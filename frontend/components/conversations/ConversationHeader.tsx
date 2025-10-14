@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import { ArrowLeft, UserPlus, Info, MoreVertical } from 'lucide-react';
+import { ArrowLeft, UserPlus, Info, MoreVertical, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -19,6 +19,7 @@ import type {
 } from '@shared/types';
 import { ConversationParticipants } from './conversation-participants';
 import { ConversationParticipantsPopover } from './conversation-participants-popover';
+import { CreateLinkButton } from './create-link-button';
 import { UserRoleEnum } from '@shared/types';
 
 interface ConversationHeaderProps {
@@ -151,6 +152,24 @@ export function ConversationHeader({
           onParticipantAdded={onParticipantAdded}
           onLinkCreated={onLinkCreated}
         />
+
+        {/* Bouton de création de lien rapide - seulement pour les conversations de groupe et avec les bons rôles */}
+        {conversation.type !== 'direct' && 
+         !(conversation.type === 'global' && currentUser.role !== 'BIGBOSS' && currentUser.role !== 'ADMIN') && (
+          <CreateLinkButton
+            conversationId={conversation.id}
+            currentUser={currentUser}
+            disableSummaryModal={false}
+            onLinkCreated={() => {
+              onLinkCreated?.('');
+            }}
+            variant="ghost"
+            size="sm"
+            className="h-10 w-10 p-0 rounded-full hover:bg-accent/50"
+          >
+            <Link2 className="h-5 w-5" />
+          </CreateLinkButton>
+        )}
 
         {/* Menu dropdown */}
         <DropdownMenu>

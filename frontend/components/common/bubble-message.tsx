@@ -517,7 +517,12 @@ function BubbleMessageInner({
               <div className="flex-1">
                 <div className="flex items-center space-x-2">
                   <span className="font-medium text-gray-900 dark:text-gray-100">
-                    @{message.sender?.username}
+                    {message.anonymousSender 
+                      ? (message.anonymousSender.username || 
+                         `${message.anonymousSender.firstName || ''} ${message.anonymousSender.lastName || ''}`.trim() || 
+                         t('anonymous'))
+                      : `@${message.sender?.username}`
+                    }
                   </span>
                   {message.anonymousSenderId && (
                     <Ghost className="h-4 w-4 text-gray-400 dark:text-gray-500" />
@@ -595,10 +600,13 @@ function BubbleMessageInner({
                     {/* Header avec nom, date et badges */}
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <span className="text-xs font-semibold text-blue-900 dark:text-blue-100 truncate">
-                        {(message.replyTo.sender && 'displayName' in message.replyTo.sender ? message.replyTo.sender.displayName : null) || 
-                         message.replyTo.sender?.username || 
-                         message.replyTo.anonymousSender?.username ||
-                         t('unknownUser')}
+                        {message.replyTo.anonymousSender 
+                          ? (message.replyTo.anonymousSender.username || 
+                             `${message.replyTo.anonymousSender.firstName || ''} ${message.replyTo.anonymousSender.lastName || ''}`.trim() || 
+                             t('anonymous'))
+                          : ((message.replyTo.sender && 'displayName' in message.replyTo.sender ? message.replyTo.sender.displayName : null) || 
+                             message.replyTo.sender?.username || 
+                             t('unknownUser'))}
                       </span>
                       
                   <span className="text-[10px] text-blue-600/60 dark:text-blue-400/60 flex-shrink-0">

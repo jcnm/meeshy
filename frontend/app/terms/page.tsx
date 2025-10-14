@@ -1,30 +1,40 @@
 'use client';
 
-
 import { useI18n } from '@/hooks/useI18n';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Printer, FileText, Mail } from 'lucide-react';
+import { Printer, FileText, Mail } from 'lucide-react';
 import Link from 'next/link';
-
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
 
 export default function TermsPage() {
-  const { t, tArray } = useI18n('terms');
+  const { t, tArray, isLoading } = useI18n('terms');
 
   const handlePrint = () => {
     window.print();
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
+      <Header mode="default" />
+
+      {/* Print Button */}
       <div className="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
-              <ArrowLeft className="h-5 w-5" />
-              <span>{t('backHome')}</span>
-            </Link>
+          <div className="flex justify-end">
             <Button onClick={handlePrint} variant="outline" className="flex items-center space-x-2">
               <Printer className="h-4 w-4" />
               <span>{t('print')}</span>
@@ -97,11 +107,11 @@ export default function TermsPage() {
               </div>
             </section>
 
-            {/* 6. Privacy */}
+            {/* 6. Limitation of Liability */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">{t('title')}</h2>
+              <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">{t('limitation.title')}</h2>
               <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                {t('content')}
+                {t('limitation.content')}
               </p>
             </section>
 
@@ -113,15 +123,7 @@ export default function TermsPage() {
               </p>
             </section>
 
-            {/* 8. Limitation of Liability */}
-            <section className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">{t('limitation.title')}</h2>
-              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                {t('limitation.content')}
-              </p>
-            </section>
-
-            {/* 9. Changes to Terms */}
+            {/* 8. Changes to Terms */}
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">{t('changes.title')}</h2>
               <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
@@ -129,7 +131,7 @@ export default function TermsPage() {
               </p>
             </section>
 
-            {/* 10. Governing Law */}
+            {/* 9. Governing Law */}
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">{t('governing.title')}</h2>
               <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
@@ -200,6 +202,9 @@ export default function TermsPage() {
           }
         }
       `}</style>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }

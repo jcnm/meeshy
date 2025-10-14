@@ -74,8 +74,12 @@ export default function ChatLinkPage() {
     );
   }
 
-  if (!conversationData) {
-    return null;
+  if (!conversationData || !conversationData.currentUser) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <AccessDenied description={t('errors.unableToLoadConversation')} />
+      </div>
+    );
   }
 
   const isAnonymous = conversationData.userType === 'anonymous';
@@ -128,10 +132,10 @@ export default function ChatLinkPage() {
             canViewAuditLogs: false,
             canManageNotifications: false,
             canManageTranslations: false,
-            ...conversationData.currentUser.permissions
+            ...(conversationData.currentUser?.permissions || {})
           },
-          systemLanguage: conversationData.currentUser.language,
-          regionalLanguage: conversationData.currentUser.language,
+          systemLanguage: conversationData.currentUser?.language || 'fr',
+          regionalLanguage: conversationData.currentUser?.language || 'fr',
           autoTranslateEnabled: true,
           translateToSystemLanguage: true,
           translateToRegionalLanguage: false,

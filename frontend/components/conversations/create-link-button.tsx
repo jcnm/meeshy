@@ -10,8 +10,11 @@ import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { copyToClipboard } from '@/lib/clipboard';
 import { useUser } from '@/stores';
+import { useLanguage } from '@/hooks/use-language';
 
 interface CreateLinkButtonProps {
+  conversationId?: string; // ID de la conversation (optionnel, détecté depuis l'URL sinon)
+  currentUser?: any; // Utilisateur courant (optionnel, utilise le store si non fourni)
   onLinkCreated?: () => void;
   variant?: 'default' | 'outline' | 'ghost' | 'secondary' | 'destructive';
   size?: 'default' | 'sm' | 'lg' | 'icon';
@@ -22,6 +25,8 @@ interface CreateLinkButtonProps {
 }
 
 export function CreateLinkButton({
+  conversationId: propConversationId,
+  currentUser: propCurrentUser,
   onLinkCreated,
   variant = 'default',
   size = 'default',
@@ -36,9 +41,63 @@ export function CreateLinkButton({
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const [generatedToken, setGeneratedToken] = useState<string | null>(null);
   const [linkSummaryData, setLinkSummaryData] = useState<any>(null);
-  const { user: currentUser } = useUser();
+  const { user: storeUser } = useUser();
+  const currentUser = propCurrentUser || storeUser; // Utiliser la prop en priorité, sinon le store
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { detectedInterfaceLanguage } = useLanguage();
+
+  // Messages traduits selon la langue de l'interface
+  const getTranslatedMessages = (lang: string) => {
+    const messages: Record<string, { success: string; shareMessage: string; copied: string }> = {
+      fr: {
+        success: 'Point d\'ancrage créé avec succès',
+        shareMessage: '🔗 Rejoignez la conversation Meeshy !\n\n',
+        copied: 'Lien copié dans le presse-papier !'
+      },
+      en: {
+        success: 'Anchor point created successfully',
+        shareMessage: '🔗 Join the Meeshy conversation!\n\n',
+        copied: 'Link copied to clipboard!'
+      },
+      es: {
+        success: 'Punto de anclaje creado con éxito',
+        shareMessage: '🔗 ¡Únete a la conversación de Meeshy!\n\n',
+        copied: '¡Enlace copiado al portapapeles!'
+      },
+      de: {
+        success: 'Ankerpunkt erfolgreich erstellt',
+        shareMessage: '🔗 Treten Sie dem Meeshy-Gespräch bei!\n\n',
+        copied: 'Link in die Zwischenablage kopiert!'
+      },
+      it: {
+        success: 'Punto di ancoraggio creato con successo',
+        shareMessage: '🔗 Unisciti alla conversazione Meeshy!\n\n',
+        copied: 'Link copiato negli appunti!'
+      },
+      pt: {
+        success: 'Ponto de ancoragem criado com sucesso',
+        shareMessage: '🔗 Junte-se à conversa Meeshy!\n\n',
+        copied: 'Link copiado para a área de transferência!'
+      },
+      zh: {
+        success: '锚点创建成功',
+        shareMessage: '🔗 加入 Meeshy 对话！\n\n',
+        copied: '链接已复制到剪贴板！'
+      },
+      ja: {
+        success: 'アンカーポイントが正常に作成されました',
+        shareMessage: '🔗 Meeshy の会話に参加しましょう！\n\n',
+        copied: 'リンクがクリップボードにコピーされました！'
+      },
+      ar: {
+        success: 'تم إنشاء نقطة الربط بنجاح',
+        shareMessage: '🔗 انضم إلى محادثة Meeshy!\n\n',
+        copied: 'تم نسخ الرابط إلى الحافظة!'
+      }
+    };
+    return messages[lang] || messages['en'];
+  };
 
   const handleLinkCreated = () => {
     setIsModalOpen(false);
@@ -57,8 +116,13 @@ export function CreateLinkButton({
   };
 
   const createQuickLink = async (conversationId: string) => {
-    if (!currentUser || !conversationId) {
-      toast.error('Impossible de créer le lien : informations manquantes');
+    if (!currentUser) {
+      toast.error('Impossible de créer le lien : utilisateur non connecté');
+      return;
+    }
+    
+    if (!conversationId) {
+      toast.error('Impossible de créer le lien : conversation non identifiée');
       return;
     }
 
@@ -96,6 +160,8 @@ export function CreateLinkButton({
       if (response.ok) {
         const result = await response.json();
         const linkUrl = `${window.location.origin}/join/${result.data.linkId}`;
+        const messages = getTranslatedMessages(detectedInterfaceLanguage);
+        const shareText = messages.shareMessage + linkUrl;
         
         // Stocker les liens générés
         setGeneratedLink(linkUrl);
@@ -120,34 +186,45 @@ export function CreateLinkButton({
           allowedLanguages: linkData.allowedLanguages
         });
         
-        // Essayer de copier dans le presse-papiers avec gestion d'erreur
+        // Copier le lien avec message de partage dans le presse-papier
         try {
-          await navigator.clipboard.writeText(linkUrl);
-          toast.success('Lien créé et copié dans le presse-papier !');
-        } catch (clipboardError: any) {
-          console.warn('Clipboard access denied or not available:', clipboardError);
-          // Fallback: afficher le lien dans un toast avec action de copie manuelle
-          toast.success('Lien créé avec succès !', {
+          await navigator.clipboard.writeText(shareText);
+          toast.success(messages.success, {
             description: linkUrl,
             duration: 10000,
-            action: {
-              label: 'Copier manuellement',
-              onClick: () => {
-                // Essayer une méthode alternative de copie
-                const textArea = document.createElement('textarea');
-                textArea.value = linkUrl;
-                document.body.appendChild(textArea);
-                textArea.select();
-                try {
-                  document.execCommand('copy');
-                  toast.success('Copié dans le presse-papiers !');
-                } catch (fallbackError) {
-                  console.error('Fallback copy failed:', fallbackError);
-                  toast.error('Échec de la copie');
-                }
-                document.body.removeChild(textArea);
+            onClick: async () => {
+              // Recopier au clic sur le toast
+              try {
+                await navigator.clipboard.writeText(shareText);
+                toast.success(messages.copied);
+              } catch (err) {
+                console.error('Erreur copie:', err);
               }
-            }
+            },
+            style: { cursor: 'pointer' }
+          });
+        } catch (clipboardError: any) {
+          console.warn('Clipboard access denied or not available:', clipboardError);
+          // Fallback: afficher le lien dans un toast cliquable
+          toast.success(messages.success, {
+            description: linkUrl,
+            duration: 10000,
+            onClick: () => {
+              // Essayer une méthode alternative de copie
+              const textArea = document.createElement('textarea');
+              textArea.value = shareText;
+              document.body.appendChild(textArea);
+              textArea.select();
+              try {
+                document.execCommand('copy');
+                toast.success(messages.copied);
+              } catch (fallbackError) {
+                console.error('Fallback copy failed:', fallbackError);
+                toast.error('Échec de la copie');
+              }
+              document.body.removeChild(textArea);
+            },
+            style: { cursor: 'pointer' }
           });
         }
         
@@ -176,11 +253,11 @@ export function CreateLinkButton({
       return;
     }
 
-    // Détecter le contexte : si on est dans une conversation spécifique
+    // Utiliser la prop conversationId en priorité, sinon détecter depuis l'URL
     const currentPath = window.location.pathname;
     const conversationIdFromPath = currentPath.match(/\/conversations\/([^\/]+)/)?.[1];
     const conversationIdFromQuery = searchParams.get('id');
-    const currentConversationId = conversationIdFromPath || conversationIdFromQuery;
+    const currentConversationId = propConversationId || conversationIdFromPath || conversationIdFromQuery;
     
     if (currentConversationId) {
       // Contexte : conversation spécifique -> génération automatique

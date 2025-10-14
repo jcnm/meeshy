@@ -827,6 +827,15 @@ export async function conversationRoutes(fastify: FastifyInstance) {
                   avatar: true
                 }
               },
+              anonymousSender: {
+                select: {
+                  id: true,
+                  username: true,
+                  firstName: true,
+                  lastName: true,
+                  language: true
+                }
+              },
               status: {
                 select: {
                   userId: true,

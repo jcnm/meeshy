@@ -262,7 +262,6 @@ export function ConversationList({
   
   // Test de défilement - ajouter des éléments de test si nécessaire
   // Logs désactivés pour éviter la répétition excessive
-  const totalUnread = conversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
 
   return (
     <div className="flex flex-col h-full max-h-full bg-card conversation-list-container overflow-hidden">
@@ -272,13 +271,6 @@ export function ConversationList({
           <h2 className="text-lg font-semibold">{t('title')}</h2>
           
           <div className="flex items-center gap-2">
-            {/* Indicateur de messages non lus */}
-            {totalUnread > 0 && (
-              <Badge variant="destructive">
-                {totalUnread}
-              </Badge>
-            )}
-            
             {/* Bouton créer lien */}
             <CreateLinkButton
               onLinkCreated={onLinkCreated}

@@ -16,15 +16,13 @@ import {
   Crown,
   Loader2,
   UserX,
-  UserPlus,
-  Link2
+  UserPlus
 } from 'lucide-react';
 import { ThreadMember } from '@shared/types';
 import { conversationsService } from '@/services/conversations.service';
 import { toast } from 'sonner';
 import { useI18n } from '@/hooks/useI18n';
 import { UserRoleEnum } from '@shared/types';
-import { CreateLinkButton } from './create-link-button';
 import { InviteUserModal } from './invite-user-modal';
 import { getUserInitials } from '@/lib/avatar-utils';
 
@@ -130,12 +128,13 @@ export function ConversationParticipantsPopover({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-72 sm:w-80 p-0 shadow-2xl border border-border bg-card dark:bg-card backdrop-blur-sm"
-        side="bottom"
-        align="end"
-        alignOffset={-2}
+        className="w-80 sm:w-96 p-0 shadow-2xl border border-border bg-card dark:bg-card backdrop-blur-sm"
+        side="left"
+        align="center"
+        alignOffset={0}
         sideOffset={8}
-        collisionPadding={20}
+        collisionPadding={{ left: 80, right: 20, top: 20, bottom: 20 }}
+        avoidCollisions={false}
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <div className="p-3">
@@ -143,29 +142,6 @@ export function ConversationParticipantsPopover({
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-semibold text-sm text-foreground">{t('conversationUI.participants')} ({participants.length})</h4>
             <div className="flex items-center gap-1">
-              {/* Bouton de création de lien - seulement pour les conversations de groupe et avec les bons rôles */}
-              {conversationType !== 'direct' && 
-               !(conversationType === 'global' && currentUser.role !== 'BIGBOSS' && currentUser.role !== 'ADMIN') && (
-                <div 
-                  onClick={(e) => {
-                    // Fermer le popover immédiatement au clic
-                    setIsOpen(false);
-                    // Laisser l'événement continuer vers le CreateLinkButton
-                  }}
-                >
-                  <CreateLinkButton
-                    disableSummaryModal={true}
-                    onLinkCreated={() => {
-                      onLinkCreated?.('');
-                    }}
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0 rounded-full hover:bg-accent/50 border border-border/30 hover:border-primary/50 transition-colors"
-                  >
-                    <Link2 className="h-4 w-4 text-primary" />
-                  </CreateLinkButton>
-                </div>
-              )}
               <Button
                 variant="ghost"
                 size="sm"

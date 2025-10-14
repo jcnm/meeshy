@@ -91,7 +91,7 @@ check_scripts() {
 # Démarrer les services
 start_services() {
     log_info "╔══════════════════════════════════════════════════════════╗"
-    log_info "║     MEESHY - Démarrage en Mode Natif (Development)     ║"
+    log_info "║     MEESHY - Démarrage en Mode Natif (Development)       ║"
     log_info "╚══════════════════════════════════════════════════════════╝"
     echo ""
     

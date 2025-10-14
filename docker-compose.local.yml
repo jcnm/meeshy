@@ -77,31 +77,6 @@ services:
       timeout: 10s
       retries: 3
 
-  # P3X Redis UI - Interface Redis
-  p3x-redis-ui:
-    image: patrikx3/p3x-redis-ui:latest
-    container_name: meeshy-dev-p3x-redis-ui
-    restart: unless-stopped
-    environment:
-      - P3X_REDIS_UI_SETTINGS={"hostname":"redis","port":6379,"password":"","meeshy-dev-database":0}
-      - P3X_REDIS_UI_HTTP_PORT=7843
-      - P3XRS_SETTINGS_PATH=/settings
-    ports:
-      - "7843:7843"
-    volumes:
-      - dev_redis_ui_data:/settings
-    depends_on:
-      redis:
-        condition: service_healthy
-    networks:
-      - meeshy-dev-network
-    healthcheck:
-      test: ["CMD-SHELL", "netstat -an | grep :7843 || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-
 networks:
   meeshy-dev-network:
     driver: bridge

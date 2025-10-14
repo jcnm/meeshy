@@ -86,19 +86,38 @@ export function Header({
                     Continue Chat
                   </Button>
                 )}
-                <Button 
-                  variant="ghost" 
-                  onClick={() => handleAuthClick('login')}
-                >
-                  <LogIn className="h-4 w-4 mr-2" />
-                  Login
-                </Button>
-                <Button 
-                  onClick={() => handleAuthClick('register')}
-                >
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  Sign Up
-                </Button>
+                {mode === 'landing' ? (
+                  <>
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => handleAuthClick('login')}
+                    >
+                      <LogIn className="h-4 w-4 mr-2" />
+                      Login
+                    </Button>
+                    <Button 
+                      onClick={() => handleAuthClick('register')}
+                    >
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Sign Up
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/login">
+                      <Button variant="ghost">
+                        <LogIn className="h-4 w-4 mr-2" />
+                        Login
+                      </Button>
+                    </Link>
+                    <Link href="/signin">
+                      <Button>
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Sign Up
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </>
             )}
           </div>
@@ -148,27 +167,46 @@ export function Header({
                       Continue Chat
                     </Button>
                   )}
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-start"
-                    onClick={() => {
-                      handleAuthClick('login');
-                      setIsMobileMenuOpen(false);
-                    }}
-                  >
-                    <LogIn className="h-4 w-4 mr-2" />
-                    Login
-                  </Button>
-                  <Button 
-                    className="w-full justify-start"
-                    onClick={() => {
-                      handleAuthClick('register');
-                      setIsMobileMenuOpen(false);
-                    }}
-                  >
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Sign Up
-                  </Button>
+                  {mode === 'landing' ? (
+                    <>
+                      <Button 
+                        variant="ghost" 
+                        className="w-full justify-start"
+                        onClick={() => {
+                          handleAuthClick('login');
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <LogIn className="h-4 w-4 mr-2" />
+                        Login
+                      </Button>
+                      <Button 
+                        className="w-full justify-start"
+                        onClick={() => {
+                          handleAuthClick('register');
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Sign Up
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                        <Button variant="ghost" className="w-full justify-start">
+                          <LogIn className="h-4 w-4 mr-2" />
+                          Login
+                        </Button>
+                      </Link>
+                      <Link href="/signin" onClick={() => setIsMobileMenuOpen(false)}>
+                        <Button className="w-full justify-start">
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          Sign Up
+                        </Button>
+                      </Link>
+                    </>
+                  )}
                 </>
               )}
             </nav>

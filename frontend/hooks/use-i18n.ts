@@ -47,20 +47,48 @@ export function useI18n(namespace: string = 'common', options: UseI18nOptions = 
   
   // Charger les traductions pour un namespace et une locale donnés
   const loadTranslations = useCallback(async (locale: string, ns: string) => {
+    console.log(`[i18n] 🚀 Loading translations for ${locale}/${ns}...`);
     const cacheKey = `${locale}-${ns}`;
     
-    // En développement, ne pas utiliser le cache pour voir les changements immédiatement
+    // En développement, ne PAS utiliser le cache pour voir les changements immédiatement
     const useCache = process.env.NODE_ENV !== 'development';
     
     // Vérifier le cache d'abord (seulement en production)
     if (useCache && translationsCache.has(cacheKey)) {
+      console.log(`[i18n] ✅ Using cached translations for ${locale}/${ns}`);
       return translationsCache.get(cacheKey)!;
     }
     
     try {
       // Importer dynamiquement le fichier JSON
       const data = await import(`@/locales/${locale}/${ns}.json`);
-      const translations = data.default || data;
+      
+      // Debug: voir exactement ce qui est importé
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[i18n] 📦 Import raw data for ${locale}/${ns}:`, {
+          hasDefault: 'default' in data,
+          dataKeys: Object.keys(data),
+          data: data
+        });
+      }
+      
+      // Extraire les traductions : soit data.default, soit data directement
+      let translations = data.default || data;
+      
+      // Si les traductions ont une clé qui correspond au namespace, l'extraire
+      // Ex: { "landing": { "hero": {...} } } → { "hero": {...} }
+      if (ns in translations) {
+        translations = translations[ns];
+      }
+      
+      // Debug: afficher ce qui est chargé
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[i18n] 📋 Extracted translations for ${locale}/${ns}:`, {
+          hasDefault: 'default' in data,
+          hasNamespaceKey: ns in (data.default || data),
+          translationsKeys: Object.keys(translations)
+        });
+      }
       
       // Mettre en cache (seulement en production)
       if (useCache) {
@@ -69,7 +97,7 @@ export function useI18n(namespace: string = 'common', options: UseI18nOptions = 
       
       return translations;
     } catch (error) {
-      console.warn(`[i18n] Failed to load translations for ${locale}/${ns}:`, error);
+      console.error(`[i18n] ❌ Failed to load translations for ${locale}/${ns}:`, error);
       
       // Si on est déjà sur le fallback, retourner un objet vide
       if (locale === fallbackLocale) {
@@ -97,16 +125,33 @@ export function useI18n(namespace: string = 'common', options: UseI18nOptions = 
       const data = await loadTranslations(currentInterfaceLanguage, namespace);
       
       if (isMounted) {
+        // Debug: log les données brutes
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[i18n] 🔍 Raw data for ${currentInterfaceLanguage}/${namespace}:`, {
+            dataKeys: Object.keys(data),
+            hasNamespaceKey: namespace in data,
+            dataContent: data
+          });
+        }
+        
         // Si les données ont une clé racine qui correspond au namespace, l'extraire
         // Ex: { "landing": { "hero": { ... } } } → { "hero": { ... } }
-        const translationsData = data[namespace] || data;
+        // Note: loadTranslations fait déjà cette extraction maintenant
+        const translationsData = data;
         
         // Debug: log la structure chargée en mode développement
         if (process.env.NODE_ENV === 'development') {
-          console.log(`[i18n] Loaded ${currentInterfaceLanguage}/${namespace}:`, Object.keys(translationsData));
+          console.log(`[i18n] ✅ Loaded ${currentInterfaceLanguage}/${namespace}:`, {
+            translationsDataKeys: Object.keys(translationsData),
+            translationsData
+          });
         }
         
         setTranslations(translationsData);
+        console.log(`[i18n] 💾 Set translations for ${currentInterfaceLanguage}/${namespace}:`, {
+          translationsDataKeys: Object.keys(translationsData),
+          translationsData
+        });
         setIsLoading(false);
       }
     };
@@ -120,6 +165,14 @@ export function useI18n(namespace: string = 'common', options: UseI18nOptions = 
   
   // Fonction de traduction
   const t = useCallback((key: string, params?: Record<string, any>): string => {
+    // Ne pas afficher de warnings pendant le chargement initial
+    const shouldWarn = process.env.NODE_ENV === 'development' && !isLoading;
+    
+    // Debug: afficher l'état des translations seulement si elles sont censées être chargées
+    if (shouldWarn && Object.keys(translations).length === 0) {
+      console.warn(`[i18n] Translations object is empty for namespace "${namespace}"`);
+    }
+    
     // Naviguer dans l'objet de traductions en utilisant la clé avec points
     const keys = key.split('.');
     let value: any = translations;
@@ -129,8 +182,12 @@ export function useI18n(namespace: string = 'common', options: UseI18nOptions = 
         value = value[k];
       } else {
         // Clé non trouvée - retourner la clé elle-même en mode développement
-        if (process.env.NODE_ENV === 'development') {
-          console.warn(`[i18n] Missing translation key: ${namespace}.${key}`);
+        if (shouldWarn) {
+          console.warn(`[i18n] Missing translation key: ${namespace}.${key}`, {
+            translationsKeys: Object.keys(translations),
+            lookingFor: k,
+            currentValue: value
+          });
         }
         return key;
       }
@@ -152,7 +209,7 @@ export function useI18n(namespace: string = 'common', options: UseI18nOptions = 
     }
     
     return value;
-  }, [translations, namespace]);
+  }, [translations, namespace, isLoading]);
   
   // Fonction pour récupérer un tableau de traductions
   const tArray = useCallback((key: string): string[] => {

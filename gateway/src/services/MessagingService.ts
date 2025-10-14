@@ -561,7 +561,11 @@ export class MessagingService {
         anonymousSender: {
           select: {
             id: true,
-            conversationId: true
+            conversationId: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            language: true
           }
         },
         replyTo: {
@@ -572,6 +576,15 @@ export class MessagingService {
                 username: true,
                 displayName: true,
                 avatar: true
+              }
+            },
+            anonymousSender: {
+              select: {
+                id: true,
+                username: true,
+                firstName: true,
+                lastName: true,
+                language: true
               }
             }
           }

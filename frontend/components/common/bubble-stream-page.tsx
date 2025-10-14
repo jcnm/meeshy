@@ -725,6 +725,18 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     }
   }, [newMessage]);
 
+  // Définir le callback pour récupérer un message par ID (utilise la liste translatedMessages existante)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const meeshySocketIOService = require('@/services/meeshy-socketio.service').meeshySocketIOService;
+      const getMessageById = (messageId: string) => {
+        return (translatedMessages as Message[]).find(msg => msg.id === messageId);
+      };
+      meeshySocketIOService.setGetMessageByIdCallback(getMessageById);
+      console.log(`� [CALLBACK] Callback getMessageById défini (${translatedMessages.length} messages disponibles)`);
+    }
+  }, [translatedMessages]);
+
   // Mise à jour de la langue sélectionnée basée sur les préférences utilisateur uniquement
   useEffect(() => {
     const newUserLanguage = resolveUserPreferredLanguage();

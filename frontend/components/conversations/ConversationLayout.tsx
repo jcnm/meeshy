@@ -592,7 +592,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     <DashboardLayout title={t('conversationLayout.conversations.title')} hideHeaderOnMobile={true}>
       <div 
         className={cn(
-          "flex bg-background overflow-hidden conversation-layout",
+          "flex bg-background conversation-layout",
           isMobile ? 'h-screen' : 'h-[calc(100vh-64px)]'
         )}
         role="application"
@@ -632,7 +632,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         {/* Zone de conversation principale */}
         <main 
           className={cn(
-            "flex-1 flex flex-col min-w-0 h-full relative",
+            "flex-1 flex flex-col min-w-0 h-full",
             isMobile && showConversationList && "hidden"
           )}
           role="main"
@@ -642,7 +642,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
           {selectedConversation ? (
             <div className="flex flex-col h-full max-h-full">
               {/* Header de conversation */}
-              <header className="flex-shrink-0 z-30 bg-card shadow-sm" role="banner">
+              <header className="flex-shrink-0 bg-card shadow-sm relative" role="banner">
                 <ConversationHeader
                   conversation={selectedConversation}
                   currentUser={user}

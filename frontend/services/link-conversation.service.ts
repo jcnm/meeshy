@@ -93,7 +93,7 @@ export interface LinkConversationData {
       canSendFiles: boolean;
       canSendImages: boolean;
     };
-  };
+  } | null; // Peut être null si l'utilisateur n'est pas authentifié
 }
 
 export interface LinkConversationOptions {

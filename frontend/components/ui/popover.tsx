@@ -22,6 +22,7 @@ function PopoverContent({
   align = "center",
   sideOffset = 4,
   collisionPadding = 16,
+  avoidCollisions = true,
   ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Content>) {
   return (
@@ -31,7 +32,7 @@ function PopoverContent({
         align={align}
         sideOffset={sideOffset}
         collisionPadding={collisionPadding}
-        avoidCollisions={true}
+        avoidCollisions={avoidCollisions}
         sticky="always"
         style={{ zIndex: 99999, position: 'fixed' }}
         className={cn(

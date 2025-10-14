@@ -1,30 +1,40 @@
 'use client';
 
-
 import { useI18n } from '@/hooks/useI18n';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Printer, Shield, Mail } from '@/lib/icons';
+import { Printer, Shield, Mail } from '@/lib/icons';
 import Link from 'next/link';
-
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
 
 export default function PrivacyPage() {
-  const { t, tArray } = useI18n('privacy');
+  const { t, tArray, isLoading } = useI18n('privacy');
 
   const handlePrint = () => {
     window.print();
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
+      <Header mode="default" />
+
+      {/* Print Button */}
       <div className="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900">
-              <ArrowLeft className="h-5 w-5" />
-              <span>{t('backHome')}</span>
-            </Link>
+          <div className="flex justify-end">
             <Button onClick={handlePrint} variant="outline" className="flex items-center space-x-2">
               <Printer className="h-4 w-4" />
               <span>{t('print')}</span>
@@ -200,6 +210,9 @@ export default function PrivacyPage() {
           }
         }
       `}</style>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }

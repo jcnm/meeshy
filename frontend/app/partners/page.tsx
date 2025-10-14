@@ -1,12 +1,12 @@
 'use client';
 
-
 import { useI18n } from '@/hooks/useI18n';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Handshake, Mail, ExternalLink, Building2, GraduationCap, Users, Shield, Zap, HeartHandshake, Globe, BookOpen, Briefcase } from 'lucide-react';
+import { Handshake, Mail, ExternalLink, Building2, GraduationCap, Users, Shield, Zap, HeartHandshake, Globe, BookOpen, Briefcase } from 'lucide-react';
 import Link from 'next/link';
-
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
 
 export default function PartnersPage() {
   const { t } = useI18n('partners');
@@ -14,16 +14,7 @@ export default function PartnersPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900">
-              <ArrowLeft className="h-5 w-5" />
-              <span>{t('backHome')}</span>
-            </Link>
-          </div>
-        </div>
-      </div>
+      <Header mode="default" />
 
       {/* Content */}
       <div className="container mx-auto px-4 py-8">
@@ -280,6 +271,9 @@ export default function PartnersPage() {
           </Card>
         </div>
       </div>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }

@@ -59,6 +59,18 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
   // Hook pour fixer les z-index des popovers Radix UI
   useFixRadixZIndex();
 
+  // Définir le callback pour récupérer un message par ID (utilise la liste translatedMessages existante)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const meeshySocketIOService = require('@/services/meeshy-socketio.service').meeshySocketIOService;
+      const getMessageById = (messageId: string) => {
+        return (translatedMessages as Message[]).find(msg => msg.id === messageId);
+      };
+      meeshySocketIOService.setGetMessageByIdCallback(getMessageById);
+      console.log(`🔗 [CALLBACK ConversationMessages] Callback getMessageById défini (${translatedMessages.length} messages disponibles)`);
+    }
+  }, [translatedMessages]);
+
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const previousMessageCountRef = useRef(0);

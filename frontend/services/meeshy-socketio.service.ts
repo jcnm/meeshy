@@ -58,8 +58,19 @@ class MeeshySocketIOService {
   private batchTimeout: NodeJS.Timeout | null = null;
   private readonly BATCH_DELAY = 100; // ms - délai pour grouper les traductions
 
+  // Callback pour récupérer un message par ID (fourni par le composant qui a la liste des messages)
+  private getMessageByIdCallback: ((messageId: string) => Message | undefined) | null = null;
+
   constructor() {
     // La connexion sera initialisée quand l'utilisateur sera défini
+  }
+
+  /**
+   * Définit le callback pour récupérer un message par ID
+   * Ce callback sera utilisé pour reconstituer replyTo depuis les messages existants
+   */
+  public setGetMessageByIdCallback(callback: (messageId: string) => Message | undefined): void {
+    this.getMessageByIdCallback = callback;
   }
 
   /**
@@ -242,6 +253,7 @@ class MeeshySocketIOService {
         messageId: socketMessage.id,
         conversationId: socketMessage.conversationId,
         senderId: socketMessage.senderId,
+        replyToId: socketMessage.replyToId,
         content: socketMessage.content?.substring(0, 50) + '...',
         receivedOnPage: typeof window !== 'undefined' ? window.location.pathname : 'unknown',
         listenersCount: this.messageListeners.size,
@@ -473,6 +485,19 @@ class MeeshySocketIOService {
    * Convertit un message Socket.IO en Message standard
    */
   private convertSocketMessageToMessage(socketMessage: SocketIOMessage): Message {
+    // Reconstituer replyTo depuis la liste des messages existants si replyToId est présent
+    let replyTo: Message | undefined = undefined;
+    if (socketMessage.replyToId && this.getMessageByIdCallback) {
+      replyTo = this.getMessageByIdCallback(socketMessage.replyToId);
+      if (replyTo) {
+        console.log(`💬 [MESSAGES] Message réponse reconstitué depuis la liste: ${socketMessage.replyToId}`);
+      } else {
+        console.warn(`⚠️ [MESSAGES] Message ${socketMessage.replyToId} non trouvé dans la liste pour replyTo`);
+      }
+    } else if (socketMessage.replyToId && !this.getMessageByIdCallback) {
+      console.warn(`⚠️ [MESSAGES] Callback getMessageById non défini, impossible de reconstituer replyTo`);
+    }
+
     return {
       id: socketMessage.id,
       conversationId: socketMessage.conversationId,
@@ -486,23 +511,8 @@ class MeeshySocketIOService {
       isEdited: false,
       isDeleted: false,
       translations: [],
-      // CORRECTION: Copier replyTo si présent dans le message Socket.IO
-      replyTo: (socketMessage as any).replyTo ? {
-        id: (socketMessage as any).replyTo.id,
-        conversationId: socketMessage.conversationId,
-        senderId: (socketMessage as any).replyTo.sender?.id || (socketMessage as any).replyTo.anonymousSender?.id || '',
-        content: (socketMessage as any).replyTo.content,
-        originalLanguage: (socketMessage as any).replyTo.originalLanguage || 'fr',
-        messageType: 'text',
-        timestamp: new Date((socketMessage as any).replyTo.createdAt),
-        createdAt: new Date((socketMessage as any).replyTo.createdAt),
-        updatedAt: new Date((socketMessage as any).replyTo.createdAt),
-        isEdited: false,
-        isDeleted: false,
-        translations: (socketMessage as any).replyTo.translations || [],
-        sender: (socketMessage as any).replyTo.sender || undefined,
-        anonymousSender: (socketMessage as any).replyTo.anonymousSender || undefined
-      } : undefined,
+      // Utiliser le message depuis le cache si disponible
+      replyTo: replyTo,
       sender: socketMessage.sender || {
         id: socketMessage.senderId || '',
         username: 'Utilisateur inconnu',

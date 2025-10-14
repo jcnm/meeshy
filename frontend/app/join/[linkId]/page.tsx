@@ -134,11 +134,11 @@ export default function JoinConversationPage() {
           }
         } else {
           const errorResult = await linkResponse.json().catch(() => ({}));
-          setLinkError(errorResult.message || 'Lien de conversation invalide ou introuvable');
+          setLinkError(errorResult.message || t('linkError'));
         }
       } catch (error) {
         console.error('Erreur initialisation:', error);
-        setLinkError('Erreur lors du chargement du lien');
+        setLinkError(t('linkError'));
       } finally {
         setIsLoading(false);
       }
@@ -193,19 +193,19 @@ export default function JoinConversationPage() {
   // Fonction pour rejoindre de manière anonyme
   const handleJoinAnonymously = async () => {
     if (!anonymousForm.firstName.trim() || !anonymousForm.lastName.trim()) {
-      toast.error('Le prénom et le nom sont requis');
+      toast.error(t('firstNameRequired'));
       return;
     }
 
     // Vérifier si l'username est requis
     if (conversationLink?.requireNickname && !anonymousForm.username.trim()) {
-      toast.error('Le nom d\'utilisateur est obligatoire pour rejoindre cette conversation');
+      toast.error(t('usernameRequired'));
       return;
     }
 
     // Vérifier si l'email est requis
     if (conversationLink?.requireEmail && !anonymousForm.email.trim()) {
-      toast.error('L\'email est obligatoire pour rejoindre cette conversation');
+      toast.error(t('emailRequired'));
       return;
     }
 
@@ -235,23 +235,23 @@ export default function JoinConversationPage() {
         // Stocker le linkId original pour permettre la redirection depuis la page d'accueil
         localStorage.setItem('anonymous_current_link_id', linkId);
         
-        toast.success(`Bienvenue ${result.data.participant.username} !`); // Utiliser username du participant
+        toast.success(t('welcome', { username: result.data.participant.username }));
         
         // Rediriger vers la page de chat anonyme avec le conversationShareLinkId
         // Utiliser window.location.href pour forcer la redirection immédiate
         window.location.href = `/chat/${result.data.id}`;
       } else {
-        toast.error(result.message || 'Erreur lors de la connexion anonyme');
+        toast.error(result.message || t('joinError'));
         
         // Si le username est déjà pris, proposer le username suggéré
         if (response.status === 409 && result.suggestedNickname) {
           setAnonymousForm(prev => ({ ...prev, username: result.suggestedNickname })); // Mettre à jour username
-          toast.info(`Username suggéré: ${result.suggestedNickname}`);
+          toast.info(t('suggestedUsername', { username: result.suggestedNickname }));
         }
       }
     } catch (error) {
       console.error('Erreur connexion anonyme:', error);
-      toast.error('Erreur de connexion');
+      toast.error(t('connectionError'));
     } finally {
       setIsJoining(false);
     }
@@ -297,11 +297,11 @@ export default function JoinConversationPage() {
             if (linkInfo.success) {
               router.push(`/chat/${linkInfo.data.id}`);
             } else {
-              toast.error('Impossible de rediriger vers la conversation');
+              toast.error(t('joinError'));
             }
           } catch (error) {
             console.error('[JOIN_CONVERSATION] Erreur récupération linkInfo:', error);
-            toast.error('Erreur lors de la redirection');
+            toast.error(t('joinError'));
           }
         }
         return;
@@ -322,7 +322,7 @@ export default function JoinConversationPage() {
           console.log('[JOIN_CONVERSATION] conversationShareLinkId récupéré:', conversationShareLinkId);
         } catch (error) {
           console.error('[JOIN_CONVERSATION] Erreur récupération linkInfo:', error);
-          toast.error('Impossible de récupérer les informations du lien');
+          toast.error(t('linkError'));
           return;
         }
         
@@ -338,7 +338,7 @@ export default function JoinConversationPage() {
           if (chatResult.success && chatResult.data.userType === 'member') {
             // Utilisateur membre authentifié - rediriger directement vers la conversation
             console.log('[JOIN_CONVERSATION] Utilisateur membre, redirection vers conversation');
-            toast.success('Redirection vers votre conversation');
+            toast.success(t('redirecting'));
             // Pour les utilisateurs authentifiés, rediriger vers la page de conversation normale
             // Utiliser l'ID de la conversation depuis les données reçues
             router.push(`/conversations/${chatResult.data.conversation.id}`);
@@ -365,19 +365,19 @@ export default function JoinConversationPage() {
         if (response.ok) {
           const result = await response.json();
           console.log('[JOIN_CONVERSATION] Jointure réussie:', result);
-          toast.success('Vous avez rejoint la conversation !');
+          toast.success(t('redirecting'));
           // Pour les utilisateurs authentifiés, rediriger vers la page de conversation normale
           // Utiliser l'ID de la conversation retourné par l'API
           router.push(`/conversations/${result.data.conversationId}`);
         } else {
           const error = await response.json();
           console.error('[JOIN_CONVERSATION] Erreur POST /conversations/join:', response.status, error);
-          toast.error(error.message || 'Erreur lors de la jointure');
+          toast.error(error.message || t('joinError'));
         }
       }
     } catch (error) {
       console.error('[JOIN_CONVERSATION] Erreur jointure:', error);
-      toast.error('Erreur de connexion');
+      toast.error(t('connectionError'));
     } finally {
       setIsJoining(false);
     }
@@ -397,7 +397,7 @@ export default function JoinConversationPage() {
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-            <CardTitle className="text-xl text-red-700">Lien invalide</CardTitle>
+            <CardTitle className="text-xl text-red-700">{t('invalidLink')}</CardTitle>
             <CardDescription className="text-red-600">
               {linkError}
             </CardDescription>
@@ -407,7 +407,7 @@ export default function JoinConversationPage() {
               onClick={() => router.push('/')}
               className="w-full"
             >
-              Retourner à l&apos;accueil
+              {t('returnToHome')}
             </Button>
           </CardContent>
         </Card>
@@ -420,9 +420,9 @@ export default function JoinConversationPage() {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <CardTitle>Conversation introuvable</CardTitle>
+            <CardTitle>{t('conversationNotFound')}</CardTitle>
             <CardDescription>
-              Le lien que vous essayez d&apos;utiliser n&apos;existe pas
+              {t('conversationNotFoundDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -430,7 +430,7 @@ export default function JoinConversationPage() {
               onClick={() => router.push('/')}
               className="w-full"
             >
-              Retourner à l&apos;accueil
+              {t('returnToHome')}
             </Button>
           </CardContent>
         </Card>
@@ -456,14 +456,14 @@ export default function JoinConversationPage() {
                 <DialogTrigger asChild>
                   <Button variant="ghost" size="sm">
                     <LogIn className="h-4 w-4 mr-2" />
-                    Se connecter
+                    {t('signIn')}
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Se connecter</DialogTitle>
+                    <DialogTitle>{t('signIn')}</DialogTitle>
                     <DialogDescription>
-                      Connectez-vous pour rejoindre la conversation
+                      {t('signInToJoin')}
                     </DialogDescription>
                   </DialogHeader>
                   <LoginForm onSuccess={onAuthSuccess} />
@@ -474,14 +474,14 @@ export default function JoinConversationPage() {
                 <DialogTrigger asChild>
                   <Button size="sm">
                     <UserPlus className="h-4 w-4 mr-2" />
-                    S&apos;inscrire
+                    {t('signUp')}
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Créer un compte</DialogTitle>
+                    <DialogTitle>{t('createAccount')}</DialogTitle>
                     <DialogDescription>
-                      Créez votre compte pour rejoindre la conversation
+                      {t('createAccountToJoin')}
                     </DialogDescription>
                   </DialogHeader>
                   <RegisterForm onSuccess={onAuthSuccess} />
@@ -493,7 +493,7 @@ export default function JoinConversationPage() {
           {currentUser && (
             <div className="flex items-center space-x-2">
               <span className="text-sm text-gray-600 dark:text-gray-400">
-                {isAnonymous ? 'Session anonyme' : 'Connecté'}: {currentUser.displayName || `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || currentUser.username}
+                {isAnonymous ? t('anonymousSession') : t('connected')}: {currentUser.displayName || `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || currentUser.username}
               </span>
               <Button 
                 variant="ghost" 
@@ -504,11 +504,11 @@ export default function JoinConversationPage() {
                   } else {
                     logout();
                   }
-                  toast.info('Session fermée');
+                  toast.info(t('sessionClosed'));
                 }}
               >
                 <UserMinus className="h-4 w-4 mr-2" />
-                {isAnonymous ? 'Quitter la session' : 'Se déconnecter'}
+                {isAnonymous ? t('leaveSession') : t('disconnect')}
               </Button>
             </div>
           )}
@@ -629,7 +629,7 @@ export default function JoinConversationPage() {
                     <CheckCircle className="h-5 w-5 text-green-600" />
                     <div>
                       <p className="font-medium text-green-900">
-                        Connecté en tant que {currentUser.displayName || `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || currentUser.username}
+                        {t('connectedAs')} {currentUser.displayName || `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || currentUser.username}
                       </p>
                       <p className="text-sm text-green-700">
                         @{currentUser.username || currentUser.displayName || 'utilisateur'}
@@ -650,7 +650,7 @@ export default function JoinConversationPage() {
               ) : (
                 <div className="space-y-6">
                   <div className="text-center text-gray-600 dark:text-gray-400">
-                    <p className="mb-4">Choisissez comment rejoindre cette conversation</p>
+                    <p className="mb-4">{t('chooseHowToJoin')}</p>
                   </div>
                   
                   {!showAnonymousForm ? (
@@ -672,7 +672,7 @@ export default function JoinConversationPage() {
                           <span className="w-full border-t" />
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
-                          <span className="bg-white dark:bg-gray-800 px-2 text-muted-foreground">Ou avec un compte</span>
+                          <span className="bg-white dark:bg-gray-800 px-2 text-muted-foreground">{t('orWithAccount')}</span>
                         </div>
                       </div>
                       
@@ -681,14 +681,14 @@ export default function JoinConversationPage() {
                           <DialogTrigger asChild>
                             <Button variant="outline" size="lg">
                               <LogIn className="h-4 w-4 mr-2" />
-                              Se connecter
+                              {t('signIn')}
                             </Button>
                           </DialogTrigger>
                           <DialogContent>
                             <DialogHeader>
-                              <DialogTitle>Se connecter</DialogTitle>
+                              <DialogTitle>{t('signIn')}</DialogTitle>
                               <DialogDescription>
-                                Connectez-vous pour rejoindre la conversation
+                                {t('signInToJoin')}
                               </DialogDescription>
                             </DialogHeader>
                             <LoginForm onSuccess={onAuthSuccess} />
@@ -699,14 +699,14 @@ export default function JoinConversationPage() {
                           <DialogTrigger asChild>
                             <Button size="lg">
                               <UserPlus className="h-4 w-4 mr-2" />
-                              S&apos;inscrire
+                              {t('signUp')}
                             </Button>
                           </DialogTrigger>
                           <DialogContent>
                             <DialogHeader>
-                              <DialogTitle>Créer un compte</DialogTitle>
+                              <DialogTitle>{t('createAccount')}</DialogTitle>
                               <DialogDescription>
-                                Créez votre compte pour rejoindre la conversation
+                                {t('createAccountToJoin')}
                               </DialogDescription>
                             </DialogHeader>
                             <RegisterForm onSuccess={onAuthSuccess} />
@@ -718,13 +718,13 @@ export default function JoinConversationPage() {
                     /* Formulaire anonyme */
                     <div className="space-y-4">
                       <div className="text-center mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Accès anonyme</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Créez votre identité temporaire</p>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('anonymousAccess')}</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{t('createTemporaryIdentity')}</p>
                       </div>
                       
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="firstName">Prénom *</Label>
+                          <Label htmlFor="firstName">{t('firstName')} *</Label>
                           <Input
                             id="firstName"
                             value={anonymousForm.firstName}
@@ -734,7 +734,7 @@ export default function JoinConversationPage() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="lastName">Nom *</Label>
+                          <Label htmlFor="lastName">{t('lastName')} *</Label>
                           <Input
                             id="lastName"
                             value={anonymousForm.lastName}
@@ -748,38 +748,38 @@ export default function JoinConversationPage() {
                       {conversationLink.requireNickname && (
                         <div className="space-y-2">
                           <Label htmlFor="username">
-                            Nom d&apos;utilisateur <span className="text-red-500">*</span>
+                            {t('username')} <span className="text-red-500">*</span>
                           </Label>
                           <Input
                             id="username"
                             value={anonymousForm.username}
                             onChange={(e) => updateAnonymousForm('username', e.target.value)}
-                            placeholder="Choisissez votre nom d'utilisateur"
+                            placeholder={t('username')}
                             required={conversationLink.requireNickname}
                           />
                           <p className="text-xs text-red-500">
-                            Le nom d'utilisateur est obligatoire pour rejoindre cette conversation
+                            {t('usernameRequired')}
                           </p>
                           <p className="text-xs text-gray-500">
-                            ⚠️ Ce nom ne peut pas être utilisé s'il existe déjà dans cette conversation ou par un membre de la plateforme
+                            {t('usernameWarning')}
                           </p>
                         </div>
                       )}
                       
                       {!conversationLink.requireNickname && (
                         <div className="space-y-2">
-                          <Label htmlFor="username">Nom d&apos;utilisateur (optionnel)</Label>
+                          <Label htmlFor="username">{t('usernameOptional')}</Label>
                           <Input
                             id="username"
                             value={anonymousForm.username}
                             onChange={(e) => updateAnonymousForm('username', e.target.value)}
-                            placeholder="Généré automatiquement"
+                            placeholder={t('autoGenerated')}
                           />
                           <p className="text-xs text-gray-500">
-                            Laissez vide pour génération automatique : prénom_initiales
+                            {t('leaveEmpty')}
                           </p>
                           <p className="text-xs text-gray-500">
-                            ⚠️ Si vous choisissez un nom personnalisé, il ne peut pas être utilisé s'il existe déjà dans cette conversation ou par un membre de la plateforme
+                            {t('customUsernameWarning')}
                           </p>
                         </div>
                       )}
@@ -787,7 +787,7 @@ export default function JoinConversationPage() {
                       {conversationLink.requireEmail && (
                         <div className="space-y-2">
                           <Label htmlFor="email">
-                            Email <span className="text-red-500">*</span>
+                            {t('email')} <span className="text-red-500">*</span>
                           </Label>
                           <Input
                             id="email"
@@ -798,13 +798,13 @@ export default function JoinConversationPage() {
                             required={conversationLink.requireEmail}
                           />
                           <p className="text-xs text-red-500">
-                            L'email est obligatoire pour rejoindre cette conversation
+                            {t('emailRequired')}
                           </p>
                         </div>
                       )}
                       
                       <div className="space-y-2">
-                        <Label htmlFor="language">Langue parlée</Label>
+                        <Label htmlFor="language">{t('spokenLanguage')}</Label>
                         <Select 
                           value={anonymousForm.language} 
                           onValueChange={(value) => updateAnonymousForm('language', value)}
@@ -838,7 +838,7 @@ export default function JoinConversationPage() {
                           size="lg"
                           className="flex-1"
                         >
-                          {isJoining ? 'Connexion...' : 'Rejoindre'}
+                          {isJoining ? t('joining') : t('join')}
                           <ExternalLink className="h-4 w-4 ml-2" />
                         </Button>
                         <Button 
@@ -846,7 +846,7 @@ export default function JoinConversationPage() {
                           variant="outline"
                           size="lg"
                         >
-                          Retour
+                          {t('back')}
                         </Button>
                       </div>
                     </div>

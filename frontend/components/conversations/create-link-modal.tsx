@@ -254,7 +254,7 @@ export function CreateLinkModalV2({
     try {
       const conversationsData = await conversationsService.getConversations();
       // Filtrer les conversations directes et globales (pas de liens possibles)
-      const linkableConversations = conversationsData.filter(conv => 
+      const linkableConversations = (conversationsData.conversations || []).filter(conv => 
         conv.type !== 'direct' && conv.type !== 'global'
       );
       setConversations(linkableConversations);
@@ -1354,77 +1354,79 @@ export function CreateLinkModalV2({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl w-[95vw] max-h-[90vh] overflow-y-auto sm:max-w-4xl sm:w-[90vw] sm:max-h-[85vh]">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl w-[90vw] max-h-[90vh] p-0 gap-0 flex flex-col sm:max-w-2xl sm:w-[85vw] sm:max-h-[85vh]">
+        <DialogHeader className="flex-shrink-0 bg-background border-b px-6 py-4">
           <DialogTitle className="text-xl font-bold flex items-center">
             <Link2 className="h-5 w-5 mr-2" />
-            {t('title')}
+            Créer un lien de partage
           </DialogTitle>
           <DialogDescription>
-            {t('description')}
+            Créez un lien de partage pour inviter des personnes à rejoindre une conversation
           </DialogDescription>
         </DialogHeader>
 
-        {/* Progress indicator - Timeline horizontale */}
-        <div className="py-6">
-          <div className="flex items-center justify-between">
-            {Array.from({ length: totalSteps }, (_, i) => {
-              const stepNumber = i + 1;
-              const isActive = stepNumber === currentStep;
-              const isCompleted = stepNumber < currentStep;
-              const stepTitles = [
-                t('createLinkModal.steps.selectConversation'),
-                t('createLinkModal.steps.configureLink'),
-                t('createLinkModal.steps.linkOptions'),
-                t('createLinkModal.steps.summaryAndGeneration')
-              ];
-              
-              return (
-                <div key={i} className="flex flex-col items-center flex-1">
-                  <div className="flex items-center w-full">
-                    {/* Ligne de connexion */}
-                    {i < totalSteps - 1 && (
-                      <div className={`flex-1 h-0.5 mx-2 ${
-                        isCompleted ? 'bg-primary' : 'bg-muted'
+        {/* Scrollable content area */}
+        <div className="flex-1 overflow-y-auto px-6">
+          {/* Progress indicator - Timeline horizontale */}
+          <div className="py-6">
+            <div className="flex items-center justify-between">
+              {Array.from({ length: totalSteps }, (_, i) => {
+                const stepNumber = i + 1;
+                const isActive = stepNumber === currentStep;
+                const isCompleted = stepNumber < currentStep;
+                const stepTitles = [
+                  t('createLinkModal.steps.selectConversation'),
+                  t('createLinkModal.steps.configureLink'),
+                  t('createLinkModal.steps.linkOptions'),
+                  t('createLinkModal.steps.summaryAndGeneration')
+                ];
+                
+                return (
+                  <div key={i} className="flex flex-col items-center flex-1">
+                    <div className="flex items-center w-full">
+                      {/* Ligne de connexion précédente - seulement si ce n'est pas le premier */}
+                      {i > 0 && (
+                        <div className={`flex-1 h-0.5 mx-2 ${
+                          isCompleted ? 'bg-primary' : 'bg-muted'
+                        }`} />
+                      )}
+                      
+                      {/* Point de l'étape */}
+                      <div className={`w-3 h-3 rounded-full flex-shrink-0 ${
+                        isActive 
+                          ? 'bg-primary ring-4 ring-primary/20' 
+                          : isCompleted 
+                          ? 'bg-primary' 
+                          : 'bg-muted'
                       }`} />
-                    )}
+                      
+                      {/* Ligne de connexion suivante - seulement si ce n'est pas le dernier */}
+                      {i < totalSteps - 1 && (
+                        <div className={`flex-1 h-0.5 mx-2 ${
+                          isCompleted ? 'bg-primary' : 'bg-muted'
+                        }`} />
+                      )}
+                    </div>
                     
-                    {/* Point de l'étape */}
-                    <div className={`w-3 h-3 rounded-full flex-shrink-0 ${
-                      isActive 
-                        ? 'bg-primary ring-4 ring-primary/20' 
-                        : isCompleted 
-                        ? 'bg-primary' 
-                        : 'bg-muted'
-                    }`} />
-                    
-                    {/* Ligne de connexion suivante */}
-                    {i < totalSteps - 1 && (
-                      <div className={`flex-1 h-0.5 mx-2 ${
-                        isCompleted ? 'bg-primary' : 'bg-muted'
-                      }`} />
-                    )}
+                    {/* Texte de l'étape */}
+                    <div className="mt-3 text-center">
+                      <p className={`text-xs font-medium ${
+                        isActive ? 'text-primary' : isCompleted ? 'text-primary' : 'text-muted-foreground'
+                      }`}>
+                        {stepTitles[i]}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Étape {stepNumber}
+                      </p>
+                    </div>
                   </div>
-                  
-                  {/* Texte de l'étape */}
-                  <div className="mt-3 text-center">
-                    <p className={`text-xs font-medium ${
-                      isActive ? 'text-primary' : isCompleted ? 'text-primary' : 'text-muted-foreground'
-                    }`}>
-                      {stepTitles[i]}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Étape {stepNumber}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
 
-        {/* Step content */}
-        <div className="min-h-[400px]">
+          {/* Step content */}
+          <div className="min-h-[400px] pb-6">
           {generatedLink && generatedToken ? (
             // Afficher la page de synthèse finale au lieu des étapes
             <div className="space-y-6">
@@ -1546,47 +1548,50 @@ export function CreateLinkModalV2({
               {currentStep === 4 && renderStep4()}
             </>
           )}
+          </div>
         </div>
 
         {/* Navigation buttons - masqués quand la synthèse est affichée */}
         {!generatedLink && (
-          <div className="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-6 border-t">
-            <div className="flex space-x-2">
-              {currentStep > 1 && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={prevStep}
-                  className="w-full sm:w-auto"
-                >
-                  <ChevronLeft className="h-4 w-4 mr-2" />
-                  {t('createLinkModal.navigation.previous')}
-                </Button>
-              )}
-            </div>
-            
-            <div className="flex space-x-2">
-              {currentStep < totalSteps ? (
-                <Button
-                  type="button"
-                  onClick={nextStep}
-                  disabled={!canProceedToNext()}
-                  className="w-full sm:w-auto"
-                >
-                  {t('createLinkModal.navigation.next')}
-                  <ChevronRight className="h-4 w-4 ml-2" />
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  onClick={generateLink}
-                  disabled={!canCreateLink() || isCreating}
-                  className="flex items-center w-full sm:w-auto"
-                >
-                  <Link2 className="h-4 w-4 mr-2" />
-                  {isCreating ? t('createLinkModal.navigation.generating') : t('createLinkModal.navigation.createLink')}
-                </Button>
-              )}
+          <div className="flex-shrink-0 bg-background border-t px-6 py-4">
+            <div className="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0 sm:space-x-4">
+              <div className="flex space-x-2 w-full sm:w-auto">
+                {currentStep > 1 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={prevStep}
+                    className="w-full sm:w-auto"
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-2" />
+                    {t('createLinkModal.navigation.previous')}
+                  </Button>
+                )}
+              </div>
+              
+              <div className="flex space-x-2 w-full sm:w-auto">
+                {currentStep < totalSteps ? (
+                  <Button
+                    type="button"
+                    onClick={nextStep}
+                    disabled={!canProceedToNext()}
+                    className="w-full sm:w-auto"
+                  >
+                    {t('createLinkModal.navigation.next')}
+                    <ChevronRight className="h-4 w-4 ml-2" />
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={generateLink}
+                    disabled={!canCreateLink() || isCreating}
+                    className="flex items-center w-full sm:w-auto"
+                  >
+                    <Link2 className="h-4 w-4 mr-2" />
+                    {isCreating ? t('createLinkModal.navigation.generating') : t('createLinkModal.navigation.createLink')}
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         )}
