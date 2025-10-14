@@ -92,19 +92,19 @@ check_port_free 3100 "Frontend"
 check_port_free 8000 "Translator"
 
 # Arrêt des services Docker
-echo -e "${BLUE}🐳 Arrêt des services Docker...${NC}"
+echo -e "${BLUE}🐳 Arrêt des services Docker (Infrastructure uniquement)...${NC}"
 cd /Users/smpceo/Documents/Services/Meeshy/meeshy
 
-# Arrêter les services Docker de développement
-echo -e "${YELLOW}🛑 Arrêt des conteneurs Docker...${NC}"
-docker-compose -f docker-compose.dev.yml stop 2>/dev/null || true
+# Arrêter les services Docker de développement (infrastructure uniquement)
+echo -e "${YELLOW}🛑 Arrêt des conteneurs Docker (MongoDB, Redis)...${NC}"
+docker-compose -f docker-compose.infrastructure.yml stop 2>/dev/null || true
 
 # Optionnel: supprimer les conteneurs (décommentez si nécessaire)
 # echo -e "${YELLOW}🗑️  Suppression des conteneurs...${NC}"
-# docker-compose -f docker-compose.dev.yml rm -f 2>/dev/null || true
+# docker-compose -f docker-compose.infrastructure.yml rm -f 2>/dev/null || true
 
 echo -e "${BLUE}📊 Statut des conteneurs Docker:${NC}"
-docker-compose -f docker-compose.dev.yml ps 2>/dev/null || echo "Aucun conteneur Docker en cours"
+docker-compose -f docker-compose.infrastructure.yml ps 2>/dev/null || echo "Aucun conteneur Docker en cours"
 
 # Nettoyage des fichiers de logs (optionnel)
 echo -e "${BLUE}🧹 Nettoyage des fichiers de logs...${NC}"
