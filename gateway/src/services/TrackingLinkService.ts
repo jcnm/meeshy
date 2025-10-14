@@ -1,5 +1,5 @@
-import { PrismaClient } from '../../../shared/client';
-import { TrackingLink, TrackingLinkClick } from '../../../shared/types/tracking-link';
+import { PrismaClient } from '../../shared/prisma/client';
+import { TrackingLink, TrackingLinkClick } from '../../shared/types/tracking-link';
 
 /**
  * Service pour gérer les liens de tracking

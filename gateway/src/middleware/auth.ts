@@ -35,6 +35,7 @@ export interface RegisteredUser {
 }
 
 export interface AnonymousUser {
+  id: string;  // MongoDB ObjectId du AnonymousParticipant
   sessionToken: string;
   username: string;
   firstName?: string;
@@ -218,6 +219,7 @@ export class AuthMiddleware {
       const shareLink = anonymousParticipant.shareLink;
       
       const anonymousUser: AnonymousUser = {
+        id: anonymousParticipant.id,
         sessionToken,
         username: anonymousParticipant.username,
         firstName: anonymousParticipant.firstName || undefined,

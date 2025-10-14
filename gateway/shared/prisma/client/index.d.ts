@@ -4928,7 +4928,7 @@ export namespace Prisma {
 
   export type ConversationGroupByOutputType = {
     id: string
-    identifier: string | null
+    identifier: string
     type: string
     title: string | null
     description: string | null
@@ -5029,7 +5029,7 @@ export namespace Prisma {
       /**
        * Identifiant lisible par l'homme (ex: "mee_meeshy", "general", "mee_support")
        */
-      identifier: string | null
+      identifier: string
       /**
        * direct, group, public, global
        */
@@ -7394,7 +7394,7 @@ export namespace Prisma {
   export type ConversationShareLinkGroupByOutputType = {
     id: string
     linkId: string
-    identifier: string | null
+    identifier: string
     conversationId: string
     createdBy: string
     name: string | null
@@ -7524,7 +7524,7 @@ export namespace Prisma {
       /**
        * Identifiant lisible par l'homme (ex: "mshy_meeshy-public", "mshy_support-link")
        */
-      identifier: string | null
+      identifier: string
       conversationId: string
       createdBy: string
       name: string | null
@@ -16154,7 +16154,7 @@ export namespace Prisma {
 
   export type CommunityGroupByOutputType = {
     id: string
-    identifier: string | null
+    identifier: string
     name: string
     description: string | null
     avatar: string | null
@@ -16231,7 +16231,7 @@ export namespace Prisma {
       /**
        * Identifiant lisible par l'homme (ex: "mshy_meeshy-paris", "mshy_support-lycee-njanda")
        */
-      identifier: string | null
+      identifier: string
       name: string
       description: string | null
       avatar: string | null
@@ -26416,7 +26416,7 @@ export namespace Prisma {
     OR?: ConversationWhereInput[]
     NOT?: ConversationWhereInput | ConversationWhereInput[]
     id?: StringFilter<"Conversation"> | string
-    identifier?: StringNullableFilter<"Conversation"> | string | null
+    identifier?: StringFilter<"Conversation"> | string
     type?: StringFilter<"Conversation"> | string
     title?: StringNullableFilter<"Conversation"> | string | null
     description?: StringNullableFilter<"Conversation"> | string | null
@@ -26510,7 +26510,7 @@ export namespace Prisma {
     OR?: ConversationScalarWhereWithAggregatesInput[]
     NOT?: ConversationScalarWhereWithAggregatesInput | ConversationScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Conversation"> | string
-    identifier?: StringNullableWithAggregatesFilter<"Conversation"> | string | null
+    identifier?: StringWithAggregatesFilter<"Conversation"> | string
     type?: StringWithAggregatesFilter<"Conversation"> | string
     title?: StringNullableWithAggregatesFilter<"Conversation"> | string | null
     description?: StringNullableWithAggregatesFilter<"Conversation"> | string | null
@@ -26633,7 +26633,7 @@ export namespace Prisma {
     NOT?: ConversationShareLinkWhereInput | ConversationShareLinkWhereInput[]
     id?: StringFilter<"ConversationShareLink"> | string
     linkId?: StringFilter<"ConversationShareLink"> | string
-    identifier?: StringNullableFilter<"ConversationShareLink"> | string | null
+    identifier?: StringFilter<"ConversationShareLink"> | string
     conversationId?: StringFilter<"ConversationShareLink"> | string
     createdBy?: StringFilter<"ConversationShareLink"> | string
     name?: StringNullableFilter<"ConversationShareLink"> | string | null
@@ -26769,7 +26769,7 @@ export namespace Prisma {
     NOT?: ConversationShareLinkScalarWhereWithAggregatesInput | ConversationShareLinkScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"ConversationShareLink"> | string
     linkId?: StringWithAggregatesFilter<"ConversationShareLink"> | string
-    identifier?: StringNullableWithAggregatesFilter<"ConversationShareLink"> | string | null
+    identifier?: StringWithAggregatesFilter<"ConversationShareLink"> | string
     conversationId?: StringWithAggregatesFilter<"ConversationShareLink"> | string
     createdBy?: StringWithAggregatesFilter<"ConversationShareLink"> | string
     name?: StringNullableWithAggregatesFilter<"ConversationShareLink"> | string | null
@@ -27425,7 +27425,7 @@ export namespace Prisma {
     OR?: CommunityWhereInput[]
     NOT?: CommunityWhereInput | CommunityWhereInput[]
     id?: StringFilter<"Community"> | string
-    identifier?: StringNullableFilter<"Community"> | string | null
+    identifier?: StringFilter<"Community"> | string
     name?: StringFilter<"Community"> | string
     description?: StringNullableFilter<"Community"> | string | null
     avatar?: StringNullableFilter<"Community"> | string | null
@@ -27491,7 +27491,7 @@ export namespace Prisma {
     OR?: CommunityScalarWhereWithAggregatesInput[]
     NOT?: CommunityScalarWhereWithAggregatesInput | CommunityScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Community"> | string
-    identifier?: StringNullableWithAggregatesFilter<"Community"> | string | null
+    identifier?: StringWithAggregatesFilter<"Community"> | string
     name?: StringWithAggregatesFilter<"Community"> | string
     description?: StringNullableWithAggregatesFilter<"Community"> | string | null
     avatar?: StringNullableWithAggregatesFilter<"Community"> | string | null
@@ -28477,7 +28477,7 @@ export namespace Prisma {
 
   export type ConversationCreateInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -28499,7 +28499,7 @@ export namespace Prisma {
 
   export type ConversationUncheckedCreateInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -28520,7 +28520,7 @@ export namespace Prisma {
   }
 
   export type ConversationUpdateInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28541,7 +28541,7 @@ export namespace Prisma {
   }
 
   export type ConversationUncheckedUpdateInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28563,7 +28563,7 @@ export namespace Prisma {
 
   export type ConversationCreateManyInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -28578,7 +28578,7 @@ export namespace Prisma {
   }
 
   export type ConversationUpdateManyMutationInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28592,7 +28592,7 @@ export namespace Prisma {
   }
 
   export type ConversationUncheckedUpdateManyInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28722,7 +28722,7 @@ export namespace Prisma {
   export type ConversationShareLinkCreateInput = {
     id?: string
     linkId: string
-    identifier?: string | null
+    identifier: string
     name?: string | null
     description?: string | null
     maxUses?: number | null
@@ -28752,7 +28752,7 @@ export namespace Prisma {
   export type ConversationShareLinkUncheckedCreateInput = {
     id?: string
     linkId: string
-    identifier?: string | null
+    identifier: string
     conversationId: string
     createdBy: string
     name?: string | null
@@ -28781,7 +28781,7 @@ export namespace Prisma {
 
   export type ConversationShareLinkUpdateInput = {
     linkId?: StringFieldUpdateOperationsInput | string
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxUses?: NullableIntFieldUpdateOperationsInput | number | null
@@ -28810,7 +28810,7 @@ export namespace Prisma {
 
   export type ConversationShareLinkUncheckedUpdateInput = {
     linkId?: StringFieldUpdateOperationsInput | string
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     conversationId?: StringFieldUpdateOperationsInput | string
     createdBy?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28840,7 +28840,7 @@ export namespace Prisma {
   export type ConversationShareLinkCreateManyInput = {
     id?: string
     linkId: string
-    identifier?: string | null
+    identifier: string
     conversationId: string
     createdBy: string
     name?: string | null
@@ -28868,7 +28868,7 @@ export namespace Prisma {
 
   export type ConversationShareLinkUpdateManyMutationInput = {
     linkId?: StringFieldUpdateOperationsInput | string
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxUses?: NullableIntFieldUpdateOperationsInput | number | null
@@ -28894,7 +28894,7 @@ export namespace Prisma {
 
   export type ConversationShareLinkUncheckedUpdateManyInput = {
     linkId?: StringFieldUpdateOperationsInput | string
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     conversationId?: StringFieldUpdateOperationsInput | string
     createdBy?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29568,7 +29568,7 @@ export namespace Prisma {
 
   export type CommunityCreateInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     name: string
     description?: string | null
     avatar?: string | null
@@ -29582,7 +29582,7 @@ export namespace Prisma {
 
   export type CommunityUncheckedCreateInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     name: string
     description?: string | null
     avatar?: string | null
@@ -29595,7 +29595,7 @@ export namespace Prisma {
   }
 
   export type CommunityUpdateInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29608,7 +29608,7 @@ export namespace Prisma {
   }
 
   export type CommunityUncheckedUpdateInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29622,7 +29622,7 @@ export namespace Prisma {
 
   export type CommunityCreateManyInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     name: string
     description?: string | null
     avatar?: string | null
@@ -29633,7 +29633,7 @@ export namespace Prisma {
   }
 
   export type CommunityUpdateManyMutationInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29643,7 +29643,7 @@ export namespace Prisma {
   }
 
   export type CommunityUncheckedUpdateManyInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34139,7 +34139,7 @@ export namespace Prisma {
 
   export type CommunityCreateWithoutCreatorInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     name: string
     description?: string | null
     avatar?: string | null
@@ -34152,7 +34152,7 @@ export namespace Prisma {
 
   export type CommunityUncheckedCreateWithoutCreatorInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     name: string
     description?: string | null
     avatar?: string | null
@@ -34270,7 +34270,7 @@ export namespace Prisma {
   export type ConversationShareLinkCreateWithoutCreatorInput = {
     id?: string
     linkId: string
-    identifier?: string | null
+    identifier: string
     name?: string | null
     description?: string | null
     maxUses?: number | null
@@ -34299,7 +34299,7 @@ export namespace Prisma {
   export type ConversationShareLinkUncheckedCreateWithoutCreatorInput = {
     id?: string
     linkId: string
-    identifier?: string | null
+    identifier: string
     conversationId: string
     name?: string | null
     description?: string | null
@@ -34794,7 +34794,7 @@ export namespace Prisma {
     OR?: CommunityScalarWhereInput[]
     NOT?: CommunityScalarWhereInput | CommunityScalarWhereInput[]
     id?: StringFilter<"Community"> | string
-    identifier?: StringNullableFilter<"Community"> | string | null
+    identifier?: StringFilter<"Community"> | string
     name?: StringFilter<"Community"> | string
     description?: StringNullableFilter<"Community"> | string | null
     avatar?: StringNullableFilter<"Community"> | string | null
@@ -34920,7 +34920,7 @@ export namespace Prisma {
     NOT?: ConversationShareLinkScalarWhereInput | ConversationShareLinkScalarWhereInput[]
     id?: StringFilter<"ConversationShareLink"> | string
     linkId?: StringFilter<"ConversationShareLink"> | string
-    identifier?: StringNullableFilter<"ConversationShareLink"> | string | null
+    identifier?: StringFilter<"ConversationShareLink"> | string
     conversationId?: StringFilter<"ConversationShareLink"> | string
     createdBy?: StringFilter<"ConversationShareLink"> | string
     name?: StringNullableFilter<"ConversationShareLink"> | string | null
@@ -35482,7 +35482,7 @@ export namespace Prisma {
   export type ConversationShareLinkCreateWithoutConversationInput = {
     id?: string
     linkId: string
-    identifier?: string | null
+    identifier: string
     name?: string | null
     description?: string | null
     maxUses?: number | null
@@ -35511,7 +35511,7 @@ export namespace Prisma {
   export type ConversationShareLinkUncheckedCreateWithoutConversationInput = {
     id?: string
     linkId: string
-    identifier?: string | null
+    identifier: string
     createdBy: string
     name?: string | null
     description?: string | null
@@ -35548,7 +35548,7 @@ export namespace Prisma {
 
   export type CommunityCreateWithoutConversationInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     name: string
     description?: string | null
     avatar?: string | null
@@ -35561,7 +35561,7 @@ export namespace Prisma {
 
   export type CommunityUncheckedCreateWithoutConversationInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     name: string
     description?: string | null
     avatar?: string | null
@@ -35754,7 +35754,7 @@ export namespace Prisma {
   }
 
   export type CommunityUpdateWithoutConversationInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35766,7 +35766,7 @@ export namespace Prisma {
   }
 
   export type CommunityUncheckedUpdateWithoutConversationInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35906,7 +35906,7 @@ export namespace Prisma {
 
   export type ConversationCreateWithoutMembersInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -35927,7 +35927,7 @@ export namespace Prisma {
 
   export type ConversationUncheckedCreateWithoutMembersInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -36062,7 +36062,7 @@ export namespace Prisma {
   }
 
   export type ConversationUpdateWithoutMembersInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36082,7 +36082,7 @@ export namespace Prisma {
   }
 
   export type ConversationUncheckedUpdateWithoutMembersInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36257,7 +36257,7 @@ export namespace Prisma {
 
   export type ConversationCreateWithoutShareLinksInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -36278,7 +36278,7 @@ export namespace Prisma {
 
   export type ConversationUncheckedCreateWithoutShareLinksInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -36429,7 +36429,7 @@ export namespace Prisma {
   }
 
   export type ConversationUpdateWithoutShareLinksInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36449,7 +36449,7 @@ export namespace Prisma {
   }
 
   export type ConversationUncheckedUpdateWithoutShareLinksInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36471,7 +36471,7 @@ export namespace Prisma {
   export type ConversationShareLinkCreateWithoutAnonymousParticipantsInput = {
     id?: string
     linkId: string
-    identifier?: string | null
+    identifier: string
     name?: string | null
     description?: string | null
     maxUses?: number | null
@@ -36500,7 +36500,7 @@ export namespace Prisma {
   export type ConversationShareLinkUncheckedCreateWithoutAnonymousParticipantsInput = {
     id?: string
     linkId: string
-    identifier?: string | null
+    identifier: string
     conversationId: string
     createdBy: string
     name?: string | null
@@ -36533,7 +36533,7 @@ export namespace Prisma {
 
   export type ConversationCreateWithoutAnonymousParticipantsInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -36554,7 +36554,7 @@ export namespace Prisma {
 
   export type ConversationUncheckedCreateWithoutAnonymousParticipantsInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -36685,7 +36685,7 @@ export namespace Prisma {
 
   export type ConversationShareLinkUpdateWithoutAnonymousParticipantsInput = {
     linkId?: StringFieldUpdateOperationsInput | string
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxUses?: NullableIntFieldUpdateOperationsInput | number | null
@@ -36713,7 +36713,7 @@ export namespace Prisma {
 
   export type ConversationShareLinkUncheckedUpdateWithoutAnonymousParticipantsInput = {
     linkId?: StringFieldUpdateOperationsInput | string
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     conversationId?: StringFieldUpdateOperationsInput | string
     createdBy?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36751,7 +36751,7 @@ export namespace Prisma {
   }
 
   export type ConversationUpdateWithoutAnonymousParticipantsInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36771,7 +36771,7 @@ export namespace Prisma {
   }
 
   export type ConversationUncheckedUpdateWithoutAnonymousParticipantsInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37149,7 +37149,7 @@ export namespace Prisma {
 
   export type ConversationCreateWithoutMessagesInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -37170,7 +37170,7 @@ export namespace Prisma {
 
   export type ConversationUncheckedCreateWithoutMessagesInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -37492,7 +37492,7 @@ export namespace Prisma {
   }
 
   export type ConversationUpdateWithoutMessagesInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37512,7 +37512,7 @@ export namespace Prisma {
   }
 
   export type ConversationUncheckedUpdateWithoutMessagesInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38492,7 +38492,7 @@ export namespace Prisma {
 
   export type ConversationCreateWithoutTypingIndicatorsInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -38513,7 +38513,7 @@ export namespace Prisma {
 
   export type ConversationUncheckedCreateWithoutTypingIndicatorsInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -38648,7 +38648,7 @@ export namespace Prisma {
   }
 
   export type ConversationUpdateWithoutTypingIndicatorsInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38668,7 +38668,7 @@ export namespace Prisma {
   }
 
   export type ConversationUncheckedUpdateWithoutTypingIndicatorsInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39001,7 +39001,7 @@ export namespace Prisma {
 
   export type ConversationCreateWithoutCommunityInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -39022,7 +39022,7 @@ export namespace Prisma {
 
   export type ConversationUncheckedCreateWithoutCommunityInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -39186,7 +39186,7 @@ export namespace Prisma {
     OR?: ConversationScalarWhereInput[]
     NOT?: ConversationScalarWhereInput | ConversationScalarWhereInput[]
     id?: StringFilter<"Conversation"> | string
-    identifier?: StringNullableFilter<"Conversation"> | string | null
+    identifier?: StringFilter<"Conversation"> | string
     type?: StringFilter<"Conversation"> | string
     title?: StringNullableFilter<"Conversation"> | string | null
     description?: StringNullableFilter<"Conversation"> | string | null
@@ -39297,7 +39297,7 @@ export namespace Prisma {
 
   export type CommunityCreateWithoutMembersInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     name: string
     description?: string | null
     avatar?: string | null
@@ -39310,7 +39310,7 @@ export namespace Prisma {
 
   export type CommunityUncheckedCreateWithoutMembersInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     name: string
     description?: string | null
     avatar?: string | null
@@ -39437,7 +39437,7 @@ export namespace Prisma {
   }
 
   export type CommunityUpdateWithoutMembersInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39449,7 +39449,7 @@ export namespace Prisma {
   }
 
   export type CommunityUncheckedUpdateWithoutMembersInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39945,7 +39945,7 @@ export namespace Prisma {
 
   export type ConversationCreateWithoutPreferencesInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -39966,7 +39966,7 @@ export namespace Prisma {
 
   export type ConversationUncheckedCreateWithoutPreferencesInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -40101,7 +40101,7 @@ export namespace Prisma {
   }
 
   export type ConversationUpdateWithoutPreferencesInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40121,7 +40121,7 @@ export namespace Prisma {
   }
 
   export type ConversationUncheckedUpdateWithoutPreferencesInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41478,7 +41478,7 @@ export namespace Prisma {
 
   export type CommunityCreateManyCreatorInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     name: string
     description?: string | null
     avatar?: string | null
@@ -41524,7 +41524,7 @@ export namespace Prisma {
   export type ConversationShareLinkCreateManyCreatorInput = {
     id?: string
     linkId: string
-    identifier?: string | null
+    identifier: string
     conversationId: string
     name?: string | null
     description?: string | null
@@ -41686,7 +41686,7 @@ export namespace Prisma {
   }
 
   export type CommunityUpdateWithoutCreatorInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41698,7 +41698,7 @@ export namespace Prisma {
   }
 
   export type CommunityUncheckedUpdateWithoutCreatorInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41710,7 +41710,7 @@ export namespace Prisma {
   }
 
   export type CommunityUncheckedUpdateManyWithoutCreatorInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41814,7 +41814,7 @@ export namespace Prisma {
 
   export type ConversationShareLinkUpdateWithoutCreatorInput = {
     linkId?: StringFieldUpdateOperationsInput | string
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxUses?: NullableIntFieldUpdateOperationsInput | number | null
@@ -41842,7 +41842,7 @@ export namespace Prisma {
 
   export type ConversationShareLinkUncheckedUpdateWithoutCreatorInput = {
     linkId?: StringFieldUpdateOperationsInput | string
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     conversationId?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41870,7 +41870,7 @@ export namespace Prisma {
 
   export type ConversationShareLinkUncheckedUpdateManyWithoutCreatorInput = {
     linkId?: StringFieldUpdateOperationsInput | string
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     conversationId?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42332,7 +42332,7 @@ export namespace Prisma {
   export type ConversationShareLinkCreateManyConversationInput = {
     id?: string
     linkId: string
-    identifier?: string | null
+    identifier: string
     createdBy: string
     name?: string | null
     description?: string | null
@@ -42528,7 +42528,7 @@ export namespace Prisma {
 
   export type ConversationShareLinkUpdateWithoutConversationInput = {
     linkId?: StringFieldUpdateOperationsInput | string
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxUses?: NullableIntFieldUpdateOperationsInput | number | null
@@ -42556,7 +42556,7 @@ export namespace Prisma {
 
   export type ConversationShareLinkUncheckedUpdateWithoutConversationInput = {
     linkId?: StringFieldUpdateOperationsInput | string
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     createdBy?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42584,7 +42584,7 @@ export namespace Prisma {
 
   export type ConversationShareLinkUncheckedUpdateManyWithoutConversationInput = {
     linkId?: StringFieldUpdateOperationsInput | string
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     createdBy?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43091,7 +43091,7 @@ export namespace Prisma {
 
   export type ConversationCreateManyCommunityInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -43123,7 +43123,7 @@ export namespace Prisma {
   }
 
   export type ConversationUpdateWithoutCommunityInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43143,7 +43143,7 @@ export namespace Prisma {
   }
 
   export type ConversationUncheckedUpdateWithoutCommunityInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43163,7 +43163,7 @@ export namespace Prisma {
   }
 
   export type ConversationUncheckedUpdateManyWithoutCommunityInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null

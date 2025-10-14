@@ -259,8 +259,12 @@ export async function friendRequestRoutes(fastify: FastifyInstance) {
         });
 
         if (!existingConversation) {
+          // Générer un identifier unique pour la conversation directe
+          const identifier = `direct_${friendRequest.senderId}_${friendRequest.receiverId}_${Date.now()}`;
+          
           const conversation = await fastify.prisma.conversation.create({
             data: {
+              identifier,
               type: 'direct',
               members: {
                 create: [

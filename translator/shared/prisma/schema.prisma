@@ -64,7 +64,7 @@ model User {
 model Conversation {
   id                    String                   @id @default(auto()) @map("_id") @db.ObjectId
   /// Identifiant lisible par l'homme (ex: "mee_meeshy", "general", "mee_support")
-  identifier            String?                  @unique
+  identifier            String                   @unique
   /// direct, group, public, global
   type                  String
   title                 String?
@@ -114,7 +114,7 @@ model ConversationShareLink {
   id                     String                 @id @default(auto()) @map("_id") @db.ObjectId
   linkId                 String                 @unique
   /// Identifiant lisible par l'homme (ex: "mshy_meeshy-public", "mshy_support-link")
-  identifier             String?                @unique
+  identifier             String                 @unique
   conversationId         String                 @db.ObjectId
   createdBy              String                 @db.ObjectId
   name                   String?
@@ -283,7 +283,7 @@ model Notification {
 model Community {
   id          String        @id @default(auto()) @map("_id") @db.ObjectId
   /// Identifiant lisible par l'homme (ex: "mshy_meeshy-paris", "mshy_support-lycee-njanda")
-  identifier             String?                @unique
+  identifier             String                 @unique
   name        String
   description String?
   avatar      String?
