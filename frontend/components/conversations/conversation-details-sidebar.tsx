@@ -20,7 +20,9 @@ import {
   Save,
   Languages,
   Users,
-  Link2
+  Link2,
+  Copy,
+  Check
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Conversation, User, Message } from '@shared/types';
@@ -31,6 +33,7 @@ import { ConversationLinksSection } from './conversation-links-section';
 import { CreateLinkButton } from './create-link-button';
 import { UserRoleEnum } from '@shared/types';
 import { useI18n } from '@/hooks/useI18n';
+import { copyToClipboard } from '@/lib/clipboard';
 
 // Import des composants de la sidebar de BubbleStreamPage
 import {
@@ -63,6 +66,7 @@ export function ConversationDetailsSidebar({
   const [isEditingName, setIsEditingName] = useState(false);
   const [conversationName, setConversationName] = useState(conversation.title || conversation.name || '');
   const [isLoading, setIsLoading] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   // États pour les statistiques de langues
   const [messageLanguageStats, setMessageLanguageStats] = useState<LanguageStats[]>([]);
@@ -214,6 +218,20 @@ export function ConversationDetailsSidebar({
     }
   };
 
+  // Copier le lien de la conversation
+  const handleCopyConversationLink = async () => {
+    const conversationUrl = `${window.location.origin}/conversations/${conversation.id}`;
+    const result = await copyToClipboard(conversationUrl);
+    
+    if (result.success) {
+      setIsCopied(true);
+      toast.success('Lien de conversation copié !');
+      setTimeout(() => setIsCopied(false), 2000);
+    } else {
+      toast.error(result.message || 'Erreur lors de la copie');
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -322,6 +340,27 @@ export function ConversationDetailsSidebar({
                   {conversation.type !== 'direct' ? t('conversationDetails.conversationGroup') : t('conversationDetails.conversationPrivate')}
                 </p>
               </div>
+            </div>
+
+            <Separator />
+
+            {/* ID de la conversation avec bouton copier */}
+            <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800">
+              <span className="text-xs font-mono text-gray-600 dark:text-gray-400 truncate">
+                {conversation.id}
+              </span>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleCopyConversationLink}
+                className="h-8 w-8 p-0 flex-shrink-0"
+              >
+                {isCopied ? (
+                  <Check className="h-4 w-4 text-green-500" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </Button>
             </div>
 
             <Separator />

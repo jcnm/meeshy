@@ -4,6 +4,14 @@
     "createLink": "Create a link",
     "unnamedLink": "Unnamed link",
     "conversation": "Conversation",
+    "linkNameTemplate": {
+      "default": "{participantLimit} link for conversation '{conversationTitle}' valid for {duration}",
+      "openToAll": "open to all",
+      "limitedToParticipants": "limited to {count} participant(s)",
+      "limitedToUses": "limited to {count} use(s)",
+      "days": "{count} day(s)",
+      "indefinitely": "indefinitely"
+    },
     "searchPlaceholder": "Search links...",
     "tabs": {
       "active": "Active",

@@ -1,6 +1,7 @@
 import { apiService } from './api.service';
 import { socketIOUserToUser } from '@/utils/user-adapter';
 import { UserRoleEnum, MessageType } from '@shared/types';
+import { generateLinkName } from '@/utils/link-name-generator';
 import type { 
   Conversation, 
   Message, 
@@ -596,12 +597,48 @@ export class ConversationsService {
     requireEmail?: boolean;
   }): Promise<string> {
     try {
+      // Si le nom n'est pas fourni, générer un nom automatique basé sur la conversation
+      let linkName = linkData?.name;
+      
+      if (!linkName) {
+        // Récupérer les détails de la conversation pour obtenir le titre
+        try {
+          const conversation = await this.getConversation(conversationId);
+          const conversationTitle = conversation.title || 'Conversation';
+          
+          // Calculer la durée en jours si expiresAt est fourni
+          let durationDays: number | undefined;
+          if (linkData?.expiresAt) {
+            const expirationDate = new Date(linkData.expiresAt);
+            const now = new Date();
+            durationDays = Math.ceil((expirationDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+          }
+          
+          // Obtenir la langue de l'utilisateur courant (depuis localStorage si disponible)
+          const userDataStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+          const userData = userDataStr ? JSON.parse(userDataStr) : null;
+          const userLanguage = userData?.systemLanguage || 'fr';
+          
+          // Générer le nom du lien automatiquement
+          linkName = generateLinkName({
+            conversationTitle,
+            language: userLanguage,
+            durationDays: durationDays || 7,
+            maxUses: linkData?.maxUses,
+            isPublic: !linkData?.maxUses
+          });
+        } catch (error) {
+          console.warn('Impossible de récupérer les détails de la conversation pour générer le nom du lien:', error);
+          linkName = 'Lien d\'invitation';
+        }
+      }
+      
       // Utiliser l'endpoint existant /conversations/:id/new-link
       const response = await apiService.post<{ 
         success: boolean; 
         data: { link: string; code: string; shareLink: any } 
       }>(`/api/conversations/${conversationId}/new-link`, {
-        name: linkData?.name || 'Lien d\'invitation',
+        name: linkName,
         description: linkData?.description || 'Rejoignez cette conversation',
         maxUses: linkData?.maxUses,
         expiresAt: linkData?.expiresAt,

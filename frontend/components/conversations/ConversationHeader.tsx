@@ -34,6 +34,7 @@ interface ConversationHeaderProps {
   onParticipantAdded: (userId: string) => void;
   onLinkCreated: (link: any) => void;
   t: (key: string) => string;
+  showBackButton?: boolean;
 }
 
 export function ConversationHeader({
@@ -47,7 +48,8 @@ export function ConversationHeader({
   onParticipantRemoved,
   onParticipantAdded,
   onLinkCreated,
-  t
+  t,
+  showBackButton = false
 }: ConversationHeaderProps) {
   // Helper pour obtenir le rôle de l'utilisateur
   const getCurrentUserRole = useCallback((): UserRoleEnum => {
@@ -94,8 +96,8 @@ export function ConversationHeader({
   return (
     <div className="flex items-center justify-between p-4 border-b border-border bg-card">
       <div className="flex items-center gap-3 flex-1 min-w-0">
-        {/* Bouton retour (mobile) */}
-        {isMobile && (
+        {/* Bouton retour (mobile ou desktop avec showBackButton) */}
+        {(isMobile || showBackButton) && (
           <Button
             size="icon"
             variant="ghost"

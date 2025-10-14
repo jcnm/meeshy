@@ -1,14 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ResponsiveTabs } from '@/components/ui/responsive-tabs';
 import { Badge } from '@/components/ui/badge';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { Footer } from '@/components/layout/Footer';
 import { toast } from 'sonner';
 import { buildApiUrl } from '@/lib/config';
 import { 
@@ -28,7 +29,10 @@ import {
   Share2,
   Calendar,
   Link,
-  ChevronDown
+  ChevronDown,
+  Activity,
+  TrendingUp,
+  Zap
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -164,6 +168,26 @@ export default function ContactsPage() {
       setLoading(false);
     }
   };
+
+  // Calculer les statistiques des contacts
+  const stats = useMemo(() => {
+    // S'assurer que contacts est toujours un tableau
+    const contactsArray = Array.isArray(contacts) ? contacts : [];
+    const requestsArray = Array.isArray(friendRequests) ? friendRequests : [];
+    const affiliatesArray = Array.isArray(affiliateRelations) ? affiliateRelations : [];
+    
+    const onlineContacts = contactsArray.filter(contact => contact.isOnline);
+    const connectedRequests = requestsArray.filter(req => req.status === 'accepted');
+    const pendingRequests = requestsArray.filter(req => req.status === 'pending');
+    
+    return {
+      total: contactsArray.length,
+      online: onlineContacts.length,
+      connected: connectedRequests.length,
+      pending: pendingRequests.length,
+      affiliates: affiliatesArray.length
+    };
+  }, [contacts, friendRequests, affiliateRelations]);
 
 
   const loadFriendRequests = async () => {
@@ -344,575 +368,677 @@ export default function ContactsPage() {
 
   if (loading) {
     return (
-      <DashboardLayout title={t('title')}>
-        <div className="max-w-4xl mx-auto">
-          <div className="animate-pulse space-y-4">
-            <div className="h-12 bg-gray-200 rounded"></div>
-            <div className="space-y-3">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="h-16 bg-gray-200 rounded"></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </DashboardLayout>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
+      </div>
     );
   }
 
   return (
-    <DashboardLayout title={t('title')}>
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header avec recherche */}
-        <Card>
-          <CardContent className="p-6">
-            <form onSubmit={handleSearch} className="space-y-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  type="text"
-                  placeholder={t('searchPlaceholder')}
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    searchUsers(e.target.value);
-                  }}
-                  className="pl-10"
-                />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {displayedUsers.length === 1 ? t('contactsFound', { count: displayedUsers.length }) : t('contactsFound_plural', { count: displayedUsers.length })}
-                  </p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
+      <DashboardLayout title={t('title')} className="!bg-none !bg-transparent !h-auto">
+        {/* Contenu principal scrollable avec largeur limitée */}
+        <div className="relative z-10 max-w-7xl mx-auto space-y-8 pb-8 w-full py-8">
+          {/* Hero Section */}
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 p-8 md:p-12 text-white shadow-2xl">
+            <div className="absolute inset-0 bg-black/10"></div>
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl">
+                  <Users className="h-8 w-8" />
                 </div>
-                
-                <Button 
-                  onClick={() => setIsShareModalOpen(true)}
-                  variant="outline"
-                  className="flex items-center space-x-2"
-                >
-                  <Share2 className="h-4 w-4" />
-                  <span>{t('inviteContact')}</span>
-                </Button>
+                <h1 className="text-4xl md:text-5xl font-bold">{t('title')}</h1>
               </div>
-            </form>
-          </CardContent>
-        </Card>
+              <p className="text-lg md:text-xl text-blue-100 max-w-2xl">
+                Gérez vos contacts, connectez-vous avec des amis et développez votre réseau professionnel
+              </p>
+            </div>
+            {/* Decorative elements */}
+            <div className="absolute -right-12 -bottom-12 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
+            <div className="absolute -left-12 -top-12 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl"></div>
+          </div>
 
-        {/* Tabs responsifs avec ResponsiveTabs */}
-        <ResponsiveTabs
-          value={activeTab}
-          onValueChange={setActiveTab}
-          items={[
-            {
-              value: "all",
-              label: t('tabs.all'),
-              icon: <Users className="h-4 w-4" />,
-              content: (
-                <div className="space-y-4">
-                  {displayedUsers.length === 0 ? (
-                    <Card>
-                      <CardContent className="flex flex-col items-center justify-center py-12">
-                        <Users className="h-12 w-12 text-gray-400 mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                          {searchQuery ? t('messages.noContactsFound') : t('messages.noContacts')}
-                        </h3>
-                        <p className="text-gray-600 dark:text-gray-400 text-center max-w-sm mb-4">
-                          {searchQuery 
-                            ? t('messages.noContactsFoundDescription')
-                            : t('messages.noContactsDescription')
-                          }
-                        </p>
-                        <Button 
-                          onClick={() => router.push('/search')}
-                          className="flex items-center space-x-2"
-                        >
-                          <UserPlus className="h-4 w-4" />
-                          <span>{t('messages.searchUsers')}</span>
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ) : (
-                    <div className="space-y-2">
-                      {displayedUsers.map((contact) => (
-                        <Card key={contact.id} className="hover:shadow-md transition-shadow">
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-3">
-                                <Avatar className="h-12 w-12">
-                                  <AvatarImage src={contact.avatar} alt={getUserDisplayName(contact)} />
-                                  <AvatarFallback>
-                                    {getUserDisplayName(contact).slice(0, 2).toUpperCase()}
-                                  </AvatarFallback>
-                                </Avatar>
-                                
-                                <div className="flex-1">
-                                  <h3 className="font-semibold text-gray-900 dark:text-white">
-                                    {getUserDisplayName(contact)}
-                                  </h3>
-                                  <p className="text-sm text-gray-600 dark:text-gray-400">@{contact.username}</p>
-                                  
-                                  <div className="flex items-center space-x-4 mt-1">
-                                    <div className="flex items-center space-x-1">
-                                      <div className={`w-2 h-2 rounded-full ${contact.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
-                                      <span className="text-xs text-gray-500">
-                                        {contact.isOnline ? t('status.online') : t('status.offline')}
-                                      </span>
-                                    </div>
-                                    
-                                    {contact.email && (
-                                      <div className="flex items-center space-x-1">
-                                        <Mail className="h-3 w-3 text-gray-400" />
-                                        <span className="text-xs text-gray-500 truncate max-w-32">
-                                          {contact.email}
-                                        </span>
-                                      </div>
-                                    )}
-                                  </div>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <Card className="border-2 hover:border-primary/50 transition-all hover:shadow-lg bg-white dark:bg-gray-950">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Total contacts</p>
+                    <p className="text-3xl font-bold text-foreground">{stats.total}</p>
+                  </div>
+                  <div className="p-4 bg-blue-100 dark:bg-blue-900/30 rounded-2xl">
+                    <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 hover:border-green-500/50 transition-all hover:shadow-lg bg-white dark:bg-gray-950">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">En ligne</p>
+                    <p className="text-3xl font-bold text-green-600 dark:text-green-400">{stats.online}</p>
+                  </div>
+                  <div className="p-4 bg-green-100 dark:bg-green-900/30 rounded-2xl">
+                    <Activity className="h-6 w-6 text-green-600 dark:text-green-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 hover:border-purple-500/50 transition-all hover:shadow-lg bg-white dark:bg-gray-950">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Connectés</p>
+                    <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{stats.connected}</p>
+                  </div>
+                  <div className="p-4 bg-purple-100 dark:bg-purple-900/30 rounded-2xl">
+                    <UserCheck className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 hover:border-orange-500/50 transition-all hover:shadow-lg bg-white dark:bg-gray-950">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">En attente</p>
+                    <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{stats.pending}</p>
+                  </div>
+                  <div className="p-4 bg-orange-100 dark:bg-orange-900/30 rounded-2xl">
+                    <Clock className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 hover:border-cyan-500/50 transition-all hover:shadow-lg bg-white dark:bg-gray-950">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Affiliés</p>
+                    <p className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">{stats.affiliates}</p>
+                  </div>
+                  <div className="p-4 bg-cyan-100 dark:bg-cyan-900/30 rounded-2xl">
+                    <Share2 className="h-6 w-6 text-cyan-600 dark:text-cyan-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Search and Actions */}
+          <Card className="border-2 shadow-lg bg-white dark:bg-gray-950">
+            <CardContent className="p-6">
+              <form onSubmit={handleSearch} className="space-y-4">
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="flex-1 relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <Input
+                      type="text"
+                      placeholder={t('searchPlaceholder')}
+                      value={searchQuery}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        searchUsers(e.target.value);
+                      }}
+                      className="pl-10 h-12 text-base border-2 focus:border-primary"
+                    />
+                  </div>
+                  
+                  <Button 
+                    onClick={() => setIsShareModalOpen(true)}
+                    variant="default"
+                    className="h-12 rounded-xl px-6 font-semibold shadow-md hover:shadow-lg transition-all bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                  >
+                    <Share2 className="h-5 w-5 mr-2" />
+                    <span>{t('inviteContact')}</span>
+                  </Button>
+                </div>
+
+                {displayedUsers.length > 0 && (
+                  <div className="mt-4 flex items-center gap-2">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground font-medium">
+                      {displayedUsers.length === 1 ? t('contactsFound', { count: displayedUsers.length }) : t('contactsFound_plural', { count: displayedUsers.length })}
+                    </p>
+                  </div>
+                )}
+              </form>
+            </CardContent>
+          </Card>
+
+          {/* Tabs modernisés */}
+          <div className="space-y-6">
+            <div className="w-full">
+              <ResponsiveTabs
+                value={activeTab}
+                onValueChange={setActiveTab}
+                items={[
+                  {
+                    value: "all",
+                    label: t('tabs.all'),
+                    icon: <Users className="h-4 w-4" />,
+                    content: (
+                      <div className="space-y-4">
+                        {displayedUsers.length === 0 ? (
+                          <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
+                            <CardContent className="flex flex-col items-center justify-center py-16 px-6">
+                              <div className="relative mb-6">
+                                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 blur-3xl rounded-full"></div>
+                                <div className="relative p-6 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-3xl">
+                                  <Users className="h-16 w-16 text-blue-600 dark:text-blue-400" />
                                 </div>
                               </div>
                               
-                              <div className="flex items-center space-x-2">
-                                <Button
-                                  size="sm"
-                                  onClick={() => startConversation(contact.id)}
-                                  className="flex items-center space-x-1"
+                              <h3 className="text-2xl font-bold text-foreground mb-3 text-center">
+                                {searchQuery ? 'Aucun contact trouvé' : 'Aucun contact'}
+                              </h3>
+                              <p className="text-muted-foreground text-base mb-8 text-center max-w-md">
+                                {searchQuery 
+                                  ? 'Essayez de modifier votre recherche ou invitez de nouveaux contacts'
+                                  : 'Commencez à développer votre réseau en invitant des contacts'
+                                }
+                              </p>
+                              
+                              <div className="flex flex-col sm:flex-row gap-3">
+                                <Button 
+                                  onClick={() => router.push('/search')}
+                                  variant="outline"
+                                  className="h-12 rounded-xl px-6 font-semibold shadow-md hover:shadow-lg transition-all border-2"
                                 >
-                                  <MessageSquare className="h-4 w-4" />
-                                  <span className="hidden sm:inline">{t('actions.message')}</span>
+                                  <UserPlus className="h-5 w-5 mr-2" />
+                                  <span>{t('messages.searchUsers')}</span>
                                 </Button>
-                                
-                                {searchQuery && (
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => sendFriendRequest(contact.id)}
-                                    className="flex items-center space-x-1"
-                                  >
-                                    <Link className="h-4 w-4" />
-                                    <span className="hidden sm:inline">{t('actions.connection')}</span>
-                                  </Button>
-                                )}
-                                
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                      <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem 
-                                      onClick={() => router.push(`/profile/${contact.id}`)}
-                                    >
-                                      {t('actions.viewProfile')}
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => startConversation(contact.id)}>
-                                      {t('actions.sendMessage')}
-                                    </DropdownMenuItem>
-                                    {contact.phoneNumber && (
-                                      <DropdownMenuItem>
-                                        <Phone className="mr-2 h-4 w-4" />
-                                        {t('actions.call')}
-                                      </DropdownMenuItem>
-                                    )}
-                                    {activeTab !== 'all' && (
-                                      <DropdownMenuItem className="text-red-600">
-                                        <UserMinus className="mr-2 h-4 w-4" />
-                                        {t('actions.remove')}
-                                      </DropdownMenuItem>
-                                    )}
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )
-            },
-            {
-              value: "pending",
-              label: t('tabs.pending'),
-              icon: <Clock className="h-4 w-4" />,
-              content: (
-                <div className="space-y-4">
-                  {friendRequests.filter(r => r.status === 'pending').length === 0 ? (
-                    <Card>
-                      <CardContent className="flex flex-col items-center justify-center py-12">
-                        <Clock className="h-12 w-12 text-gray-400 mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('messages.noPendingRequests')}</h3>
-                        <p className="text-gray-600 dark:text-gray-400 text-center max-w-sm">
-                          {t('messages.noPendingRequestsDescription')}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ) : (
-                    <div className="space-y-2">
-                      {friendRequests.filter(r => r.status === 'pending').map((request) => {
-                        const isCurrentUserSender = request.senderId === user?.id;
-                        const otherUser = isCurrentUserSender ? request.receiver : request.sender;
-                        
-                        return (
-                          <Card key={request.id} className="hover:shadow-md transition-shadow">
-                            <CardContent className="p-4">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-3">
-                                  <Avatar className="h-12 w-12">
-                                    <AvatarImage src={otherUser?.avatar} alt={getUserDisplayName(otherUser!)} />
-                                    <AvatarFallback>
-                                      {getUserDisplayName(otherUser!).slice(0, 2).toUpperCase()}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  
-                                  <div className="flex-1">
-                                    <h3 className="font-semibold text-gray-900 dark:text-white">
-                                      {getUserDisplayName(otherUser!)}
-                                    </h3>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">@{otherUser?.username}</p>
-                                    <p className="text-xs text-gray-500">
-                                      {isCurrentUserSender 
-                                        ? t('messages.requestSent', { date: new Date(request.createdAt).toLocaleDateString('pt-BR') })
-                                        : t('messages.requestReceived', { date: new Date(request.createdAt).toLocaleDateString('pt-BR') })
-                                      }
-                                    </p>
-                                  </div>
-                                </div>
-                                
-                                <div className="flex items-center space-x-2">
-                                  {isCurrentUserSender ? (
-                                    <Badge variant="outline" className="text-orange-600 border-orange-200">
-                                      <Clock className="h-3 w-3 mr-1" />
-                                      {t('status.pending')}
-                                    </Badge>
-                                  ) : (
-                                    <>
-                                      <Button
-                                        size="sm"
-                                        onClick={() => handleFriendRequest(request.id, 'accept')}
-                                        className="flex items-center space-x-1 bg-green-600 hover:bg-green-700"
-                                      >
-                                        <Check className="h-4 w-4" />
-                                        <span>{t('actions.accept')}</span>
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => handleFriendRequest(request.id, 'reject')}
-                                        className="flex items-center space-x-1"
-                                      >
-                                        <X className="h-4 w-4" />
-                                        <span>{t('actions.reject')}</span>
-                                      </Button>
-                                    </>
-                                  )}
-                                </div>
+                                <Button 
+                                  onClick={() => setIsShareModalOpen(true)}
+                                  className="h-12 rounded-xl px-6 font-semibold shadow-md hover:shadow-lg transition-all bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                                >
+                                  <Share2 className="h-5 w-5 mr-2" />
+                                  <span>{t('inviteContact')}</span>
+                                </Button>
                               </div>
                             </CardContent>
                           </Card>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              )
-            },
-            {
-              value: "connected", 
-              label: t('tabs.connected'),
-              icon: <UserCheck className="h-4 w-4" />,
-              content: (
-                <div className="space-y-4">
-                  {friendRequests.filter(r => r.status === 'accepted').length === 0 ? (
-                    <Card>
-                      <CardContent className="flex flex-col items-center justify-center py-12">
-                        <UserCheck className="h-12 w-12 text-gray-400 mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('messages.noConnectedContacts')}</h3>
-                        <p className="text-gray-600 dark:text-gray-400 text-center max-w-sm">
-                          {t('messages.noConnectedContactsDescription')}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ) : (
-                    <div className="space-y-2">
-                      {friendRequests.filter(r => r.status === 'accepted').map((request) => {
-                        const otherUser = request.senderId === user?.id ? request.receiver : request.sender;
-                        const otherUserId = request.senderId === user?.id ? request.receiverId : request.senderId;
-                        
-                        return (
-                          <Card key={request.id} className="hover:shadow-md transition-shadow">
-                            <CardContent className="p-4">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-3">
-                                  <Avatar className="h-12 w-12">
-                                    <AvatarImage src={otherUser?.avatar} alt={getUserDisplayName(otherUser!)} />
-                                    <AvatarFallback>
-                                      {getUserDisplayName(otherUser!).slice(0, 2).toUpperCase()}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  
-                                  <div className="flex-1">
-                                    <h3 className="font-semibold text-gray-900 dark:text-white">
-                                      {getUserDisplayName(otherUser!)}
-                                    </h3>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">@{otherUser?.username}</p>
-                                    <div className="flex items-center space-x-1 mt-1">
-                                      <div className={`w-2 h-2 rounded-full ${otherUser?.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
-                                      <span className="text-xs text-gray-500">
-                                        {otherUser?.isOnline ? t('status.online') : t('status.offline')}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
+                        ) : (
+                          <div className="grid gap-6">
+                            {displayedUsers.map((contact) => (
+                              <Card key={contact.id} className="relative border-2 hover:border-primary/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950">
+                                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
                                 
-                                <div className="flex items-center space-x-2">
-                                  <Button
-                                    size="sm"
-                                    onClick={() => startConversation(otherUserId)}
-                                    className="flex items-center space-x-1"
-                                  >
-                                    <MessageSquare className="h-4 w-4" />
-                                    <span>{t('actions.message')}</span>
-                                  </Button>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              )
-            },
-            {
-              value: "refused",
-              label: t('tabs.refused'),
-              icon: <UserX className="h-4 w-4" />,
-              content: (
-                <div className="space-y-4">
-                  {friendRequests.filter(r => r.status === 'rejected').length === 0 ? (
-                    <Card>
-                      <CardContent className="flex flex-col items-center justify-center py-12">
-                        <UserX className="h-12 w-12 text-gray-400 mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('messages.noRefusedRequests')}</h3>
-                        <p className="text-gray-600 dark:text-gray-400 text-center max-w-sm">
-                          {t('messages.noRefusedRequestsDescription')}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ) : (
-                    <div className="space-y-2">
-                      {friendRequests.filter(r => r.status === 'rejected').map((request) => {
-                        const isCurrentUserSender = request.senderId === user?.id;
-                        const otherUser = isCurrentUserSender ? request.receiver : request.sender;
-                        const otherUserId = isCurrentUserSender ? request.receiverId : request.senderId;
-                        
-                        return (
-                          <Card key={request.id} className="hover:shadow-md transition-shadow">
-                            <CardContent className="p-4">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-3">
-                                  <Avatar className="h-12 w-12">
-                                    <AvatarImage src={otherUser?.avatar} alt={getUserDisplayName(otherUser!)} />
-                                    <AvatarFallback>
-                                      {getUserDisplayName(otherUser!).slice(0, 2).toUpperCase()}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  
-                                  <div className="flex-1">
-                                    <h3 className="font-semibold text-gray-900 dark:text-white">
-                                      {getUserDisplayName(otherUser!)}
-                                    </h3>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">@{otherUser?.username}</p>
-                                    <p className="text-xs text-gray-500">
-                                      {t('messages.requestRejected', { date: new Date(request.updatedAt).toLocaleDateString('pt-BR') })}
-                                    </p>
-                                  </div>
-                                </div>
-                                
-                                <div className="flex items-center space-x-2">
-                                  {isCurrentUserSender ? (
-                                    <Badge variant="outline" className="text-red-600 dark:text-red-400 border-red-200">
-                                      <UserX className="h-3 w-3 mr-1" />
-                                      {t('status.rejected')}
-                                    </Badge>
-                                  ) : (
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => sendFriendRequest(otherUserId)}
-                                      className="flex items-center space-x-1"
-                                    >
-                                      <UserPlus className="h-4 w-4" />
-                                      <span>{t('actions.resend')}</span>
-                                    </Button>
-                                  )}
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              )
-            },
-            {
-              value: "affiliates",
-              label: t('tabs.affiliates'),
-              icon: <Share2 className="h-4 w-4" />,
-              content: (
-                <div className="space-y-4">
-                  {affiliateRelations.length === 0 ? (
-                    <Card>
-                      <CardContent className="flex flex-col items-center justify-center py-12">
-                        <Share2 className="h-12 w-12 text-gray-400 mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('messages.noAffiliateContacts')}</h3>
-                        <p className="text-gray-600 dark:text-gray-400 text-center max-w-sm">
-                          {t('messages.noAffiliateContactsDescription')}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ) : (
-                    <div className="space-y-2">
-                      {affiliateRelations.map((relation) => (
-                        <Card key={relation.id} className="hover:shadow-md transition-shadow">
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-3">
-                                <Avatar className="h-12 w-12">
-                                  <AvatarImage src={relation.referredUser.avatar} alt={getUserDisplayName(relation.referredUser)} />
-                                  <AvatarFallback>
-                                    {getUserDisplayName(relation.referredUser).slice(0, 2).toUpperCase()}
-                                  </AvatarFallback>
-                                </Avatar>
-                                
-                                <div className="flex-1">
-                                  <h3 className="font-semibold text-gray-900 dark:text-white">
-                                    {getUserDisplayName(relation.referredUser)}
-                                  </h3>
-                                  <p className="text-sm text-gray-600 dark:text-gray-400">@{relation.referredUser.username}</p>
-                                  
-                                  {/* Informations détaillées */}
-                                  <div className="space-y-2 mt-3">
-                                    {/* Email si disponible */}
-                                    {relation.referredUser.email && (
-                                      <div className="flex items-center space-x-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
-                                        <Mail className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                                        <div className="flex-1 min-w-0">
-                                          <span className="text-xs text-gray-500 uppercase tracking-wide">
-                                            {t('messages.emailAddress')}
-                                          </span>
-                                          <p className="text-sm text-gray-700 dark:text-gray-300 truncate">
-                                            {relation.referredUser.email}
-                                          </p>
+                                <CardContent className="relative z-10 p-6">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-4">
+                                      <Avatar className="h-16 w-16 border-2 border-white shadow-lg">
+                                        <AvatarImage src={contact.avatar} alt={getUserDisplayName(contact)} />
+                                        <AvatarFallback className="text-lg font-bold">
+                                          {getUserDisplayName(contact).slice(0, 2).toUpperCase()}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      
+                                      <div className="flex-1">
+                                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                                          {getUserDisplayName(contact)}
+                                        </h3>
+                                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">@{contact.username}</p>
+                                        
+                                        <div className="flex items-center space-x-4">
+                                          <div className="flex items-center space-x-2">
+                                            <div className={`w-3 h-3 rounded-full ${contact.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                            <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                                              {contact.isOnline ? t('status.online') : t('status.offline')}
+                                            </span>
+                                          </div>
+                                          
+                                          {contact.email && (
+                                            <div className="flex items-center space-x-2">
+                                              <Mail className="h-4 w-4 text-gray-400" />
+                                              <span className="text-sm text-gray-600 dark:text-gray-400 truncate max-w-48">
+                                                {contact.email}
+                                              </span>
+                                            </div>
+                                          )}
                                         </div>
                                       </div>
-                                    )}
-                                    
-                                    {/* Lien d'invitation utilisé */}
-                                    <div className="flex items-center space-x-2 p-2 bg-blue-50 rounded-md">
-                                      <Link className="h-4 w-4 text-blue-500 flex-shrink-0" />
-                                      <div className="flex-1 min-w-0">
-                                        <span className="text-xs text-blue-500 uppercase tracking-wide">
-                                          {t('messages.linkUsed')}
-                                        </span>
-                                        <p className="text-sm text-blue-700 font-medium truncate">
-                                          {relation.affiliateToken.name}
-                                        </p>
-                                      </div>
                                     </div>
                                     
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                      {/* Date d'inscription */}
-                                      <div className="flex items-center space-x-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
-                                        <Calendar className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                                    <div className="flex items-center space-x-3">
+                                      <Button
+                                        size="sm"
+                                        onClick={() => startConversation(contact.id)}
+                                        className="flex items-center space-x-2 h-10 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg transition-all"
+                                      >
+                                        <MessageSquare className="h-4 w-4" />
+                                        <span>{t('actions.message')}</span>
+                                      </Button>
+                                      
+                                      {searchQuery && (
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => sendFriendRequest(contact.id)}
+                                          className="flex items-center space-x-2 h-10 px-4 border-2 shadow-md hover:shadow-lg transition-all"
+                                        >
+                                          <Link className="h-4 w-4" />
+                                          <span>{t('actions.connection')}</span>
+                                        </Button>
+                                      )}
+                                      
+                                      <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                          <Button variant="ghost" size="sm" className="h-10 w-10 p-0 hover:bg-gray-200 dark:hover:bg-gray-700">
+                                            <MoreVertical className="h-5 w-5" />
+                                          </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="w-56 z-[100]">
+                                          <DropdownMenuItem 
+                                            onClick={() => router.push(`/profile/${contact.id}`)}
+                                            className="py-3"
+                                          >
+                                            <UserCheck className="h-4 w-4 mr-3" />
+                                            <span className="font-medium">{t('actions.viewProfile')}</span>
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => startConversation(contact.id)} className="py-3">
+                                            <MessageSquare className="h-4 w-4 mr-3" />
+                                            <span className="font-medium">{t('actions.sendMessage')}</span>
+                                          </DropdownMenuItem>
+                                          {contact.phoneNumber && (
+                                            <DropdownMenuItem className="py-3">
+                                              <Phone className="h-4 w-4 mr-3" />
+                                              <span className="font-medium">{t('actions.call')}</span>
+                                            </DropdownMenuItem>
+                                          )}
+                                          {activeTab !== 'all' && (
+                                            <DropdownMenuItem className="text-red-600 py-3 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/20">
+                                              <UserMinus className="h-4 w-4 mr-3" />
+                                              <span className="font-medium">{t('actions.remove')}</span>
+                                            </DropdownMenuItem>
+                                          )}
+                                        </DropdownMenuContent>
+                                      </DropdownMenu>
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  },
+                  {
+                    value: "pending",
+                    label: t('tabs.pending'),
+                    icon: <Clock className="h-4 w-4" />,
+                    content: (
+                      <div className="space-y-4">
+                        {friendRequests.filter(r => r.status === 'pending').length === 0 ? (
+                          <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
+                            <CardContent className="flex flex-col items-center justify-center py-16 px-6">
+                              <div className="relative mb-6">
+                                <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-yellow-500/20 blur-3xl rounded-full"></div>
+                                <div className="relative p-6 bg-gradient-to-br from-orange-100 to-yellow-100 dark:from-orange-900/30 dark:to-yellow-900/30 rounded-3xl">
+                                  <Clock className="h-16 w-16 text-orange-600 dark:text-orange-400" />
+                                </div>
+                              </div>
+                              
+                              <h3 className="text-2xl font-bold text-foreground mb-3 text-center">{t('messages.noPendingRequests')}</h3>
+                              <p className="text-muted-foreground text-base mb-8 text-center max-w-md">
+                                {t('messages.noPendingRequestsDescription')}
+                              </p>
+                            </CardContent>
+                          </Card>
+                        ) : (
+                          <div className="grid gap-6">
+                            {friendRequests.filter(r => r.status === 'pending').map((request) => {
+                              const isCurrentUserSender = request.senderId === user?.id;
+                              const otherUser = isCurrentUserSender ? request.receiver : request.sender;
+                              
+                              return (
+                                <Card key={request.id} className="relative border-2 hover:border-orange-500/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950">
+                                  <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-yellow-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
+                                  
+                                  <CardContent className="relative z-10 p-6">
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center space-x-4">
+                                        <Avatar className="h-16 w-16 border-2 border-white shadow-lg">
+                                          <AvatarImage src={otherUser?.avatar} alt={getUserDisplayName(otherUser!)} />
+                                          <AvatarFallback className="text-lg font-bold">
+                                            {getUserDisplayName(otherUser!).slice(0, 2).toUpperCase()}
+                                          </AvatarFallback>
+                                        </Avatar>
+                                        
                                         <div className="flex-1">
-                                          <span className="text-xs text-gray-500 uppercase tracking-wide block">
-                                            {t('messages.registeredAt')}
-                                          </span>
-                                          <p className="text-sm text-gray-700 dark:text-gray-300">
-                                            {new Date(relation.referredUser.createdAt).toLocaleDateString('fr-FR', {
-                                              day: 'numeric',
-                                              month: 'short',
-                                              year: 'numeric'
-                                            })}
+                                          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                                            {getUserDisplayName(otherUser!)}
+                                          </h3>
+                                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">@{otherUser?.username}</p>
+                                          <p className="text-sm text-gray-500 font-medium">
+                                            {isCurrentUserSender 
+                                              ? t('messages.requestSent', { date: new Date(request.createdAt).toLocaleDateString('fr-FR') })
+                                              : t('messages.requestReceived', { date: new Date(request.createdAt).toLocaleDateString('fr-FR') })
+                                            }
                                           </p>
                                         </div>
                                       </div>
                                       
-                                      {/* Date de jointure via le lien */}
-                                      <div className="flex items-center space-x-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-md">
-                                        <UserCheck className="h-4 w-4 text-green-500 flex-shrink-0" />
+                                      <div className="flex items-center space-x-3">
+                                        {isCurrentUserSender ? (
+                                          <Badge variant="outline" className="text-orange-600 border-orange-200 px-3 py-1.5 font-semibold">
+                                            <Clock className="h-4 w-4 mr-2" />
+                                            {t('status.pending')}
+                                          </Badge>
+                                        ) : (
+                                          <>
+                                            <Button
+                                              size="sm"
+                                              onClick={() => handleFriendRequest(request.id, 'accept')}
+                                              className="flex items-center space-x-2 h-10 px-4 bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg transition-all"
+                                            >
+                                              <Check className="h-4 w-4" />
+                                              <span>{t('actions.accept')}</span>
+                                            </Button>
+                                            <Button
+                                              size="sm"
+                                              variant="outline"
+                                              onClick={() => handleFriendRequest(request.id, 'reject')}
+                                              className="flex items-center space-x-2 h-10 px-4 border-2 shadow-md hover:shadow-lg transition-all"
+                                            >
+                                              <X className="h-4 w-4" />
+                                              <span>{t('actions.reject')}</span>
+                                            </Button>
+                                          </>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  },
+                  {
+                    value: "connected", 
+                    label: t('tabs.connected'),
+                    icon: <UserCheck className="h-4 w-4" />,
+                    content: (
+                      <div className="space-y-4">
+                        {friendRequests.filter(r => r.status === 'accepted').length === 0 ? (
+                          <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
+                            <CardContent className="flex flex-col items-center justify-center py-16 px-6">
+                              <div className="relative mb-6">
+                                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 blur-3xl rounded-full"></div>
+                                <div className="relative p-6 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-3xl">
+                                  <UserCheck className="h-16 w-16 text-purple-600 dark:text-purple-400" />
+                                </div>
+                              </div>
+                              
+                              <h3 className="text-2xl font-bold text-foreground mb-3 text-center">{t('messages.noConnectedContacts')}</h3>
+                              <p className="text-muted-foreground text-base mb-8 text-center max-w-md">
+                                {t('messages.noConnectedContactsDescription')}
+                              </p>
+                            </CardContent>
+                          </Card>
+                        ) : (
+                          <div className="grid gap-6">
+                            {friendRequests.filter(r => r.status === 'accepted').map((request) => {
+                              const otherUser = request.senderId === user?.id ? request.receiver : request.sender;
+                              const otherUserId = request.senderId === user?.id ? request.receiverId : request.senderId;
+                              
+                              return (
+                                <Card key={request.id} className="relative border-2 hover:border-purple-500/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950">
+                                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
+                                  
+                                  <CardContent className="relative z-10 p-6">
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center space-x-4">
+                                        <Avatar className="h-16 w-16 border-2 border-white shadow-lg">
+                                          <AvatarImage src={otherUser?.avatar} alt={getUserDisplayName(otherUser!)} />
+                                          <AvatarFallback className="text-lg font-bold">
+                                            {getUserDisplayName(otherUser!).slice(0, 2).toUpperCase()}
+                                          </AvatarFallback>
+                                        </Avatar>
+                                        
                                         <div className="flex-1">
-                                          <span className="text-xs text-green-600 uppercase tracking-wide block">
-                                            {t('messages.joinedOn')}
-                                          </span>
-                                          <p className="text-sm text-green-700 dark:text-green-300 font-medium">
-                                            {new Date(relation.createdAt).toLocaleDateString('fr-FR', {
-                                              day: 'numeric',
-                                              month: 'short',
-                                              year: 'numeric'
-                                            })}
+                                          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                                            {getUserDisplayName(otherUser!)}
+                                          </h3>
+                                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">@{otherUser?.username}</p>
+                                          <div className="flex items-center space-x-2">
+                                            <div className={`w-3 h-3 rounded-full ${otherUser?.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                            <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                                              {otherUser?.isOnline ? t('status.online') : t('status.offline')}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="flex items-center space-x-3">
+                                        <Button
+                                          size="sm"
+                                          onClick={() => startConversation(otherUserId)}
+                                          className="flex items-center space-x-2 h-10 px-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-md hover:shadow-lg transition-all"
+                                        >
+                                          <MessageSquare className="h-4 w-4" />
+                                          <span>{t('actions.message')}</span>
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  },
+                  {
+                    value: "refused",
+                    label: t('tabs.refused'),
+                    icon: <UserX className="h-4 w-4" />,
+                    content: (
+                      <div className="space-y-4">
+                        {friendRequests.filter(r => r.status === 'rejected').length === 0 ? (
+                          <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
+                            <CardContent className="flex flex-col items-center justify-center py-16 px-6">
+                              <div className="relative mb-6">
+                                <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-orange-500/20 blur-3xl rounded-full"></div>
+                                <div className="relative p-6 bg-gradient-to-br from-red-100 to-orange-100 dark:from-red-900/30 dark:to-orange-900/30 rounded-3xl">
+                                  <UserX className="h-16 w-16 text-red-600 dark:text-red-400" />
+                                </div>
+                              </div>
+                              
+                              <h3 className="text-2xl font-bold text-foreground mb-3 text-center">{t('messages.noRefusedRequests')}</h3>
+                              <p className="text-muted-foreground text-base mb-8 text-center max-w-md">
+                                {t('messages.noRefusedRequestsDescription')}
+                              </p>
+                            </CardContent>
+                          </Card>
+                        ) : (
+                          <div className="grid gap-6">
+                            {friendRequests.filter(r => r.status === 'rejected').map((request) => {
+                              const isCurrentUserSender = request.senderId === user?.id;
+                              const otherUser = isCurrentUserSender ? request.receiver : request.sender;
+                              const otherUserId = isCurrentUserSender ? request.receiverId : request.senderId;
+                              
+                              return (
+                                <Card key={request.id} className="relative border-2 hover:border-red-500/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950">
+                                  <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
+                                  
+                                  <CardContent className="relative z-10 p-6">
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center space-x-4">
+                                        <Avatar className="h-16 w-16 border-2 border-white shadow-lg">
+                                          <AvatarImage src={otherUser?.avatar} alt={getUserDisplayName(otherUser!)} />
+                                          <AvatarFallback className="text-lg font-bold">
+                                            {getUserDisplayName(otherUser!).slice(0, 2).toUpperCase()}
+                                          </AvatarFallback>
+                                        </Avatar>
+                                        
+                                        <div className="flex-1">
+                                          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                                            {getUserDisplayName(otherUser!)}
+                                          </h3>
+                                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">@{otherUser?.username}</p>
+                                          <p className="text-sm text-gray-500 font-medium">
+                                            {t('messages.requestRejected', { date: new Date(request.updatedAt).toLocaleDateString('fr-FR') })}
                                           </p>
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="flex items-center space-x-3">
+                                        {isCurrentUserSender ? (
+                                          <Badge variant="outline" className="text-red-600 dark:text-red-400 border-red-200 px-3 py-1.5 font-semibold">
+                                            <UserX className="h-4 w-4 mr-2" />
+                                            {t('status.rejected')}
+                                          </Badge>
+                                        ) : (
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => sendFriendRequest(otherUserId)}
+                                            className="flex items-center space-x-2 h-10 px-4 border-2 shadow-md hover:shadow-lg transition-all"
+                                          >
+                                            <UserPlus className="h-4 w-4" />
+                                            <span>{t('actions.resend')}</span>
+                                          </Button>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  },
+                  {
+                    value: "affiliates",
+                    label: t('tabs.affiliates'),
+                    icon: <Share2 className="h-4 w-4" />,
+                    content: (
+                      <div className="space-y-4">
+                        {affiliateRelations.length === 0 ? (
+                          <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
+                            <CardContent className="flex flex-col items-center justify-center py-16 px-6">
+                              <div className="relative mb-6">
+                                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-teal-500/20 blur-3xl rounded-full"></div>
+                                <div className="relative p-6 bg-gradient-to-br from-cyan-100 to-teal-100 dark:from-cyan-900/30 dark:to-teal-900/30 rounded-3xl">
+                                  <Share2 className="h-16 w-16 text-cyan-600 dark:text-cyan-400" />
+                                </div>
+                              </div>
+                              
+                              <h3 className="text-2xl font-bold text-foreground mb-3 text-center">{t('messages.noAffiliateContacts')}</h3>
+                              <p className="text-muted-foreground text-base mb-8 text-center max-w-md">
+                                {t('messages.noAffiliateContactsDescription')}
+                              </p>
+                            </CardContent>
+                          </Card>
+                        ) : (
+                          <div className="grid gap-6">
+                            {affiliateRelations.map((relation) => (
+                              <Card key={relation.id} className="relative border-2 hover:border-cyan-500/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950">
+                                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
+                                
+                                <CardContent className="relative z-10 p-6">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-4">
+                                      <Avatar className="h-16 w-16 border-2 border-white shadow-lg">
+                                        <AvatarImage src={relation.referredUser.avatar} alt={getUserDisplayName(relation.referredUser)} />
+                                        <AvatarFallback className="text-lg font-bold">
+                                          {getUserDisplayName(relation.referredUser).slice(0, 2).toUpperCase()}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      
+                                      <div className="flex-1">
+                                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                                          {getUserDisplayName(relation.referredUser)}
+                                        </h3>
+                                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">@{relation.referredUser.username}</p>
+                                        
+                                        {/* Informations détaillées compactes */}
+                                        <div className="space-y-2">
+                                          {/* Status et email */}
+                                          <div className="flex items-center space-x-4">
+                                            <div className="flex items-center space-x-2">
+                                              <div className={`w-3 h-3 rounded-full ${relation.referredUser.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                              <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                                                {relation.referredUser.isOnline ? t('status.online') : t('status.offline')}
+                                              </span>
+                                            </div>
+                                            
+                                            {relation.referredUser.email && (
+                                              <div className="flex items-center space-x-2">
+                                                <Mail className="h-4 w-4 text-gray-400" />
+                                                <span className="text-sm text-gray-600 dark:text-gray-400 truncate max-w-48">
+                                                  {relation.referredUser.email}
+                                                </span>
+                                              </div>
+                                            )}
+                                          </div>
+                                          
+                                          {/* Lien d'invitation utilisé */}
+                                          <div className="flex items-center space-x-2 p-3 bg-cyan-50 dark:bg-cyan-900/20 rounded-lg">
+                                            <Link className="h-4 w-4 text-cyan-600 flex-shrink-0" />
+                                            <div className="flex-1">
+                                              <span className="text-xs text-cyan-600 uppercase tracking-wide block font-medium">
+                                                Lien utilisé: {relation.affiliateToken.name}
+                                              </span>
+                                            </div>
+                                          </div>
                                         </div>
                                       </div>
                                     </div>
                                     
-                                    {/* Statut en ligne/hors ligne */}
-                                    <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
-                                      <div className="flex items-center space-x-2">
-                                        <div className={`w-3 h-3 rounded-full ${relation.referredUser.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
-                                        <span className="text-sm text-gray-700 dark:text-gray-300">
-                                          {relation.referredUser.isOnline ? t('status.online') : t('status.offline')}
-                                        </span>
-                                      </div>
-                                      {relation.referredUser.isOnline && (
-                                        <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">
-                                          Actif
-                                        </span>
-                                      )}
+                                    <div className="flex items-center space-x-3">
+                                      <Button
+                                        size="sm"
+                                        onClick={() => startConversation(relation.referredUser.id)}
+                                        className="flex items-center space-x-2 h-10 px-4 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 shadow-md hover:shadow-lg transition-all"
+                                      >
+                                        <MessageSquare className="h-4 w-4" />
+                                        <span>{t('actions.message')}</span>
+                                      </Button>
                                     </div>
                                   </div>
-                                </div>
-                              </div>
-                              
-                              <div className="flex items-center space-x-2">
-                                <Button
-                                  size="sm"
-                                  onClick={() => startConversation(relation.referredUser.id)}
-                                  className="flex items-center space-x-1"
-                                >
-                                  <MessageSquare className="h-4 w-4" />
-                                  <span>{t('actions.message')}</span>
-                                </Button>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )
-            }
-          ]}
-          mobileBreakpoint="md"
-          className="mb-6"
-        />
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  }
+                ]}
+                mobileBreakpoint="md"
+                className="mb-6"
+              />
+            </div>
+          </div>
 
-{/* Modal d'affiliation */}
-        <ShareAffiliateModal
-          isOpen={isShareModalOpen}
-          onClose={() => setIsShareModalOpen(false)}
-          userLanguage={user?.systemLanguage || 'fr'}
-        />
+          {/* Modal d'affiliation */}
+          <ShareAffiliateModal
+            isOpen={isShareModalOpen}
+            onClose={() => setIsShareModalOpen(false)}
+            userLanguage={user?.systemLanguage || 'fr'}
+          />
+        </div>
+      </DashboardLayout>
+
+      {/* Footer - Prend toute la largeur de la page, après le contenu scrollable */}
+      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mt-16">
+        <Footer />
       </div>
-    </DashboardLayout>
+    </div>
   );
 }

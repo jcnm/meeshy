@@ -53,6 +53,7 @@ import { Conversation } from '@shared/types';
 import { User } from '@shared/types';
 import { useI18n } from '@/hooks/useI18n';
 import { useUser } from '@/stores';
+import { generateLinkName } from '@/utils/link-name-generator';
 
 // Langues supportées
 const SUPPORTED_LANGUAGES = [
@@ -355,11 +356,21 @@ export function CreateLinkModalV2({
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + expirationDays);
 
-      // Générer le nom du lien automatiquement
+      // Générer le nom du lien automatiquement selon la langue
       const conversationTitle = createNewConversation 
         ? newConversationData.title 
         : conversations.find(c => c.id === selectedConversationId)?.title;
-      const generatedLinkName = conversationTitle ? `Rejoindre la conversation : ${conversationTitle}` : 'Lien de partage';
+      
+      const generatedLinkName = conversationTitle 
+        ? generateLinkName({
+            conversationTitle,
+            language: currentUser?.systemLanguage || 'fr',
+            durationDays: expirationDays,
+            maxParticipants: maxConcurrentUsers,
+            maxUses: maxUses,
+            isPublic: !maxConcurrentUsers && !maxUses
+          })
+        : 'Lien de partage';
 
       const requestBody: any = {
         name: generatedLinkName,

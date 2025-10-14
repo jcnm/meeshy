@@ -127,7 +127,11 @@ export function DashboardLayout({
   }
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 ${className}`}>
+    <div className={`${
+      className.includes('!h-full') ? 'h-full' : 
+      className.includes('!h-auto') ? 'min-h-0' : 
+      'min-h-screen'
+    } bg-gradient-to-br from-blue-50 to-indigo-100 ${className}`}>
       {/* Header fixe - masqué sur mobile si demandé */}
       {!(isMobile && hideHeaderOnMobile) && (
         <header className="fixed top-0 left-0 right-0 z-[50] bg-white shadow-sm border-b">
@@ -257,10 +261,18 @@ export function DashboardLayout({
       )}
 
       {/* Contenu principal avec padding-top conditionnel */}
-      <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-screen ${
+      <main className={`${
+        className.includes('!max-w-none') ? 'w-full' : 'max-w-7xl mx-auto'
+      } ${
+        className.includes('!px-0') ? '' : 'px-4 sm:px-6 lg:px-8'
+      } ${
         !(isMobile && hideHeaderOnMobile) ? 'pt-16' : 'pt-0'
+      } ${
+        className.includes('!h-full') ? 'h-full' : 
+        className.includes('!h-auto') ? 'min-h-0' : 
+        'h-screen'
       }`}>
-        <div className="h-full pt-2">
+        <div className={`${className.includes('!h-auto') || className.includes('!h-full') ? 'h-full' : 'pt-2'}`}>
           {children}
         </div>
       </main>

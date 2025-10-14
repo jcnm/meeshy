@@ -11,6 +11,8 @@ import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { copyToClipboard } from '@/lib/clipboard';
 import { useUser } from '@/stores';
 import { useLanguage } from '@/hooks/use-language';
+import { generateLinkName } from '@/utils/link-name-generator';
+import { conversationsService } from '@/services/conversations.service';
 
 interface CreateLinkButtonProps {
   conversationId?: string; // ID de la conversation (optionnel, détecté depuis l'URL sinon)
@@ -129,13 +131,32 @@ export function CreateLinkButton({
     setIsCreating(true);
     
     try {
+      // Récupérer les détails de la conversation pour obtenir le titre
+      const conversation = await conversationsService.getConversation(conversationId);
+      const conversationTitle = conversation.title || 'Conversation';
+      
+      // Paramètres du lien
+      const expirationDays = 1; // 24h
+      const maxUses = undefined;
+      const maxConcurrentUsers = undefined;
+      
+      // Générer le nom du lien selon la langue de l'utilisateur
+      const linkTitle = generateLinkName({
+        conversationTitle,
+        language: currentUser.systemLanguage || detectedInterfaceLanguage || 'fr',
+        durationDays: expirationDays,
+        maxParticipants: maxConcurrentUsers,
+        maxUses: maxUses,
+        isPublic: true
+      });
+      
       const linkData = {
         conversationId: conversationId,
-        title: `Lien de partage - ${new Date().toLocaleDateString('fr-FR')}`,
+        title: linkTitle,
         description: 'Lien de partage créé automatiquement',
-        expirationDays: 1, // 24h
-        maxUses: undefined,
-        maxConcurrentUsers: undefined,
+        expirationDays: expirationDays,
+        maxUses: maxUses,
+        maxConcurrentUsers: maxConcurrentUsers,
         maxUniqueSessions: undefined,
         allowAnonymousMessages: true,
         allowAnonymousFiles: true, // Tous types de fichiers
