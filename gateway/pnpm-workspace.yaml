@@ -1,9 +1,0 @@
-ignoredBuiltDependencies:
-  - '@prisma/client'
-  - '@prisma/engines'
-  - esbuild
-  - grpc-tools
-  - prisma
-  - protobufjs
-  - unrs-resolver
-  - zeromq

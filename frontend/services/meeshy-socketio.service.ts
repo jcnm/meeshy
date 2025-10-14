@@ -486,6 +486,23 @@ class MeeshySocketIOService {
       isEdited: false,
       isDeleted: false,
       translations: [],
+      // CORRECTION: Copier replyTo si présent dans le message Socket.IO
+      replyTo: (socketMessage as any).replyTo ? {
+        id: (socketMessage as any).replyTo.id,
+        conversationId: socketMessage.conversationId,
+        senderId: (socketMessage as any).replyTo.sender?.id || (socketMessage as any).replyTo.anonymousSender?.id || '',
+        content: (socketMessage as any).replyTo.content,
+        originalLanguage: (socketMessage as any).replyTo.originalLanguage || 'fr',
+        messageType: 'text',
+        timestamp: new Date((socketMessage as any).replyTo.createdAt),
+        createdAt: new Date((socketMessage as any).replyTo.createdAt),
+        updatedAt: new Date((socketMessage as any).replyTo.createdAt),
+        isEdited: false,
+        isDeleted: false,
+        translations: (socketMessage as any).replyTo.translations || [],
+        sender: (socketMessage as any).replyTo.sender || undefined,
+        anonymousSender: (socketMessage as any).replyTo.anonymousSender || undefined
+      } : undefined,
       sender: socketMessage.sender || {
         id: socketMessage.senderId || '',
         username: 'Utilisateur inconnu',

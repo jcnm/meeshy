@@ -359,8 +359,8 @@ export class MeeshySocketIOManager {
             conversationId: normalizedId,
             userId 
           });
-          // Pré-charger/rafraîchir les stats pour cette conversation et les envoyer au socket qui rejoint
-          this._sendConversationStatsToSocket(socket, normalizedId).catch(() => {});
+          // Pré-charger/rafraîchir les stats - utiliser l'ID original pour Prisma
+          this._sendConversationStatsToSocket(socket, data.conversationId).catch(() => {});
         }
         console.log(`👥 Socket ${socket.id} rejoint ${room} (original: ${data.conversationId} → normalized: ${normalizedId})`);
       });
@@ -1168,21 +1168,22 @@ export class MeeshySocketIOManager {
    */
   private async _broadcastNewMessage(message: Message, conversationId: string, senderSocket?: any): Promise<void> {
     try {
-      // Normaliser l'ID de conversation pour le broadcast
+      // Normaliser l'ID de conversation uniquement pour le broadcast Socket.IO
       const normalizedId = await this.normalizeConversationId(conversationId);
       
       console.log(`[PHASE 3.1] 📤 Broadcasting message ${message.id} vers conversation ${normalizedId} (original: ${conversationId})`);
       
-      // Récupérer les stats de conversation mises à jour (utiliser normalizedId)
+      // CORRECTION: Utiliser l'ObjectId original pour les requêtes Prisma
       const updatedStats = await conversationStatsService.updateOnNewMessage(
         this.prisma,
-        normalizedId,
+        conversationId,  // Utiliser l'ID original (ObjectId) pour Prisma
         message.originalLanguage || 'fr',
         () => this.getConnectedUsers()
       );
 
       // CORRECTION CRITIQUE: Récupérer les traductions existantes du message
       let messageTranslations: any[] = [];
+      let replyToMessage: any = null;
       try {
         if (message.id) {
           const messageWithTranslations = await this.prisma.message.findUnique({
@@ -1197,15 +1198,47 @@ export class MeeshySocketIOManager {
                   cacheKey: true,
                   confidenceScore: true
                 }
+              },
+              replyTo: {
+                include: {
+                  sender: {
+                    select: {
+                      id: true,
+                      username: true,
+                      displayName: true,
+                      firstName: true,
+                      lastName: true
+                    }
+                  },
+                  anonymousSender: {
+                    select: {
+                      id: true,
+                      username: true,
+                      firstName: true,
+                      lastName: true
+                    }
+                  },
+                  translations: {
+                    select: {
+                      id: true,
+                      targetLanguage: true,
+                      translatedContent: true
+                    }
+                  }
+                }
               }
             }
           });
           
           messageTranslations = messageWithTranslations?.translations || [];
+          replyToMessage = messageWithTranslations?.replyTo || null;
           console.log(`🔍 [DEBUG] Message ${message.id} a ${messageTranslations.length} traductions existantes`);
+          if (replyToMessage) {
+            console.log(`💬 [DEBUG] Message ${message.id} est une réponse au message ${replyToMessage.id}`);
+          }
         }
       } catch (error) {
-        console.warn(`⚠️ [DEBUG] Erreur récupération traductions pour ${message.id}:`, error);
+        console.warn(`⚠️ [DEBUG] Erreur récupération traductions/replyTo pour ${message.id}:`, error);
       }
 
       // Construire le payload de message pour broadcast - compatible avec les types existants
@@ -1243,6 +1276,16 @@ export class MeeshySocketIOManager {
           isActive: (message.sender as any).isActive ?? true,
           createdAt: (message.sender as any).createdAt || new Date(),
           updatedAt: (message.sender as any).updatedAt || new Date()
+        } : undefined,
+        // Inclure le message auquel on répond (replyTo) avec ses détails
+        replyTo: replyToMessage ? {
+          id: replyToMessage.id,
+          content: replyToMessage.content,
+          originalLanguage: replyToMessage.originalLanguage,
+          createdAt: replyToMessage.createdAt,
+          sender: replyToMessage.sender,
+          anonymousSender: replyToMessage.anonymousSender,
+          translations: replyToMessage.translations || []
         } : undefined,
         meta: {
           conversationStats: updatedStats

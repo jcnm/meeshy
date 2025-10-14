@@ -731,7 +731,7 @@ function BubbleMessageInner({
                     </TooltipContent>
                 <PopoverContent 
                   className={cn(
-                    "w-[calc(100vw-32px)] sm:w-96 md:w-[420px] p-0 shadow-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 backdrop-blur-sm",
+                    "w-[calc(100vw-32px)] sm:w-[270px] md:w-[294px] p-0 shadow-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 backdrop-blur-sm",
                     Z_CLASSES.POPOVER
                   )}
                   side={getPopoverSide()} 

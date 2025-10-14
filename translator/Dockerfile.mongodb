@@ -82,7 +82,6 @@ ARG NORMAL_POOL_SIZE=10000
 ARG ANY_POOL_SIZE=10000
 ARG NORMAL_WORKERS=2
 ARG ANY_WORKERS=1
-ARG DATABASE_URL="mongodb+srv://meeshy-app:1DtO4d7ELWYq5ruhakR9@mongodb-31217e73-o6739ab9b.30e4c693.database.cloud.ovh.net/meeshy?replicaSet=replicaset&tls=true&authMechanism=SCRAM-SHA-256&authSource=admin&readPreference=primaryPreferred&maxPoolSize=50&minPoolSize=5&maxIdleTimeMS=30000&serverSelectionTimeoutMS=60000&connectTimeoutMS=60000&socketTimeoutMS=60000&heartbeatFrequencyMS=10000&retryWrites=true&retryReads=true"
 
 # Configuration des variables d'environnement depuis les args
 ENV GRPC_HOST=${GRPC_HOST} \
@@ -115,8 +114,7 @@ ENV GRPC_HOST=${GRPC_HOST} \
     NORMAL_POOL_SIZE=${NORMAL_POOL_SIZE} \
     ANY_POOL_SIZE=${ANY_POOL_SIZE} \
     NORMAL_WORKERS=${NORMAL_WORKERS} \
-    ANY_WORKERS=${ANY_WORKERS} \
-    DATABASE_URL=${DATABASE_URL}
+    ANY_WORKERS=${ANY_WORKERS} 
 
 # OPTIMISATION: Installation en une seule layer avec cleanup et optimisations ML
 RUN apt-get update && apt-get install -y --no-install-recommends \

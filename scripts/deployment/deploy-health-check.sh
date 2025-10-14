@@ -137,10 +137,10 @@ check_services_connectivity() {
         
         # Test Gateway
         echo "--- Gateway ---"
-        if curl -s -o /dev/null -w "%{http_code}" http://localhost:3001/health | grep -q "200"; then
-            echo "✅ Gateway: Accessible sur le port 3001"
+        if curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/health | grep -q "200"; then
+            echo "✅ Gateway: Accessible sur le port 3000"
         else
-            echo "❌ Gateway: Non accessible sur le port 3001"
+            echo "❌ Gateway: Non accessible sur le port 3000"
         fi
         
         # Test Translator

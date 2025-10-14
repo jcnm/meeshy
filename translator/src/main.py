@@ -54,33 +54,21 @@ class MeeshyTranslationServer:
         self.is_initialized = False
     
     async def initialize(self) -> bool:
-        """Initialise le serveur de traduction avec QuantizedMLService uniquement"""
+        """Initialise le serveur de traduction (sans charger les modèles immédiatement)"""
         try:
             logger.info("[TRANSLATOR] 🚀 Initialisation du serveur de traduction avec TranslationMLService...")
             
-            # 1. Initialiser le service ML unifié (obligatoire)
+            # 1. Initialiser le service ML unifié (sans charger les modèles)
             max_workers = int(os.getenv('TRANSLATION_WORKERS', '50'))
             quantization_level = os.getenv('QUANTIZATION_LEVEL', 'float16')
             
             # Utiliser le service ML unifié avec tous les modèles
             self.translation_service = TranslationMLService(self.settings, model_type="all", max_workers=max_workers, quantization_level=quantization_level)
             
-            # Charger les modèles ML au démarrage
-            logger.info("[TRANSLATOR] 📚 Chargement des modèles ML...")
-            ml_initialized = await self.translation_service.initialize()
-            if not ml_initialized:
-                logger.error("[TRANSLATOR] ❌ Échec de l'initialisation du service ML unifié")
-                return False
-            
-            # Vérifier si au moins un modèle est disponible
-            stats = await self.translation_service.get_stats()
-            available_models = list(stats.get('models_loaded', {}).keys())
-            if not available_models:
-                logger.error("[TRANSLATOR] ❌ Aucun modèle ML disponible")
-                return False
-            
-            logger.info(f"[TRANSLATOR] ✅ Service ML unifié initialisé avec succès")
-            logger.info(f"[TRANSLATOR] ✅ Modèles disponibles: {available_models}")
+            logger.info(f"[TRANSLATOR] ✅ Service ML unifié créé (modèles seront chargés en arrière-plan)")
+            logger.info(f"[TRANSLATOR] 📚 Le chargement des modèles ML démarrera après le serveur FastAPI...")
+            logger.info(f"[TRANSLATOR] ✅ Service ML unifié créé (modèles seront chargés en arrière-plan)")
+            logger.info(f"[TRANSLATOR] 📚 Le chargement des modèles ML démarrera après le serveur FastAPI...")
             
             # 2. Initialiser le serveur ZMQ avec le service ML unifié
             zmq_push_port = int(os.getenv('TRANSLATOR_ZMQ_PULL_PORT', '5555'))
@@ -105,8 +93,8 @@ class MeeshyTranslationServer:
             database_url = os.getenv('DATABASE_URL', 'postgresql://meeshy:MeeshyP@ssword@localhost:5432/meeshy')
             
             self.zmq_server = ZMQTranslationServer(
-                gateway_push_port=zmq_push_port,  # Port où Translator PULL bind (Gateway PUSH connect ici)
-                gateway_sub_port=zmq_pub_port,    # Port où Translator PUB bind (Gateway SUB connect ici)
+                gateway_push_port=zmq_push_port,
+                gateway_sub_port=zmq_pub_port,
                 normal_workers=normal_workers,
                 any_workers=any_workers,
                 translation_service=self.translation_service,
@@ -121,14 +109,14 @@ class MeeshyTranslationServer:
             
             # 3. Initialiser l'API FastAPI avec le service ML unifié
             self.translation_api = TranslationAPI(
-                translation_service=self.translation_service,  # Service ML unifié
+                translation_service=self.translation_service,
                 zmq_server=self.zmq_server
             )
             logger.info("[TRANSLATOR] ✅ API FastAPI configurée avec service ML unifié")
             
             self.is_initialized = True
             logger.info("[TRANSLATOR] ✅ Architecture unifiée initialisée avec succès")
-            logger.info(f"[TRANSLATOR] 🎯 Tous les canaux (ZMQ, REST) utilisent le service ML unifié")
+            logger.info(f"[TRANSLATOR] 🎯 Serveur prêt, modèles ML se chargeront en arrière-plan")
             
             return True
             
@@ -137,6 +125,29 @@ class MeeshyTranslationServer:
             import traceback
             traceback.print_exc()
             return False
+    
+    async def initialize_models_background(self):
+        """Charge les modèles ML en arrière-plan après le démarrage du serveur"""
+        try:
+            logger.info("[TRANSLATOR] 🔄 Démarrage du chargement des modèles ML en arrière-plan...")
+            logger.info("[TRANSLATOR] ⏱️ Cette opération prendra environ 2-5 minutes...")
+            
+            # Charger les modèles ML
+            ml_initialized = await self.translation_service.initialize()
+            
+            if ml_initialized:
+                stats = await self.translation_service.get_stats()
+                available_models = list(stats.get('models_loaded', {}).keys())
+                logger.info(f"[TRANSLATOR] ✅ Modèles ML chargés avec succès: {available_models}")
+                logger.info(f"[TRANSLATOR] 🎯 Service de traduction maintenant pleinement opérationnel")
+            else:
+                logger.error("[TRANSLATOR] ❌ Échec du chargement des modèles ML")
+                logger.warning("[TRANSLATOR] ⚠️ Le serveur continue de fonctionner mais les traductions ML ne seront pas disponibles")
+                
+        except Exception as e:
+            logger.error(f"[TRANSLATOR] ❌ Erreur lors du chargement des modèles ML: {e}")
+            import traceback
+            traceback.print_exc()
     
     async def start_zmq_server(self):
         """Démarre le serveur ZMQ haute performance"""
@@ -187,6 +198,10 @@ class MeeshyTranslationServer:
         try:
             logger.info("[TRANSLATOR] 🚀 Démarrage du serveur de traduction haute performance...")
             
+            # Démarrer le chargement des modèles ML en arrière-plan
+            logger.info("[TRANSLATOR] 🔄 Lancement du chargement des modèles ML en arrière-plan...")
+            models_task = asyncio.create_task(self.initialize_models_background())
+            
             # Démarrer le serveur ZMQ en arrière-plan
             zmq_task = await self.start_zmq_server()
             if not zmq_task:
@@ -194,12 +209,13 @@ class MeeshyTranslationServer:
                 return
             
             logger.info("[TRANSLATOR] ✅ Serveur ZMQ démarré avec succès")
+            logger.info("[TRANSLATOR] 🌐 Démarrage de l'API FastAPI (serveur prêt immédiatement)...")
             
-            # Démarrer l'API FastAPI en parallèle avec ZMQ
+            # Démarrer l'API FastAPI - le serveur sera healthy immédiatement
             api_task = asyncio.create_task(self.start_api_server())
             
-            # Attendre que l'une des tâches se termine
-            await asyncio.gather(zmq_task, api_task, return_exceptions=True)
+            # Attendre que les tâches se terminent (models_task va se terminer quand les modèles sont chargés)
+            await asyncio.gather(zmq_task, api_task, models_task, return_exceptions=True)
             
         except KeyboardInterrupt:
             logger.info("[TRANSLATOR] 🛑 Arrêt demandé par l'utilisateur")

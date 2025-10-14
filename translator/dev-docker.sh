@@ -18,7 +18,7 @@ docker build -t meeshy-translator:dev .
 # Démarrer le conteneur en mode développement
 echo "🏃 Démarrage du conteneur en mode développement..."
 docker run -it --rm \
-    --name meeshy-translator-dev \
+    --name meeshy-dev-translator \
     -p 8000:8000 \
     -p 50051:50051 \
     -p 5555:5555 \

@@ -15,7 +15,7 @@ wait_for_database() {
     echo "[TRANSLATOR] Test de connectivite reseau..."
     
     # Attendre que MongoDB soit pret avec gestion des erreurs amelioree  
-    MAX_RETRIES=30
+    MAX_RETRIES=2
     RETRY_COUNT=0
     
     while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
@@ -27,7 +27,7 @@ wait_for_database() {
             return 0
         else
             echo "[TRANSLATOR] Base de donnees non accessible, attente de 10 secondes..."
-            sleep 10
+            sleep 5
             RETRY_COUNT=$((RETRY_COUNT + 1))
         fi
     done
@@ -82,7 +82,7 @@ async def init_database():
         })
         
         # Essayer d abord avec db push (plus rapide pour l initialisation MongoDB)
-        max_retries = 3
+        max_retries = 2
         for attempt in range(max_retries):
             try:
                 print(f'[TRANSLATOR] Tentative {attempt + 1}/{max_retries}: Application du schema MongoDB avec prisma db push...')
@@ -101,12 +101,12 @@ async def init_database():
                     print(f'[TRANSLATOR] Tentative {attempt + 1} echouee: {result.stderr}')
                     if attempt < max_retries - 1:
                         print('[TRANSLATOR] Attente avant nouvelle tentative...')
-                        time.sleep(30)  # Attendre 30 secondes entre les tentatives
+                        time.sleep(5)  # Attendre 5 secondes entre les tentatives
                     
             except subprocess.TimeoutExpired:
                 print(f'[TRANSLATOR] Timeout de la tentative {attempt + 1}')
                 if attempt < max_retries - 1:
-                    time.sleep(30)
+                    time.sleep(5)
         
         # Si tout echoue, continuer en mode degrade
         print('[TRANSLATOR] Toutes les tentatives de migration ont echoue')

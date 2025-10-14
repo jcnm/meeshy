@@ -66,7 +66,7 @@ try:
     import pymongo
     
     # Créer une URL sans les paramètres Prisma
-    mongo_url = f"mongodb+srv://{username}:{parsed.password}@{host}/{database}?replicaSet=replicaset&tls=true&authMechanism=SCRAM-SHA-256"
+    mongo_url = f"mongodb://{username}:{parsed.password}@{host}/{database}?replicaSet=replicaset&tls=true&authMechanism=SCRAM-SHA-256"
     print(f"📋 URL pymongo: {mongo_url[:50]}...")
     
     client = pymongo.MongoClient(mongo_url, serverSelectionTimeoutMS=10000)

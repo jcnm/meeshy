@@ -13,7 +13,8 @@ export WORKERS=2
 export FASTAPI_PORT=8000
 export GRPC_PORT=50051
 export ZMQ_PORT=5555
-export DATABASE_URL="file:../shared/dev.db"
+export DATABASE_TYPE=MONGODB
+export DATABASE_URL="mongodb://localhost:27017/meeshy?replicaSet=rs0"
 export PRISMA_POOL_SIZE=5
 export REDIS_URL="redis://localhost:6379"
 export TRANSLATION_CACHE_TTL=3600

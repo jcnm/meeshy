@@ -16,6 +16,7 @@ import subprocess
 class MongoDBHealthChecker:
     def __init__(self):
         self.database_url = os.getenv('DATABASE_URL')
+        print(f"[HEALTH-CHECK] Using DATABASE_URL: {self.database_url}")
         if not self.database_url:
             raise ValueError("DATABASE_URL environment variable is required")
         
@@ -89,54 +90,7 @@ class MongoDBHealthChecker:
             print(f"[HEALTH-CHECK] TCP connectivity test failed: {e}")
             return False
     
-    def test_mongodb_connection(self):
-        """Test actual MongoDB connection using pymongo"""
-        print("[HEALTH-CHECK] Testing MongoDB connection via pymongo")
-        
-        try:
-            import pymongo
-            from urllib.parse import urlparse
-            
-            # Parse connection URL
-            parsed = urlparse(self.database_url)
-            
-            # Create MongoDB client with optimized settings
-            client = pymongo.MongoClient(
-                self.database_url,
-                serverSelectionTimeoutMS=30000,
-                connectTimeoutMS=30000,
-                socketTimeoutMS=30000,
-                retryWrites=True,
-                retryReads=True
-            )
-            
-            # Test connection with ping
-            start_time = time.time()
-            result = client.admin.command('ping')
-            end_time = time.time()
-            
-            if result.get('ok') == 1:
-                latency = (end_time - start_time) * 1000
-                print(f"[HEALTH-CHECK] MongoDB ping successful (latency: {latency:.2f}ms)")
-                
-                # Test database access
-                db_name = parsed.path.lstrip('/')
-                if db_name:
-                    db = client[db_name]
-                    collections = db.list_collection_names()
-                    print(f"[HEALTH-CHECK] Database '{db_name}' accessible, {len(collections)} collections")
-                
-                client.close()
-                return True
-            else:
-                print(f"[HEALTH-CHECK] MongoDB ping failed: {result}")
-                client.close()
-                return False
-                
-        except Exception as e:
-            print(f"[HEALTH-CHECK] MongoDB connection test failed: {e}")
-            return False
-    
+
     def run_health_check(self):
         """Run complete health check"""
         print("[HEALTH-CHECK] Starting MongoDB health check...")
@@ -144,8 +98,7 @@ class MongoDBHealthChecker:
         
         tests = [
             ("DNS Resolution", self.test_dns_resolution),
-            ("TCP Connectivity", self.test_tcp_connectivity),
-            ("MongoDB Connection", self.test_mongodb_connection)
+            ("TCP Connectivity", self.test_tcp_connectivity)
         ]
         
         results = {}

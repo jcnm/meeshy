@@ -198,12 +198,19 @@ async def comprehensive_health_check() -> Dict[str, Any]:
         zmq_ok = zmq_health.get("running", False)
         models_ok = models_health.get("loaded", False) or models_health.get("status") == "degraded_mode"
         
-        if db_ok and zmq_ok and models_ok:
-            overall_status = "healthy"
-        elif db_ok and zmq_ok:
-            overall_status = "degraded"  # Modèles en mode dégradé mais services principaux OK
+        # Le service est "healthy" dès que le serveur démarre (même sans modèles)
+        # Les modèles se chargent en arrière-plan
+        models_loading = not models_health.get("loaded", False)
+        
+        if db_ok and zmq_ok:
+            if models_ok:
+                overall_status = "healthy"
+            elif models_loading:
+                overall_status = "healthy"  # Healthy même si modèles en cours de chargement
+            else:
+                overall_status = "degraded"  # Erreur de chargement des modèles
         else:
-            overall_status = "unhealthy"
+            overall_status = "unhealthy"  # DB ou ZMQ non disponible
         
         # Uptime
         uptime_seconds = time.time() - startup_time
@@ -214,6 +221,7 @@ async def comprehensive_health_check() -> Dict[str, Any]:
             "version": "1.0.0", 
             "timestamp": time.time(),
             "uptime_seconds": uptime_seconds,
+            "models_loading": models_loading,  # Indicateur de chargement en cours
             "components": {
                 "database": db_health,
                 "zmq_server": zmq_health,
@@ -223,6 +231,7 @@ async def comprehensive_health_check() -> Dict[str, Any]:
                 "database_connected": db_ok,
                 "zmq_running": zmq_ok,
                 "models_loaded": models_ok,
+                "models_loading": models_loading,
                 "total_models": models_health.get("count", 0)
             }
         }
