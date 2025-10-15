@@ -146,9 +146,12 @@ class MeeshySocketIOService {
       return;
     }
 
-    // Vérifier que l'utilisateur est configuré avant de se connecter
-    if (!this.currentUser) {
-      logger.socketio.warn('MeeshySocketIOService: Aucun utilisateur configuré, connexion différée');
+    // CORRECTION: Vérifier que soit un utilisateur soit un token est disponible
+    const hasAuthToken = !!localStorage.getItem('auth_token');
+    const hasSessionToken = !!localStorage.getItem('anonymous_session_token');
+    
+    if (!this.currentUser && !hasAuthToken && !hasSessionToken) {
+      logger.socketio.warn('MeeshySocketIOService: Aucun utilisateur ni token configuré, connexion différée');
       this.isConnecting = false;
       return;
     }
@@ -1064,11 +1067,21 @@ class MeeshySocketIOService {
     this.isConnecting = false;
     this.reconnectAttempts = 0;
     
-    // Réinitialiser la connexion si on a un utilisateur
-    if (this.currentUser) {
+    // CORRECTION: Vérifier si un token existe même si currentUser est null
+    // Cela peut arriver lors d'un rafraîchissement de page ou changement de page
+    const hasAuthToken = typeof window !== 'undefined' && !!localStorage.getItem('auth_token');
+    const hasSessionToken = typeof window !== 'undefined' && !!localStorage.getItem('anonymous_session_token');
+    
+    if (this.currentUser || hasAuthToken || hasSessionToken) {
+      console.log('🔄 Reconnexion avec:', {
+        hasCurrentUser: !!this.currentUser,
+        hasAuthToken,
+        hasSessionToken
+      });
       this.initializeConnection();
     } else {
-      console.warn('🔒 MeeshySocketIOService: Aucun utilisateur configuré pour la reconnexion');
+      console.warn('🔒 MeeshySocketIOService: Aucun utilisateur ni token pour la reconnexion');
+      toast.warning('Veuillez vous reconnecter pour utiliser le chat en temps réel');
     }
   }  /**
    * Gestionnaires d'événements
