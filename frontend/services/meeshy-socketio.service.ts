@@ -269,10 +269,15 @@ class MeeshySocketIOService {
       this.isConnecting = false;
       console.warn('🔌 MeeshySocketIOService: Socket.IO déconnecté', { reason });
       
+      // CORRECTION: Ne pas afficher de toast pour les déconnexions normales du client
+      // "io client disconnect" = déconnexion volontaire (changement de page, multi-onglets, etc.)
+      // "io server disconnect" = le serveur a forcé la déconnexion (onglet dupliqué détecté)
       if (reason === 'io server disconnect') {
-        // Le serveur a forcé la déconnexion, ne pas reconnecter automatiquement
-        toast.error(this.t('common.websocket.disconnectedByServer'));
-      } else {
+        // Le serveur a forcé la déconnexion (connexion multiple détectée)
+        // C'est normal quand on ouvre un deuxième onglet - pas besoin de toast d'erreur
+        console.log('🔄 Déconnexion par le serveur (connexion multiple détectée)');
+      } else if (reason !== 'io client disconnect' && reason !== 'transport close') {
+        // Seulement afficher un toast pour les déconnexions inattendues
         toast.warning(this.t('common.websocket.connectionLostReconnecting'));
       }
     });

@@ -105,6 +105,7 @@ import { MessagesDisplay } from '@/components/common/messages-display';
 
 export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousMode = false, linkId, initialParticipants }: BubbleStreamPageProps) {
   const { t } = useI18n('conversations');
+  const { t: tCommon } = useI18n('common');
   const router = useRouter();
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -202,13 +203,13 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       
       // Recharger les messages pour afficher la modification
       await refreshMessages();
-      toast.success('Message modifié avec succès');
+      toast.success(tCommon('messages.messageModified'));
     } catch (error) {
       console.error('Erreur lors de la modification du message:', error);
-      toast.error('Erreur lors de la modification du message');
+      toast.error(tCommon('messages.modifyError'));
       throw error;
     }
-  }, [conversationId, selectedInputLanguage, refreshMessages]);
+  }, [conversationId, selectedInputLanguage, refreshMessages, tCommon]);
 
   const handleDeleteMessage = useCallback(async (messageId: string) => {
     try {
@@ -216,13 +217,13 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       
       // Recharger les messages pour afficher la suppression
       await refreshMessages();
-      toast.success('Message supprimé avec succès');
+      toast.success(tCommon('messages.messageDeleted'));
     } catch (error) {
       console.error('Erreur lors de la suppression du message:', error);
-      toast.error('Erreur lors de la suppression du message');
+      toast.error(tCommon('messages.deleteError'));
       throw error;
     }
-  }, [conversationId, refreshMessages]);
+  }, [conversationId, refreshMessages, tCommon]);
 
   const handleReplyMessage = useCallback((message: any) => {
     const { setReplyingTo } = useReplyStore.getState();
@@ -240,7 +241,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       textareaRef.current.focus();
     }
     
-    toast.success('Répondre à ce message');
+    toast.success(tCommon('messages.replyTo'));
   }, []);
 
   const handleNavigateToMessage = useCallback((messageId: string) => {
@@ -262,13 +263,13 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         messageElement.classList.remove('ring-2', 'ring-blue-500', 'ring-offset-2');
       }, 2000);
       
-      toast.success('Message trouvé !');
+      toast.success(tCommon('messages.messageFound'));
     } else {
       // Le message n'est pas visible, peut-être trop loin
-      toast.info('Message non visible. Chargement...');
+      toast.info(tCommon('messages.messageNotVisible'));
       // TODO: Implémenter le chargement des messages précédents si nécessaire
     }
-  }, []);
+  }, [tCommon]);
 
   // Logique de permissions pour la modération
   const getUserModerationRole = useCallback(() => {
@@ -699,7 +700,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           hasToken: !!localStorage.getItem('auth_token'),
           wsUrl: (typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_WS_URL || 'ws://meeshy.me/api') : 'ws://gateway:3000') + '/ws'
         });
-        toast.warning('� Connexion WebSocket en cours...');
+        toast.warning(t('bubbleStream.connectingWebSocket'));
       }
     }, 3000);
 
@@ -991,7 +992,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       // Vérifier l'état de la connexion avant l'envoi
       if (!connectionStatus.isConnected) {
         console.log('⚠️ WebSocket non connecté - Impossible d\'envoyer le message');
-        toast.warning('Connexion en cours - Veuillez patienter...');
+        toast.warning(tCommon('messages.connectionInProgress'));
         // Restaurer le message pour permettre un nouvel essai
         setNewMessage(messageContent);
         return;
@@ -1014,7 +1015,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         
         if (sendResult) {
           console.log('✅ Message envoyé via WebSocket avec succès');
-          toast.success('Message envoyé !');
+          toast.success(tCommon('messages.messageSent'));
           
           // Log pour le debug - La langue source sera utilisée côté serveur
           console.log(`🔤 Langue source du message: ${selectedInputLanguage} (détectée: ${detectedLanguage})`);
@@ -1059,7 +1060,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
     } catch (error) {
       console.error('❌ Erreur lors de l\'envoi du message:', error);
-      toast.error('Erreur lors de l\'envoi du message');
+      toast.error(tCommon('messages.sendError'));
       // Restaurer le message en cas d'erreur
       setNewMessage(messageContent);
     }
@@ -1238,7 +1239,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                         }}
                         className="ml-2 text-xs px-2 py-1 h-auto hover:bg-orange-200/50"
                       >
-                        Reconnecter
+                        {t('bubbleStream.reconnect')}
                       </Button>
                     </>
                   )}
@@ -1291,7 +1292,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
             {!hasMore && messages.length > 0 && (
               <div className="flex justify-center py-4">
                 <div className="text-sm text-muted-foreground">
-                  Tous les messages ont été chargés
+                  {tCommon('messages.allMessagesLoaded')}
                 </div>
               </div>
             )}

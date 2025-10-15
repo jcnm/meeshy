@@ -19,6 +19,7 @@
     "connectingWebSocket": "Connecting to WebSocket...",
     "initializing": "Initializing...",
     "reconnecting": "Reconnecting...",
+    "reconnect": "Reconnect",
     "realTimeMessages": "Real-time messages",
     "connectionInProgress": "Connection in progress",
     "emptyStateMessage": "No messages yet",
