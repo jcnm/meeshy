@@ -324,20 +324,24 @@ export function CreateConversationModal({
       // For direct messages, use default title if none provided
       if (conversationType === 'direct' && !conversationTitle) {
         conversationTitle = selectedUsers.length > 0 
-          ? `Conversation avec ${selectedUsers[0].displayName || selectedUsers[0].username}`
-          : 'Conversation directe';
+          ? t('createConversationModal.preview.defaultTitles.direct', { 
+              username: selectedUsers[0].displayName || selectedUsers[0].username 
+            })
+          : t('createConversationModal.conversationTypes.direct');
       }
       
       // For group conversations with 2+ users, require title
       if (conversationType === 'group' && !conversationTitle) {
         conversationTitle = selectedUsers.length > 0
-          ? `Conversation avec ${selectedUsers.map(u => u.displayName || u.username).join(', ')}`
-          : 'Conversation de groupe';
+          ? t('createConversationModal.preview.defaultTitles.group', {
+              users: selectedUsers.map(u => u.displayName || u.username).join(', ')
+            })
+          : t('createConversationModal.conversationTypes.group');
       }
 
       // For public conversations, require title
       if (conversationType === 'public' && !conversationTitle) {
-        conversationTitle = 'Conversation publique';
+        conversationTitle = t('createConversationModal.preview.defaultTitles.public');
       }
 
       // Map conversation type for backend compatibility
@@ -794,7 +798,8 @@ export function CreateConversationModal({
             >
               <Sparkles className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
               {isCreating ? t('createConversationModal.actions.creating') : 
-                conversationType === 'direct' ? t('createConversationModal.actions.createDirectConversation') : 
+                conversationType === 'direct' ? t('createConversationModal.actions.createDirectConversation') :
+                conversationType === 'public' ? t('createConversationModal.actions.createPublicConversation') :
                 t('createConversationModal.actions.createGroupConversation')}
             </Button>
             <Button

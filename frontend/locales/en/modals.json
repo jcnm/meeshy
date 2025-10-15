@@ -171,7 +171,21 @@
         "cancel": "Cancel",
         "creating": "Creating...",
         "createDirectConversation": "Create direct conversation",
-        "createGroupConversation": "Create group conversation"
+        "createGroupConversation": "Create group conversation",
+        "createPublicConversation": "Create public conversation"
+      },
+      "preview": {
+        "title": "Conversation preview",
+        "members": "Members ({count})",
+        "you": "You",
+        "autoTranslation": "Automatic translation enabled",
+        "encryptedMessages": "End-to-end encrypted messages",
+        "historyEnabled": "History saved",
+        "defaultTitles": {
+          "direct": "Conversation with {username}",
+          "group": "Conversation with {users}",
+          "public": "Public conversation"
+        }
       },
       "errors": {
         "searchError": "Error searching",

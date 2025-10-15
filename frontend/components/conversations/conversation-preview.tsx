@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { User } from '@/types';
 import { MessageSquare, Users, Hash, Building2, Lock, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/hooks/useI18n';
 
 interface ConversationPreviewProps {
   title: string;
@@ -28,16 +29,22 @@ export function ConversationPreview({
   conversationType,
   getUserAccentColor
 }: ConversationPreviewProps) {
+  const { t } = useI18n('modals');
+  
   if (selectedUsers.length === 0) {
     return null;
   }
 
   const displayTitle = title || (
     conversationType === 'direct' 
-      ? `Conversation avec ${selectedUsers[0]?.displayName || selectedUsers[0]?.username}`
+      ? t('createConversationModal.preview.defaultTitles.direct', { 
+          username: selectedUsers[0]?.displayName || selectedUsers[0]?.username 
+        })
       : conversationType === 'group'
-      ? `Conversation avec ${selectedUsers.map(u => u.displayName || u.username).join(', ')}`
-      : 'Conversation publique'
+      ? t('createConversationModal.preview.defaultTitles.group', {
+          users: selectedUsers.map(u => u.displayName || u.username).join(', ')
+        })
+      : t('createConversationModal.preview.defaultTitles.public')
   );
 
   return (
@@ -45,7 +52,7 @@ export function ConversationPreview({
       <CardHeader className="pb-3">
         <CardTitle className="text-sm flex items-center gap-2">
           <MessageSquare className="h-4 w-4 text-primary" />
-          Aperçu de la conversation
+          {t('createConversationModal.preview.title')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -54,7 +61,7 @@ export function ConversationPreview({
           <div className="flex items-center gap-2">
             <h4 className="font-medium text-sm">{displayTitle}</h4>
             <Badge variant="outline" className="text-xs">
-              {conversationType === 'direct' ? 'Directe' : conversationType === 'group' ? 'Groupe' : 'Publique'}
+              {t(`createConversationModal.conversationTypes.${conversationType}`)}
             </Badge>
           </div>
           
@@ -82,7 +89,9 @@ export function ConversationPreview({
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">Membres ({selectedUsers.length + 1})</span>
+            <span className="text-sm font-medium">
+              {t('createConversationModal.preview.members', { count: selectedUsers.length + 1 })}
+            </span>
           </div>
           
           <div className="flex flex-wrap gap-2">
@@ -92,9 +101,11 @@ export function ConversationPreview({
               className="flex items-center gap-2 px-2 py-1 bg-primary/10 text-primary border-primary/20"
             >
               <Avatar className="h-4 w-4">
-                <AvatarFallback className="text-xs">Vous</AvatarFallback>
+                <AvatarFallback className="text-xs">
+                  {t('createConversationModal.preview.you').charAt(0).toUpperCase()}
+                </AvatarFallback>
               </Avatar>
-              <span className="text-xs font-medium">Vous</span>
+              <span className="text-xs font-medium">{t('createConversationModal.preview.you')}</span>
             </Badge>
             
             {/* Autres utilisateurs */}
@@ -123,9 +134,9 @@ export function ConversationPreview({
 
         {/* Informations supplémentaires */}
         <div className="text-xs text-muted-foreground space-y-1">
-          <div>• Traduction automatique activée</div>
-          <div>• Messages chiffrés de bout en bout</div>
-          <div>• Historique sauvegardé</div>
+          <div>• {t('createConversationModal.preview.autoTranslation')}</div>
+          <div>• {t('createConversationModal.preview.encryptedMessages')}</div>
+          <div>• {t('createConversationModal.preview.historyEnabled')}</div>
         </div>
       </CardContent>
     </Card>
