@@ -71,6 +71,17 @@ export default function LinksPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCreateConversationModal, setShowCreateConversationModal] = useState(false);
 
+  /**
+   * Tronque le nom du lien à 32 caractères pour l'affichage dans la liste
+   * Le nom complet est visible dans la modale de détails/édition
+   */
+  const truncateLinkName = (name: string, maxLength: number = 32): string => {
+    if (name.length <= maxLength) {
+      return name;
+    }
+    return name.substring(0, maxLength - 3) + '...';
+  };
+
   // Charger les liens
   const loadLinks = async () => {
     try {
@@ -600,7 +611,7 @@ export default function LinksPage() {
                               <Link2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                             </div>
                             <div className="flex-1 min-w-0 max-w-[calc(100%-3rem)]">
-                              <CardTitle className="text-xl font-bold truncate">
+                              <CardTitle className="text-xl font-bold">
                                 <a
                                   href={`/join/${link.linkId}`}
                                   className="text-foreground hover:text-primary transition-colors"
@@ -609,7 +620,7 @@ export default function LinksPage() {
                                     router.push(`/join/${link.linkId}`);
                                   }}
                                 >
-                                  {link.name || t('unnamedLink')}
+                                  {truncateLinkName(link.name || t('unnamedLink'))}
                                 </a>
                               </CardTitle>
                             </div>

@@ -169,14 +169,25 @@ export function ConversationLinksSection({ conversationId }: ConversationLinksSe
     return <Badge variant="default" className="text-xs">Actif</Badge>;
   };
 
+  /**
+   * Tronque le nom du lien à 32 caractères pour l'affichage dans la liste
+   * Le nom complet est visible dans la modale de détails
+   */
+  const truncateLinkName = (name: string, maxLength: number = 32): string => {
+    if (name.length <= maxLength) {
+      return name;
+    }
+    return name.substring(0, maxLength - 3) + '...';
+  };
+
   const renderLinkCard = (link: ShareLink) => (
     <Card key={link.id} className="mb-3">
       <CardContent className="p-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <h4 className="font-medium text-sm truncate max-w-[calc(100%-4rem)]">
-                {link.name || 'Lien de partage'}
+              <h4 className="font-medium text-sm">
+                {truncateLinkName(link.name || 'Lien de partage')}
               </h4>
               {getStatusBadge(link)}
             </div>
@@ -224,7 +235,9 @@ export function ConversationLinksSection({ conversationId }: ConversationLinksSe
               <PopoverContent className="w-80 p-4" align="end">
                 <div className="space-y-3">
                   <div>
-                    <h4 className="font-medium text-sm mb-1">Détails du lien</h4>
+                    <h4 className="font-medium text-sm mb-1 break-words">
+                      {link.name || 'Lien de partage'}
+                    </h4>
                     <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
                       {link.description || 'Aucune description'}
                     </p>
