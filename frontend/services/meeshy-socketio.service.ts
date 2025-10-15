@@ -45,7 +45,11 @@ class MeeshySocketIOService {
    */
   private t(key: string): string {
     try {
-      const userLang = typeof window !== 'undefined' ? localStorage.getItem('user_language') || 'en' : 'en';
+      // Utiliser la clé correcte: meeshy-i18n-language (définie dans i18n-utils.ts)
+      const userLang = typeof window !== 'undefined' 
+        ? (localStorage.getItem('meeshy-i18n-language') || 'en')
+        : 'en';
+      
       const translations = userLang === 'fr' ? frTranslations : enTranslations;
       
       const keys = key.split('.');
@@ -53,8 +57,15 @@ class MeeshySocketIOService {
       for (const k of keys) {
         value = value?.[k];
       }
+      
+      // Debug pour comprendre le problème
+      if (!value) {
+        console.warn(`[MeeshySocketIOService] Traduction manquante pour clé: ${key}, langue: ${userLang}`);
+      }
+      
       return value || key;
-    } catch {
+    } catch (error) {
+      console.error('[MeeshySocketIOService] Erreur traduction:', error);
       return key;
     }
   }
@@ -863,6 +874,103 @@ class MeeshySocketIOService {
       } catch (error) {
         console.error('❌ MeeshySocketIOService: Erreur lors de l\'extraction de l\'ID conversation:', error);
         toast.error('Erreur lors de l\'extraction de l\'ID de conversation');
+        resolve(false);
+      }
+    });
+  }
+
+  /**
+   * Envoie un message avec des attachments
+   */
+  public async sendMessageWithAttachments(
+    conversationOrId: any, 
+    content: string, 
+    attachmentIds: string[],
+    originalLanguage?: string, 
+    replyToId?: string
+  ): Promise<boolean> {
+    return new Promise(async (resolve) => {
+      if (!this.socket) {
+        console.error('❌ MeeshySocketIOService: Socket non connecté');
+        toast.error('Connexion WebSocket non initialisée');
+        resolve(false);
+        return;
+      }
+
+      if (!this.isConnected && !this.socket.connected) {
+        console.error('❌ MeeshySocketIOService: Socket pas connecté');
+        toast.error('Connexion WebSocket non établie');
+        resolve(false);
+        return;
+      }
+
+      if (this.socket.disconnected) {
+        console.error('❌ MeeshySocketIOService: Socket déconnecté');
+        toast.error('Connexion WebSocket perdue');
+        resolve(false);
+        return;
+      }
+
+      try {
+        // Déterminer l'ID de conversation
+        let conversationId: string;
+        
+        if (typeof conversationOrId === 'string') {
+          const idType = getConversationIdType(conversationOrId);
+          if (idType === 'objectId') {
+            conversationId = conversationOrId;
+          } else if (idType === 'identifier') {
+            conversationId = conversationOrId;
+          } else {
+            throw new Error(`Invalid conversation identifier: ${conversationOrId}`);
+          }
+        } else {
+          conversationId = getConversationApiId(conversationOrId);
+        }
+
+        console.log('📤📎 MeeshySocketIOService: Envoi message avec attachments', {
+          conversationId,
+          contentLength: content.length,
+          attachmentCount: attachmentIds.length,
+          originalLanguage,
+          replyToId: replyToId || 'none',
+          timestamp: new Date().toISOString()
+        });
+
+        // Utiliser l'ObjectId pour l'envoi au backend
+        const messageData = { 
+          conversationId, 
+          content,
+          attachmentIds,
+          originalLanguage: originalLanguage || 'fr',
+          replyToId
+        };
+
+        // Émettre l'événement avec callback
+        this.socket.emit(CLIENT_EVENTS.MESSAGE_SEND_WITH_ATTACHMENTS, messageData, (response: any) => {
+          if (response?.success) {
+            console.log('✅ MeeshySocketIOService: Message avec attachments envoyé', {
+              messageId: response?.data?.messageId,
+              attachmentCount: attachmentIds.length
+            });
+            resolve(true);
+          } else {
+            console.error('❌ MeeshySocketIOService: Erreur envoi message avec attachments', {
+              error: response?.error,
+              message: response?.message,
+              conversationId,
+              response
+            });
+            
+            const errorMsg = response?.message || response?.error || 'Erreur lors de l\'envoi du message';
+            toast.error(`Erreur: ${errorMsg}`);
+            resolve(false);
+          }
+        });
+      
+      } catch (error) {
+        console.error('❌ MeeshySocketIOService: Erreur lors de l\'envoi message avec attachments:', error);
+        toast.error('Erreur lors de l\'envoi du message');
         resolve(false);
       }
     });
