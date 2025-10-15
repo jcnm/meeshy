@@ -505,7 +505,7 @@ export function CreateConversationModal({
                     key={user.id}
                     variant="outline"
                     className={cn(
-                      "flex items-center gap-2 px-3 py-1 border-2",
+                      "flex items-center gap-2 px-3 py-1.5 border-2",
                       getUserAccentColor(user.id)
                     )}
                   >
@@ -518,10 +518,14 @@ export function CreateConversationModal({
                     <span className="text-sm font-medium">
                       {user.displayName || user.username}
                     </span>
-                    <X
-                      className="h-3 w-3 cursor-pointer hover:opacity-70"
+                    <button
+                      type="button"
                       onClick={() => toggleUserSelection(user)}
-                    />
+                      className="ml-1 rounded-full p-0.5 hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+                      aria-label={`Retirer ${user.displayName || user.username}`}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
                   </Badge>
                 ))}
               </div>
