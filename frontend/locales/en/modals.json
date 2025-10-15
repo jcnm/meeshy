@@ -397,6 +397,7 @@
         "linkName": "Link name",
         "linkNameInfo": "A friendly name to identify this link",
         "linkNamePlaceholder": "Ex: Team invitation, Partner access...",
+        "linkNameDefaultPrefix": "Join the conversation:",
         "linkIdentifier": "Link identifier",
         "linkIdentifierInfo": "Unique identifier for this link (used in the URL)",
         "regenerateIdentifier": "Regenerate identifier",

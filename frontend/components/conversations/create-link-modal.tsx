@@ -174,6 +174,7 @@ export function CreateLinkModalV2({
   preGeneratedToken
 }: CreateLinkModalV2Props) {
   const { t } = useI18n('modals');
+  const { t: tCommon } = useI18n('common');
   const { user: currentUser } = useUser();
   
   // États pour les étapes
@@ -261,7 +262,7 @@ export function CreateLinkModalV2({
       setConversations(linkableConversations);
     } catch (error) {
       console.error('Erreur lors du chargement des conversations:', error);
-      toast.error('Erreur lors du chargement des conversations');
+      toast.error(t('createLinkModal.errors.searchError'));
     } finally {
       setIsLoadingConversations(false);
     }
@@ -704,245 +705,243 @@ export function CreateLinkModalV2({
     </div>
   );
 
-  // Étape 2: Création de nouvelle conversation ou configuration de base
+  // Étape 2: Configuration de la conversation et du lien
   const renderStep2 = () => {
-    if (createNewConversation) {
-      return (
-        <div className="space-y-6">
-          {/* Titre de la conversation */}
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-            <Label htmlFor="conversationTitle" className="text-sm font-medium">
-              {t('conversationForm.title')}
-            </Label>
-              <InfoIcon content={t('conversationForm.titleInfo')} />
-            </div>
-            <Input
-              id="conversationTitle"
-              value={newConversationData.title}
-              onChange={(e) => setNewConversationData(prev => ({ ...prev, title: e.target.value }))}
-              placeholder={t('conversationForm.titlePlaceholder')}
-              className="text-lg"
-            />
-          </div>
-
-          {/* Description de la conversation */}
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-            <Label htmlFor="conversationDescription" className="text-sm font-medium">
-              {t('conversationForm.description')}
-            </Label>
-              <InfoIcon content={t('conversationForm.descriptionInfo')} />
-            </div>
-            <Textarea
-              id="conversationDescription"
-              value={newConversationData.description}
-              onChange={(e) => setNewConversationData(prev => ({ ...prev, description: e.target.value }))}
-              placeholder={t('conversationForm.descriptionPlaceholder')}
-              className="min-h-[80px]"
-            />
-          </div>
-
-          {/* Ajout de membres */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium">{t('conversationForm.baseMembers')}</Label>
-              <Badge variant="secondary">
-                {t('conversationForm.memberCount', { count: newConversationData.memberIds.length })}
-              </Badge>
-            </div>
-
-            {/* Recherche d'utilisateurs */}
-            <div className="relative">
-              {isLoadingUsers ? (
-                <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+    return (
+      <div className="space-y-8">
+        {/* SECTION 1: CONVERSATION */}
+        <Card className="border-2">
+          <CardHeader className="bg-muted/30">
+            <CardTitle className="text-lg flex items-center">
+              <MessageSquare className="h-5 w-5 mr-2" />
+              {createNewConversation ? t('createLinkModal.createNewConversation.title') : t('summary.conversation')}
+            </CardTitle>
+            <CardDescription>
+              {createNewConversation 
+                ? t('createLinkModal.conversationForm.titleInfo')
+                : t('createLinkModal.stepDescriptions.configureLink')
+              }
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6 space-y-4">
+            {/* Si on crée une nouvelle conversation */}
+            {createNewConversation && (
+              <>
+                {/* Titre de la conversation */}
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Label htmlFor="conversationTitle" className="text-sm font-medium">
+                      {t('conversationForm.title')}
+                    </Label>
+                    <InfoIcon content={t('conversationForm.titleInfo')} />
+                  </div>
+                  <Input
+                    id="conversationTitle"
+                    value={newConversationData.title}
+                    onChange={(e) => setNewConversationData(prev => ({ ...prev, title: e.target.value }))}
+                    placeholder={t('conversationForm.titlePlaceholder')}
+                    className="text-lg"
+                  />
                 </div>
-              ) : (
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              )}
-              <Input
-                placeholder={t('conversationForm.searchUsers')}
-                value={userSearchQuery}
-                onChange={(e) => setUserSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
 
-            {/* Liste des utilisateurs */}
-            <div className="space-y-2 max-h-48 overflow-y-auto">
-              {isLoadingUsers ? (
-                <div className="flex items-center justify-center py-4">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                {/* Description de la conversation */}
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Label htmlFor="conversationDescription" className="text-sm font-medium">
+                      {t('conversationForm.description')}
+                    </Label>
+                    <InfoIcon content={t('conversationForm.descriptionInfo')} />
+                  </div>
+                  <Textarea
+                    id="conversationDescription"
+                    value={newConversationData.description}
+                    onChange={(e) => setNewConversationData(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder={t('conversationForm.descriptionPlaceholder')}
+                    className="min-h-[80px]"
+                  />
                 </div>
-              ) : filteredUsers.length === 0 ? (
-                <div className="text-center py-4 text-muted-foreground">
-                  <UserPlus className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">{t('conversationForm.noUsersFound')}</p>
-                </div>
-              ) : (
-                filteredUsers.map((user) => {
-                  const isSelected = newConversationData.memberIds.includes(user.id);
-                  
-                  const toggleUserSelection = () => {
-                    if (isSelected) {
-                      setNewConversationData(prev => ({
-                        ...prev,
-                        memberIds: prev.memberIds.filter(id => id !== user.id)
-                      }));
-                    } else {
-                      setNewConversationData(prev => ({
-                        ...prev,
-                        memberIds: [...prev.memberIds, user.id]
-                      }));
-                    }
-                  };
 
-                  return (
-                    <div
-                      key={user.id}
-                      className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-accent/50 transition-colors cursor-pointer"
-                      onClick={toggleUserSelection}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={(e) => {
-                          e.stopPropagation(); // Empêche le double déclenchement
-                          if (e.target.checked) {
-                            setNewConversationData(prev => ({
-                              ...prev,
-                              memberIds: [...prev.memberIds, user.id]
-                            }));
-                          } else {
+                {/* Ajout de membres */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium">{t('conversationForm.baseMembers')}</Label>
+                    <Badge variant="secondary">
+                      {t('conversationForm.memberCount', { count: newConversationData.memberIds.length })}
+                    </Badge>
+                  </div>
+
+                  {/* Recherche d'utilisateurs */}
+                  <div className="relative">
+                    {isLoadingUsers ? (
+                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                      </div>
+                    ) : (
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    )}
+                    <Input
+                      placeholder={t('conversationForm.searchUsers')}
+                      value={userSearchQuery}
+                      onChange={(e) => setUserSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+
+                  {/* Liste des utilisateurs */}
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {isLoadingUsers ? (
+                      <div className="flex items-center justify-center py-4">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                      </div>
+                    ) : filteredUsers.length === 0 ? (
+                      <div className="text-center py-4 text-muted-foreground">
+                        <UserPlus className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">{t('conversationForm.noUsersFound')}</p>
+                      </div>
+                    ) : (
+                      filteredUsers.map((user) => {
+                        const isSelected = newConversationData.memberIds.includes(user.id);
+                        
+                        const toggleUserSelection = () => {
+                          if (isSelected) {
                             setNewConversationData(prev => ({
                               ...prev,
                               memberIds: prev.memberIds.filter(id => id !== user.id)
                             }));
+                          } else {
+                            setNewConversationData(prev => ({
+                              ...prev,
+                              memberIds: [...prev.memberIds, user.id]
+                            }));
                           }
-                        }}
-                        className="rounded"
-                      />
-                      <div className="h-8 w-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                        <span className="text-xs font-medium text-white">
-                          {user.displayName?.[0] || user.firstName?.[0] || user.username[0].toUpperCase()}
-                        </span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">
-                          {user.displayName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username}
-                        </p>
-                        <p className="text-sm text-muted-foreground truncate">@{user.username}</p>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-        </div>
-      );
-    }
+                        };
 
-    // Configuration de base du lien
-    return (
-      <div className="space-y-6">
-        {/* Afficher les champs nom et description seulement si on crée une nouvelle conversation */}
-        {createNewConversation && (
-          <>
-            <div className="space-y-2">
-              <Label htmlFor="linkTitle" className="text-sm font-medium">
-                Nom de la conversation *
-              </Label>
-              <Input
-                id="linkTitle"
-                value={linkTitle}
-                onChange={(e) => setLinkTitle(e.target.value)}
-                placeholder="Ex: Discussion équipe, Brainstorming projet..."
-                className="text-lg"
-              />
-            </div>
+                        return (
+                          <div
+                            key={user.id}
+                            className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-accent/50 transition-colors cursor-pointer"
+                            onClick={toggleUserSelection}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                if (e.target.checked) {
+                                  setNewConversationData(prev => ({
+                                    ...prev,
+                                    memberIds: [...prev.memberIds, user.id]
+                                  }));
+                                } else {
+                                  setNewConversationData(prev => ({
+                                    ...prev,
+                                    memberIds: prev.memberIds.filter(id => id !== user.id)
+                                  }));
+                                }
+                              }}
+                              className="rounded"
+                            />
+                            <div className="h-8 w-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                              <span className="text-xs font-medium text-white">
+                                {user.displayName?.[0] || user.firstName?.[0] || user.username[0].toUpperCase()}
+                              </span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium truncate">
+                                {user.displayName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username}
+                              </p>
+                              <p className="text-sm text-muted-foreground truncate">@{user.username}</p>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
 
-            <div className="space-y-2">
-              <Label htmlFor="linkDescription" className="text-sm font-medium">
-                Description (optionnelle)
-              </Label>
-              <Textarea
-                id="linkDescription"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Décrivez brièvement l'objectif de cette conversation..."
-                className="min-h-[80px]"
-              />
-            </div>
-          </>
-        )}
-
-        {/* Si une conversation existante est sélectionnée, afficher ses informations */}
-        {selectedConversationId && !createNewConversation && (
-          <div className="p-4 bg-muted/50 rounded-lg">
-            <div className="flex items-center space-x-3">
-              <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                <MessageSquare className="h-5 w-5 text-white" />
+            {/* Si une conversation existante est sélectionnée */}
+            {selectedConversationId && !createNewConversation && (
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <MessageSquare className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-medium">{conversations.find(c => c.id === selectedConversationId)?.title}</h3>
+                    {conversations.find(c => c.id === selectedConversationId)?.description && (
+                      <p className="text-sm text-muted-foreground">{conversations.find(c => c.id === selectedConversationId)?.description}</p>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div className="flex-1">
-                <h3 className="font-medium">{conversations.find(c => c.id === selectedConversationId)?.title}</h3>
-                {conversations.find(c => c.id === selectedConversationId)?.description && (
-                  <p className="text-sm text-muted-foreground">{conversations.find(c => c.id === selectedConversationId)?.description}</p>
-                )}
+            )}
+          </CardContent>
+        </Card>
+
+        {/* SECTION 2: CONFIGURATION DU LIEN */}
+        <Card className="border-2 border-primary/20">
+          <CardHeader className="bg-primary/5">
+            <CardTitle className="text-lg flex items-center">
+              <Link2 className="h-5 w-5 mr-2" />
+              {t('createLinkModal.linkDetails.title')}
+            </CardTitle>
+            <CardDescription>
+              {t('linkConfiguration.validityDurationInfo')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Label className="text-sm font-medium">{t('linkConfiguration.validityDuration')}</Label>
+                  <InfoIcon content={t('linkConfiguration.validityDurationInfo')} />
+                </div>
+                <Select value={expirationDays.toString()} onValueChange={(value) => setExpirationDays(parseInt(value))}>
+                  <SelectTrigger className="w-full h-12">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DURATION_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value.toString()}>
+                        <div>
+                          <div className="font-medium">{t(option.labelKey)}</div>
+                          <div className="text-xs text-muted-foreground">{t(option.descriptionKey)}</div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Label className="text-sm font-medium">{t('linkConfiguration.usageLimit')}</Label>
+                  <InfoIcon content={t('linkConfiguration.usageLimitInfo')} />
+                </div>
+                <Select 
+                  value={maxUses?.toString() || 'unlimited'} 
+                  onValueChange={(value) => setMaxUses(value === 'unlimited' ? undefined : parseInt(value))}
+                >
+                  <SelectTrigger className="w-full h-12">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LIMIT_OPTIONS.map((option) => (
+                      <SelectItem key={option.value || 'unlimited'} value={option.value?.toString() || 'unlimited'}>
+                        <div>
+                          <div className="font-medium">{t(option.labelKey)}</div>
+                          <div className="text-xs text-muted-foreground">{t(option.descriptionKey)}</div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-            <Label className="text-sm font-medium">{t('linkConfiguration.validityDuration')}</Label>
-              <InfoIcon content={t('linkConfiguration.validityDurationInfo')} />
-            </div>
-            <Select value={expirationDays.toString()} onValueChange={(value) => setExpirationDays(parseInt(value))}>
-              <SelectTrigger className="w-full h-12">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {DURATION_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value.toString()}>
-                    <div>
-                      <div className="font-medium">{t(option.labelKey)}</div>
-                      <div className="text-xs text-muted-foreground">{t(option.descriptionKey)}</div>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-            <Label className="text-sm font-medium">{t('linkConfiguration.usageLimit')}</Label>
-              <InfoIcon content={t('linkConfiguration.usageLimitInfo')} />
-            </div>
-            <Select 
-              value={maxUses?.toString() || 'unlimited'} 
-              onValueChange={(value) => setMaxUses(value === 'unlimited' ? undefined : parseInt(value))}
-            >
-              <SelectTrigger className="w-full h-12">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {LIMIT_OPTIONS.map((option) => (
-                  <SelectItem key={option.value || 'unlimited'} value={option.value?.toString() || 'unlimited'}>
-                    <div>
-                      <div className="font-medium">{t(option.labelKey)}</div>
-                      <div className="text-xs text-muted-foreground">{t(option.descriptionKey)}</div>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     );
   };
@@ -1108,7 +1107,7 @@ export function CreateLinkModalV2({
                 const conversationTitle = createNewConversation 
                   ? newConversationData.title 
                   : conversations.find(c => c.id === selectedConversationId)?.title;
-                return conversationTitle ? `Rejoindre la conversation : ${conversationTitle}` : '';
+                return conversationTitle ? `${t('createLinkModal.linkDetails.linkNameDefaultPrefix')} ${conversationTitle}` : '';
               })()}
               onChange={(e) => setLinkTitle(e.target.value)}
               placeholder={t('linkDetails.linkNamePlaceholder')}
@@ -1369,10 +1368,10 @@ export function CreateLinkModalV2({
         <DialogHeader className="flex-shrink-0 bg-background border-b px-3 py-3 sm:px-6 sm:py-4">
           <DialogTitle className="text-base sm:text-xl font-bold flex items-center">
             <Link2 className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-            Créer un lien de partage
+            {t('createLinkModal.title')}
           </DialogTitle>
           <DialogDescription className="text-xs sm:text-sm">
-            Créez un lien de partage pour inviter des personnes à rejoindre une conversation
+            {t('createLinkModal.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -1427,7 +1426,7 @@ export function CreateLinkModalV2({
                         {stepTitles[i]}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Étape {stepNumber}
+                        {tCommon('step', { step: stepNumber })}
                       </p>
                     </div>
                   </div>
@@ -1448,10 +1447,10 @@ export function CreateLinkModalV2({
                     <CheckCircle className="h-8 w-8 text-green-600" />
                   </div>
                   <CardTitle className="text-2xl text-green-700">
-                    Lien créé avec succès !
+                    {t('createLinkModal.success.linkCreated')}
                   </CardTitle>
                   <CardDescription className="text-green-600">
-                    Votre lien de partage est prêt à être utilisé
+                    {t('createLinkButton.linkCreated')}
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -1461,38 +1460,38 @@ export function CreateLinkModalV2({
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center">
                     <FileText className="h-5 w-5 mr-2" />
-                    Synthèse de votre lien
+                    {t('summary.title')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="p-4 bg-muted/30 rounded-lg">
-                      <h4 className="font-medium text-sm text-muted-foreground mb-2">Conversation</h4>
+                      <h4 className="font-medium text-sm text-muted-foreground mb-2">{t('summary.conversation')}</h4>
                       <p className="font-medium">
                         {createNewConversation 
-                          ? `Nouvelle: ${newConversationData.title}`
-                          : conversations.find(c => c.id === selectedConversationId)?.title || 'Non sélectionnée'
+                          ? `${tCommon('new')}: ${newConversationData.title}`
+                          : conversations.find(c => c.id === selectedConversationId)?.title || tCommon('notSelected')
                         }
                       </p>
                     </div>
                     
                     <div className="p-4 bg-muted/30 rounded-lg">
-                      <h4 className="font-medium text-sm text-muted-foreground mb-2">Durée de validité</h4>
-                      <p className="font-medium">{DURATION_OPTIONS.find(d => d.value === expirationDays) ? t(DURATION_OPTIONS.find(d => d.value === expirationDays)!.labelKey) : `${expirationDays} jours`}</p>
+                      <h4 className="font-medium text-sm text-muted-foreground mb-2">{t('summary.validityDuration')}</h4>
+                      <p className="font-medium">{DURATION_OPTIONS.find(d => d.value === expirationDays) ? t(DURATION_OPTIONS.find(d => d.value === expirationDays)!.labelKey) : `${expirationDays} ${tCommon('days')}`}</p>
                     </div>
                     
                     <div className="p-4 bg-muted/30 rounded-lg">
-                      <h4 className="font-medium text-sm text-muted-foreground mb-2">Limite d'utilisations</h4>
-                      <p className="font-medium">{maxUses ? `${maxUses} utilisations` : 'Illimitées'}</p>
+                      <h4 className="font-medium text-sm text-muted-foreground mb-2">{t('summary.usageLimit')}</h4>
+                      <p className="font-medium">{maxUses ? `${maxUses} ${t('summary.usageCount', { count: maxUses })}` : t('summary.unlimited')}</p>
                     </div>
                     
                     <div className="p-4 bg-muted/30 rounded-lg">
-                      <h4 className="font-medium text-sm text-muted-foreground mb-2">Permissions</h4>
+                      <h4 className="font-medium text-sm text-muted-foreground mb-2">{t('summary.permissions')}</h4>
                       <div className="flex flex-wrap gap-1">
-                        {allowAnonymousMessages && <Badge variant="outline" className="text-xs">Messages</Badge>}
-                        {allowAnonymousImages && <Badge variant="outline" className="text-xs">Images</Badge>}
-                        {allowAnonymousFiles && <Badge variant="outline" className="text-xs">Fichiers</Badge>}
-                        {allowViewHistory && <Badge variant="outline" className="text-xs">Historique</Badge>}
+                        {allowAnonymousMessages && <Badge variant="outline" className="text-xs">{t('summary.messages')}</Badge>}
+                        {allowAnonymousImages && <Badge variant="outline" className="text-xs">{t('summary.images')}</Badge>}
+                        {allowAnonymousFiles && <Badge variant="outline" className="text-xs">{t('summary.files')}</Badge>}
+                        {allowViewHistory && <Badge variant="outline" className="text-xs">{t('summary.history')}</Badge>}
                       </div>
                     </div>
                   </div>
@@ -1504,10 +1503,10 @@ export function CreateLinkModalV2({
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center">
                     <Link2 className="h-5 w-5 mr-2" />
-                    Lien de partage complet
+                    {t('createLinkButton.generatedLink')}
                   </CardTitle>
                   <CardDescription>
-                    Partagez ce lien pour permettre aux autres de rejoindre la conversation
+                    {t('linkSummaryModal.shareLink')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -1525,7 +1524,7 @@ export function CreateLinkModalV2({
                         className="w-full sm:w-auto"
                       >
                         <Copy className="h-4 w-4 mr-2" />
-                        Copier
+                        {t('createLinkButton.copy')}
                       </Button>
                     </div>
                   </div>
@@ -1540,13 +1539,13 @@ export function CreateLinkModalV2({
                   className="flex-1"
                 >
                   <Copy className="mr-2 h-4 w-4" />
-                  Copier le lien
+                  {t('createLinkModal.actions.copyLink')}
                 </Button>
                 <Button
                   onClick={handleClose}
                   className="flex-1"
                 >
-                  Fermer
+                  {t('createLinkModal.actions.close')}
                 </Button>
               </div>
             </div>
