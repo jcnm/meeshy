@@ -26,6 +26,7 @@ function enrichTrackingLink(link: TrackingLink, request?: FastifyRequest): Track
 // Schémas de validation Zod
 const createTrackingLinkSchema = z.object({
   originalUrl: z.string().url('URL invalide'),
+  name: z.string().max(32, 'Le nom ne peut pas dépasser 32 caractères').optional(),
   conversationId: z.string().optional(),
   messageId: z.string().optional(),
   expiresAt: z.string().datetime().optional()

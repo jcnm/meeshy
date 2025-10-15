@@ -7,11 +7,13 @@ import { User } from '@/types';
 import { 
   Globe, 
   User as UserIcon, 
-  Palette
+  Palette,
+  Lock
 } from 'lucide-react';
 import { UserSettings } from './user-settings';
 import { LanguageSettings } from '@/components/translation/language-settings';
 import { ThemeSettings } from './theme-settings';
+import { PasswordSettings } from './password-settings';
 import { useI18n } from '@/hooks/useI18n';
 
 interface CompleteUserSettingsProps {
@@ -27,7 +29,7 @@ export function CompleteUserSettings({ user, onUserUpdate, children }: CompleteU
   // Gérer l'ancrage URL pour les tabs
   useEffect(() => {
     const hash = window.location.hash.replace('#', '');
-    if (hash && ['user', 'translation', 'theme'].includes(hash)) {
+    if (hash && ['user', 'translation', 'security', 'theme'].includes(hash)) {
       setActiveTab(hash);
     }
   }, []);
@@ -64,6 +66,12 @@ export function CompleteUserSettings({ user, onUserUpdate, children }: CompleteU
           </CardContent>
         </Card>
       )
+    },
+    {
+      value: "security",
+      label: t('tabs.security'),
+      icon: <Lock className="h-3 w-3 lg:h-4 lg:w-4" />,
+      content: <PasswordSettings />
     },
     {
       value: "theme",

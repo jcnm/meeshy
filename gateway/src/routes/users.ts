@@ -1,6 +1,7 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { logError } from '../utils/logger';
+import bcrypt from 'bcryptjs';
 
 // Schéma de validation pour la mise à jour utilisateur
 const updateUserSchema = z.object({
@@ -30,6 +31,16 @@ const updateAvatarSchema = z.object({
     },
     'Invalid avatar format. Must be a valid URL or base64 image'
   )
+});
+
+// Schéma de validation pour le changement de mot de passe
+const updatePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Le mot de passe actuel est requis'),
+  newPassword: z.string().min(6, 'Le nouveau mot de passe doit contenir au moins 6 caractères'),
+  confirmPassword: z.string().min(1, 'La confirmation du mot de passe est requise')
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: 'Les mots de passe ne correspondent pas',
+  path: ['confirmPassword']
 });
 
 export async function userRoutes(fastify: FastifyInstance) {
@@ -495,6 +506,80 @@ export async function userRoutes(fastify: FastifyInstance) {
       }
 
       logError(fastify.log, 'Update user avatar error:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Erreur interne du serveur'
+      });
+    }
+  });
+
+  // Route pour changer le mot de passe de l'utilisateur connecté
+  fastify.patch('/users/me/password', {
+    onRequest: [fastify.authenticate]
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      // Utiliser le nouveau système d'authentification unifié
+      const authContext = (request as any).authContext;
+      if (!authContext || !authContext.isAuthenticated || !authContext.registeredUser) {
+        return reply.status(401).send({
+          success: false,
+          message: 'Authentication required',
+          error: 'User must be authenticated to change password'
+        });
+      }
+      
+      const userId = authContext.userId;
+      
+      // Valider le body de la requête
+      const body = updatePasswordSchema.parse(request.body);
+      
+      // Récupérer l'utilisateur avec son mot de passe
+      const user = await fastify.prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, password: true }
+      });
+
+      if (!user) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Utilisateur non trouvé'
+        });
+      }
+
+      // Vérifier que l'ancien mot de passe est correct
+      const isPasswordValid = await bcrypt.compare(body.currentPassword, user.password);
+      
+      if (!isPasswordValid) {
+        return reply.status(400).send({
+          success: false,
+          error: 'Le mot de passe actuel est incorrect'
+        });
+      }
+
+      // Hasher le nouveau mot de passe
+      const hashedPassword = await bcrypt.hash(body.newPassword, 10);
+
+      // Mettre à jour le mot de passe
+      await fastify.prisma.user.update({
+        where: { id: userId },
+        data: { password: hashedPassword }
+      });
+
+      return reply.send({
+        success: true,
+        message: 'Mot de passe mis à jour avec succès'
+      });
+
+    } catch (error: unknown) {
+      if (error instanceof z.ZodError) {
+        return reply.status(400).send({
+          success: false,
+          error: error.errors[0]?.message || 'Données invalides',
+          details: error.errors
+        });
+      }
+
+      logError(fastify.log, 'Update password error:', error);
       return reply.status(500).send({
         success: false,
         error: 'Erreur interne du serveur'

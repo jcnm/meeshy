@@ -399,6 +399,7 @@ model AffiliateRelation {
 model TrackingLink {
   id              String   @id @default(auto()) @map("_id") @db.ObjectId
   token           String   @unique // Token de 6 caractères (ex: "a1b2c3")
+  name            String?  // Nom du lien (max 32 caractères)
   originalUrl     String   // URL originale complète
   shortUrl        String   // URL courte générée (meeshy.me/l/<token>)
   createdBy       String?  @db.ObjectId // Utilisateur qui a créé le lien (null si anonyme)

@@ -1,6 +1,7 @@
 /**
  * Générateur de noms de liens de partage automatiques
  * Génère des noms de liens selon le nom de la conversation, la langue, la durée et les limites
+ * Limite automatiquement à 32 caractères maximum
  */
 
 export interface LinkNameOptions {
@@ -12,8 +13,22 @@ export interface LinkNameOptions {
   isPublic?: boolean;
 }
 
+const MAX_LINK_NAME_LENGTH = 32;
+
+/**
+ * Tronque intelligemment une chaîne pour respecter la limite de caractères
+ */
+function truncateString(str: string, maxLength: number): string {
+  if (str.length <= maxLength) {
+    return str;
+  }
+  // Tronquer en gardant de l'espace pour "..."
+  return str.substring(0, maxLength - 3) + '...';
+}
+
 /**
  * Génère un nom de lien automatique selon les paramètres et la langue
+ * Limite automatiquement à 32 caractères maximum
  * Format attendu (français): "lien <limite> de la conversation <nom> valable <durée>"
  * Exemple: "lien ouvert à tous de la conversation 'Rencontre à Paris les Samedi' valable 7 jours"
  */
@@ -34,37 +49,91 @@ export function generateLinkName(options: LinkNameOptions): string {
   const durationText = getDurationText(durationDays, language);
 
   // Construire le nom selon la langue
+  let fullName: string;
+  
   switch (language) {
     case 'fr':
-      return `lien ${participantLimit} de la conversation '${conversationTitle}' valable ${durationText}`;
+      fullName = `lien ${participantLimit} de la conversation '${conversationTitle}' valable ${durationText}`;
+      break;
     
     case 'en':
-      return `${participantLimit} link for conversation '${conversationTitle}' valid for ${durationText}`;
+      fullName = `${participantLimit} link for conversation '${conversationTitle}' valid for ${durationText}`;
+      break;
     
     case 'es':
-      return `enlace ${participantLimit} de la conversación '${conversationTitle}' válido por ${durationText}`;
+      fullName = `enlace ${participantLimit} de la conversación '${conversationTitle}' válido por ${durationText}`;
+      break;
     
     case 'de':
-      return `${participantLimit} Link für Gespräch '${conversationTitle}' gültig für ${durationText}`;
+      fullName = `${participantLimit} Link für Gespräch '${conversationTitle}' gültig für ${durationText}`;
+      break;
     
     case 'it':
-      return `link ${participantLimit} per conversazione '${conversationTitle}' valido per ${durationText}`;
+      fullName = `link ${participantLimit} per conversazione '${conversationTitle}' valido per ${durationText}`;
+      break;
     
     case 'pt':
-      return `link ${participantLimit} para conversa '${conversationTitle}' válido por ${durationText}`;
+      fullName = `link ${participantLimit} para conversa '${conversationTitle}' válido por ${durationText}`;
+      break;
     
     case 'zh':
-      return `${conversationTitle} 的${participantLimit}链接，有效期 ${durationText}`;
+      fullName = `${conversationTitle} 的${participantLimit}链接，有效期 ${durationText}`;
+      break;
     
     case 'ja':
-      return `会話 '${conversationTitle}' の${participantLimit}リンク（有効期限: ${durationText}）`;
+      fullName = `会話 '${conversationTitle}' の${participantLimit}リンク（有効期限: ${durationText}）`;
+      break;
     
     case 'ar':
-      return `رابط ${participantLimit} للمحادثة '${conversationTitle}' صالح لمدة ${durationText}`;
+      fullName = `رابط ${participantLimit} للمحادثة '${conversationTitle}' صالح لمدة ${durationText}`;
+      break;
     
     default:
-      return `${participantLimit} link for conversation '${conversationTitle}' valid for ${durationText}`;
+      fullName = `${participantLimit} link for conversation '${conversationTitle}' valid for ${durationText}`;
+      break;
   }
+
+  // Si le nom dépasse 32 caractères, essayer de tronquer intelligemment
+  if (fullName.length > MAX_LINK_NAME_LENGTH) {
+    // Essayer de créer un nom plus court en priorisant le titre
+    const truncatedTitle = truncateString(conversationTitle, 20);
+    
+    switch (language) {
+      case 'fr':
+        fullName = `Lien '${truncatedTitle}'`;
+        break;
+      case 'en':
+        fullName = `Link '${truncatedTitle}'`;
+        break;
+      case 'es':
+        fullName = `Enlace '${truncatedTitle}'`;
+        break;
+      case 'de':
+        fullName = `Link '${truncatedTitle}'`;
+        break;
+      case 'it':
+        fullName = `Link '${truncatedTitle}'`;
+        break;
+      case 'pt':
+        fullName = `Link '${truncatedTitle}'`;
+        break;
+      case 'zh':
+        fullName = `${truncatedTitle} 链接`;
+        break;
+      case 'ja':
+        fullName = `${truncatedTitle} リンク`;
+        break;
+      case 'ar':
+        fullName = `رابط '${truncatedTitle}'`;
+        break;
+      default:
+        fullName = `Link '${truncatedTitle}'`;
+        break;
+    }
+  }
+
+  // S'assurer que le résultat final ne dépasse pas 32 caractères
+  return truncateString(fullName, MAX_LINK_NAME_LENGTH);
 }
 
 /**

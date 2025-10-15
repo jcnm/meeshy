@@ -10,6 +10,7 @@
     "tabs": {
       "profile": "Profile",
       "translation": "Translation",
+      "security": "Security",
       "theme": "Theme",
       "fonts": "Fonts",
       "stats": "Stats"
@@ -109,6 +110,33 @@
       "translateToRegionalLanguage": "Translate to regional language",
       "useCustomDestination": "Use custom destination",
       "customDestinationPlaceholder": "Select a language"
+    },
+    "security": {
+      "title": "Security Settings",
+      "description": "Manage your account security and password",
+      "password": {
+        "title": "Change Password",
+        "description": "Update your account password to keep your account secure",
+        "currentPassword": "Current password",
+        "currentPasswordPlaceholder": "Enter your current password",
+        "newPassword": "New password",
+        "newPasswordPlaceholder": "Enter your new password",
+        "confirmPassword": "Confirm new password",
+        "confirmPasswordPlaceholder": "Re-enter your new password",
+        "requirements": "Password must be at least 6 characters long",
+        "update": "Update Password",
+        "updating": "Updating...",
+        "cancel": "Cancel",
+        "updateSuccess": "Password updated successfully",
+        "errors": {
+          "currentRequired": "Current password is required",
+          "newRequired": "New password is required",
+          "tooShort": "Password must be at least 6 characters long",
+          "mismatch": "Passwords do not match",
+          "samePassword": "New password must be different from current password",
+          "updateFailed": "Failed to update password"
+        }
+      }
     },
     "theme": {
       "title": "Theme and interface",
