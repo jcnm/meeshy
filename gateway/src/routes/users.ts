@@ -318,6 +318,87 @@ export async function userRoutes(fastify: FastifyInstance) {
     }
   });
 
+  // Route pour obtenir les statistiques d'un utilisateur spécifique
+  fastify.get('/users/:userId/stats', {
+    onRequest: [fastify.authenticate]
+  }, async (request: FastifyRequest<{ Params: { userId: string } }>, reply: FastifyReply) => {
+    try {
+      const authContext = (request as any).authContext;
+      if (!authContext || !authContext.isAuthenticated) {
+        return reply.status(401).send({
+          success: false,
+          message: 'Authentication required'
+        });
+      }
+
+      const { userId } = request.params;
+      fastify.log.info(`[USER_STATS] Getting stats for user ${userId}`);
+
+      // Récupérer les statistiques de base de l'utilisateur
+      const [
+        totalConversations,
+        totalMessages,
+        totalFriends,
+        userInfo
+      ] = await Promise.all([
+        // Nombre de conversations où l'utilisateur est membre
+        fastify.prisma.conversationMember.count({
+          where: {
+            userId: userId,
+            isActive: true
+          }
+        }),
+        // Nombre de messages envoyés
+        fastify.prisma.message.count({
+          where: {
+            senderId: userId,
+            isDeleted: false
+          }
+        }),
+        // Nombre d'amis (connexions acceptées)
+        fastify.prisma.friendRequest.count({
+          where: {
+            OR: [
+              { senderId: userId, status: 'accepted' },
+              { receiverId: userId, status: 'accepted' }
+            ]
+          }
+        }),
+        // Informations de base de l'utilisateur
+        fastify.prisma.user.findUnique({
+          where: { id: userId },
+          select: {
+            createdAt: true,
+            isOnline: true,
+            lastSeen: true
+          }
+        })
+      ]);
+
+      const stats = {
+        totalConversations,
+        totalMessages,
+        totalFriends,
+        memberSince: userInfo?.createdAt,
+        isOnline: userInfo?.isOnline,
+        lastSeen: userInfo?.lastSeen
+      };
+
+      return reply.send({
+        success: true,
+        data: stats
+      });
+
+    } catch (error) {
+      fastify.log.error(`[USER_STATS] Error getting user stats: ${error instanceof Error ? error.message : String(error)}`);
+      return reply.status(500).send({
+        success: false,
+        message: 'Erreur lors de la récupération des statistiques',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // Route pour mettre à jour le profil utilisateur connecté
   fastify.patch('/users/me', {
     onRequest: [fastify.authenticate]
