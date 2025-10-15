@@ -211,20 +211,34 @@ class MeeshySocketIOService {
 
     // Événements de connexion
     this.socket.on('connect', () => {
-      this.isConnected = true;
+      // NE PAS mettre isConnected = true ici, attendre la confirmation d'authentification
       this.isConnecting = false;
       this.reconnectAttempts = 0;
-      console.log('Socket.IO connecté', {
+      console.log('Socket.IO connecté (en attente d\'authentification)', {
         socketId: this.socket?.id,
         transport: this.socket?.io.engine?.transport.name
       });
       
-      // L'authentification est maintenant gérée automatiquement via les headers
-      // Pas besoin d'envoyer d'événement 'authenticate'
-      console.log('Authentification gérée automatiquement via headers');
-      
-      // Log de connexion
-      console.log('Connexion établie');
+      // L'authentification est gérée automatiquement via les headers
+      // Le backend doit émettre SERVER_EVENTS.AUTHENTICATED après validation
+      console.log('⏳ En attente de confirmation d\'authentification...');
+    });
+
+    // CORRECTION: Écouter l'événement AUTHENTICATED du backend
+    this.socket.on(SERVER_EVENTS.AUTHENTICATED, (response: any) => {
+      if (response?.success) {
+        this.isConnected = true;
+        console.log('✅ Authentification confirmée par le serveur', {
+          userId: response.user?.id,
+          isAnonymous: response.user?.isAnonymous,
+          language: response.user?.language
+        });
+        toast.success('Connecté au serveur');
+      } else {
+        this.isConnected = false;
+        console.error('❌ Authentification refusée par le serveur:', response?.error);
+        toast.error('Authentification échouée: ' + (response?.error || 'Erreur inconnue'));
+      }
     });
 
     this.socket.on('disconnect', (reason) => {

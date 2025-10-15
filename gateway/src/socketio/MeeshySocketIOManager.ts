@@ -499,6 +499,12 @@ export class MeeshySocketIOManager {
               console.log(`👥 Utilisateur authentifié ${user.id} rejoint conversation globale "meeshy"`);
             } catch {}
 
+            // CORRECTION: Émettre l'événement AUTHENTICATED pour que le frontend sache que l'auth a réussi
+            socket.emit(SERVER_EVENTS.AUTHENTICATED, { 
+              success: true, 
+              user: { id: user.id, language: user.language, isAnonymous: false } 
+            });
+
             console.log(`✅ Utilisateur authentifié automatiquement: ${user.id}`);
             return; // Authentification réussie
           } else {
@@ -566,6 +572,12 @@ export class MeeshySocketIOManager {
               socket.join(conversationRoom);
               console.log(`👥 Participant anonyme ${user.id} rejoint conversation ${conversationRoom}`);
             } catch {}
+
+            // CORRECTION: Émettre l'événement AUTHENTICATED pour que le frontend sache que l'auth a réussi
+            socket.emit(SERVER_EVENTS.AUTHENTICATED, { 
+              success: true, 
+              user: { id: user.id, language: user.language, isAnonymous: true } 
+            });
 
             console.log(`✅ Participant anonyme authentifié automatiquement: ${user.id}`);
             return; // Authentification anonyme réussie
