@@ -84,21 +84,33 @@ export function CreateConversationModal({
   const [showCommunitySection, setShowCommunitySection] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-  // Validation function for identifier
+  // Validation function for identifier (allows hex suffix)
   const validateIdentifier = (identifier: string): boolean => {
-    const regex = /^[a-zA-Z0-9\-_@]*$/;
+    // Accepte lettres, chiffres, tirets, underscores et @ 
+    // Le suffixe hex sera composé de a-f0-9 après un tiret
+    const regex = /^[a-zA-Z0-9\-_@]+$/;
     return regex.test(identifier);
   };
 
-  // Generate identifier from title - now mandatory
+  // Generate identifier from title with hex suffix for uniqueness
   const generateIdentifierFromTitle = (title: string): string => {
     if (!title.trim()) return '';
-    return title
+    
+    const baseIdentifier = title
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, '') // Keep only letters, numbers, spaces and hyphens
       .replace(/\s+/g, '-') // Replace spaces with hyphens
       .replace(/-+/g, '-') // Replace multiple hyphens with single
       .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+    
+    if (!baseIdentifier) return '';
+    
+    // Generate 4-byte hex suffix for uniqueness (like conversation links)
+    const hexSuffix = Array.from(crypto.getRandomValues(new Uint8Array(4)))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+    
+    return `${baseIdentifier}-${hexSuffix}`;
   };
 
   // Generate user accent color based on user ID

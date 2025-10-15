@@ -150,25 +150,45 @@ function generateConversationIdentifier(title?: string): string {
 }
 
 /**
- * Vérifie l'unicité d'un identifiant de conversation et génère une variante si nécessaire
+ * Vérifie l'unicité d'un identifiant de conversation et génère une variante avec suffixe hexadécimal si nécessaire
  */
 async function ensureUniqueConversationIdentifier(prisma: any, baseIdentifier: string): Promise<string> {
-  let identifier = baseIdentifier;
-  let counter = 1;
+  // Si l'identifiant a déjà un suffixe hexadécimal (8 caractères après le dernier tiret)
+  const hexPattern = /-[a-f0-9]{8}$/;
+  const hasHexSuffix = hexPattern.test(baseIdentifier);
   
-  while (true) {
-    const existing = await prisma.conversation.findFirst({
-      where: { identifier }
-    });
-    
-    if (!existing) {
-      return identifier;
-    }
-    
-    // Ajouter un suffixe numérique pour assurer l'unicité
-    identifier = `${baseIdentifier}-${counter}`;
-    counter++;
+  // Si pas de suffixe hex, vérifier l'unicité de l'identifiant tel quel
+  let identifier = baseIdentifier;
+  
+  const existing = await prisma.conversation.findFirst({
+    where: { identifier }
+  });
+  
+  if (!existing) {
+    return identifier;
   }
+  
+  // Si l'identifiant existe, ajouter/régénérer un suffixe hexadécimal aléatoire de 4 bytes (8 caractères)
+  // Enlever l'ancien suffixe s'il existe
+  const baseWithoutSuffix = hasHexSuffix ? baseIdentifier.replace(hexPattern, '') : baseIdentifier;
+  
+  // Générer un nouveau suffixe hexadécimal
+  const crypto = require('crypto');
+  const hexSuffix = crypto.randomBytes(4).toString('hex'); // 4 bytes = 8 caractères hex
+  
+  identifier = `${baseWithoutSuffix}-${hexSuffix}`;
+  
+  // Vérifier que le nouvel identifiant avec hex suffix n'existe pas non plus
+  const existingWithHex = await prisma.conversation.findFirst({
+    where: { identifier }
+  });
+  
+  if (!existingWithHex) {
+    return identifier;
+  }
+  
+  // Si par une chance extrême le hex existe aussi, régénérer récursivement
+  return ensureUniqueConversationIdentifier(prisma, baseWithoutSuffix);
 }
 
 /**
