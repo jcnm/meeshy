@@ -570,34 +570,39 @@ export default function ContactsPage() {
                               <Card key={contact.id} className="relative border-2 hover:border-primary/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950">
                                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
                                 
-                                <CardContent className="relative z-10 p-6">
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-center space-x-4">
-                                      <Avatar className="h-16 w-16 border-2 border-white shadow-lg">
+                                <CardContent className="relative z-10 p-4 sm:p-6">
+                                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                    <div className="flex items-start sm:items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
+                                      <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-white shadow-lg flex-shrink-0">
                                         <AvatarImage src={contact.avatar} alt={getUserDisplayName(contact)} />
-                                        <AvatarFallback className="text-lg font-bold">
+                                        <AvatarFallback className="text-sm sm:text-lg font-bold">
                                           {getUserDisplayName(contact).slice(0, 2).toUpperCase()}
                                         </AvatarFallback>
                                       </Avatar>
                                       
-                                      <div className="flex-1">
-                                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                                      <div className="flex-1 min-w-0">
+                                        <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white mb-1 break-words">
                                           {getUserDisplayName(contact)}
                                         </h3>
-                                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">@{contact.username}</p>
+                                        <button
+                                          onClick={() => router.push(`/profile/${contact.id}`)}
+                                          className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline mb-2 sm:mb-3 break-all transition-colors cursor-pointer text-left"
+                                        >
+                                          @{contact.username}
+                                        </button>
                                         
-                                        <div className="flex items-center space-x-4">
-                                          <div className="flex items-center space-x-2">
-                                            <div className={`w-3 h-3 rounded-full ${contact.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
-                                            <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                                          <div className="flex items-center space-x-2 flex-shrink-0">
+                                            <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${contact.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                            <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
                                               {contact.isOnline ? t('status.online') : t('status.offline')}
                                             </span>
                                           </div>
                                           
                                           {contact.email && (
-                                            <div className="flex items-center space-x-2">
-                                              <Mail className="h-4 w-4 text-gray-400" />
-                                              <span className="text-sm text-gray-600 dark:text-gray-400 truncate max-w-48">
+                                            <div className="flex items-center space-x-2 min-w-0">
+                                              <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+                                              <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
                                                 {contact.email}
                                               </span>
                                             </div>
@@ -606,32 +611,23 @@ export default function ContactsPage() {
                                       </div>
                                     </div>
                                     
-                                    <div className="flex items-center space-x-3">
-                                      <Button
-                                        size="sm"
-                                        onClick={() => startConversation(contact.id)}
-                                        className="flex items-center space-x-2 h-10 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg transition-all"
-                                      >
-                                        <MessageSquare className="h-4 w-4" />
-                                        <span>{t('actions.message')}</span>
-                                      </Button>
-                                      
+                                    <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
                                       {searchQuery && (
                                         <Button
                                           size="sm"
                                           variant="outline"
                                           onClick={() => sendFriendRequest(contact.id)}
-                                          className="flex items-center space-x-2 h-10 px-4 border-2 shadow-md hover:shadow-lg transition-all"
+                                          className="flex-1 sm:flex-none items-center gap-2 h-9 sm:h-10 px-3 sm:px-4 border-2 shadow-md hover:shadow-lg transition-all"
                                         >
-                                          <Link className="h-4 w-4" />
-                                          <span>{t('actions.connection')}</span>
+                                          <Link className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                          <span className="text-xs sm:text-sm">{t('actions.connection')}</span>
                                         </Button>
                                       )}
                                       
                                       <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                          <Button variant="ghost" size="sm" className="h-10 w-10 p-0 hover:bg-gray-200 dark:hover:bg-gray-700">
-                                            <MoreVertical className="h-5 w-5" />
+                                          <Button variant="ghost" size="sm" className="h-9 w-9 sm:h-10 sm:w-10 p-0 hover:bg-gray-200 dark:hover:bg-gray-700 flex-shrink-0">
+                                            <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
                                           </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end" className="w-56 z-[100]">
@@ -641,10 +637,6 @@ export default function ContactsPage() {
                                           >
                                             <UserCheck className="h-4 w-4 mr-3" />
                                             <span className="font-medium">{t('actions.viewProfile')}</span>
-                                          </DropdownMenuItem>
-                                          <DropdownMenuItem onClick={() => startConversation(contact.id)} className="py-3">
-                                            <MessageSquare className="h-4 w-4 mr-3" />
-                                            <span className="font-medium">{t('actions.sendMessage')}</span>
                                           </DropdownMenuItem>
                                           {contact.phoneNumber && (
                                             <DropdownMenuItem className="py-3">
@@ -702,22 +694,27 @@ export default function ContactsPage() {
                                 <Card key={request.id} className="relative border-2 hover:border-orange-500/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950">
                                   <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-yellow-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
                                   
-                                  <CardContent className="relative z-10 p-6">
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex items-center space-x-4">
-                                        <Avatar className="h-16 w-16 border-2 border-white shadow-lg">
+                                  <CardContent className="relative z-10 p-4 sm:p-6">
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                      <div className="flex items-start sm:items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
+                                        <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-white shadow-lg flex-shrink-0">
                                           <AvatarImage src={otherUser?.avatar} alt={getUserDisplayName(otherUser!)} />
-                                          <AvatarFallback className="text-lg font-bold">
+                                          <AvatarFallback className="text-sm sm:text-lg font-bold">
                                             {getUserDisplayName(otherUser!).slice(0, 2).toUpperCase()}
                                           </AvatarFallback>
                                         </Avatar>
                                         
-                                        <div className="flex-1">
-                                          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                                        <div className="flex-1 min-w-0">
+                                          <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white mb-1 break-words">
                                             {getUserDisplayName(otherUser!)}
                                           </h3>
-                                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">@{otherUser?.username}</p>
-                                          <p className="text-sm text-gray-500 font-medium">
+                                          <button
+                                            onClick={() => router.push(`/profile/${otherUser?.id}`)}
+                                            className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline mb-2 break-all transition-colors cursor-pointer text-left"
+                                          >
+                                            @{otherUser?.username}
+                                          </button>
+                                          <p className="text-xs sm:text-sm text-gray-500 font-medium break-words">
                                             {isCurrentUserSender 
                                               ? t('messages.requestSent', { date: new Date(request.createdAt).toLocaleDateString('fr-FR') })
                                               : t('messages.requestReceived', { date: new Date(request.createdAt).toLocaleDateString('fr-FR') })
@@ -726,10 +723,10 @@ export default function ContactsPage() {
                                         </div>
                                       </div>
                                       
-                                      <div className="flex items-center space-x-3">
+                                      <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto flex-wrap sm:flex-nowrap">
                                         {isCurrentUserSender ? (
-                                          <Badge variant="outline" className="text-orange-600 border-orange-200 px-3 py-1.5 font-semibold">
-                                            <Clock className="h-4 w-4 mr-2" />
+                                          <Badge variant="outline" className="text-orange-600 border-orange-200 px-3 py-1.5 font-semibold w-full sm:w-auto justify-center">
+                                            <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-2" />
                                             {t('status.pending')}
                                           </Badge>
                                         ) : (
@@ -737,19 +734,19 @@ export default function ContactsPage() {
                                             <Button
                                               size="sm"
                                               onClick={() => handleFriendRequest(request.id, 'accept')}
-                                              className="flex items-center space-x-2 h-10 px-4 bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg transition-all"
+                                              className="flex-1 sm:flex-none items-center gap-2 h-9 sm:h-10 px-3 sm:px-4 bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg transition-all"
                                             >
-                                              <Check className="h-4 w-4" />
-                                              <span>{t('actions.accept')}</span>
+                                              <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                              <span className="text-xs sm:text-sm">{t('actions.accept')}</span>
                                             </Button>
                                             <Button
                                               size="sm"
                                               variant="outline"
                                               onClick={() => handleFriendRequest(request.id, 'reject')}
-                                              className="flex items-center space-x-2 h-10 px-4 border-2 shadow-md hover:shadow-lg transition-all"
+                                              className="flex-1 sm:flex-none items-center gap-2 h-9 sm:h-10 px-3 sm:px-4 border-2 shadow-md hover:shadow-lg transition-all"
                                             >
-                                              <X className="h-4 w-4" />
-                                              <span>{t('actions.reject')}</span>
+                                              <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                              <span className="text-xs sm:text-sm">{t('actions.reject')}</span>
                                             </Button>
                                           </>
                                         )}
@@ -796,39 +793,37 @@ export default function ContactsPage() {
                                 <Card key={request.id} className="relative border-2 hover:border-purple-500/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950">
                                   <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
                                   
-                                  <CardContent className="relative z-10 p-6">
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex items-center space-x-4">
-                                        <Avatar className="h-16 w-16 border-2 border-white shadow-lg">
+                                  <CardContent className="relative z-10 p-4 sm:p-6">
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                      <div className="flex items-start sm:items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
+                                        <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-white shadow-lg flex-shrink-0">
                                           <AvatarImage src={otherUser?.avatar} alt={getUserDisplayName(otherUser!)} />
-                                          <AvatarFallback className="text-lg font-bold">
+                                          <AvatarFallback className="text-sm sm:text-lg font-bold">
                                             {getUserDisplayName(otherUser!).slice(0, 2).toUpperCase()}
                                           </AvatarFallback>
                                         </Avatar>
                                         
-                                        <div className="flex-1">
-                                          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                                        <div className="flex-1 min-w-0">
+                                          <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white mb-1 break-words">
                                             {getUserDisplayName(otherUser!)}
                                           </h3>
-                                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">@{otherUser?.username}</p>
+                                          <button
+                                            onClick={() => router.push(`/profile/${otherUserId}`)}
+                                            className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline mb-2 sm:mb-3 break-all transition-colors cursor-pointer text-left"
+                                          >
+                                            @{otherUser?.username}
+                                          </button>
                                           <div className="flex items-center space-x-2">
-                                            <div className={`w-3 h-3 rounded-full ${otherUser?.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
-                                            <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                                            <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${otherUser?.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                            <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
                                               {otherUser?.isOnline ? t('status.online') : t('status.offline')}
                                             </span>
                                           </div>
                                         </div>
                                       </div>
                                       
-                                      <div className="flex items-center space-x-3">
-                                        <Button
-                                          size="sm"
-                                          onClick={() => startConversation(otherUserId)}
-                                          className="flex items-center space-x-2 h-10 px-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-md hover:shadow-lg transition-all"
-                                        >
-                                          <MessageSquare className="h-4 w-4" />
-                                          <span>{t('actions.message')}</span>
-                                        </Button>
+                                      <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                                        {/* Actions disponibles via le menu dropdown */}
                                       </div>
                                     </div>
                                   </CardContent>
@@ -952,35 +947,40 @@ export default function ContactsPage() {
                                 
                                 <CardContent className="relative z-10 p-6">
                                   <div className="flex items-center justify-between">
-                                    <div className="flex items-center space-x-4">
-                                      <Avatar className="h-16 w-16 border-2 border-white shadow-lg">
+                                    <div className="flex items-start sm:items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
+                                      <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-white shadow-lg flex-shrink-0">
                                         <AvatarImage src={relation.referredUser.avatar} alt={getUserDisplayName(relation.referredUser)} />
-                                        <AvatarFallback className="text-lg font-bold">
+                                        <AvatarFallback className="text-sm sm:text-lg font-bold">
                                           {getUserDisplayName(relation.referredUser).slice(0, 2).toUpperCase()}
                                         </AvatarFallback>
                                       </Avatar>
                                       
-                                      <div className="flex-1">
-                                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                                      <div className="flex-1 min-w-0">
+                                        <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white mb-1 break-words">
                                           {getUserDisplayName(relation.referredUser)}
                                         </h3>
-                                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">@{relation.referredUser.username}</p>
+                                        <button
+                                          onClick={() => router.push(`/profile/${relation.referredUser.id}`)}
+                                          className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline mb-2 sm:mb-3 break-all transition-colors cursor-pointer text-left"
+                                        >
+                                          @{relation.referredUser.username}
+                                        </button>
                                         
                                         {/* Informations détaillées compactes */}
                                         <div className="space-y-2">
                                           {/* Status et email */}
-                                          <div className="flex items-center space-x-4">
+                                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                                             <div className="flex items-center space-x-2">
-                                              <div className={`w-3 h-3 rounded-full ${relation.referredUser.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
-                                              <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                                              <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${relation.referredUser.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                              <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
                                                 {relation.referredUser.isOnline ? t('status.online') : t('status.offline')}
                                               </span>
                                             </div>
                                             
                                             {relation.referredUser.email && (
-                                              <div className="flex items-center space-x-2">
-                                                <Mail className="h-4 w-4 text-gray-400" />
-                                                <span className="text-sm text-gray-600 dark:text-gray-400 truncate max-w-48">
+                                              <div className="flex items-center space-x-2 min-w-0">
+                                                <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+                                                <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
                                                   {relation.referredUser.email}
                                                 </span>
                                               </div>
@@ -988,27 +988,16 @@ export default function ContactsPage() {
                                           </div>
                                           
                                           {/* Lien d'invitation utilisé */}
-                                          <div className="flex items-center space-x-2 p-3 bg-cyan-50 dark:bg-cyan-900/20 rounded-lg">
-                                            <Link className="h-4 w-4 text-cyan-600 flex-shrink-0" />
-                                            <div className="flex-1">
-                                              <span className="text-xs text-cyan-600 uppercase tracking-wide block font-medium">
-                                                Lien utilisé: {relation.affiliateToken.name}
+                                          <div className="flex items-center space-x-2 p-2 sm:p-3 bg-cyan-50 dark:bg-cyan-900/20 rounded-lg">
+                                            <Link className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-cyan-600 flex-shrink-0" />
+                                            <div className="flex-1 min-w-0">
+                                              <span className="text-xs text-cyan-600 uppercase tracking-wide block font-medium break-words">
+                                                {t('messages.linkUsed')}: {relation.affiliateToken.name}
                                               </span>
                                             </div>
                                           </div>
                                         </div>
                                       </div>
-                                    </div>
-                                    
-                                    <div className="flex items-center space-x-3">
-                                      <Button
-                                        size="sm"
-                                        onClick={() => startConversation(relation.referredUser.id)}
-                                        className="flex items-center space-x-2 h-10 px-4 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 shadow-md hover:shadow-lg transition-all"
-                                      >
-                                        <MessageSquare className="h-4 w-4" />
-                                        <span>{t('actions.message')}</span>
-                                      </Button>
                                     </div>
                                   </div>
                                 </CardContent>
