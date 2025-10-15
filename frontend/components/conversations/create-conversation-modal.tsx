@@ -17,12 +17,18 @@ import { Badge } from '@/components/ui/badge';
 import { User } from '@/types';
 import { apiService } from '@/services/api.service';
 import { toast } from 'sonner';
-import { Check, X, Users, User as UserIcon, Building2, Hash, Search, Plus, Sparkles, UserPlus, Globe, Lock } from 'lucide-react';
+import { Check, X, Users, User as UserIcon, Building2, Hash, Search, Plus, Sparkles, UserPlus, Globe, Lock, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { IdentifierSuggestions } from './identifier-suggestions';
 import { ConversationPreview } from './conversation-preview';
 import { SmartSearch } from './smart-search';
 import { useI18n } from '@/hooks/useI18n';
+import { Switch } from '@/components/ui/switch';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 
 interface Community {
   id: string;
@@ -73,6 +79,10 @@ export function CreateConversationModal({
   // New modern UI states
   const [conversationType, setConversationType] = useState<'direct' | 'group' | 'public'>('direct');
   const [step, setStep] = useState<'members' | 'details'>('members');
+  
+  // New state for community toggle and preview accordion
+  const [showCommunitySection, setShowCommunitySection] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   // Validation function for identifier
   const validateIdentifier = (identifier: string): boolean => {
@@ -266,6 +276,8 @@ export function CreateConversationModal({
       if (isSelected) {
         return prev.filter(u => u.id !== user.id);
       } else {
+        // Clear search query after selecting a user
+        setSearchQuery('');
         return [...prev, user];
       }
     });
@@ -278,15 +290,17 @@ export function CreateConversationModal({
       return;
     }
 
-    // Validate identifier - now mandatory
-    if (!customIdentifier.trim()) {
-      toast.error(t('createConversationModal.errors.identifierRequired'));
-      return;
-    }
+    // Validate identifier - mandatory for group and public conversations only
+    if (conversationType !== 'direct') {
+      if (!customIdentifier.trim()) {
+        toast.error(t('createConversationModal.errors.identifierRequired'));
+        return;
+      }
 
-    if (!validateIdentifier(customIdentifier)) {
-      toast.error(t('createConversationModal.errors.invalidIdentifier'));
-      return;
+      if (!validateIdentifier(customIdentifier)) {
+        toast.error(t('createConversationModal.errors.invalidIdentifier'));
+        return;
+      }
     }
 
     setIsCreating(true);
@@ -317,13 +331,17 @@ export function CreateConversationModal({
       // Map conversation type for backend compatibility
       const backendType = conversationType === 'public' ? 'broadcast' : conversationType;
 
-      // Prepare request body - identifier is now mandatory
+      // Prepare request body - identifier is mandatory for group and public only
       const requestBody: any = {
         title: conversationTitle,
         type: backendType,
-        participantIds: selectedUsers.map(u => u.id),
-        identifier: customIdentifier // Always include identifier
+        participantIds: selectedUsers.map(u => u.id)
       };
+
+      // Add identifier only for group and public conversations
+      if (conversationType !== 'direct' && customIdentifier.trim()) {
+        requestBody.identifier = customIdentifier;
+      }
 
       // Add community if selected
       if (selectedCommunity) {
@@ -363,145 +381,47 @@ export function CreateConversationModal({
     setCustomIdentifier('');
     setConversationType('direct');
     setStep('members');
+    setShowCommunitySection(false);
+    setIsPreviewOpen(false);
     onClose();
   };
 
   // Auto-detect conversation type based on selected users
   useEffect(() => {
     if (selectedUsers.length === 1) {
-      setConversationType('direct');
+      // Only set to direct if it's not already group or public
+      if (conversationType !== 'group' && conversationType !== 'public') {
+        setConversationType('direct');
+      }
     } else if (selectedUsers.length > 1) {
-      setConversationType('group');
+      // If more than 1 user, switch from direct to group automatically
+      if (conversationType === 'direct') {
+        setConversationType('group');
+      }
     }
-  }, [selectedUsers]);
+  }, [selectedUsers.length, conversationType]); // Include conversationType to satisfy React Hooks rules
 
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl w-[95vw] max-h-[95vh] overflow-y-auto p-4 sm:p-6 sm:max-w-3xl sm:w-[90vw] sm:max-h-[90vh] md:max-h-[85vh]">
-        <DialogHeader>
+      <DialogContent className="max-w-3xl w-[95vw] max-h-[95vh] p-0 sm:max-w-3xl sm:w-[90vw] sm:max-h-[90vh] md:max-h-[85vh] flex flex-col">
+        <DialogHeader className="px-4 pt-4 sm:px-6 sm:pt-6 pb-4 border-b">
           <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
             <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-{t('createConversationModal.title')}
+            {t('createConversationModal.title')}
           </DialogTitle>
           <DialogDescription>
-{t('createConversationModal.description')}
+            {t('createConversationModal.description')}
           </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-6">
-          {/* Step Indicator */}
-          <div className="flex items-center gap-4">
-            <div className={cn(
-              "flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium",
-              step === 'members' ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-            )}>
+        {/* Scrollable content area */}
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4">
+          <div className="space-y-6">
+          {/* User Selection with Input Field - Always visible */}
+          <div>
+            <Label className="text-sm font-medium flex items-center gap-2 mb-2">
               <UserPlus className="h-4 w-4" />
-{t('createConversationModal.steps.members')}
-            </div>
-            <div className="h-px bg-border flex-1" />
-            <div className={cn(
-              "flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium",
-              step === 'details' ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-            )}>
-              <Hash className="h-4 w-4" />
-{t('createConversationModal.steps.details')}
-            </div>
-          </div>
-
-          {/* Community Selection with Input Field */}
-          <div>
-            <Label className="text-sm font-medium flex items-center gap-2 mb-2">
-              <Building2 className="h-4 w-4" />
-{t('createConversationModal.community.title')}
-            </Label>
-            <Input
-placeholder={t('createConversationModal.community.searchPlaceholder')}
-              value={communitySearchQuery}
-              onChange={(e) => setCommunitySearchQuery(e.target.value)}
-              className="w-full"
-            />
-            
-            {/* Community Search Results */}
-            {communitySearchQuery.length >= 2 && (
-              <div className="mt-2 border rounded-lg bg-background shadow-sm max-h-48 overflow-y-auto">
-                {isLoadingCommunities ? (
-                  <div className="p-3 text-center text-sm text-muted-foreground">
-{t('createConversationModal.community.loading')}
-                  </div>
-                ) : filteredCommunities.length > 0 ? (
-                  <div className="p-1">
-                    {filteredCommunities.map((community) => (
-                      <div
-                        key={community.id}
-                        className={cn(
-                          "flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-muted/50",
-                          selectedCommunity === community.id && "bg-primary/10 border border-primary/20"
-                        )}
-                        onClick={() => {
-                          setSelectedCommunity(community.id === selectedCommunity ? '' : community.id);
-                        }}
-                      >
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback>
-                            <Building2 className="h-4 w-4" />
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-sm">{community.name}</span>
-                            {community.isPrivate ? (
-                              <Lock className="h-3 w-3 text-muted-foreground" />
-                            ) : (
-                              <Globe className="h-3 w-3 text-muted-foreground" />
-                            )}
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            {t('createConversationModal.community.membersCount', { count: community._count.members, conversations: community._count.Conversation })}
-                          </p>
-                        </div>
-                        <Check
-                          className={cn(
-                            "h-4 w-4",
-                            selectedCommunity === community.id ? "opacity-100 text-primary" : "opacity-0"
-                          )}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="p-3 text-center text-sm text-muted-foreground">
-                    {t('createConversationModal.community.noCommunitiesFound')}
-                  </div>
-                )}
-              </div>
-            )}
-            
-            {/* Selected Community Display */}
-            {selectedCommunity && (
-              <div className="mt-2 p-2 bg-primary/10 border border-primary/20 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium">
-                    {communities.find(c => c.id === selectedCommunity)?.name}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0 ml-auto"
-                    onClick={() => setSelectedCommunity('')}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* User Selection with Input Field */}
-          <div>
-            <Label className="text-sm font-medium flex items-center gap-2 mb-2">
-              <Users className="h-4 w-4" />
               {t('createConversationModal.members.title')}
             </Label>
             <Input
@@ -608,23 +528,16 @@ placeholder={t('createConversationModal.community.searchPlaceholder')}
             </div>
           )}
 
-          {/* Conversation Details - Always show when users are selected */}
+          {/* Conversation Type Selection - Show when at least 1 user is selected */}
           {selectedUsers.length > 0 && (
-            <div className="space-y-4 p-4 border rounded-lg bg-gradient-to-r from-primary/5 to-secondary/5">
-              <div className="flex items-center gap-2 mb-4">
-                <Hash className="h-4 w-4 text-primary" />
-                <span className="font-medium">{t('createConversationModal.conversationDetails.title')}</span>
-                <Badge variant="outline" className="ml-auto">
-                  {conversationType === 'direct' ? t('createConversationModal.conversationDetails.typeDirect') : 
-                   conversationType === 'group' ? t('createConversationModal.conversationDetails.typeGroup') : 
-                   'Publique'}
-                </Badge>
-              </div>
-
-              {/* Type de conversation */}
-              <div className="mb-4">
-                <Label className="text-sm font-medium mb-2 block">Type de conversation</Label>
-                <div className="grid grid-cols-3 gap-2">
+            <div>
+              <Label className="text-sm font-medium mb-2 block">Type de conversation</Label>
+              <div className={cn(
+                "grid gap-2",
+                selectedUsers.length === 1 ? "grid-cols-3" : "grid-cols-2"
+              )}>
+                {/* Direct - Only show when exactly 1 user is selected */}
+                {selectedUsers.length === 1 && (
                   <Button
                     type="button"
                     variant={conversationType === 'direct' ? 'default' : 'outline'}
@@ -633,31 +546,43 @@ placeholder={t('createConversationModal.community.searchPlaceholder')}
                     className="flex items-center gap-2"
                   >
                     <UserIcon className="h-4 w-4" />
-                    Directe
+                    Direct
                   </Button>
-                  <Button
-                    type="button"
-                    variant={conversationType === 'group' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setConversationType('group')}
-                    className="flex items-center gap-2"
-                  >
-                    <Users className="h-4 w-4" />
-                    Groupe
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={conversationType === 'public' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setConversationType('public')}
-                    className="flex items-center gap-2"
-                  >
-                    <Globe className="h-4 w-4" />
-                    Publique
-                  </Button>
-                </div>
+                )}
+                {/* Group - Always show when users are selected */}
+                <Button
+                  type="button"
+                  variant={conversationType === 'group' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setConversationType('group')}
+                  className="flex items-center gap-2"
+                >
+                  <Users className="h-4 w-4" />
+                  Groupe
+                </Button>
+                {/* Public - Always show when users are selected */}
+                <Button
+                  type="button"
+                  variant={conversationType === 'public' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setConversationType('public')}
+                  className="flex items-center gap-2"
+                >
+                  <Globe className="h-4 w-4" />
+                  Publique
+                </Button>
               </div>
-              
+            </div>
+          )}
+
+          {/* Title and Identifier - Only show for Group or Public */}
+          {selectedUsers.length > 0 && (conversationType === 'group' || conversationType === 'public') && (
+            <div className="space-y-4 p-4 border rounded-lg bg-gradient-to-r from-primary/5 to-secondary/5">
+              <div className="flex items-center gap-2 mb-2">
+                <Hash className="h-4 w-4 text-primary" />
+                <span className="font-medium">{t('createConversationModal.conversationDetails.title')}</span>
+              </div>
+
               <div>
                 <Label htmlFor="title" className="text-sm font-medium">
                   {t('createConversationModal.conversationDetails.conversationTitle')}
@@ -670,10 +595,7 @@ placeholder={t('createConversationModal.community.searchPlaceholder')}
                   className="mt-1"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  {conversationType === 'direct' 
-                    ? t('createConversationModal.conversationDetails.titleInfoDirect')
-                    : t('createConversationModal.conversationDetails.titleInfoGroup')
-                  }
+                  {t('createConversationModal.conversationDetails.titleInfoGroup')}
                 </p>
               </div>
               
@@ -715,33 +637,168 @@ placeholder={t('createConversationModal.community.searchPlaceholder')}
             </div>
           )}
 
-          {/* Aperçu de la conversation */}
-          {(selectedUsers.length > 0 || conversationType === 'public') && customIdentifier && (
-            <ConversationPreview
-              title={title}
-              identifier={customIdentifier}
-              selectedUsers={selectedUsers}
-              selectedCommunity={selectedCommunity ? communities.find(c => c.id === selectedCommunity) : undefined}
-              conversationType={conversationType}
-              getUserAccentColor={getUserAccentColor}
-            />
+          {/* Community Toggle - Only show when at least 1 user is selected */}
+          {selectedUsers.length > 0 && (
+            <div className="flex items-center justify-between p-3 border rounded-lg bg-muted/50">
+              <div className="flex items-center gap-2">
+                <Building2 className="h-4 w-4" />
+                <Label htmlFor="community-toggle" className="text-sm font-medium cursor-pointer">
+                  Ajouter à une communauté
+                </Label>
+              </div>
+              <Switch
+                id="community-toggle"
+                checked={showCommunitySection}
+                onCheckedChange={setShowCommunitySection}
+              />
+            </div>
           )}
-          
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 pt-4">
+
+          {/* Community Selection - Only show when toggle is ON */}
+          {showCommunitySection && selectedUsers.length > 0 && (
+            <div className="space-y-4 p-4 border rounded-lg bg-gradient-to-r from-primary/5 to-secondary/5">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                <Building2 className="h-4 w-4" />
+                {t('createConversationModal.community.title')}
+              </Label>
+              <Input
+                placeholder={t('createConversationModal.community.searchPlaceholder')}
+                value={communitySearchQuery}
+                onChange={(e) => setCommunitySearchQuery(e.target.value)}
+                className="w-full"
+              />
+              
+              {/* Community Search Results */}
+              {communitySearchQuery.length >= 2 && (
+                <div className="mt-2 border rounded-lg bg-background shadow-sm max-h-48 overflow-y-auto">
+                  {isLoadingCommunities ? (
+                    <div className="p-3 text-center text-sm text-muted-foreground">
+                      {t('createConversationModal.community.loading')}
+                    </div>
+                  ) : filteredCommunities.length > 0 ? (
+                    <div className="p-1">
+                      {filteredCommunities.map((community) => (
+                        <div
+                          key={community.id}
+                          className={cn(
+                            "flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-muted/50",
+                            selectedCommunity === community.id && "bg-primary/10 border border-primary/20"
+                          )}
+                          onClick={() => {
+                            setSelectedCommunity(community.id === selectedCommunity ? '' : community.id);
+                          }}
+                        >
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback>
+                              <Building2 className="h-4 w-4" />
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-sm">{community.name}</span>
+                              {community.isPrivate ? (
+                                <Lock className="h-3 w-3 text-muted-foreground" />
+                              ) : (
+                                <Globe className="h-3 w-3 text-muted-foreground" />
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {t('createConversationModal.community.membersCount', { count: community._count.members, conversations: community._count.Conversation })}
+                            </p>
+                          </div>
+                          <Check
+                            className={cn(
+                              "h-4 w-4",
+                              selectedCommunity === community.id ? "opacity-100 text-primary" : "opacity-0"
+                            )}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-3 text-center text-sm text-muted-foreground">
+                      {t('createConversationModal.community.noCommunitiesFound')}
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Selected Community Display */}
+              {selectedCommunity && (
+                <div className="mt-2 p-2 bg-primary/10 border border-primary/20 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <Building2 className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium">
+                      {communities.find(c => c.id === selectedCommunity)?.name}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 ml-auto"
+                      onClick={() => setSelectedCommunity('')}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Preview - Collapsible/Accordion - Hidden by default */}
+          {selectedUsers.length > 0 && (conversationType === 'direct' || customIdentifier) && (
+            <Collapsible
+              open={isPreviewOpen}
+              onOpenChange={setIsPreviewOpen}
+              className="border rounded-lg"
+            >
+              <CollapsibleTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="w-full flex items-center justify-between p-4 hover:bg-muted/50"
+                >
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    <span className="font-medium">Récapitulatif de la conversation</span>
+                  </div>
+                  {isPreviewOpen ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="p-4 pt-0">
+                <ConversationPreview
+                  title={title}
+                  identifier={customIdentifier}
+                  selectedUsers={selectedUsers}
+                  selectedCommunity={selectedCommunity ? communities.find(c => c.id === selectedCommunity) : undefined}
+                  conversationType={conversationType}
+                  getUserAccentColor={getUserAccentColor}
+                />
+              </CollapsibleContent>
+            </Collapsible>
+          )}
+          </div>
+        </div>
+        
+        {/* Fixed Actions Footer */}
+        <div className="border-t bg-background px-4 sm:px-6 py-4">
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
             <Button
               onClick={createConversation}
               disabled={
                 selectedUsers.length === 0 || 
                 isCreating || 
-                !customIdentifier.trim() ||
-                !validateIdentifier(customIdentifier)
+                (conversationType !== 'direct' && !customIdentifier.trim()) ||
+                (conversationType !== 'direct' && !validateIdentifier(customIdentifier))
               }
               className="flex-1 w-full sm:w-auto text-xs sm:text-sm h-9 sm:h-11"
             >
               <Sparkles className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
               {isCreating ? t('createConversationModal.actions.creating') : 
-                selectedUsers.length === 1 ? t('createConversationModal.actions.createDirectConversation') : 
+                conversationType === 'direct' ? t('createConversationModal.actions.createDirectConversation') : 
                 t('createConversationModal.actions.createGroupConversation')}
             </Button>
             <Button
