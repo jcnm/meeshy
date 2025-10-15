@@ -5,6 +5,7 @@ import contacts from './contacts.json';
 import links from './links.json';
 import modals from './modals.json';
 import bubbleStream from './bubbleStream.json';
+import websocket from './websocket.json';
 
 export default {
   common,
@@ -14,6 +15,7 @@ export default {
   links,
   modals,
   bubbleStream,
+  websocket,
 };
 
 export {
@@ -24,5 +26,6 @@ export {
   links,
   modals,
   bubbleStream,
+  websocket,
 };
 

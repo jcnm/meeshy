@@ -45,11 +45,7 @@ class MeeshySocketIOService {
    */
   private t(key: string): string {
     try {
-      // Utiliser la clé correcte: meeshy-i18n-language (définie dans i18n-utils.ts)
-      const userLang = typeof window !== 'undefined' 
-        ? (localStorage.getItem('meeshy-i18n-language') || 'en')
-        : 'en';
-      
+      const userLang = typeof window !== 'undefined' ? localStorage.getItem('user_language') || 'en' : 'en';
       const translations = userLang === 'fr' ? frTranslations : enTranslations;
       
       const keys = key.split('.');
@@ -57,15 +53,8 @@ class MeeshySocketIOService {
       for (const k of keys) {
         value = value?.[k];
       }
-      
-      // Debug pour comprendre le problème
-      if (!value) {
-        console.warn(`[MeeshySocketIOService] Traduction manquante pour clé: ${key}, langue: ${userLang}`);
-      }
-      
       return value || key;
-    } catch (error) {
-      console.error('[MeeshySocketIOService] Erreur traduction:', error);
+    } catch {
       return key;
     }
   }
@@ -267,11 +256,11 @@ class MeeshySocketIOService {
           isAnonymous: response.user?.isAnonymous,
           language: response.user?.language
         });
-        toast.success(this.t('common.websocket.connected'));
+        toast.success(this.t('websocket.connected'));
       } else {
         this.isConnected = false;
         console.error('❌ Authentification refusée par le serveur:', response?.error);
-        toast.error(this.t('common.websocket.authenticationFailed') + ': ' + (response?.error || 'Erreur inconnue'));
+        toast.error(this.t('websocket.authenticationFailed') + ': ' + (response?.error || 'Erreur inconnue'));
       }
     });
 
@@ -289,7 +278,7 @@ class MeeshySocketIOService {
         console.log('🔄 Déconnexion par le serveur (connexion multiple détectée)');
       } else if (reason !== 'io client disconnect' && reason !== 'transport close') {
         // Seulement afficher un toast pour les déconnexions inattendues
-        toast.warning(this.t('common.websocket.connectionLostReconnecting'));
+        toast.warning(this.t('websocket.connectionLostReconnecting'));
       }
     });
 

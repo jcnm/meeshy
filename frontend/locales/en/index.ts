@@ -22,6 +22,7 @@ import partners from './partners.json';
 import privacy from './privacy.json';
 import terms from './terms.json';
 import bubbleStream from './bubbleStream.json';
+import websocket from './websocket.json';
 
 export default {
   common,
@@ -48,6 +49,7 @@ export default {
   privacy,
   terms,
   bubbleStream,
+  websocket,
 };
 
 export {
@@ -75,4 +77,5 @@ export {
   privacy,
   terms,
   bubbleStream,
+  websocket,
 };
