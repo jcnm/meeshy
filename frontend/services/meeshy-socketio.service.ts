@@ -25,6 +25,10 @@ import type {
 // Import des constantes d'événements depuis les types partagés
 import { SERVER_EVENTS, CLIENT_EVENTS } from '@shared/types/socketio-events';
 
+// Import des traductions
+import enTranslations from '@/locales/en';
+import frTranslations from '@/locales/fr';
+
 class MeeshySocketIOService {
   private static instance: MeeshySocketIOService | null = null;
   
@@ -35,6 +39,25 @@ class MeeshySocketIOService {
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private reconnectTimeout: NodeJS.Timeout | null = null;
+
+  /**
+   * Fonction utilitaire pour obtenir la traduction selon la langue de l'utilisateur
+   */
+  private t(key: string): string {
+    try {
+      const userLang = typeof window !== 'undefined' ? localStorage.getItem('user_language') || 'en' : 'en';
+      const translations = userLang === 'fr' ? frTranslations : enTranslations;
+      
+      const keys = key.split('.');
+      let value: any = translations;
+      for (const k of keys) {
+        value = value?.[k];
+      }
+      return value || key;
+    } catch {
+      return key;
+    }
+  }
 
   // Suivi des utilisateurs en train de taper par conversation
   private typingUsers: Map<string, Set<string>> = new Map(); // conversationId -> Set<userId>
@@ -233,11 +256,11 @@ class MeeshySocketIOService {
           isAnonymous: response.user?.isAnonymous,
           language: response.user?.language
         });
-        toast.success('Connecté au serveur');
+        toast.success(this.t('common.websocket.connected'));
       } else {
         this.isConnected = false;
         console.error('❌ Authentification refusée par le serveur:', response?.error);
-        toast.error('Authentification échouée: ' + (response?.error || 'Erreur inconnue'));
+        toast.error(this.t('common.websocket.authenticationFailed') + ': ' + (response?.error || 'Erreur inconnue'));
       }
     });
 
@@ -248,9 +271,9 @@ class MeeshySocketIOService {
       
       if (reason === 'io server disconnect') {
         // Le serveur a forcé la déconnexion, ne pas reconnecter automatiquement
-        toast.error('Déconnecté par le serveur');
+        toast.error(this.t('common.websocket.disconnectedByServer'));
       } else {
-        toast.warning('Connexion perdue, reconnexion...');
+        toast.warning(this.t('common.websocket.connectionLostReconnecting'));
       }
     });
 

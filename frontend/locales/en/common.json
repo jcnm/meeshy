@@ -140,6 +140,12 @@
       "messageNotVisible": "Message not visible. Loading...",
       "allMessagesLoaded": "All messages have been loaded",
       "requestTranslationError": "Error requesting translation"
+    },
+    "websocket": {
+      "disconnectedByServer": "Disconnected by server",
+      "connectionLostReconnecting": "Connection lost, reconnecting...",
+      "connected": "Connected to server",
+      "authenticationFailed": "Authentication failed"
     }
   }
 }

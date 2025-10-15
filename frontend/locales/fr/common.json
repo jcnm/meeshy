@@ -140,6 +140,12 @@
       "messageNotVisible": "Message non visible. Chargement...",
       "allMessagesLoaded": "Tous les messages ont été chargés",
       "requestTranslationError": "Erreur lors de la demande de traduction"
+    },
+    "websocket": {
+      "disconnectedByServer": "Déconnecté par le serveur",
+      "connectionLostReconnecting": "Connexion perdue, reconnexion...",
+      "connected": "Connecté au serveur",
+      "authenticationFailed": "Authentification échouée"
     }
   }
 }
