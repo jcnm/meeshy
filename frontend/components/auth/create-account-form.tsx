@@ -10,6 +10,7 @@ import { SUPPORTED_LANGUAGES } from '@shared/types';
 import { JoinConversationResponse } from '@/types/frontend';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
+import { useI18n } from '@/hooks/useI18n';
 
 interface CreateAccountFormProps {
   linkId: string;
@@ -17,6 +18,7 @@ interface CreateAccountFormProps {
 }
 
 export function CreateAccountForm({ linkId, onSuccess }: CreateAccountFormProps) {
+  const { t } = useI18n('auth');
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
@@ -74,9 +76,9 @@ export function CreateAccountForm({ linkId, onSuccess }: CreateAccountFormProps)
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>Rejoindre la conversation</CardTitle>
+        <CardTitle>{t('createAccount.title')}</CardTitle>
         <CardDescription>
-          Créez votre compte ou connectez-vous si vous en avez déjà un
+          {t('createAccount.description')}
         </CardDescription>
       </CardHeader>
       <CardContent>
