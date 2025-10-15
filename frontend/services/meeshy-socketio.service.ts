@@ -42,10 +42,15 @@ class MeeshySocketIOService {
 
   /**
    * Fonction utilitaire pour obtenir la traduction selon la langue de l'utilisateur
+   * Utilise la même clé localStorage que le système i18n principal
    */
   private t(key: string): string {
     try {
-      const userLang = typeof window !== 'undefined' ? localStorage.getItem('user_language') || 'en' : 'en';
+      // Utiliser la clé correcte: meeshy-i18n-language (définie dans i18n-utils.ts)
+      const userLang = typeof window !== 'undefined' 
+        ? (localStorage.getItem('meeshy-i18n-language') || 'en')
+        : 'en';
+      
       const translations = userLang === 'fr' ? frTranslations : enTranslations;
       
       const keys = key.split('.');
@@ -53,8 +58,18 @@ class MeeshySocketIOService {
       for (const k of keys) {
         value = value?.[k];
       }
+      
+      // Debug pour comprendre le problème
+      if (!value && typeof window !== 'undefined') {
+        console.warn(`[MeeshySocketIOService] Traduction manquante pour clé: ${key}, langue: ${userLang}`, {
+          availableKeys: Object.keys(translations),
+          translations
+        });
+      }
+      
       return value || key;
-    } catch {
+    } catch (error) {
+      console.error('[MeeshySocketIOService] Erreur traduction:', error);
       return key;
     }
   }
