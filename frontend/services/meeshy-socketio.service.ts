@@ -758,10 +758,17 @@ class MeeshySocketIOService {
       }
 
       if (!this.isConnected) {
-        console.error('❌ MeeshySocketIOService: Socket connecté mais pas prêt');
-        toast.error('Connexion WebSocket non établie');
-        resolve(false);
-        return;
+        // Si le socket est connecté mais isConnected=false, c'est probablement un problème de timing
+        // Essayons quand même si le socket est vraiment connecté
+        if (this.socket.connected) {
+          console.warn('⚠️ MeeshySocketIOService: Socket connecté mais isConnected=false, tentative d\'envoi quand même');
+          // Continuer l'envoi
+        } else {
+          console.error('❌ MeeshySocketIOService: Socket pas connecté');
+          toast.error('Connexion WebSocket non établie');
+          resolve(false);
+          return;
+        }
       }
 
       // Vérifier l'état de la connexion
