@@ -51,10 +51,14 @@ class MeeshySocketIOService {
         ? (localStorage.getItem('meeshy-i18n-language') || 'en')
         : 'en';
       
-      const translations = userLang === 'fr' ? frTranslations : enTranslations;
+      // Les imports contiennent TOUS les namespaces: { common, auth, websocket, ... }
+      const allTranslations = userLang === 'fr' ? frTranslations : enTranslations;
       
+      // La clé est au format "namespace.path.to.value" (ex: "websocket.connected")
       const keys = key.split('.');
-      let value: any = translations;
+      let value: any = allTranslations;
+      
+      // Naviguer dans la structure complète
       for (const k of keys) {
         value = value?.[k];
       }
@@ -62,8 +66,10 @@ class MeeshySocketIOService {
       // Debug pour comprendre le problème
       if (!value && typeof window !== 'undefined') {
         console.warn(`[MeeshySocketIOService] Traduction manquante pour clé: ${key}, langue: ${userLang}`, {
-          availableKeys: Object.keys(translations),
-          translations
+          availableNamespaces: Object.keys(allTranslations),
+          lookingFor: key,
+          firstLevel: keys[0],
+          hasFirstLevel: keys[0] in allTranslations
         });
       }
       
