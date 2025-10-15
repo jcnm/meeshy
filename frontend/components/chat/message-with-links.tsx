@@ -7,8 +7,8 @@ import {
   parseMessageLinks,
   recordTrackingLinkClick,
   generateDeviceFingerprint,
-  type ParsedLink,
 } from '@/lib/utils/link-parser';
+import type { ParsedLink } from '@/lib/utils/link-parser';
 
 export interface MessageWithLinksProps {
   content: string;
@@ -32,17 +32,22 @@ export function MessageWithLinks({
 }: MessageWithLinksProps) {
   // Parser le message pour extraire les liens
   const parsedParts = useMemo(() => {
-    return parseMessageLinks(content);
+    const parts = parseMessageLinks(content);
+    console.log('[MessageWithLinks] Content:', content);
+    console.log('[MessageWithLinks] Parsed parts:', parts);
+    return parts;
   }, [content]);
 
   // Gérer le clic sur un lien
   const handleLinkClick = useCallback(
     async (e: React.MouseEvent<HTMLAnchorElement>, part: ParsedLink) => {
+      console.log('[MessageWithLinks] Link clicked:', part);
       const isTracking = part.type === 'tracking-link' || part.type === 'mshy-link';
 
       // Si c'est un lien de tracking (mshy:// ou meeshy.me/l/<token>) et que le tracking est activé
       if (isTracking && enableTracking && part.token) {
         e.preventDefault();
+        console.log('[MessageWithLinks] Recording tracking link click for token:', part.token);
 
         try {
           // Enregistrer le clic
@@ -90,7 +95,7 @@ export function MessageWithLinks({
         );
       }
 
-      // Gérer les liens mshy:// (créés par le backend)
+      // Gérer les liens m+<token> (créés par le backend)
       if (part.type === 'mshy-link') {
         return (
           <a
@@ -100,16 +105,14 @@ export function MessageWithLinks({
             rel="noopener noreferrer"
             onClick={(e) => handleLinkClick(e, part)}
             className={cn(
-              'inline-flex items-center gap-1 font-medium underline decoration-2 transition-colors',
-              'break-all',
+              'inline-flex items-center gap-0.5 font-semibold underline decoration-2 transition-all',
+              'cursor-pointer pointer-events-auto hover:scale-105',
               linkClassName
             )}
-            title={`Meeshy tracking link: ${part.trackingUrl}`}
+            title={`Meeshy tracking link → ${part.trackingUrl}`}
           >
-            <span className="inline-flex items-center gap-1">
-              <Link2 className="h-3 w-3 flex-shrink-0 inline" />
-              <span className="break-all">{part.content}</span>
-            </span>
+            <Link2 className="h-3.5 w-3.5 flex-shrink-0" />
+            <span className="font-mono text-xs">{part.content}</span>
           </a>
         );
       }
@@ -127,7 +130,7 @@ export function MessageWithLinks({
           onClick={(e) => handleLinkClick(e, part)}
           className={cn(
             'inline-flex items-center gap-1 text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline decoration-blue-500/30 hover:decoration-blue-500/60 transition-colors',
-            'break-all',
+            'break-all cursor-pointer pointer-events-auto',
             linkClassName
           )}
           title={url}
@@ -147,7 +150,7 @@ export function MessageWithLinks({
   );
 
   return (
-    <div className={cn('text-sm', className)}>
+    <div className={cn('text-sm', className)} style={{ position: 'relative', zIndex: 1 }}>
       {parsedParts.map((part, index) => renderPart(part, index))}
     </div>
   );

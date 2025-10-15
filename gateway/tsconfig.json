@@ -23,7 +23,8 @@
     "rootDir": "./",
     "baseUrl": "./",
     "paths": {
-      "@shared/*": ["./shared/*"]
+      "@shared/*": ["./shared/*"],
+      "@prisma/client": ["./shared/prisma/client"]
     },
     "declaration": true,
     "declarationMap": true,

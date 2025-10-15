@@ -15,12 +15,28 @@ export class TrackingLinkService {
    * Génère un token unique de 6 caractères
    */
   private generateToken(): string {
-    const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+=-_';
+    const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-';
     let token = '';
     for (let i = 0; i < 6; i++) {
       token += characters.charAt(Math.floor(Math.random() * characters.length));
     }
     return token;
+  }
+
+  /**
+   * Construit l'URL complète d'un lien de tracking selon l'environnement
+   * Utilise FRONTEND_URL de l'environnement ou fallback sur localhost
+   */
+  public buildTrackingUrl(token: string): string {
+    const frontendUrl = process.env.FRONTEND_URL || process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3100';
+    return `${frontendUrl}/l/${token}`;
+  }
+
+  /**
+   * Construit le format court m+<token> pour les messages
+   */
+  public buildShortFormat(token: string): string {
+    return `m+${token}`;
   }
 
   /**
@@ -64,7 +80,9 @@ export class TrackingLinkService {
     expiresAt?: Date;
   }): Promise<TrackingLink> {
     const token = await this.generateUniqueToken();
-    const shortUrl = `meeshy.me/l/${token}`;
+    // Ne stocker que le chemin relatif, pas le domaine complet
+    // Cela permet une flexibilité totale (dev, staging, production, custom domains)
+    const shortUrl = `/l/${token}`;
 
     const trackingLink = await this.prisma.trackingLink.create({
       data: {
@@ -409,8 +427,10 @@ export class TrackingLinkService {
     // Regex pour détecter les liens HTTP(S)
     const urlRegex = /(https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*))/gi;
     
-    // Regex pour détecter les liens meeshy existants
-    const meeshyLinkRegex = /https?:\/\/(?:www\.)?meeshy\.me\/l\/([a-zA-Z0-9+\-_=]{6})/gi;
+    // Regex pour détecter les liens de tracking existants (à ignorer)
+    // Support n'importe quel domaine avec /l/<token> (flexible pour dev, staging, production)
+    const trackingLinkRegex = /https?:\/\/[^\/]+\/l\/([a-zA-Z0-9+\-_=]{6})/gi;
+    const mshyShortRegex = /\bm\+([a-zA-Z0-9+\-_=]{6})\b/gi;
 
     const trackingLinks: TrackingLink[] = [];
     let processedContent = content;
@@ -426,9 +446,12 @@ export class TrackingLinkService {
 
     // Traiter chaque lien
     for (const url of matches) {
-      // Ignorer les liens meeshy existants
-      if (meeshyLinkRegex.test(url)) {
-        console.log(`[TrackingLinkService] Skipping existing Meeshy link: ${url}`);
+      // Ignorer les liens de tracking existants (n'importe quel domaine/l/<token> ou m+<token>)
+      trackingLinkRegex.lastIndex = 0;
+      mshyShortRegex.lastIndex = 0;
+      
+      if (trackingLinkRegex.test(url) || mshyShortRegex.test(url)) {
+        console.log(`[TrackingLinkService] Skipping existing tracking link: ${url}`);
         continue;
       }
 
@@ -451,8 +474,8 @@ export class TrackingLinkService {
 
         trackingLinks.push(trackingLink);
 
-        // Remplacer le lien par mshy://<token>
-        const replacement = `mshy://${trackingLink.token}`;
+        // Remplacer le lien par m+<token> (format court)
+        const replacement = `m+${trackingLink.token}`;
         processedContent = processedContent.replace(url, replacement);
 
         console.log(`[TrackingLinkService] Replaced ${url} with ${replacement}`);

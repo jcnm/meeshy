@@ -14,6 +14,8 @@
     },
     "searchPlaceholder": "Search links...",
     "tabs": {
+      "shareLinks": "Share Links",
+      "trackingLinks": "Tracked Links",
       "active": "Active",
       "disabled": "Disabled",
       "expired": "Expired"
@@ -28,7 +30,10 @@
       "created": "Created",
       "expires": "Expires",
       "uses": "Uses",
-      "active": "Active"
+      "active": "Active",
+      "totalClicks": "Total clicks",
+      "uniqueClicks": "Unique clicks",
+      "lastClicked": "Last clicked"
     },
     "actions": {
       "viewDetails": "View details",
@@ -192,6 +197,57 @@
       "5000": {
         "label": "5000 uses",
         "description": "Link can be used 5000 times"
+      }
+    },
+    "tracking": {
+      "title": "Tracked Links",
+      "createLink": "Create tracked link",
+      "originalUrl": "Original URL",
+      "shortUrl": "Short URL",
+      "trackingUrl": "Tracking URL",
+      "noLinks": "No tracked links",
+      "noLinksDescription": "Create your first tracked link to monitor clicks and engagement",
+      "stats": {
+        "totalLinks": "Total links",
+        "totalClicks": "Total clicks",
+        "uniqueClicks": "Unique visitors",
+        "activeLinks": "Active links"
+      },
+      "details": {
+        "title": "Tracking Link Statistics",
+        "overview": "Overview",
+        "performance": "Performance",
+        "geography": "Geography",
+        "devices": "Devices",
+        "browsers": "Browsers",
+        "timeline": "Timeline",
+        "clicksByCountry": "Clicks by country",
+        "clicksByDevice": "Clicks by device",
+        "clicksByBrowser": "Clicks by browser",
+        "clicksByDate": "Clicks over time",
+        "topReferrers": "Top referrers",
+        "referrer": "Referrer",
+        "clicks": "Clicks"
+      },
+      "actions": {
+        "viewStats": "View statistics",
+        "copyShortUrl": "Copy short URL",
+        "deactivate": "Deactivate",
+        "activate": "Activate"
+      },
+      "success": {
+        "created": "Tracking link created successfully",
+        "copied": "Link copied to clipboard",
+        "deactivated": "Link deactivated successfully",
+        "activated": "Link activated successfully",
+        "deleted": "Link deleted successfully"
+      },
+      "errors": {
+        "loadFailed": "Error loading tracking links",
+        "createFailed": "Error creating tracking link",
+        "statsFailed": "Error loading statistics",
+        "deactivateFailed": "Error deactivating link",
+        "deleteFailed": "Error deleting link"
       }
     }
   }

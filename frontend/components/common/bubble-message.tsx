@@ -607,7 +607,7 @@ function BubbleMessageInner({
               )}
 
               {/* Contenu principal */}
-              <div className="mb-2">
+              <div className="mb-2" style={{ position: 'relative', zIndex: 1 }}>
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
                     key={`content-${message.id}-${currentDisplayLanguage}-${currentContent.substring(0, 10)}`}
@@ -616,6 +616,7 @@ function BubbleMessageInner({
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
                     ref={contentRef}
+                    style={{ position: 'relative', zIndex: 1 }}
                   >
                     <MessageWithLinks
                       content={currentContent}
@@ -626,6 +627,7 @@ function BubbleMessageInner({
                           : "text-gray-800 dark:text-gray-100"
                       )}
                       linkClassName={cn(
+                        "relative z-10",
                         isOwnMessage
                           ? "text-white hover:text-white/90 decoration-white/40 hover:decoration-white/70"
                           : "text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 decoration-blue-500/30 hover:decoration-blue-500/60"

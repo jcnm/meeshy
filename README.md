@@ -221,6 +221,37 @@ sudo apt install apache2-utils  # Linux
 htpasswd -nb admin your-password
 ```
 
+### 🔐 Réinitialisation des Mots de Passe en Production
+
+**NOUVEAU** : Système complet de réinitialisation des mots de passe **SANS PERTE DE DONNÉES** !
+
+```bash
+# Réinitialiser tous les mots de passe en production
+./scripts/production/reset-production-passwords.sh VOTRE_IP_DROPLET
+
+# Vérifier que tout fonctionne
+./scripts/production/verify-password-reset.sh VOTRE_IP_DROPLET
+
+# Consulter les nouveaux mots de passe
+cat secrets/clear.txt
+```
+
+**Ce qui est réinitialisé :**
+- ✅ Traefik Dashboard (admin)
+- ✅ MongoDB UI (admin)  
+- ✅ Redis UI (admin)
+- ✅ Utilisateurs application (admin, meeshy, atabeth)
+- ✅ Mots de passe services (MongoDB, Redis)
+- ✅ JWT Secret
+
+**Durée :** ~3 minutes | **Interruption :** ~30 secondes | **Perte de données :** 0%
+
+**Documentation complète :**
+- 📋 [Guide rapide](./QUICK_PASSWORD_RESET.md)
+- 📚 [Documentation complète](./docs/PASSWORD_RESET_GUIDE.md)
+- ⚡ [Aide-mémoire](./CHEATSHEET_PASSWORD_RESET.sh)
+- 📊 [Index](./docs/PASSWORD_RESET_INDEX.md)
+
 ## ✨ Fonctionnalités
 
 ### Messagerie Temps Réel

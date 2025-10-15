@@ -28,7 +28,9 @@ import {
   Plus,
   TrendingUp,
   AlertCircle,
-  Zap
+  Zap,
+  ExternalLink,
+  MousePointerClick
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -39,14 +41,17 @@ import {
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { ConversationLink } from '@/types';
+import type { TrackingLink } from '@shared/types/tracking-link';
 import { useI18n } from '@/hooks/useI18n';
 import { LinkDetailsModal } from '@/components/links/link-details-modal';
 import { LinkEditModal } from '@/components/links/link-edit-modal';
+import { TrackingLinkDetailsModal } from '@/components/links/tracking-link-details-modal';
 import { CreateLinkButton } from '@/components/links/create-link-button';
 import { CreateConversationModal } from '@/components/conversations/create-conversation-modal';
 import { copyToClipboard } from '@/lib/clipboard';
 import { useUser } from '@/stores';
 import { useRouter } from 'next/navigation';
+import { getUserTrackingLinks, deleteTrackingLink, deactivateTrackingLink } from '@/services/tracking-links';
 
 export default function LinksPage() {
   const { t } = useI18n('links');
@@ -54,11 +59,15 @@ export default function LinksPage() {
   const user = useUser();
   const router = useRouter();
   const [links, setLinks] = useState<ConversationLink[]>([]);
+  const [trackingLinks, setTrackingLinks] = useState<TrackingLink[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [mainTab, setMainTab] = useState<'shareLinks' | 'trackingLinks'>('shareLinks');
   const [selectedTab, setSelectedTab] = useState('active');
   const [selectedLink, setSelectedLink] = useState<ConversationLink | null>(null);
+  const [selectedTrackingLink, setSelectedTrackingLink] = useState<TrackingLink | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showTrackingDetailsModal, setShowTrackingDetailsModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCreateConversationModal, setShowCreateConversationModal] = useState(false);
 
@@ -67,15 +76,26 @@ export default function LinksPage() {
     try {
       setIsLoading(true);
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(buildApiUrl('/api/links/my-links'), {
+      
+      // Charger les liens de partage
+      const shareLinksResponse = await fetch(buildApiUrl('/api/links/my-links'), {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      if (response.ok) {
-        const data = await response.json();
+      if (shareLinksResponse.ok) {
+        const data = await shareLinksResponse.json();
         setLinks(data.data || []);
       } else {
         toast.error(t('errors.loadFailed'));
+      }
+
+      // Charger les liens trackés
+      try {
+        const trackingLinksData = await getUserTrackingLinks();
+        setTrackingLinks(trackingLinksData);
+      } catch (error) {
+        console.error('Erreur lors du chargement des liens trackés:', error);
+        // Ne pas afficher d'erreur si c'est juste les liens trackés qui échouent
       }
     } catch (error) {
       console.error('Erreur lors du chargement des liens:', error);
@@ -91,23 +111,37 @@ export default function LinksPage() {
 
   // Calculer les statistiques
   const stats = useMemo(() => {
-    const activeLinks = links.filter(link => 
-      link.isActive && (!link.expiresAt || new Date(link.expiresAt) > new Date())
-    );
-    const expiredLinks = links.filter(link => 
-      link.expiresAt && new Date(link.expiresAt) <= new Date()
-    );
-    const totalUses = links.reduce((sum, link) => sum + (link.currentUses || 0), 0);
-    const totalActiveUsers = links.reduce((sum, link) => sum + (link.currentConcurrentUsers || 0), 0);
-    
-    return {
-      total: links.length,
-      active: activeLinks.length,
-      expired: expiredLinks.length,
-      totalUses,
-      totalActiveUsers
-    };
-  }, [links]);
+    if (mainTab === 'shareLinks') {
+      const activeLinks = links.filter(link => 
+        link.isActive && (!link.expiresAt || new Date(link.expiresAt) > new Date())
+      );
+      const expiredLinks = links.filter(link => 
+        link.expiresAt && new Date(link.expiresAt) <= new Date()
+      );
+      const totalUses = links.reduce((sum, link) => sum + (link.currentUses || 0), 0);
+      const totalActiveUsers = links.reduce((sum, link) => sum + (link.currentConcurrentUsers || 0), 0);
+      
+      return {
+        total: links.length,
+        active: activeLinks.length,
+        expired: expiredLinks.length,
+        totalUses,
+        totalActiveUsers
+      };
+    } else {
+      // Stats pour tracking links
+      const activeLinks = trackingLinks.filter(link => link.isActive);
+      const totalClicks = trackingLinks.reduce((sum, link) => sum + link.totalClicks, 0);
+      const uniqueClicks = trackingLinks.reduce((sum, link) => sum + link.uniqueClicks, 0);
+      
+      return {
+        total: trackingLinks.length,
+        active: activeLinks.length,
+        totalClicks,
+        uniqueClicks
+      };
+    }
+  }, [links, trackingLinks, mainTab]);
 
   // Filtrer les liens
   const filteredLinks = links.filter(link => {
@@ -222,6 +256,47 @@ export default function LinksPage() {
     }
   };
 
+  // Copier un lien tracké
+  const handleCopyTrackingLink = async (shortUrl: string) => {
+    const result = await copyToClipboard(shortUrl);
+    if (result.success) {
+      toast.success(t('tracking.success.copied'));
+    } else {
+      toast.error(result.message);
+    }
+  };
+
+  // Désactiver/activer un lien tracké
+  const handleToggleTrackingLink = async (link: TrackingLink) => {
+    try {
+      if (link.isActive) {
+        await deactivateTrackingLink(link.token);
+        toast.success(t('tracking.success.deactivated'));
+      } else {
+        // Pour réactiver, on devrait avoir une route activate, pour l'instant on peut juste désactiver
+        toast.info('Activation not yet implemented');
+      }
+      loadLinks();
+    } catch (error) {
+      console.error('Erreur lors du basculement:', error);
+      toast.error(t('tracking.errors.deactivateFailed'));
+    }
+  };
+
+  // Supprimer un lien tracké
+  const handleDeleteTrackingLink = async (link: TrackingLink) => {
+    if (!confirm(t('confirm.delete'))) return;
+
+    try {
+      await deleteTrackingLink(link.token);
+      toast.success(t('tracking.success.deleted'));
+      loadLinks();
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+      toast.error(t('tracking.errors.deleteFailed'));
+    }
+  };
+
   // Formater la date
   const formatDate = (date: string | Date) => {
     return new Date(date).toLocaleDateString('fr-FR', {
@@ -278,7 +353,9 @@ export default function LinksPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Total des liens</p>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">
+                    {mainTab === 'shareLinks' ? 'Total des liens' : t('tracking.stats.totalLinks')}
+                  </p>
                   <p className="text-3xl font-bold text-foreground">{stats.total}</p>
                 </div>
                 <div className="p-4 bg-blue-100 dark:bg-blue-900/30 rounded-2xl">
@@ -292,7 +369,9 @@ export default function LinksPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Liens actifs</p>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">
+                    {mainTab === 'shareLinks' ? 'Liens actifs' : t('tracking.stats.activeLinks')}
+                  </p>
                   <p className="text-3xl font-bold text-green-600 dark:text-green-400">{stats.active}</p>
                 </div>
                 <div className="p-4 bg-green-100 dark:bg-green-900/30 rounded-2xl">
@@ -302,35 +381,96 @@ export default function LinksPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-2 hover:border-orange-500/50 transition-all hover:shadow-lg bg-white dark:bg-gray-950">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Utilisations</p>
-                  <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{stats.totalUses}</p>
-                </div>
-                <div className="p-4 bg-orange-100 dark:bg-orange-900/30 rounded-2xl">
-                  <TrendingUp className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {mainTab === 'shareLinks' ? (
+            <>
+              <Card className="border-2 hover:border-orange-500/50 transition-all hover:shadow-lg bg-white dark:bg-gray-950">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-1">Utilisations</p>
+                      <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{stats.totalUses}</p>
+                    </div>
+                    <div className="p-4 bg-orange-100 dark:bg-orange-900/30 rounded-2xl">
+                      <TrendingUp className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-          <Card className="border-2 hover:border-purple-500/50 transition-all hover:shadow-lg bg-white dark:bg-gray-950">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Utilisateurs actifs</p>
-                  <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{stats.totalActiveUsers}</p>
-                </div>
-                <div className="p-4 bg-purple-100 dark:bg-purple-900/30 rounded-2xl">
-                  <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              <Card className="border-2 hover:border-purple-500/50 transition-all hover:shadow-lg bg-white dark:bg-gray-950">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-1">Utilisateurs actifs</p>
+                      <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{stats.totalActiveUsers}</p>
+                    </div>
+                    <div className="p-4 bg-purple-100 dark:bg-purple-900/30 rounded-2xl">
+                      <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          ) : (
+            <>
+              <Card className="border-2 hover:border-orange-500/50 transition-all hover:shadow-lg bg-white dark:bg-gray-950">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-1">{t('tracking.stats.totalClicks')}</p>
+                      <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{stats.totalClicks}</p>
+                    </div>
+                    <div className="p-4 bg-orange-100 dark:bg-orange-900/30 rounded-2xl">
+                      <MousePointerClick className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-2 hover:border-purple-500/50 transition-all hover:shadow-lg bg-white dark:bg-gray-950">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-1">{t('tracking.stats.uniqueClicks')}</p>
+                      <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{stats.uniqueClicks}</p>
+                    </div>
+                    <div className="p-4 bg-purple-100 dark:bg-purple-900/30 rounded-2xl">
+                      <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
         </div>
 
+        {/* Main Tab Selector */}
+        <Card className="border-2 shadow-lg bg-white dark:bg-gray-950">
+          <CardContent className="p-6">
+            <Tabs value={mainTab} onValueChange={(value) => setMainTab(value as 'shareLinks' | 'trackingLinks')}>
+              <TabsList className="w-full grid grid-cols-2 h-auto p-1.5 bg-gray-100 dark:bg-gray-800">
+                <TabsTrigger 
+                  value="shareLinks" 
+                  className="data-[state=active]:bg-blue-500 data-[state=active]:text-white py-3 px-6 rounded-lg font-medium transition-all"
+                >
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  {t('tabs.shareLinks')}
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="trackingLinks" 
+                  className="data-[state=active]:bg-purple-500 data-[state=active]:text-white py-3 px-6 rounded-lg font-medium transition-all"
+                >
+                  <BarChart className="h-4 w-4 mr-2" />
+                  {t('tabs.trackingLinks')}
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </CardContent>
+        </Card>
+
+        {/* Content based on selected main tab */}
+        {mainTab === 'shareLinks' ? (
+          <>
         {/* Search and Actions */}
         <Card className="border-2 shadow-lg bg-white dark:bg-gray-950">
           <CardContent className="p-6">
@@ -611,6 +751,193 @@ export default function LinksPage() {
             )}
           </TabsContent>
         </Tabs>
+          </>
+        ) : (
+          /* Tracking Links Content */
+          <>
+            {/* Search Bar for Tracking Links */}
+            <Card className="border-2 shadow-lg bg-white dark:bg-gray-950">
+              <CardContent className="p-6">
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="flex-1 relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <Input
+                      type="text"
+                      placeholder="Search tracking links..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 h-12 text-base border-2 focus:border-primary"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Tracking Links List */}
+            {isLoading ? (
+              <Card className="border-2 bg-white dark:bg-gray-950">
+                <CardContent className="flex flex-col items-center justify-center py-16">
+                  <div className="relative">
+                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-primary"></div>
+                    <Zap className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-6 w-6 text-primary" />
+                  </div>
+                  <p className="mt-4 text-muted-foreground font-medium">Loading your tracking links...</p>
+                </CardContent>
+              </Card>
+            ) : trackingLinks.length === 0 ? (
+              <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
+                <CardContent className="flex flex-col items-center justify-center py-16 px-6">
+                  <div className="relative mb-6">
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-blue-500/20 blur-3xl rounded-full"></div>
+                    <div className="relative p-6 bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 rounded-3xl">
+                      <BarChart className="h-16 w-16 text-purple-600 dark:text-purple-400" />
+                    </div>
+                  </div>
+                  
+                  <h3 className="text-2xl font-bold text-foreground mb-3 text-center">
+                    {t('tracking.noLinks')}
+                  </h3>
+                  <p className="text-muted-foreground text-base mb-8 text-center max-w-md">
+                    {t('tracking.noLinksDescription')}
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-6">
+                {trackingLinks
+                  .filter(link => 
+                    link.originalUrl.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    link.shortUrl.toLowerCase().includes(searchQuery.toLowerCase())
+                  )
+                  .map((link) => (
+                    <Card key={link.id} className="relative border-2 hover:border-purple-500/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950">
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
+                      
+                      <CardHeader className="relative z-10 pb-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1 min-w-0 space-y-2">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2.5 bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 rounded-xl flex-shrink-0">
+                                <Link2 className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <CardTitle className="text-lg font-bold truncate">
+                                  {link.shortUrl}
+                                </CardTitle>
+                              </div>
+                            </div>
+                            <CardDescription className="flex items-center gap-2 text-sm">
+                              <ExternalLink className="h-4 w-4 flex-shrink-0" />
+                              <a 
+                                href={link.originalUrl} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-primary hover:underline font-medium truncate"
+                              >
+                                {link.originalUrl}
+                              </a>
+                            </CardDescription>
+                          </div>
+                          
+                          <div className="flex items-start gap-2 flex-shrink-0">
+                            <Badge 
+                              variant={link.isActive ? 'default' : 'secondary'}
+                              className={`px-3 py-1.5 font-semibold ${
+                                link.isActive 
+                                  ? 'bg-green-500 hover:bg-green-600' 
+                                  : 'bg-gray-400 hover:bg-gray-500'
+                              }`}
+                            >
+                              {link.isActive ? t('status.active') : t('status.inactive')}
+                            </Badge>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-9 w-9 p-0 flex-shrink-0">
+                                  <MoreVertical className="h-5 w-5" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-56">
+                                <DropdownMenuItem onClick={() => handleCopyTrackingLink(link.shortUrl)} className="py-3">
+                                  <Copy className="h-4 w-4 mr-3" />
+                                  <span className="font-medium">{t('tracking.actions.copyShortUrl')}</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => {
+                                  setSelectedTrackingLink(link);
+                                  setShowTrackingDetailsModal(true);
+                                }} className="py-3">
+                                  <BarChart className="h-4 w-4 mr-3" />
+                                  <span className="font-medium">{t('tracking.actions.viewStats')}</span>
+                                </DropdownMenuItem>
+                                {link.isActive && (
+                                  <DropdownMenuItem onClick={() => handleToggleTrackingLink(link)} className="py-3">
+                                    <XCircle className="h-4 w-4 mr-3" />
+                                    <span className="font-medium">{t('tracking.actions.deactivate')}</span>
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuItem 
+                                  onClick={() => handleDeleteTrackingLink(link)}
+                                  className="text-red-600 py-3"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-3" />
+                                  <span className="font-medium">{t('actions.delete')}</span>
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      
+                      <CardContent className="relative z-10 pt-4 border-t">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                                <MousePointerClick className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                              </div>
+                              <span className="text-sm font-medium">{t('stats.totalClicks')}</span>
+                            </div>
+                            <p className="text-lg font-bold text-foreground pl-8">{link.totalClicks}</p>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <div className="p-1.5 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                                <Users className="h-4 w-4 text-green-600 dark:text-green-400" />
+                              </div>
+                              <span className="text-sm font-medium">{t('stats.uniqueClicks')}</span>
+                            </div>
+                            <p className="text-lg font-bold text-foreground pl-8">{link.uniqueClicks}</p>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <div className="p-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                                <Calendar className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                              </div>
+                              <span className="text-sm font-medium">{t('stats.created')}</span>
+                            </div>
+                            <p className="text-sm font-semibold text-foreground pl-8">{formatDate(link.createdAt)}</p>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <div className="p-1.5 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                                <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                              </div>
+                              <span className="text-sm font-medium">{t('stats.lastClicked')}</span>
+                            </div>
+                            <p className="text-sm font-semibold text-foreground pl-8">
+                              {link.lastClickedAt ? formatDate(link.lastClickedAt) : 'Never'}
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+              </div>
+            )}
+          </>
+        )}
 
         {/* Modales */}
         {selectedLink && (
@@ -637,6 +964,18 @@ export default function LinksPage() {
               }}
             />
           </>
+        )}
+
+        {/* Tracking Link Details Modal */}
+        {selectedTrackingLink && (
+          <TrackingLinkDetailsModal
+            link={selectedTrackingLink}
+            isOpen={showTrackingDetailsModal}
+            onClose={() => {
+              setShowTrackingDetailsModal(false);
+              setSelectedTrackingLink(null);
+            }}
+          />
         )}
 
         {/* Modales de création */}

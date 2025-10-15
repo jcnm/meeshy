@@ -6,8 +6,10 @@ import { buildApiUrl, API_ENDPOINTS } from '../config';
 
 // Regex pour détecter les liens
 const URL_REGEX = /(https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*))/gi;
-const TRACKING_LINK_REGEX = /https?:\/\/(?:www\.)?meeshy\.me\/l\/([a-zA-Z0-9+\-_=]{6})/gi;
-const MSHY_PROTOCOL_REGEX = /mshy:\/\/([a-zA-Z0-9+\-_=]{6})/gi;
+// Détecte les liens de tracking sur n'importe quel domaine: http(s)://exemple.com/l/<token>
+const TRACKING_LINK_REGEX = /https?:\/\/[^\/]+\/l\/([a-zA-Z0-9+\-_=]{6})/gi;
+// Détecte le format court: m+<token>
+const MSHY_SHORT_REGEX = /\bm\+([a-zA-Z0-9+\-_=]{6})\b/gi;
 
 export interface ParsedLink {
   type: 'text' | 'url' | 'tracking-link' | 'mshy-link';
@@ -36,9 +38,9 @@ export function parseMessageLinks(message: string): ParsedLink[] {
   // Créer un tableau de toutes les correspondances
   const matches: Array<{ match: RegExpExecArray; type: 'tracking' | 'mshy' | 'url' }> = [];
 
-  // Trouver tous les liens mshy:// (priorité la plus haute)
+  // Trouver tous les liens m+<token> (priorité la plus haute)
   let mshyMatch: RegExpExecArray | null;
-  const mshyRegex = new RegExp(MSHY_PROTOCOL_REGEX.source, 'gi');
+  const mshyRegex = new RegExp(MSHY_SHORT_REGEX.source, 'gi');
   while ((mshyMatch = mshyRegex.exec(message)) !== null) {
     matches.push({ match: mshyMatch, type: 'mshy' });
   }
@@ -90,10 +92,15 @@ export function parseMessageLinks(message: string): ParsedLink[] {
     // Ajouter le lien selon son type
     if (type === 'mshy') {
       const token = match[1]; // Le token de 6 caractères
+      // Utiliser le domaine actuel ou un chemin relatif pour flexibilité
+      const trackingUrl = typeof window !== 'undefined' 
+        ? `${window.location.origin}/l/${token}`
+        : `/l/${token}`;
+      
       parts.push({
         type: 'mshy-link',
         content: match[0],
-        trackingUrl: `https://meeshy.me/l/${token}`,
+        trackingUrl,
         token,
         start: matchStart,
         end: matchEnd,
@@ -154,6 +161,11 @@ export async function createTrackingLink(
     messageId?: string;
   } = {}
 ): Promise<{ success: boolean; trackingLink?: any; error?: string }> {
+  // Vérifier que nous sommes côté client
+  if (typeof window === 'undefined') {
+    return { success: false, error: 'Function only available on client side' };
+  }
+
   try {
     const token = localStorage.getItem('auth_token');
     const sessionToken = localStorage.getItem('session_token');
@@ -210,6 +222,11 @@ export async function recordTrackingLinkClick(
     deviceFingerprint?: string;
   } = {}
 ): Promise<{ success: boolean; originalUrl?: string; error?: string }> {
+  // Vérifier que nous sommes côté client
+  if (typeof window === 'undefined') {
+    return { success: false, error: 'Function only available on client side' };
+  }
+
   try {
     const authToken = localStorage.getItem('auth_token');
     const sessionToken = localStorage.getItem('session_token');
@@ -306,23 +323,31 @@ export async function replaceLinksWithTracking(
  * Vérifie si une chaîne contient des liens
  */
 export function hasLinks(message: string): boolean {
-  return URL_REGEX.test(message);
+  const urlRegex = new RegExp(URL_REGEX.source, 'gi');
+  return urlRegex.test(message);
 }
 
 /**
  * Vérifie si un lien est un lien de tracking Meeshy
  */
 export function isTrackingLink(url: string): boolean {
-  return TRACKING_LINK_REGEX.test(url);
+  const trackingRegex = new RegExp(TRACKING_LINK_REGEX.source, 'gi');
+  return trackingRegex.test(url);
 }
 
 /**
  * Extrait le token d'un lien de tracking
  */
 export function extractTrackingToken(url: string): string | null {
-  const match = url.match(TRACKING_LINK_REGEX);
-  if (match && match[1]) {
-    return match[1];
+  const trackingRegex = new RegExp(TRACKING_LINK_REGEX.source, 'gi');
+  const match = url.match(trackingRegex);
+  if (match && match.length > 0) {
+    // Extraire le token du match complet
+    const fullMatch = match[0];
+    const tokenMatch = fullMatch.match(/\/l\/([a-zA-Z0-9+\-_=]{6})/);
+    if (tokenMatch && tokenMatch[1]) {
+      return tokenMatch[1];
+    }
   }
   return null;
 }
@@ -376,6 +401,11 @@ function detectDevice(userAgent: string): string {
  * Pour une empreinte plus robuste, utilisez une bibliothèque comme fingerprintjs
  */
 export function generateDeviceFingerprint(): string {
+  // Vérifier que nous sommes côté client
+  if (typeof window === 'undefined') {
+    return 'server-side-fingerprint';
+  }
+
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   

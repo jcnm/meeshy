@@ -7,6 +7,21 @@ import {
   UnifiedAuthRequest,
   isRegisteredUser
 } from '../middleware/auth';
+import type { TrackingLink } from '../../shared/types/tracking-link';
+
+/**
+ * Helper pour enrichir un TrackingLink avec l'URL complète
+ * Construit l'URL basée sur FRONTEND_URL ou le domaine de la requête
+ */
+function enrichTrackingLink(link: TrackingLink, request?: FastifyRequest): TrackingLink & { fullUrl?: string } {
+  const trackingService = new TrackingLinkService(null as any); // Just for the helper method
+  const fullUrl = trackingService.buildTrackingUrl(link.token);
+  
+  return {
+    ...link,
+    fullUrl // Ajouter l'URL complète pour le client
+  };
+}
 
 // Schémas de validation Zod
 const createTrackingLinkSchema = z.object({
@@ -76,7 +91,7 @@ export async function trackingLinksRoutes(fastify: FastifyInstance) {
         return reply.send({
           success: true,
           data: {
-            trackingLink: existingLink,
+            trackingLink: enrichTrackingLink(existingLink, request),
             existed: true
           }
         });
@@ -94,8 +109,7 @@ export async function trackingLinksRoutes(fastify: FastifyInstance) {
       return reply.status(201).send({
         success: true,
         data: {
-          trackingLink,
-          existed: false
+          trackingLink: enrichTrackingLink(trackingLink, request)
         }
       });
 

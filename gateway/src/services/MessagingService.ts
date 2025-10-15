@@ -16,12 +16,17 @@ import type {
 } from '../../shared/types';
 import { TranslationService } from './TranslationService';
 import { conversationStatsService } from './ConversationStatsService';
+import { TrackingLinkService } from './TrackingLinkService';
 
 export class MessagingService {
+  private trackingLinkService: TrackingLinkService;
+
   constructor(
     private readonly prisma: PrismaClient,
     private readonly translationService: TranslationService
-  ) {}
+  ) {
+    this.trackingLinkService = new TrackingLinkService(prisma);
+  }
 
   /**
    * Crée le contexte d'authentification basé sur les tokens
@@ -524,6 +529,74 @@ export class MessagingService {
   }
 
   /**
+   * Traite les liens dans le contenu du message
+   * Détecte les URLs et crée des liens de tracking Meeshy
+   * Remplace les URLs par le format court m+<token>
+   */
+  private async processLinksInContent(
+    content: string,
+    conversationId: string,
+    senderId?: string,
+    messageId?: string
+  ): Promise<string> {
+    try {
+      // Regex pour détecter les URLs (excluant déjà les liens Meeshy)
+      const URL_REGEX = /(https?:\/\/(?!(?:www\.)?meeshy\.me\/l\/)(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*))/gi;
+      
+      // Chercher tous les liens dans le message
+      const urls = content.match(URL_REGEX);
+      
+      if (!urls || urls.length === 0) {
+        console.log('[MessagingService] Aucun lien détecté dans le message');
+        return content;
+      }
+
+      console.log(`[MessagingService] 🔗 ${urls.length} lien(s) détecté(s) dans le message`);
+
+      let processedContent = content;
+
+      // Traiter chaque URL
+      for (const url of urls) {
+        try {
+          // Vérifier si un lien de tracking existe déjà pour cette URL dans cette conversation
+          let trackingLink = await this.trackingLinkService.findExistingTrackingLink(
+            url,
+            conversationId
+          );
+
+          // Si le lien n'existe pas, le créer
+          if (!trackingLink) {
+            console.log(`[MessagingService] Création d'un nouveau lien de tracking pour: ${url}`);
+            trackingLink = await this.trackingLinkService.createTrackingLink({
+              originalUrl: url,
+              conversationId,
+              createdBy: senderId,
+              messageId
+            });
+          } else {
+            console.log(`[MessagingService] Lien de tracking existant trouvé: m+${trackingLink.token}`);
+          }
+
+          // Remplacer l'URL par le format court Meeshy
+          const meeshyShortLink = `m+${trackingLink.token}`;
+          processedContent = processedContent.replace(url, meeshyShortLink);
+
+          console.log(`[MessagingService] ✅ URL remplacée: ${url} → ${meeshyShortLink}`);
+        } catch (linkError) {
+          console.error(`[MessagingService] ❌ Erreur lors du traitement du lien ${url}:`, linkError);
+          // En cas d'erreur, on garde l'URL originale
+        }
+      }
+
+      return processedContent;
+    } catch (error) {
+      console.error('[MessagingService] Erreur lors du traitement des liens:', error);
+      // En cas d'erreur globale, retourner le contenu original
+      return content;
+    }
+  }
+
+  /**
    * Sauvegarde du message en base avec toutes les relations
    */
   private async saveMessage(data: {
@@ -536,12 +609,28 @@ export class MessagingService {
     replyToId?: string;
     encrypted?: boolean;
   }): Promise<Message> {
+    // ÉTAPE 1: Traiter les liens AVANT de sauvegarder le message
+    console.log('[MessagingService] 🔗 Traitement des liens dans le contenu...');
+    const processedContent = await this.processLinksInContent(
+      data.content,
+      data.conversationId,
+      data.senderId || data.anonymousSenderId,
+      undefined // messageId sera mis à jour après création
+    );
+
+    if (processedContent !== data.content) {
+      console.log('[MessagingService] ✅ Contenu modifié avec liens Meeshy');
+      console.log('[MessagingService] Original:', data.content.substring(0, 100));
+      console.log('[MessagingService] Modifié:', processedContent.substring(0, 100));
+    }
+
+    // ÉTAPE 2: Créer le message avec le contenu traité
     const message = await this.prisma.message.create({
       data: {
         conversationId: data.conversationId,
         senderId: data.senderId,
         anonymousSenderId: data.anonymousSenderId,
-        content: data.content.trim(),
+        content: processedContent.trim(),
         originalLanguage: data.originalLanguage,
         messageType: data.messageType || 'text',
         replyToId: data.replyToId
@@ -591,6 +680,34 @@ export class MessagingService {
         }
       }
     });
+
+    // ÉTAPE 3: Mettre à jour les liens de tracking avec le messageId
+    if (processedContent !== data.content) {
+      try {
+        // Extraire tous les tokens Meeshy du contenu modifié
+        const meeshyTokenRegex = /m\+([a-zA-Z0-9+\-_=]{6})/gi;
+        const matches = processedContent.matchAll(meeshyTokenRegex);
+        
+        for (const match of matches) {
+          const token = match[1];
+          try {
+            // Mettre à jour le lien de tracking avec le messageId
+            await this.prisma.trackingLink.updateMany({
+              where: { 
+                token,
+                conversationId: data.conversationId,
+                messageId: null // Seulement ceux qui n'ont pas encore de messageId
+              },
+              data: { messageId: message.id }
+            });
+          } catch (updateError) {
+            console.error(`[MessagingService] Erreur lors de la mise à jour du messageId pour le token ${token}:`, updateError);
+          }
+        }
+      } catch (error) {
+        console.error('[MessagingService] Erreur lors de la mise à jour des messageIds:', error);
+      }
+    }
 
     // Convertir au format unifié avec timestamp
     return {
