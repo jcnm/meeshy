@@ -3,6 +3,8 @@
     "title": "Contacts",
     "searchPlaceholder": "Search contacts...",
     "inviteContact": "Invite contact",
+    "contactsFound": "{count} contact found",
+    "contactsFound_plural": "{count} contacts found",
     "tabs": {
       "all": "All",
       "connected": "Connected",
@@ -44,7 +46,9 @@
       "emailAddress": "Email address",
       "registeredAt": "Registered on",
       "joinedOn": "Joined on",
-      "linkUsed": "Link used"
+      "linkUsed": "Link used",
+      "requestSent": "Request sent on {date}",
+      "requestReceived": "Request received on {date}"
     },
     "success": {
       "friendRequestSent": "Friend request sent",

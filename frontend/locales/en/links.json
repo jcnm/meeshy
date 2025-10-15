@@ -24,7 +24,9 @@
       "active": "Active",
       "inactive": "Inactive",
       "expired": "Expired",
-      "never": "Never"
+      "never": "Never",
+      "daysRemaining": "{days} day(s) remaining",
+      "hoursRemaining": "{hours} hour(s) remaining"
     },
     "stats": {
       "created": "Created",

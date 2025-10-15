@@ -30,6 +30,10 @@
     "confirm": "Confirm",
     "yes": "Yes",
     "no": "No",
+    "new": "New",
+    "notSelected": "Not selected",
+    "days": "days",
+    "step": "Step {step}",
     "insufficientRights": "You do not have the necessary rights to perform this operation",
     "navigation": {
       "home": "Home",
@@ -122,6 +126,20 @@
         "title": "Tip:",
         "message": "If you think you should have access to this resource, try logging in or contact the administrator."
       }
+    },
+    "messages": {
+      "messageSent": "Message sent!",
+      "sendError": "Error sending message",
+      "connectionInProgress": "Connection in progress - Please wait...",
+      "messageModified": "Message modified successfully",
+      "messageDeleted": "Message deleted successfully",
+      "modifyError": "Error modifying message",
+      "deleteError": "Error deleting message",
+      "replyTo": "Reply to this message",
+      "messageFound": "Message found!",
+      "messageNotVisible": "Message not visible. Loading...",
+      "allMessagesLoaded": "All messages have been loaded",
+      "requestTranslationError": "Error requesting translation"
     }
   }
 }
