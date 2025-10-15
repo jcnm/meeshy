@@ -16,6 +16,7 @@
     "websocketEstablished": "WebSocket connection established",
     "connected": "Connected",
     "connecting": "Connecting...",
+    "connectingWebSocket": "Connecting to WebSocket...",
     "initializing": "Initializing...",
     "reconnecting": "Reconnecting...",
     "realTimeMessages": "Real-time messages",
