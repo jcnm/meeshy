@@ -398,7 +398,7 @@ export default function LinksPage() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground mb-1">Utilisations</p>
+                      <p className="text-sm font-medium text-muted-foreground mb-1">{t('stats.uses')}</p>
                       <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{stats.totalUses}</p>
                     </div>
                     <div className="p-4 bg-orange-100 dark:bg-orange-900/30 rounded-2xl">
@@ -412,7 +412,7 @@ export default function LinksPage() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground mb-1">Utilisateurs actifs</p>
+                      <p className="text-sm font-medium text-muted-foreground mb-1">{t('details.activeUsers')}</p>
                       <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{stats.totalActiveUsers}</p>
                     </div>
                     <div className="p-4 bg-purple-100 dark:bg-purple-900/30 rounded-2xl">
