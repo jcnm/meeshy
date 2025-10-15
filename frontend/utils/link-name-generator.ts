@@ -1,6 +1,7 @@
 /**
  * Générateur de noms de liens de partage automatiques
- * Génère des noms de liens selon le nom de la conversation, la langue, la durée et les limites
+ * Génère des noms descriptifs basés sur le type de canal/destinataires
+ * Format: "Canal [type] - [durée]" ou "Lien [limite] - [durée]"
  * Limite automatiquement à 32 caractères maximum
  */
 
@@ -16,25 +17,12 @@ export interface LinkNameOptions {
 const MAX_LINK_NAME_LENGTH = 32;
 
 /**
- * Tronque intelligemment une chaîne pour respecter la limite de caractères
- */
-function truncateString(str: string, maxLength: number): string {
-  if (str.length <= maxLength) {
-    return str;
-  }
-  // Tronquer en gardant de l'espace pour "..."
-  return str.substring(0, maxLength - 3) + '...';
-}
-
-/**
- * Génère un nom de lien automatique selon les paramètres et la langue
- * Limite automatiquement à 32 caractères maximum
- * Format attendu (français): "lien <limite> de la conversation <nom> valable <durée>"
- * Exemple: "lien ouvert à tous de la conversation 'Rencontre à Paris les Samedi' valable 7 jours"
+ * Génère un nom de lien basé sur le canal de diffusion et les destinataires
+ * Format attendu: "Canal public - 7j" ou "Lien 10 pers. - 30j"
+ * Ne contient PAS le titre de la conversation pour rester concis
  */
 export function generateLinkName(options: LinkNameOptions): string {
   const {
-    conversationTitle,
     language = 'fr',
     durationDays,
     maxParticipants,
@@ -42,104 +30,69 @@ export function generateLinkName(options: LinkNameOptions): string {
     isPublic = true
   } = options;
 
-  // Déterminer la limite de participants
-  const participantLimit = getParticipantLimitText(maxParticipants, maxUses, isPublic, language);
-
-  // Déterminer la durée
-  const durationText = getDurationText(durationDays, language);
+  // Déterminer le type de canal/destinataires
+  const channelType = getChannelType(maxParticipants, maxUses, isPublic, language);
+  
+  // Déterminer la durée courte
+  const shortDuration = getShortDuration(durationDays, language);
 
   // Construire le nom selon la langue
-  let fullName: string;
+  let linkName: string;
   
   switch (language) {
     case 'fr':
-      fullName = `lien ${participantLimit} de la conversation '${conversationTitle}' valable ${durationText}`;
+      linkName = `${channelType} - ${shortDuration}`;
       break;
     
     case 'en':
-      fullName = `${participantLimit} link for conversation '${conversationTitle}' valid for ${durationText}`;
+      linkName = `${channelType} - ${shortDuration}`;
       break;
     
     case 'es':
-      fullName = `enlace ${participantLimit} de la conversación '${conversationTitle}' válido por ${durationText}`;
+      linkName = `${channelType} - ${shortDuration}`;
       break;
     
     case 'de':
-      fullName = `${participantLimit} Link für Gespräch '${conversationTitle}' gültig für ${durationText}`;
+      linkName = `${channelType} - ${shortDuration}`;
       break;
     
     case 'it':
-      fullName = `link ${participantLimit} per conversazione '${conversationTitle}' valido per ${durationText}`;
+      linkName = `${channelType} - ${shortDuration}`;
       break;
     
     case 'pt':
-      fullName = `link ${participantLimit} para conversa '${conversationTitle}' válido por ${durationText}`;
+      linkName = `${channelType} - ${shortDuration}`;
       break;
     
     case 'zh':
-      fullName = `${conversationTitle} 的${participantLimit}链接，有效期 ${durationText}`;
+      linkName = `${channelType} - ${shortDuration}`;
       break;
     
     case 'ja':
-      fullName = `会話 '${conversationTitle}' の${participantLimit}リンク（有効期限: ${durationText}）`;
+      linkName = `${channelType} - ${shortDuration}`;
       break;
     
     case 'ar':
-      fullName = `رابط ${participantLimit} للمحادثة '${conversationTitle}' صالح لمدة ${durationText}`;
+      linkName = `${channelType} - ${shortDuration}`;
       break;
     
     default:
-      fullName = `${participantLimit} link for conversation '${conversationTitle}' valid for ${durationText}`;
+      linkName = `${channelType} - ${shortDuration}`;
       break;
   }
 
-  // Si le nom dépasse 32 caractères, essayer de tronquer intelligemment
-  if (fullName.length > MAX_LINK_NAME_LENGTH) {
-    // Essayer de créer un nom plus court en priorisant le titre
-    const truncatedTitle = truncateString(conversationTitle, 20);
-    
-    switch (language) {
-      case 'fr':
-        fullName = `Lien '${truncatedTitle}'`;
-        break;
-      case 'en':
-        fullName = `Link '${truncatedTitle}'`;
-        break;
-      case 'es':
-        fullName = `Enlace '${truncatedTitle}'`;
-        break;
-      case 'de':
-        fullName = `Link '${truncatedTitle}'`;
-        break;
-      case 'it':
-        fullName = `Link '${truncatedTitle}'`;
-        break;
-      case 'pt':
-        fullName = `Link '${truncatedTitle}'`;
-        break;
-      case 'zh':
-        fullName = `${truncatedTitle} 链接`;
-        break;
-      case 'ja':
-        fullName = `${truncatedTitle} リンク`;
-        break;
-      case 'ar':
-        fullName = `رابط '${truncatedTitle}'`;
-        break;
-      default:
-        fullName = `Link '${truncatedTitle}'`;
-        break;
-    }
+  // S'assurer que le résultat ne dépasse pas 32 caractères
+  if (linkName.length > MAX_LINK_NAME_LENGTH) {
+    return linkName.substring(0, MAX_LINK_NAME_LENGTH - 3) + '...';
   }
 
-  // S'assurer que le résultat final ne dépasse pas 32 caractères
-  return truncateString(fullName, MAX_LINK_NAME_LENGTH);
+  return linkName;
 }
 
 /**
- * Retourne le texte de limitation des participants selon la langue
+ * Retourne le type de canal/destinataires selon les limites
  */
-function getParticipantLimitText(
+function getChannelType(
   maxParticipants: number | undefined,
   maxUses: number | undefined,
   isPublic: boolean,
@@ -150,185 +103,185 @@ function getParticipantLimitText(
   switch (language) {
     case 'fr':
       if (!hasLimit || isPublic) {
-        return 'ouvert à tous';
+        return 'Canal public';
       }
       if (maxParticipants) {
-        return `limité à ${maxParticipants} participant${maxParticipants > 1 ? 's' : ''}`;
+        return `Lien ${maxParticipants} pers.`;
       }
       if (maxUses) {
-        return `limité à ${maxUses} utilisation${maxUses > 1 ? 's' : ''}`;
+        return `Lien ${maxUses} util.`;
       }
-      return 'ouvert à tous';
+      return 'Canal public';
     
     case 'en':
       if (!hasLimit || isPublic) {
-        return 'open to all';
+        return 'Public channel';
       }
       if (maxParticipants) {
-        return `limited to ${maxParticipants} participant${maxParticipants > 1 ? 's' : ''}`;
+        return `Link ${maxParticipants} people`;
       }
       if (maxUses) {
-        return `limited to ${maxUses} use${maxUses > 1 ? 's' : ''}`;
+        return `Link ${maxUses} uses`;
       }
-      return 'open to all';
+      return 'Public channel';
     
     case 'es':
       if (!hasLimit || isPublic) {
-        return 'abierto a todos';
+        return 'Canal público';
       }
       if (maxParticipants) {
-        return `limitado a ${maxParticipants} participante${maxParticipants > 1 ? 's' : ''}`;
+        return `Enlace ${maxParticipants} pers.`;
       }
       if (maxUses) {
-        return `limitado a ${maxUses} uso${maxUses > 1 ? 's' : ''}`;
+        return `Enlace ${maxUses} usos`;
       }
-      return 'abierto a todos';
+      return 'Canal público';
     
     case 'de':
       if (!hasLimit || isPublic) {
-        return 'für alle geöffnet';
+        return 'Öffentlicher Kanal';
       }
       if (maxParticipants) {
-        return `begrenzt auf ${maxParticipants} Teilnehmer`;
+        return `Link ${maxParticipants} Pers.`;
       }
       if (maxUses) {
-        return `begrenzt auf ${maxUses} Verwendung${maxUses > 1 ? 'en' : ''}`;
+        return `Link ${maxUses} Verw.`;
       }
-      return 'für alle geöffnet';
+      return 'Öffentlicher Kanal';
     
     case 'it':
       if (!hasLimit || isPublic) {
-        return 'aperto a tutti';
+        return 'Canale pubblico';
       }
       if (maxParticipants) {
-        return `limitato a ${maxParticipants} partecipante${maxParticipants > 1 ? 'i' : ''}`;
+        return `Link ${maxParticipants} pers.`;
       }
       if (maxUses) {
-        return `limitato a ${maxUses} uso${maxUses > 1 ? 'i' : ''}`;
+        return `Link ${maxUses} usi`;
       }
-      return 'aperto a tutti';
+      return 'Canale pubblico';
     
     case 'pt':
       if (!hasLimit || isPublic) {
-        return 'aberto a todos';
+        return 'Canal público';
       }
       if (maxParticipants) {
-        return `limitado a ${maxParticipants} participante${maxParticipants > 1 ? 's' : ''}`;
+        return `Link ${maxParticipants} pess.`;
       }
       if (maxUses) {
-        return `limitado a ${maxUses} uso${maxUses > 1 ? 's' : ''}`;
+        return `Link ${maxUses} usos`;
       }
-      return 'aberto a todos';
+      return 'Canal público';
     
     case 'zh':
       if (!hasLimit || isPublic) {
-        return '对所有人开放';
+        return '公开频道';
       }
       if (maxParticipants) {
-        return `限制 ${maxParticipants} 位参与者`;
+        return `链接 ${maxParticipants}人`;
       }
       if (maxUses) {
-        return `限制 ${maxUses} 次使用`;
+        return `链接 ${maxUses}次`;
       }
-      return '对所有人开放';
+      return '公开频道';
     
     case 'ja':
       if (!hasLimit || isPublic) {
-        return 'すべての人に公開';
+        return '公開チャンネル';
       }
       if (maxParticipants) {
-        return `${maxParticipants}人の参加者に制限`;
+        return `リンク ${maxParticipants}名`;
       }
       if (maxUses) {
-        return `${maxUses}回の使用に制限`;
+        return `リンク ${maxUses}回`;
       }
-      return 'すべての人に公開';
+      return '公開チャンネル';
     
     case 'ar':
       if (!hasLimit || isPublic) {
-        return 'مفتوح للجميع';
+        return 'قناة عامة';
       }
       if (maxParticipants) {
-        return `محدود لـ ${maxParticipants} مشارك${maxParticipants > 1 ? 'ين' : ''}`;
+        return `رابط ${maxParticipants} شخص`;
       }
       if (maxUses) {
-        return `محدود لـ ${maxUses} استخدام${maxUses > 1 ? 'ات' : ''}`;
+        return `رابط ${maxUses} استخدام`;
       }
-      return 'مفتوح للجميع';
+      return 'قناة عامة';
     
     default:
       if (!hasLimit || isPublic) {
-        return 'open to all';
+        return 'Public channel';
       }
       if (maxParticipants) {
-        return `limited to ${maxParticipants} participant${maxParticipants > 1 ? 's' : ''}`;
+        return `Link ${maxParticipants} people`;
       }
       if (maxUses) {
-        return `limited to ${maxUses} use${maxUses > 1 ? 's' : ''}`;
+        return `Link ${maxUses} uses`;
       }
-      return 'open to all';
+      return 'Public channel';
   }
 }
 
 /**
- * Retourne le texte de durée selon la langue
+ * Retourne la durée en format court selon la langue
  */
-function getDurationText(durationDays: number | undefined, language: string): string {
+function getShortDuration(durationDays: number | undefined, language: string): string {
   if (!durationDays) {
     switch (language) {
       case 'fr':
-        return 'indéfiniment';
+        return '∞';
       case 'en':
-        return 'indefinitely';
+        return '∞';
       case 'es':
-        return 'indefinidamente';
+        return '∞';
       case 'de':
-        return 'unbegrenzt';
+        return '∞';
       case 'it':
-        return 'indefinitamente';
+        return '∞';
       case 'pt':
-        return 'indefinidamente';
+        return '∞';
       case 'zh':
-        return '无限期';
+        return '∞';
       case 'ja':
-        return '無期限';
+        return '∞';
       case 'ar':
-        return 'إلى أجل غير مسمى';
+        return '∞';
       default:
-        return 'indefinitely';
+        return '∞';
     }
   }
 
   switch (language) {
     case 'fr':
-      return `${durationDays} jour${durationDays > 1 ? 's' : ''}`;
+      return `${durationDays}j`;
     
     case 'en':
-      return `${durationDays} day${durationDays > 1 ? 's' : ''}`;
+      return `${durationDays}d`;
     
     case 'es':
-      return `${durationDays} día${durationDays > 1 ? 's' : ''}`;
+      return `${durationDays}d`;
     
     case 'de':
-      return `${durationDays} Tag${durationDays > 1 ? 'e' : ''}`;
+      return `${durationDays}T`;
     
     case 'it':
-      return `${durationDays} giorno${durationDays > 1 ? 'i' : ''}`;
+      return `${durationDays}g`;
     
     case 'pt':
-      return `${durationDays} dia${durationDays > 1 ? 's' : ''}`;
+      return `${durationDays}d`;
     
     case 'zh':
-      return `${durationDays} 天`;
+      return `${durationDays}天`;
     
     case 'ja':
-      return `${durationDays} 日`;
+      return `${durationDays}日`;
     
     case 'ar':
-      return `${durationDays} يوم${durationDays > 1 ? 'اً' : ''}`;
+      return `${durationDays}ي`;
     
     default:
-      return `${durationDays} day${durationDays > 1 ? 's' : ''}`;
+      return `${durationDays}d`;
   }
 }
 
@@ -344,4 +297,3 @@ export function generateSimpleLinkName(conversationTitle: string, language: stri
     isPublic: true
   });
 }
-
