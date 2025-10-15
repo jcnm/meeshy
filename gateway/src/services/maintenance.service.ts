@@ -10,9 +10,17 @@ export class MaintenanceService {
   private prisma: PrismaClient;
   private maintenanceInterval: NodeJS.Timeout | null = null;
   private readonly OFFLINE_THRESHOLD_MINUTES = 5; // 5 minutes d'inactivité = hors ligne
+  private statusBroadcastCallback: ((userId: string, isOnline: boolean, isAnonymous: boolean) => void) | null = null;
 
   constructor(prisma: PrismaClient) {
     this.prisma = prisma;
+  }
+
+  /**
+   * Définir une callback pour broadcaster les changements de statut
+   */
+  setStatusBroadcastCallback(callback: (userId: string, isOnline: boolean, isAnonymous: boolean) => void): void {
+    this.statusBroadcastCallback = callback;
   }
 
   /**
@@ -79,9 +87,58 @@ export class MaintenanceService {
           }
         });
 
-        logger.info(`🔄 ${inactiveUsers.length} utilisateurs marqués comme hors ligne (inactifs depuis >${this.OFFLINE_THRESHOLD_MINUTES}min)`, {
-          users: inactiveUsers.map(u => ({ id: u.id, username: u.username, lastActiveAt: u.lastActiveAt }))
+        logger.warn(`🔄 [CLEANUP] ${inactiveUsers.length} utilisateurs marqués comme hors ligne (inactifs depuis >${this.OFFLINE_THRESHOLD_MINUTES}min)`, {
+          users: inactiveUsers.map(u => ({ 
+            id: u.id, 
+            username: u.username, 
+            lastActiveAt: u.lastActiveAt,
+            inactiveMinutes: Math.floor((Date.now() - u.lastActiveAt.getTime()) / 60000)
+          }))
         });
+      } else {
+        logger.debug(`✅ [CLEANUP] Aucun utilisateur inactif à nettoyer`);
+      }
+
+      // CORRECTION: Gérer également les participants anonymes inactifs
+      const inactiveAnonymous = await this.prisma.anonymousParticipant.findMany({
+        where: {
+          isOnline: true,
+          lastActiveAt: {
+            lt: offlineThreshold
+          },
+          isActive: true
+        },
+        select: {
+          id: true,
+          username: true,
+          lastActiveAt: true
+        }
+      });
+
+      if (inactiveAnonymous.length > 0) {
+        // Mettre à jour leur statut en ligne
+        await this.prisma.anonymousParticipant.updateMany({
+          where: {
+            id: {
+              in: inactiveAnonymous.map(participant => participant.id)
+            }
+          },
+          data: {
+            isOnline: false,
+            lastSeenAt: new Date()
+          }
+        });
+
+        logger.warn(`🔄 [CLEANUP] ${inactiveAnonymous.length} participants anonymes marqués comme hors ligne (inactifs depuis >${this.OFFLINE_THRESHOLD_MINUTES}min)`, {
+          participants: inactiveAnonymous.map(p => ({ 
+            id: p.id, 
+            username: p.username, 
+            lastActiveAt: p.lastActiveAt,
+            inactiveMinutes: Math.floor((Date.now() - p.lastActiveAt.getTime()) / 60000)
+          }))
+        });
+      } else {
+        logger.debug(`✅ [CLEANUP] Aucun participant anonyme inactif à nettoyer`);
       }
     } catch (error) {
       logger.error('❌ Erreur lors de la mise à jour des utilisateurs hors ligne:', error);
@@ -91,7 +148,7 @@ export class MaintenanceService {
   /**
    * Mettre à jour manuellement l'état en ligne/hors ligne d'un utilisateur
    */
-  async updateUserOnlineStatus(userId: string, isOnline: boolean): Promise<void> {
+  async updateUserOnlineStatus(userId: string, isOnline: boolean, broadcast: boolean = false): Promise<void> {
     try {
       await this.prisma.user.update({
         where: { id: userId },
@@ -103,8 +160,38 @@ export class MaintenanceService {
       });
 
       logger.info(`👤 Statut utilisateur ${userId} mis à jour: ${isOnline ? 'en ligne' : 'hors ligne'}`);
+      
+      // CORRECTION: Broadcaster le changement de statut si demandé
+      if (broadcast && this.statusBroadcastCallback) {
+        this.statusBroadcastCallback(userId, isOnline, false);
+      }
     } catch (error) {
       logger.error(`❌ Erreur lors de la mise à jour du statut de l'utilisateur ${userId}:`, error);
+    }
+  }
+
+  /**
+   * Mettre à jour manuellement l'état en ligne/hors ligne d'un participant anonyme
+   */
+  async updateAnonymousOnlineStatus(participantId: string, isOnline: boolean, broadcast: boolean = false): Promise<void> {
+    try {
+      await this.prisma.anonymousParticipant.update({
+        where: { id: participantId },
+        data: {
+          isOnline,
+          lastSeenAt: new Date(),
+          lastActiveAt: isOnline ? new Date() : undefined
+        }
+      });
+
+      logger.info(`👤 Statut participant anonyme ${participantId} mis à jour: ${isOnline ? 'en ligne' : 'hors ligne'}`);
+      
+      // CORRECTION: Broadcaster le changement de statut si demandé
+      if (broadcast && this.statusBroadcastCallback) {
+        this.statusBroadcastCallback(participantId, isOnline, true);
+      }
+    } catch (error) {
+      logger.error(`❌ Erreur lors de la mise à jour du statut du participant anonyme ${participantId}:`, error);
     }
   }
 
@@ -149,7 +236,7 @@ export class MaintenanceService {
    */
   async getMaintenanceStats(): Promise<any> {
     try {
-      const [onlineUsers, totalUsers, anonymousSessions] = await Promise.all([
+      const [onlineUsers, totalUsers, anonymousSessions, onlineAnonymous] = await Promise.all([
         this.prisma.user.count({
           where: { isOnline: true, isActive: true }
         }),
@@ -158,16 +245,20 @@ export class MaintenanceService {
         }),
         this.prisma.anonymousParticipant.count({
           where: { isActive: true }
+        }),
+        this.prisma.anonymousParticipant.count({
+          where: { isOnline: true, isActive: true }
         })
       ]);
 
       const maintenanceActive = this.maintenanceInterval !== null;
-      logger.info(`📊 Statistiques de maintenance - Maintenance active: ${maintenanceActive}, Utilisateurs en ligne: ${onlineUsers}/${totalUsers}`);
+      logger.info(`📊 Statistiques de maintenance - Maintenance active: ${maintenanceActive}, Utilisateurs en ligne: ${onlineUsers}/${totalUsers}, Anonymes en ligne: ${onlineAnonymous}/${anonymousSessions}`);
 
       return {
         onlineUsers,
         totalUsers,
         anonymousSessions,
+        onlineAnonymous,
         offlineThresholdMinutes: this.OFFLINE_THRESHOLD_MINUTES,
         maintenanceActive
       };

@@ -65,6 +65,13 @@ export class MeeshySocketIOManager {
     this.maintenanceService = new MaintenanceService(prisma);
     this.messagingService = new MessagingService(prisma, this.translationService);
     
+    // CORRECTION: Configurer le callback de broadcast pour le MaintenanceService
+    this.maintenanceService.setStatusBroadcastCallback(
+      (userId: string, isOnline: boolean, isAnonymous: boolean) => {
+        this._broadcastUserStatus(userId, isOnline, isAnonymous);
+      }
+    );
+    
     // Initialiser Socket.IO avec les types shared
     this.io = new SocketIOServer<ClientToServerEvents, ServerToClientEvents>(httpServer, {
       path: "/socket.io/",
@@ -74,7 +81,13 @@ export class MeeshySocketIOManager {
         methods: ["GET", "POST"],
         allowedHeaders: ['authorization', 'content-type', 'x-session-token', 'websocket', 'polling'],
         credentials: true
-      }
+      },
+      // CORRECTION CRITIQUE: Configuration timeouts pour détecter déconnexions abruptes
+      pingTimeout: 10000,  // 10s - Temps d'attente pour le pong avant de considérer la connexion morte
+      pingInterval: 25000, // 25s - Intervalle entre les pings (par défaut)
+      connectTimeout: 45000, // 45s - Timeout pour la connexion initiale
+      // Autoriser reconnexion rapide
+      allowEIO3: true
     });
     
     console.log('[GATEWAY] 🚀 MeeshySocketIOManager initialisé avec MessagingService');
@@ -410,7 +423,8 @@ export class MeeshySocketIOManager {
 
       // Récupérer les tokens depuis différentes sources avec types précis
       const authToken = socket.handshake?.headers?.authorization?.replace('Bearer ', '') || 
-                       socket.handshake?.auth?.authToken;
+                       socket.handshake?.auth?.authToken ||
+                       socket.handshake?.auth?.token; // Support pour socket.handshake.auth.token
       const sessionToken = socket.handshake?.headers?.['x-session-token'] as string || 
                           socket.handshake?.auth?.sessionToken;
       
@@ -457,12 +471,24 @@ export class MeeshySocketIOManager {
               language: dbUser.systemLanguage
             };
 
+            // CORRECTION CRITIQUE: Gérer les connexions multiples (même utilisateur, plusieurs onglets)
+            const existingUser = this.connectedUsers.get(user.id);
+            if (existingUser && existingUser.socketId !== socket.id) {
+              // Déconnecter l'ancienne socket
+              const oldSocket = this.io.sockets.sockets.get(existingUser.socketId);
+              if (oldSocket) {
+                console.log(`🔄 Déconnexion de l'ancienne socket ${existingUser.socketId} pour l'utilisateur ${user.id}`);
+                oldSocket.disconnect(true);
+              }
+              this.socketToUser.delete(existingUser.socketId);
+            }
+
             // Enregistrer l'utilisateur
             this.connectedUsers.set(user.id, user);
             this.socketToUser.set(socket.id, user.id);
 
-            // Mettre à jour l'état en ligne dans la base de données
-            await this.maintenanceService.updateUserOnlineStatus(user.id, true);
+            // Mettre à jour l'état en ligne dans la base de données et broadcaster
+            await this.maintenanceService.updateUserOnlineStatus(user.id, true, true);
 
             // Rejoindre les conversations de l'utilisateur
             await this._joinUserConversations(socket, user.id, false);
@@ -515,9 +541,24 @@ export class MeeshySocketIOManager {
               sessionToken: participant.sessionToken
             };
 
+            // CORRECTION CRITIQUE: Gérer les connexions multiples (même anonyme, plusieurs onglets)
+            const existingUser = this.connectedUsers.get(user.id);
+            if (existingUser && existingUser.socketId !== socket.id) {
+              // Déconnecter l'ancienne socket
+              const oldSocket = this.io.sockets.sockets.get(existingUser.socketId);
+              if (oldSocket) {
+                console.log(`🔄 Déconnexion de l'ancienne socket ${existingUser.socketId} pour l'anonyme ${user.id}`);
+                oldSocket.disconnect(true);
+              }
+              this.socketToUser.delete(existingUser.socketId);
+            }
+
             // Enregistrer l'utilisateur anonyme
             this.connectedUsers.set(user.id, user);
             this.socketToUser.set(socket.id, user.id);
+
+            // CORRECTION: Mettre à jour l'état en ligne dans la base de données pour les anonymes et broadcaster
+            await this.maintenanceService.updateAnonymousOnlineStatus(user.id, true, true);
 
             // Rejoindre la conversation spécifique du lien de partage
             try {
@@ -607,7 +648,8 @@ export class MeeshySocketIOManager {
                 id: anonymousUser.id,
                 socketId: socket.id,
                 isAnonymous: true,
-                language: data.language || anonymousUser.language || 'fr'
+                language: data.language || anonymousUser.language || 'fr',
+                sessionToken: anonymousUser.sessionToken
               };
               console.log(`✅ Participant anonyme authentifié: ${user.id}`);
             } else {
@@ -635,9 +677,28 @@ export class MeeshySocketIOManager {
       }
       
       if (user) {
+        // CORRECTION CRITIQUE: Gérer les connexions multiples
+        const existingUser = this.connectedUsers.get(user.id);
+        if (existingUser && existingUser.socketId !== socket.id) {
+          // Déconnecter l'ancienne socket
+          const oldSocket = this.io.sockets.sockets.get(existingUser.socketId);
+          if (oldSocket) {
+            console.log(`🔄 Déconnexion de l'ancienne socket ${existingUser.socketId} pour ${user.isAnonymous ? 'anonyme' : 'utilisateur'} ${user.id}`);
+            oldSocket.disconnect(true);
+          }
+          this.socketToUser.delete(existingUser.socketId);
+        }
+
         // Enregistrer l'utilisateur
         this.connectedUsers.set(user.id, user);
         this.socketToUser.set(socket.id, user.id);
+        
+        // CORRECTION: Mettre à jour l'état en ligne selon le type d'utilisateur et broadcaster
+        if (user.isAnonymous) {
+          await this.maintenanceService.updateAnonymousOnlineStatus(user.id, true, true);
+        } else {
+          await this.maintenanceService.updateUserOnlineStatus(user.id, true, true);
+        }
         
         // Rejoindre les conversations de l'utilisateur
         await this._joinUserConversations(socket, user.id, user.isAnonymous);
@@ -1010,16 +1071,99 @@ export class MeeshySocketIOManager {
     const userId = this.socketToUser.get(socket.id);
     
     if (userId) {
-      this.connectedUsers.delete(userId);
-      this.socketToUser.delete(socket.id);
+      const user = this.connectedUsers.get(userId);
+      const isAnonymous = user?.isAnonymous || false;
       
-      // Mettre à jour l'état en ligne/hors ligne dans la base de données
-      await this.maintenanceService.updateUserOnlineStatus(userId, false);
-      
-      console.log(`🔌 Déconnexion: ${userId} (socket: ${socket.id})`);
+      // CORRECTION CRITIQUE: Ne supprimer que si c'est bien la socket active actuelle
+      // (en cas de reconnexion rapide, une nouvelle socket peut avoir été créée)
+      const currentUser = this.connectedUsers.get(userId);
+      if (currentUser && currentUser.socketId === socket.id) {
+        this.connectedUsers.delete(userId);
+        this.socketToUser.delete(socket.id);
+        
+        // CORRECTION: Mettre à jour l'état en ligne/hors ligne selon le type d'utilisateur et broadcaster
+        if (isAnonymous) {
+          await this.maintenanceService.updateAnonymousOnlineStatus(userId, false, true);
+          console.log(`🔌 Déconnexion participant anonyme: ${userId} (socket: ${socket.id})`);
+        } else {
+          await this.maintenanceService.updateUserOnlineStatus(userId, false, true);
+          console.log(`🔌 Déconnexion utilisateur: ${userId} (socket: ${socket.id})`);
+        }
+      } else {
+        // Cette socket était déjà remplacée, juste nettoyer socketToUser
+        this.socketToUser.delete(socket.id);
+        console.log(`🔌 Déconnexion socket obsolète ignorée: ${socket.id} pour utilisateur ${userId}`);
+      }
     }
     
     this.stats.active_connections--;
+  }
+
+  /**
+   * CORRECTION: Broadcaster le changement de statut d'un utilisateur à tous les clients
+   */
+  private async _broadcastUserStatus(userId: string, isOnline: boolean, isAnonymous: boolean): Promise<void> {
+    try {
+      // Récupérer les informations de l'utilisateur pour le broadcast
+      if (isAnonymous) {
+        const participant = await this.prisma.anonymousParticipant.findUnique({
+          where: { id: userId },
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            conversationId: true
+          }
+        });
+
+        if (participant) {
+          const displayName = `${participant.firstName} ${participant.lastName}`.trim() || participant.username;
+          
+          // Broadcaster uniquement dans la conversation du participant anonyme
+          this.io.to(`conversation_${participant.conversationId}`).emit(SERVER_EVENTS.USER_STATUS, {
+            userId: participant.id,
+            username: displayName,
+            isOnline
+          });
+          
+          console.log(`📡 [STATUS] Statut participant anonyme ${displayName} broadcasté: ${isOnline ? 'en ligne' : 'hors ligne'}`);
+        }
+      } else {
+        const user = await this.prisma.user.findUnique({
+          where: { id: userId },
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            firstName: true,
+            lastName: true,
+            conversations: {
+              select: {
+                conversationId: true
+              }
+            }
+          }
+        });
+
+        if (user) {
+          const displayName = user.displayName || `${user.firstName} ${user.lastName}`.trim() || user.username;
+          
+          // Broadcaster dans toutes les conversations de l'utilisateur
+          for (const conv of user.conversations) {
+            this.io.to(`conversation_${conv.conversationId}`).emit(SERVER_EVENTS.USER_STATUS, {
+              userId: user.id,
+              username: displayName,
+              isOnline
+            });
+          }
+          
+          console.log(`📡 [STATUS] Statut utilisateur ${displayName} broadcasté dans ${user.conversations.length} conversations: ${isOnline ? 'en ligne' : 'hors ligne'}`);
+        }
+      }
+    } catch (error) {
+      console.error('❌ [STATUS] Erreur lors du broadcast du statut:', error);
+    }
   }
 
   private async _handleTypingStart(socket: any, data: { conversationId: string }) {
@@ -1150,6 +1294,7 @@ export class MeeshySocketIOManager {
       } catch {}
     }, 10000); // toutes les 10s par défaut
   }
+
 
   private async _sendConversationStatsToSocket(socket: any, conversationId: string): Promise<void> {
     this._ensureOnlineStatsTicker();
@@ -1418,6 +1563,12 @@ export class MeeshySocketIOManager {
 
   async close(): Promise<void> {
     try {
+      // Arrêter le ticker des stats en ligne
+      if (this.onlineStatsInterval) {
+        clearInterval(this.onlineStatsInterval);
+        this.onlineStatsInterval = null;
+      }
+      
       await this.translationService.close();
       this.io.close();
       console.log('[GATEWAY] ✅ MeeshySocketIOManager fermé');
