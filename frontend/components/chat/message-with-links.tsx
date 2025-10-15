@@ -58,19 +58,29 @@ export function MessageWithLinks({
           });
 
           if (result.success && result.originalUrl) {
-            // Ouvrir l'URL originale dans un nouvel onglet
-            window.open(result.originalUrl, '_blank', 'noopener,noreferrer');
+            // Essayer d'ouvrir dans un nouvel onglet, sinon naviguer directement
+            const newWindow = window.open(result.originalUrl, '_blank', 'noopener,noreferrer');
+            if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+              // Si l'ouverture d'un nouvel onglet échoue, naviguer directement
+              window.location.href = result.originalUrl;
+            }
           } else {
             console.error('Failed to record tracking link click:', result.error);
             // Fallback: ouvrir le lien de tracking directement
             const fallbackUrl = part.type === 'mshy-link' ? part.trackingUrl! : part.content;
-            window.open(fallbackUrl, '_blank', 'noopener,noreferrer');
+            const newWindow = window.open(fallbackUrl, '_blank', 'noopener,noreferrer');
+            if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+              window.location.href = fallbackUrl;
+            }
           }
         } catch (error) {
           console.error('Error handling tracking link click:', error);
           // Fallback: ouvrir le lien de tracking directement
           const fallbackUrl = part.type === 'mshy-link' ? part.trackingUrl! : part.content;
-          window.open(fallbackUrl, '_blank', 'noopener,noreferrer');
+          const newWindow = window.open(fallbackUrl, '_blank', 'noopener,noreferrer');
+          if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+            window.location.href = fallbackUrl;
+          }
         }
       }
 
@@ -109,7 +119,7 @@ export function MessageWithLinks({
               'cursor-pointer pointer-events-auto hover:scale-105',
               linkClassName
             )}
-            title={`Meeshy tracking link → ${part.trackingUrl}`}
+            title={`Open the link :${part.trackingUrl}`}
           >
             <Link2 className="h-3.5 w-3.5 flex-shrink-0" />
             <span className="font-mono text-xs">{part.content}</span>
@@ -212,23 +222,26 @@ export function TrackingLink({
         });
 
         if (result.success && result.originalUrl) {
-          window.open(result.originalUrl, '_blank', 'noopener,noreferrer');
+          const newWindow = window.open(result.originalUrl, '_blank', 'noopener,noreferrer');
+          if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+            window.location.href = result.originalUrl;
+          }
           onClickTracked?.();
         } else {
           console.error('Failed to record tracking link click:', result.error);
-          window.open(
-            `https://meeshy.me/l/${token}`,
-            '_blank',
-            'noopener,noreferrer'
-          );
+          const fallbackUrl = `https://meeshy.me/l/${token}`;
+          const newWindow = window.open(fallbackUrl, '_blank', 'noopener,noreferrer');
+          if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+            window.location.href = fallbackUrl;
+          }
         }
       } catch (error) {
         console.error('Error handling tracking link click:', error);
-        window.open(
-          `https://meeshy.me/l/${token}`,
-          '_blank',
-          'noopener,noreferrer'
-        );
+        const fallbackUrl = `https://meeshy.me/l/${token}`;
+        const newWindow = window.open(fallbackUrl, '_blank', 'noopener,noreferrer');
+        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+          window.location.href = fallbackUrl;
+        }
       }
     },
     [token, onClickTracked]
