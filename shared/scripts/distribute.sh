@@ -2,13 +2,14 @@
 
 # Script de distribution des fichiers générés vers les services
 # Copie les fichiers Prisma et Proto générés vers chaque service
+# Configure également le workspace pour les builds Docker
 
 set -e
 
 echo "🚀 Distribution des fichiers générés vers les services..."
 
 # Répertoire de base (supposé être exécuté depuis shared/)
-SHARED_DIR="$(pwd)"
+SHARED_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ROOT_DIR="$(dirname "$SHARED_DIR")"
 
 # Services cibles
@@ -17,19 +18,26 @@ FRONTEND_DIR="$ROOT_DIR/frontend"
 TRANSLATOR_DIR="$ROOT_DIR/translator"
 
 # Vérifier que nous sommes dans le bon répertoire
+cd "$SHARED_DIR"
 if [ ! -f "package.json" ]; then
     echo "❌ Erreur: Ce script doit être exécuté depuis le répertoire shared/"
     exit 1
 fi
 
-# Vérifier que le build a été fait
-if [ ! -d "dist" ]; then
-    echo "❌ Erreur: Le dossier dist/ n'existe pas. Lancez 'pnpm build:types' d'abord."
-    exit 1
+# Build shared types if needed
+if [ ! -d "$SHARED_DIR/dist" ]; then
+    echo "📦 Building shared types..."
+    pnpm run build:types 2>/dev/null || npm run build:types || true
 fi
 
-rm -rf "./node_modules"
-rm -rf "./prisma/client"
+# Vérifier que le build a été fait
+if [ ! -d "dist" ]; then
+    echo "⚠️  Le dossier dist/ n'existe pas. Tentative de build..."
+    pnpm run build:types 2>/dev/null || npm run build:types || echo "⚠️  Build échoué, continuons..."
+fi
+
+rm -rf "./node_modules" 2>/dev/null || true
+rm -rf "./prisma/client" 2>/dev/null || true
 
 # Fonction pour créer le répertoire libs et copier les fichiers
 distribute_to_service() {
@@ -76,7 +84,7 @@ distribute_to_service() {
             mkdir -p "$service_dir/shared/prisma"
             if [ -f "schema.prisma" ]; then
                 cp schema.prisma "$service_dir/shared/prisma/"
-                cp seeds.ts "$service_dir/shared/" >/dev/null 2>&1 || true
+                cp seed.ts "$service_dir/shared/prisma/" 2>/dev/null || true
                 echo "  ✅ Schema Prisma copié vers $service_name/shared/prisma/"
             fi
 
@@ -87,6 +95,39 @@ distribute_to_service() {
                 echo "  ✅ Fichiers Proto copiés vers $service_name/shared/proto/"
             fi
 
+            # Copier shared package.json (needed for pnpm workspace)
+            echo "  📦 Copying shared package.json..."
+            cp "$SHARED_DIR/package.json" "$service_dir/shared/package.json"
+            
+            # Copy pnpm workspace configuration
+            echo "  📦 Copying pnpm workspace configuration..."
+            cp "$ROOT_DIR/pnpm-workspace.yaml" "$service_dir/pnpm-workspace.yaml"
+            
+            # Create minimal pnpm-workspace.yaml for service context
+            echo "  📦 Creating minimal pnpm-workspace.yaml for $service_name..."
+            cat > "$service_dir/pnpm-workspace.yaml" << 'EOF'
+packages:
+  - '.'
+  - 'shared'
+
+ignoredBuiltDependencies:
+  - '@tensorflow/tfjs-node'
+  - core-js
+  - onnxruntime-node
+  - protobufjs
+  - sharp
+  - unrs-resolver
+
+onlyBuiltDependencies:
+  - '@prisma/client'
+  - '@prisma/engines'
+  - esbuild
+  - prisma
+EOF
+
+            echo "  ✅ $service_name is now self-sufficient for Docker build!"
+            echo "  ✅ - shared/ directory distributed"
+            echo "  ✅ - pnpm-workspace.yaml configured for $service_name context"
             ;;
             
         "python")
@@ -133,6 +174,8 @@ distribute_to_service() {
             # Créer un __init__.py pour faire de shared un package Python
             touch "$service_dir/shared/__init__.py"
             touch "$service_dir/shared/proto/__init__.py" 2>/dev/null || true
+            
+            echo "  ✅ $service_name is now self-sufficient for Docker build!"
             ;;
     esac
     
@@ -156,6 +199,7 @@ for service_dir in "$GATEWAY_DIR" "$FRONTEND_DIR" "$TRANSLATOR_DIR"; do
     fi
 done
 
+echo ""
 echo "🎉 Distribution terminée ! Version: $VERSION"
 echo ""
 echo "📋 Résumé:"
@@ -163,8 +207,13 @@ echo "  TypeScript Services (Gateway, Frontend):"
 echo "    - Prisma Client JS généré -> */shared/"
 echo "    - Proto TypeScript -> */shared/proto/"
 echo "    - Types TypeScript -> */shared/types/"
+echo "    - Package.json + pnpm-workspace.yaml configurés"
+echo "    - Services prêts pour Docker build ✓"
 echo "  Python Service (Translator):"
 echo "    - Schema Prisma Python -> translator/shared/prisma/ + translator/schema.prisma"
 echo "    - Generator: prisma-client-py avec interface asyncio"
 echo "    - Proto source + Python générés -> translator/shared/proto/"
+echo "    - Service prêt pour Docker build ✓"
 echo "  - Version: $VERSION"
+echo ""
+echo "✅ Vous pouvez maintenant lancer les builds Docker des services!"

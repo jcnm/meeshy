@@ -2,6 +2,7 @@
 
 # Script de démarrage pour l'environnement de développement local Meeshy
 # Exécute les services en mode natif (translator, gateway, frontend)
+# Les containers Docker (MongoDB, Redis) restent actifs après Ctrl+C
 
 set -e
 
@@ -16,6 +17,7 @@ NC='\033[0m' # No Color
 TRANSLATOR_PID=""
 GATEWAY_PID=""
 FRONTEND_PID=""
+INFRA_STARTED_BY_SCRIPT=false
 
 # Fonction pour afficher les messages
 log_info() {
@@ -34,9 +36,9 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Fonction pour arrêter tous les processus
+# Fonction pour arrêter tous les processus natifs
 cleanup() {
-    log_warning "Arrêt des services..."
+    log_warning "Arrêt des services natifs..."
     
     if [ ! -z "$FRONTEND_PID" ]; then
         log_info "Arrêt du frontend (PID: $FRONTEND_PID)..."
@@ -53,7 +55,9 @@ cleanup() {
         kill $TRANSLATOR_PID 2>/dev/null || true
     fi
     
-    log_success "Tous les services ont été arrêtés"
+    log_success "Services natifs arrêtés"
+    log_info "💡 Les containers Docker (MongoDB, Redis) restent actifs"
+    log_info "   Pour les arrêter: ${YELLOW}docker-compose -f docker-compose.infra.yml down${NC}"
     exit 0
 }
 
@@ -62,6 +66,58 @@ trap cleanup SIGINT SIGTERM
 
 # Capturer Ctrl+C pour arrêter proprement
 trap cleanup SIGINT SIGTERM
+
+# Vérifier et démarrer l'infrastructure Docker
+check_infrastructure() {
+    log_info "Vérification de l'infrastructure Docker..."
+    
+    # Vérifier si les containers d'infrastructure tournent
+    local database_running=$(docker ps --filter "name=meeshy-dev-database" --filter "status=running" -q)
+    local redis_running=$(docker ps --filter "name=meeshy-dev-redis" --filter "status=running" -q)
+    
+    if [ -z "$database_running" ] || [ -z "$redis_running" ]; then
+        log_warning "Infrastructure Docker non démarrée"
+        log_info "Démarrage des containers d'infrastructure (MongoDB, Redis)..."
+        
+        docker-compose -f docker-compose.infra.yml up -d
+        INFRA_STARTED_BY_SCRIPT=true
+        
+        log_info "Attente du démarrage complet de l'infrastructure..."
+        sleep 10
+        
+        # Vérifier que MongoDB est prêt
+        log_info "Vérification de MongoDB..."
+        for i in {1..30}; do
+            if docker exec meeshy-dev-database mongosh --eval "db.adminCommand('ping')" > /dev/null 2>&1; then
+                log_success "MongoDB est prêt"
+                break
+            fi
+            if [ $i -eq 30 ]; then
+                log_error "Timeout: MongoDB ne répond pas"
+                exit 1
+            fi
+            sleep 1
+        done
+        
+        # Vérifier que Redis est prêt
+        log_info "Vérification de Redis..."
+        for i in {1..10}; do
+            if docker exec meeshy-dev-redis redis-cli ping > /dev/null 2>&1; then
+                log_success "Redis est prêt"
+                break
+            fi
+            if [ $i -eq 10 ]; then
+                log_error "Timeout: Redis ne répond pas"
+                exit 1
+            fi
+            sleep 1
+        done
+        
+        log_success "Infrastructure Docker démarrée avec succès"
+    else
+        log_success "Infrastructure Docker déjà en cours d'exécution"
+    fi
+}
 
 # Vérifier les scripts de démarrage
 check_scripts() {
@@ -145,7 +201,8 @@ start_services() {
     echo "   - logs/gateway.log"
     echo "   - logs/frontend.log"
     echo ""
-    log_info "💡 Appuyez sur ${YELLOW}Ctrl+C${NC} pour arrêter tous les services"
+    log_info "💡 Appuyez sur ${YELLOW}Ctrl+C${NC} pour arrêter les services natifs"
+    log_info "   (Les containers Docker resteront actifs)"
     echo ""
     
     # Attendre indéfiniment (jusqu'à Ctrl+C)
@@ -154,6 +211,9 @@ start_services() {
 
 # Créer le répertoire logs si nécessaire
 mkdir -p logs
+
+# Vérifier et démarrer l'infrastructure Docker
+check_infrastructure
 
 # Vérifier les scripts
 check_scripts

@@ -13,7 +13,40 @@ PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
+# Parse les arguments
+STOP_CONTAINERS=false
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --with-containers)
+      STOP_CONTAINERS=true
+      shift
+      ;;
+    -h|--help)
+      echo "Usage: $0 [OPTIONS]"
+      echo ""
+      echo "Options:"
+      echo "  --with-containers    Arrête aussi les conteneurs Docker (MongoDB, Redis)"
+      echo "  -h, --help          Affiche cette aide"
+      echo ""
+      echo "Par défaut, seuls les services natifs (Node.js, Python) sont arrêtés."
+      echo "Les conteneurs Docker restent actifs sauf si --with-containers est spécifié."
+      exit 0
+      ;;
+    *)
+      echo -e "${RED}❌ Option inconnue: $1${NC}"
+      echo "Utilisez -h ou --help pour voir les options disponibles"
+      exit 1
+      ;;
+  esac
+done
+
 echo -e "${CYAN}🛑 Arrêt de l'environnement Meeshy LOCAL (DEV)${NC}"
+if [ "$STOP_CONTAINERS" = true ]; then
+  echo -e "${YELLOW}   Mode: Services natifs + Conteneurs Docker${NC}"
+else
+  echo -e "${YELLOW}   Mode: Services natifs uniquement${NC}"
+fi
 echo ""
 
 # Fonction pour arrêter un processus par nom
@@ -91,20 +124,25 @@ check_port_free 3000 "Gateway"
 check_port_free 3100 "Frontend"
 check_port_free 8000 "Translator"
 
-# Arrêt des services Docker
-echo -e "${BLUE}🐳 Arrêt des services Docker (Infrastructure uniquement)...${NC}"
-cd /Users/smpceo/Documents/Services/Meeshy/meeshy
+# Arrêt des services Docker (optionnel)
+if [ "$STOP_CONTAINERS" = true ]; then
+  echo -e "${BLUE}🐳 Arrêt des services Docker (Infrastructure uniquement)...${NC}"
+  cd /Users/smpceo/Documents/Services/Meeshy/meeshy
 
-# Arrêter les services Docker de développement (infrastructure uniquement)
-echo -e "${YELLOW}🛑 Arrêt des conteneurs Docker (MongoDB, Redis)...${NC}"
-docker-compose -f docker-compose.local.yml stop 2>/dev/null || true
+  # Arrêter les services Docker de développement (infrastructure uniquement)
+  echo -e "${YELLOW}🛑 Arrêt des conteneurs Docker (MongoDB, Redis)...${NC}"
+  docker-compose -f docker-compose.local.yml stop 2>/dev/null || true
 
-# Optionnel: supprimer les conteneurs (décommentez si nécessaire)
-# echo -e "${YELLOW}🗑️  Suppression des conteneurs...${NC}"
-# docker-compose -f docker-compose.local.yml rm -f 2>/dev/null || true
+  # Optionnel: supprimer les conteneurs (décommentez si nécessaire)
+  # echo -e "${YELLOW}🗑️  Suppression des conteneurs...${NC}"
+  # docker-compose -f docker-compose.local.yml rm -f 2>/dev/null || true
 
-echo -e "${BLUE}📊 Statut des conteneurs Docker:${NC}"
-docker-compose -f docker-compose.local.yml ps 2>/dev/null || echo "Aucun conteneur Docker en cours"
+  echo -e "${BLUE}📊 Statut des conteneurs Docker:${NC}"
+  docker-compose -f docker-compose.local.yml ps 2>/dev/null || echo "Aucun conteneur Docker en cours"
+else
+  echo -e "${CYAN}ℹ️  Les conteneurs Docker (MongoDB, Redis) restent actifs${NC}"
+  echo -e "${CYAN}   Pour les arrêter aussi, utilisez: $0 --with-containers${NC}"
+fi
 
 # Nettoyage des fichiers de logs (optionnel)
 echo -e "${BLUE}🧹 Nettoyage des fichiers de logs...${NC}"
@@ -129,10 +167,18 @@ echo -e "${GREEN}✅ Environnement Meeshy LOCAL arrêté avec succès !${NC}"
 echo ""
 echo -e "${CYAN}📋 Résumé:${NC}"
 echo -e "  ${GREEN}Services Node.js:${NC} Arrêtés"
-echo -e "  ${GREEN}Services Docker:${NC} Arrêtés"
-echo -e "  ${GREEN}Ports:${NC} Libérés"
+if [ "$STOP_CONTAINERS" = true ]; then
+  echo -e "  ${GREEN}Services Docker:${NC} Arrêtés"
+else
+  echo -e "  ${YELLOW}Services Docker:${NC} Toujours actifs (MongoDB, Redis)"
+fi
+echo -e "  ${GREEN}Ports (3000, 3100, 8000):${NC} Libérés"
 echo -e "  ${GREEN}Logs:${NC} Nettoyés"
 echo ""
 echo -e "${PURPLE}🚀 Pour redémarrer l'environnement:${NC}"
-echo -e "  ${YELLOW}./scripts/development/start-local.sh${NC}"
+if [ "$STOP_CONTAINERS" = true ]; then
+  echo -e "  ${YELLOW}./scripts/development/development-start-local.sh --with-containers${NC}"
+else
+  echo -e "  ${YELLOW}./scripts/development/development-start-local.sh${NC}"
+fi
 echo ""

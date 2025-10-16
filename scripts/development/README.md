@@ -1,145 +1,402 @@
-# 🚀 Scripts de Développement Local
+# Scripts de développement local
 
-## Scripts Disponibles
+## Vue d'ensemble
 
-### start-local.sh ⭐
-**Script principal pour démarrer l'environnement de développement complet**
+Ces scripts permettent de démarrer et arrêter l'environnement de développement Meeshy en mode **local** (services natifs + infrastructure Docker).
 
+## Scripts disponibles
+
+### 1. `development-start-local.sh`
+
+Démarre tous les services Meeshy en mode développement.
+
+**Usage de base (services natifs uniquement) :**
 ```bash
-./start-local.sh
+./scripts/development/development-start-local.sh
 ```
 
-**Fonctionnalités :**
-- ✅ Configuration automatique des variables d'environnement pour localhost
-- 🐳 Démarrage de MongoDB et Redis via Docker
-- 🚀 Lancement de Translator, Gateway, Frontend en mode natif
-- 📊 Monitoring des services en temps réel
-- 🛑 Arrêt propre avec Ctrl+C (nettoie tout automatiquement)
-
-**Variables configurées automatiquement :**
+**Avec conteneurs Docker :**
 ```bash
-DATABASE_URL=mongodb://meeshy:MeeshyPassword123@localhost:27017/meeshy?authSource=admin
-REDIS_URL=redis://localhost:6379
-NEXT_PUBLIC_API_URL=http://localhost:3000
-NEXT_PUBLIC_WS_URL=ws://localhost:3000/api/ws
-# ... et toutes les autres variables pour localhost
+./scripts/development/development-start-local.sh --with-containers
 ```
 
-### stop-local.sh 🛑
-**Script de sauvegarde pour arrêter l'environnement (généralement pas nécessaire)**
-
+**Aide :**
 ```bash
-./stop-local.sh
+./scripts/development/development-start-local.sh --help
 ```
 
-Normalement, utilisez Ctrl+C dans le terminal de `start-local.sh` pour un arrêt propre.
+#### Comportement par défaut
 
-### test-local.sh 🧪
-**Script de test pour vérifier que tous les services fonctionnent**
+- ✅ Démarre les services **natifs** (Node.js, Python)
+  - Frontend (Next.js) sur port 3100
+  - Gateway (Fastify) sur port 3000
+  - Translator (FastAPI) sur port 8000
+- ❌ **Ne démarre PAS** les conteneurs Docker
+- ⚠️ **Vérifie** que MongoDB et Redis sont accessibles
+  - Si non accessibles → erreur et arrêt
+  - Message d'aide pour les démarrer manuellement
 
+#### Avec option `--with-containers`
+
+- ✅ Démarre les conteneurs Docker
+  - MongoDB sur port 27017
+  - Redis sur port 6379
+- ✅ Initialise le replica set MongoDB
+- ✅ Démarre les services natifs
+
+#### Prérequis
+
+- Node.js 22+
+- pnpm
+- Python 3.12+
+- Docker et docker-compose
+
+---
+
+### 2. `development-stop-local.sh`
+
+Arrête tous les services Meeshy démarrés par le script de démarrage.
+
+**Usage de base (services natifs uniquement) :**
 ```bash
-./test-local.sh
+./scripts/development/development-stop-local.sh
 ```
 
-Teste la connectivité de tous les services :
-- Ports ouverts (3000, 3100, 8000, 27017, 6379)
-- Endpoints HTTP (/health)
-- Accessibilité des services
-
-## 🎯 Utilisation Recommandée
-
-### Démarrage Normal
+**Avec conteneurs Docker :**
 ```bash
-# Démarrer tout l'environnement
-./scripts/development/start-local.sh
-
-# Dans un autre terminal, tester que tout fonctionne
-./scripts/development/test-local.sh
-
-# Développer normalement avec hot-reload
-# - Modifications Frontend : rechargées automatiquement
-# - Modifications Gateway : redémarrage auto avec nodemon  
-# - Modifications Translator : redémarrage auto avec uvicorn --reload
-
-# Arrêter avec Ctrl+C dans le terminal start-local.sh
+./scripts/development/development-stop-local.sh --with-containers
 ```
 
-### Développement avec Logs
+**Aide :**
 ```bash
-# Démarrer l'environnement
-./scripts/development/start-local.sh
+./scripts/development/development-stop-local.sh --help
+```
 
-# Dans d'autres terminaux, suivre les logs
-tail -f translator/translator.log
-tail -f gateway/gateway.log
+#### Comportement par défaut
+
+- ✅ Arrête les services **natifs** (Node.js, Python)
+  - Frontend (PID)
+  - Gateway (PID)
+  - Translator (PID)
+- ✅ Libère les ports 3000, 3100, 8000
+- ✅ Nettoie les fichiers de logs
+- ❌ **Ne touche PAS** aux conteneurs Docker
+  - MongoDB et Redis restent actifs
+
+#### Avec option `--with-containers`
+
+- ✅ Arrête les services natifs
+- ✅ **Arrête aussi** les conteneurs Docker
+  - MongoDB
+  - Redis
+
+---
+
+## Scénarios d'utilisation
+
+### Scénario 1 : Développement normal (recommandé)
+
+**Objectif :** Travailler sur le code sans redémarrer MongoDB/Redis à chaque fois.
+
+**Setup initial (une fois) :**
+```bash
+# Démarrer MongoDB et Redis
+docker-compose -f docker-compose.local.yml up -d
+
+# Initialiser le replica set MongoDB (si nécessaire)
+docker exec meeshy-dev-database mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "localhost:27017"}]})'
+```
+
+**Workflow quotidien :**
+```bash
+# Démarrer les services
+./scripts/development/development-start-local.sh
+
+# Travailler...
+
+# Arrêter les services (MongoDB/Redis restent actifs)
+./scripts/development/development-stop-local.sh
+
+# Redémarrer rapidement sans attendre MongoDB/Redis
+./scripts/development/development-start-local.sh
+```
+
+**Avantages :**
+- ⚡ Démarrage ultra-rapide (5-10 secondes au lieu de 30-60 secondes)
+- 💾 Données persistantes entre les redémarrages
+- 🔄 Pas besoin de réinitialiser le replica set MongoDB
+
+---
+
+### Scénario 2 : Démarrage complet (from scratch)
+
+**Objectif :** Tout démarrer depuis zéro (première utilisation ou après un reboot).
+
+```bash
+# Démarrer TOUT (conteneurs + services)
+./scripts/development/development-start-local.sh --with-containers
+
+# Travailler...
+
+# Arrêter TOUT
+./scripts/development/development-stop-local.sh --with-containers
+```
+
+**Avantages :**
+- 🎯 Un seul script pour tout gérer
+- 🧹 Environnement propre à chaque démarrage
+- 📦 Idéal pour les tests de déploiement
+
+---
+
+### Scénario 3 : Redémarrage rapide d'un service spécifique
+
+**Objectif :** Redémarrer uniquement le Frontend ou le Gateway sans tout arrêter.
+
+```bash
+# Identifier le PID du service
+ps aux | grep "next.*start"  # Frontend
+ps aux | grep "node.*gateway"  # Gateway
+ps aux | grep "python.*main.py"  # Translator
+
+# Arrêter le service
+kill <PID>
+
+# Dans le terminal du script de démarrage, le service sera automatiquement détecté comme arrêté
+# Relancer manuellement :
+cd frontend && pnpm run dev > frontend.log 2>&1 &
+# OU
+cd gateway && pnpm run dev > gateway.log 2>&1 &
+# OU
+cd translator && source venv/bin/activate && python3 src/main.py > translator.log 2>&1 &
+```
+
+---
+
+## Gestion des conteneurs Docker
+
+### Démarrer MongoDB et Redis manuellement
+
+```bash
+# Démarrer les conteneurs
+docker-compose -f docker-compose.local.yml up -d
+
+# Vérifier le statut
+docker-compose -f docker-compose.local.yml ps
+
+# Voir les logs
+docker-compose -f docker-compose.local.yml logs -f
+```
+
+### Arrêter MongoDB et Redis manuellement
+
+```bash
+# Arrêter sans supprimer
+docker-compose -f docker-compose.local.yml stop
+
+# Arrêter et supprimer
+docker-compose -f docker-compose.local.yml down
+
+# Arrêter, supprimer ET supprimer les volumes (⚠️ perte de données)
+docker-compose -f docker-compose.local.yml down -v
+```
+
+### Vérifier que les conteneurs sont actifs
+
+```bash
+# Vérifier MongoDB
+docker exec meeshy-dev-database mongosh --eval "db.runCommand({ping: 1})"
+
+# Vérifier Redis
+docker exec meeshy-dev-redis redis-cli ping
+```
+
+---
+
+## Logs des services
+
+### Voir les logs en temps réel
+
+```bash
+# Frontend
 tail -f frontend/frontend.log
+
+# Gateway
+tail -f gateway/gateway.log
+
+# Translator
+tail -f translator/translator.log
+
+# Tous en même temps
+tail -f frontend/frontend.log gateway/gateway.log translator/translator.log
 ```
 
-## 🔧 Configuration Automatique
+### Logs Docker
 
-Le script `start-local.sh` crée automatiquement tous les fichiers `.env.local` nécessaires :
-
-- `/meeshy/.env.local` (global)
-- `/frontend/.env.local` (Next.js)
-- `/gateway/.env.local` (Fastify)
-- `/translator/.env.local` (FastAPI)
-
-**Tous configurés pour localhost**, pas besoin de configuration manuelle !
-
-## 🐳 Services Docker
-
-Le script utilise `docker-compose.dev.yml` qui démarre uniquement :
-- **MongoDB** (port 27017)
-- **Redis** (port 6379)
-
-Les services applicatifs sont démarrés nativement pour permettre le hot-reload.
-
-## 🛑 Arrêt Propre avec Ctrl+C
-
-Le script `start-local.sh` gère automatiquement l'arrêt propre :
-
-1. **Ctrl+C détecté** → Signal de nettoyage déclenché
-2. **Arrêt des services Node.js/Python** → SIGTERM puis SIGKILL si nécessaire
-3. **Arrêt des containers Docker** → `docker-compose down`
-4. **Nettoyage des logs** → Suppression des fichiers temporaires
-5. **Vérification finale** → Ports libérés
-
-## 📊 Monitoring Intégré
-
-Le script surveille en permanence que tous les services restent actifs :
-- Si un service s'arrête → Message d'alerte
-- Si tous les services s'arrêtent → Arrêt automatique du script
-- Vérification toutes les 5 secondes
-
-## 🔍 Dépannage
-
-### Erreur "Port déjà occupé"
 ```bash
-# Le script vérifie automatiquement et affiche les ports occupés
-# Pour forcer l'arrêt des processus existants :
-pkill -f "node.*server"
-pkill -f "python.*main" 
+# MongoDB
+docker logs -f meeshy-dev-database
+
+# Redis
+docker logs -f meeshy-dev-redis
 ```
 
-### Services qui ne démarrent pas
+---
+
+## Troubleshooting
+
+### Erreur : "MongoDB n'est pas accessible"
+
+**Problème :** MongoDB n'est pas démarré ou le replica set n'est pas initialisé.
+
+**Solutions :**
 ```bash
-# Vérifier les logs des services
-cat translator/translator.log
-cat gateway/gateway.log
-cat frontend/frontend.log
+# Option 1 : Démarrer avec --with-containers
+./scripts/development/development-start-local.sh --with-containers
 
-# Redémarrer seulement l'infrastructure Docker
-docker-compose -f docker-compose.dev.yml restart
+# Option 2 : Démarrer MongoDB manuellement
+docker-compose -f docker-compose.local.yml up -d
+docker exec meeshy-dev-database mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "localhost:27017"}]})'
+./scripts/development/development-start-local.sh
 ```
 
-### Variables d'environnement incorrectes
-Les fichiers `.env.local` sont recréés à chaque démarrage du script, donc toujours à jour avec la configuration localhost.
+### Erreur : "Port déjà utilisé"
 
-## ✨ Avantages
+**Problème :** Un service est déjà en cours d'exécution sur le port.
 
-- 🎯 **Un seul script** pour tout démarrer
-- 🔧 **Configuration automatique** - pas de setup manuel
-- 🛑 **Arrêt propre** avec Ctrl+C - pas de processus orphelins
-- 🔄 **Hot reload** sur tous les services
-- 📊 **Monitoring intégré** - détection des pannes
-- 🧹 **Nettoyage automatique** - pas de pollution du système
+**Solutions :**
+```bash
+# Arrêter tous les services
+./scripts/development/development-stop-local.sh
+
+# Vérifier les ports
+lsof -ti:3000  # Gateway
+lsof -ti:3100  # Frontend
+lsof -ti:8000  # Translator
+
+# Forcer l'arrêt si nécessaire
+kill -9 $(lsof -ti:3000)
+```
+
+### Erreur : "Service s'arrête immédiatement"
+
+**Problème :** Le service crash au démarrage.
+
+**Solutions :**
+```bash
+# Voir les logs
+tail -f <service>/service.log
+
+# Exemples courants :
+# - Dépendances manquantes → pnpm install
+# - Prisma non généré → cd gateway && pnpm run generate:prisma
+# - Environnement Python manquant → cd translator && python3 -m venv venv
+```
+
+---
+
+## Recommandations
+
+### Pour le développement quotidien
+
+1. **Démarrer les conteneurs une fois** :
+   ```bash
+   docker-compose -f docker-compose.local.yml up -d
+   ```
+
+2. **Utiliser les scripts sans --with-containers** :
+   ```bash
+   ./scripts/development/development-start-local.sh
+   # Travailler...
+   ./scripts/development/development-stop-local.sh
+   ```
+
+3. **Arrêter les conteneurs en fin de journée** (optionnel) :
+   ```bash
+   docker-compose -f docker-compose.local.yml stop
+   ```
+
+### Avantages de cette approche
+
+- ⚡ **Démarrage rapide** : 5-10 secondes au lieu de 30-60 secondes
+- 💾 **Données persistantes** : MongoDB/Redis gardent les données entre redémarrages
+- 🔄 **Itération rapide** : Redémarrer uniquement les services applicatifs
+- 💻 **Ressources** : Économie de ressources (pas de redémarrage conteneurs)
+
+---
+
+## Commandes utiles
+
+### Vérifier l'état des services
+
+```bash
+# Vérifier les processus
+ps aux | grep -E "next|gateway|translator|python|node"
+
+# Vérifier les ports
+lsof -i:3000  # Gateway
+lsof -i:3100  # Frontend
+lsof -i:8000  # Translator
+lsof -i:27017 # MongoDB
+lsof -i:6379  # Redis
+
+# Vérifier les conteneurs
+docker-compose -f docker-compose.local.yml ps
+```
+
+### Nettoyage complet
+
+```bash
+# Arrêter tout
+./scripts/development/development-stop-local.sh --with-containers
+
+# Supprimer les logs
+rm -f frontend/frontend.log gateway/gateway.log translator/translator.log
+
+# Supprimer les conteneurs et volumes (⚠️ perte de données)
+docker-compose -f docker-compose.local.yml down -v
+
+# Supprimer les dépendances
+rm -rf frontend/node_modules gateway/node_modules translator/venv
+
+# Supprimer le cache Next.js
+rm -rf frontend/.next
+```
+
+---
+
+## Structure des fichiers créés
+
+```
+meeshy/
+├── .env.local                    # Config racine
+├── frontend/
+│   ├── .env.local               # Config Frontend
+│   └── frontend.log             # Logs Frontend
+├── gateway/
+│   ├── .env.local               # Config Gateway
+│   └── gateway.log              # Logs Gateway
+└── translator/
+    ├── .env.local               # Config Translator
+    └── translator.log           # Logs Translator
+```
+
+---
+
+## Notes importantes
+
+1. **Fichiers .env.local** : Générés automatiquement par le script de démarrage
+2. **Logs** : Stockés dans chaque répertoire de service
+3. **PIDs** : Affichés au démarrage pour pouvoir arrêter manuellement si nécessaire
+4. **Ctrl+C** : Arrête proprement tous les services (cleanup automatique)
+5. **Monitoring** : Le script surveille les services et alerte s'ils s'arrêtent
+
+---
+
+## Date de création
+
+2025-10-16
+
+## Auteur
+
+Scripts de développement Meeshy

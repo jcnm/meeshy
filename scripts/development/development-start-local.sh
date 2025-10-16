@@ -13,6 +13,37 @@ PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
+# Parse les arguments
+START_CONTAINERS=false
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --with-containers)
+      START_CONTAINERS=true
+      shift
+      ;;
+    -h|--help)
+      echo "Usage: $0 [OPTIONS]"
+      echo ""
+      echo "Options:"
+      echo "  --with-containers    Démarre aussi les conteneurs Docker (MongoDB, Redis)"
+      echo "  -h, --help          Affiche cette aide"
+      echo ""
+      echo "Par défaut, seuls les services natifs (Node.js, Python) sont démarrés."
+      echo "Les conteneurs Docker doivent être déjà en cours d'exécution."
+      echo ""
+      echo "Pour démarrer les conteneurs manuellement:"
+      echo "  docker-compose -f docker-compose.local.yml up -d"
+      exit 0
+      ;;
+    *)
+      echo -e "${RED}❌ Option inconnue: $1${NC}"
+      echo "Utilisez -h ou --help pour voir les options disponibles"
+      exit 1
+      ;;
+  esac
+done
+
 # Obtenir le répertoire du projet
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -21,6 +52,11 @@ echo -e "${CYAN}═════════════════════�
 echo -e "${CYAN}🚀 MEESHY - DÉMARRAGE ENVIRONNEMENT DE DÉVELOPPEMENT LOCAL${NC}"
 echo -e "${CYAN}════════════════════════════════════════════════════════════════${NC}"
 echo ""
+if [ "$START_CONTAINERS" = true ]; then
+  echo -e "${YELLOW}   Mode: Services natifs + Conteneurs Docker${NC}"
+else
+  echo -e "${YELLOW}   Mode: Services natifs uniquement${NC}"
+fi
 echo -e "${BLUE}📁 Répertoire du projet: ${PROJECT_ROOT}${NC}"
 echo ""
 
@@ -60,10 +96,14 @@ cleanup() {
         echo -e "${GREEN}✅ Translator arrêté${NC}"
     fi
     
-    # Arrêter les services Docker
-    echo -e "${YELLOW}🛑 Arrêt des services Docker (MongoDB, Redis)...${NC}"
-    docker-compose -f docker-compose.local.yml down 2>/dev/null || true
-    echo -e "${GREEN}✅ Services Docker arrêtés${NC}"
+    # Arrêter les services Docker (seulement si démarrés par ce script)
+    if [ "$START_CONTAINERS" = true ]; then
+        echo -e "${YELLOW}🛑 Arrêt des services Docker (MongoDB, Redis)...${NC}"
+        docker-compose -f docker-compose.local.yml down 2>/dev/null || true
+        echo -e "${GREEN}✅ Services Docker arrêtés${NC}"
+    else
+        echo -e "${CYAN}ℹ️  Les conteneurs Docker ne sont pas arrêtés (non démarrés par ce script)${NC}"
+    fi
     
     echo ""
     echo -e "${GREEN}✅ Environnement Meeshy arrêté avec succès !${NC}"
@@ -156,12 +196,35 @@ echo -e "${GREEN}✅ docker-compose $(docker-compose --version)${NC}"
 echo ""
 
 # Vérifier que les ports sont disponibles
-echo -e "${BLUE}🔍 Vérification des ports...${NC}"
+echo -e "${BLUE}🔍 Vérification des ports des services natifs...${NC}"
 check_port 3000 "Gateway" || exit 1
 check_port 3100 "Frontend" || exit 1
 check_port 8000 "Translator" || exit 1
-#check_port 27017 "MongoDB" || exit 1
-#check_port 6379 "Redis" || exit 1
+
+# Vérifier les ports Docker uniquement si on va les démarrer
+if [ "$START_CONTAINERS" = true ]; then
+    echo -e "${BLUE}🔍 Vérification des ports des conteneurs...${NC}"
+    check_port 27017 "MongoDB" || exit 1
+    check_port 6379 "Redis" || exit 1
+else
+    echo -e "${CYAN}ℹ️  Vérification de la disponibilité de MongoDB et Redis...${NC}"
+    # Vérifier que MongoDB et Redis sont accessibles
+    if ! nc -z localhost 27017 2>/dev/null; then
+        echo -e "${RED}❌ MongoDB n'est pas accessible sur le port 27017${NC}"
+        echo -e "${YELLOW}   Démarrez-le avec: docker-compose -f docker-compose.local.yml up -d${NC}"
+        echo -e "${YELLOW}   Ou utilisez: $0 --with-containers${NC}"
+        exit 1
+    fi
+    echo -e "${GREEN}✅ MongoDB est accessible${NC}"
+    
+    if ! nc -z localhost 6379 2>/dev/null; then
+        echo -e "${RED}❌ Redis n'est pas accessible sur le port 6379${NC}"
+        echo -e "${YELLOW}   Démarrez-le avec: docker-compose -f docker-compose.local.yml up -d${NC}"
+        echo -e "${YELLOW}   Ou utilisez: $0 --with-containers${NC}"
+        exit 1
+    fi
+    echo -e "${GREEN}✅ Redis est accessible${NC}"
+fi
 echo ""
 
 # Créer les fichiers .env.local
@@ -263,19 +326,20 @@ echo -e "${GREEN}✅ translator/.env.local créé${NC}"
 
 echo ""
 
-# Démarrer l'infrastructure Docker (MongoDB + Redis uniquement)
-echo -e "${BLUE}🐳 Démarrage de l'infrastructure Docker (MongoDB, Redis)...${NC}"
-echo -e "${CYAN}   Note: Seuls MongoDB et Redis sont démarrés en Docker${NC}"
-echo -e "${CYAN}   Les services applicatifs seront lancés nativement${NC}"
-docker-compose -f docker-compose.local.yml up -d
+# Démarrer l'infrastructure Docker (optionnel)
+if [ "$START_CONTAINERS" = true ]; then
+    echo -e "${BLUE}🐳 Démarrage de l'infrastructure Docker (MongoDB, Redis)...${NC}"
+    echo -e "${CYAN}   Note: Seuls MongoDB et Redis sont démarrés en Docker${NC}"
+    echo -e "${CYAN}   Les services applicatifs seront lancés nativement${NC}"
+    docker-compose -f docker-compose.local.yml up -d
 
-# Attendre que MongoDB soit prêt
-echo -e "${YELLOW}⏳ Attente du démarrage de MongoDB...${NC}"
-sleep 5
+    # Attendre que MongoDB soit prêt
+    echo -e "${YELLOW}⏳ Attente du démarrage de MongoDB...${NC}"
+    sleep 5
 
-# Initialiser le replica set MongoDB
-echo -e "${BLUE}🔧 Initialisation du replica set MongoDB...${NC}"
-docker exec meeshy-dev-database mongosh --eval '
+    # Initialiser le replica set MongoDB
+    echo -e "${BLUE}🔧 Initialisation du replica set MongoDB...${NC}"
+    docker exec meeshy-dev-database mongosh --eval '
 try {
     rs.status();
     print("Replica set already initialized");
@@ -288,7 +352,11 @@ try {
 }
 ' 2>/dev/null || echo -e "${YELLOW}⚠️  Replica set déjà initialisé ou erreur non critique${NC}"
 
-echo -e "${GREEN}✅ Services Docker démarrés${NC}"
+    echo -e "${GREEN}✅ Services Docker démarrés${NC}"
+else
+    echo -e "${CYAN}ℹ️  Les conteneurs Docker ne sont pas démarrés (mode natif uniquement)${NC}"
+    echo -e "${CYAN}   MongoDB et Redis doivent être déjà en cours d'exécution${NC}"
+fi
 echo ""
 
 # Vérifier que les dépendances sont installées
@@ -388,7 +456,17 @@ echo -e "${PURPLE}🌐 Frontend:${NC}     ${BLUE}http://localhost:3100${NC}"
 echo -e "${PURPLE}🚀 Gateway API:${NC}  ${BLUE}http://localhost:3000${NC}"
 echo -e "${PURPLE}🔤 Translator:${NC}   ${BLUE}http://localhost:8000${NC}"
 echo -e "${PURPLE}🗄️  MongoDB:${NC}     ${BLUE}mongodb://localhost:27017${NC}"
+if [ "$START_CONTAINERS" = true ]; then
+    echo -e "   ${GREEN}(démarré par ce script)${NC}"
+else
+    echo -e "   ${YELLOW}(conteneur externe)${NC}"
+fi
 echo -e "${PURPLE}💾 Redis:${NC}        ${BLUE}redis://localhost:6379${NC}"
+if [ "$START_CONTAINERS" = true ]; then
+    echo -e "   ${GREEN}(démarré par ce script)${NC}"
+else
+    echo -e "   ${YELLOW}(conteneur externe)${NC}"
+fi
 echo ""
 echo -e "${CYAN}════════════════════════════════════════════════════════════${NC}"
 echo ""
@@ -417,7 +495,11 @@ echo ""
 echo -e "${YELLOW}⚠️  POUR ARRÊTER L'ENVIRONNEMENT${NC}"
 echo -e "${YELLOW}════════════════════════════════════════════════════════════${NC}"
 echo -e "  ${RED}Appuyez sur Ctrl+C dans ce terminal${NC}"
-echo -e "  ${BLUE}Ou utilisez:${NC} ./scripts/development/development-stop-local.sh"
+if [ "$START_CONTAINERS" = true ]; then
+    echo -e "  ${BLUE}Ou utilisez:${NC} ./scripts/development/development-stop-local.sh --with-containers"
+else
+    echo -e "  ${BLUE}Ou utilisez:${NC} ./scripts/development/development-stop-local.sh"
+fi
 echo -e "${YELLOW}════════════════════════════════════════════════════════════${NC}"
 echo ""
 

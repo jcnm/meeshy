@@ -4,7 +4,7 @@
  */
 
 import { PrismaClient } from './client';
-import { UserRoleEnum } from './types';
+import { UserRoleEnum } from '@meeshy/shared/types';
 
 const prisma = new PrismaClient();
 
