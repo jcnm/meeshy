@@ -7,7 +7,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { useSocketIOMessaging } from './use-socketio-messaging';
+import { useWebSocket } from './use-websocket';
 import { 
   validateMessageContent, 
   prepareMessageMetadata, 
@@ -54,7 +54,7 @@ interface UseMessagingReturn {
   stopTyping: () => void;
   
   // Socket.IO messaging
-  socketMessaging: ReturnType<typeof useSocketIOMessaging>;
+  socketMessaging: ReturnType<typeof useWebSocket>;
 }
 
 export function useMessaging(options: UseMessagingOptions = {}): UseMessagingReturn {
@@ -79,28 +79,21 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Socket.IO messaging
-  const socketMessaging = useSocketIOMessaging({
+  // Socket.IO messaging - NOUVEAU SERVICE SIMPLIFIÉ
+  const socketMessaging = useWebSocket({
     conversationId,
-    currentUser,
-    events: {
-      message: true,
-      edit: true,
-      delete: true,
-      translation: true,
-      typing: true,
-      status: true,
-      conversationStats: true,
-      onlineStats: true
-    },
     onNewMessage,
-    onUserTyping: (userId, username, isTyping) => {
-      handleTypingEvent(userId, username, isTyping);
-      onUserTyping?.(userId, username, isTyping);
+    onTyping: (event) => {
+      handleTypingEvent(event.userId, event.username, event.isTyping || false);
+      onUserTyping?.(event.userId, event.username, event.isTyping || false);
     },
-    onUserStatus,
-    onTranslation,
-    onConversationStats
+    onUserStatus: (event) => {
+      onUserStatus?.(event.userId, event.username, event.isOnline);
+    },
+    onTranslation: onTranslation ? (data) => {
+      // Adapter format: TranslationEvent → (messageId, translations[])
+      onTranslation(data.messageId, data.translations);
+    } : undefined
   });
 
   // Gestion des indicateurs de frappe

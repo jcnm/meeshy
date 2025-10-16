@@ -33,6 +33,8 @@ class WebSocketService {
   
   // Listeners
   private messageListeners: Set<(message: Message) => void> = new Set();
+  private editListeners: Set<(message: Message) => void> = new Set();
+  private deleteListeners: Set<(messageId: string) => void> = new Set();
   private translationListeners: Set<(data: TranslationEvent) => void> = new Set();
   private typingListeners: Set<(event: TypingEvent) => void> = new Set();
   private statusListeners: Set<(event: UserStatusEvent) => void> = new Set();
@@ -147,9 +149,23 @@ class WebSocketService {
     });
     
     // Nouveaux messages
-    this.socket.on(SERVER_EVENTS.MESSAGE_NEW, (message: any) => {
-      console.log('📨 [WS] Nouveau message:', message.id);
+    this.socket.on(SERVER_EVENTS.MESSAGE_NEW, (socketMessage: any) => {
+      console.log('📨 [WS] Nouveau message:', socketMessage.id);
+      const message = this.convertToMessage(socketMessage);
       this.messageListeners.forEach(listener => listener(message));
+    });
+    
+    // Messages édités
+    this.socket.on(SERVER_EVENTS.MESSAGE_EDITED, (socketMessage: any) => {
+      console.log('✏️ [WS] Message édité:', socketMessage.id);
+      const message = this.convertToMessage(socketMessage);
+      this.editListeners.forEach(listener => listener(message));
+    });
+    
+    // Messages supprimés
+    this.socket.on(SERVER_EVENTS.MESSAGE_DELETED, (data: any) => {
+      console.log('🗑️ [WS] Message supprimé:', data.messageId);
+      this.deleteListeners.forEach(listener => listener(data.messageId));
     });
     
     // Traductions
@@ -176,6 +192,29 @@ class WebSocketService {
     this.socket.on(SERVER_EVENTS.ERROR, (error: any) => {
       console.error('❌ [WS] Erreur:', error);
     });
+  }
+
+  /**
+   * Convertit un message Socket.IO en Message standard
+   */
+  private convertToMessage(socketMessage: any): Message {
+    return {
+      id: socketMessage.id,
+      conversationId: socketMessage.conversationId,
+      senderId: socketMessage.senderId || socketMessage.anonymousSenderId || '',
+      content: socketMessage.content,
+      originalLanguage: socketMessage.originalLanguage || 'fr',
+      messageType: socketMessage.messageType || 'text',
+      timestamp: socketMessage.createdAt,
+      createdAt: socketMessage.createdAt,
+      updatedAt: socketMessage.updatedAt,
+      isEdited: socketMessage.isEdited || false,
+      isDeleted: socketMessage.isDeleted || false,
+      translations: socketMessage.translations || [],
+      replyToId: socketMessage.replyToId,
+      sender: socketMessage.sender || socketMessage.anonymousSender,
+      anonymousSenderId: socketMessage.anonymousSenderId
+    } as Message;
   }
 
   /**
@@ -245,6 +284,91 @@ class WebSocketService {
   }
 
   /**
+   * Envoyer un message avec attachments
+   */
+  public async sendMessageWithAttachments(
+    conversationId: string, 
+    content: string, 
+    attachmentIds: string[],
+    language: string, 
+    replyToId?: string
+  ): Promise<boolean> {
+    if (!this.socket?.connected) {
+      console.error('❌ [WS] Socket non connecté');
+      toast.error('Connexion perdue');
+      this.reconnect();
+      return false;
+    }
+    
+    return new Promise((resolve) => {
+      console.log('📤📎 [WS] Envoi message avec attachments:', attachmentIds.length);
+      
+      this.socket!.emit(CLIENT_EVENTS.MESSAGE_SEND_WITH_ATTACHMENTS, {
+        conversationId,
+        content,
+        attachmentIds,
+        originalLanguage: language,
+        replyToId
+      }, (response: any) => {
+        if (response?.success) {
+          console.log('✅ [WS] Message avec attachments envoyé');
+          resolve(true);
+        } else {
+          console.error('❌ [WS] Échec envoi attachments:', response?.error);
+          toast.error(response?.error || 'Échec envoi');
+          resolve(false);
+        }
+      });
+    });
+  }
+
+  /**
+   * Éditer un message
+   */
+  public async editMessage(messageId: string, content: string): Promise<boolean> {
+    if (!this.socket?.connected) {
+      console.error('❌ [WS] Socket non connecté');
+      return false;
+    }
+    
+    return new Promise((resolve) => {
+      this.socket!.emit(CLIENT_EVENTS.MESSAGE_EDIT, { messageId, content }, (response: any) => {
+        if (response?.success) {
+          console.log('✅ [WS] Message édité');
+          resolve(true);
+        } else {
+          console.error('❌ [WS] Échec édition:', response?.error);
+          toast.error(response?.error || 'Échec édition');
+          resolve(false);
+        }
+      });
+    });
+  }
+
+  /**
+   * Supprimer un message
+   */
+  public async deleteMessage(messageId: string): Promise<boolean> {
+    if (!this.socket?.connected) {
+      console.error('❌ [WS] Socket non connecté');
+      return false;
+    }
+    
+    return new Promise((resolve) => {
+      this.socket!.emit(CLIENT_EVENTS.MESSAGE_DELETE, { messageId }, (response: any) => {
+        if (response?.success) {
+          console.log('✅ [WS] Message supprimé');
+          resolve(true);
+        } else {
+          console.error('❌ [WS] Échec suppression:', response?.error);
+          toast.error(response?.error || 'Échec suppression');
+          resolve(false);
+        }
+      });
+    });
+  }
+
+  /**
    * ÉTAPE 7: Reconnexion
    */
   public reconnect(): void {
@@ -279,6 +403,16 @@ class WebSocketService {
   public onNewMessage(listener: (message: Message) => void): () => void {
     this.messageListeners.add(listener);
     return () => this.messageListeners.delete(listener);
+  }
+
+  public onMessageEdited(listener: (message: Message) => void): () => void {
+    this.editListeners.add(listener);
+    return () => this.editListeners.delete(listener);
+  }
+
+  public onMessageDeleted(listener: (messageId: string) => void): () => void {
+    this.deleteListeners.add(listener);
+    return () => this.deleteListeners.delete(listener);
   }
 
   public onTranslation(listener: (data: TranslationEvent) => void): () => void {

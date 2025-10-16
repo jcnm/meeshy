@@ -22,13 +22,23 @@ import type { Message, TranslationEvent, TypingEvent, UserStatusEvent } from '@/
 export interface UseWebSocketOptions {
   conversationId?: string | null;
   onNewMessage?: (message: Message) => void;
+  onMessageEdited?: (message: Message) => void;
+  onMessageDeleted?: (messageId: string) => void;
   onTranslation?: (data: TranslationEvent) => void;
   onTyping?: (event: TypingEvent) => void;
   onUserStatus?: (event: UserStatusEvent) => void;
 }
 
 export function useWebSocket(options: UseWebSocketOptions = {}) {
-  const { conversationId, onNewMessage, onTranslation, onTyping, onUserStatus } = options;
+  const { 
+    conversationId, 
+    onNewMessage, 
+    onMessageEdited,
+    onMessageDeleted,
+    onTranslation, 
+    onTyping, 
+    onUserStatus 
+  } = options;
   
   const [isConnected, setIsConnected] = useState(false);
 
@@ -37,11 +47,11 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     if (!conversationId) return;
     
     console.log('🚪 [HOOK] Join conversation:', conversationId);
-    simpleWebSocketService.joinConversation(conversationId);
+    webSocketService.joinConversation(conversationId);
     
     return () => {
       console.log('🚪 [HOOK] Leave conversation:', conversationId);
-      simpleWebSocketService.leaveConversation(conversationId);
+      webSocketService.leaveConversation(conversationId);
     };
   }, [conversationId]);
 
@@ -50,34 +60,44 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     const unsubscribers: Array<() => void> = [];
     
     if (onNewMessage) {
-      const unsub = simpleWebSocketService.onNewMessage(onNewMessage);
+      const unsub = webSocketService.onNewMessage(onNewMessage);
+      unsubscribers.push(unsub);
+    }
+    
+    if (onMessageEdited) {
+      const unsub = webSocketService.onMessageEdited(onMessageEdited);
+      unsubscribers.push(unsub);
+    }
+    
+    if (onMessageDeleted) {
+      const unsub = webSocketService.onMessageDeleted(onMessageDeleted);
       unsubscribers.push(unsub);
     }
     
     if (onTranslation) {
-      const unsub = simpleWebSocketService.onTranslation(onTranslation);
+      const unsub = webSocketService.onTranslation(onTranslation);
       unsubscribers.push(unsub);
     }
     
     if (onTyping) {
-      const unsub = simpleWebSocketService.onTyping(onTyping);
+      const unsub = webSocketService.onTyping(onTyping);
       unsubscribers.push(unsub);
     }
     
     if (onUserStatus) {
-      const unsub = simpleWebSocketService.onUserStatus(onUserStatus);
+      const unsub = webSocketService.onUserStatus(onUserStatus);
       unsubscribers.push(unsub);
     }
     
     return () => {
       unsubscribers.forEach(unsub => unsub());
     };
-  }, [onNewMessage, onTranslation, onTyping, onUserStatus]);
+  }, [onNewMessage, onMessageEdited, onMessageDeleted, onTranslation, onTyping, onUserStatus]);
 
   // ÉTAPE 3: Surveiller l'état de connexion
   useEffect(() => {
     const interval = setInterval(() => {
-      const connected = simpleWebSocketService.isConnected();
+      const connected = webSocketService.isConnected();
       setIsConnected(connected);
     }, 1000);
     
@@ -95,32 +115,57 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       return false;
     }
     
-    return await simpleWebSocketService.sendMessage(conversationId, content, language, replyToId);
+    return await webSocketService.sendMessage(conversationId, content, language, replyToId);
   }, [conversationId]);
 
   const startTyping = useCallback(() => {
     if (conversationId) {
-      simpleWebSocketService.startTyping(conversationId);
+      webSocketService.startTyping(conversationId);
     }
   }, [conversationId]);
 
   const stopTyping = useCallback(() => {
     if (conversationId) {
-      simpleWebSocketService.stopTyping(conversationId);
+      webSocketService.stopTyping(conversationId);
     }
   }, [conversationId]);
 
+  const sendMessageWithAttachments = useCallback(async (
+    content: string,
+    attachmentIds: string[],
+    language: string,
+    replyToId?: string
+  ): Promise<boolean> => {
+    if (!conversationId) {
+      console.error('❌ [HOOK] Pas de conversationId');
+      return false;
+    }
+    
+    return await webSocketService.sendMessageWithAttachments(conversationId, content, attachmentIds, language, replyToId);
+  }, [conversationId]);
+
+  const editMessage = useCallback(async (messageId: string, content: string): Promise<boolean> => {
+    return await webSocketService.editMessage(messageId, content);
+  }, []);
+
+  const deleteMessage = useCallback(async (messageId: string): Promise<boolean> => {
+    return await webSocketService.deleteMessage(messageId);
+  }, []);
+
   const reconnect = useCallback(() => {
-    simpleWebSocketService.reconnect();
+    webSocketService.reconnect();
   }, []);
 
   return {
     isConnected,
     sendMessage,
+    sendMessageWithAttachments,
+    editMessage,
+    deleteMessage,
     startTyping,
     stopTyping,
     reconnect,
-    status: simpleWebSocketService.getConnectionStatus()
+    status: webSocketService.getConnectionStatus()
   };
 }
 
