@@ -10,6 +10,7 @@ import {
   getSizeLimit,
   getAttachmentType
 } from '../shared/types/attachment';
+import { createAuthHeaders } from '@/utils/token-utils';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -47,17 +48,13 @@ export class AttachmentService {
       formData.append('files', file);
     });
 
-    const headers: HeadersInit = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-      console.log('[AttachmentService] Token ajouté aux headers');
-    } else {
-      console.warn('[AttachmentService] ⚠️ Pas de token fourni');
-    }
+    // Utiliser l'utilitaire pour créer les bons headers d'authentification
+    const authHeaders = createAuthHeaders(token);
+    console.log('[AttachmentService] Headers d\'authentification:', Object.keys(authHeaders));
 
     const response = await fetch(buildApiUrl('/attachments/upload'), {
       method: 'POST',
-      headers,
+      headers: authHeaders,
       body: formData,
       credentials: 'include',
     });
@@ -86,13 +83,11 @@ export class AttachmentService {
    * Crée un attachment texte
    */
   static async uploadText(content: string, token?: string): Promise<{ success: boolean; attachment: UploadedAttachmentResponse }> {
+    const authHeaders = createAuthHeaders(token);
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
+      ...authHeaders
     };
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
 
     const response = await fetch(buildApiUrl('/attachments/upload-text'), {
       method: 'POST',
@@ -126,38 +121,54 @@ export class AttachmentService {
     if (options.limit) params.append('limit', options.limit.toString());
     if (options.offset) params.append('offset', options.offset.toString());
 
-    const headers: HeadersInit = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
+    const authHeaders = createAuthHeaders(token);
+
+    console.log('[AttachmentService] getConversationAttachments - Début', {
+      conversationId,
+      options,
+      authHeaders: Object.keys(authHeaders),
+      url: buildApiUrl(`/conversations/${conversationId}/attachments?${params}`)
+    });
 
     const response = await fetch(
       buildApiUrl(`/conversations/${conversationId}/attachments?${params}`),
       {
-        headers,
+        headers: authHeaders,
         credentials: 'include',
       }
     );
 
+    console.log('[AttachmentService] getConversationAttachments - Réponse:', {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok
+    });
+
     if (!response.ok) {
-      throw new Error('Failed to fetch attachments');
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      console.error('[AttachmentService] ❌ Erreur récupération attachments:', {
+        status: response.status,
+        error: errorData
+      });
+      throw new Error(errorData.error || errorData.message || 'Failed to fetch attachments');
     }
 
-    return response.json();
+    const result = await response.json();
+    console.log('[AttachmentService] ✅ Attachments récupérés:', {
+      count: result.attachments?.length || 0
+    });
+    return result;
   }
 
   /**
    * Supprime un attachment
    */
   static async deleteAttachment(attachmentId: string, token?: string): Promise<void> {
-    const headers: HeadersInit = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
+    const authHeaders = createAuthHeaders(token);
 
     const response = await fetch(buildApiUrl(`/attachments/${attachmentId}`), {
       method: 'DELETE',
-      headers,
+      headers: authHeaders,
       credentials: 'include',
     });
 
