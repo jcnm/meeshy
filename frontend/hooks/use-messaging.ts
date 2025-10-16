@@ -44,6 +44,7 @@ interface UseMessagingReturn {
   
   // Actions de messagerie
   sendMessage: (content: string, originalLanguage?: string, replyToId?: string) => Promise<boolean>;
+  sendMessageWithAttachments: (content: string, attachmentIds: string[], originalLanguage?: string, replyToId?: string) => Promise<boolean>;
   editMessage: (messageId: string, newContent: string) => Promise<boolean>;
   deleteMessage: (messageId: string) => Promise<boolean>;
   
@@ -220,6 +221,66 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
     }
   }, [conversationId, currentUser, socketMessaging, onMessageSent, onMessageFailed, stopTyping]);
 
+  // Envoi de message avec attachments
+  const sendMessageWithAttachments = useCallback(async (
+    content: string, 
+    attachmentIds: string[], 
+    originalLanguage?: string, 
+    replyToId?: string
+  ): Promise<boolean> => {
+    if (!conversationId || !currentUser) {
+      console.error('[MESSAGING] Cannot send message: missing conversationId or currentUser');
+      return false;
+    }
+
+    // Validation du contenu (peut être vide si on a des attachments)
+    if (!content.trim() && attachmentIds.length === 0) {
+      setSendError('Message vide sans attachments');
+      toast.error('Veuillez saisir un message ou ajouter un fichier');
+      return false;
+    }
+
+    setIsSending(true);
+    setSendError(null);
+
+    try {
+      // Déterminer la langue source
+      const sourceLanguage = originalLanguage || currentUser?.systemLanguage || 'fr';
+      
+      console.log('[MESSAGING] 📎 Envoi message avec attachments:', {
+        content: content.substring(0, 50),
+        attachmentCount: attachmentIds.length,
+        sourceLanguage,
+        conversationId
+      });
+
+      // Envoyer via Socket.IO avec attachments
+      const success = await socketMessaging.sendMessageWithAttachments(
+        content, 
+        attachmentIds, 
+        sourceLanguage, 
+        replyToId
+      );
+
+      if (success) {
+        stopTyping();
+        console.log('[MESSAGING] ✅ Message avec attachments envoyé avec succès');
+        onMessageSent?.(content, sourceLanguage);
+        return true;
+      } else {
+        throw new Error('Failed to send message with attachments via Socket.IO');
+      }
+    } catch (error) {
+      const errorMessage = handleMessageError(error, content);
+      setSendError(errorMessage);
+      toast.error(errorMessage);
+      onMessageFailed?.(content, error as Error);
+      return false;
+    } finally {
+      setIsSending(false);
+    }
+  }, [conversationId, currentUser, socketMessaging, onMessageSent, onMessageFailed, stopTyping]);
+
   // Édition de message
   const editMessage = useCallback(async (messageId: string, newContent: string): Promise<boolean> => {
     setIsSending(true);
@@ -290,6 +351,7 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
     
     // Actions de messagerie
     sendMessage,
+    sendMessageWithAttachments,
     editMessage,
     deleteMessage,
     

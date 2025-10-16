@@ -26,10 +26,20 @@ export interface FileToUpload {
 }
 
 export interface UploadResult {
-  attachmentId: string;
+  id: string;
+  messageId: string;
+  fileName: string;
+  originalName: string;
+  mimeType: string;
+  fileSize: number;
   fileUrl: string;
   thumbnailUrl?: string;
-  metadata: AttachmentMetadata;
+  width?: number;
+  height?: number;
+  duration?: number;
+  uploadedBy: string;
+  isAnonymous: boolean;
+  createdAt: Date;
 }
 
 export class AttachmentService {
@@ -41,7 +51,8 @@ export class AttachmentService {
   constructor(prisma: PrismaClient) {
     this.prisma = prisma;
     this.uploadBasePath = process.env.UPLOAD_PATH || path.join(process.cwd(), 'uploads', 'attachments');
-    this.publicUrl = process.env.PUBLIC_URL || 'http://localhost:3001';
+    // Utiliser le port 3000 par défaut (port du gateway) au lieu de 3001
+    this.publicUrl = process.env.PUBLIC_URL || 'http://localhost:3000';
   }
 
   /**
@@ -167,20 +178,34 @@ export class AttachmentService {
     isAnonymous: boolean = false,
     messageId?: string
   ): Promise<UploadResult> {
+    console.log('[AttachmentService] uploadFile - Début', {
+      filename: file.filename,
+      mimeType: file.mimeType,
+      size: file.size,
+      userId,
+      isAnonymous,
+      messageId,
+    });
+
     // Valider le fichier
     const validation = this.validateFile(file);
     if (!validation.valid) {
+      console.error('[AttachmentService] ❌ Validation échouée:', validation.error);
       throw new Error(validation.error);
     }
+    console.log('[AttachmentService] ✅ Validation OK');
 
     // Générer le chemin
     const filePath = this.generateFilePath(userId, file.filename);
+    console.log('[AttachmentService] Chemin généré:', filePath);
     
     // Sauvegarder le fichier
     await this.saveFile(file.buffer, filePath);
+    console.log('[AttachmentService] ✅ Fichier sauvegardé');
 
     // Déterminer le type
     const attachmentType = getAttachmentType(file.mimeType);
+    console.log('[AttachmentService] Type détecté:', attachmentType);
 
     // Préparer les métadonnées
     const metadata: AttachmentMetadata = {};
@@ -200,10 +225,14 @@ export class AttachmentService {
     const fileUrl = this.getAttachmentUrl(filePath);
     const thumbnailUrl = thumbnailPath ? this.getAttachmentUrl(thumbnailPath) : undefined;
 
+    // Pour messageId, générer un ObjectId temporaire si non fourni
+    // Cela évite l'erreur Prisma car messageId doit être un ObjectId valide
+    const tempMessageId = messageId || '000000000000000000000000'; // ObjectId temporaire valide (24 hex chars)
+
     // Créer l'enregistrement en base de données
     const attachment = await this.prisma.messageAttachment.create({
       data: {
-        messageId: messageId || 'temp', // Sera mis à jour lors de la création du message
+        messageId: tempMessageId,
         fileName: path.basename(filePath),
         originalName: file.filename,
         mimeType: file.mimeType,
@@ -220,12 +249,37 @@ export class AttachmentService {
       },
     });
 
-    return {
-      attachmentId: attachment.id,
-      fileUrl,
-      thumbnailUrl,
-      metadata,
+    console.log('[AttachmentService] ✅ Record Prisma créé:', {
+      id: attachment.id,
+      fileName: attachment.fileName,
+      fileSize: attachment.fileSize,
+    });
+
+    const result = {
+      id: attachment.id,
+      messageId: attachment.messageId,
+      fileName: attachment.fileName,
+      originalName: attachment.originalName,
+      mimeType: attachment.mimeType,
+      fileSize: attachment.fileSize,
+      fileUrl: attachment.fileUrl,
+      thumbnailUrl: attachment.thumbnailUrl || undefined,
+      width: attachment.width || undefined,
+      height: attachment.height || undefined,
+      duration: attachment.duration || undefined,
+      uploadedBy: attachment.uploadedBy,
+      isAnonymous: attachment.isAnonymous,
+      createdAt: attachment.createdAt,
     };
+
+    console.log('[AttachmentService] uploadFile - Fin, returning:', {
+      id: result.id,
+      fileName: result.fileName,
+      fileSize: result.fileSize,
+      hasAllFields: !!(result.id && result.fileName && result.mimeType),
+    });
+
+    return result;
   }
 
   /**
@@ -237,17 +291,39 @@ export class AttachmentService {
     isAnonymous: boolean = false,
     messageId?: string
   ): Promise<UploadResult[]> {
+    console.log('[AttachmentService] uploadMultiple - Début', {
+      filesCount: files.length,
+      userId,
+      isAnonymous,
+      messageId,
+    });
+
     const results: UploadResult[] = [];
 
     for (const file of files) {
       try {
+        console.log('[AttachmentService] Uploading file:', file.filename);
         const result = await this.uploadFile(file, userId, isAnonymous, messageId);
+        console.log('[AttachmentService] Upload result:', {
+          id: result.id,
+          fileName: result.fileName,
+          fileSize: result.fileSize,
+        });
         results.push(result);
       } catch (error) {
-        console.error('[AttachmentService] Erreur upload fichier:', error);
+        console.error('[AttachmentService] ❌ Erreur upload fichier:', {
+          filename: file.filename,
+          error: error instanceof Error ? error.message : error,
+          stack: error instanceof Error ? error.stack : undefined,
+        });
         // Continuer avec les autres fichiers
       }
     }
+
+    console.log('[AttachmentService] uploadMultiple - Fin', {
+      resultsCount: results.length,
+      results: results.map(r => ({ id: r.id, fileName: r.fileName })),
+    });
 
     return results;
   }

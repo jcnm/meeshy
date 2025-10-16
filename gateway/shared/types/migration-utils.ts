@@ -3,11 +3,10 @@
  * Facilite la transition vers les nouveaux types Phase 1
  */
 
-import type { Message, Conversation, ConversationParticipant } from './conversation';
-import type { SocketIOUser as User } from './socketio-events';
+import type { Message, Conversation } from './conversation';
+import type { SocketIOUser as User, SocketIOUser } from './socketio-events';
 import type { AnonymousParticipant } from './anonymous';
 import type { ApiResponse } from './api-responses';
-import type { SocketIOUser, SocketIOMessage } from './socketio-events';
 
 /**
  * Convertit un SocketIOUser vers User unifié
@@ -52,35 +51,67 @@ export function isValidObjectId(id: string): boolean {
 }
 
 /**
+ * Type guard pour vérifier si un objet a une propriété id valide
+ */
+function hasValidId(obj: unknown): obj is { id: string } {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    'id' in obj &&
+    typeof (obj as { id: unknown }).id === 'string' &&
+    isValidObjectId((obj as { id: string }).id)
+  );
+}
+
+/**
+ * Type guard pour vérifier si un objet a une propriété identifier
+ */
+function hasIdentifier(obj: unknown): obj is { identifier: string } {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    'identifier' in obj &&
+    typeof (obj as { identifier: unknown }).identifier === 'string'
+  );
+}
+
+/**
+ * Type guard pour vérifier si un objet ressemble à une conversation
+ */
+export function isConversationLike(obj: unknown): obj is { id: string; identifier?: string } {
+  return hasValidId(obj);
+}
+
+/**
  * Extrait l'ObjectId d'un objet conversation pour les API
  */
-export function getApiConversationId(conversation: any): string {
+export function getApiConversationId(conversation: unknown): string {
   if (!conversation) {
     throw new Error('Conversation object is null or undefined');
   }
   
-  if (conversation.id && isValidObjectId(conversation.id)) {
-    return conversation.id;
+  if (!hasValidId(conversation)) {
+    throw new Error(`Invalid conversation object: missing valid ObjectId. Got: ${JSON.stringify(conversation)}`);
   }
   
-  throw new Error(`Invalid conversation object: missing valid ObjectId. Got: ${JSON.stringify(conversation)}`);
+  return conversation.id;
 }
 
 /**
  * Extrait l'identifier d'affichage d'une conversation
  */
-export function getDisplayConversationId(conversation: any): string {
+export function getDisplayConversationId(conversation: unknown): string {
   if (!conversation) {
     throw new Error('Conversation object is null or undefined');
   }
   
   // Priorité à l'identifier pour les URLs
-  if (conversation.identifier && typeof conversation.identifier === 'string') {
+  if (hasIdentifier(conversation)) {
     return conversation.identifier;
   }
   
   // Fallback sur l'ID
-  if (conversation.id) {
+  if (hasValidId(conversation)) {
     return conversation.id;
   }
   
@@ -88,9 +119,14 @@ export function getDisplayConversationId(conversation: any): string {
 }
 
 /**
+ * Type pour les métadonnées de réponse API
+ */
+export type ApiResponseMeta = Readonly<Record<string, string | number | boolean | null>>;
+
+/**
  * Crée une réponse API de succès
  */
-export function createApiSuccessResponse<T>(data: T, meta?: any): ApiResponse<T> {
+export function createApiSuccessResponse<T>(data: T, meta?: ApiResponseMeta): ApiResponse<T> {
   return {
     success: true,
     data,
@@ -124,59 +160,126 @@ export function isAnonymousParticipant(sender: User | AnonymousParticipant | und
 }
 
 /**
+ * Type guard pour vérifier si un objet ressemble à un message brut
+ */
+function isRawMessageLike(obj: unknown): obj is { 
+  id: unknown; 
+  conversationId: unknown; 
+  content: unknown;
+} {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    'id' in obj &&
+    'conversationId' in obj &&
+    'content' in obj
+  );
+}
+
+/**
  * Normalise un message depuis différentes sources
  * Assure la synchronisation entre createdAt et timestamp
  */
-export function normalizeMessage(rawMessage: any): Message {
+export function normalizeMessage(rawMessage: unknown): Message {
+  if (!isRawMessageLike(rawMessage)) {
+    throw new Error('Invalid message object: missing required fields');
+  }
+
+  const raw = rawMessage as Record<string, unknown>;
+  
+  // Helper pour normaliser les dates
+  const toDate = (val: unknown): Date => {
+    if (val instanceof Date) return val;
+    if (typeof val === 'string' || typeof val === 'number') return new Date(val);
+    return new Date();
+  };
+
   const normalizedMessage: Message = {
-    id: String(rawMessage.id),
-    conversationId: String(rawMessage.conversationId),
-    senderId: rawMessage.senderId ? String(rawMessage.senderId) : undefined,
-    anonymousSenderId: rawMessage.anonymousSenderId ? String(rawMessage.anonymousSenderId) : undefined,
-    content: String(rawMessage.content),
-    originalLanguage: String(rawMessage.originalLanguage || 'fr'),
-    messageType: rawMessage.messageType || 'text',
-    isEdited: Boolean(rawMessage.isEdited),
-    isDeleted: Boolean(rawMessage.isDeleted),
-    replyToId: rawMessage.replyToId ? String(rawMessage.replyToId) : undefined,
-    createdAt: new Date(rawMessage.createdAt || rawMessage.timestamp),
-    updatedAt: new Date(rawMessage.updatedAt || rawMessage.createdAt || rawMessage.timestamp),
-    editedAt: rawMessage.editedAt ? new Date(rawMessage.editedAt) : undefined,
-    deletedAt: rawMessage.deletedAt ? new Date(rawMessage.deletedAt) : undefined,
+    id: String(raw.id),
+    conversationId: String(raw.conversationId),
+    senderId: raw.senderId ? String(raw.senderId) : undefined,
+    anonymousSenderId: raw.anonymousSenderId ? String(raw.anonymousSenderId) : undefined,
+    content: String(raw.content),
+    originalLanguage: String(raw.originalLanguage || 'fr'),
+    messageType: (raw.messageType as 'text' | 'image' | 'file' | 'audio' | 'video' | 'location' | 'system') || 'text',
+    isEdited: Boolean(raw.isEdited),
+    isDeleted: Boolean(raw.isDeleted),
+    replyToId: raw.replyToId ? String(raw.replyToId) : undefined,
+    createdAt: toDate(raw.createdAt || raw.timestamp),
+    updatedAt: toDate(raw.updatedAt || raw.createdAt || raw.timestamp),
+    editedAt: raw.editedAt ? toDate(raw.editedAt) : undefined,
+    deletedAt: raw.deletedAt ? toDate(raw.deletedAt) : undefined,
     
     // Synchroniser timestamp avec createdAt pour compatibilité
-    timestamp: new Date(rawMessage.createdAt || rawMessage.timestamp),
+    timestamp: toDate(raw.createdAt || raw.timestamp),
     
-    sender: rawMessage.sender || rawMessage.anonymousSender,
-    anonymousSender: rawMessage.anonymousSender,
-    translations: rawMessage.translations || [],
-    replyTo: rawMessage.replyTo ? normalizeMessage(rawMessage.replyTo) : undefined
+    sender: (raw.sender || raw.anonymousSender) as User | AnonymousParticipant | undefined,
+    anonymousSender: raw.anonymousSender ? {
+      id: String((raw.anonymousSender as any).id),
+      username: String((raw.anonymousSender as any).username || ''),
+      firstName: String((raw.anonymousSender as any).firstName || ''),
+      lastName: String((raw.anonymousSender as any).lastName || ''),
+      language: String((raw.anonymousSender as any).language || 'fr'),
+      isMeeshyer: Boolean((raw.anonymousSender as any).isMeeshyer)
+    } : undefined,
+    translations: Array.isArray(raw.translations) ? raw.translations : [],
+    replyTo: raw.replyTo ? normalizeMessage(raw.replyTo) : undefined
   };
   
   return normalizedMessage;
 }
 
 /**
+ * Type guard pour vérifier si un objet ressemble à une conversation brute
+ */
+function isRawConversationLike(obj: unknown): obj is {
+  id: unknown;
+  createdAt: unknown;
+  updatedAt: unknown;
+} {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    'id' in obj &&
+    'createdAt' in obj &&
+    'updatedAt' in obj
+  );
+}
+
+/**
  * Normalise une conversation depuis différentes sources
  * Assure la synchronisation entre les alias de champs
  */
-export function normalizeConversation(rawConversation: any): Conversation {
+export function normalizeConversation(rawConversation: unknown): Conversation {
+  if (!isRawConversationLike(rawConversation)) {
+    throw new Error('Invalid conversation object: missing required fields');
+  }
+
+  const raw = rawConversation as Record<string, unknown>;
+  
+  // Helper pour normaliser les dates
+  const toDate = (val: unknown): Date => {
+    if (val instanceof Date) return val;
+    if (typeof val === 'string' || typeof val === 'number') return new Date(val);
+    return new Date();
+  };
+
   const normalizedConversation: Conversation = {
-    id: String(rawConversation.id),
-    identifier: rawConversation.identifier,
-    type: rawConversation.type || 'direct',
-    title: rawConversation.title,
-    description: rawConversation.description,
-    status: rawConversation.status || 'active',
-    visibility: rawConversation.visibility || 'private',
-    lastMessage: rawConversation.lastMessage ? normalizeMessage(rawConversation.lastMessage) : undefined,
-    messageCount: Number(rawConversation.messageCount || 0),
-    unreadCount: Number(rawConversation.unreadCount || 0),
-    participants: Array.isArray(rawConversation.participants) ? rawConversation.participants : [],
-    createdAt: new Date(rawConversation.createdAt),
-    updatedAt: new Date(rawConversation.updatedAt),
-    lastActivityAt: rawConversation.lastActivityAt ? new Date(rawConversation.lastActivityAt) : undefined,
-    createdBy: rawConversation.createdBy
+    id: String(raw.id),
+    identifier: raw.identifier as string | undefined,
+    type: (raw.type as 'direct' | 'group' | 'public' | 'global' | 'broadcast') || 'direct',
+    title: raw.title as string | undefined,
+    description: raw.description as string | undefined,
+    status: (raw.status as 'active' | 'archived' | 'deleted') || 'active',
+    visibility: (raw.visibility as 'public' | 'private' | 'restricted') || 'private',
+    lastMessage: raw.lastMessage ? normalizeMessage(raw.lastMessage) : undefined,
+    messageCount: Number(raw.messageCount || 0),
+    unreadCount: Number(raw.unreadCount || 0),
+    participants: Array.isArray(raw.participants) ? raw.participants as Conversation['participants'] : [],
+    createdAt: toDate(raw.createdAt),
+    updatedAt: toDate(raw.updatedAt),
+    lastActivityAt: raw.lastActivityAt ? toDate(raw.lastActivityAt) : undefined,
+    createdBy: raw.createdBy as string | undefined
   };
   
   return normalizedConversation;

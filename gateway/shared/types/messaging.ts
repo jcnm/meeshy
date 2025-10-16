@@ -5,7 +5,9 @@
  * Gateway WebSocket ↔ Frontend communication
  */
 
-import type { SocketIOMessage as Message, ApiResponse, ConversationStats } from './index';
+import type { ApiResponse } from './api-responses';
+import type { ConversationStats } from './conversation';
+import type { SocketIOMessage } from './socketio-events';
 
 // ===== TYPES D'AUTHENTIFICATION =====
 
@@ -18,14 +20,67 @@ export type AuthenticationType = 'jwt' | 'session' | 'anonymous';
  * Context d'authentification pour une requête
  */
 export interface AuthenticationContext {
-  type: AuthenticationType;
-  userId?: string;           // ID User (pour JWT)
-  sessionToken?: string;     // Session token (pour anonymes)
-  jwtToken?: string;         // JWT Token complet
-  isAnonymous: boolean;      // Dérivé du type
+  readonly type: AuthenticationType;
+  readonly userId?: string;           // ID User (pour JWT)
+  readonly sessionToken?: string;     // Session token (pour anonymes)
+  readonly jwtToken?: string;         // JWT Token complet
+  readonly isAnonymous: boolean;      // Dérivé du type
 }
 
 // ===== REQUÊTE DE MESSAGE =====
+
+/**
+ * Priorité d'un message
+ */
+export type MessagePriority = 'low' | 'normal' | 'high' | 'urgent';
+
+/**
+ * Source d'un message
+ */
+export type MessageSource = 'websocket' | 'rest' | 'api';
+
+/**
+ * Type d'attachement de message
+ */
+export type MessageAttachmentType = 'image' | 'file' | 'audio' | 'video' | 'link';
+
+/**
+ * Modèle de traduction
+ */
+export type TranslationModelType = 'basic' | 'medium' | 'premium';
+
+/**
+ * Préférences de traduction pour un message
+ */
+export interface MessageTranslationPreferences {
+  readonly disableAutoTranslation?: boolean;
+  readonly targetLanguages?: readonly string[];
+  readonly modelType?: TranslationModelType;
+}
+
+/**
+ * Métadonnées d'une requête de message
+ */
+export interface MessageRequestMetadata {
+  readonly source?: MessageSource;
+  readonly socketId?: string;
+  readonly clientTimestamp?: number;
+  readonly requestId?: string;
+  readonly userAgent?: string;
+}
+
+/**
+ * Pièce jointe de message
+ */
+export interface MessageAttachment {
+  readonly id: string;
+  readonly type: MessageAttachmentType;
+  readonly url: string;
+  readonly filename?: string;
+  readonly size?: number;
+  readonly mimeType?: string;
+  readonly thumbnail?: string;
+}
 
 /**
  * Format pour toutes les requêtes d'envoi de message
@@ -33,88 +88,118 @@ export interface AuthenticationContext {
  */
 export interface MessageRequest {
   // Champs requis
-  conversationId: string;
-  content: string;
+  readonly conversationId: string;
+  readonly content: string;
   
   // Champs optionnels avec defaults intelligents
-  originalLanguage?: string;        // Default: détection auto ou langue utilisateur
-  messageType?: string;             // Default: "text"
-  replyToId?: string;              // Pour les réponses/threads
+  readonly originalLanguage?: string;        // Default: détection auto ou langue utilisateur
+  readonly messageType?: string;             // Default: "text"
+  readonly replyToId?: string;              // Pour les réponses/threads
   
   // Extensions pour messaging anonyme - DEPRECATED, utiliser authContext
-  isAnonymous?: boolean;           // Default: false
-  anonymousDisplayName?: string;   // Requis si isAnonymous = true
+  readonly isAnonymous?: boolean;           // Default: false
+  readonly anonymousDisplayName?: string;   // Requis si isAnonymous = true
   
   // Metadata optionnelle
-  priority?: 'low' | 'normal' | 'high' | 'urgent';
-  encrypted?: boolean;             // Default: false
-  attachments?: MessageAttachment[];
+  readonly priority?: MessagePriority;
+  readonly encrypted?: boolean;             // Default: false
+  readonly attachments?: readonly MessageAttachment[];
   
   // Preferences de traduction spécifiques à ce message
-  translationPreferences?: {
-    disableAutoTranslation?: boolean;
-    targetLanguages?: string[];    // Override des langues auto-détectées
-    modelType?: 'basic' | 'medium' | 'premium';
-  };
+  readonly translationPreferences?: MessageTranslationPreferences;
 
   // Context d'authentification - NOUVEAU
-  authContext?: AuthenticationContext;
+  readonly authContext?: AuthenticationContext;
 
   // Metadata pour WebSocket/REST tracking
-  metadata?: {
-    source?: 'websocket' | 'rest' | 'api';
-    socketId?: string;
-    clientTimestamp?: number;
-    requestId?: string;
-    userAgent?: string;
-  };
-}
-
-/**
- * Pièce jointe de message
- */
-export interface MessageAttachment {
-  id: string;
-  type: 'image' | 'file' | 'audio' | 'video' | 'link';
-  url: string;
-  filename?: string;
-  size?: number;
-  mimeType?: string;
-  thumbnail?: string;
+  readonly metadata?: MessageRequestMetadata;
 }
 
 // ===== RÉPONSE UNIFIÉE =====
 
 /**
+ * Statut du processus de traduction
+ */
+export type TranslationProcessStatus = 'pending' | 'in_progress' | 'completed' | 'failed' | 'cached';
+
+/**
+ * Statut de livraison d'un message
+ */
+export type DeliveryStatusType = 'sent' | 'delivered' | 'read' | 'failed';
+
+/**
+ * Détails de livraison pour un destinataire
+ */
+export interface RecipientDeliveryDetail {
+  readonly userId: string;
+  readonly status: DeliveryStatusType;
+  readonly timestamp: Date;
+}
+
+/**
  * Statut de traduction pour un message
  */
 export interface TranslationStatus {
-  status: 'pending' | 'in_progress' | 'completed' | 'failed' | 'cached';
-  languagesRequested: string[];     // Langues demandées pour traduction
-  languagesCompleted: string[];     // Langues avec traduction terminée
-  languagesFailed: string[];        // Langues avec traduction échouée
-  estimatedCompletionTime?: number; // Temps estimé en ms
-  cacheHitRate?: number;           // % de traductions venant du cache
-  model?: 'basic' | 'medium' | 'premium'; // Modèle utilisé pour traduire
+  readonly status: TranslationProcessStatus;
+  readonly languagesRequested: readonly string[];     // Langues demandées pour traduction
+  readonly languagesCompleted: readonly string[];     // Langues avec traduction terminée
+  readonly languagesFailed: readonly string[];        // Langues avec traduction échouée
+  readonly estimatedCompletionTime?: number; // Temps estimé en ms
+  readonly cacheHitRate?: number;           // % de traductions venant du cache
+  readonly model?: TranslationModelType;
 }
 
 /**
  * Statut de livraison pour un message
  */
 export interface DeliveryStatus {
-  status: 'sent' | 'delivered' | 'read' | 'failed';
-  sentAt: Date;
-  deliveredAt?: Date;
-  readAt?: Date;
-  failedAt?: Date;
-  recipientCount: number;           // Nombre de destinataires
-  deliveredCount: number;           // Nombre ayant reçu le message
-  readCount: number;                // Nombre ayant lu le message
-  recipientDetails?: Array<{        // Détail par destinataire (optionnel)
-    userId: string;
-    status: 'sent' | 'delivered' | 'read' | 'failed';
-    timestamp: Date;
-  }>;
+  readonly status: DeliveryStatusType;
+  readonly sentAt: Date;
+  readonly deliveredAt?: Date;
+  readonly readAt?: Date;
+  readonly failedAt?: Date;
+  readonly recipientCount: number;           // Nombre de destinataires
+  readonly deliveredCount: number;           // Nombre ayant reçu le message
+  readonly readCount: number;                // Nombre ayant lu le message
+  readonly recipientDetails?: readonly RecipientDeliveryDetail[];
+}
+
+/**
+ * Métriques de performance d'une requête
+ */
+export interface PerformanceMetrics {
+  readonly processingTime: number;         // Temps total de traitement en ms
+  readonly dbQueryTime: number;           // Temps des requêtes DB en ms
+  readonly translationQueueTime: number;  // Temps ajout à queue traduction en ms
+  readonly validationTime: number;        // Temps de validation en ms
+}
+
+/**
+ * Contexte d'un message
+ */
+export interface MessageContext {
+  readonly isFirstMessage: boolean;       // Premier message de la conversation
+  readonly triggerNotifications: boolean; // Déclenche des notifications push
+  readonly mentionedUsers: readonly string[];      // IDs utilisateurs mentionnés (@user)
+  readonly containsLinks: boolean;        // Message contient des liens
+  readonly spamScore?: number;           // Score anti-spam (0-1)
+}
+
+/**
+ * Informations de debugging (development only)
+ */
+export interface DebugInfo {
+  readonly requestId: string;
+  readonly serverTime: Date;
+  readonly userId: string;
+  readonly conversationId: string;
+  readonly messageId: string;
+  readonly error?: string;
+  readonly stack?: string;
+  readonly socketId?: string;
+  readonly source?: string;
+  // Note: Pour des champs additionnels de debug, utiliser un objet séparé 'extra'
+  readonly extra?: Readonly<Record<string, string | number | boolean | null>>;
 }
 
 /**
@@ -122,68 +207,55 @@ export interface DeliveryStatus {
  */
 export interface MessageResponseMetadata {
   // Stats de conversation mises à jour
-  conversationStats?: ConversationStats;
+  readonly conversationStats?: ConversationStats;
   
   // Statut de traduction
-  translationStatus?: TranslationStatus;
+  readonly translationStatus?: TranslationStatus;
   
   // Statut de livraison
-  deliveryStatus?: DeliveryStatus;
+  readonly deliveryStatus?: DeliveryStatus;
   
   // Performance metrics
-  performance?: {
-    processingTime: number;         // Temps total de traitement en ms
-    dbQueryTime: number;           // Temps des requêtes DB en ms
-    translationQueueTime: number;  // Temps ajout à queue traduction en ms
-    validationTime: number;        // Temps de validation en ms
-  };
+  readonly performance?: PerformanceMetrics;
   
   // Informations contextuelles
-  context?: {
-    isFirstMessage: boolean;       // Premier message de la conversation
-    triggerNotifications: boolean; // Déclenche des notifications push
-    mentionedUsers: string[];      // IDs utilisateurs mentionnés (@user)
-    containsLinks: boolean;        // Message contient des liens
-    spamScore?: number;           // Score anti-spam (0-1)
-  };
+  readonly context?: MessageContext;
   
   // Debugging info (development only)
-  debug?: {
-    requestId: string;
-    serverTime: Date;
-    userId: string;
-    conversationId: string;
-    messageId: string;
-    // Champs flexibles pour debugging spécifique
-    error?: string;
-    stack?: string;
-    socketId?: string;
-    source?: string;
-    [key: string]: any;  // Allow additional debug fields
-  };
+  readonly debug?: DebugInfo;
 }
 
 /**
  * Réponse pour l'envoi de messages
  * Étend ApiResponse avec metadata complète
  */
-export interface MessageResponse extends ApiResponse<Message> {
+export interface MessageResponse extends ApiResponse<SocketIOMessage> {
   // Message complet avec toutes les relations
-  data: Message;  // Includes sender, translations, replyTo, etc.
+  readonly data: SocketIOMessage;  // Includes sender, translations, replyTo, etc.
   
   // Metadata enrichie
-  metadata: MessageResponseMetadata;
+  readonly metadata: MessageResponseMetadata;
 }
 
 // ===== ÉVÉNEMENTS WEBSOCKET UNIFIÉS =====
 
 /**
+ * Type d'événement WebSocket pour l'envoi
+ */
+export type MessageSendEventType = 'message:send';
+
+/**
+ * Type d'événement WebSocket pour la diffusion
+ */
+export type MessageBroadcastEventType = 'message:new';
+
+/**
  * Format d'événement WebSocket pour l'envoi de message
  */
 export interface MessageSendEvent {
-  type: 'message:send';
-  payload: MessageRequest;
-  requestId?: string;              // Pour traçabilité
+  readonly type: MessageSendEventType;
+  readonly payload: MessageRequest;
+  readonly requestId?: string;              // Pour traçabilité
 }
 
 /**
@@ -194,51 +266,71 @@ export interface MessageSendCallback {
 }
 
 /**
+ * Payload pour l'événement de diffusion
+ */
+export interface MessageBroadcastPayload {
+  readonly message: SocketIOMessage;
+  readonly conversationId: string;
+  readonly targetLanguage: string;        // Langue pour ce destinataire spécifique
+  readonly metadata: Omit<MessageResponseMetadata, 'debug'>;
+}
+
+/**
  * Événement de diffusion temps réel vers autres clients
  */
 export interface MessageBroadcastEvent {
-  type: 'message:new';
-  payload: {
-    message: Message;
-    conversationId: string;
-    targetLanguage: string;        // Langue pour ce destinataire spécifique
-    metadata: Omit<MessageResponseMetadata, 'debug'>;
-  };
+  readonly type: MessageBroadcastEventType;
+  readonly payload: MessageBroadcastPayload;
 }
 
 // ===== VALIDATION TYPES =====
+
+/**
+ * Erreur de validation (mutable pour construction)
+ */
+export interface ValidationError {
+  field: keyof MessageRequest;
+  message: string;
+  code: string;
+}
+
+/**
+ * Avertissement de validation (mutable pour construction)
+ */
+export interface ValidationWarning {
+  field: keyof MessageRequest;
+  message: string;
+  code: string;
+}
 
 /**
  * Résultat de validation pour une requête de message
  */
 export interface MessageValidationResult {
   isValid: boolean;
-  errors: Array<{
-    field: keyof MessageRequest;
-    message: string;
-    code: string;
-  }>;
-  warnings?: Array<{
-    field: keyof MessageRequest;
-    message: string;
-    code: string;
-  }>;
+  errors: ValidationError[];
+  warnings?: ValidationWarning[];
+}
+
+/**
+ * Restrictions d'envoi de message
+ */
+export interface MessageSendRestrictions {
+  readonly maxContentLength?: number;
+  readonly maxAttachments?: number;
+  readonly allowedAttachmentTypes?: readonly string[];
+  readonly rateLimitRemaining?: number;
 }
 
 /**
  * Résultat de vérification des permissions
  */
 export interface MessagePermissionResult {
-  canSend: boolean;
-  canSendAnonymous?: boolean;
-  canAttachFiles?: boolean;
-  canMentionUsers?: boolean;
-  canUseHighPriority?: boolean;
-  restrictions?: {
-    maxContentLength?: number;
-    maxAttachments?: number;
-    allowedAttachmentTypes?: string[];
-    rateLimitRemaining?: number;
-  };
-  reason?: string;                 // Raison si canSend = false
+  readonly canSend: boolean;
+  readonly canSendAnonymous?: boolean;
+  readonly canAttachFiles?: boolean;
+  readonly canMentionUsers?: boolean;
+  readonly canUseHighPriority?: boolean;
+  readonly restrictions?: MessageSendRestrictions;
+  readonly reason?: string;                 // Raison si canSend = false
 }

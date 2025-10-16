@@ -65,3 +65,23 @@ README.md
 # Other
 *.tar.gz
 
+# Exclude parent shared directory (we copy it locally)
+../shared
+../gateway
+../translator
+../scripts
+
+# Workspace files (copied by prepare script)
+package.json.workspace
+
+# Docker build scripts
+build-*.sh
+docker-compose*.yml
+
+# Database files
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+dev.db
+

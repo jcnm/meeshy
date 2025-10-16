@@ -49,98 +49,130 @@ export interface SocketResponse<T = unknown> extends ApiResponse<T> {
 }
 
 /**
+ * Données de réponse pour l'envoi de message
+ */
+export interface SendMessageResponseData {
+  readonly messageId: string;
+  readonly status?: string;
+  readonly timestamp?: string;
+}
+
+/**
  * Réponse pour l'envoi de message
  */
-export interface SendMessageResponse extends ApiResponse<{
-  messageId: string;
-  status?: string;
-  timestamp?: string;
-}> {}
+export interface SendMessageResponse<TMessage = unknown> extends ApiResponse<SendMessageResponseData> {
+  readonly messageData?: TMessage;
+}
+
+/**
+ * Données de réponse pour la liste des messages
+ */
+export interface GetMessagesResponseData<TMessage = unknown> {
+  readonly messages: readonly TMessage[];
+  readonly hasMore: boolean;
+}
 
 /**
  * Réponse pour la liste des messages
  */
-export interface GetMessagesResponse extends ApiResponse<{
-  messages: any[]; // Will be typed as Message[] when used
-  hasMore: boolean;
-}> {}
+export interface GetMessagesResponse<TMessage = unknown> extends ApiResponse<GetMessagesResponseData<TMessage>> {}
 
 /**
  * Réponse pour la liste des conversations
  */
-export interface GetConversationsResponse extends ApiResponse<any[]> {} // Will be typed as Conversation[] when used
+export interface GetConversationsResponse<TConversation = unknown> extends ApiResponse<readonly TConversation[]> {}
 
 /**
  * Réponse pour une conversation spécifique
  */
-export interface GetConversationResponse extends ApiResponse<any> {} // Will be typed as Conversation when used
+export interface GetConversationResponse<TConversation = unknown> extends ApiResponse<TConversation> {}
 
 /**
  * Réponse pour la création d'une conversation
  */
-export interface CreateConversationResponse extends ApiResponse<any> {} // Will be typed as Conversation when used
+export interface CreateConversationResponse<TConversation = unknown> extends ApiResponse<TConversation> {}
 
 /**
  * Erreur API standardisée
  */
 export interface ApiError {
-  message: string;
-  status: number;
-  code?: string;
-  details?: Record<string, unknown>;
+  readonly message: string;
+  readonly status: number;
+  readonly code?: string;
+  readonly details?: Readonly<Record<string, string | number | boolean | null>>;
 }
 
 /**
  * Configuration API
  */
 export interface ApiConfig {
-  baseUrl: string;
-  timeout: number;
-  headers: Record<string, string>;
-  retries?: number;
-  retryDelay?: number;
+  readonly baseUrl: string;
+  readonly timeout: number;
+  readonly headers: Readonly<Record<string, string>>;
+  readonly retries?: number;
+  readonly retryDelay?: number;
 }
 
 /**
  * Options pour les requêtes API
  */
 export interface ApiRequestOptions {
-  signal?: AbortSignal;
-  timeout?: number;
-  retries?: number;
-  headers?: Record<string, string>;
+  readonly signal?: AbortSignal;
+  readonly timeout?: number;
+  readonly retries?: number;
+  readonly headers?: Readonly<Record<string, string>>;
+}
+
+/**
+ * Données de réponse d'authentification
+ */
+export interface AuthResponseData<TUser = unknown> {
+  readonly user: TUser;
+  readonly token?: string;
+  readonly sessionToken?: string;
+  readonly expiresAt?: string;
 }
 
 /**
  * Réponse d'authentification
  */
-export interface AuthResponse extends ApiResponse<{
-  user: any; // Will be typed as User when used
-  token?: string;
-  sessionToken?: string;
-  expiresAt?: string;
-}> {}
+export interface AuthResponse<TUser = unknown> extends ApiResponse<AuthResponseData<TUser>> {}
+
+/**
+ * Traduction individuelle
+ */
+export interface Translation {
+  readonly targetLanguage: string;
+  readonly translatedContent: string;
+  readonly translationModel: string;
+  readonly confidenceScore?: number;
+  readonly cached: boolean;
+}
+
+/**
+ * Données de réponse pour les traductions
+ */
+export interface TranslationResponseData {
+  readonly messageId: string;
+  readonly translations: readonly Translation[];
+}
 
 /**
  * Réponse pour les traductions
  */
-export interface TranslationResponse extends ApiResponse<{
-  messageId: string;
-  translations: Array<{
-    targetLanguage: string;
-    translatedContent: string;
-    translationModel: string;
-    confidenceScore?: number;
-    cached: boolean;
-  }>;
-}> {}
+export interface TranslationResponse extends ApiResponse<TranslationResponseData> {}
+
+/**
+ * Données de réponse pour les statistiques
+ */
+export interface StatsResponseData {
+  readonly stats: ConversationStats;
+}
 
 /**
  * Réponse pour les statistiques
  */
-export interface StatsResponse extends ApiResponse<{
-  stats: ConversationStats;
-}> {}
+export interface StatsResponse extends ApiResponse<StatsResponseData> {}
 
 /**
  * Type guard pour vérifier si une réponse est un succès

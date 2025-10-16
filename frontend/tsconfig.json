@@ -27,6 +27,12 @@
       "@/*": [
         "./*"
       ],
+      "@meeshy/shared": [
+        "../shared/dist/index.d.ts"
+      ],
+      "@meeshy/shared/*": [
+        "../shared/dist/*"
+      ],
       "@shared/*": [
         "./shared/*"
       ]

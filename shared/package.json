@@ -1,36 +1,69 @@
 {
   "name": "@meeshy/shared",
   "version": "1.0.0",
-  "description": "Shared types, schemas, and protocols for Meeshy microservices",
-  "main": "generated/index.js",
-  "types": "generated/index.d.ts",
+  "description": "Librairie partagée fortement typée pour Meeshy (Types, Schema Prisma, Utilitaires)",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./generated/index.js",
-    "./prisma": "./generated/prisma/index.js",
-    "./proto": "./proto/index.js"
-  },
-  "scripts": {
-    "generate": "prisma generate",
-    "migrate": "prisma migrate dev",
-    "studio": "prisma studio", 
-    "build:types": "tsc --build",
-    "build": "pnpm run generate && pnpm run build:types && pnpm run distribute",
-    "distribute": "chmod +x scripts/distribute.sh && ./scripts/distribute.sh",
-    "clean": "rm -rf dist/ generated/ node_modules/ && find . -name '*.js' -not -path './node_modules/*' -not -path './prisma/client/*' -delete && find . -name '*.map' -not -path './node_modules/*' -not -path './prisma/client/*' -delete",
-    "proto:compile": "protoc --js_out=import_style=commonjs,binary:./proto/generated --ts_out=./proto/generated proto/*.proto"
-  },
-  "dependencies": {
-    "@prisma/client": "6.13.0"
-  },
-  "devDependencies": {
-    "@types/node": "^22.0.0",
-    "prisma": "6.13.0",
-    "ts-node": "^10.9.2",
-    "tsx": "^4.20.3"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    },
+    "./types": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./types/*": {
+      "types": "./dist/*.d.ts",
+      "import": "./dist/*.js"
+    },
+    "./schema": "./schema.prisma",
+    "./client": "./client/index.js"
   },
   "files": [
-    "generated/",
-    "proto/",
-    "prisma/schema.prisma"
-  ]
+    "dist",
+    "schema.prisma",
+    "client"
+  ],
+  "scripts": {
+    "build": "npm run build:types",
+    "build:types": "tsc --project tsconfig.json",
+    "build:watch": "tsc --watch --project tsconfig.json",
+    "build:prisma": "prisma generate --schema=./schema.prisma",
+    "build:all": "npm run clean && npm run build:types && npm run build:prisma",
+    "clean": "rm -rf dist types/**/*.js types/**/*.d.ts types/**/*.js.map types/**/*.d.ts.map",
+    "clean:all": "npm run clean && rm -rf client node_modules",
+    "typecheck": "tsc --noEmit --project tsconfig.json",
+    "validate": "npm run typecheck && echo '✅ Types validation réussie - Alignement avec schema.prisma vérifié'",
+    "prebuild": "npm run clean",
+    "prisma:studio": "prisma studio --schema=./schema.prisma",
+    "prisma:format": "prisma format --schema=./schema.prisma"
+  },
+  "keywords": [
+    "meeshy",
+    "types",
+    "typescript",
+    "shared",
+    "library",
+    "prisma"
+  ],
+  "author": "Meeshy Team",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@prisma/client": "^6.13.0"
+  },
+  "devDependencies": {
+    "prisma": "^6.13.0",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
+  "prisma": {
+    "schema": "./schema.prisma"
+  }
 }

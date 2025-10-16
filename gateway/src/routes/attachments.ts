@@ -34,6 +34,7 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
         const isAnonymous = authContext.isAnonymous;
 
         // Récupérer les fichiers uploadés
+        console.log('[AttachmentRoutes] 📥 Starting file parsing...');
         const parts = request.parts();
         const files: Array<{
           buffer: Buffer;
@@ -43,8 +44,10 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
         }> = [];
 
         for await (const part of parts) {
+          console.log('[AttachmentRoutes] 📦 Part received:', { type: part.type, filename: part.type === 'file' ? part.filename : 'N/A' });
           if (part.type === 'file') {
             const buffer = await part.toBuffer();
+            console.log('[AttachmentRoutes] 📄 File buffered:', { filename: part.filename, size: buffer.length });
             files.push({
               buffer,
               filename: part.filename,
@@ -54,12 +57,19 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
           }
         }
 
+        console.log('[AttachmentRoutes] 📊 Total files collected:', files.length);
         if (files.length === 0) {
+          console.log('[AttachmentRoutes] ❌ No files provided');
           return reply.status(400).send({
             success: false,
             error: 'No files provided',
           });
         }
+
+        console.log('[AttachmentRoutes] 📤 Uploading files:', {
+          count: files.length,
+          files: files.map(f => ({ name: f.filename, size: f.size, type: f.mimeType })),
+        });
 
         // Upload tous les fichiers
         const results = await attachmentService.uploadMultiple(
@@ -68,12 +78,17 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
           isAnonymous
         );
 
+        console.log('[AttachmentRoutes] ✅ Upload results:', {
+          count: results.length,
+          results: results.map(r => ({ id: r.id, fileName: r.fileName })),
+        });
+
         return reply.send({
           success: true,
           attachments: results,
         });
       } catch (error: any) {
-        console.error('[AttachmentRoutes] Error uploading files:', error);
+        console.error('[AttachmentRoutes] ❌ Error uploading files:', error);
         return reply.status(500).send({
           success: false,
           error: error.message || 'Error uploading files',

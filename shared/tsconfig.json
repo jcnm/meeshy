@@ -1,38 +1,53 @@
 {
   "compilerOptions": {
+    /* Language and Environment */
     "target": "ES2020",
     "lib": ["ES2020", "DOM"],
-    "module": "CommonJS",
+    
+    /* Modules */
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    
+    /* Emit */
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
     "outDir": "./dist",
-    "rootDir": "./",
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
+    "rootDir": "./types",
+    "removeComments": false,
+    "preserveConstEnums": true,
+    "declarationDir": "./dist",
+    
+    /* Interop Constraints */
     "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "noEmitOnError": true,
-    "preserveConstEnums": true
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    
+    /* Type Checking */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": false,
+    "noImplicitOverride": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    
+    /* Completeness */
+    "skipLibCheck": true
   },
-  "include": [
-    "types/**/*",
-    "**/*.ts"
-  ],
+  "include": ["types/**/*.ts"],
   "exclude": [
     "node_modules",
     "dist",
     "client",
-    "prisma/client",
+    "**/*.test.ts",
+    "**/*.spec.ts",
     "**/*.d.ts",
-    "**/*.js",
-    "**/*.map"
+    "**/*.js"
   ]
 }

@@ -86,9 +86,12 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   const [isMobile, setIsMobile] = useState(false);
   const [showConversationList, setShowConversationList] = useState(true);
   const [newMessage, setNewMessage] = useState('');
+  
+  // État pour les attachments
+  const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
 
   // Référence pour le textarea du MessageComposer
-  const messageComposerRef = useRef<{ focus: () => void; blur: () => void }>(null);
+  const messageComposerRef = useRef<{ focus: () => void; blur: () => void; clearAttachments?: () => void }>(null);
 
   // État pour les traductions
   const [translatingMessages, setTranslatingMessages] = useState<Map<string, Set<string>>>(new Map());
@@ -507,13 +510,17 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     const content = newMessage.trim();
     const replyToId = useReplyStore.getState().replyingTo?.id;
     
+    const hasAttachments = attachmentIds.length > 0;
+    
     console.log('[ConversationLayout] handleSendMessage appelé:', {
       content,
       selectedConversationId: selectedConversation?.id,
       hasMessaging: !!messaging,
       hasUser: !!user,
       selectedLanguage,
-      replyToId
+      replyToId,
+      attachmentCount: attachmentIds.length,
+      hasAttachments
     });
     
     if (!selectedConversation?.id || !user) {
@@ -521,10 +528,26 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       return;
     }
     
+    // Sauvegarder les attachments avant de les effacer
+    const currentAttachmentIds = [...attachmentIds];
+    
     try {
-      await messaging.sendMessage(content, selectedLanguage, replyToId);
+      // Envoyer avec ou sans attachments
+      if (hasAttachments && messaging.sendMessageWithAttachments) {
+        console.log('[ConversationLayout] 📎 Envoi avec attachments:', currentAttachmentIds);
+        await messaging.sendMessageWithAttachments(content, currentAttachmentIds, selectedLanguage, replyToId);
+      } else {
+        await messaging.sendMessage(content, selectedLanguage, replyToId);
+      }
+      
       console.log('[ConversationLayout] Message envoyé avec succès - en attente du retour serveur');
       setNewMessage('');
+      setAttachmentIds([]); // Réinitialiser les attachments
+      
+      // Clear les attachments du composer
+      if (messageComposerRef.current && messageComposerRef.current.clearAttachments) {
+        messageComposerRef.current.clearAttachments();
+      }
       
       // Effacer l'état de réponse
       if (replyToId) {
@@ -532,8 +555,10 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       }
     } catch (error) {
       console.error('[ConversationLayout] Erreur envoi message:', error);
+      // Restaurer les attachments en cas d'erreur
+      setAttachmentIds(currentAttachmentIds);
     }
-  }, [newMessage, selectedConversation?.id, messaging, selectedLanguage, user]);
+  }, [newMessage, selectedConversation?.id, messaging, selectedLanguage, user, attachmentIds]);
 
   // Gestion de la saisie avec auto-resize du textarea
   const handleTyping = useCallback((value: string) => {
@@ -660,6 +685,8 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               placeholder={t('conversationLayout.writeMessage')}
               onKeyPress={handleKeyPress}
               choices={getUserLanguageChoices(user)}
+              onAttachmentsChange={setAttachmentIds}
+              token={typeof window !== 'undefined' ? localStorage.getItem('auth_token') || undefined : undefined}
             />
           </div>
 
@@ -807,6 +834,8 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                     placeholder={t('conversationLayout.writeMessage')}
                     onKeyPress={handleKeyPress}
                     choices={getUserLanguageChoices(user)}
+                    onAttachmentsChange={setAttachmentIds}
+                    token={typeof window !== 'undefined' ? localStorage.getItem('auth_token') || undefined : undefined}
                   />
                 </div>
               </div>

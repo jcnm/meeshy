@@ -23,8 +23,10 @@
     "rootDir": "./",
     "baseUrl": "./",
     "paths": {
+      "@meeshy/shared": ["../shared/dist/index.d.ts"],
+      "@meeshy/shared/*": ["../shared/dist/*"],
       "@shared/*": ["./shared/*"],
-      "@prisma/client": ["./shared/prisma/client"]
+      "@prisma/client": ["../shared/client"]
     },
     "declaration": true,
     "declarationMap": true,

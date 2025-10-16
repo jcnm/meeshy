@@ -11,19 +11,29 @@ import type { AnonymousParticipant } from './anonymous';
 // ===== 1. MESSAGES GATEWAY (API/Backend) =====
 
 /**
+ * Modèles de traduction supportés
+ */
+export type TranslationModel = 'basic' | 'medium' | 'premium';
+
+/**
+ * Statuts de traduction dans l'UI
+ */
+export type TranslationStatus = 'pending' | 'translating' | 'completed' | 'failed';
+
+/**
  * Type de base pour toutes les réponses de traduction
  */
 export interface MessageTranslation {
-  id: string;
-  messageId: string;
-  sourceLanguage: string;
-  targetLanguage: string;
-  translatedContent: string;
-  translationModel: 'basic' | 'medium' | 'premium';
-  cacheKey: string;
-  confidenceScore?: number;
-  createdAt: Date;
-  cached: boolean;
+  readonly id: string;
+  readonly messageId: string;
+  readonly sourceLanguage: string;
+  readonly targetLanguage: string;
+  readonly translatedContent: string;
+  readonly translationModel: TranslationModel;
+  readonly cacheKey: string;
+  readonly confidenceScore?: number;
+  readonly createdAt: Date;
+  readonly cached: boolean;
 }
 
 /**
@@ -35,35 +45,35 @@ export interface MessageTranslation {
  */
 export interface GatewayMessage {
   // Identifiants
-  id: string;
-  conversationId: string;
-  senderId?: string;
-  anonymousSenderId?: string;
+  readonly id: string;
+  readonly conversationId: string;
+  readonly senderId?: string;
+  readonly anonymousSenderId?: string;
   
   // Contenu
-  content: string;
-  originalLanguage: string;
-  messageType: MessageType;
+  readonly content: string;
+  readonly originalLanguage: string;
+  readonly messageType: MessageType;
   
   // Métadonnées
-  isEdited: boolean;
-  editedAt?: Date;
-  isDeleted: boolean;
-  deletedAt?: Date;
-  replyToId?: string;
+  readonly isEdited: boolean;
+  readonly editedAt?: Date;
+  readonly isDeleted: boolean;
+  readonly deletedAt?: Date;
+  readonly replyToId?: string;
   
   // Timestamps
-  createdAt: Date;
-  updatedAt?: Date;
+  readonly createdAt: Date;
+  readonly updatedAt?: Date;
   
   // Sender résolu (authentifié ou anonyme)
-  sender?: User | AnonymousParticipant;
+  readonly sender?: User | AnonymousParticipant;
   
   // Traductions disponibles (peut être vide pour nouveaux messages)
-  translations: MessageTranslation[];
+  readonly translations: readonly MessageTranslation[];
   
   // Message de réponse référencé
-  replyTo?: GatewayMessage;
+  readonly replyTo?: GatewayMessage;
 }
 
 // ===== 2. MESSAGES UI (Interface utilisateur) =====
@@ -72,14 +82,33 @@ export interface GatewayMessage {
  * État de traduction pour l'interface utilisateur
  */
 export interface UITranslationState {
-  language: string;           // Langue cible
-  content: string;           // Contenu traduit
-  status: 'pending' | 'translating' | 'completed' | 'failed';
-  timestamp: Date;
-  confidence?: number;       // Score de confiance 0-1
-  model?: 'basic' | 'medium' | 'premium';
-  error?: string;           // Message d'erreur si échec
-  fromCache: boolean;       // Indique si traduit depuis le cache
+  readonly language: string;           // Langue cible
+  readonly content: string;           // Contenu traduit
+  readonly status: TranslationStatus;
+  readonly timestamp: Date;
+  readonly confidence?: number;       // Score de confiance 0-1
+  readonly model?: TranslationModel;
+  readonly error?: string;           // Message d'erreur si échec
+  readonly fromCache: boolean;       // Indique si traduit depuis le cache
+}
+
+/**
+ * Statut de lecture pour un utilisateur
+ */
+export interface ReadStatus {
+  readonly userId: string;
+  readonly readAt?: Date;
+  readonly receivedAt?: Date;
+}
+
+/**
+ * Permissions disponibles pour un message
+ */
+export interface MessagePermissions {
+  readonly canEdit: boolean;
+  readonly canDelete: boolean;
+  readonly canTranslate: boolean;
+  readonly canReply: boolean;
 }
 
 /**
@@ -90,33 +119,33 @@ export interface UIMessage extends GatewayMessage {
   // ===== ÉTATS VISUELS =====
   
   // Traductions avec états UI
-  uiTranslations: UITranslationState[];
+  readonly uiTranslations: readonly UITranslationState[];
   
   // États de traduction en cours par langue
-  translatingLanguages: Set<string>;
+  readonly translatingLanguages: Set<string>;
   
   // Affichage actuel
-  currentDisplayLanguage: string;
-  showingOriginal: boolean;
+  readonly currentDisplayLanguage: string;
+  readonly showingOriginal: boolean;
   
   // ===== MÉTADONNÉES UI =====
   
   // Contenu original conservé
-  originalContent: string;
+  readonly originalContent: string;
   
   // Statuts de lecture (pour conversations de groupe)
-  readStatus?: Array<{ userId: string; readAt?: Date; receivedAt?: Date }>;
+  readonly readStatus?: readonly ReadStatus[];
   
   // Localisation (pour messages géolocalisés)
-  location?: string;
+  readonly location?: string;
   
   // ===== ACTIONS DISPONIBLES =====
   
   // Actions possibles selon les permissions
-  canEdit: boolean;
-  canDelete: boolean;
-  canTranslate: boolean;
-  canReply: boolean;
+  readonly canEdit: boolean;
+  readonly canDelete: boolean;
+  readonly canTranslate: boolean;
+  readonly canReply: boolean;
 }
 
 // ===== UTILITAIRES DE CONVERSION =====
@@ -174,10 +203,19 @@ export function addTranslatingState(
   const existingIndex = uiTranslations.findIndex(t => t.language === targetLanguage);
   
   if (existingIndex >= 0) {
-    uiTranslations[existingIndex] = {
-      ...uiTranslations[existingIndex],
-      status: 'translating'
-    };
+    const existing = uiTranslations[existingIndex];
+    if (existing) {
+      uiTranslations[existingIndex] = {
+        language: existing.language,
+        content: existing.content,
+        timestamp: existing.timestamp,
+        fromCache: existing.fromCache,
+        status: 'translating',
+        confidence: existing.confidence,
+        model: existing.model,
+        error: existing.error
+      };
+    }
   } else {
     uiTranslations.push({
       language: targetLanguage,
@@ -196,37 +234,43 @@ export function addTranslatingState(
 }
 
 /**
+ * Résultat de traduction
+ */
+export interface TranslationResult {
+  readonly content?: string;
+  readonly status: 'completed' | 'failed';
+  readonly error?: string;
+  readonly confidence?: number;
+  readonly model?: TranslationModel;
+  readonly fromCache?: boolean;
+}
+
+/**
  * Met à jour le résultat d'une traduction dans un UIMessage
  */
 export function updateTranslationResult(
   message: UIMessage,
   targetLanguage: string,
-  result: {
-    content?: string;
-    status: 'completed' | 'failed';
-    error?: string;
-    confidence?: number;
-    model?: 'basic' | 'medium' | 'premium';
-    fromCache?: boolean;
-  }
+  result: TranslationResult
 ): UIMessage {
   const translatingLanguages = new Set(message.translatingLanguages);
   translatingLanguages.delete(targetLanguage);
 
-  const uiTranslations = message.uiTranslations.map(t =>
-    t.language === targetLanguage
-      ? {
-          ...t,
-          content: result.content || t.content,
-          status: result.status,
-          error: result.error,
-          confidence: result.confidence,
-          model: result.model,
-          fromCache: result.fromCache ?? false,
-          timestamp: new Date()
-        }
-      : t
-  );
+  const uiTranslations = message.uiTranslations.map(t => {
+    if (t.language === targetLanguage) {
+      return {
+        language: t.language,
+        content: result.content || t.content,
+        status: result.status,
+        timestamp: new Date(),
+        fromCache: result.fromCache ?? false,
+        confidence: result.confidence ?? t.confidence,
+        model: result.model ?? t.model,
+        error: result.error
+      };
+    }
+    return t;
+  });
 
   return {
     ...message,

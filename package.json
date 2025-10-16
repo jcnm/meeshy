@@ -51,5 +51,15 @@
     "node-fetch": "^3.3.2",
     "socket.io-client": "^4.8.1",
     "ws": "^8.18.3"
+  },
+  "pnpm": {
+    "peerDependencyRules": {
+      "ignoreMissing": [
+        "onnxruntime-node",
+        "sharp",
+        "@tensorflow/tfjs-node",
+        "@xenova/transformers"
+      ]
+    }
   }
 }

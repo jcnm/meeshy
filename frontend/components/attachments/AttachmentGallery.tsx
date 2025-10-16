@@ -7,7 +7,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, ChevronLeft, ChevronRight, Download, MessageSquare } from 'lucide-react';
 import { Button } from '../ui/button';
-import { Dialog, DialogContent } from '../ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
 import { Attachment } from '../../shared/types/attachment';
 import { AttachmentService } from '../../services/attachmentService';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -108,6 +108,9 @@ export function AttachmentGallery({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl h-[90vh] p-0 bg-black/95 dark:bg-black border-none">
+        <DialogTitle className="sr-only">
+          Galerie d'images - {currentIndex + 1} sur {attachments.length}
+        </DialogTitle>
         <div className="relative w-full h-full flex flex-col">
           {/* Header */}
           <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/80 to-transparent p-4">

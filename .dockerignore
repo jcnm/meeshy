@@ -1,147 +1,102 @@
-# Logs et caches
-**/*.log
-**/logs/
-**/node_modules/.cache/
-**/.next/cache/
-**/__pycache__/
-**/*.pyc
-**/.pytest_cache/
-**/coverage/
-**/.nyc_output/
-**/htmlcov/
+# Monorepo .dockerignore for Gateway build
+# Prevents copying unnecessary files during Docker build
 
-# Fichiers de développement
-**/.git/
-**/.vscode/
-**/.idea/
-**/README.md
-**/docker-compose*.yml
-**/.env*
-**/Dockerfile*
-**/.dockerignore
+# === Development dependencies ===
+**/node_modules/
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/pnpm-debug.log*
+**/package-lock.json
 
-# Build artifacts non nécessaires
+# === Build outputs (will be generated) ===
 **/dist/
 **/build/
-**/.tox/
-**/venv/
-**/.venv/
-
-# Fichiers système et temporaires
-**/.DS_Store
-**/Thumbs.db
-**/.Trashes
-**/.Spotlight-V100
-**/.fseventsd
-**/.VolumeIcon.icns
-**/.com.apple.timemachine.donotpresent
-
-# Fichiers de test et couverture
-**/test-results/
 **/coverage/
-**/.nyc_output/
-**/htmlcov/
-**/__tests__/
-**/*.test.*
-**/*.spec.*
-**/jest.config.*
-**/jest.setup.*
+**/.next/
+gateway/generated/
 
-# Fichiers de développement et documentation
+# === Development files ===
+**/.env.local
+**/.env.development.local
+**/.env.test.local
+**/.env.production.local
+.env
+.env.backup*
+
+# === Testing ===
+**/__tests__/
+**/*.test.js
+**/*.test.ts
+**/*.spec.js
+**/*.spec.ts
+**/.nyc_output/
+
+# === IDE ===
+.vscode/
+.idea/
+**/*.swp
+**/*.swo
+
+# === OS ===
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+
+# === Logs ===
+**/*.log
+**/logs/
+gateway/gateway.log
+
+# === Temporary files ===
+**/*.tmp
+**/*.temp
+
+# === Git ===
+.git/
+.gitignore
+.github/
+
+# === Docker ===
+**/Dockerfile*
+**/.dockerignore
+docker-compose*.yml
+
+# === Documentation ===
+**/README.md
 **/docs/
 **/CHANGELOG.md
-**/CONTRIBUTING.md
-**/CONTRIBUTORS.md
-**/CODE_OF_CONDUCT.md
-**/SECURITY.md
-**/SUPPORT.md
-**/INTERNATIONALIZATION.md
-**/PROJECT_OVERVIEW.md
-**/LICENSE
-**/.cursorrules
-**/.gitignore
-**/.eslintrc.json
-**/eslint.config.mjs
-**/components.json
-**/next-env.d.ts
-**/postcss.config.mjs
-**/tsconfig.tsbuildinfo
 
-# Scripts de développement (sauf ceux utilisés par Docker)
-**/start-*.sh
-**/kill-*.sh
-**/frontend.sh
-**/gateway.sh
-**/translator.sh
-**/restart-*.sh
-**/build_*.sh
-**/docker-diagnostic.sh
+# === Scripts (except entrypoint) ===
+**/scripts/
+**/*.sh
+!gateway/docker-entrypoint.sh
 
-# Fichiers de configuration de développement (exemples seulement)
-**/env.example
-**/.version
+# === Exclude frontend and translator (only gateway needed) ===
+frontend/
+translator/
+tests/
 
-# Dossiers de développement
-**/.github/
-**/.vscode/
-**/.idea/
-**/node_modules/
-**/.next/
-**/generated/
+# === Uploads (will be volume-mounted) ===
+gateway/uploads/
 
-# Fichiers de documentation et notes
-**/README.md
-**/RELEASE_NOTES_*.md
-**/DOCKER_ML_FIXES.md
-**/VARIABLES_ENV_UPDATE.md
+# === Exclude other services' files ===
+gateway/check-*.js
+gateway/cleanup-*.js
+gateway/debug-*.js
+gateway/fix-*.js
+gateway/fix-*.sh
+gateway/test-*.js
+gateway/test-*.ts
+gateway/migrate-*.ts
+gateway/validate-*.sh
+gateway/verify-*.js
+gateway/build-*.sh
 
-# Fichiers de test Python
-**/test_*.py
-**/start_simple.py
-
-# Fichiers de configuration spécifiques (non essentiels)
-**/schema.sqlite.prisma
-**/init.sql
-**/seed.ts
-**/version.txt
-
-# Dossiers de cache et temporaires
-**/cache/
-**/tmp/
-**/.cache/
-**/.tmp/
-
-# ===== MODÈLES ML (téléchargés au runtime) =====
-**/models/
-**/translator/models/
-**/translator/models/*
-**/*.safetensors
-**/*.bin
-**/*.model
-**/*.pt
-**/*.pth
-**/*.onnx
-**/*.tflite
-**/*.pb
-**/*.h5
-**/*.keras
-**/*.joblib
-**/*.pickle
-**/*.pkl
-
-# ===== FICHIERS ESSENTIELS POUR DOCKER (NE PAS IGNORER) =====
-# Les fichiers suivants sont utilisés par les Dockerfiles et DOIVENT être préservés :
-# - package.json (dans chaque service)
-# - pnpm-lock.yaml (dans chaque service)
-# - pnpm-workspace.yaml (dans chaque service)
-# - tsconfig.json (dans chaque service)
-# - next.config.ts (frontend)
-# - tailwind.config.ts (frontend)
-# - requirements.txt (translator)
-# - schema.prisma (shared)
-# - translation.proto (translator)
-# - docker-start-unified.sh (root)
-# - scripts/ (dossier complet)
-# - docker/ (dossier complet)
-# - Dockerfile* (tous les Dockerfiles)
-# - docker-compose*.yml (tous les fichiers compose)
+# === Config files not needed ===
+gateway/jest.config.json
+gateway/jest.setup.js
+Makefile
+*.md
+LICENSE

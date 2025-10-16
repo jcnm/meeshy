@@ -52,42 +52,222 @@ export const CLIENT_EVENTS = {
 export type ServerEventNames = typeof SERVER_EVENTS[keyof typeof SERVER_EVENTS];
 export type ClientEventNames = typeof CLIENT_EVENTS[keyof typeof CLIENT_EVENTS];
 
+/**
+ * Données pour l'événement de suppression de message
+ */
+export interface MessageDeletedEventData {
+  readonly messageId: string;
+  readonly conversationId: string;
+}
+
+/**
+ * Données pour l'événement de participation à une conversation
+ */
+export interface ConversationParticipationEventData {
+  readonly conversationId: string;
+  readonly userId: string;
+}
+
+/**
+ * Données pour l'événement d'authentification
+ */
+export interface AuthenticatedEventData {
+  readonly success: boolean;
+  readonly user?: SocketIOUser;
+  readonly error?: string;
+}
+
+/**
+ * Données pour l'événement d'envoi de message
+ */
+export interface MessageSentEventData {
+  readonly messageId: string;
+  readonly status: string;
+  readonly timestamp: string;
+}
+
+/**
+ * Données pour l'événement d'erreur
+ */
+export interface ErrorEventData {
+  readonly message: string;
+  readonly code?: string;
+}
+
+/**
+ * Données pour l'événement de réception de traduction
+ */
+export interface TranslationReceivedEventData {
+  readonly messageId: string;
+  readonly translatedText: string;
+  readonly targetLanguage: string;
+  readonly confidenceScore?: number;
+}
+
+/**
+ * Données pour l'événement d'erreur de traduction
+ */
+export interface TranslationErrorEventData {
+  readonly messageId: string;
+  readonly targetLanguage: string;
+  readonly error: string;
+}
+
+/**
+ * Données de notification générique
+ */
+export interface NotificationEventData {
+  readonly id: string;
+  readonly type: string;
+  readonly title: string;
+  readonly message: string;
+  readonly timestamp: Date;
+}
+
+/**
+ * Données de message système
+ */
+export interface SystemMessageEventData {
+  readonly type: string;
+  readonly content: string;
+  readonly timestamp: Date;
+}
+
+/**
+ * Données pour l'événement de statistiques de conversation
+ */
+export interface ConversationStatsEventData {
+  readonly conversationId: string;
+  readonly stats: ConversationStatsDTO;
+}
+
+/**
+ * Données pour l'événement de statistiques en ligne
+ */
+export interface ConversationOnlineStatsEventData {
+  readonly conversationId: string;
+  readonly onlineUsers: readonly ConversationOnlineUser[];
+  readonly updatedAt: Date;
+}
+
 // Événements du serveur vers le client
 export interface ServerToClientEvents {
   [SERVER_EVENTS.MESSAGE_NEW]: (message: SocketIOMessage) => void;
   [SERVER_EVENTS.MESSAGE_EDITED]: (message: SocketIOMessage) => void;
-  [SERVER_EVENTS.MESSAGE_DELETED]: (data: { messageId: string; conversationId: string }) => void;
+  [SERVER_EVENTS.MESSAGE_DELETED]: (data: MessageDeletedEventData) => void;
   [SERVER_EVENTS.MESSAGE_TRANSLATION]: (data: TranslationEvent) => void;
   [SERVER_EVENTS.MESSAGE_TRANSLATED]: (data: TranslationEvent) => void;
   [SERVER_EVENTS.TYPING_START]: (data: TypingEvent) => void;
   [SERVER_EVENTS.TYPING_STOP]: (data: TypingEvent) => void;
   [SERVER_EVENTS.USER_STATUS]: (data: UserStatusEvent) => void;
-  [SERVER_EVENTS.CONVERSATION_JOINED]: (data: { conversationId: string; userId: string }) => void;
-  [SERVER_EVENTS.CONVERSATION_LEFT]: (data: { conversationId: string; userId: string }) => void;
-  [SERVER_EVENTS.AUTHENTICATED]: (data: { success: boolean; user?: any; error?: string }) => void;
-  [SERVER_EVENTS.MESSAGE_SENT]: (data: { messageId: string; status: string; timestamp: string }) => void;
-  [SERVER_EVENTS.ERROR]: (data: { message: string; code?: string }) => void;
-  [SERVER_EVENTS.TRANSLATION_RECEIVED]: (data: { messageId: string; translatedText: string; targetLanguage: string; confidenceScore?: number }) => void;
-  [SERVER_EVENTS.TRANSLATION_ERROR]: (data: { messageId: string; targetLanguage: string; error: string }) => void;
-  [SERVER_EVENTS.NOTIFICATION]: (data: any) => void;
-  [SERVER_EVENTS.SYSTEM_MESSAGE]: (data: any) => void;
-  [SERVER_EVENTS.CONVERSATION_STATS]: (data: { conversationId: string; stats: ConversationStatsDTO }) => void;
-  [SERVER_EVENTS.CONVERSATION_ONLINE_STATS]: (data: { conversationId: string; onlineUsers: ConversationOnlineUser[]; updatedAt: Date }) => void;
+  [SERVER_EVENTS.CONVERSATION_JOINED]: (data: ConversationParticipationEventData) => void;
+  [SERVER_EVENTS.CONVERSATION_LEFT]: (data: ConversationParticipationEventData) => void;
+  [SERVER_EVENTS.AUTHENTICATED]: (data: AuthenticatedEventData) => void;
+  [SERVER_EVENTS.MESSAGE_SENT]: (data: MessageSentEventData) => void;
+  [SERVER_EVENTS.ERROR]: (data: ErrorEventData) => void;
+  [SERVER_EVENTS.TRANSLATION_RECEIVED]: (data: TranslationReceivedEventData) => void;
+  [SERVER_EVENTS.TRANSLATION_ERROR]: (data: TranslationErrorEventData) => void;
+  [SERVER_EVENTS.NOTIFICATION]: (data: NotificationEventData) => void;
+  [SERVER_EVENTS.SYSTEM_MESSAGE]: (data: SystemMessageEventData) => void;
+  [SERVER_EVENTS.CONVERSATION_STATS]: (data: ConversationStatsEventData) => void;
+  [SERVER_EVENTS.CONVERSATION_ONLINE_STATS]: (data: ConversationOnlineStatsEventData) => void;
+}
+
+/**
+ * Données pour l'envoi de message
+ */
+export interface MessageSendData {
+  readonly conversationId: string;
+  readonly content: string;
+  readonly originalLanguage?: string;
+  readonly messageType?: string;
+  readonly replyToId?: string;
+}
+
+/**
+ * Réponse d'envoi de message
+ */
+export interface MessageSendResponseData {
+  readonly messageId: string;
+}
+
+/**
+ * Données pour l'envoi de message avec attachements
+ */
+export interface MessageSendWithAttachmentsData {
+  readonly conversationId: string;
+  readonly content: string;
+  readonly originalLanguage?: string;
+  readonly attachmentIds: readonly string[];
+  readonly replyToId?: string;
+}
+
+/**
+ * Données pour l'édition de message
+ */
+export interface MessageEditData {
+  readonly messageId: string;
+  readonly content: string;
+}
+
+/**
+ * Données pour la suppression de message
+ */
+export interface MessageDeleteData {
+  readonly messageId: string;
+}
+
+/**
+ * Données pour rejoindre/quitter une conversation
+ */
+export interface ConversationActionData {
+  readonly conversationId: string;
+}
+
+/**
+ * Données pour les événements de frappe
+ */
+export interface TypingActionData {
+  readonly conversationId: string;
+}
+
+/**
+ * Données pour le statut utilisateur
+ */
+export interface UserStatusData {
+  readonly isOnline: boolean;
+}
+
+/**
+ * Données pour l'authentification
+ */
+export interface AuthenticateData {
+  readonly userId?: string;
+  readonly sessionToken?: string;
+  readonly language?: string;
+}
+
+/**
+ * Données pour la requête de traduction
+ */
+export interface RequestTranslationData {
+  readonly messageId: string;
+  readonly targetLanguage: string;
 }
 
 // Événements du client vers le serveur
 export interface ClientToServerEvents {
-  [CLIENT_EVENTS.MESSAGE_SEND]: (data: { conversationId: string; content: string; originalLanguage?: string; messageType?: string; replyToId?: string }, callback?: (response: SocketIOResponse<{ messageId: string }>) => void) => void;
-  [CLIENT_EVENTS.MESSAGE_SEND_WITH_ATTACHMENTS]: (data: { conversationId: string; content: string; originalLanguage?: string; attachmentIds: string[]; replyToId?: string }, callback?: (response: SocketIOResponse<{ messageId: string }>) => void) => void;
-  [CLIENT_EVENTS.MESSAGE_EDIT]: (data: { messageId: string; content: string }, callback?: (response: SocketIOResponse) => void) => void;
-  [CLIENT_EVENTS.MESSAGE_DELETE]: (data: { messageId: string }, callback?: (response: SocketIOResponse) => void) => void;
-  [CLIENT_EVENTS.CONVERSATION_JOIN]: (data: { conversationId: string }) => void;
-  [CLIENT_EVENTS.CONVERSATION_LEAVE]: (data: { conversationId: string }) => void;
-  [CLIENT_EVENTS.TYPING_START]: (data: { conversationId: string }) => void;
-  [CLIENT_EVENTS.TYPING_STOP]: (data: { conversationId: string }) => void;
-  [CLIENT_EVENTS.USER_STATUS]: (data: { isOnline: boolean }) => void;
-  [CLIENT_EVENTS.AUTHENTICATE]: (data: { userId?: string; sessionToken?: string; language?: string }) => void;
-  [CLIENT_EVENTS.REQUEST_TRANSLATION]: (data: { messageId: string; targetLanguage: string }) => void;
+  [CLIENT_EVENTS.MESSAGE_SEND]: (data: MessageSendData, callback?: (response: SocketIOResponse<MessageSendResponseData>) => void) => void;
+  [CLIENT_EVENTS.MESSAGE_SEND_WITH_ATTACHMENTS]: (data: MessageSendWithAttachmentsData, callback?: (response: SocketIOResponse<MessageSendResponseData>) => void) => void;
+  [CLIENT_EVENTS.MESSAGE_EDIT]: (data: MessageEditData, callback?: (response: SocketIOResponse) => void) => void;
+  [CLIENT_EVENTS.MESSAGE_DELETE]: (data: MessageDeleteData, callback?: (response: SocketIOResponse) => void) => void;
+  [CLIENT_EVENTS.CONVERSATION_JOIN]: (data: ConversationActionData) => void;
+  [CLIENT_EVENTS.CONVERSATION_LEAVE]: (data: ConversationActionData) => void;
+  [CLIENT_EVENTS.TYPING_START]: (data: TypingActionData) => void;
+  [CLIENT_EVENTS.TYPING_STOP]: (data: TypingActionData) => void;
+  [CLIENT_EVENTS.USER_STATUS]: (data: UserStatusData) => void;
+  [CLIENT_EVENTS.AUTHENTICATE]: (data: AuthenticateData) => void;
+  [CLIENT_EVENTS.REQUEST_TRANSLATION]: (data: RequestTranslationData) => void;
 }
 
 // ===== TYPES DE BASE =====
@@ -263,21 +443,31 @@ export interface ConnectionDiagnostics {
 
 // ===== TYPES POUR L'AUTHENTIFICATION =====
 
-// Base Socket interface pour éviter l'import de socket.io dans shared
+/**
+ * Listener générique pour les événements Socket.IO
+ */
+export type SocketEventListener = (...args: readonly unknown[]) => void;
+
+/**
+ * Base Socket interface pour éviter l'import de socket.io dans shared
+ */
 export interface BaseSocket {
-  id: string;
-  emit: (event: string, ...args: any[]) => boolean;
-  on: (event: string, listener: (...args: any[]) => void) => void;
+  readonly id: string;
+  emit: (event: string, ...args: readonly unknown[]) => boolean;
+  on: (event: string, listener: SocketEventListener) => void;
   join: (room: string) => void;
   leave: (room: string) => void;
 }
 
+/**
+ * Socket authentifié avec métadonnées utilisateur
+ */
 export interface AuthenticatedSocket extends BaseSocket {
-  userId: string;
-  username: string;
-  userData: SocketIOUser;
-  connectedAt: Date;
-  currentConversations: string[];
+  readonly userId: string;
+  readonly username: string;
+  readonly userData: SocketIOUser;
+  readonly connectedAt: Date;
+  readonly currentConversations: readonly string[];
 }
 
 // ===== EXPORTS POUR RÉTROCOMPATIBILITÉ =====

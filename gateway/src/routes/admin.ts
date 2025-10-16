@@ -29,19 +29,17 @@ const updateUserStatusSchema = z.object({
 
 // Service de permissions
 class PermissionsService {
-  private readonly ROLE_HIERARCHY: Record<UserRole, number> = {
-  [UserRoleEnum.BIGBOSS]: 7,
-  [UserRoleEnum.CREATOR]: 6,
-  [UserRoleEnum.ADMIN]: 5,
-  [UserRoleEnum.MODERATOR]: 4,
-  [UserRoleEnum.AUDIT]: 3,
-  [UserRoleEnum.ANALYST]: 2,
-  [UserRoleEnum.USER]: 1,
-  [UserRoleEnum.MEMBER]: 1,
+  private readonly ROLE_HIERARCHY: Record<string, number> = {
+    'BIGBOSS': 7,
+    'ADMIN': 5,
+    'MODO': 4,
+    'AUDIT': 3,
+    'ANALYST': 2,
+    'USER': 1,
   };
 
-  private readonly DEFAULT_PERMISSIONS: Record<UserRole, UserPermissions> = {
-    [UserRoleEnum.BIGBOSS]: {
+  private readonly DEFAULT_PERMISSIONS: Record<string, UserPermissions> = {
+    'BIGBOSS': {
       canAccessAdmin: true,
       canManageUsers: true,
       canManageCommunities: true,
@@ -52,18 +50,7 @@ class PermissionsService {
       canManageNotifications: true,
       canManageTranslations: true,
     },
-    [UserRoleEnum.CREATOR]: {
-      canAccessAdmin: true,
-      canManageUsers: true,
-      canManageCommunities: true,
-      canManageConversations: true,
-      canViewAnalytics: true,
-      canModerateContent: true,
-      canViewAuditLogs: true,
-      canManageNotifications: true,
-      canManageTranslations: false,
-    },
-    [UserRoleEnum.ADMIN]: {
+    'ADMIN': {
       canAccessAdmin: true,
       canManageUsers: true,
       canManageCommunities: true,
@@ -74,7 +61,7 @@ class PermissionsService {
       canManageNotifications: true,
       canManageTranslations: false,
     },
-    [UserRoleEnum.MODERATOR]: {
+    'MODO': {
       canAccessAdmin: true,
       canManageUsers: false,
       canManageCommunities: true,
@@ -85,7 +72,7 @@ class PermissionsService {
       canManageNotifications: false,
       canManageTranslations: false,
     },
-    [UserRoleEnum.AUDIT]: {
+    'AUDIT': {
       canAccessAdmin: true,
       canManageUsers: false,
       canManageCommunities: false,
@@ -96,7 +83,7 @@ class PermissionsService {
       canManageNotifications: false,
       canManageTranslations: false,
     },
-    [UserRoleEnum.ANALYST]: {
+    'ANALYST': {
       canAccessAdmin: false,
       canManageUsers: false,
       canManageCommunities: false,
@@ -107,18 +94,7 @@ class PermissionsService {
       canManageNotifications: false,
       canManageTranslations: false,
     },
-    [UserRoleEnum.USER]: {
-      canAccessAdmin: false,
-      canManageUsers: false,
-      canManageCommunities: false,
-      canManageConversations: false,
-      canViewAnalytics: false,
-      canModerateContent: false,
-      canViewAuditLogs: false,
-      canManageNotifications: false,
-      canManageTranslations: false,
-    },
-    [UserRoleEnum.MEMBER]: {
+    'USER': {
       canAccessAdmin: false,
       canManageUsers: false,
       canManageCommunities: false,

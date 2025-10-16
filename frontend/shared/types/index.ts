@@ -13,6 +13,9 @@ export * from './anonymous';
 export * from './api-responses';
 export * from './migration-utils';
 
+// Import pour usage interne
+import type { AnonymousParticipant } from './anonymous';
+
 // Message types are now consolidated
 
 // Export des types unifiés Phase 2 - Messaging
@@ -37,16 +40,28 @@ import type { MessageTranslationCache, SocketIOUser, TranslationData, UserPermis
 export type { TranslationData, MessageTranslationCache, SocketIOUser };
 
 // ===== ENUM DES RÔLES UNIFORMES =====
+/**
+ * Rôles globaux des utilisateurs (aligné avec schema.prisma User.role)
+ * @see shared/schema.prisma ligne 35
+ */
 export enum UserRoleEnum {
   BIGBOSS = 'BIGBOSS',
   ADMIN = 'ADMIN',
-  CREATOR = 'CREATOR',
-  MODERATOR = 'MODERATOR',
+  MODO = 'MODO',        // Moderator global (schema.prisma)
   AUDIT = 'AUDIT',
   ANALYST = 'ANALYST',
   USER = 'USER',
-  MEMBER = 'MEMBER'
+  // Aliases pour rétrocompatibilité
+  MODERATOR = 'MODO',   // Alias de MODO
+  CREATOR = 'ADMIN',    // Alias de ADMIN (créateur de communauté)
+  MEMBER = 'USER'       // Alias de USER (membre standard)
 }
+
+/**
+ * Rôles dans une conversation ou communauté (aligné avec ConversationMember.role)
+ * @see shared/schema.prisma ligne 94
+ */
+export type ConversationRole = 'admin' | 'moderator' | 'member';
 
 // ===== TYPES SPÉCIFIQUES À LA TRADUCTION =====
 export interface TranslationRequest {
@@ -115,73 +130,96 @@ export interface BubbleTranslation {
   confidence: number; // 0-1 pour la qualité de traduction
 }
 
+/**
+ * Types de notification supportés
+ */
+export type NotificationType = 
+  | 'message' 
+  | 'group_invite' 
+  | 'conversation_invite' 
+  | 'system' 
+  | 'translation_error' 
+  | 'user_joined' 
+  | 'user_left' 
+  | 'typing';
+
+/**
+ * Message traduit (legacy, utiliser MessageWithTranslations à la place)
+ * @deprecated Utilisez les types de message-types.ts
+ */
 export interface TranslatedMessage {
   // Core message properties
-  id: string;
-  conversationId: string;
-  senderId?: string;
-  anonymousSenderId?: string;
-  content: string;
-  originalLanguage: string;
-  messageType: any;
-  isEdited: boolean;
-  editedAt?: Date;
-  isDeleted: boolean;
-  deletedAt?: Date;
-  replyToId?: string;
-  createdAt: Date;
-  updatedAt?: Date;
-  timestamp: Date;
-  sender?: any;
-  anonymousSender?: any;
+  readonly id: string;
+  readonly conversationId: string;
+  readonly senderId?: string;
+  readonly anonymousSenderId?: string;
+  readonly content: string;
+  readonly originalLanguage: string;
+  readonly messageType: MessageType;
+  readonly isEdited: boolean;
+  readonly editedAt?: Date;
+  readonly isDeleted: boolean;
+  readonly deletedAt?: Date;
+  readonly replyToId?: string;
+  readonly createdAt: Date;
+  readonly updatedAt?: Date;
+  readonly timestamp: Date;
+  readonly sender?: SocketIOUser | AnonymousParticipant;
+  readonly anonymousSender?: AnonymousParticipant;
   
   // Translation-specific properties
-  translation?: BubbleTranslation;
-  originalContent?: string;
-  translatedContent?: string;
-  targetLanguage?: string;
-  isTranslated?: boolean;
-  isTranslating?: boolean;
-  showingOriginal?: boolean;
-  translationError?: string;
-  translationFailed?: boolean;
-  translations?: TranslationData[];
+  readonly translation?: BubbleTranslation;
+  readonly originalContent?: string;
+  readonly translatedContent?: string;
+  readonly targetLanguage?: string;
+  readonly isTranslated?: boolean;
+  readonly isTranslating?: boolean;
+  readonly showingOriginal?: boolean;
+  readonly translationError?: string;
+  readonly translationFailed?: boolean;
+  readonly translations?: readonly TranslationData[];
 }
 
+/**
+ * Traduction simple
+ */
 export interface Translation {
-  language: string;
-  content: string;
-  flag: string;
-  createdAt: Date;
+  readonly language: string;
+  readonly content: string;
+  readonly flag: string;
+  readonly createdAt: Date;
 }
 
+/**
+ * Notification utilisateur
+ */
 export interface Notification {
-  id: string;
-  userId: string;
-  type: 'message' | 'group_invite' | 'conversation_invite' | 'system' | 'translation_error' | 'user_joined' | 'user_left' | 'typing';
-  title: string;
-  message: string;
-  isRead: boolean;
-  data?: Record<string, unknown>;
-  createdAt: Date;
-  expiresAt?: Date;
+  readonly id: string;
+  readonly userId: string;
+  readonly type: NotificationType;
+  readonly title: string;
+  readonly message: string;
+  readonly isRead: boolean;
+  readonly data?: Readonly<Record<string, string | number | boolean | null>>;
+  readonly createdAt: Date;
+  readonly expiresAt?: Date;
 }
 
 export type UserRole = UserRoleEnum;
 
 // Utilitaires pour les rôles et permissions
-export const ROLE_HIERARCHY: Record<UserRoleEnum, number> = {
+export const ROLE_HIERARCHY: Readonly<Record<string, number>> = {
   [UserRoleEnum.BIGBOSS]: 7,
-  [UserRoleEnum.CREATOR]: 6,
   [UserRoleEnum.ADMIN]: 5,
-  [UserRoleEnum.MODERATOR]: 4,
+  [UserRoleEnum.MODO]: 4,
   [UserRoleEnum.AUDIT]: 3,
   [UserRoleEnum.ANALYST]: 2,
   [UserRoleEnum.USER]: 1,
-  [UserRoleEnum.MEMBER]: 1,
+  // Aliases ne sont pas inclus dans le record car ils pointent vers les mêmes valeurs
+  // Pour récupérer la hiérarchie d'un alias, utilisez la valeur de l'enum directement
 };
 
-export const DEFAULT_PERMISSIONS: Record<UserRoleEnum, UserPermissions> = {
+export const DEFAULT_PERMISSIONS: Readonly<Record<string, UserPermissions>> = {
   [UserRoleEnum.BIGBOSS]: {
     canAccessAdmin: true,
     canManageUsers: true,
@@ -204,18 +242,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRoleEnum, UserPermissions> = {
     canManageNotifications: true,
     canManageTranslations: false,
   },
-  [UserRoleEnum.CREATOR]: {
-    canAccessAdmin: true,
-    canManageUsers: true,
-    canManageGroups: true,
-    canManageConversations: true,
-    canViewAnalytics: true,
-    canModerateContent: true,
-    canViewAuditLogs: true,
-    canManageNotifications: true,
-    canManageTranslations: false,
-  },
-  [UserRoleEnum.MODERATOR]: {
+  [UserRoleEnum.MODO]: {
     canAccessAdmin: true,
     canManageUsers: false,
     canManageGroups: true,
@@ -259,17 +286,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRoleEnum, UserPermissions> = {
     canManageNotifications: false,
     canManageTranslations: false,
   },
-  [UserRoleEnum.MEMBER]: {
-    canAccessAdmin: false,
-    canManageUsers: false,
-    canManageGroups: false,
-    canManageConversations: false,
-    canViewAnalytics: false,
-    canModerateContent: false,
-    canViewAuditLogs: false,
-    canManageNotifications: false,
-    canManageTranslations: false,
-  },
+  // Aliases ne sont pas inclus car ils retournent les mêmes valeurs string que les rôles principaux
 };
 
 // ===== TYPES POUR LES CONVERSATIONS - LEGACY (DEPRECATED) =====
@@ -299,118 +316,161 @@ export interface ConversationMember extends ThreadMember {}
 export type Conversation = UnifiedConversation;
 export type ConversationParticipant = UnifiedConversationParticipant;
 
+/**
+ * Membre d'un groupe
+ */
 export interface GroupMember {
-  id: string;
-  groupId: string;
-  userId: string;
-  joinedAt: Date;
-  role: UserRoleEnum;
-  user: SocketIOUser;
+  readonly id: string;
+  readonly groupId: string;
+  readonly userId: string;
+  readonly joinedAt: Date;
+  readonly role: UserRoleEnum;
+  readonly user: SocketIOUser;
 }
 
+/**
+ * Groupe de conversations
+ */
 export interface Group {
-  id: string;
-  name: string;
-  description?: string;
-  isPrivate: boolean;
-  maxMembers?: number;
-  createdAt: Date;
-  updatedAt: Date;
-  members: GroupMember[];
-  conversations: Conversation[];
+  readonly id: string;
+  readonly name: string;
+  readonly description?: string;
+  readonly isPrivate: boolean;
+  readonly maxMembers?: number;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+  readonly members: readonly GroupMember[];
+  readonly conversations: readonly Conversation[];
 }
 
+/**
+ * Informations du créateur d'un lien
+ */
+export interface LinkCreatorInfo {
+  readonly id: string;
+  readonly username: string;
+  readonly firstName: string;
+  readonly lastName: string;
+  readonly displayName: string;
+  readonly avatar?: string;
+}
+
+/**
+ * Statistiques d'un lien de conversation
+ */
+export interface ConversationLinkStats {
+  readonly totalParticipants: number;
+  readonly memberCount: number;
+  readonly anonymousCount: number;
+  readonly languageCount: number;
+  readonly spokenLanguages: readonly string[];
+}
+
+/**
+ * Lien de partage de conversation
+ */
 export interface ConversationLink {
-  id: string;
-  conversationId: string;
-  linkId: string;
-  name?: string;
-  description?: string;
-  maxUses?: number;
-  currentUses: number;
-  maxConcurrentUsers?: number;
-  currentConcurrentUsers: number;
-  maxUniqueSessions?: number;
-  currentUniqueSessions: number;
-  expiresAt?: Date;
-  isActive: boolean;
-  allowAnonymousMessages: boolean;
-  allowAnonymousFiles: boolean;
-  allowAnonymousImages: boolean;
-  allowViewHistory: boolean;
-  requireNickname: boolean;
-  requireEmail: boolean;
-  allowedCountries: string[];
-  allowedLanguages: string[];
-  allowedIpRanges: string[];
-  createdAt: Date;
-  updatedAt: Date;
-  conversation: Conversation;
-  creator?: {
-    id: string;
-    username: string;
-    firstName: string;
-    lastName: string;
-    displayName: string;
-    avatar?: string;
-  };
-  stats?: {
-    totalParticipants: number;
-    memberCount: number;
-    anonymousCount: number;
-    languageCount: number;
-    spokenLanguages: string[];
-  };
+  readonly id: string;
+  readonly conversationId: string;
+  readonly linkId: string;
+  readonly name?: string;
+  readonly description?: string;
+  readonly maxUses?: number;
+  readonly currentUses: number;
+  readonly maxConcurrentUsers?: number;
+  readonly currentConcurrentUsers: number;
+  readonly maxUniqueSessions?: number;
+  readonly currentUniqueSessions: number;
+  readonly expiresAt?: Date;
+  readonly isActive: boolean;
+  readonly allowAnonymousMessages: boolean;
+  readonly allowAnonymousFiles: boolean;
+  readonly allowAnonymousImages: boolean;
+  readonly allowViewHistory: boolean;
+  readonly requireNickname: boolean;
+  readonly requireEmail: boolean;
+  readonly allowedCountries: readonly string[];
+  readonly allowedLanguages: readonly string[];
+  readonly allowedIpRanges: readonly string[];
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+  readonly conversation: Conversation;
+  readonly creator?: LinkCreatorInfo;
+  readonly stats?: ConversationLinkStats;
 }
 
 // ===== TYPES POUR L'AUTHENTIFICATION =====
+
+/**
+ * Requête d'authentification
+ */
 export interface AuthRequest {
-  username: string;
-  password?: string;
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phoneNumber?: string;
-  systemLanguage?: string;
-  regionalLanguage?: string;
+  readonly username: string;
+  readonly password?: string;
+  readonly firstName?: string;
+  readonly lastName?: string;
+  readonly email?: string;
+  readonly phoneNumber?: string;
+  readonly systemLanguage?: string;
+  readonly regionalLanguage?: string;
 }
 
+/**
+ * Réponse d'authentification
+ */
 export interface AuthResponse {
-  success: boolean;
-  user?: SocketIOUser;
-  token?: string;
-  message?: string;
+  readonly success: boolean;
+  readonly user?: SocketIOUser;
+  readonly token?: string;
+  readonly message?: string;
 }
 
+/**
+ * Modes d'authentification
+ */
 export type AuthMode = 'welcome' | 'login' | 'register' | 'join';
 
 // ===== TYPES POUR LES INDICATEURS =====
+
+/**
+ * Indicateur de frappe
+ */
 export interface TypingIndicator {
-  userId: string;
-  conversationId: string;
-  isTyping: boolean;
-  user: SocketIOUser;
+  readonly userId: string;
+  readonly conversationId: string;
+  readonly isTyping: boolean;
+  readonly user: SocketIOUser;
 }
 
+/**
+ * Statut en ligne d'un utilisateur
+ */
 export interface OnlineStatus {
-  userId: string;
-  isOnline: boolean;
-  lastActiveAt: Date;
+  readonly userId: string;
+  readonly isOnline: boolean;
+  readonly lastActiveAt: Date;
 }
 
 // ===== TYPES POUR L'ERREUR HANDLING =====
+
+/**
+ * Réponse d'erreur standardisée
+ */
 export interface ErrorResponse {
-  success: false;
-  error: string;
-  code?: string;
-  details?: unknown;
-  timestamp: Date;
+  readonly success: false;
+  readonly error: string;
+  readonly code?: string;
+  readonly details?: Readonly<Record<string, string | number | boolean | null>>;
+  readonly timestamp: Date;
 }
 
+/**
+ * Erreur de validation
+ */
 export interface ValidationError {
-  field: string;
-  message: string;
-  value?: unknown;
+  readonly field: string;
+  readonly message: string;
+  readonly value?: string | number | boolean | null;
 }
 
 // ===== CONSTANTES =====
@@ -610,66 +670,91 @@ export function filterSupportedLanguages(
 export const TRANSLATION_MODELS = ['basic', 'medium', 'premium'] as const;
 export type TranslationModel = typeof TRANSLATION_MODELS[number];
 
-export const MESSAGE_TYPES = ['text', 'image', 'file', 'system'] as const;
+/**
+ * Types de messages supportés (aligné avec schema.prisma)
+ * @see shared/schema.prisma ligne 184
+ */
+export const MESSAGE_TYPES = ['text', 'image', 'file', 'audio', 'video', 'location', 'system'] as const;
 export type MessageType = typeof MESSAGE_TYPES[number];
 
 // ===== TYPES POUR LES STATISTIQUES =====
+
+/**
+ * Statistiques de connexion
+ */
 export interface ConnectionStats {
-  connectedSockets: number;
-  connectedUsers: number;
-  activeConversations: number;
-  typingUsers: Record<string, number>;
-  messagesPerSecond?: number;
-  translationsPerSecond?: number;
+  readonly connectedSockets: number;
+  readonly connectedUsers: number;
+  readonly activeConversations: number;
+  readonly typingUsers: Readonly<Record<string, number>>;
+  readonly messagesPerSecond?: number;
+  readonly translationsPerSecond?: number;
 }
 
+/**
+ * Statistiques de traduction
+ */
 export interface TranslationStats {
-  requestsTotal: number;
-  requestsSuccess: number;
-  requestsError: number;
-  cacheHitRate: number;
-  averageProcessingTime: number;
-  modelUsage: Record<TranslationModel, number>;
+  readonly requestsTotal: number;
+  readonly requestsSuccess: number;
+  readonly requestsError: number;
+  readonly cacheHitRate: number;
+  readonly averageProcessingTime: number;
+  readonly modelUsage: Readonly<Record<TranslationModel, number>>;
 }
 
 // ===== TYPES POUR MISE À JOUR UTILISATEUR =====
+
+/**
+ * Requête de mise à jour utilisateur
+ */
 export interface UpdateUserRequest {
-  firstName?: string;
-  lastName?: string;
-  displayName?: string;
-  email?: string;
-  phoneNumber?: string;
-  systemLanguage?: string;
-  regionalLanguage?: string;
-  customDestinationLanguage?: string;
-  autoTranslateEnabled?: boolean;
-  translateToSystemLanguage?: boolean;
-  translateToRegionalLanguage?: boolean;
-  useCustomDestination?: boolean;
+  readonly firstName?: string;
+  readonly lastName?: string;
+  readonly displayName?: string;
+  readonly email?: string;
+  readonly phoneNumber?: string;
+  readonly systemLanguage?: string;
+  readonly regionalLanguage?: string;
+  readonly customDestinationLanguage?: string;
+  readonly autoTranslateEnabled?: boolean;
+  readonly translateToSystemLanguage?: boolean;
+  readonly translateToRegionalLanguage?: boolean;
+  readonly useCustomDestination?: boolean;
 }
 
+/**
+ * Réponse de mise à jour utilisateur
+ */
 export interface UpdateUserResponse {
-  success: boolean;
-  data?: Partial<SocketIOUser>;
-  error?: string;
-  message?: string;
+  readonly success: boolean;
+  readonly data?: Partial<SocketIOUser>;
+  readonly error?: string;
+  readonly message?: string;
 }
 
 // ===== TYPES POUR LES REQUÊTES =====
+
+/**
+ * Requête de création de conversation
+ */
 export interface CreateConversationRequest {
-  name: string;
-  description?: string;
-  isPrivate?: boolean;
-  maxMembers?: number;
-  participantIds?: string[];
-  participants?: string[]; // Alias pour la rétrocompatibilité
-  isGroup?: boolean;
+  readonly name: string;
+  readonly description?: string;
+  readonly isPrivate?: boolean;
+  readonly maxMembers?: number;
+  readonly participantIds?: readonly string[];
+  readonly participants?: readonly string[]; // Alias pour la rétrocompatibilité
+  readonly isGroup?: boolean;
 }
 
+/**
+ * Requête d'envoi de message
+ */
 export interface SendMessageRequest {
-  content: string;
-  originalLanguage?: string;
-  messageType?: string;
+  readonly content: string;
+  readonly originalLanguage?: string;
+  readonly messageType?: string;
 }
 
 // ===== RE-EXPORTS POUR RÉTROCOMPATIBILITÉ =====

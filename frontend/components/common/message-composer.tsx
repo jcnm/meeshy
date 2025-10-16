@@ -131,7 +131,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   // Notifier le parent quand les attachments changent
   useEffect(() => {
     if (onAttachmentsChange) {
-      const attachmentIds = uploadedAttachments.map(att => att.attachmentId);
+      const attachmentIds = uploadedAttachments.map(att => att.id);
       console.log('📎 Notification parent - IDs d\'attachments:', attachmentIds);
       onAttachmentsChange(attachmentIds);
     }

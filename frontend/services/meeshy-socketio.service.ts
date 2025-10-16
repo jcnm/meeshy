@@ -119,14 +119,9 @@ class MeeshySocketIOService {
       return MeeshySocketIOService.instance;
     }
     
-    // CORRECTION: Initialiser automatiquement si des tokens sont disponibles
-    // MAIS SEULEMENT si c'est la première instance (singleton)
-    if (typeof window !== 'undefined') {
-      // Attendre un peu que le DOM soit prêt
-      setTimeout(() => {
-        this.ensureConnection();
-      }, 1000);
-    }
+    // OPTIMISATION: Ne PAS initialiser automatiquement dans le constructeur
+    // La connexion sera établie uniquement quand nécessaire (lazy loading)
+    // Cela évite de ralentir le chargement initial de la page
   }
   
   /**
@@ -171,10 +166,15 @@ class MeeshySocketIOService {
    */
   static getInstance(): MeeshySocketIOService {
     if (!MeeshySocketIOService.instance) {
-      console.log('🏗️ [SINGLETON] Création nouvelle instance MeeshySocketIOService');
+      // Ne logger que côté client en runtime (pas pendant le build Next.js)
+      if (typeof window !== 'undefined') {
+        console.log('🏗️ [SINGLETON] Création nouvelle instance MeeshySocketIOService');
+      }
       MeeshySocketIOService.instance = new MeeshySocketIOService();
     } else {
-      console.log('🔄 [SINGLETON] Réutilisation instance existante MeeshySocketIOService');
+      if (typeof window !== 'undefined') {
+        console.log('🔄 [SINGLETON] Réutilisation instance existante MeeshySocketIOService');
+      }
     }
     return MeeshySocketIOService.instance;
   }
@@ -996,9 +996,9 @@ class MeeshySocketIOService {
     if (!token) {
       console.warn('  🔒 Token non disponible, attente avec retry...');
       
-      // Attendre un peu et réessayer
+      // OPTIMISATION: Retry très rapide et limité
       let attempts = 0;
-      const maxAttempts = 5; // Réduit de 10 à 5
+      const maxAttempts = 3; // Réduit à 3 tentatives
       const retryInterval = setInterval(() => {
         attempts++;
         const retryAuthToken = localStorage.getItem('auth_token');
@@ -1015,7 +1015,7 @@ class MeeshySocketIOService {
           console.error('  ❌ Token toujours non disponible après', maxAttempts, 'tentatives');
           clearInterval(retryInterval);
         }
-      }, 500); // Réduit de 1000ms à 500ms pour être plus rapide
+      }, 200); // Réduit à 200ms pour être plus rapide
       
       console.log('═══════════════════════════════════════════════════════');
       console.log('');

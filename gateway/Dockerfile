@@ -96,8 +96,10 @@ RUN apk add --no-cache \
 WORKDIR /app
 
 # === DEPENDENCY INSTALLATION ===
-# Copie des fichiers de dépendances en premier (pour le cache Docker)
+# Copie de la configuration workspace et des packages nécessaires
+COPY --chown=gateway:nodejs pnpm-workspace.yaml ./
 COPY --chown=gateway:nodejs package.json pnpm-lock.yaml* ./
+COPY --chown=gateway:nodejs shared/package.json ./shared/
 COPY --chown=gateway:nodejs .env.docker ./.env
 
 # Installation des dépendances et nettoyage en une seule layer
@@ -114,13 +116,15 @@ COPY --chown=gateway:nodejs docker-entrypoint.sh ./
 
 # Build de l'application avec nettoyage
 RUN echo "🔧 Génération du client Prisma Node.js..." \
-    && cd /app/shared \
-    && npx prisma generate --schema=./prisma/schema.prisma \
+    && npx prisma generate --schema=./shared/prisma/schema.prisma \
     && echo "✅ Client Prisma Node.js généré avec succès" \
-    && cd /app \
-    && DATABASE_URL=mongodb://dummy:dummy@localhost:27017/dummy pnpm run build \
+    && echo "🏗️  Building TypeScript application..." \
+    && CI=true DATABASE_URL=mongodb://dummy:dummy@localhost:27017/dummy pnpm exec tsc \
+    && cp -r shared/prisma dist/shared/ \
+    && echo "✅ Build completed successfully" \
+    && echo "🧹 Cleaning up development dependencies..." \
     && rm -rf src/ tsconfig.json \
-    && pnpm install --prod --ignore-scripts \
+    && CI=true pnpm install --prod --ignore-scripts \
     && pnpm store prune \
     && rm -rf /tmp/.npm /tmp/.yarn ~/.cache \
     && chmod +x /app/docker-entrypoint.sh

@@ -5,36 +5,57 @@
 
 import type { SocketIOUser as User, MessageType } from './socketio-events';
 import type { AnonymousParticipant } from './anonymous';
-// UserRole will be defined locally to avoid circular dependency
-type UserRole = string;
+
+/**
+ * Rôle utilisateur global (aligné avec schema.prisma User.role)
+ * @see shared/schema.prisma ligne 35
+ */
+export type UserRole = 'USER' | 'ADMIN' | 'MODO' | 'BIGBOSS' | 'AUDIT' | 'ANALYST' | 
+  // Aliases pour rétrocompatibilité
+  'MODERATOR' | 'CREATOR' | 'MEMBER';
+
+/**
+ * Langue parlée avec statistiques
+ */
+export interface LanguageUsageStats {
+  readonly language: string;
+  readonly messageCount: number;
+  readonly percentage: number;
+}
+
+/**
+ * Paire de langues pour traduction
+ */
+export interface LanguagePair {
+  readonly from: string;
+  readonly to: string;
+  readonly count: number;
+}
+
+/**
+ * Statistiques de traduction
+ */
+export interface TranslationStatsData {
+  readonly totalTranslations: number;
+  readonly cacheHitRate: number;             // % traductions depuis cache
+  readonly averageTranslationTime: number;   // En ms
+  readonly topLanguagePairs: readonly LanguagePair[];
+}
 
 /**
  * Statistiques d'une conversation
  */
 export interface ConversationStats {
-  totalMessages: number;
-  totalParticipants: number;
-  activeParticipants: number;          // Participants actifs dernières 24h
-  messagesLast24h: number;
-  messagesLast7days: number;
-  averageResponseTime: number;         // En minutes
-  topLanguages: Array<{
-    language: string;
-    messageCount: number;
-    percentage: number;
-  }>;
-  translationStats: {
-    totalTranslations: number;
-    cacheHitRate: number;             // % traductions depuis cache
-    averageTranslationTime: number;   // En ms
-    topLanguagePairs: Array<{
-      from: string;
-      to: string;
-      count: number;
-    }>;
-  };
-  lastActivity: Date;
-  createdAt: Date;
+  readonly totalMessages: number;
+  readonly totalParticipants: number;
+  readonly activeParticipants: number;          // Participants actifs dernières 24h
+  readonly messagesLast24h: number;
+  readonly messagesLast7days: number;
+  readonly averageResponseTime: number;         // En minutes
+  readonly topLanguages: readonly LanguageUsageStats[];
+  readonly translationStats: TranslationStatsData;
+  readonly lastActivity: Date;
+  readonly createdAt: Date;
 }
 
 /**
@@ -43,26 +64,43 @@ export interface ConversationStats {
  * - identifier: Human-readable (OPTIONNEL pour URLs)
  */
 export interface ConversationIdentifiers {
-  id: string;           // ObjectId MongoDB - TOUJOURS pour API/WebSocket
-  identifier?: string;  // Human-readable - OPTIONNEL pour URLs
+  readonly id: string;           // ObjectId MongoDB - TOUJOURS pour API/WebSocket
+  readonly identifier?: string;  // Human-readable - OPTIONNEL pour URLs
 }
 
 // ===== MESSAGE TYPES CONSOLIDATED =====
 
 /**
+ * Modèle de traduction
+ */
+export type TranslationModel = 'basic' | 'medium' | 'premium';
+
+/**
  * Type de base pour toutes les traductions
  */
 export interface MessageTranslation {
-  id: string;
-  messageId: string;
-  sourceLanguage: string;
-  targetLanguage: string;
-  translatedContent: string;
-  translationModel: 'basic' | 'medium' | 'premium';
-  cacheKey: string;
-  confidenceScore?: number;
-  createdAt: Date;
-  cached: boolean;
+  readonly id: string;
+  readonly messageId: string;
+  readonly sourceLanguage: string;
+  readonly targetLanguage: string;
+  readonly translatedContent: string;
+  readonly translationModel: TranslationModel;
+  readonly cacheKey: string;
+  readonly confidenceScore?: number;
+  readonly createdAt: Date;
+  readonly cached: boolean;
+}
+
+/**
+ * Informations d'un expéditeur anonyme
+ */
+export interface AnonymousSenderInfo {
+  readonly id: string;
+  readonly username: string;
+  readonly firstName: string;
+  readonly lastName: string;
+  readonly language: string;
+  readonly isMeeshyer: boolean;
 }
 
 /**
@@ -74,76 +112,68 @@ export interface MessageTranslation {
  */
 export interface Message {
   // ===== IDENTIFIANTS =====
-  id: string;
-  conversationId: string;
-  senderId?: string;           // ID utilisateur authentifié
-  anonymousSenderId?: string;  // ID utilisateur anonyme
+  readonly id: string;
+  readonly conversationId: string;
+  readonly senderId?: string;           // ID utilisateur authentifié
+  readonly anonymousSenderId?: string;  // ID utilisateur anonyme
 
   // ===== CONTENU =====
-  content: string;
-  originalLanguage: string;
-  messageType: MessageType;
+  readonly content: string;
+  readonly originalLanguage: string;
+  readonly messageType: MessageType;
 
   // ===== ÉTAT DU MESSAGE =====
-  isEdited: boolean;
-  editedAt?: Date;
-  isDeleted: boolean;
-  deletedAt?: Date;
+  readonly isEdited: boolean;
+  readonly editedAt?: Date;
+  readonly isDeleted: boolean;
+  readonly deletedAt?: Date;
 
   // ===== RÉPONSE =====
-  replyToId?: string;
-  replyTo?: Message;           // Message de réponse (récursif)
-
-  // ===== PIÈCES JOINTES =====
-  attachments?: Array<{
-    id: string;
-    fileName: string;
-    originalFileName: string;
-    mimeType: string;
-    fileSize: number;
-    fileUrl: string;
-    thumbnailUrl?: string;
-    fileType: 'image' | 'video' | 'audio' | 'document' | 'other';
-    metadata?: any;
-    createdAt: Date;
-  }>;
+  readonly replyToId?: string;
+  readonly replyTo?: Message;           // Message de réponse (récursif)
 
   // ===== MÉTADONNÉES =====
-  createdAt: Date;
-  updatedAt?: Date;
+  readonly createdAt: Date;
+  readonly updatedAt?: Date;
 
   // ===== EXPÉDITEUR =====
-  sender?: User | AnonymousParticipant;
+  readonly sender?: User | AnonymousParticipant;
 
   // ===== TRADUCTIONS =====
-  translations: MessageTranslation[];
+  readonly translations: readonly MessageTranslation[];
 
   // ===== COMPATIBILITÉ =====
-  timestamp: Date;             // Alias pour createdAt (requis pour compatibilité)
+  readonly timestamp: Date;             // Alias pour createdAt (requis pour compatibilité)
 
   // ===== PARTICIPANT ANONYME =====
-  anonymousSender?: {
-    id: string;
-    username: string;
-    firstName: string;
-    lastName: string;
-    language: string;
-    isMeeshyer: boolean;
-  };
+  readonly anonymousSender?: AnonymousSenderInfo;
 }
+
+/**
+ * Statut de traduction UI
+ */
+export type UITranslationStatus = 'pending' | 'translating' | 'completed' | 'failed';
 
 /**
  * État de traduction dans l'interface utilisateur
  */
 export interface UITranslationState {
-  language: string;
-  content: string;
-  status: 'pending' | 'translating' | 'completed' | 'failed';
-  timestamp: Date;
-  confidence?: number;
-  model?: 'basic' | 'medium' | 'premium';
-  error?: string;
-  fromCache: boolean;
+  readonly language: string;
+  readonly content: string;
+  readonly status: UITranslationStatus;
+  readonly timestamp: Date;
+  readonly confidence?: number;
+  readonly model?: TranslationModel;
+  readonly error?: string;
+  readonly fromCache: boolean;
+}
+
+/**
+ * Statut de lecture pour un message
+ */
+export interface MessageReadStatus {
+  readonly userId: string;
+  readonly readAt: Date;
 }
 
 /**
@@ -152,23 +182,93 @@ export interface UITranslationState {
  */
 export interface MessageWithTranslations extends Message {
   // ===== TRADUCTIONS UI =====
-  uiTranslations: UITranslationState[];
-  translatingLanguages: Set<string>;
-  currentDisplayLanguage: string;
-  showingOriginal: boolean;
-  originalContent: string;
+  readonly uiTranslations: readonly UITranslationState[];
+  readonly translatingLanguages: Set<string>;
+  readonly currentDisplayLanguage: string;
+  readonly showingOriginal: boolean;
+  readonly originalContent: string;
 
   // ===== ÉTAT DE LECTURE =====
-  readStatus?: Array<{ userId: string; readAt: Date }>;
+  readonly readStatus?: readonly MessageReadStatus[];
 
   // ===== MÉTADONNÉES SUPPLÉMENTAIRES =====
-  location?: string;
+  readonly location?: string;
 
   // ===== PERMISSIONS UI =====
-  canEdit: boolean;
-  canDelete: boolean;
-  canTranslate: boolean;
-  canReply: boolean;
+  readonly canEdit: boolean;
+  readonly canDelete: boolean;
+  readonly canTranslate: boolean;
+  readonly canReply: boolean;
+}
+
+/**
+ * Type de conversation
+ */
+export type ConversationType = 'direct' | 'group' | 'public' | 'global' | 'broadcast';
+
+/**
+ * Statut de conversation
+ */
+export type ConversationStatus = 'active' | 'archived' | 'deleted';
+
+/**
+ * Visibilité de conversation
+ */
+export type ConversationVisibility = 'public' | 'private' | 'restricted';
+
+/**
+ * Type de lien de conversation
+ */
+export type ConversationLinkType = 'invite' | 'share' | 'embed';
+
+/**
+ * Permissions d'un participant
+ */
+export interface ParticipantPermissions {
+  readonly canInvite: boolean;
+  readonly canRemove: boolean;
+  readonly canEdit: boolean;
+  readonly canDelete: boolean;
+  readonly canModerate: boolean;
+}
+
+/**
+ * Participant d'une conversation
+ */
+export interface ConversationParticipantInfo {
+  readonly userId: string;
+  readonly role: UserRole;
+  readonly joinedAt: Date;
+  readonly isActive: boolean;
+  readonly permissions?: ParticipantPermissions;
+}
+
+/**
+ * Paramètres d'une conversation
+ */
+export interface ConversationSettings {
+  readonly allowAnonymous: boolean;
+  readonly requireApproval: boolean;
+  readonly maxParticipants?: number;
+  readonly autoArchive?: boolean;
+  readonly translationEnabled: boolean;
+  readonly defaultLanguage?: string;
+  readonly allowedLanguages?: readonly string[];
+}
+
+/**
+ * Lien de partage d'une conversation
+ */
+export interface ConversationLink {
+  readonly id: string;
+  readonly type: ConversationLinkType;
+  readonly url: string;
+  readonly expiresAt?: Date;
+  readonly maxUses?: number;
+  readonly currentUses: number;
+  readonly isActive: boolean;
+  readonly createdBy: string;
+  readonly createdAt: Date;
 }
 
 /**
@@ -177,146 +277,117 @@ export interface MessageWithTranslations extends Message {
  */
 export interface Conversation {
   // ===== IDENTIFIANTS =====
-  id: string;
-  identifier?: string;
+  readonly id: string;
+  readonly identifier?: string;
 
   // ===== MÉTADONNÉES =====
-  title?: string;
-  description?: string;
-  type: 'direct' | 'group' | 'anonymous' | 'broadcast';
-  status: 'active' | 'archived' | 'deleted';
-  visibility: 'public' | 'private' | 'restricted';
+  readonly title?: string;
+  readonly description?: string;
+  readonly type: ConversationType;
+  readonly status: ConversationStatus;
+  readonly visibility: ConversationVisibility;
 
   // ===== PARTICIPANTS =====
-  participants: Array<{
-    userId: string;
-    role: UserRole;
-    joinedAt: Date;
-    isActive: boolean;
-    permissions?: {
-      canInvite: boolean;
-      canRemove: boolean;
-      canEdit: boolean;
-      canDelete: boolean;
-      canModerate: boolean;
-    };
-  }>;
+  readonly participants: readonly ConversationParticipantInfo[];
 
   // ===== MESSAGES =====
-  lastMessage?: Message;
-  messageCount?: number;
-  unreadCount?: number;
+  readonly lastMessage?: Message;
+  readonly messageCount?: number;
+  readonly unreadCount?: number;
 
   // ===== STATISTIQUES =====
-  stats?: ConversationStats;
+  readonly stats?: ConversationStats;
 
   // ===== CONFIGURATION =====
-  settings?: {
-    allowAnonymous: boolean;
-    requireApproval: boolean;
-    maxParticipants?: number;
-    autoArchive?: boolean;
-    translationEnabled: boolean;
-    defaultLanguage?: string;
-    allowedLanguages?: string[];
-  };
+  readonly settings?: ConversationSettings;
 
   // ===== LIENS ET PARTAGE =====
-  links?: Array<{
-    id: string;
-    type: 'invite' | 'share' | 'embed';
-    url: string;
-    expiresAt?: Date;
-    maxUses?: number;
-    currentUses: number;
-    isActive: boolean;
-    createdBy: string;
-    createdAt: Date;
-  }>;
+  readonly links?: readonly ConversationLink[];
 
   // ===== TIMESTAMPS =====
-  createdAt: Date;
-  updatedAt: Date;
-  lastActivityAt?: Date;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+  readonly lastActivityAt?: Date;
 
   // ===== CRÉATEUR =====
-  createdBy?: string;
-  createdByUser?: User;
+  readonly createdBy?: string;
+  readonly createdByUser?: User;
 }
 
 /**
  * Membre d'une conversation (ThreadMember)
  */
 export interface ThreadMember {
-  id: string;
-  conversationId: string;
-  userId: string;
-  user: User;
-  role: UserRole;
-  joinedAt: Date;
-  isActive: boolean;
-  isAnonymous: boolean;
-  permissions?: {
-    canInvite: boolean;
-    canRemove: boolean;
-    canEdit: boolean;
-    canDelete: boolean;
-    canModerate: boolean;
-  };
+  readonly id: string;
+  readonly conversationId: string;
+  readonly userId: string;
+  readonly user: User;
+  readonly role: UserRole;
+  readonly joinedAt: Date;
+  readonly isActive: boolean;
+  readonly isAnonymous: boolean;
+  readonly permissions?: ParticipantPermissions;
+}
+
+/**
+ * Traduction individuelle dans TranslationData
+ */
+export interface TranslationItem {
+  readonly targetLanguage: string;
+  readonly translatedContent: string;
+  readonly confidence?: number;
+  readonly model?: TranslationModel;
+  readonly fromCache: boolean;
 }
 
 /**
  * Données de traduction reçues via Socket.IO
  */
 export interface TranslationData {
-  messageId: string;
-  translations: Array<{
-    targetLanguage: string;
-    translatedContent: string;
-    confidence?: number;
-    model?: 'basic' | 'medium' | 'premium';
-    fromCache: boolean;
-  }>;
-  timestamp: Date;
+  readonly messageId: string;
+  readonly translations: readonly TranslationItem[];
+  readonly timestamp: Date;
 }
 
 /**
  * Message traduit pour l'affichage
  */
 export interface TranslatedMessage extends Message {
-  translatedContent?: string;
-  targetLanguage?: string;
-  translationConfidence?: number;
-  translationModel?: 'basic' | 'medium' | 'premium';
-  isTranslationCached?: boolean;
+  readonly translatedContent?: string;
+  readonly targetLanguage?: string;
+  readonly translationConfidence?: number;
+  readonly translationModel?: TranslationModel;
+  readonly isTranslationCached?: boolean;
 }
 
 // ===== SHARE LINK TYPES =====
+
+/**
+ * Lien de partage de conversation (alias)
+ */
 export interface ConversationShareLink {
-  id: string;
-  type: 'invite' | 'share' | 'embed';
-  url: string;
-  expiresAt?: Date;
-  maxUses?: number;
-  currentUses: number;
-  isActive: boolean;
-  createdBy: string;
-  createdAt: Date;
+  readonly id: string;
+  readonly type: ConversationLinkType;
+  readonly url: string;
+  readonly expiresAt?: Date;
+  readonly maxUses?: number;
+  readonly currentUses: number;
+  readonly isActive: boolean;
+  readonly createdBy: string;
+  readonly createdAt: Date;
 }
 
 // ===== CONVERSATION PARTICIPANT =====
+
+/**
+ * Participant de conversation (alias)
+ */
 export interface ConversationParticipant {
-  userId: string;
-  role: UserRole;
-  joinedAt: Date;
-  isActive: boolean;
-  permissions?: {
-    canInvite: boolean;
-    canRemove: boolean;
-    canEdit: boolean;
-    canDelete: boolean;
-    canModerate: boolean;
-  };
+  readonly userId: string;
+  readonly role: UserRole;
+  readonly joinedAt: Date;
+  readonly isActive: boolean;
+  readonly permissions?: ParticipantPermissions;
 }
 
 // ===== TYPE ALIASES FOR COMPATIBILITY =====
