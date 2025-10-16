@@ -57,7 +57,8 @@ import { useI18n } from '@/hooks/useI18n';
 import { getMessageInitials } from '@/lib/avatar-utils';
 import { cn } from '@/lib/utils';
 import { useFixTranslationPopoverZIndex } from '@/hooks/use-fix-z-index';
-import { MessageWithLinks } from '@/components/chat/message-with-links'; 
+import { MessageWithLinks } from '@/components/chat/message-with-links';
+import { MessageAttachments } from '@/components/attachments/MessageAttachments'; 
 
 
 interface BubbleMessageProps {
@@ -67,6 +68,7 @@ interface BubbleMessageProps {
     translations: BubbleTranslation[];
     originalContent: string;
     readStatus?: Array<{ userId: string; readAt: Date }>;
+    attachments?: any[]; // Attachments du message
   };
   currentUser: User;
   userLanguage: string;
@@ -78,6 +80,7 @@ interface BubbleMessageProps {
   onLanguageSwitch?: (messageId: string, language: string) => void;
   onReplyMessage?: (message: Message) => void;
   onNavigateToMessage?: (messageId: string) => void;
+  onImageClick?: (attachmentId: string) => void; // Nouveau: click sur image
   // États contrôlés depuis le parent
   currentDisplayLanguage: string;
   isTranslating?: boolean;
@@ -97,6 +100,7 @@ function BubbleMessageInner({
   onLanguageSwitch,
   onReplyMessage,
   onNavigateToMessage,
+  onImageClick,
   currentDisplayLanguage,
   isTranslating = false,
   translationError,
@@ -638,6 +642,14 @@ function BubbleMessageInner({
                         console.log(`Link clicked: ${url} (tracking: ${isTracking})`);
                       }}
                     />
+
+                    {/* Attachments */}
+                    {message.attachments && message.attachments.length > 0 && (
+                      <MessageAttachments
+                        attachments={message.attachments as any}
+                        onImageClick={onImageClick}
+                      />
+                    )}
                   </motion.div>
                 </AnimatePresence>
               </div>

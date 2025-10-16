@@ -217,16 +217,30 @@ class DatabaseService:
             logger.error(f"❌ [TRANSLATOR-DB] Erreur invalidation traductions: {e}")
             return False
     
-    async def health_check(self) -> bool:
+    async def health_check(self) -> Dict[str, Any]:
         """Vérifie la santé de la connexion à la base de données"""
         try:
             if not self.is_connected:
-                return False
+                return {
+                    "connected": False,
+                    "status": "disconnected",
+                    "error": "Database not connected"
+                }
             
-            # Test simple de connexion
-            await self.prisma.execute_raw("SELECT 1")
-            return True
+            # Test simple de connexion (MongoDB ne supporte pas SELECT 1)
+            # Utiliser une requête MongoDB valide à la place
+            await self.prisma.user.count()
+            
+            return {
+                "connected": True,
+                "status": "healthy",
+                "type": "mongodb"
+            }
             
         except Exception as e:
             logger.error(f"❌ [TRANSLATOR-DB] Erreur health check: {e}")
-            return False
+            return {
+                "connected": False,
+                "status": "error",
+                "error": str(e)
+            }

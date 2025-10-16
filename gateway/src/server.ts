@@ -16,6 +16,7 @@ import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import jwt from '@fastify/jwt';
 import sensible from '@fastify/sensible'; // Ajout pour httpErrors
+import multipart from '@fastify/multipart';
 import { PrismaClient } from '../shared/prisma/client';
 import winston from 'winston';
 import { TranslationService } from './services/TranslationService';
@@ -38,6 +39,7 @@ import affiliateRoutes from './routes/affiliate';
 import messageRoutes from './routes/messages';
 import { notificationRoutes } from './routes/notifications';
 import { friendRequestRoutes } from './routes/friends';
+import { attachmentRoutes } from './routes/attachments';
 import { InitService } from './services/init.service';
 import { MeeshySocketIOHandler } from './socketio/MeeshySocketIOHandler';
 
@@ -251,6 +253,14 @@ class MeeshyServer {
 
     // Register sensible plugin for httpErrors
     await this.server.register(sensible);
+
+    // Register multipart plugin for file uploads
+    await this.server.register(multipart, {
+      limits: {
+        fileSize: 104857600, // 100MB max file size
+        files: 10, // Max 10 files per request
+      },
+    });
 
     // Security headers
     await this.server.register(helmet, {
@@ -498,6 +508,9 @@ class MeeshyServer {
     
     // Register message routes with /api prefix
     await this.server.register(messageRoutes, { prefix: '/api' });
+    
+    // Register attachment routes with /api prefix
+    await this.server.register(attachmentRoutes, { prefix: '/api' });
     
     // Register notification routes with /api prefix
     await this.server.register(notificationRoutes, { prefix: '/api' });

@@ -49,6 +49,11 @@ export type Message = $Result.DefaultSelection<Prisma.$MessagePayload>
  */
 export type MessageTranslation = $Result.DefaultSelection<Prisma.$MessageTranslationPayload>
 /**
+ * Model MessageAttachment
+ * Attachement de fichier pour un message
+ */
+export type MessageAttachment = $Result.DefaultSelection<Prisma.$MessageAttachmentPayload>
+/**
  * Model MessageStatus
  * Statut de reception, lecture ou réponse d'un message par un utilisateur
  */
@@ -275,6 +280,16 @@ export class PrismaClient<
     * ```
     */
   get messageTranslation(): Prisma.MessageTranslationDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.messageAttachment`: Exposes CRUD operations for the **MessageAttachment** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more MessageAttachments
+    * const messageAttachments = await prisma.messageAttachment.findMany()
+    * ```
+    */
+  get messageAttachment(): Prisma.MessageAttachmentDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.messageStatus`: Exposes CRUD operations for the **MessageStatus** model.
@@ -852,6 +867,7 @@ export namespace Prisma {
     AnonymousParticipant: 'AnonymousParticipant',
     Message: 'Message',
     MessageTranslation: 'MessageTranslation',
+    MessageAttachment: 'MessageAttachment',
     MessageStatus: 'MessageStatus',
     FriendRequest: 'FriendRequest',
     TypingIndicator: 'TypingIndicator',
@@ -883,7 +899,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "conversation" | "conversationMember" | "conversationShareLink" | "anonymousParticipant" | "message" | "messageTranslation" | "messageStatus" | "friendRequest" | "typingIndicator" | "notification" | "community" | "communityMember" | "userStats" | "userPreference" | "conversationPreference" | "affiliateToken" | "affiliateRelation" | "trackingLink" | "trackingLinkClick"
+      modelProps: "user" | "conversation" | "conversationMember" | "conversationShareLink" | "anonymousParticipant" | "message" | "messageTranslation" | "messageAttachment" | "messageStatus" | "friendRequest" | "typingIndicator" | "notification" | "community" | "communityMember" | "userStats" | "userPreference" | "conversationPreference" | "affiliateToken" | "affiliateRelation" | "trackingLink" | "trackingLinkClick"
       txIsolationLevel: never
     }
     model: {
@@ -1402,6 +1418,80 @@ export namespace Prisma {
           count: {
             args: Prisma.MessageTranslationCountArgs<ExtArgs>
             result: $Utils.Optional<MessageTranslationCountAggregateOutputType> | number
+          }
+        }
+      }
+      MessageAttachment: {
+        payload: Prisma.$MessageAttachmentPayload<ExtArgs>
+        fields: Prisma.MessageAttachmentFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.MessageAttachmentFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageAttachmentPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.MessageAttachmentFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageAttachmentPayload>
+          }
+          findFirst: {
+            args: Prisma.MessageAttachmentFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageAttachmentPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.MessageAttachmentFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageAttachmentPayload>
+          }
+          findMany: {
+            args: Prisma.MessageAttachmentFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageAttachmentPayload>[]
+          }
+          create: {
+            args: Prisma.MessageAttachmentCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageAttachmentPayload>
+          }
+          createMany: {
+            args: Prisma.MessageAttachmentCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.MessageAttachmentDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageAttachmentPayload>
+          }
+          update: {
+            args: Prisma.MessageAttachmentUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageAttachmentPayload>
+          }
+          deleteMany: {
+            args: Prisma.MessageAttachmentDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.MessageAttachmentUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.MessageAttachmentUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageAttachmentPayload>
+          }
+          aggregate: {
+            args: Prisma.MessageAttachmentAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateMessageAttachment>
+          }
+          groupBy: {
+            args: Prisma.MessageAttachmentGroupByArgs<ExtArgs>
+            result: $Utils.Optional<MessageAttachmentGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.MessageAttachmentFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.MessageAttachmentAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.MessageAttachmentCountArgs<ExtArgs>
+            result: $Utils.Optional<MessageAttachmentCountAggregateOutputType> | number
           }
         }
       }
@@ -2453,6 +2543,7 @@ export namespace Prisma {
     anonymousParticipant?: AnonymousParticipantOmit
     message?: MessageOmit
     messageTranslation?: MessageTranslationOmit
+    messageAttachment?: MessageAttachmentOmit
     messageStatus?: MessageStatusOmit
     friendRequest?: FriendRequestOmit
     typingIndicator?: TypingIndicatorOmit
@@ -2890,6 +2981,7 @@ export namespace Prisma {
     status: number
     statusResponses: number
     translations: number
+    attachments: number
     replies: number
   }
 
@@ -2897,6 +2989,7 @@ export namespace Prisma {
     status?: boolean | MessageCountOutputTypeCountStatusArgs
     statusResponses?: boolean | MessageCountOutputTypeCountStatusResponsesArgs
     translations?: boolean | MessageCountOutputTypeCountTranslationsArgs
+    attachments?: boolean | MessageCountOutputTypeCountAttachmentsArgs
     replies?: boolean | MessageCountOutputTypeCountRepliesArgs
   }
 
@@ -2930,6 +3023,13 @@ export namespace Prisma {
    */
   export type MessageCountOutputTypeCountTranslationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: MessageTranslationWhereInput
+  }
+
+  /**
+   * MessageCountOutputType without action
+   */
+  export type MessageCountOutputTypeCountAttachmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MessageAttachmentWhereInput
   }
 
   /**
@@ -4928,7 +5028,7 @@ export namespace Prisma {
 
   export type ConversationGroupByOutputType = {
     id: string
-    identifier: string | null
+    identifier: string
     type: string
     title: string | null
     description: string | null
@@ -5029,7 +5129,7 @@ export namespace Prisma {
       /**
        * Identifiant lisible par l'homme (ex: "mee_meeshy", "general", "mee_support")
        */
-      identifier: string | null
+      identifier: string
       /**
        * direct, group, public, global
        */
@@ -7394,7 +7494,7 @@ export namespace Prisma {
   export type ConversationShareLinkGroupByOutputType = {
     id: string
     linkId: string
-    identifier: string | null
+    identifier: string
     conversationId: string
     createdBy: string
     name: string | null
@@ -7524,7 +7624,7 @@ export namespace Prisma {
       /**
        * Identifiant lisible par l'homme (ex: "mshy_meeshy-public", "mshy_support-link")
        */
-      identifier: string | null
+      identifier: string
       conversationId: string
       createdBy: string
       name: string | null
@@ -9837,6 +9937,7 @@ export namespace Prisma {
     status?: boolean | Message$statusArgs<ExtArgs>
     statusResponses?: boolean | Message$statusResponsesArgs<ExtArgs>
     translations?: boolean | Message$translationsArgs<ExtArgs>
+    attachments?: boolean | Message$attachmentsArgs<ExtArgs>
     replyTo?: boolean | Message$replyToArgs<ExtArgs>
     replies?: boolean | Message$repliesArgs<ExtArgs>
     anonymousSender?: boolean | Message$anonymousSenderArgs<ExtArgs>
@@ -9869,6 +9970,7 @@ export namespace Prisma {
     status?: boolean | Message$statusArgs<ExtArgs>
     statusResponses?: boolean | Message$statusResponsesArgs<ExtArgs>
     translations?: boolean | Message$translationsArgs<ExtArgs>
+    attachments?: boolean | Message$attachmentsArgs<ExtArgs>
     replyTo?: boolean | Message$replyToArgs<ExtArgs>
     replies?: boolean | Message$repliesArgs<ExtArgs>
     anonymousSender?: boolean | Message$anonymousSenderArgs<ExtArgs>
@@ -9883,6 +9985,7 @@ export namespace Prisma {
       status: Prisma.$MessageStatusPayload<ExtArgs>[]
       statusResponses: Prisma.$MessageStatusPayload<ExtArgs>[]
       translations: Prisma.$MessageTranslationPayload<ExtArgs>[]
+      attachments: Prisma.$MessageAttachmentPayload<ExtArgs>[]
       replyTo: Prisma.$MessagePayload<ExtArgs> | null
       replies: Prisma.$MessagePayload<ExtArgs>[]
       anonymousSender: Prisma.$AnonymousParticipantPayload<ExtArgs> | null
@@ -10273,6 +10376,7 @@ export namespace Prisma {
     status<T extends Message$statusArgs<ExtArgs> = {}>(args?: Subset<T, Message$statusArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     statusResponses<T extends Message$statusResponsesArgs<ExtArgs> = {}>(args?: Subset<T, Message$statusResponsesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     translations<T extends Message$translationsArgs<ExtArgs> = {}>(args?: Subset<T, Message$translationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageTranslationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    attachments<T extends Message$attachmentsArgs<ExtArgs> = {}>(args?: Subset<T, Message$attachmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageAttachmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     replyTo<T extends Message$replyToArgs<ExtArgs> = {}>(args?: Subset<T, Message$replyToArgs<ExtArgs>>): Prisma__MessageClient<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     replies<T extends Message$repliesArgs<ExtArgs> = {}>(args?: Subset<T, Message$repliesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     anonymousSender<T extends Message$anonymousSenderArgs<ExtArgs> = {}>(args?: Subset<T, Message$anonymousSenderArgs<ExtArgs>>): Prisma__AnonymousParticipantClient<$Result.GetResult<Prisma.$AnonymousParticipantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -10760,6 +10864,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: MessageTranslationScalarFieldEnum | MessageTranslationScalarFieldEnum[]
+  }
+
+  /**
+   * Message.attachments
+   */
+  export type Message$attachmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageAttachment
+     */
+    select?: MessageAttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageAttachment
+     */
+    omit?: MessageAttachmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageAttachmentInclude<ExtArgs> | null
+    where?: MessageAttachmentWhereInput
+    orderBy?: MessageAttachmentOrderByWithRelationInput | MessageAttachmentOrderByWithRelationInput[]
+    cursor?: MessageAttachmentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: MessageAttachmentScalarFieldEnum | MessageAttachmentScalarFieldEnum[]
   }
 
   /**
@@ -11916,6 +12044,1152 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: MessageTranslationInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model MessageAttachment
+   */
+
+  export type AggregateMessageAttachment = {
+    _count: MessageAttachmentCountAggregateOutputType | null
+    _avg: MessageAttachmentAvgAggregateOutputType | null
+    _sum: MessageAttachmentSumAggregateOutputType | null
+    _min: MessageAttachmentMinAggregateOutputType | null
+    _max: MessageAttachmentMaxAggregateOutputType | null
+  }
+
+  export type MessageAttachmentAvgAggregateOutputType = {
+    fileSize: number | null
+    width: number | null
+    height: number | null
+    duration: number | null
+  }
+
+  export type MessageAttachmentSumAggregateOutputType = {
+    fileSize: number | null
+    width: number | null
+    height: number | null
+    duration: number | null
+  }
+
+  export type MessageAttachmentMinAggregateOutputType = {
+    id: string | null
+    messageId: string | null
+    fileName: string | null
+    originalName: string | null
+    mimeType: string | null
+    fileSize: number | null
+    filePath: string | null
+    fileUrl: string | null
+    width: number | null
+    height: number | null
+    thumbnailPath: string | null
+    thumbnailUrl: string | null
+    duration: number | null
+    uploadedBy: string | null
+    isAnonymous: boolean | null
+    createdAt: Date | null
+  }
+
+  export type MessageAttachmentMaxAggregateOutputType = {
+    id: string | null
+    messageId: string | null
+    fileName: string | null
+    originalName: string | null
+    mimeType: string | null
+    fileSize: number | null
+    filePath: string | null
+    fileUrl: string | null
+    width: number | null
+    height: number | null
+    thumbnailPath: string | null
+    thumbnailUrl: string | null
+    duration: number | null
+    uploadedBy: string | null
+    isAnonymous: boolean | null
+    createdAt: Date | null
+  }
+
+  export type MessageAttachmentCountAggregateOutputType = {
+    id: number
+    messageId: number
+    fileName: number
+    originalName: number
+    mimeType: number
+    fileSize: number
+    filePath: number
+    fileUrl: number
+    width: number
+    height: number
+    thumbnailPath: number
+    thumbnailUrl: number
+    duration: number
+    uploadedBy: number
+    isAnonymous: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type MessageAttachmentAvgAggregateInputType = {
+    fileSize?: true
+    width?: true
+    height?: true
+    duration?: true
+  }
+
+  export type MessageAttachmentSumAggregateInputType = {
+    fileSize?: true
+    width?: true
+    height?: true
+    duration?: true
+  }
+
+  export type MessageAttachmentMinAggregateInputType = {
+    id?: true
+    messageId?: true
+    fileName?: true
+    originalName?: true
+    mimeType?: true
+    fileSize?: true
+    filePath?: true
+    fileUrl?: true
+    width?: true
+    height?: true
+    thumbnailPath?: true
+    thumbnailUrl?: true
+    duration?: true
+    uploadedBy?: true
+    isAnonymous?: true
+    createdAt?: true
+  }
+
+  export type MessageAttachmentMaxAggregateInputType = {
+    id?: true
+    messageId?: true
+    fileName?: true
+    originalName?: true
+    mimeType?: true
+    fileSize?: true
+    filePath?: true
+    fileUrl?: true
+    width?: true
+    height?: true
+    thumbnailPath?: true
+    thumbnailUrl?: true
+    duration?: true
+    uploadedBy?: true
+    isAnonymous?: true
+    createdAt?: true
+  }
+
+  export type MessageAttachmentCountAggregateInputType = {
+    id?: true
+    messageId?: true
+    fileName?: true
+    originalName?: true
+    mimeType?: true
+    fileSize?: true
+    filePath?: true
+    fileUrl?: true
+    width?: true
+    height?: true
+    thumbnailPath?: true
+    thumbnailUrl?: true
+    duration?: true
+    uploadedBy?: true
+    isAnonymous?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type MessageAttachmentAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which MessageAttachment to aggregate.
+     */
+    where?: MessageAttachmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MessageAttachments to fetch.
+     */
+    orderBy?: MessageAttachmentOrderByWithRelationInput | MessageAttachmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: MessageAttachmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MessageAttachments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MessageAttachments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned MessageAttachments
+    **/
+    _count?: true | MessageAttachmentCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: MessageAttachmentAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: MessageAttachmentSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: MessageAttachmentMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: MessageAttachmentMaxAggregateInputType
+  }
+
+  export type GetMessageAttachmentAggregateType<T extends MessageAttachmentAggregateArgs> = {
+        [P in keyof T & keyof AggregateMessageAttachment]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateMessageAttachment[P]>
+      : GetScalarType<T[P], AggregateMessageAttachment[P]>
+  }
+
+
+
+
+  export type MessageAttachmentGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MessageAttachmentWhereInput
+    orderBy?: MessageAttachmentOrderByWithAggregationInput | MessageAttachmentOrderByWithAggregationInput[]
+    by: MessageAttachmentScalarFieldEnum[] | MessageAttachmentScalarFieldEnum
+    having?: MessageAttachmentScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: MessageAttachmentCountAggregateInputType | true
+    _avg?: MessageAttachmentAvgAggregateInputType
+    _sum?: MessageAttachmentSumAggregateInputType
+    _min?: MessageAttachmentMinAggregateInputType
+    _max?: MessageAttachmentMaxAggregateInputType
+  }
+
+  export type MessageAttachmentGroupByOutputType = {
+    id: string
+    messageId: string
+    fileName: string
+    originalName: string
+    mimeType: string
+    fileSize: number
+    filePath: string
+    fileUrl: string
+    width: number | null
+    height: number | null
+    thumbnailPath: string | null
+    thumbnailUrl: string | null
+    duration: number | null
+    uploadedBy: string
+    isAnonymous: boolean
+    createdAt: Date
+    _count: MessageAttachmentCountAggregateOutputType | null
+    _avg: MessageAttachmentAvgAggregateOutputType | null
+    _sum: MessageAttachmentSumAggregateOutputType | null
+    _min: MessageAttachmentMinAggregateOutputType | null
+    _max: MessageAttachmentMaxAggregateOutputType | null
+  }
+
+  type GetMessageAttachmentGroupByPayload<T extends MessageAttachmentGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<MessageAttachmentGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof MessageAttachmentGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], MessageAttachmentGroupByOutputType[P]>
+            : GetScalarType<T[P], MessageAttachmentGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type MessageAttachmentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    messageId?: boolean
+    fileName?: boolean
+    originalName?: boolean
+    mimeType?: boolean
+    fileSize?: boolean
+    filePath?: boolean
+    fileUrl?: boolean
+    width?: boolean
+    height?: boolean
+    thumbnailPath?: boolean
+    thumbnailUrl?: boolean
+    duration?: boolean
+    uploadedBy?: boolean
+    isAnonymous?: boolean
+    createdAt?: boolean
+    message?: boolean | MessageDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["messageAttachment"]>
+
+
+
+  export type MessageAttachmentSelectScalar = {
+    id?: boolean
+    messageId?: boolean
+    fileName?: boolean
+    originalName?: boolean
+    mimeType?: boolean
+    fileSize?: boolean
+    filePath?: boolean
+    fileUrl?: boolean
+    width?: boolean
+    height?: boolean
+    thumbnailPath?: boolean
+    thumbnailUrl?: boolean
+    duration?: boolean
+    uploadedBy?: boolean
+    isAnonymous?: boolean
+    createdAt?: boolean
+  }
+
+  export type MessageAttachmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "messageId" | "fileName" | "originalName" | "mimeType" | "fileSize" | "filePath" | "fileUrl" | "width" | "height" | "thumbnailPath" | "thumbnailUrl" | "duration" | "uploadedBy" | "isAnonymous" | "createdAt", ExtArgs["result"]["messageAttachment"]>
+  export type MessageAttachmentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    message?: boolean | MessageDefaultArgs<ExtArgs>
+  }
+
+  export type $MessageAttachmentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "MessageAttachment"
+    objects: {
+      message: Prisma.$MessagePayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      messageId: string
+      fileName: string
+      originalName: string
+      mimeType: string
+      fileSize: number
+      filePath: string
+      fileUrl: string
+      width: number | null
+      height: number | null
+      thumbnailPath: string | null
+      thumbnailUrl: string | null
+      duration: number | null
+      uploadedBy: string
+      isAnonymous: boolean
+      createdAt: Date
+    }, ExtArgs["result"]["messageAttachment"]>
+    composites: {}
+  }
+
+  type MessageAttachmentGetPayload<S extends boolean | null | undefined | MessageAttachmentDefaultArgs> = $Result.GetResult<Prisma.$MessageAttachmentPayload, S>
+
+  type MessageAttachmentCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<MessageAttachmentFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: MessageAttachmentCountAggregateInputType | true
+    }
+
+  export interface MessageAttachmentDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['MessageAttachment'], meta: { name: 'MessageAttachment' } }
+    /**
+     * Find zero or one MessageAttachment that matches the filter.
+     * @param {MessageAttachmentFindUniqueArgs} args - Arguments to find a MessageAttachment
+     * @example
+     * // Get one MessageAttachment
+     * const messageAttachment = await prisma.messageAttachment.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends MessageAttachmentFindUniqueArgs>(args: SelectSubset<T, MessageAttachmentFindUniqueArgs<ExtArgs>>): Prisma__MessageAttachmentClient<$Result.GetResult<Prisma.$MessageAttachmentPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one MessageAttachment that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {MessageAttachmentFindUniqueOrThrowArgs} args - Arguments to find a MessageAttachment
+     * @example
+     * // Get one MessageAttachment
+     * const messageAttachment = await prisma.messageAttachment.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends MessageAttachmentFindUniqueOrThrowArgs>(args: SelectSubset<T, MessageAttachmentFindUniqueOrThrowArgs<ExtArgs>>): Prisma__MessageAttachmentClient<$Result.GetResult<Prisma.$MessageAttachmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first MessageAttachment that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MessageAttachmentFindFirstArgs} args - Arguments to find a MessageAttachment
+     * @example
+     * // Get one MessageAttachment
+     * const messageAttachment = await prisma.messageAttachment.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends MessageAttachmentFindFirstArgs>(args?: SelectSubset<T, MessageAttachmentFindFirstArgs<ExtArgs>>): Prisma__MessageAttachmentClient<$Result.GetResult<Prisma.$MessageAttachmentPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first MessageAttachment that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MessageAttachmentFindFirstOrThrowArgs} args - Arguments to find a MessageAttachment
+     * @example
+     * // Get one MessageAttachment
+     * const messageAttachment = await prisma.messageAttachment.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends MessageAttachmentFindFirstOrThrowArgs>(args?: SelectSubset<T, MessageAttachmentFindFirstOrThrowArgs<ExtArgs>>): Prisma__MessageAttachmentClient<$Result.GetResult<Prisma.$MessageAttachmentPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more MessageAttachments that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MessageAttachmentFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all MessageAttachments
+     * const messageAttachments = await prisma.messageAttachment.findMany()
+     * 
+     * // Get first 10 MessageAttachments
+     * const messageAttachments = await prisma.messageAttachment.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const messageAttachmentWithIdOnly = await prisma.messageAttachment.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends MessageAttachmentFindManyArgs>(args?: SelectSubset<T, MessageAttachmentFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageAttachmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a MessageAttachment.
+     * @param {MessageAttachmentCreateArgs} args - Arguments to create a MessageAttachment.
+     * @example
+     * // Create one MessageAttachment
+     * const MessageAttachment = await prisma.messageAttachment.create({
+     *   data: {
+     *     // ... data to create a MessageAttachment
+     *   }
+     * })
+     * 
+     */
+    create<T extends MessageAttachmentCreateArgs>(args: SelectSubset<T, MessageAttachmentCreateArgs<ExtArgs>>): Prisma__MessageAttachmentClient<$Result.GetResult<Prisma.$MessageAttachmentPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many MessageAttachments.
+     * @param {MessageAttachmentCreateManyArgs} args - Arguments to create many MessageAttachments.
+     * @example
+     * // Create many MessageAttachments
+     * const messageAttachment = await prisma.messageAttachment.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends MessageAttachmentCreateManyArgs>(args?: SelectSubset<T, MessageAttachmentCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a MessageAttachment.
+     * @param {MessageAttachmentDeleteArgs} args - Arguments to delete one MessageAttachment.
+     * @example
+     * // Delete one MessageAttachment
+     * const MessageAttachment = await prisma.messageAttachment.delete({
+     *   where: {
+     *     // ... filter to delete one MessageAttachment
+     *   }
+     * })
+     * 
+     */
+    delete<T extends MessageAttachmentDeleteArgs>(args: SelectSubset<T, MessageAttachmentDeleteArgs<ExtArgs>>): Prisma__MessageAttachmentClient<$Result.GetResult<Prisma.$MessageAttachmentPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one MessageAttachment.
+     * @param {MessageAttachmentUpdateArgs} args - Arguments to update one MessageAttachment.
+     * @example
+     * // Update one MessageAttachment
+     * const messageAttachment = await prisma.messageAttachment.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends MessageAttachmentUpdateArgs>(args: SelectSubset<T, MessageAttachmentUpdateArgs<ExtArgs>>): Prisma__MessageAttachmentClient<$Result.GetResult<Prisma.$MessageAttachmentPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more MessageAttachments.
+     * @param {MessageAttachmentDeleteManyArgs} args - Arguments to filter MessageAttachments to delete.
+     * @example
+     * // Delete a few MessageAttachments
+     * const { count } = await prisma.messageAttachment.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends MessageAttachmentDeleteManyArgs>(args?: SelectSubset<T, MessageAttachmentDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more MessageAttachments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MessageAttachmentUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many MessageAttachments
+     * const messageAttachment = await prisma.messageAttachment.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends MessageAttachmentUpdateManyArgs>(args: SelectSubset<T, MessageAttachmentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one MessageAttachment.
+     * @param {MessageAttachmentUpsertArgs} args - Arguments to update or create a MessageAttachment.
+     * @example
+     * // Update or create a MessageAttachment
+     * const messageAttachment = await prisma.messageAttachment.upsert({
+     *   create: {
+     *     // ... data to create a MessageAttachment
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the MessageAttachment we want to update
+     *   }
+     * })
+     */
+    upsert<T extends MessageAttachmentUpsertArgs>(args: SelectSubset<T, MessageAttachmentUpsertArgs<ExtArgs>>): Prisma__MessageAttachmentClient<$Result.GetResult<Prisma.$MessageAttachmentPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more MessageAttachments that matches the filter.
+     * @param {MessageAttachmentFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const messageAttachment = await prisma.messageAttachment.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: MessageAttachmentFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a MessageAttachment.
+     * @param {MessageAttachmentAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const messageAttachment = await prisma.messageAttachment.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: MessageAttachmentAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of MessageAttachments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MessageAttachmentCountArgs} args - Arguments to filter MessageAttachments to count.
+     * @example
+     * // Count the number of MessageAttachments
+     * const count = await prisma.messageAttachment.count({
+     *   where: {
+     *     // ... the filter for the MessageAttachments we want to count
+     *   }
+     * })
+    **/
+    count<T extends MessageAttachmentCountArgs>(
+      args?: Subset<T, MessageAttachmentCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], MessageAttachmentCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a MessageAttachment.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MessageAttachmentAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends MessageAttachmentAggregateArgs>(args: Subset<T, MessageAttachmentAggregateArgs>): Prisma.PrismaPromise<GetMessageAttachmentAggregateType<T>>
+
+    /**
+     * Group by MessageAttachment.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MessageAttachmentGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends MessageAttachmentGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: MessageAttachmentGroupByArgs['orderBy'] }
+        : { orderBy?: MessageAttachmentGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, MessageAttachmentGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMessageAttachmentGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the MessageAttachment model
+   */
+  readonly fields: MessageAttachmentFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for MessageAttachment.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__MessageAttachmentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    message<T extends MessageDefaultArgs<ExtArgs> = {}>(args?: Subset<T, MessageDefaultArgs<ExtArgs>>): Prisma__MessageClient<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the MessageAttachment model
+   */
+  interface MessageAttachmentFieldRefs {
+    readonly id: FieldRef<"MessageAttachment", 'String'>
+    readonly messageId: FieldRef<"MessageAttachment", 'String'>
+    readonly fileName: FieldRef<"MessageAttachment", 'String'>
+    readonly originalName: FieldRef<"MessageAttachment", 'String'>
+    readonly mimeType: FieldRef<"MessageAttachment", 'String'>
+    readonly fileSize: FieldRef<"MessageAttachment", 'Int'>
+    readonly filePath: FieldRef<"MessageAttachment", 'String'>
+    readonly fileUrl: FieldRef<"MessageAttachment", 'String'>
+    readonly width: FieldRef<"MessageAttachment", 'Int'>
+    readonly height: FieldRef<"MessageAttachment", 'Int'>
+    readonly thumbnailPath: FieldRef<"MessageAttachment", 'String'>
+    readonly thumbnailUrl: FieldRef<"MessageAttachment", 'String'>
+    readonly duration: FieldRef<"MessageAttachment", 'Int'>
+    readonly uploadedBy: FieldRef<"MessageAttachment", 'String'>
+    readonly isAnonymous: FieldRef<"MessageAttachment", 'Boolean'>
+    readonly createdAt: FieldRef<"MessageAttachment", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * MessageAttachment findUnique
+   */
+  export type MessageAttachmentFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageAttachment
+     */
+    select?: MessageAttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageAttachment
+     */
+    omit?: MessageAttachmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageAttachmentInclude<ExtArgs> | null
+    /**
+     * Filter, which MessageAttachment to fetch.
+     */
+    where: MessageAttachmentWhereUniqueInput
+  }
+
+  /**
+   * MessageAttachment findUniqueOrThrow
+   */
+  export type MessageAttachmentFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageAttachment
+     */
+    select?: MessageAttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageAttachment
+     */
+    omit?: MessageAttachmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageAttachmentInclude<ExtArgs> | null
+    /**
+     * Filter, which MessageAttachment to fetch.
+     */
+    where: MessageAttachmentWhereUniqueInput
+  }
+
+  /**
+   * MessageAttachment findFirst
+   */
+  export type MessageAttachmentFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageAttachment
+     */
+    select?: MessageAttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageAttachment
+     */
+    omit?: MessageAttachmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageAttachmentInclude<ExtArgs> | null
+    /**
+     * Filter, which MessageAttachment to fetch.
+     */
+    where?: MessageAttachmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MessageAttachments to fetch.
+     */
+    orderBy?: MessageAttachmentOrderByWithRelationInput | MessageAttachmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for MessageAttachments.
+     */
+    cursor?: MessageAttachmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MessageAttachments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MessageAttachments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MessageAttachments.
+     */
+    distinct?: MessageAttachmentScalarFieldEnum | MessageAttachmentScalarFieldEnum[]
+  }
+
+  /**
+   * MessageAttachment findFirstOrThrow
+   */
+  export type MessageAttachmentFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageAttachment
+     */
+    select?: MessageAttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageAttachment
+     */
+    omit?: MessageAttachmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageAttachmentInclude<ExtArgs> | null
+    /**
+     * Filter, which MessageAttachment to fetch.
+     */
+    where?: MessageAttachmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MessageAttachments to fetch.
+     */
+    orderBy?: MessageAttachmentOrderByWithRelationInput | MessageAttachmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for MessageAttachments.
+     */
+    cursor?: MessageAttachmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MessageAttachments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MessageAttachments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MessageAttachments.
+     */
+    distinct?: MessageAttachmentScalarFieldEnum | MessageAttachmentScalarFieldEnum[]
+  }
+
+  /**
+   * MessageAttachment findMany
+   */
+  export type MessageAttachmentFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageAttachment
+     */
+    select?: MessageAttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageAttachment
+     */
+    omit?: MessageAttachmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageAttachmentInclude<ExtArgs> | null
+    /**
+     * Filter, which MessageAttachments to fetch.
+     */
+    where?: MessageAttachmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MessageAttachments to fetch.
+     */
+    orderBy?: MessageAttachmentOrderByWithRelationInput | MessageAttachmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing MessageAttachments.
+     */
+    cursor?: MessageAttachmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MessageAttachments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MessageAttachments.
+     */
+    skip?: number
+    distinct?: MessageAttachmentScalarFieldEnum | MessageAttachmentScalarFieldEnum[]
+  }
+
+  /**
+   * MessageAttachment create
+   */
+  export type MessageAttachmentCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageAttachment
+     */
+    select?: MessageAttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageAttachment
+     */
+    omit?: MessageAttachmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageAttachmentInclude<ExtArgs> | null
+    /**
+     * The data needed to create a MessageAttachment.
+     */
+    data: XOR<MessageAttachmentCreateInput, MessageAttachmentUncheckedCreateInput>
+  }
+
+  /**
+   * MessageAttachment createMany
+   */
+  export type MessageAttachmentCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many MessageAttachments.
+     */
+    data: MessageAttachmentCreateManyInput | MessageAttachmentCreateManyInput[]
+  }
+
+  /**
+   * MessageAttachment update
+   */
+  export type MessageAttachmentUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageAttachment
+     */
+    select?: MessageAttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageAttachment
+     */
+    omit?: MessageAttachmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageAttachmentInclude<ExtArgs> | null
+    /**
+     * The data needed to update a MessageAttachment.
+     */
+    data: XOR<MessageAttachmentUpdateInput, MessageAttachmentUncheckedUpdateInput>
+    /**
+     * Choose, which MessageAttachment to update.
+     */
+    where: MessageAttachmentWhereUniqueInput
+  }
+
+  /**
+   * MessageAttachment updateMany
+   */
+  export type MessageAttachmentUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update MessageAttachments.
+     */
+    data: XOR<MessageAttachmentUpdateManyMutationInput, MessageAttachmentUncheckedUpdateManyInput>
+    /**
+     * Filter which MessageAttachments to update
+     */
+    where?: MessageAttachmentWhereInput
+    /**
+     * Limit how many MessageAttachments to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * MessageAttachment upsert
+   */
+  export type MessageAttachmentUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageAttachment
+     */
+    select?: MessageAttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageAttachment
+     */
+    omit?: MessageAttachmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageAttachmentInclude<ExtArgs> | null
+    /**
+     * The filter to search for the MessageAttachment to update in case it exists.
+     */
+    where: MessageAttachmentWhereUniqueInput
+    /**
+     * In case the MessageAttachment found by the `where` argument doesn't exist, create a new MessageAttachment with this data.
+     */
+    create: XOR<MessageAttachmentCreateInput, MessageAttachmentUncheckedCreateInput>
+    /**
+     * In case the MessageAttachment was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<MessageAttachmentUpdateInput, MessageAttachmentUncheckedUpdateInput>
+  }
+
+  /**
+   * MessageAttachment delete
+   */
+  export type MessageAttachmentDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageAttachment
+     */
+    select?: MessageAttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageAttachment
+     */
+    omit?: MessageAttachmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageAttachmentInclude<ExtArgs> | null
+    /**
+     * Filter which MessageAttachment to delete.
+     */
+    where: MessageAttachmentWhereUniqueInput
+  }
+
+  /**
+   * MessageAttachment deleteMany
+   */
+  export type MessageAttachmentDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which MessageAttachments to delete
+     */
+    where?: MessageAttachmentWhereInput
+    /**
+     * Limit how many MessageAttachments to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * MessageAttachment findRaw
+   */
+  export type MessageAttachmentFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * MessageAttachment aggregateRaw
+   */
+  export type MessageAttachmentAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * MessageAttachment without action
+   */
+  export type MessageAttachmentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageAttachment
+     */
+    select?: MessageAttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageAttachment
+     */
+    omit?: MessageAttachmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageAttachmentInclude<ExtArgs> | null
   }
 
 
@@ -16154,7 +17428,7 @@ export namespace Prisma {
 
   export type CommunityGroupByOutputType = {
     id: string
-    identifier: string | null
+    identifier: string
     name: string
     description: string | null
     avatar: string | null
@@ -16231,7 +17505,7 @@ export namespace Prisma {
       /**
        * Identifiant lisible par l'homme (ex: "mshy_meeshy-paris", "mshy_support-lycee-njanda")
        */
-      identifier: string | null
+      identifier: string
       name: string
       description: string | null
       avatar: string | null
@@ -23459,6 +24733,7 @@ export namespace Prisma {
   export type TrackingLinkMinAggregateOutputType = {
     id: string | null
     token: string | null
+    name: string | null
     originalUrl: string | null
     shortUrl: string | null
     createdBy: string | null
@@ -23476,6 +24751,7 @@ export namespace Prisma {
   export type TrackingLinkMaxAggregateOutputType = {
     id: string | null
     token: string | null
+    name: string | null
     originalUrl: string | null
     shortUrl: string | null
     createdBy: string | null
@@ -23493,6 +24769,7 @@ export namespace Prisma {
   export type TrackingLinkCountAggregateOutputType = {
     id: number
     token: number
+    name: number
     originalUrl: number
     shortUrl: number
     createdBy: number
@@ -23522,6 +24799,7 @@ export namespace Prisma {
   export type TrackingLinkMinAggregateInputType = {
     id?: true
     token?: true
+    name?: true
     originalUrl?: true
     shortUrl?: true
     createdBy?: true
@@ -23539,6 +24817,7 @@ export namespace Prisma {
   export type TrackingLinkMaxAggregateInputType = {
     id?: true
     token?: true
+    name?: true
     originalUrl?: true
     shortUrl?: true
     createdBy?: true
@@ -23556,6 +24835,7 @@ export namespace Prisma {
   export type TrackingLinkCountAggregateInputType = {
     id?: true
     token?: true
+    name?: true
     originalUrl?: true
     shortUrl?: true
     createdBy?: true
@@ -23660,6 +24940,7 @@ export namespace Prisma {
   export type TrackingLinkGroupByOutputType = {
     id: string
     token: string
+    name: string | null
     originalUrl: string
     shortUrl: string
     createdBy: string | null
@@ -23696,6 +24977,7 @@ export namespace Prisma {
   export type TrackingLinkSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     token?: boolean
+    name?: boolean
     originalUrl?: boolean
     shortUrl?: boolean
     createdBy?: boolean
@@ -23718,6 +25000,7 @@ export namespace Prisma {
   export type TrackingLinkSelectScalar = {
     id?: boolean
     token?: boolean
+    name?: boolean
     originalUrl?: boolean
     shortUrl?: boolean
     createdBy?: boolean
@@ -23732,7 +25015,7 @@ export namespace Prisma {
     lastClickedAt?: boolean
   }
 
-  export type TrackingLinkOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "token" | "originalUrl" | "shortUrl" | "createdBy" | "conversationId" | "messageId" | "totalClicks" | "uniqueClicks" | "isActive" | "expiresAt" | "createdAt" | "updatedAt" | "lastClickedAt", ExtArgs["result"]["trackingLink"]>
+  export type TrackingLinkOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "token" | "name" | "originalUrl" | "shortUrl" | "createdBy" | "conversationId" | "messageId" | "totalClicks" | "uniqueClicks" | "isActive" | "expiresAt" | "createdAt" | "updatedAt" | "lastClickedAt", ExtArgs["result"]["trackingLink"]>
   export type TrackingLinkInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     clicks?: boolean | TrackingLink$clicksArgs<ExtArgs>
     creator?: boolean | TrackingLink$creatorArgs<ExtArgs>
@@ -23748,6 +25031,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       token: string
+      name: string | null
       originalUrl: string
       shortUrl: string
       createdBy: string | null
@@ -24156,6 +25440,7 @@ export namespace Prisma {
   interface TrackingLinkFieldRefs {
     readonly id: FieldRef<"TrackingLink", 'String'>
     readonly token: FieldRef<"TrackingLink", 'String'>
+    readonly name: FieldRef<"TrackingLink", 'String'>
     readonly originalUrl: FieldRef<"TrackingLink", 'String'>
     readonly shortUrl: FieldRef<"TrackingLink", 'String'>
     readonly createdBy: FieldRef<"TrackingLink", 'String'>
@@ -25913,6 +27198,28 @@ export namespace Prisma {
   export type MessageTranslationScalarFieldEnum = (typeof MessageTranslationScalarFieldEnum)[keyof typeof MessageTranslationScalarFieldEnum]
 
 
+  export const MessageAttachmentScalarFieldEnum: {
+    id: 'id',
+    messageId: 'messageId',
+    fileName: 'fileName',
+    originalName: 'originalName',
+    mimeType: 'mimeType',
+    fileSize: 'fileSize',
+    filePath: 'filePath',
+    fileUrl: 'fileUrl',
+    width: 'width',
+    height: 'height',
+    thumbnailPath: 'thumbnailPath',
+    thumbnailUrl: 'thumbnailUrl',
+    duration: 'duration',
+    uploadedBy: 'uploadedBy',
+    isAnonymous: 'isAnonymous',
+    createdAt: 'createdAt'
+  };
+
+  export type MessageAttachmentScalarFieldEnum = (typeof MessageAttachmentScalarFieldEnum)[keyof typeof MessageAttachmentScalarFieldEnum]
+
+
   export const MessageStatusScalarFieldEnum: {
     id: 'id',
     messageId: 'messageId',
@@ -26079,6 +27386,7 @@ export namespace Prisma {
   export const TrackingLinkScalarFieldEnum: {
     id: 'id',
     token: 'token',
+    name: 'name',
     originalUrl: 'originalUrl',
     shortUrl: 'shortUrl',
     createdBy: 'createdBy',
@@ -26416,7 +27724,7 @@ export namespace Prisma {
     OR?: ConversationWhereInput[]
     NOT?: ConversationWhereInput | ConversationWhereInput[]
     id?: StringFilter<"Conversation"> | string
-    identifier?: StringNullableFilter<"Conversation"> | string | null
+    identifier?: StringFilter<"Conversation"> | string
     type?: StringFilter<"Conversation"> | string
     title?: StringNullableFilter<"Conversation"> | string | null
     description?: StringNullableFilter<"Conversation"> | string | null
@@ -26510,7 +27818,7 @@ export namespace Prisma {
     OR?: ConversationScalarWhereWithAggregatesInput[]
     NOT?: ConversationScalarWhereWithAggregatesInput | ConversationScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Conversation"> | string
-    identifier?: StringNullableWithAggregatesFilter<"Conversation"> | string | null
+    identifier?: StringWithAggregatesFilter<"Conversation"> | string
     type?: StringWithAggregatesFilter<"Conversation"> | string
     title?: StringNullableWithAggregatesFilter<"Conversation"> | string | null
     description?: StringNullableWithAggregatesFilter<"Conversation"> | string | null
@@ -26633,7 +27941,7 @@ export namespace Prisma {
     NOT?: ConversationShareLinkWhereInput | ConversationShareLinkWhereInput[]
     id?: StringFilter<"ConversationShareLink"> | string
     linkId?: StringFilter<"ConversationShareLink"> | string
-    identifier?: StringNullableFilter<"ConversationShareLink"> | string | null
+    identifier?: StringFilter<"ConversationShareLink"> | string
     conversationId?: StringFilter<"ConversationShareLink"> | string
     createdBy?: StringFilter<"ConversationShareLink"> | string
     name?: StringNullableFilter<"ConversationShareLink"> | string | null
@@ -26769,7 +28077,7 @@ export namespace Prisma {
     NOT?: ConversationShareLinkScalarWhereWithAggregatesInput | ConversationShareLinkScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"ConversationShareLink"> | string
     linkId?: StringWithAggregatesFilter<"ConversationShareLink"> | string
-    identifier?: StringNullableWithAggregatesFilter<"ConversationShareLink"> | string | null
+    identifier?: StringWithAggregatesFilter<"ConversationShareLink"> | string
     conversationId?: StringWithAggregatesFilter<"ConversationShareLink"> | string
     createdBy?: StringWithAggregatesFilter<"ConversationShareLink"> | string
     name?: StringNullableWithAggregatesFilter<"ConversationShareLink"> | string | null
@@ -26960,6 +28268,7 @@ export namespace Prisma {
     status?: MessageStatusListRelationFilter
     statusResponses?: MessageStatusListRelationFilter
     translations?: MessageTranslationListRelationFilter
+    attachments?: MessageAttachmentListRelationFilter
     replyTo?: XOR<MessageNullableScalarRelationFilter, MessageWhereInput> | null
     replies?: MessageListRelationFilter
     anonymousSender?: XOR<AnonymousParticipantNullableScalarRelationFilter, AnonymousParticipantWhereInput> | null
@@ -26985,6 +28294,7 @@ export namespace Prisma {
     status?: MessageStatusOrderByRelationAggregateInput
     statusResponses?: MessageStatusOrderByRelationAggregateInput
     translations?: MessageTranslationOrderByRelationAggregateInput
+    attachments?: MessageAttachmentOrderByRelationAggregateInput
     replyTo?: MessageOrderByWithRelationInput
     replies?: MessageOrderByRelationAggregateInput
     anonymousSender?: AnonymousParticipantOrderByWithRelationInput
@@ -27013,6 +28323,7 @@ export namespace Prisma {
     status?: MessageStatusListRelationFilter
     statusResponses?: MessageStatusListRelationFilter
     translations?: MessageTranslationListRelationFilter
+    attachments?: MessageAttachmentListRelationFilter
     replyTo?: XOR<MessageNullableScalarRelationFilter, MessageWhereInput> | null
     replies?: MessageListRelationFilter
     anonymousSender?: XOR<AnonymousParticipantNullableScalarRelationFilter, AnonymousParticipantWhereInput> | null
@@ -27135,6 +28446,118 @@ export namespace Prisma {
     cacheKey?: StringWithAggregatesFilter<"MessageTranslation"> | string
     confidenceScore?: FloatNullableWithAggregatesFilter<"MessageTranslation"> | number | null
     createdAt?: DateTimeWithAggregatesFilter<"MessageTranslation"> | Date | string
+  }
+
+  export type MessageAttachmentWhereInput = {
+    AND?: MessageAttachmentWhereInput | MessageAttachmentWhereInput[]
+    OR?: MessageAttachmentWhereInput[]
+    NOT?: MessageAttachmentWhereInput | MessageAttachmentWhereInput[]
+    id?: StringFilter<"MessageAttachment"> | string
+    messageId?: StringFilter<"MessageAttachment"> | string
+    fileName?: StringFilter<"MessageAttachment"> | string
+    originalName?: StringFilter<"MessageAttachment"> | string
+    mimeType?: StringFilter<"MessageAttachment"> | string
+    fileSize?: IntFilter<"MessageAttachment"> | number
+    filePath?: StringFilter<"MessageAttachment"> | string
+    fileUrl?: StringFilter<"MessageAttachment"> | string
+    width?: IntNullableFilter<"MessageAttachment"> | number | null
+    height?: IntNullableFilter<"MessageAttachment"> | number | null
+    thumbnailPath?: StringNullableFilter<"MessageAttachment"> | string | null
+    thumbnailUrl?: StringNullableFilter<"MessageAttachment"> | string | null
+    duration?: IntNullableFilter<"MessageAttachment"> | number | null
+    uploadedBy?: StringFilter<"MessageAttachment"> | string
+    isAnonymous?: BoolFilter<"MessageAttachment"> | boolean
+    createdAt?: DateTimeFilter<"MessageAttachment"> | Date | string
+    message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
+  }
+
+  export type MessageAttachmentOrderByWithRelationInput = {
+    id?: SortOrder
+    messageId?: SortOrder
+    fileName?: SortOrder
+    originalName?: SortOrder
+    mimeType?: SortOrder
+    fileSize?: SortOrder
+    filePath?: SortOrder
+    fileUrl?: SortOrder
+    width?: SortOrder
+    height?: SortOrder
+    thumbnailPath?: SortOrder
+    thumbnailUrl?: SortOrder
+    duration?: SortOrder
+    uploadedBy?: SortOrder
+    isAnonymous?: SortOrder
+    createdAt?: SortOrder
+    message?: MessageOrderByWithRelationInput
+  }
+
+  export type MessageAttachmentWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: MessageAttachmentWhereInput | MessageAttachmentWhereInput[]
+    OR?: MessageAttachmentWhereInput[]
+    NOT?: MessageAttachmentWhereInput | MessageAttachmentWhereInput[]
+    messageId?: StringFilter<"MessageAttachment"> | string
+    fileName?: StringFilter<"MessageAttachment"> | string
+    originalName?: StringFilter<"MessageAttachment"> | string
+    mimeType?: StringFilter<"MessageAttachment"> | string
+    fileSize?: IntFilter<"MessageAttachment"> | number
+    filePath?: StringFilter<"MessageAttachment"> | string
+    fileUrl?: StringFilter<"MessageAttachment"> | string
+    width?: IntNullableFilter<"MessageAttachment"> | number | null
+    height?: IntNullableFilter<"MessageAttachment"> | number | null
+    thumbnailPath?: StringNullableFilter<"MessageAttachment"> | string | null
+    thumbnailUrl?: StringNullableFilter<"MessageAttachment"> | string | null
+    duration?: IntNullableFilter<"MessageAttachment"> | number | null
+    uploadedBy?: StringFilter<"MessageAttachment"> | string
+    isAnonymous?: BoolFilter<"MessageAttachment"> | boolean
+    createdAt?: DateTimeFilter<"MessageAttachment"> | Date | string
+    message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
+  }, "id">
+
+  export type MessageAttachmentOrderByWithAggregationInput = {
+    id?: SortOrder
+    messageId?: SortOrder
+    fileName?: SortOrder
+    originalName?: SortOrder
+    mimeType?: SortOrder
+    fileSize?: SortOrder
+    filePath?: SortOrder
+    fileUrl?: SortOrder
+    width?: SortOrder
+    height?: SortOrder
+    thumbnailPath?: SortOrder
+    thumbnailUrl?: SortOrder
+    duration?: SortOrder
+    uploadedBy?: SortOrder
+    isAnonymous?: SortOrder
+    createdAt?: SortOrder
+    _count?: MessageAttachmentCountOrderByAggregateInput
+    _avg?: MessageAttachmentAvgOrderByAggregateInput
+    _max?: MessageAttachmentMaxOrderByAggregateInput
+    _min?: MessageAttachmentMinOrderByAggregateInput
+    _sum?: MessageAttachmentSumOrderByAggregateInput
+  }
+
+  export type MessageAttachmentScalarWhereWithAggregatesInput = {
+    AND?: MessageAttachmentScalarWhereWithAggregatesInput | MessageAttachmentScalarWhereWithAggregatesInput[]
+    OR?: MessageAttachmentScalarWhereWithAggregatesInput[]
+    NOT?: MessageAttachmentScalarWhereWithAggregatesInput | MessageAttachmentScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"MessageAttachment"> | string
+    messageId?: StringWithAggregatesFilter<"MessageAttachment"> | string
+    fileName?: StringWithAggregatesFilter<"MessageAttachment"> | string
+    originalName?: StringWithAggregatesFilter<"MessageAttachment"> | string
+    mimeType?: StringWithAggregatesFilter<"MessageAttachment"> | string
+    fileSize?: IntWithAggregatesFilter<"MessageAttachment"> | number
+    filePath?: StringWithAggregatesFilter<"MessageAttachment"> | string
+    fileUrl?: StringWithAggregatesFilter<"MessageAttachment"> | string
+    width?: IntNullableWithAggregatesFilter<"MessageAttachment"> | number | null
+    height?: IntNullableWithAggregatesFilter<"MessageAttachment"> | number | null
+    thumbnailPath?: StringNullableWithAggregatesFilter<"MessageAttachment"> | string | null
+    thumbnailUrl?: StringNullableWithAggregatesFilter<"MessageAttachment"> | string | null
+    duration?: IntNullableWithAggregatesFilter<"MessageAttachment"> | number | null
+    uploadedBy?: StringWithAggregatesFilter<"MessageAttachment"> | string
+    isAnonymous?: BoolWithAggregatesFilter<"MessageAttachment"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"MessageAttachment"> | Date | string
   }
 
   export type MessageStatusWhereInput = {
@@ -27425,7 +28848,7 @@ export namespace Prisma {
     OR?: CommunityWhereInput[]
     NOT?: CommunityWhereInput | CommunityWhereInput[]
     id?: StringFilter<"Community"> | string
-    identifier?: StringNullableFilter<"Community"> | string | null
+    identifier?: StringFilter<"Community"> | string
     name?: StringFilter<"Community"> | string
     description?: StringNullableFilter<"Community"> | string | null
     avatar?: StringNullableFilter<"Community"> | string | null
@@ -27491,7 +28914,7 @@ export namespace Prisma {
     OR?: CommunityScalarWhereWithAggregatesInput[]
     NOT?: CommunityScalarWhereWithAggregatesInput | CommunityScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Community"> | string
-    identifier?: StringNullableWithAggregatesFilter<"Community"> | string | null
+    identifier?: StringWithAggregatesFilter<"Community"> | string
     name?: StringWithAggregatesFilter<"Community"> | string
     description?: StringNullableWithAggregatesFilter<"Community"> | string | null
     avatar?: StringNullableWithAggregatesFilter<"Community"> | string | null
@@ -27996,6 +29419,7 @@ export namespace Prisma {
     NOT?: TrackingLinkWhereInput | TrackingLinkWhereInput[]
     id?: StringFilter<"TrackingLink"> | string
     token?: StringFilter<"TrackingLink"> | string
+    name?: StringNullableFilter<"TrackingLink"> | string | null
     originalUrl?: StringFilter<"TrackingLink"> | string
     shortUrl?: StringFilter<"TrackingLink"> | string
     createdBy?: StringNullableFilter<"TrackingLink"> | string | null
@@ -28015,6 +29439,7 @@ export namespace Prisma {
   export type TrackingLinkOrderByWithRelationInput = {
     id?: SortOrder
     token?: SortOrder
+    name?: SortOrder
     originalUrl?: SortOrder
     shortUrl?: SortOrder
     createdBy?: SortOrder
@@ -28037,6 +29462,7 @@ export namespace Prisma {
     AND?: TrackingLinkWhereInput | TrackingLinkWhereInput[]
     OR?: TrackingLinkWhereInput[]
     NOT?: TrackingLinkWhereInput | TrackingLinkWhereInput[]
+    name?: StringNullableFilter<"TrackingLink"> | string | null
     originalUrl?: StringFilter<"TrackingLink"> | string
     shortUrl?: StringFilter<"TrackingLink"> | string
     createdBy?: StringNullableFilter<"TrackingLink"> | string | null
@@ -28056,6 +29482,7 @@ export namespace Prisma {
   export type TrackingLinkOrderByWithAggregationInput = {
     id?: SortOrder
     token?: SortOrder
+    name?: SortOrder
     originalUrl?: SortOrder
     shortUrl?: SortOrder
     createdBy?: SortOrder
@@ -28081,6 +29508,7 @@ export namespace Prisma {
     NOT?: TrackingLinkScalarWhereWithAggregatesInput | TrackingLinkScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"TrackingLink"> | string
     token?: StringWithAggregatesFilter<"TrackingLink"> | string
+    name?: StringNullableWithAggregatesFilter<"TrackingLink"> | string | null
     originalUrl?: StringWithAggregatesFilter<"TrackingLink"> | string
     shortUrl?: StringWithAggregatesFilter<"TrackingLink"> | string
     createdBy?: StringNullableWithAggregatesFilter<"TrackingLink"> | string | null
@@ -28477,7 +29905,7 @@ export namespace Prisma {
 
   export type ConversationCreateInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -28499,7 +29927,7 @@ export namespace Prisma {
 
   export type ConversationUncheckedCreateInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -28520,7 +29948,7 @@ export namespace Prisma {
   }
 
   export type ConversationUpdateInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28541,7 +29969,7 @@ export namespace Prisma {
   }
 
   export type ConversationUncheckedUpdateInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28563,7 +29991,7 @@ export namespace Prisma {
 
   export type ConversationCreateManyInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -28578,7 +30006,7 @@ export namespace Prisma {
   }
 
   export type ConversationUpdateManyMutationInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28592,7 +30020,7 @@ export namespace Prisma {
   }
 
   export type ConversationUncheckedUpdateManyInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28722,7 +30150,7 @@ export namespace Prisma {
   export type ConversationShareLinkCreateInput = {
     id?: string
     linkId: string
-    identifier?: string | null
+    identifier: string
     name?: string | null
     description?: string | null
     maxUses?: number | null
@@ -28752,7 +30180,7 @@ export namespace Prisma {
   export type ConversationShareLinkUncheckedCreateInput = {
     id?: string
     linkId: string
-    identifier?: string | null
+    identifier: string
     conversationId: string
     createdBy: string
     name?: string | null
@@ -28781,7 +30209,7 @@ export namespace Prisma {
 
   export type ConversationShareLinkUpdateInput = {
     linkId?: StringFieldUpdateOperationsInput | string
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxUses?: NullableIntFieldUpdateOperationsInput | number | null
@@ -28810,7 +30238,7 @@ export namespace Prisma {
 
   export type ConversationShareLinkUncheckedUpdateInput = {
     linkId?: StringFieldUpdateOperationsInput | string
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     conversationId?: StringFieldUpdateOperationsInput | string
     createdBy?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28840,7 +30268,7 @@ export namespace Prisma {
   export type ConversationShareLinkCreateManyInput = {
     id?: string
     linkId: string
-    identifier?: string | null
+    identifier: string
     conversationId: string
     createdBy: string
     name?: string | null
@@ -28868,7 +30296,7 @@ export namespace Prisma {
 
   export type ConversationShareLinkUpdateManyMutationInput = {
     linkId?: StringFieldUpdateOperationsInput | string
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxUses?: NullableIntFieldUpdateOperationsInput | number | null
@@ -28894,7 +30322,7 @@ export namespace Prisma {
 
   export type ConversationShareLinkUncheckedUpdateManyInput = {
     linkId?: StringFieldUpdateOperationsInput | string
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     conversationId?: StringFieldUpdateOperationsInput | string
     createdBy?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29104,6 +30532,7 @@ export namespace Prisma {
     status?: MessageStatusCreateNestedManyWithoutMessageInput
     statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
     anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
@@ -29129,6 +30558,7 @@ export namespace Prisma {
     status?: MessageStatusUncheckedCreateNestedManyWithoutMessageInput
     statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
 
@@ -29145,6 +30575,7 @@ export namespace Prisma {
     status?: MessageStatusUpdateManyWithoutMessageNestedInput
     statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
     anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
@@ -29169,6 +30600,7 @@ export namespace Prisma {
     status?: MessageStatusUncheckedUpdateManyWithoutMessageNestedInput
     statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
 
@@ -29293,6 +30725,134 @@ export namespace Prisma {
     translationModel?: StringFieldUpdateOperationsInput | string
     cacheKey?: StringFieldUpdateOperationsInput | string
     confidenceScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MessageAttachmentCreateInput = {
+    id?: string
+    fileName: string
+    originalName: string
+    mimeType: string
+    fileSize: number
+    filePath: string
+    fileUrl: string
+    width?: number | null
+    height?: number | null
+    thumbnailPath?: string | null
+    thumbnailUrl?: string | null
+    duration?: number | null
+    uploadedBy: string
+    isAnonymous?: boolean
+    createdAt?: Date | string
+    message: MessageCreateNestedOneWithoutAttachmentsInput
+  }
+
+  export type MessageAttachmentUncheckedCreateInput = {
+    id?: string
+    messageId: string
+    fileName: string
+    originalName: string
+    mimeType: string
+    fileSize: number
+    filePath: string
+    fileUrl: string
+    width?: number | null
+    height?: number | null
+    thumbnailPath?: string | null
+    thumbnailUrl?: string | null
+    duration?: number | null
+    uploadedBy: string
+    isAnonymous?: boolean
+    createdAt?: Date | string
+  }
+
+  export type MessageAttachmentUpdateInput = {
+    fileName?: StringFieldUpdateOperationsInput | string
+    originalName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    filePath?: StringFieldUpdateOperationsInput | string
+    fileUrl?: StringFieldUpdateOperationsInput | string
+    width?: NullableIntFieldUpdateOperationsInput | number | null
+    height?: NullableIntFieldUpdateOperationsInput | number | null
+    thumbnailPath?: NullableStringFieldUpdateOperationsInput | string | null
+    thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    duration?: NullableIntFieldUpdateOperationsInput | number | null
+    uploadedBy?: StringFieldUpdateOperationsInput | string
+    isAnonymous?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    message?: MessageUpdateOneRequiredWithoutAttachmentsNestedInput
+  }
+
+  export type MessageAttachmentUncheckedUpdateInput = {
+    messageId?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    originalName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    filePath?: StringFieldUpdateOperationsInput | string
+    fileUrl?: StringFieldUpdateOperationsInput | string
+    width?: NullableIntFieldUpdateOperationsInput | number | null
+    height?: NullableIntFieldUpdateOperationsInput | number | null
+    thumbnailPath?: NullableStringFieldUpdateOperationsInput | string | null
+    thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    duration?: NullableIntFieldUpdateOperationsInput | number | null
+    uploadedBy?: StringFieldUpdateOperationsInput | string
+    isAnonymous?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MessageAttachmentCreateManyInput = {
+    id?: string
+    messageId: string
+    fileName: string
+    originalName: string
+    mimeType: string
+    fileSize: number
+    filePath: string
+    fileUrl: string
+    width?: number | null
+    height?: number | null
+    thumbnailPath?: string | null
+    thumbnailUrl?: string | null
+    duration?: number | null
+    uploadedBy: string
+    isAnonymous?: boolean
+    createdAt?: Date | string
+  }
+
+  export type MessageAttachmentUpdateManyMutationInput = {
+    fileName?: StringFieldUpdateOperationsInput | string
+    originalName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    filePath?: StringFieldUpdateOperationsInput | string
+    fileUrl?: StringFieldUpdateOperationsInput | string
+    width?: NullableIntFieldUpdateOperationsInput | number | null
+    height?: NullableIntFieldUpdateOperationsInput | number | null
+    thumbnailPath?: NullableStringFieldUpdateOperationsInput | string | null
+    thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    duration?: NullableIntFieldUpdateOperationsInput | number | null
+    uploadedBy?: StringFieldUpdateOperationsInput | string
+    isAnonymous?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MessageAttachmentUncheckedUpdateManyInput = {
+    messageId?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    originalName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    filePath?: StringFieldUpdateOperationsInput | string
+    fileUrl?: StringFieldUpdateOperationsInput | string
+    width?: NullableIntFieldUpdateOperationsInput | number | null
+    height?: NullableIntFieldUpdateOperationsInput | number | null
+    thumbnailPath?: NullableStringFieldUpdateOperationsInput | string | null
+    thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    duration?: NullableIntFieldUpdateOperationsInput | number | null
+    uploadedBy?: StringFieldUpdateOperationsInput | string
+    isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -29568,7 +31128,7 @@ export namespace Prisma {
 
   export type CommunityCreateInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     name: string
     description?: string | null
     avatar?: string | null
@@ -29582,7 +31142,7 @@ export namespace Prisma {
 
   export type CommunityUncheckedCreateInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     name: string
     description?: string | null
     avatar?: string | null
@@ -29595,7 +31155,7 @@ export namespace Prisma {
   }
 
   export type CommunityUpdateInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29608,7 +31168,7 @@ export namespace Prisma {
   }
 
   export type CommunityUncheckedUpdateInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29622,7 +31182,7 @@ export namespace Prisma {
 
   export type CommunityCreateManyInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     name: string
     description?: string | null
     avatar?: string | null
@@ -29633,7 +31193,7 @@ export namespace Prisma {
   }
 
   export type CommunityUpdateManyMutationInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29643,7 +31203,7 @@ export namespace Prisma {
   }
 
   export type CommunityUncheckedUpdateManyInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30158,6 +31718,7 @@ export namespace Prisma {
   export type TrackingLinkCreateInput = {
     id?: string
     token: string
+    name?: string | null
     originalUrl: string
     shortUrl: string
     conversationId?: string | null
@@ -30176,6 +31737,7 @@ export namespace Prisma {
   export type TrackingLinkUncheckedCreateInput = {
     id?: string
     token: string
+    name?: string | null
     originalUrl: string
     shortUrl: string
     createdBy?: string | null
@@ -30193,6 +31755,7 @@ export namespace Prisma {
 
   export type TrackingLinkUpdateInput = {
     token?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
     originalUrl?: StringFieldUpdateOperationsInput | string
     shortUrl?: StringFieldUpdateOperationsInput | string
     conversationId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30210,6 +31773,7 @@ export namespace Prisma {
 
   export type TrackingLinkUncheckedUpdateInput = {
     token?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
     originalUrl?: StringFieldUpdateOperationsInput | string
     shortUrl?: StringFieldUpdateOperationsInput | string
     createdBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30228,6 +31792,7 @@ export namespace Prisma {
   export type TrackingLinkCreateManyInput = {
     id?: string
     token: string
+    name?: string | null
     originalUrl: string
     shortUrl: string
     createdBy?: string | null
@@ -30244,6 +31809,7 @@ export namespace Prisma {
 
   export type TrackingLinkUpdateManyMutationInput = {
     token?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
     originalUrl?: StringFieldUpdateOperationsInput | string
     shortUrl?: StringFieldUpdateOperationsInput | string
     conversationId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30259,6 +31825,7 @@ export namespace Prisma {
 
   export type TrackingLinkUncheckedUpdateManyInput = {
     token?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
     originalUrl?: StringFieldUpdateOperationsInput | string
     shortUrl?: StringFieldUpdateOperationsInput | string
     createdBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -31141,6 +32708,12 @@ export namespace Prisma {
     none?: MessageTranslationWhereInput
   }
 
+  export type MessageAttachmentListRelationFilter = {
+    every?: MessageAttachmentWhereInput
+    some?: MessageAttachmentWhereInput
+    none?: MessageAttachmentWhereInput
+  }
+
   export type MessageNullableScalarRelationFilter = {
     is?: MessageWhereInput | null
     isNot?: MessageWhereInput | null
@@ -31157,6 +32730,10 @@ export namespace Prisma {
   }
 
   export type MessageTranslationOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type MessageAttachmentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -31287,6 +32864,77 @@ export namespace Prisma {
     _min?: NestedFloatNullableFilter<$PrismaModel>
     _max?: NestedFloatNullableFilter<$PrismaModel>
     isSet?: boolean
+  }
+
+  export type MessageAttachmentCountOrderByAggregateInput = {
+    id?: SortOrder
+    messageId?: SortOrder
+    fileName?: SortOrder
+    originalName?: SortOrder
+    mimeType?: SortOrder
+    fileSize?: SortOrder
+    filePath?: SortOrder
+    fileUrl?: SortOrder
+    width?: SortOrder
+    height?: SortOrder
+    thumbnailPath?: SortOrder
+    thumbnailUrl?: SortOrder
+    duration?: SortOrder
+    uploadedBy?: SortOrder
+    isAnonymous?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type MessageAttachmentAvgOrderByAggregateInput = {
+    fileSize?: SortOrder
+    width?: SortOrder
+    height?: SortOrder
+    duration?: SortOrder
+  }
+
+  export type MessageAttachmentMaxOrderByAggregateInput = {
+    id?: SortOrder
+    messageId?: SortOrder
+    fileName?: SortOrder
+    originalName?: SortOrder
+    mimeType?: SortOrder
+    fileSize?: SortOrder
+    filePath?: SortOrder
+    fileUrl?: SortOrder
+    width?: SortOrder
+    height?: SortOrder
+    thumbnailPath?: SortOrder
+    thumbnailUrl?: SortOrder
+    duration?: SortOrder
+    uploadedBy?: SortOrder
+    isAnonymous?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type MessageAttachmentMinOrderByAggregateInput = {
+    id?: SortOrder
+    messageId?: SortOrder
+    fileName?: SortOrder
+    originalName?: SortOrder
+    mimeType?: SortOrder
+    fileSize?: SortOrder
+    filePath?: SortOrder
+    fileUrl?: SortOrder
+    width?: SortOrder
+    height?: SortOrder
+    thumbnailPath?: SortOrder
+    thumbnailUrl?: SortOrder
+    duration?: SortOrder
+    uploadedBy?: SortOrder
+    isAnonymous?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type MessageAttachmentSumOrderByAggregateInput = {
+    fileSize?: SortOrder
+    width?: SortOrder
+    height?: SortOrder
+    duration?: SortOrder
   }
 
   export type MessageStatusMessageId_userIdCompoundUniqueInput = {
@@ -31751,6 +33399,7 @@ export namespace Prisma {
   export type TrackingLinkCountOrderByAggregateInput = {
     id?: SortOrder
     token?: SortOrder
+    name?: SortOrder
     originalUrl?: SortOrder
     shortUrl?: SortOrder
     createdBy?: SortOrder
@@ -31773,6 +33422,7 @@ export namespace Prisma {
   export type TrackingLinkMaxOrderByAggregateInput = {
     id?: SortOrder
     token?: SortOrder
+    name?: SortOrder
     originalUrl?: SortOrder
     shortUrl?: SortOrder
     createdBy?: SortOrder
@@ -31790,6 +33440,7 @@ export namespace Prisma {
   export type TrackingLinkMinOrderByAggregateInput = {
     id?: SortOrder
     token?: SortOrder
+    name?: SortOrder
     originalUrl?: SortOrder
     shortUrl?: SortOrder
     createdBy?: SortOrder
@@ -33182,6 +34833,13 @@ export namespace Prisma {
     connect?: MessageTranslationWhereUniqueInput | MessageTranslationWhereUniqueInput[]
   }
 
+  export type MessageAttachmentCreateNestedManyWithoutMessageInput = {
+    create?: XOR<MessageAttachmentCreateWithoutMessageInput, MessageAttachmentUncheckedCreateWithoutMessageInput> | MessageAttachmentCreateWithoutMessageInput[] | MessageAttachmentUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: MessageAttachmentCreateOrConnectWithoutMessageInput | MessageAttachmentCreateOrConnectWithoutMessageInput[]
+    createMany?: MessageAttachmentCreateManyMessageInputEnvelope
+    connect?: MessageAttachmentWhereUniqueInput | MessageAttachmentWhereUniqueInput[]
+  }
+
   export type MessageCreateNestedOneWithoutRepliesInput = {
     create?: XOR<MessageCreateWithoutRepliesInput, MessageUncheckedCreateWithoutRepliesInput>
     connectOrCreate?: MessageCreateOrConnectWithoutRepliesInput
@@ -33234,6 +34892,13 @@ export namespace Prisma {
     connect?: MessageTranslationWhereUniqueInput | MessageTranslationWhereUniqueInput[]
   }
 
+  export type MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput = {
+    create?: XOR<MessageAttachmentCreateWithoutMessageInput, MessageAttachmentUncheckedCreateWithoutMessageInput> | MessageAttachmentCreateWithoutMessageInput[] | MessageAttachmentUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: MessageAttachmentCreateOrConnectWithoutMessageInput | MessageAttachmentCreateOrConnectWithoutMessageInput[]
+    createMany?: MessageAttachmentCreateManyMessageInputEnvelope
+    connect?: MessageAttachmentWhereUniqueInput | MessageAttachmentWhereUniqueInput[]
+  }
+
   export type MessageUncheckedCreateNestedManyWithoutReplyToInput = {
     create?: XOR<MessageCreateWithoutReplyToInput, MessageUncheckedCreateWithoutReplyToInput> | MessageCreateWithoutReplyToInput[] | MessageUncheckedCreateWithoutReplyToInput[]
     connectOrCreate?: MessageCreateOrConnectWithoutReplyToInput | MessageCreateOrConnectWithoutReplyToInput[]
@@ -33281,6 +34946,20 @@ export namespace Prisma {
     update?: MessageTranslationUpdateWithWhereUniqueWithoutMessageInput | MessageTranslationUpdateWithWhereUniqueWithoutMessageInput[]
     updateMany?: MessageTranslationUpdateManyWithWhereWithoutMessageInput | MessageTranslationUpdateManyWithWhereWithoutMessageInput[]
     deleteMany?: MessageTranslationScalarWhereInput | MessageTranslationScalarWhereInput[]
+  }
+
+  export type MessageAttachmentUpdateManyWithoutMessageNestedInput = {
+    create?: XOR<MessageAttachmentCreateWithoutMessageInput, MessageAttachmentUncheckedCreateWithoutMessageInput> | MessageAttachmentCreateWithoutMessageInput[] | MessageAttachmentUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: MessageAttachmentCreateOrConnectWithoutMessageInput | MessageAttachmentCreateOrConnectWithoutMessageInput[]
+    upsert?: MessageAttachmentUpsertWithWhereUniqueWithoutMessageInput | MessageAttachmentUpsertWithWhereUniqueWithoutMessageInput[]
+    createMany?: MessageAttachmentCreateManyMessageInputEnvelope
+    set?: MessageAttachmentWhereUniqueInput | MessageAttachmentWhereUniqueInput[]
+    disconnect?: MessageAttachmentWhereUniqueInput | MessageAttachmentWhereUniqueInput[]
+    delete?: MessageAttachmentWhereUniqueInput | MessageAttachmentWhereUniqueInput[]
+    connect?: MessageAttachmentWhereUniqueInput | MessageAttachmentWhereUniqueInput[]
+    update?: MessageAttachmentUpdateWithWhereUniqueWithoutMessageInput | MessageAttachmentUpdateWithWhereUniqueWithoutMessageInput[]
+    updateMany?: MessageAttachmentUpdateManyWithWhereWithoutMessageInput | MessageAttachmentUpdateManyWithWhereWithoutMessageInput[]
+    deleteMany?: MessageAttachmentScalarWhereInput | MessageAttachmentScalarWhereInput[]
   }
 
   export type MessageUpdateOneWithoutRepliesNestedInput = {
@@ -33377,6 +35056,20 @@ export namespace Prisma {
     deleteMany?: MessageTranslationScalarWhereInput | MessageTranslationScalarWhereInput[]
   }
 
+  export type MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput = {
+    create?: XOR<MessageAttachmentCreateWithoutMessageInput, MessageAttachmentUncheckedCreateWithoutMessageInput> | MessageAttachmentCreateWithoutMessageInput[] | MessageAttachmentUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: MessageAttachmentCreateOrConnectWithoutMessageInput | MessageAttachmentCreateOrConnectWithoutMessageInput[]
+    upsert?: MessageAttachmentUpsertWithWhereUniqueWithoutMessageInput | MessageAttachmentUpsertWithWhereUniqueWithoutMessageInput[]
+    createMany?: MessageAttachmentCreateManyMessageInputEnvelope
+    set?: MessageAttachmentWhereUniqueInput | MessageAttachmentWhereUniqueInput[]
+    disconnect?: MessageAttachmentWhereUniqueInput | MessageAttachmentWhereUniqueInput[]
+    delete?: MessageAttachmentWhereUniqueInput | MessageAttachmentWhereUniqueInput[]
+    connect?: MessageAttachmentWhereUniqueInput | MessageAttachmentWhereUniqueInput[]
+    update?: MessageAttachmentUpdateWithWhereUniqueWithoutMessageInput | MessageAttachmentUpdateWithWhereUniqueWithoutMessageInput[]
+    updateMany?: MessageAttachmentUpdateManyWithWhereWithoutMessageInput | MessageAttachmentUpdateManyWithWhereWithoutMessageInput[]
+    deleteMany?: MessageAttachmentScalarWhereInput | MessageAttachmentScalarWhereInput[]
+  }
+
   export type MessageUncheckedUpdateManyWithoutReplyToNestedInput = {
     create?: XOR<MessageCreateWithoutReplyToInput, MessageUncheckedCreateWithoutReplyToInput> | MessageCreateWithoutReplyToInput[] | MessageUncheckedCreateWithoutReplyToInput[]
     connectOrCreate?: MessageCreateOrConnectWithoutReplyToInput | MessageCreateOrConnectWithoutReplyToInput[]
@@ -33412,6 +35105,20 @@ export namespace Prisma {
     upsert?: MessageUpsertWithoutTranslationsInput
     connect?: MessageWhereUniqueInput
     update?: XOR<XOR<MessageUpdateToOneWithWhereWithoutTranslationsInput, MessageUpdateWithoutTranslationsInput>, MessageUncheckedUpdateWithoutTranslationsInput>
+  }
+
+  export type MessageCreateNestedOneWithoutAttachmentsInput = {
+    create?: XOR<MessageCreateWithoutAttachmentsInput, MessageUncheckedCreateWithoutAttachmentsInput>
+    connectOrCreate?: MessageCreateOrConnectWithoutAttachmentsInput
+    connect?: MessageWhereUniqueInput
+  }
+
+  export type MessageUpdateOneRequiredWithoutAttachmentsNestedInput = {
+    create?: XOR<MessageCreateWithoutAttachmentsInput, MessageUncheckedCreateWithoutAttachmentsInput>
+    connectOrCreate?: MessageCreateOrConnectWithoutAttachmentsInput
+    upsert?: MessageUpsertWithoutAttachmentsInput
+    connect?: MessageWhereUniqueInput
+    update?: XOR<XOR<MessageUpdateToOneWithWhereWithoutAttachmentsInput, MessageUpdateWithoutAttachmentsInput>, MessageUncheckedUpdateWithoutAttachmentsInput>
   }
 
   export type UserCreateNestedOneWithoutMessageStatusInput = {
@@ -34139,7 +35846,7 @@ export namespace Prisma {
 
   export type CommunityCreateWithoutCreatorInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     name: string
     description?: string | null
     avatar?: string | null
@@ -34152,7 +35859,7 @@ export namespace Prisma {
 
   export type CommunityUncheckedCreateWithoutCreatorInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     name: string
     description?: string | null
     avatar?: string | null
@@ -34270,7 +35977,7 @@ export namespace Prisma {
   export type ConversationShareLinkCreateWithoutCreatorInput = {
     id?: string
     linkId: string
-    identifier?: string | null
+    identifier: string
     name?: string | null
     description?: string | null
     maxUses?: number | null
@@ -34299,7 +36006,7 @@ export namespace Prisma {
   export type ConversationShareLinkUncheckedCreateWithoutCreatorInput = {
     id?: string
     linkId: string
-    identifier?: string | null
+    identifier: string
     conversationId: string
     name?: string | null
     description?: string | null
@@ -34423,6 +36130,7 @@ export namespace Prisma {
     status?: MessageStatusCreateNestedManyWithoutMessageInput
     statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
     anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
@@ -34446,6 +36154,7 @@ export namespace Prisma {
     status?: MessageStatusUncheckedCreateNestedManyWithoutMessageInput
     statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
 
@@ -34688,6 +36397,7 @@ export namespace Prisma {
   export type TrackingLinkCreateWithoutCreatorInput = {
     id?: string
     token: string
+    name?: string | null
     originalUrl: string
     shortUrl: string
     conversationId?: string | null
@@ -34705,6 +36415,7 @@ export namespace Prisma {
   export type TrackingLinkUncheckedCreateWithoutCreatorInput = {
     id?: string
     token: string
+    name?: string | null
     originalUrl: string
     shortUrl: string
     conversationId?: string | null
@@ -34794,7 +36505,7 @@ export namespace Prisma {
     OR?: CommunityScalarWhereInput[]
     NOT?: CommunityScalarWhereInput | CommunityScalarWhereInput[]
     id?: StringFilter<"Community"> | string
-    identifier?: StringNullableFilter<"Community"> | string | null
+    identifier?: StringFilter<"Community"> | string
     name?: StringFilter<"Community"> | string
     description?: StringNullableFilter<"Community"> | string | null
     avatar?: StringNullableFilter<"Community"> | string | null
@@ -34920,7 +36631,7 @@ export namespace Prisma {
     NOT?: ConversationShareLinkScalarWhereInput | ConversationShareLinkScalarWhereInput[]
     id?: StringFilter<"ConversationShareLink"> | string
     linkId?: StringFilter<"ConversationShareLink"> | string
-    identifier?: StringNullableFilter<"ConversationShareLink"> | string | null
+    identifier?: StringFilter<"ConversationShareLink"> | string
     conversationId?: StringFilter<"ConversationShareLink"> | string
     createdBy?: StringFilter<"ConversationShareLink"> | string
     name?: StringNullableFilter<"ConversationShareLink"> | string | null
@@ -35296,6 +37007,7 @@ export namespace Prisma {
     NOT?: TrackingLinkScalarWhereInput | TrackingLinkScalarWhereInput[]
     id?: StringFilter<"TrackingLink"> | string
     token?: StringFilter<"TrackingLink"> | string
+    name?: StringNullableFilter<"TrackingLink"> | string | null
     originalUrl?: StringFilter<"TrackingLink"> | string
     shortUrl?: StringFilter<"TrackingLink"> | string
     createdBy?: StringNullableFilter<"TrackingLink"> | string | null
@@ -35482,7 +37194,7 @@ export namespace Prisma {
   export type ConversationShareLinkCreateWithoutConversationInput = {
     id?: string
     linkId: string
-    identifier?: string | null
+    identifier: string
     name?: string | null
     description?: string | null
     maxUses?: number | null
@@ -35511,7 +37223,7 @@ export namespace Prisma {
   export type ConversationShareLinkUncheckedCreateWithoutConversationInput = {
     id?: string
     linkId: string
-    identifier?: string | null
+    identifier: string
     createdBy: string
     name?: string | null
     description?: string | null
@@ -35548,7 +37260,7 @@ export namespace Prisma {
 
   export type CommunityCreateWithoutConversationInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     name: string
     description?: string | null
     avatar?: string | null
@@ -35561,7 +37273,7 @@ export namespace Prisma {
 
   export type CommunityUncheckedCreateWithoutConversationInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     name: string
     description?: string | null
     avatar?: string | null
@@ -35591,6 +37303,7 @@ export namespace Prisma {
     status?: MessageStatusCreateNestedManyWithoutMessageInput
     statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
     anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
@@ -35614,6 +37327,7 @@ export namespace Prisma {
     status?: MessageStatusUncheckedCreateNestedManyWithoutMessageInput
     statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
 
@@ -35754,7 +37468,7 @@ export namespace Prisma {
   }
 
   export type CommunityUpdateWithoutConversationInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35766,7 +37480,7 @@ export namespace Prisma {
   }
 
   export type CommunityUncheckedUpdateWithoutConversationInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35906,7 +37620,7 @@ export namespace Prisma {
 
   export type ConversationCreateWithoutMembersInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -35927,7 +37641,7 @@ export namespace Prisma {
 
   export type ConversationUncheckedCreateWithoutMembersInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -36062,7 +37776,7 @@ export namespace Prisma {
   }
 
   export type ConversationUpdateWithoutMembersInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36082,7 +37796,7 @@ export namespace Prisma {
   }
 
   export type ConversationUncheckedUpdateWithoutMembersInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36257,7 +37971,7 @@ export namespace Prisma {
 
   export type ConversationCreateWithoutShareLinksInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -36278,7 +37992,7 @@ export namespace Prisma {
 
   export type ConversationUncheckedCreateWithoutShareLinksInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -36429,7 +38143,7 @@ export namespace Prisma {
   }
 
   export type ConversationUpdateWithoutShareLinksInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36449,7 +38163,7 @@ export namespace Prisma {
   }
 
   export type ConversationUncheckedUpdateWithoutShareLinksInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36471,7 +38185,7 @@ export namespace Prisma {
   export type ConversationShareLinkCreateWithoutAnonymousParticipantsInput = {
     id?: string
     linkId: string
-    identifier?: string | null
+    identifier: string
     name?: string | null
     description?: string | null
     maxUses?: number | null
@@ -36500,7 +38214,7 @@ export namespace Prisma {
   export type ConversationShareLinkUncheckedCreateWithoutAnonymousParticipantsInput = {
     id?: string
     linkId: string
-    identifier?: string | null
+    identifier: string
     conversationId: string
     createdBy: string
     name?: string | null
@@ -36533,7 +38247,7 @@ export namespace Prisma {
 
   export type ConversationCreateWithoutAnonymousParticipantsInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -36554,7 +38268,7 @@ export namespace Prisma {
 
   export type ConversationUncheckedCreateWithoutAnonymousParticipantsInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -36592,6 +38306,7 @@ export namespace Prisma {
     status?: MessageStatusCreateNestedManyWithoutMessageInput
     statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
     sender?: UserCreateNestedOneWithoutSentMessagesInput
@@ -36615,6 +38330,7 @@ export namespace Prisma {
     status?: MessageStatusUncheckedCreateNestedManyWithoutMessageInput
     statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
 
@@ -36685,7 +38401,7 @@ export namespace Prisma {
 
   export type ConversationShareLinkUpdateWithoutAnonymousParticipantsInput = {
     linkId?: StringFieldUpdateOperationsInput | string
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxUses?: NullableIntFieldUpdateOperationsInput | number | null
@@ -36713,7 +38429,7 @@ export namespace Prisma {
 
   export type ConversationShareLinkUncheckedUpdateWithoutAnonymousParticipantsInput = {
     linkId?: StringFieldUpdateOperationsInput | string
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     conversationId?: StringFieldUpdateOperationsInput | string
     createdBy?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36751,7 +38467,7 @@ export namespace Prisma {
   }
 
   export type ConversationUpdateWithoutAnonymousParticipantsInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36771,7 +38487,7 @@ export namespace Prisma {
   }
 
   export type ConversationUncheckedUpdateWithoutAnonymousParticipantsInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36903,6 +38619,51 @@ export namespace Prisma {
     data: MessageTranslationCreateManyMessageInput | MessageTranslationCreateManyMessageInput[]
   }
 
+  export type MessageAttachmentCreateWithoutMessageInput = {
+    id?: string
+    fileName: string
+    originalName: string
+    mimeType: string
+    fileSize: number
+    filePath: string
+    fileUrl: string
+    width?: number | null
+    height?: number | null
+    thumbnailPath?: string | null
+    thumbnailUrl?: string | null
+    duration?: number | null
+    uploadedBy: string
+    isAnonymous?: boolean
+    createdAt?: Date | string
+  }
+
+  export type MessageAttachmentUncheckedCreateWithoutMessageInput = {
+    id?: string
+    fileName: string
+    originalName: string
+    mimeType: string
+    fileSize: number
+    filePath: string
+    fileUrl: string
+    width?: number | null
+    height?: number | null
+    thumbnailPath?: string | null
+    thumbnailUrl?: string | null
+    duration?: number | null
+    uploadedBy: string
+    isAnonymous?: boolean
+    createdAt?: Date | string
+  }
+
+  export type MessageAttachmentCreateOrConnectWithoutMessageInput = {
+    where: MessageAttachmentWhereUniqueInput
+    create: XOR<MessageAttachmentCreateWithoutMessageInput, MessageAttachmentUncheckedCreateWithoutMessageInput>
+  }
+
+  export type MessageAttachmentCreateManyMessageInputEnvelope = {
+    data: MessageAttachmentCreateManyMessageInput | MessageAttachmentCreateManyMessageInput[]
+  }
+
   export type MessageCreateWithoutRepliesInput = {
     id?: string
     content: string
@@ -36917,6 +38678,7 @@ export namespace Prisma {
     status?: MessageStatusCreateNestedManyWithoutMessageInput
     statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
     sender?: UserCreateNestedOneWithoutSentMessagesInput
@@ -36941,6 +38703,7 @@ export namespace Prisma {
     status?: MessageStatusUncheckedCreateNestedManyWithoutMessageInput
     statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
   }
 
   export type MessageCreateOrConnectWithoutRepliesInput = {
@@ -36962,6 +38725,7 @@ export namespace Prisma {
     status?: MessageStatusCreateNestedManyWithoutMessageInput
     statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
     anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
     sender?: UserCreateNestedOneWithoutSentMessagesInput
@@ -36985,6 +38749,7 @@ export namespace Prisma {
     status?: MessageStatusUncheckedCreateNestedManyWithoutMessageInput
     statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
 
@@ -37149,7 +38914,7 @@ export namespace Prisma {
 
   export type ConversationCreateWithoutMessagesInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -37170,7 +38935,7 @@ export namespace Prisma {
 
   export type ConversationUncheckedCreateWithoutMessagesInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -37257,6 +39022,44 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"MessageTranslation"> | Date | string
   }
 
+  export type MessageAttachmentUpsertWithWhereUniqueWithoutMessageInput = {
+    where: MessageAttachmentWhereUniqueInput
+    update: XOR<MessageAttachmentUpdateWithoutMessageInput, MessageAttachmentUncheckedUpdateWithoutMessageInput>
+    create: XOR<MessageAttachmentCreateWithoutMessageInput, MessageAttachmentUncheckedCreateWithoutMessageInput>
+  }
+
+  export type MessageAttachmentUpdateWithWhereUniqueWithoutMessageInput = {
+    where: MessageAttachmentWhereUniqueInput
+    data: XOR<MessageAttachmentUpdateWithoutMessageInput, MessageAttachmentUncheckedUpdateWithoutMessageInput>
+  }
+
+  export type MessageAttachmentUpdateManyWithWhereWithoutMessageInput = {
+    where: MessageAttachmentScalarWhereInput
+    data: XOR<MessageAttachmentUpdateManyMutationInput, MessageAttachmentUncheckedUpdateManyWithoutMessageInput>
+  }
+
+  export type MessageAttachmentScalarWhereInput = {
+    AND?: MessageAttachmentScalarWhereInput | MessageAttachmentScalarWhereInput[]
+    OR?: MessageAttachmentScalarWhereInput[]
+    NOT?: MessageAttachmentScalarWhereInput | MessageAttachmentScalarWhereInput[]
+    id?: StringFilter<"MessageAttachment"> | string
+    messageId?: StringFilter<"MessageAttachment"> | string
+    fileName?: StringFilter<"MessageAttachment"> | string
+    originalName?: StringFilter<"MessageAttachment"> | string
+    mimeType?: StringFilter<"MessageAttachment"> | string
+    fileSize?: IntFilter<"MessageAttachment"> | number
+    filePath?: StringFilter<"MessageAttachment"> | string
+    fileUrl?: StringFilter<"MessageAttachment"> | string
+    width?: IntNullableFilter<"MessageAttachment"> | number | null
+    height?: IntNullableFilter<"MessageAttachment"> | number | null
+    thumbnailPath?: StringNullableFilter<"MessageAttachment"> | string | null
+    thumbnailUrl?: StringNullableFilter<"MessageAttachment"> | string | null
+    duration?: IntNullableFilter<"MessageAttachment"> | number | null
+    uploadedBy?: StringFilter<"MessageAttachment"> | string
+    isAnonymous?: BoolFilter<"MessageAttachment"> | boolean
+    createdAt?: DateTimeFilter<"MessageAttachment"> | Date | string
+  }
+
   export type MessageUpsertWithoutRepliesInput = {
     update: XOR<MessageUpdateWithoutRepliesInput, MessageUncheckedUpdateWithoutRepliesInput>
     create: XOR<MessageCreateWithoutRepliesInput, MessageUncheckedCreateWithoutRepliesInput>
@@ -37281,6 +39084,7 @@ export namespace Prisma {
     status?: MessageStatusUpdateManyWithoutMessageNestedInput
     statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
     sender?: UserUpdateOneWithoutSentMessagesNestedInput
@@ -37304,6 +39108,7 @@ export namespace Prisma {
     status?: MessageStatusUncheckedUpdateManyWithoutMessageNestedInput
     statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageUpsertWithWhereUniqueWithoutReplyToInput = {
@@ -37492,7 +39297,7 @@ export namespace Prisma {
   }
 
   export type ConversationUpdateWithoutMessagesInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37512,7 +39317,7 @@ export namespace Prisma {
   }
 
   export type ConversationUncheckedUpdateWithoutMessagesInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37544,6 +39349,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     status?: MessageStatusCreateNestedManyWithoutMessageInput
     statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
+    attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
     anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
@@ -37568,6 +39374,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     status?: MessageStatusUncheckedCreateNestedManyWithoutMessageInput
     statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
+    attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
 
@@ -37599,6 +39406,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: MessageStatusUpdateManyWithoutMessageNestedInput
     statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
+    attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
     anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
@@ -37622,6 +39430,105 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: MessageStatusUncheckedUpdateManyWithoutMessageNestedInput
     statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
+    attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
+    replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
+  }
+
+  export type MessageCreateWithoutAttachmentsInput = {
+    id?: string
+    content: string
+    originalLanguage?: string
+    messageType?: string
+    isEdited?: boolean
+    editedAt?: Date | string | null
+    isDeleted?: boolean
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    status?: MessageStatusCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
+    translations?: MessageTranslationCreateNestedManyWithoutMessageInput
+    replyTo?: MessageCreateNestedOneWithoutRepliesInput
+    replies?: MessageCreateNestedManyWithoutReplyToInput
+    anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
+    sender?: UserCreateNestedOneWithoutSentMessagesInput
+    conversation: ConversationCreateNestedOneWithoutMessagesInput
+  }
+
+  export type MessageUncheckedCreateWithoutAttachmentsInput = {
+    id?: string
+    conversationId: string
+    senderId?: string | null
+    anonymousSenderId?: string | null
+    content: string
+    originalLanguage?: string
+    messageType?: string
+    isEdited?: boolean
+    editedAt?: Date | string | null
+    isDeleted?: boolean
+    deletedAt?: Date | string | null
+    replyToId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    status?: MessageStatusUncheckedCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
+    translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
+    replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
+  }
+
+  export type MessageCreateOrConnectWithoutAttachmentsInput = {
+    where: MessageWhereUniqueInput
+    create: XOR<MessageCreateWithoutAttachmentsInput, MessageUncheckedCreateWithoutAttachmentsInput>
+  }
+
+  export type MessageUpsertWithoutAttachmentsInput = {
+    update: XOR<MessageUpdateWithoutAttachmentsInput, MessageUncheckedUpdateWithoutAttachmentsInput>
+    create: XOR<MessageCreateWithoutAttachmentsInput, MessageUncheckedCreateWithoutAttachmentsInput>
+    where?: MessageWhereInput
+  }
+
+  export type MessageUpdateToOneWithWhereWithoutAttachmentsInput = {
+    where?: MessageWhereInput
+    data: XOR<MessageUpdateWithoutAttachmentsInput, MessageUncheckedUpdateWithoutAttachmentsInput>
+  }
+
+  export type MessageUpdateWithoutAttachmentsInput = {
+    content?: StringFieldUpdateOperationsInput | string
+    originalLanguage?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    isEdited?: BoolFieldUpdateOperationsInput | boolean
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: MessageStatusUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
+    translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
+    replyTo?: MessageUpdateOneWithoutRepliesNestedInput
+    replies?: MessageUpdateManyWithoutReplyToNestedInput
+    anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
+    sender?: UserUpdateOneWithoutSentMessagesNestedInput
+    conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
+  }
+
+  export type MessageUncheckedUpdateWithoutAttachmentsInput = {
+    conversationId?: StringFieldUpdateOperationsInput | string
+    senderId?: NullableStringFieldUpdateOperationsInput | string | null
+    anonymousSenderId?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: StringFieldUpdateOperationsInput | string
+    originalLanguage?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    isEdited?: BoolFieldUpdateOperationsInput | boolean
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: MessageStatusUncheckedUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
+    translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
 
@@ -37733,6 +39640,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
     anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
@@ -37757,6 +39665,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
 
@@ -37778,6 +39687,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     status?: MessageStatusCreateNestedManyWithoutMessageInput
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
     anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
@@ -37802,6 +39712,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     status?: MessageStatusUncheckedCreateNestedManyWithoutMessageInput
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
 
@@ -37932,6 +39843,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
     anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
@@ -37955,6 +39867,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
 
@@ -37981,6 +39894,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: MessageStatusUpdateManyWithoutMessageNestedInput
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
     anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
@@ -38004,6 +39918,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: MessageStatusUncheckedUpdateManyWithoutMessageNestedInput
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
 
@@ -38492,7 +40407,7 @@ export namespace Prisma {
 
   export type ConversationCreateWithoutTypingIndicatorsInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -38513,7 +40428,7 @@ export namespace Prisma {
 
   export type ConversationUncheckedCreateWithoutTypingIndicatorsInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -38648,7 +40563,7 @@ export namespace Prisma {
   }
 
   export type ConversationUpdateWithoutTypingIndicatorsInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38668,7 +40583,7 @@ export namespace Prisma {
   }
 
   export type ConversationUncheckedUpdateWithoutTypingIndicatorsInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39001,7 +40916,7 @@ export namespace Prisma {
 
   export type ConversationCreateWithoutCommunityInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -39022,7 +40937,7 @@ export namespace Prisma {
 
   export type ConversationUncheckedCreateWithoutCommunityInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -39186,7 +41101,7 @@ export namespace Prisma {
     OR?: ConversationScalarWhereInput[]
     NOT?: ConversationScalarWhereInput | ConversationScalarWhereInput[]
     id?: StringFilter<"Conversation"> | string
-    identifier?: StringNullableFilter<"Conversation"> | string | null
+    identifier?: StringFilter<"Conversation"> | string
     type?: StringFilter<"Conversation"> | string
     title?: StringNullableFilter<"Conversation"> | string | null
     description?: StringNullableFilter<"Conversation"> | string | null
@@ -39297,7 +41212,7 @@ export namespace Prisma {
 
   export type CommunityCreateWithoutMembersInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     name: string
     description?: string | null
     avatar?: string | null
@@ -39310,7 +41225,7 @@ export namespace Prisma {
 
   export type CommunityUncheckedCreateWithoutMembersInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     name: string
     description?: string | null
     avatar?: string | null
@@ -39437,7 +41352,7 @@ export namespace Prisma {
   }
 
   export type CommunityUpdateWithoutMembersInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39449,7 +41364,7 @@ export namespace Prisma {
   }
 
   export type CommunityUncheckedUpdateWithoutMembersInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39945,7 +41860,7 @@ export namespace Prisma {
 
   export type ConversationCreateWithoutPreferencesInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -39966,7 +41881,7 @@ export namespace Prisma {
 
   export type ConversationUncheckedCreateWithoutPreferencesInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -40101,7 +42016,7 @@ export namespace Prisma {
   }
 
   export type ConversationUpdateWithoutPreferencesInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40121,7 +42036,7 @@ export namespace Prisma {
   }
 
   export type ConversationUncheckedUpdateWithoutPreferencesInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41089,6 +43004,7 @@ export namespace Prisma {
   export type TrackingLinkCreateWithoutClicksInput = {
     id?: string
     token: string
+    name?: string | null
     originalUrl: string
     shortUrl: string
     conversationId?: string | null
@@ -41106,6 +43022,7 @@ export namespace Prisma {
   export type TrackingLinkUncheckedCreateWithoutClicksInput = {
     id?: string
     token: string
+    name?: string | null
     originalUrl: string
     shortUrl: string
     createdBy?: string | null
@@ -41288,6 +43205,7 @@ export namespace Prisma {
 
   export type TrackingLinkUpdateWithoutClicksInput = {
     token?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
     originalUrl?: StringFieldUpdateOperationsInput | string
     shortUrl?: StringFieldUpdateOperationsInput | string
     conversationId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41304,6 +43222,7 @@ export namespace Prisma {
 
   export type TrackingLinkUncheckedUpdateWithoutClicksInput = {
     token?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
     originalUrl?: StringFieldUpdateOperationsInput | string
     shortUrl?: StringFieldUpdateOperationsInput | string
     createdBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41478,7 +43397,7 @@ export namespace Prisma {
 
   export type CommunityCreateManyCreatorInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     name: string
     description?: string | null
     avatar?: string | null
@@ -41524,7 +43443,7 @@ export namespace Prisma {
   export type ConversationShareLinkCreateManyCreatorInput = {
     id?: string
     linkId: string
-    identifier?: string | null
+    identifier: string
     conversationId: string
     name?: string | null
     description?: string | null
@@ -41654,6 +43573,7 @@ export namespace Prisma {
   export type TrackingLinkCreateManyCreatorInput = {
     id?: string
     token: string
+    name?: string | null
     originalUrl: string
     shortUrl: string
     conversationId?: string | null
@@ -41686,7 +43606,7 @@ export namespace Prisma {
   }
 
   export type CommunityUpdateWithoutCreatorInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41698,7 +43618,7 @@ export namespace Prisma {
   }
 
   export type CommunityUncheckedUpdateWithoutCreatorInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41710,7 +43630,7 @@ export namespace Prisma {
   }
 
   export type CommunityUncheckedUpdateManyWithoutCreatorInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41814,7 +43734,7 @@ export namespace Prisma {
 
   export type ConversationShareLinkUpdateWithoutCreatorInput = {
     linkId?: StringFieldUpdateOperationsInput | string
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxUses?: NullableIntFieldUpdateOperationsInput | number | null
@@ -41842,7 +43762,7 @@ export namespace Prisma {
 
   export type ConversationShareLinkUncheckedUpdateWithoutCreatorInput = {
     linkId?: StringFieldUpdateOperationsInput | string
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     conversationId?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41870,7 +43790,7 @@ export namespace Prisma {
 
   export type ConversationShareLinkUncheckedUpdateManyWithoutCreatorInput = {
     linkId?: StringFieldUpdateOperationsInput | string
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     conversationId?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41971,6 +43891,7 @@ export namespace Prisma {
     status?: MessageStatusUpdateManyWithoutMessageNestedInput
     statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
     anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
@@ -41993,6 +43914,7 @@ export namespace Prisma {
     status?: MessageStatusUncheckedUpdateManyWithoutMessageNestedInput
     statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
 
@@ -42183,6 +44105,7 @@ export namespace Prisma {
 
   export type TrackingLinkUpdateWithoutCreatorInput = {
     token?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
     originalUrl?: StringFieldUpdateOperationsInput | string
     shortUrl?: StringFieldUpdateOperationsInput | string
     conversationId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42199,6 +44122,7 @@ export namespace Prisma {
 
   export type TrackingLinkUncheckedUpdateWithoutCreatorInput = {
     token?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
     originalUrl?: StringFieldUpdateOperationsInput | string
     shortUrl?: StringFieldUpdateOperationsInput | string
     conversationId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42215,6 +44139,7 @@ export namespace Prisma {
 
   export type TrackingLinkUncheckedUpdateManyWithoutCreatorInput = {
     token?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
     originalUrl?: StringFieldUpdateOperationsInput | string
     shortUrl?: StringFieldUpdateOperationsInput | string
     conversationId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42332,7 +44257,7 @@ export namespace Prisma {
   export type ConversationShareLinkCreateManyConversationInput = {
     id?: string
     linkId: string
-    identifier?: string | null
+    identifier: string
     createdBy: string
     name?: string | null
     description?: string | null
@@ -42528,7 +44453,7 @@ export namespace Prisma {
 
   export type ConversationShareLinkUpdateWithoutConversationInput = {
     linkId?: StringFieldUpdateOperationsInput | string
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxUses?: NullableIntFieldUpdateOperationsInput | number | null
@@ -42556,7 +44481,7 @@ export namespace Prisma {
 
   export type ConversationShareLinkUncheckedUpdateWithoutConversationInput = {
     linkId?: StringFieldUpdateOperationsInput | string
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     createdBy?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42584,7 +44509,7 @@ export namespace Prisma {
 
   export type ConversationShareLinkUncheckedUpdateManyWithoutConversationInput = {
     linkId?: StringFieldUpdateOperationsInput | string
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     createdBy?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42622,6 +44547,7 @@ export namespace Prisma {
     status?: MessageStatusUpdateManyWithoutMessageNestedInput
     statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
     anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
@@ -42644,6 +44570,7 @@ export namespace Prisma {
     status?: MessageStatusUncheckedUpdateManyWithoutMessageNestedInput
     statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
 
@@ -42823,6 +44750,7 @@ export namespace Prisma {
     status?: MessageStatusUpdateManyWithoutMessageNestedInput
     statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
     sender?: UserUpdateOneWithoutSentMessagesNestedInput
@@ -42845,6 +44773,7 @@ export namespace Prisma {
     status?: MessageStatusUncheckedUpdateManyWithoutMessageNestedInput
     statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
 
@@ -42941,6 +44870,24 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type MessageAttachmentCreateManyMessageInput = {
+    id?: string
+    fileName: string
+    originalName: string
+    mimeType: string
+    fileSize: number
+    filePath: string
+    fileUrl: string
+    width?: number | null
+    height?: number | null
+    thumbnailPath?: string | null
+    thumbnailUrl?: string | null
+    duration?: number | null
+    uploadedBy: string
+    isAnonymous?: boolean
+    createdAt?: Date | string
+  }
+
   export type MessageCreateManyReplyToInput = {
     id?: string
     conversationId: string
@@ -43029,6 +44976,57 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type MessageAttachmentUpdateWithoutMessageInput = {
+    fileName?: StringFieldUpdateOperationsInput | string
+    originalName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    filePath?: StringFieldUpdateOperationsInput | string
+    fileUrl?: StringFieldUpdateOperationsInput | string
+    width?: NullableIntFieldUpdateOperationsInput | number | null
+    height?: NullableIntFieldUpdateOperationsInput | number | null
+    thumbnailPath?: NullableStringFieldUpdateOperationsInput | string | null
+    thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    duration?: NullableIntFieldUpdateOperationsInput | number | null
+    uploadedBy?: StringFieldUpdateOperationsInput | string
+    isAnonymous?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MessageAttachmentUncheckedUpdateWithoutMessageInput = {
+    fileName?: StringFieldUpdateOperationsInput | string
+    originalName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    filePath?: StringFieldUpdateOperationsInput | string
+    fileUrl?: StringFieldUpdateOperationsInput | string
+    width?: NullableIntFieldUpdateOperationsInput | number | null
+    height?: NullableIntFieldUpdateOperationsInput | number | null
+    thumbnailPath?: NullableStringFieldUpdateOperationsInput | string | null
+    thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    duration?: NullableIntFieldUpdateOperationsInput | number | null
+    uploadedBy?: StringFieldUpdateOperationsInput | string
+    isAnonymous?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MessageAttachmentUncheckedUpdateManyWithoutMessageInput = {
+    fileName?: StringFieldUpdateOperationsInput | string
+    originalName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    filePath?: StringFieldUpdateOperationsInput | string
+    fileUrl?: StringFieldUpdateOperationsInput | string
+    width?: NullableIntFieldUpdateOperationsInput | number | null
+    height?: NullableIntFieldUpdateOperationsInput | number | null
+    thumbnailPath?: NullableStringFieldUpdateOperationsInput | string | null
+    thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    duration?: NullableIntFieldUpdateOperationsInput | number | null
+    uploadedBy?: StringFieldUpdateOperationsInput | string
+    isAnonymous?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type MessageUpdateWithoutReplyToInput = {
     content?: StringFieldUpdateOperationsInput | string
     originalLanguage?: StringFieldUpdateOperationsInput | string
@@ -43042,6 +45040,7 @@ export namespace Prisma {
     status?: MessageStatusUpdateManyWithoutMessageNestedInput
     statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
     anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
     sender?: UserUpdateOneWithoutSentMessagesNestedInput
@@ -43064,6 +45063,7 @@ export namespace Prisma {
     status?: MessageStatusUncheckedUpdateManyWithoutMessageNestedInput
     statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
 
@@ -43091,7 +45091,7 @@ export namespace Prisma {
 
   export type ConversationCreateManyCommunityInput = {
     id?: string
-    identifier?: string | null
+    identifier: string
     type: string
     title?: string | null
     description?: string | null
@@ -43123,7 +45123,7 @@ export namespace Prisma {
   }
 
   export type ConversationUpdateWithoutCommunityInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43143,7 +45143,7 @@ export namespace Prisma {
   }
 
   export type ConversationUncheckedUpdateWithoutCommunityInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43163,7 +45163,7 @@ export namespace Prisma {
   }
 
   export type ConversationUncheckedUpdateManyWithoutCommunityInput = {
-    identifier?: NullableStringFieldUpdateOperationsInput | string | null
+    identifier?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null

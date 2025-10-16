@@ -34,6 +34,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   const searchParams = useSearchParams();
   const user = useUser(); const isAuthChecking = useIsAuthChecking();
   const { t } = useI18n('conversations');
+  const { t: tCommon } = useI18n('common');
   
   // ID unique pour cette instance du composant
   const instanceId = useMemo(() => `layout-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, []);
@@ -471,7 +472,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       messageComposerRef.current.focus();
     }
 
-    toast.success('Répondre à ce message');
+    toast.success(tCommon('messages.replyTo'));
   }, []);
 
   // Naviguer vers un message spécifique
@@ -491,11 +492,11 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         messageElement.classList.remove('ring-2', 'ring-blue-500', 'ring-offset-2');
       }, 2000);
 
-      toast.success('Message trouvé !');
+      toast.success(tCommon('messages.messageFound'));
     } else {
-      toast.info('Message non visible. Chargement...');
+      toast.info(tCommon('messages.messageNotVisible'));
     }
-  }, []);
+  }, [tCommon]);
 
   // Envoi de message - attendre le retour serveur
   const handleSendMessage = useCallback(async () => {

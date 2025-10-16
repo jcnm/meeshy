@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, KeyboardEvent, forwardRef, useImperativeHandle, useEffect } from 'react';
-import { Send, MapPin, X, MessageCircle, Languages } from 'lucide-react';
+import { Send, MapPin, X, MessageCircle, Languages, Paperclip } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { LanguageFlagSelector } from '@/components/translation';
@@ -9,6 +9,10 @@ import { MAX_MESSAGE_LENGTH } from '@/lib/constants/languages';
 import { type LanguageChoice } from '@/lib/bubble-stream-modules';
 import { useI18n } from '@/hooks/useI18n';
 import { useReplyStore, type ReplyingToMessage } from '@/stores/reply-store';
+import { AttachmentCarousel } from '@/components/attachments/AttachmentCarousel';
+import { useTextAttachmentDetection } from '@/hooks/useTextAttachmentDetection';
+import { AttachmentService } from '@/services/attachmentService';
+import { UploadedAttachmentResponse } from '@/shared/types/attachment';
 
 interface MessageComposerProps {
   value: string;
@@ -22,11 +26,15 @@ interface MessageComposerProps {
   onKeyPress?: (e: KeyboardEvent<HTMLTextAreaElement>) => void;
   className?: string;
   choices?: LanguageChoice[]; // Choix de langues disponibles pour l'utilisateur
+  // Nouveaux props pour les attachments
+  onAttachmentsChange?: (attachmentIds: string[]) => void;
+  token?: string;
 }
 
 export interface MessageComposerRef {
   focus: () => void;
   blur: () => void;
+  clearAttachments?: () => void;
 }
 
 /**
@@ -44,12 +52,22 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   placeholder,
   onKeyPress,
   className = "",
-  choices
+  choices,
+  onAttachmentsChange,
+  token
 }, ref) => {
   const { t } = useI18n('conversations');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { replyingTo, clearReply } = useReplyStore();
   const [isMobile, setIsMobile] = useState(false);
+  
+  // États pour les attachments
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [uploadedAttachments, setUploadedAttachments] = useState<UploadedAttachmentResponse[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ [key: number]: number }>({});
   
   // Utiliser le placeholder fourni ou la traduction par défaut
   const finalPlaceholder = placeholder || t('conversationSearch.shareMessage');
@@ -100,10 +118,152 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     }
   };
 
+  // Hook pour la détection de texte collé - création automatique
+  useTextAttachmentDetection(textareaRef, {
+    enabled: true,
+    threshold: 300,
+    onTextDetected: async (text) => {
+      // Créer automatiquement l'attachement sans demander
+      await handleCreateTextAttachment(text);
+    },
+  });
+
+  // Notifier le parent quand les attachments changent
+  useEffect(() => {
+    if (onAttachmentsChange) {
+      const attachmentIds = uploadedAttachments.map(att => att.attachmentId);
+      onAttachmentsChange(attachmentIds);
+    }
+  }, [uploadedAttachments, onAttachmentsChange]);
+
+  // Handlers pour le drag & drop
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    await handleFilesSelected(files);
+  };
+
+  // Handler pour la sélection de fichiers
+  const handleFilesSelected = async (files: File[]) => {
+    if (files.length === 0) return;
+
+    // Valider les fichiers
+    const validation = AttachmentService.validateFiles(files);
+    if (!validation.valid) {
+      // TODO: Afficher une notification d'erreur
+      console.error('Validation errors:', validation.errors);
+      return;
+    }
+
+    setSelectedFiles(prev => [...prev, ...files]);
+    setIsUploading(true);
+
+    try {
+      // Upload les fichiers
+      const response = await AttachmentService.uploadFiles(files, token);
+      
+      if (response.success && response.attachments) {
+        setUploadedAttachments(prev => [...prev, ...response.attachments]);
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      // TODO: Afficher une notification d'erreur
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // Handler pour le clic sur l'icône d'attachement
+  const handleAttachmentClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  // Handler pour le changement de l'input file
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    handleFilesSelected(files);
+    // Reset l'input pour permettre de sélectionner le même fichier à nouveau
+    e.target.value = '';
+  };
+
+  // Handler pour retirer un fichier
+  const handleRemoveFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    setUploadedAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Handler pour créer un attachment texte avec nom formaté
+  const handleCreateTextAttachment = async (text: string) => {
+    if (!text) return;
+
+    setIsUploading(true);
+    try {
+      // Générer le nom de fichier avec la date actuelle
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      
+      const fileName = `presspaper-content-${year}${month}${day}-${hours}${minutes}${seconds}.txt`;
+      
+      // Créer un fichier virtuel pour l'affichage dans le carrousel
+      const textFile = new File([text], fileName, {
+        type: 'text/plain',
+      });
+      
+      // Ajouter immédiatement au carrousel pour feedback visuel
+      setSelectedFiles(prev => [...prev, textFile]);
+      
+      // Upload le texte
+      const response = await AttachmentService.uploadText(text, token);
+      if (response.success && response.attachment) {
+        setUploadedAttachments(prev => [...prev, response.attachment]);
+        console.log('✅ Texte collé créé comme attachment:', fileName);
+      }
+    } catch (error) {
+      console.error('❌ Erreur création text attachment:', error);
+      // Retirer le fichier du carrousel en cas d'erreur
+      setSelectedFiles(prev => prev.slice(0, -1));
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // Clear attachments après envoi
+  const clearAttachments = () => {
+    setSelectedFiles([]);
+    setUploadedAttachments([]);
+    setUploadProgress({});
+  };
+
   useImperativeHandle(ref, () => ({
     focus: () => textareaRef.current?.focus(),
     blur: () => textareaRef.current?.blur(),
-  }));
+    clearAttachments, // Exposer la fonction pour clear les attachments
+  } as any));
 
   // Initialiser la hauteur du textarea au montage
   useEffect(() => {
@@ -167,10 +327,16 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   };
 
   return (
-    <div className={`relative ${className}`}>
+    <div 
+      className={`relative ${className} ${isDragOver ? 'ring-2 ring-blue-500 bg-blue-50/20' : ''}`}
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       {/* Affichage du message auquel on répond */}
       {replyingTo && (
-        <div className="mb-2 p-3 bg-gradient-to-r from-blue-50/90 to-indigo-50/90 dark:from-blue-900/30 dark:to-indigo-900/30 border-l-4 border-blue-400 dark:border-blue-500 rounded-t-lg backdrop-blur-sm">
+        <div className="p-3 bg-gradient-to-r from-blue-50/90 to-indigo-50/90 dark:from-blue-900/30 dark:to-indigo-900/30 border-l-4 border-blue-400 dark:border-blue-500 rounded-t-lg backdrop-blur-sm">
           <div className="flex items-start justify-between space-x-2">
             <div className="flex items-start space-x-2 flex-1 min-w-0">
               <MessageCircle className="h-4 w-4 text-blue-500 dark:text-blue-400 mt-0.5 flex-shrink-0" />
@@ -207,6 +373,16 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
           </div>
         </div>
       )}
+
+      {/* Carrousel d'attachments - positionné juste après la citation */}
+      {selectedFiles.length > 0 && (
+        <AttachmentCarousel
+          files={selectedFiles}
+          onRemove={handleRemoveFile}
+          uploadProgress={uploadProgress}
+          disabled={isUploading}
+        />
+      )}
       
       <Textarea
         ref={textareaRef}
@@ -215,11 +391,15 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         onKeyPress={handleKeyPress}
         onBlur={handleBlur}
         placeholder={finalPlaceholder}
-        className={`expandable-textarea min-h-[60px] sm:min-h-[80px] max-h-40 resize-none pr-20 sm:pr-28 pb-8 sm:pb-10 pt-3 pl-3 border-blue-200/60 bg-white/90 backdrop-blur-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 focus:bg-white/95 placeholder:text-gray-600 scroll-hidden transition-all duration-200 ${replyingTo ? 'rounded-b-2xl rounded-t-none border-t-0' : 'rounded-2xl'} ${isMobile ? 'text-base' : 'text-sm sm:text-base'}`}
+        className={`expandable-textarea min-h-[60px] sm:min-h-[80px] max-h-40 resize-none pr-20 sm:pr-28 pb-8 sm:pb-10 pt-3 pl-3 border-blue-200/60 bg-white/90 backdrop-blur-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 focus:bg-white/95 placeholder:text-gray-600 scroll-hidden transition-all duration-200 ${
+          replyingTo || selectedFiles.length > 0 
+            ? 'rounded-b-2xl rounded-t-none border-t-0' 
+            : 'rounded-2xl'
+        } ${isMobile ? 'text-base' : 'text-sm sm:text-base'}`}
         maxLength={MAX_MESSAGE_LENGTH}
         disabled={!isComposingEnabled}
         style={{
-          borderRadius: replyingTo ? '0 0 16px 16px' : '16px',
+          borderRadius: replyingTo || selectedFiles.length > 0 ? '0 0 16px 16px' : '16px',
           boxShadow: '0 4px 20px rgba(59, 130, 246, 0.15)',
           fontSize: isMobile ? '16px' : undefined
         }}
@@ -243,6 +423,22 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
           {value.length}/{MAX_MESSAGE_LENGTH}
         </span>
         
+        {/* Icône d'attachement */}
+        <Button
+          onClick={handleAttachmentClick}
+          disabled={!isComposingEnabled || isUploading}
+          size="sm"
+          variant="ghost"
+          className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full hover:bg-gray-100 relative"
+        >
+          <Paperclip className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600" />
+          {selectedFiles.length > 0 && (
+            <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+              {selectedFiles.length}
+            </span>
+          )}
+        </Button>
+        
         {/* Sélecteur de langue d'envoi - au-dessus du bouton */}
         <div className="flex flex-col items-center space-y-1">
           <LanguageFlagSelector
@@ -254,7 +450,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
           {/* Bouton d'envoi */}
           <Button
             onClick={onSend}
-            disabled={!value.trim() || !isComposingEnabled}
+            disabled={(!value.trim() && selectedFiles.length === 0) || !isComposingEnabled || isUploading}
             size="sm"
             className="bg-blue-600 hover:bg-blue-700 text-white h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
           >
@@ -262,6 +458,16 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
           </Button>
         </div>
       </div>
+
+      {/* Input file caché */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        className="hidden"
+        onChange={handleFileInputChange}
+        accept="image/*,video/*,audio/*,application/pdf,text/plain,.doc,.docx,.ppt,.pptx"
+      />
     </div>
   );
 });

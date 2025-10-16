@@ -110,6 +110,7 @@ class MeeshyTranslationServer:
             # 3. Initialiser l'API FastAPI avec le service ML unifié
             self.translation_api = TranslationAPI(
                 translation_service=self.translation_service,
+                database_service=self.zmq_server.database_service,
                 zmq_server=self.zmq_server
             )
             logger.info("[TRANSLATOR] ✅ API FastAPI configurée avec service ML unifié")

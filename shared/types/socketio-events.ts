@@ -34,6 +34,7 @@ export const SERVER_EVENTS = {
 // Événements du client vers le serveur
 export const CLIENT_EVENTS = {
   MESSAGE_SEND: 'message:send',
+  MESSAGE_SEND_WITH_ATTACHMENTS: 'message:send-with-attachments',
   MESSAGE_EDIT: 'message:edit',
   MESSAGE_DELETE: 'message:delete',
   CONVERSATION_JOIN: 'conversation:join',
@@ -76,7 +77,8 @@ export interface ServerToClientEvents {
 
 // Événements du client vers le serveur
 export interface ClientToServerEvents {
-  [CLIENT_EVENTS.MESSAGE_SEND]: (data: { conversationId: string; content: string }, callback?: (response: SocketIOResponse<{ messageId: string }>) => void) => void;
+  [CLIENT_EVENTS.MESSAGE_SEND]: (data: { conversationId: string; content: string; originalLanguage?: string; messageType?: string; replyToId?: string }, callback?: (response: SocketIOResponse<{ messageId: string }>) => void) => void;
+  [CLIENT_EVENTS.MESSAGE_SEND_WITH_ATTACHMENTS]: (data: { conversationId: string; content: string; originalLanguage?: string; attachmentIds: string[]; replyToId?: string }, callback?: (response: SocketIOResponse<{ messageId: string }>) => void) => void;
   [CLIENT_EVENTS.MESSAGE_EDIT]: (data: { messageId: string; content: string }, callback?: (response: SocketIOResponse) => void) => void;
   [CLIENT_EVENTS.MESSAGE_DELETE]: (data: { messageId: string }, callback?: (response: SocketIOResponse) => void) => void;
   [CLIENT_EVENTS.CONVERSATION_JOIN]: (data: { conversationId: string }) => void;

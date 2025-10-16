@@ -24,6 +24,9 @@ export * from './affiliate';
 // Export des types unifiés Phase 4 - Tracking Links
 export * from './tracking-link';
 
+// Export des types unifiés Phase 5 - Attachments
+export * from './attachment';
+
 // ===== ÉVÉNEMENTS SOCKET.IO =====
 export * from './socketio-events';
 

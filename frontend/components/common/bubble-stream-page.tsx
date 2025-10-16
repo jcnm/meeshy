@@ -86,6 +86,7 @@ import { BubbleMessage } from '@/components/common/bubble-message';
 import { TrendingSection } from '@/components/common/trending-section';
 import { LoadingState } from '@/components/common/LoadingStates';
 import { useReplyStore } from '@/stores/reply-store';
+import { AttachmentGallery } from '@/components/attachments/AttachmentGallery';
 
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { useNotifications } from '@/hooks/use-notifications';
@@ -102,6 +103,7 @@ import { messageService } from '@/services/message.service';
 import { TypingIndicator } from '@/components/conversations/typing-indicator';
 import { useConversationMessages } from '@/hooks/use-conversation-messages';
 import { MessagesDisplay } from '@/components/common/messages-display';
+import { printWebSocketDiagnostics } from '@/utils/websocket-diagnostics';
 
 export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousMode = false, linkId, initialParticipants }: BubbleStreamPageProps) {
   const { t } = useI18n('conversations');
@@ -192,6 +194,24 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   const [location, setLocation] = useState<string>('');
   const [trendingHashtags, setTrendingHashtags] = useState<string[]>([]);
   const [activeUsers, setActiveUsers] = useState<User[]>(initialParticipants || []);
+  // État pour les attachments
+  const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
+  // État pour la galerie d'images
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [selectedAttachmentId, setSelectedAttachmentId] = useState<string | null>(null);
+
+  // Handler pour ouvrir la galerie d'images
+  const handleImageClick = useCallback((attachmentId: string) => {
+    setSelectedAttachmentId(attachmentId);
+    setGalleryOpen(true);
+  }, []);
+
+  // Handler pour naviguer vers un message depuis la galerie
+  const handleNavigateToMessageFromGallery = useCallback((messageId: string) => {
+    setGalleryOpen(false);
+    // TODO: Implémenter le scroll vers le message et le highlight
+    console.log('Navigate to message from gallery:', messageId);
+  }, []);
 
   // Handlers pour la modération des messages
   const handleEditMessage = useCallback(async (messageId: string, newContent: string) => {
@@ -504,17 +524,31 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           firstName: user.firstName || '',
           lastName: user.lastName || '',
           language: user.systemLanguage || 'fr',
-          isOnline: true,
           isMeeshyer: false
         };
       } else {
         enrichedMessage.sender = {
           id: user.id,
           username: user.username,
+          email: user.email || '',
+          phoneNumber: user.phoneNumber || '',
           firstName: user.firstName || '',
           lastName: user.lastName || '',
           displayName: user.displayName,
           avatar: user.avatar,
+          role: user.role,
+          isOnline: true,
+          lastSeen: new Date(),
+          createdAt: user.createdAt || new Date(),
+          updatedAt: user.updatedAt || new Date(),
+          systemLanguage: user.systemLanguage || 'fr',
+          regionalLanguage: user.regionalLanguage || 'fr',
+          autoTranslateEnabled: user.autoTranslateEnabled !== false,
+          translateToSystemLanguage: user.translateToSystemLanguage !== false,
+          translateToRegionalLanguage: user.translateToRegionalLanguage || false,
+          useCustomDestination: user.useCustomDestination || false,
+          isActive: true,
+          lastActiveAt: new Date(),
           isMeeshyer: true
         };
       }
@@ -559,6 +593,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   
   const { 
     sendMessage: sendMessageToService,
+    sendMessageWithAttachments: sendMessageWithAttachmentsToService,
     connectionStatus,
     startTyping,
     stopTyping,
@@ -957,18 +992,21 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   }
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || newMessage.length > MAX_MESSAGE_LENGTH) {
+    // Vérifier qu'il y a soit du contenu soit des attachments
+    if ((!newMessage.trim() && attachmentIds.length === 0) || newMessage.length > MAX_MESSAGE_LENGTH) {
       return;
     }
 
     const messageContent = newMessage.trim();
     const replyToId = useReplyStore.getState().replyingTo?.id;
+    const hasAttachments = attachmentIds.length > 0;
     
     console.log('📤 Envoi du message avec langue sélectionnée:', {
       content: messageContent.substring(0, 50) + '...',
       sourceLanguage: selectedInputLanguage,
       languageChoice: languageChoices.find(choice => choice.code === selectedInputLanguage),
-      replyToId: replyToId || 'none'
+      replyToId: replyToId || 'none',
+      attachmentCount: attachmentIds.length
     });
     
     setNewMessage(''); // Réinitialiser immédiatement pour éviter les doubles envois
@@ -977,6 +1015,15 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     // Effacer l'état de réponse après l'envoi
     if (replyToId) {
       useReplyStore.getState().clearReply();
+    }
+    
+    // Clear les attachments après l'envoi
+    const currentAttachmentIds = [...attachmentIds];
+    setAttachmentIds([]);
+    
+    // Clear les attachments du composer
+    if (textareaRef.current && (textareaRef.current as any).clearAttachments) {
+      (textareaRef.current as any).clearAttachments();
     }
     
     // Réinitialiser la hauteur du textarea
@@ -995,6 +1042,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         toast.warning(tCommon('messages.connectionInProgress'));
         // Restaurer le message pour permettre un nouvel essai
         setNewMessage(messageContent);
+        setAttachmentIds(currentAttachmentIds);
         return;
       }
 
@@ -1005,13 +1053,16 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           content: messageContent,
           sourceLanguage: selectedInputLanguage,
           detectedLanguage: detectedLanguage,
-          userLanguageChoices: languageChoices.map(c => c.code)
+          userLanguageChoices: languageChoices.map(c => c.code),
+          attachmentCount: currentAttachmentIds.length
         };
         
         console.log('📤 Envoi du message avec métadonnées de langue:', messageWithLanguage);
         
-        // Envoyer le message avec la langue source sélectionnée et le replyToId
-        const sendResult = await sendMessageToService(messageContent, selectedInputLanguage, replyToId);
+        // Envoyer le message avec ou sans attachments selon le cas
+        const sendResult = hasAttachments 
+          ? await sendMessageWithAttachmentsToService(messageContent, currentAttachmentIds, selectedInputLanguage, replyToId)
+          : await sendMessageToService(messageContent, selectedInputLanguage, replyToId);
         
         if (sendResult) {
           console.log('✅ Message envoyé via WebSocket avec succès');
@@ -1241,6 +1292,18 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                       >
                         {t('bubbleStream.reconnect')}
                       </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          printWebSocketDiagnostics();
+                          toast.info('🔍 Diagnostics affichés dans la console');
+                        }}
+                        className="ml-2 text-xs px-2 py-1 h-auto hover:bg-orange-200/50"
+                        title="Afficher les diagnostics de connexion dans la console"
+                      >
+                        🔍 Debug
+                      </Button>
                     </>
                   )}
                 </div>
@@ -1278,6 +1341,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
               onDeleteMessage={handleDeleteMessage}
               onReplyMessage={handleReplyMessage}
               onNavigateToMessage={handleNavigateToMessage}
+              onImageClick={handleImageClick}
               conversationType="public"
               userRole={getUserModerationRole() as any}
               addTranslatingState={addTranslatingState}
@@ -1326,6 +1390,8 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                   placeholder={t('conversationSearch.shareMessage')}
                   onKeyPress={handleKeyPress}
                   choices={languageChoices}
+                  onAttachmentsChange={setAttachmentIds}
+                  token={typeof window !== 'undefined' ? localStorage.getItem('auth_token') || localStorage.getItem('anonymous_session_token') || undefined : undefined}
                 />
               </div>
             </div>
@@ -1444,7 +1510,15 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         </div>
       </div>
 
-
+      {/* Galerie d'images */}
+      <AttachmentGallery
+        conversationId={conversationId}
+        initialAttachmentId={selectedAttachmentId || undefined}
+        open={galleryOpen}
+        onClose={() => setGalleryOpen(false)}
+        onNavigateToMessage={handleNavigateToMessageFromGallery}
+        token={typeof window !== 'undefined' ? localStorage.getItem('auth_token') || localStorage.getItem('anonymous_session_token') || undefined : undefined}
+      />
     </>
   );
 }

@@ -25,8 +25,18 @@ backend/node_modules/
 **/*/prisma/prisma/*
 # production
 /build
-backend/dist/
-
+**/*/*.d.*
+**/*/build/
+**/*/dist/
+**/*/*.*.map
+**/*/coverage/
+**/*/logs/
+**/*/cache/
+**/*/.cache/
+**/*/.eslintcache
+**/*/.next/
+**/*/out/
+**/*/.vercel/ 
 # misc
 .DS_Store
 *.pem

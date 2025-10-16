@@ -256,6 +256,25 @@ exports.Prisma.MessageTranslationScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.MessageAttachmentScalarFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  fileName: 'fileName',
+  originalName: 'originalName',
+  mimeType: 'mimeType',
+  fileSize: 'fileSize',
+  filePath: 'filePath',
+  fileUrl: 'fileUrl',
+  width: 'width',
+  height: 'height',
+  thumbnailPath: 'thumbnailPath',
+  thumbnailUrl: 'thumbnailUrl',
+  duration: 'duration',
+  uploadedBy: 'uploadedBy',
+  isAnonymous: 'isAnonymous',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.MessageStatusScalarFieldEnum = {
   id: 'id',
   messageId: 'messageId',
@@ -389,6 +408,7 @@ exports.Prisma.AffiliateRelationScalarFieldEnum = {
 exports.Prisma.TrackingLinkScalarFieldEnum = {
   id: 'id',
   token: 'token',
+  name: 'name',
   originalUrl: 'originalUrl',
   shortUrl: 'shortUrl',
   createdBy: 'createdBy',
@@ -441,6 +461,7 @@ exports.Prisma.ModelName = {
   AnonymousParticipant: 'AnonymousParticipant',
   Message: 'Message',
   MessageTranslation: 'MessageTranslation',
+  MessageAttachment: 'MessageAttachment',
   MessageStatus: 'MessageStatus',
   FriendRequest: 'FriendRequest',
   TypingIndicator: 'TypingIndicator',

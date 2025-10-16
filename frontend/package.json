@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3100",
-    "prebuild": "pnpm run copy:shared && rm -rf .next && rm shared/seed.ts shared/schema.prisma 2> /dev/null || true",
+    "prebuild": "pnpm run copy:shared && rm -rf .next && rm shared/schema.prisma 2> /dev/null || true",
     "copy:shared": "echo 'Shared files already copied in Docker context'",
     "build": "next build",
     "start": "next start -p 3100 -H 0.0.0.0",

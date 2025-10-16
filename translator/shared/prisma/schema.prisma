@@ -195,6 +195,7 @@ model Message {
   status            MessageStatus[]       @relation("MessageStatusMessage")
   statusResponses   MessageStatus[]       @relation("MessageStatusResponse")
   translations      MessageTranslation[]
+  attachments       MessageAttachment[]
   replyTo           Message?              @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   replies           Message[]             @relation("MessageReplies")
   anonymousSender   AnonymousParticipant? @relation("AnonymousMessageSender", fields: [anonymousSenderId], references: [id])
@@ -215,6 +216,38 @@ model MessageTranslation {
   createdAt         DateTime @default(now())
   
   message           Message  @relation(fields: [messageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// Attachement de fichier pour un message
+model MessageAttachment {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  messageId       String   @db.ObjectId
+  fileName        String   // Nom de fichier généré (unique)
+  originalName    String   // Nom original du fichier
+  mimeType        String   // Type MIME (image/jpeg, application/pdf, etc.)
+  fileSize        Int      // Taille en bytes
+  filePath        String   // Chemin relatif: attachments/YYYY/mm/userId/filename
+  fileUrl         String   // URL complète pour accès
+  
+  // Métadonnées spécifiques aux images
+  width           Int?
+  height          Int?
+  thumbnailPath   String?  // Miniature générée pour images
+  thumbnailUrl    String?
+  
+  // Métadonnées spécifiques audio/vidéo
+  duration        Int?     // Durée en secondes
+  
+  // Métadonnées générales
+  uploadedBy      String   @db.ObjectId // ID utilisateur ou anonyme
+  isAnonymous     Boolean  @default(false)
+  
+  createdAt       DateTime @default(now())
+  
+  message         Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  
+  @@index([messageId])
+  @@index([uploadedBy])
 }
 
 /// Statut de reception, lecture ou réponse d'un message par un utilisateur
@@ -401,6 +434,7 @@ model AffiliateRelation {
 model TrackingLink {
   id              String   @id @default(auto()) @map("_id") @db.ObjectId
   token           String   @unique // Token de 6 caractères (ex: "a1b2c3")
+  name            String?  // Nom du lien (max 32 caractères)
   originalUrl     String   // URL originale complète
   shortUrl        String   // URL courte générée (meeshy.me/l/<token>)
   createdBy       String?  @db.ObjectId // Utilisateur qui a créé le lien (null si anonyme)

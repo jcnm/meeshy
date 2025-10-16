@@ -27,6 +27,7 @@ import {
 import { AuthMode } from '@/types';
 import { useAuth } from '@/hooks/use-auth';
 import { useAppStore } from '@/stores/app-store';
+import { useI18n } from '@/hooks/useI18n';
 
 interface HeaderProps {
   mode?: 'landing' | 'chat' | 'default';
@@ -49,6 +50,7 @@ export function Header({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, isAnonymous } = useAuth();
   const { theme, setTheme } = useAppStore();
+  const { t } = useI18n('header');
 
   const handleAuthClick = (newMode: AuthMode) => {
     if (onAuthModeChange) {
@@ -91,7 +93,7 @@ export function Header({
                     onClick={handleShare}
                   >
                     <Share2 className="h-4 w-4 mr-2" />
-                    Share
+                    {t('shareLink')}
                   </Button>
                 )}
                 
@@ -125,11 +127,11 @@ export function Header({
                         <>
                           <DropdownMenuItem onClick={() => router.push('/login')}>
                             <LogIn className="h-4 w-4 mr-2" />
-                            Login
+                            {t('login')}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => router.push('/signin')}>
                             <UserPlus className="h-4 w-4 mr-2" />
-                            Sign Up
+                            {t('signUp')}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                         </>
@@ -137,21 +139,21 @@ export function Header({
                       
                       {/* Options de thème */}
                       <DropdownMenuLabel className="text-xs text-gray-500 dark:text-gray-400">
-                        Theme
+                        {t('theme')}
                       </DropdownMenuLabel>
                       <DropdownMenuItem onClick={() => setTheme('light')}>
                         <Sun className="h-4 w-4 mr-2" />
-                        Light
+                        {t('light')}
                         {theme === 'light' && <span className="ml-auto">✓</span>}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => setTheme('dark')}>
                         <Moon className="h-4 w-4 mr-2" />
-                        Dark
+                        {t('dark')}
                         {theme === 'dark' && <span className="ml-auto">✓</span>}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => setTheme('auto')}>
                         <Monitor className="h-4 w-4 mr-2" />
-                        System
+                        {t('system')}
                         {theme === 'auto' && <span className="ml-auto">✓</span>}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -168,7 +170,7 @@ export function Header({
                     onClick={() => router.push(anonymousChatLink)}
                   >
                     <MessageSquare className="h-4 w-4 mr-2" />
-                    Continue Chat
+                    {t('continueChat')}
                   </Button>
                 )}
                 {mode === 'landing' ? (
@@ -178,13 +180,13 @@ export function Header({
                       onClick={() => handleAuthClick('login')}
                     >
                       <LogIn className="h-4 w-4 mr-2" />
-                      Login
+                      {t('login')}
                     </Button>
                     <Button 
                       onClick={() => handleAuthClick('register')}
                     >
                       <UserPlus className="h-4 w-4 mr-2" />
-                      Sign Up
+                      {t('signUp')}
                     </Button>
                   </>
                 ) : (
@@ -192,13 +194,13 @@ export function Header({
                     <Link href="/login">
                       <Button variant="ghost">
                         <LogIn className="h-4 w-4 mr-2" />
-                        Login
+                        {t('login')}
                       </Button>
                     </Link>
                     <Link href="/signin">
                       <Button>
                         <UserPlus className="h-4 w-4 mr-2" />
-                        Sign Up
+                        {t('signUp')}
                       </Button>
                     </Link>
                   </>
@@ -241,7 +243,7 @@ export function Header({
                             {user.displayName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username}
                           </span>
                           {isAnonymous && (
-                            <span className="text-xs text-gray-500 dark:text-gray-400">Guest</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">{t('guest')}</span>
                           )}
                         </div>
                       </div>
@@ -258,7 +260,7 @@ export function Header({
                             }}
                           >
                             <LogIn className="h-4 w-4 mr-2" />
-                            Login
+                            {t('login')}
                           </Button>
                           <Button 
                             className="w-full justify-start"
@@ -268,7 +270,7 @@ export function Header({
                             }}
                           >
                             <UserPlus className="h-4 w-4 mr-2" />
-                            Sign Up
+                            {t('signUp')}
                           </Button>
                         </>
                       )}
@@ -276,7 +278,7 @@ export function Header({
                       {/* Options de thème */}
                       <div className="space-y-2">
                         <div className="px-2 py-1.5">
-                          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Theme</span>
+                          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{t('theme')}</span>
                         </div>
                         <Button 
                           variant="ghost" 
@@ -287,7 +289,7 @@ export function Header({
                           }}
                         >
                           <Sun className="h-4 w-4 mr-2" />
-                          Light
+                          {t('light')}
                           {theme === 'light' && <span className="ml-auto">✓</span>}
                         </Button>
                         <Button 
@@ -299,7 +301,7 @@ export function Header({
                           }}
                         >
                           <Moon className="h-4 w-4 mr-2" />
-                          Dark
+                          {t('dark')}
                           {theme === 'dark' && <span className="ml-auto">✓</span>}
                         </Button>
                         <Button 
@@ -311,7 +313,7 @@ export function Header({
                           }}
                         >
                           <Monitor className="h-4 w-4 mr-2" />
-                          System
+                          {t('system')}
                           {theme === 'auto' && <span className="ml-auto">✓</span>}
                         </Button>
                       </div>
@@ -325,7 +327,7 @@ export function Header({
                       onClick={handleShare}
                     >
                       <Share2 className="h-4 w-4 mr-2" />
-                      Share
+                      {t('shareLink')}
                     </Button>
                   )}
                 </>
@@ -343,7 +345,7 @@ export function Header({
                       }}
                     >
                       <MessageSquare className="h-4 w-4 mr-2" />
-                      Continue Chat
+                      {t('continueChat')}
                     </Button>
                   )}
                   {mode === 'landing' ? (
@@ -357,7 +359,7 @@ export function Header({
                         }}
                       >
                         <LogIn className="h-4 w-4 mr-2" />
-                        Login
+                        {t('login')}
                       </Button>
                       <Button 
                         className="w-full justify-start"
@@ -367,7 +369,7 @@ export function Header({
                         }}
                       >
                         <UserPlus className="h-4 w-4 mr-2" />
-                        Sign Up
+                        {t('signUp')}
                       </Button>
                     </>
                   ) : (
@@ -375,13 +377,13 @@ export function Header({
                       <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
                         <Button variant="ghost" className="w-full justify-start">
                           <LogIn className="h-4 w-4 mr-2" />
-                          Login
+                          {t('login')}
                         </Button>
                       </Link>
                       <Link href="/signin" onClick={() => setIsMobileMenuOpen(false)}>
                         <Button className="w-full justify-start">
                           <UserPlus className="h-4 w-4 mr-2" />
-                          Sign Up
+                          {t('signUp')}
                         </Button>
                       </Link>
                     </>

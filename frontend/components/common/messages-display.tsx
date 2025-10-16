@@ -24,6 +24,7 @@ interface MessagesDisplayProps {
   onDeleteMessage?: (messageId: string) => Promise<void>;
   onReplyMessage?: (message: Message) => void;
   onNavigateToMessage?: (messageId: string) => void;
+  onImageClick?: (attachmentId: string) => void;
   conversationType?: 'direct' | 'group' | 'public' | 'global';
   userRole?: 'USER' | 'MEMBER' | 'MODERATOR' | 'ADMIN' | 'CREATOR' | 'AUDIT' | 'ANALYST' | 'BIGBOSS';
   
@@ -52,6 +53,7 @@ export function MessagesDisplay({
   onDeleteMessage,
   onReplyMessage,
   onNavigateToMessage,
+  onImageClick,
   conversationType = 'direct',
   userRole = 'USER',
   addTranslatingState,
@@ -331,6 +333,7 @@ export function MessagesDisplay({
             onDeleteMessage={onDeleteMessage}
             onReplyMessage={onReplyMessage}
             onNavigateToMessage={onNavigateToMessage}
+            onImageClick={onImageClick}
             onLanguageSwitch={handleLanguageSwitch}
             currentDisplayLanguage={state.currentDisplayLanguage}
             isTranslating={state.isTranslating || checkIsTranslating(message.id, state.currentDisplayLanguage)}

@@ -20,7 +20,14 @@
     "clearSessionTitle": "Clear anonymous session",
     "clearSessionDescription": "Are you sure you want to clear your anonymous session? This action is irreversible.",
     "cancel": "Cancel",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "guest": "Guest",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "continueChat": "Continue Chat",
+    "signUp": "Sign Up"
   }
 }
 

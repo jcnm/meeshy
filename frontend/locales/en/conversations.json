@@ -140,9 +140,11 @@
       "websocketEstablished": "WebSocket connection established",
       "connected": "Connected",
       "connecting": "Connecting...",
+      "connectingWebSocket": "Connecting to WebSocket...",
       "initializing": "Initializing...",
       "loading": "Loading...",
       "reconnecting": "Reconnecting...",
+      "reconnect": "Reconnect",
       "typing": {
         "single": "{name} is typing...",
         "double": "{name1} and {name2} are typing...",
