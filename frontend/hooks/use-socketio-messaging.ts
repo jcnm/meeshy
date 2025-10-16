@@ -67,6 +67,7 @@ export function useSocketIOMessaging(options: UseSocketIOMessagingOptions = {}) 
     deleteMessage: ws.deleteMessage,
     startTyping: ws.startTyping,
     stopTyping: ws.stopTyping,
-    reconnect: ws.reconnect
+    reconnect: ws.reconnect,
+    getDiagnostics: ws.getDiagnostics
   };
 }

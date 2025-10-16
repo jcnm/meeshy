@@ -444,6 +444,29 @@ class WebSocketService {
       authenticated: this.isAuthenticated
     };
   }
+
+  /**
+   * Diagnostics de connexion (compatibilité)
+   */
+  public getDiagnostics() {
+    return {
+      isConnected: this.isConnected(),
+      hasSocket: !!this.socket,
+      socketId: this.socket?.id,
+      authenticated: this.isAuthenticated,
+      socketConnected: this.socket?.connected,
+      transport: (this.socket as any)?.io?.engine?.transport?.name,
+      url: this.socket ? (this.socket as any).io?.uri : 'N/A',
+      listenersCount: {
+        message: this.messageListeners.size,
+        edit: this.editListeners.size,
+        delete: this.deleteListeners.size,
+        translation: this.translationListeners.size,
+        typing: this.typingListeners.size,
+        status: this.statusListeners.size
+      }
+    };
+  }
 }
 
 // Export singleton

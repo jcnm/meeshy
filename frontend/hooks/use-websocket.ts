@@ -156,6 +156,10 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     webSocketService.reconnect();
   }, []);
 
+  const getDiagnostics = useCallback(() => {
+    return webSocketService.getDiagnostics();
+  }, []);
+
   return {
     isConnected,
     sendMessage,
@@ -165,6 +169,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     startTyping,
     stopTyping,
     reconnect,
+    getDiagnostics,
     status: webSocketService.getConnectionStatus()
   };
 }
