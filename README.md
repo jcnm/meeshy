@@ -67,23 +67,31 @@ Déployez l'ensemble des services en local avec les dernières images Docker :
 - Meeshy: `meeshy@meeshy.local` / `meeshy123`
 - Atabeth: `atabeth@meeshy.local` / `atabeth123`
 
-### Option 2: Développement Natif
+### Option 2: Développement Natif (Hot Reload)
 
-Pour développer avec hot reload :
+Pour développer avec hot reload et débogage facile :
 
 ```bash
-# Terminal 1 - Infrastructure (MongoDB + Redis)
-docker-compose -f docker-compose.dev.yml up database redis
-
-# Terminal 2 - Gateway
-cd gateway && ./gateway.sh
-
-# Terminal 3 - Translator
-cd translator && ./translator.sh
-
-# Terminal 4 - Frontend
-cd frontend && ./frontend.sh
+# Démarre l'infrastructure Docker + services natifs
+./start-dev.sh
 ```
+
+Ce script démarre automatiquement :
+- ✅ Infrastructure Docker (MongoDB, Redis) si non démarrée
+- ✅ Applications natives avec hot reload (Translator, Gateway, Frontend)
+
+**Important :** `Ctrl+C` arrête uniquement les applications natives, pas l'infrastructure Docker.
+
+Pour gérer l'infrastructure séparément :
+
+```bash
+# Démarrer/Arrêter l'infrastructure uniquement
+./scripts/infra.sh start
+./scripts/infra.sh stop
+./scripts/infra.sh status
+```
+
+📖 **Guide complet** : [Documentation Développement Natif](docs/DEV_NATIVE_SETUP.md)
 
 ### Option 3: Production avec Traefik
 
