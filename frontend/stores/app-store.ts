@@ -103,7 +103,9 @@ export const useAppStore = create<AppStore>()(
 
         initialize: async () => {
           try {
-            console.log('[APP_STORE] Initializing application...');
+            if (process.env.NODE_ENV === 'development') {
+              console.log('[APP_STORE] Initializing application...');
+            }
             
             // Initialize online status
             if (typeof window !== 'undefined') {
@@ -122,7 +124,10 @@ export const useAppStore = create<AppStore>()(
             }
             
             set({ isInitialized: true });
-            console.log('[APP_STORE] Application initialized successfully');
+            
+            if (process.env.NODE_ENV === 'development') {
+              console.log('[APP_STORE] Application initialized successfully');
+            }
             
           } catch (error) {
             console.error('[APP_STORE] Initialization error:', error);

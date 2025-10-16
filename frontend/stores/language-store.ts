@@ -69,26 +69,36 @@ export const useLanguageStore = create<LanguageStore>()(
 
         setInterfaceLanguage: (language: string) => {
           if (!get().isLanguageSupported(language)) {
-            console.warn(`[LANGUAGE_STORE] Unsupported interface language: ${language}`);
+            if (process.env.NODE_ENV === 'development') {
+              console.warn(`[LANGUAGE_STORE] Unsupported interface language: ${language}`);
+            }
             return;
           }
           
-          console.log('[LANGUAGE_STORE] Setting interface language:', language);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[LANGUAGE_STORE] Setting interface language:', language);
+          }
           set({ currentInterfaceLanguage: language });
         },
 
         setMessageLanguage: (language: string) => {
           if (!get().isLanguageSupported(language)) {
-            console.warn(`[LANGUAGE_STORE] Unsupported message language: ${language}`);
+            if (process.env.NODE_ENV === 'development') {
+              console.warn(`[LANGUAGE_STORE] Unsupported message language: ${language}`);
+            }
             return;
           }
           
-          console.log('[LANGUAGE_STORE] Setting message language:', language);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[LANGUAGE_STORE] Setting message language:', language);
+          }
           set({ currentMessageLanguage: language });
         },
 
         setCustomDestinationLanguage: (language: string) => {
-          console.log('[LANGUAGE_STORE] Setting custom destination language:', language);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[LANGUAGE_STORE] Setting custom destination language:', language);
+          }
           set((state) => ({
             userLanguageConfig: {
               ...state.userLanguageConfig,
@@ -98,7 +108,9 @@ export const useLanguageStore = create<LanguageStore>()(
         },
 
         updateLanguageConfig: (config: Partial<UserLanguageConfig>) => {
-          console.log('[LANGUAGE_STORE] Updating language config:', config);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[LANGUAGE_STORE] Updating language config:', config);
+          }
           set((state) => ({
             userLanguageConfig: {
               ...state.userLanguageConfig,
@@ -109,7 +121,9 @@ export const useLanguageStore = create<LanguageStore>()(
 
         detectAndSetBrowserLanguage: () => {
           const browserLang = detectBrowserLanguage();
-          console.log('[LANGUAGE_STORE] Detected browser language:', browserLang);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[LANGUAGE_STORE] Detected browser language:', browserLang);
+          }
           
           set({
             currentInterfaceLanguage: browserLang,

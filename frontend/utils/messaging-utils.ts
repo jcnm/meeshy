@@ -61,12 +61,14 @@ export function logMessageSend(
   sourceLanguage: string,
   conversationId?: string
 ) {
-  console.log('📤 Envoi du message avec langue sélectionnée:', {
-    conversationId,
-    content: content.substring(0, 50) + (content.length > 50 ? '...' : ''),
-    sourceLanguage,
-    contentLength: content.length
-  });
+  if (process.env.NODE_ENV === 'development') {
+    console.log('📤 Envoi du message avec langue sélectionnée:', {
+      conversationId,
+      content: content.substring(0, 50) + (content.length > 50 ? '...' : ''),
+      sourceLanguage,
+      contentLength: content.length
+    });
+  }
 }
 
 /**
@@ -76,8 +78,10 @@ export function logMessageSuccess(
   content: string,
   sourceLanguage: string
 ) {
-  console.log('✅ Message envoyé via WebSocket avec succès');
-  console.log(`🔤 Langue source du message: ${sourceLanguage}`);
+  if (process.env.NODE_ENV === 'development') {
+    console.log('✅ Message envoyé via WebSocket avec succès');
+    console.log(`🔤 Langue source du message: ${sourceLanguage}`);
+  }
 }
 
 /**
@@ -95,36 +99,48 @@ export function createStandardMessageCallbacks(options: {
 }) {
   return {
     onNewMessage: (message: Message) => {
-      console.log('📩 Message reçu via WebSocket:', { 
-        id: message.id, 
-        content: message.content, 
-        senderId: message.senderId 
-      });
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📩 Message reçu via WebSocket:', { 
+          id: message.id, 
+          content: message.content, 
+          senderId: message.senderId 
+        });
+      }
       options.onNewMessage?.(message);
     },
     
     onUserTyping: (userId: string, username: string, isTyping: boolean) => {
-      console.log('⌨️ Utilisateur en train de taper:', { userId, username, isTyping });
+      if (process.env.NODE_ENV === 'development') {
+        console.log('⌨️ Utilisateur en train de taper:', { userId, username, isTyping });
+      }
       options.onUserTyping?.(userId, username, isTyping);
     },
     
     onUserStatus: (userId: string, username: string, isOnline: boolean) => {
-      console.log('👤 Statut utilisateur changé:', { userId, username, isOnline });
+      if (process.env.NODE_ENV === 'development') {
+        console.log('👤 Statut utilisateur changé:', { userId, username, isOnline });
+      }
       options.onUserStatus?.(userId, username, isOnline);
     },
     
     onTranslation: (messageId: string, translations: any[]) => {
-      console.log('🌐 Traductions reçues pour message:', messageId, translations);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🌐 Traductions reçues pour message:', messageId, translations);
+      }
       options.onTranslation?.(messageId, translations);
     },
     
     onConversationStats: (data: any) => {
-      console.log('📊 Statistiques de conversation reçues:', data);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📊 Statistiques de conversation reçues:', data);
+      }
       options.onConversationStats?.(data);
     },
     
     onConversationOnlineStats: (data: any) => {
-      console.log('📈 Statistiques en ligne reçues:', data);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📈 Statistiques en ligne reçues:', data);
+      }
       options.onConversationOnlineStats?.(data);
     }
   };

@@ -14,6 +14,13 @@ import {
 } from '@/utils/auth';
 import { useUser, useAuthActions, useIsAuthChecking } from '@/stores';
 
+// Fonction helper pour les logs de développement
+const devLog = (message: string, ...args: any[]) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(message, ...args);
+  }
+};
+
 // Cache global pour éviter les vérifications d'authentification multiples
 const authCache = {
   lastCheck: 0,
@@ -49,7 +56,9 @@ export function useAuth() {
     
     // Utiliser le cache si récent
     if (authCache.result && (now - authCache.lastCheck) < authCache.cacheDuration) {
-      console.log('[USE_AUTH] Utilisation du cache d\'authentification');
+      if (process.env.NODE_ENV === 'development') {
+        devLog('[USE_AUTH] Utilisation du cache d\'authentification');
+      }
       setAuthState(authCache.result);
       
       // Synchroniser avec le contexte global
@@ -62,12 +71,17 @@ export function useAuth() {
       return authCache.result;
     }
     
-    console.log('[USE_AUTH] Début de la vérification d\'authentification');
+    if (process.env.NODE_ENV === 'development') {
+      devLog('[USE_AUTH] Début de la vérification d\'authentification');
+    }
     setAuthState(prev => ({ ...prev, isChecking: true }));
     
     try {
       const newAuthState = await checkAuthStatus();
-      console.log('[USE_AUTH] État d\'authentification:', newAuthState);
+      
+      if (process.env.NODE_ENV === 'development') {
+        devLog('[USE_AUTH] État d\'authentification:', newAuthState);
+      }
       
       // Mettre à jour le cache
       authCache.result = newAuthState;
@@ -120,11 +134,11 @@ export function useAuth() {
 
     // Ne pas faire de vérifications si l'authentification est en cours
     if (authState.isChecking || isAuthChecking) {
-      console.log('[USE_AUTH] Vérification en cours, pas de redirection');
+      devLog('[USE_AUTH] Vérification en cours, pas de redirection');
       return;
     }
 
-    console.log('[USE_AUTH] Vérification route:', pathname, 'Auth state:', {
+    devLog('[USE_AUTH] Vérification route:', pathname, 'Auth state:', {
       isAuthenticated: authState.isAuthenticated,
       hasUser: !!authState.user,
       isChecking: authState.isChecking
@@ -142,7 +156,7 @@ export function useAuth() {
     
     if (isPublicRoute) {
       // Route publique, pas de vérification
-      console.log('[USE_AUTH] Route publique, pas de redirection automatique');
+      devLog('[USE_AUTH] Route publique, pas de redirection automatique');
       return;
     }
     
@@ -156,7 +170,7 @@ export function useAuth() {
       // Vérifier si l'utilisateur vient juste de se connecter en anonyme
       const justJoined = localStorage.getItem('anonymous_just_joined');
       if (justJoined) {
-        console.log('[USE_AUTH] Utilisateur vient de se connecter en anonyme, pas de redirection');
+        devLog('[USE_AUTH] Utilisateur vient de se connecter en anonyme, pas de redirection');
         return;
       }
       
@@ -166,7 +180,7 @@ export function useAuth() {
         const participant = localStorage.getItem('anonymous_participant');
         
         if (!sessionToken || !participant) {
-          console.log('[USE_AUTH] Session anonyme incomplète, redirection vers join');
+          devLog('[USE_AUTH] Session anonyme incomplète, redirection vers join');
           const storedLinkId = localStorage.getItem('anonymous_current_link_id');
           if (storedLinkId) {
             redirectInProgress.current = true;
@@ -182,7 +196,7 @@ export function useAuth() {
         try {
           const participantData = JSON.parse(participant);
           if (!participantData.id || !participantData.username) {
-            console.log('[USE_AUTH] Données participant invalides, redirection vers join');
+            devLog('[USE_AUTH] Données participant invalides, redirection vers join');
             const storedLinkId = localStorage.getItem('anonymous_current_link_id');
             if (storedLinkId) {
               redirectInProgress.current = true;
@@ -212,11 +226,11 @@ export function useAuth() {
         const storedLinkId = localStorage.getItem('anonymous_current_link_id');
         
         if (storedLinkId) {
-          console.log('[USE_AUTH] Redirection vers join avec linkId original:', storedLinkId);
+          devLog('[USE_AUTH] Redirection vers join avec linkId original:', storedLinkId);
           redirectInProgress.current = true;
           router.push(`/join/${storedLinkId}`);
         } else {
-          console.log('[USE_AUTH] Pas de linkId original stocké, redirection vers home');
+          devLog('[USE_AUTH] Pas de linkId original stocké, redirection vers home');
           redirectInProgress.current = true;
           redirectToHome();
         }
@@ -228,7 +242,7 @@ export function useAuth() {
     if (!canAccessProtectedRoute(authState)) {
       // Nettoyer les données d'authentification invalides avant la redirection
       if (authState.token && !authState.isAuthenticated) {
-        console.log('[USE_AUTH] Nettoyage des données d\'authentification invalides');
+        devLog('[USE_AUTH] Nettoyage des données d\'authentification invalides');
         clearAllAuthData();
         // Mettre à jour l'état pour refléter le nettoyage
         setAuthState({
@@ -243,25 +257,25 @@ export function useAuth() {
       
       // Éviter la redirection si on est déjà sur /login
       if (pathname === '/login') {
-        console.log('[USE_AUTH] Déjà sur /login, pas de redirection');
+        devLog('[USE_AUTH] Déjà sur /login, pas de redirection');
         return;
       }
       
       // Sauvegarder l'URL actuelle pour redirection après connexion
       const returnUrl = pathname !== '/' ? pathname : undefined;
       const loginUrl = returnUrl ? `/login?returnUrl=${encodeURIComponent(returnUrl)}` : '/login';
-      console.log('[USE_AUTH] Redirection vers login car non authentifié. Auth state:', authState);
+      devLog('[USE_AUTH] Redirection vers login car non authentifié. Auth state:', authState);
       redirectInProgress.current = true;
       router.push(loginUrl);
       return;
     }
     
-    console.log('[USE_AUTH] Route autorisée:', pathname);
+    devLog('[USE_AUTH] Route autorisée:', pathname);
   }, [authState.isAuthenticated, authState.isChecking, pathname, isAuthChecking]);
 
   // Se connecter
   const login = useCallback((user: User, token: string) => {
-    console.log('[USE_AUTH] Connexion utilisateur:', user.username);
+    devLog('[USE_AUTH] Connexion utilisateur:', user.username);
     
     // Stocker immédiatement dans localStorage
     localStorage.setItem('auth_token', token);
@@ -280,12 +294,12 @@ export function useAuth() {
     setAuthState(newAuthState);
     setUserRef.current(user);
     
-    console.log('[USE_AUTH] État mis à jour immédiatement:', newAuthState);
+    devLog('[USE_AUTH] État mis à jour immédiatement:', newAuthState);
   }, []);
 
   // Se déconnecter
   const logout = useCallback(() => {
-    console.log('[USE_AUTH] Déconnexion utilisateur');
+    devLog('[USE_AUTH] Déconnexion utilisateur');
     
     clearAllAuthData();
     const newAuthState = {
@@ -303,7 +317,7 @@ export function useAuth() {
 
   // Rejoindre une conversation anonymement
   const joinAnonymously = useCallback((participant: any, sessionToken: string, conversationShareLinkId?: string) => {
-    console.log('[USE_AUTH] Création de session anonyme:', {
+    devLog('[USE_AUTH] Création de session anonyme:', {
       participantId: participant.id,
       username: participant.username,
       conversationShareLinkId,
@@ -335,7 +349,7 @@ export function useAuth() {
     setAuthState(newAuthState);
     setUserRef.current(participant);
     
-    console.log('[USE_AUTH] Session anonyme créée avec succès');
+    devLog('[USE_AUTH] Session anonyme créée avec succès');
   }, []);
 
   // Quitter une session anonyme
@@ -363,7 +377,7 @@ export function useAuth() {
 
   // Forcer le nettoyage des données d'authentification invalides
   const forceLogout = useCallback(() => {
-    console.log('[USE_AUTH] Nettoyage forcé des données d\'authentification');
+    devLog('[USE_AUTH] Nettoyage forcé des données d\'authentification');
     clearAllAuthData();
     const newAuthState = {
       isAuthenticated: false,

@@ -92,24 +92,33 @@ export async function checkAuthStatus(): Promise<AuthState> {
   const anonymousToken = localStorage.getItem('anonymous_session_token');
   const anonymousParticipant = localStorage.getItem('anonymous_participant');
   
-  console.log('[AUTH_UTILS] Vérification auth - Token normal:', !!token, 'Token anonyme:', !!anonymousToken);
-  console.log('[AUTH_UTILS] Participant anonyme stocké:', anonymousParticipant);
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[AUTH_UTILS] Vérification auth - Token normal:', !!token, 'Token anonyme:', !!anonymousToken);
+    console.log('[AUTH_UTILS] Participant anonyme stocké:', anonymousParticipant);
+  }
   
   // Si on a un token d'authentification normale
   if (token) {
     try {
-      console.log('[AUTH_UTILS] Appel API /auth/me avec token');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[AUTH_UTILS] Appel API /auth/me avec token');
+      }
       const response = await fetch(buildApiUrl('/auth/me'), {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
-      console.log('[AUTH_UTILS] Réponse API:', response.status, response.statusText);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[AUTH_UTILS] Réponse API:', response.status, response.statusText);
+      }
 
       if (response.ok) {
         const result = await response.json();
-        console.log('[AUTH_UTILS] Données reçues:', result);
+        
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[AUTH_UTILS] Données reçues:', result);
+        }
         
         // Gérer différents formats de réponse
         let userData;
@@ -128,7 +137,9 @@ export async function checkAuthStatus(): Promise<AuthState> {
         }
 
         if (userData && userData.id) {
-          console.log('[AUTH_UTILS] Utilisateur valide trouvé:', userData.username);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[AUTH_UTILS] Utilisateur valide trouvé:', userData.username);
+          }
           return {
             isAuthenticated: true,
             user: userData,
@@ -142,7 +153,9 @@ export async function checkAuthStatus(): Promise<AuthState> {
       }
       
       // Token invalide ou réponse incorrecte, nettoyer
-      console.log('[AUTH_UTILS] Token invalide, nettoyage des données');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[AUTH_UTILS] Token invalide, nettoyage des données');
+      }
       clearAuthData();
       return {
         isAuthenticated: false,

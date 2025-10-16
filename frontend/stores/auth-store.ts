@@ -124,25 +124,35 @@ export const useAuthStore = create<AuthStore>()(
           try {
             const { authToken, refreshToken, sessionExpiry, user } = get();
 
-            console.log('[AUTH_STORE] Initializing - Token:', !!authToken, 'User:', !!user);
+            if (process.env.NODE_ENV === 'development') {
+              console.log('[AUTH_STORE] Initializing - Token:', !!authToken, 'User:', !!user);
+            }
 
             if (authToken && user) {
               // Check if session is expired
               if (sessionExpiry && sessionExpiry < new Date()) {
-                console.log('[AUTH_STORE] Session expired, attempting refresh');
+                if (process.env.NODE_ENV === 'development') {
+                  console.log('[AUTH_STORE] Session expired, attempting refresh');
+                }
                 
                 const refreshed = await get().refreshSession();
                 if (!refreshed) {
-                  console.log('[AUTH_STORE] Refresh failed, clearing auth');
+                  if (process.env.NODE_ENV === 'development') {
+                    console.log('[AUTH_STORE] Refresh failed, clearing auth');
+                  }
                   get().clearAuth();
                   return;
                 }
               }
 
-              console.log('[AUTH_STORE] User authenticated:', user.username);
+              if (process.env.NODE_ENV === 'development') {
+                console.log('[AUTH_STORE] User authenticated:', user.username);
+              }
               set({ isAuthenticated: true });
             } else {
-              console.log('[AUTH_STORE] No authentication data found');
+              if (process.env.NODE_ENV === 'development') {
+                console.log('[AUTH_STORE] No authentication data found');
+              }
               set({ isAuthenticated: false });
             }
           } catch (error) {

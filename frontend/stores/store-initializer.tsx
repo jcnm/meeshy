@@ -22,7 +22,9 @@ export function StoreInitializer({ children }: StoreInitializerProps) {
   useEffect(() => {
     const initializeStores = async () => {
       try {
-        console.log('[STORE_INITIALIZER] Initializing all stores...');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[STORE_INITIALIZER] Initializing all stores...');
+        }
         
         // Initialize app and auth in parallel
         await Promise.all([
@@ -37,7 +39,9 @@ export function StoreInitializer({ children }: StoreInitializerProps) {
           detectBrowserLanguage();
         }
         
-        console.log('[STORE_INITIALIZER] All stores initialized successfully');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[STORE_INITIALIZER] All stores initialized successfully');
+        }
         
       } catch (error) {
         console.error('[STORE_INITIALIZER] Store initialization failed:', error);

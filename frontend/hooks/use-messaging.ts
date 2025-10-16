@@ -255,6 +255,7 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
       });
 
       // Envoyer via Socket.IO avec attachments
+      // Note: conversationId est géré par socketMessaging (useSocketIOMessaging hook)
       const success = await socketMessaging.sendMessageWithAttachments(
         content, 
         attachmentIds, 
