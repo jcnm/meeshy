@@ -1,15 +1,15 @@
 /**
- * Hook useSocketIOMessaging - Wrapper de compatibilité
- * @deprecated Utiliser useWebSocket directement à la place
+ * Hook useSocketIOMessaging - Gestion des messages temps réel
  * 
- * Ce hook maintient l'API existante pour compatibilité
- * mais utilise le nouveau service WebSocket simplifié en interne
+ * Utilise meeshy-socketio.service.ts pour une compatibilité complète
+ * avec les identifiants de conversation (ObjectId, identifier, objet)
  */
 
 'use client';
 
-import { useWebSocket } from './use-websocket';
-import type { Message, User } from '@/types';
+import { useEffect, useState, useCallback } from 'react';
+import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
+import type { Message, User, TypingEvent, UserStatusEvent, TranslationEvent } from '@/types';
 
 export interface UseSocketIOMessagingOptions {
   conversationId?: string | null;
@@ -26,48 +26,198 @@ export interface UseSocketIOMessagingOptions {
 }
 
 /**
- * Hook de compatibilité - Wrapper autour de useWebSocket
+ * Hook pour la gestion des messages temps réel via Socket.IO
  */
 export function useSocketIOMessaging(options: UseSocketIOMessagingOptions = {}) {
   const {
     conversationId,
+    currentUser,
     onNewMessage,
     onMessageEdited,
     onMessageDeleted,
     onUserTyping,
     onUserStatus,
     onTranslation,
+    onConversationStats,
+    onConversationOnlineStats
   } = options;
 
-  // Utiliser le nouveau hook simplifié
-  const ws = useWebSocket({
-    conversationId,
-    onNewMessage,
-    onMessageEdited,
-    onMessageDeleted,
-    onTyping: onUserTyping ? (event) => {
-      onUserTyping(event.userId, event.username, event.isTyping || false);
-    } : undefined,
-    onUserStatus: onUserStatus ? (event) => {
-      onUserStatus(event.userId, event.username, event.isOnline);
-    } : undefined,
-    onTranslation: onTranslation ? (data) => {
-      onTranslation(data.messageId, data.translations);
-    } : undefined,
-  });
+  const [isConnected, setIsConnected] = useState(false);
 
-  // Retourner une API compatible avec l'ancien hook
+  // ÉTAPE 1: Pas besoin d'initialiser explicitement - le service s'initialise automatiquement
+  // avec les tokens disponibles dans localStorage
+
+  // ÉTAPE 2: Gérer le join/leave de conversation
+  useEffect(() => {
+    if (!conversationId) return;
+    
+    console.log('🚪 [useSocketIOMessaging] Join conversation:', conversationId);
+    
+    // Support des identifiants et ObjectId
+    const conversationIdOrObject = conversationId.includes('-') 
+      ? conversationId // ObjectId
+      : { identifier: conversationId }; // Identifiant lisible
+    
+    meeshySocketIOService.joinConversation(conversationIdOrObject);
+    
+    return () => {
+      console.log('🚪 [useSocketIOMessaging] Leave conversation:', conversationId);
+      meeshySocketIOService.leaveConversation(conversationIdOrObject);
+    };
+  }, [conversationId]);
+
+  // ÉTAPE 3: Configurer les listeners
+  useEffect(() => {
+    const unsubscribers: Array<() => void> = [];
+    
+    if (onNewMessage) {
+      const unsub = meeshySocketIOService.onNewMessage(onNewMessage);
+      unsubscribers.push(unsub);
+    }
+    
+    if (onMessageEdited) {
+      const unsub = meeshySocketIOService.onMessageEdited(onMessageEdited);
+      unsubscribers.push(unsub);
+    }
+    
+    if (onMessageDeleted) {
+      const unsub = meeshySocketIOService.onMessageDeleted(onMessageDeleted);
+      unsubscribers.push(unsub);
+    }
+    
+    if (onTranslation) {
+      const unsub = meeshySocketIOService.onTranslation((data: TranslationEvent) => {
+        onTranslation(data.messageId, data.translations);
+      });
+      unsubscribers.push(unsub);
+    }
+    
+    if (onUserTyping) {
+      const unsub = meeshySocketIOService.onTyping((event: TypingEvent) => {
+        onUserTyping(event.userId, event.username, event.isTyping || false);
+      });
+      unsubscribers.push(unsub);
+    }
+    
+    if (onUserStatus) {
+      const unsub = meeshySocketIOService.onUserStatus((event: UserStatusEvent) => {
+        onUserStatus(event.userId, event.username, event.isOnline);
+      });
+      unsubscribers.push(unsub);
+    }
+
+    if (onConversationStats) {
+      const unsub = meeshySocketIOService.onConversationStats(onConversationStats);
+      unsubscribers.push(unsub);
+    }
+
+    if (onConversationOnlineStats) {
+      const unsub = meeshySocketIOService.onConversationOnlineStats(onConversationOnlineStats);
+      unsubscribers.push(unsub);
+    }
+    
+    return () => {
+      unsubscribers.forEach(unsub => unsub());
+    };
+  }, [onNewMessage, onMessageEdited, onMessageDeleted, onTranslation, onUserTyping, onUserStatus, onConversationStats, onConversationOnlineStats]);
+
+  // ÉTAPE 4: Surveiller l'état de connexion
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const diagnostics = meeshySocketIOService.getConnectionDiagnostics();
+      setIsConnected(diagnostics.isConnected);
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  // ÉTAPE 5: Actions
+  const sendMessage = useCallback(async (
+    content: string, 
+    language: string,
+    replyToId?: string
+  ): Promise<boolean> => {
+    if (!conversationId) {
+      console.error('❌ [useSocketIOMessaging] Pas de conversationId');
+      return false;
+    }
+    
+    const conversationIdOrObject = conversationId.includes('-') 
+      ? conversationId 
+      : { identifier: conversationId };
+    
+    return await meeshySocketIOService.sendMessage(conversationIdOrObject, content, language, replyToId);
+  }, [conversationId]);
+
+  const sendMessageWithAttachments = useCallback(async (
+    content: string,
+    attachmentIds: string[],
+    language: string,
+    replyToId?: string
+  ): Promise<boolean> => {
+    if (!conversationId) {
+      console.error('❌ [useSocketIOMessaging] Pas de conversationId');
+      return false;
+    }
+    
+    const conversationIdOrObject = conversationId.includes('-') 
+      ? conversationId 
+      : { identifier: conversationId };
+    
+    return await meeshySocketIOService.sendMessageWithAttachments(
+      conversationIdOrObject, 
+      content, 
+      attachmentIds, 
+      language, 
+      replyToId
+    );
+  }, [conversationId]);
+
+  const editMessage = useCallback(async (messageId: string, content: string): Promise<boolean> => {
+    return await meeshySocketIOService.editMessage(messageId, content);
+  }, []);
+
+  const deleteMessage = useCallback(async (messageId: string): Promise<boolean> => {
+    return await meeshySocketIOService.deleteMessage(messageId);
+  }, []);
+
+  const startTyping = useCallback(() => {
+    if (conversationId) {
+      meeshySocketIOService.startTyping(conversationId);
+    }
+  }, [conversationId]);
+
+  const stopTyping = useCallback(() => {
+    if (conversationId) {
+      meeshySocketIOService.stopTyping(conversationId);
+    }
+  }, [conversationId]);
+
+  const reconnect = useCallback(() => {
+    meeshySocketIOService.reconnect();
+  }, []);
+
+  const getDiagnostics = useCallback(() => {
+    const diagnostics = meeshySocketIOService.getConnectionDiagnostics();
+    return {
+      isConnected: diagnostics.isConnected,
+      conversationId,
+      hasCurrentUser: !!currentUser,
+      ...diagnostics
+    };
+  }, [conversationId, currentUser]);
+
   return {
-    ...ws,
-    connectionStatus: ws.status,
-    // Adapter les méthodes pour l'ancienne API
-    sendMessage: ws.sendMessage,
-    sendMessageWithAttachments: ws.sendMessageWithAttachments,
-    editMessage: ws.editMessage,
-    deleteMessage: ws.deleteMessage,
-    startTyping: ws.startTyping,
-    stopTyping: ws.stopTyping,
-    reconnect: ws.reconnect,
-    getDiagnostics: ws.getDiagnostics
+    isConnected,
+    status: { isConnected },
+    connectionStatus: { isConnected },
+    sendMessage,
+    sendMessageWithAttachments,
+    editMessage,
+    deleteMessage,
+    startTyping,
+    stopTyping,
+    reconnect,
+    getDiagnostics
   };
 }
