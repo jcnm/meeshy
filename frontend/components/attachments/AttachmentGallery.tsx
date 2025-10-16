@@ -19,6 +19,8 @@ interface AttachmentGalleryProps {
   onClose: () => void;
   onNavigateToMessage?: (messageId: string) => void;
   token?: string;
+  // Nouvelle prop pour passer les attachments directement (évite un appel API)
+  attachments?: Attachment[];
 }
 
 export function AttachmentGallery({
@@ -28,6 +30,7 @@ export function AttachmentGallery({
   onClose,
   onNavigateToMessage,
   token,
+  attachments: providedAttachments,
 }: AttachmentGalleryProps) {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -40,22 +43,42 @@ export function AttachmentGallery({
     const loadAttachments = async () => {
       setLoading(true);
       try {
-        const response = await AttachmentService.getConversationAttachments(
-          conversationId,
-          { type: 'image', limit: 100 },
-          token
-        );
-
-        if (response.success && response.attachments) {
-          setAttachments(response.attachments);
+        // Si des attachments sont fournis en props, les utiliser directement
+        if (providedAttachments && providedAttachments.length > 0) {
+          console.log('[AttachmentGallery] Utilisation des attachments fournis:', {
+            count: providedAttachments.length
+          });
+          setAttachments(providedAttachments);
 
           // Si un attachment initial est spécifié, trouver son index
           if (initialAttachmentId) {
-            const index = response.attachments.findIndex(
+            const index = providedAttachments.findIndex(
               (att) => att.id === initialAttachmentId
             );
             if (index !== -1) {
               setCurrentIndex(index);
+            }
+          }
+        } else {
+          // Sinon, charger via l'API (mode legacy)
+          console.log('[AttachmentGallery] Chargement via API...');
+          const response = await AttachmentService.getConversationAttachments(
+            conversationId,
+            { type: 'image', limit: 100 },
+            token
+          );
+
+          if (response.success && response.attachments) {
+            setAttachments(response.attachments);
+
+            // Si un attachment initial est spécifié, trouver son index
+            if (initialAttachmentId) {
+              const index = response.attachments.findIndex(
+                (att) => att.id === initialAttachmentId
+              );
+              if (index !== -1) {
+                setCurrentIndex(index);
+              }
             }
           }
         }
@@ -67,7 +90,7 @@ export function AttachmentGallery({
     };
 
     loadAttachments();
-  }, [open, conversationId, initialAttachmentId, token]);
+  }, [open, conversationId, initialAttachmentId, token, providedAttachments]);
 
   const currentAttachment = attachments[currentIndex];
 
@@ -107,7 +130,7 @@ export function AttachmentGallery({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl h-[90vh] p-0 bg-black/95 dark:bg-black border-none">
+      <DialogContent className="max-w-6xl h-[90vh] p-0 bg-black/95 dark:bg-black border-none" showCloseButton={false}>
         <DialogTitle className="sr-only">
           Galerie d'images - {currentIndex + 1} sur {attachments.length}
         </DialogTitle>
@@ -127,6 +150,7 @@ export function AttachmentGallery({
                   size="sm"
                   onClick={handleDownload}
                   className="text-white hover:bg-white/10"
+                  title="Télécharger"
                 >
                   <Download className="w-4 h-4" />
                 </Button>
@@ -135,6 +159,7 @@ export function AttachmentGallery({
                   size="sm"
                   onClick={onClose}
                   className="text-white hover:bg-white/10"
+                  title="Fermer"
                 >
                   <X className="w-4 h-4" />
                 </Button>

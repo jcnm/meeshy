@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   MessageSquare, 
@@ -95,15 +95,15 @@ import { useMessageTranslation } from '@/hooks/useMessageTranslation';
 import { useFixRadixZIndex } from '@/hooks/use-fix-z-index';
 import { detectLanguage } from '@/utils/language-detection';
 import { useI18n } from '@/hooks/useI18n';
-import type { User, Message, BubbleTranslation } from '@shared/types';
+import type { User, Message, BubbleTranslation, Attachment } from '@shared/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { messageTranslationService } from '@/services/message-translation.service';
+import { getAuthToken } from '@/utils/token-utils';
 import { conversationsService } from '@/services';
 import { messageService } from '@/services/message.service';
 import { TypingIndicator } from '@/components/conversations/typing-indicator';
 import { useConversationMessages } from '@/hooks/use-conversation-messages';
 import { MessagesDisplay } from '@/components/common/messages-display';
-import { printWebSocketDiagnostics } from '@/utils/websocket-diagnostics';
 
 export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousMode = false, linkId, initialParticipants }: BubbleStreamPageProps) {
   const { t, isLoading: isLoadingTranslations } = useI18n('conversations');
@@ -205,6 +205,28 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [selectedAttachmentId, setSelectedAttachmentId] = useState<string | null>(null);
 
+  // Extraire tous les attachments images des messages pour la galerie
+  const imageAttachments = useMemo(() => {
+    const allAttachments: Attachment[] = [];
+    
+    messages.forEach((message: any) => {
+      if (message.attachments && Array.isArray(message.attachments)) {
+        const imageAtts = message.attachments.filter((att: Attachment) => 
+          att.mimeType?.startsWith('image/')
+        );
+        allAttachments.push(...imageAtts);
+      }
+    });
+    
+    console.log('[BubbleStreamPage] Images extraites pour galerie:', {
+      totalMessages: messages.length,
+      imageCount: allAttachments.length,
+      images: allAttachments.map(a => ({ id: a.id, fileName: a.fileName }))
+    });
+    
+    return allAttachments;
+  }, [messages]);
+
   // Handler pour ouvrir la galerie d'images
   const handleImageClick = useCallback((attachmentId: string) => {
     setSelectedAttachmentId(attachmentId);
@@ -213,9 +235,34 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
   // Handler pour naviguer vers un message depuis la galerie
   const handleNavigateToMessageFromGallery = useCallback((messageId: string) => {
+    console.log('🖼️ Navigation vers le message depuis la galerie:', messageId);
+    
+    // Fermer la galerie
     setGalleryOpen(false);
-    // TODO: Implémenter le scroll vers le message et le highlight
-    console.log('Navigate to message from gallery:', messageId);
+    
+    // Attendre que la galerie se ferme avant de scroller
+    setTimeout(() => {
+      // Chercher l'élément du message dans le DOM
+      const messageElement = document.getElementById(`message-${messageId}`);
+      
+      if (messageElement) {
+        // Scroll vers le message avec animation
+        messageElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+        
+        // Highlight temporaire du message
+        messageElement.classList.add('ring-2', 'ring-blue-500', 'ring-offset-2');
+        setTimeout(() => {
+          messageElement.classList.remove('ring-2', 'ring-blue-500', 'ring-offset-2');
+        }, 2000);
+        
+        console.log('✅ Scroll vers le message effectué');
+      } else {
+        console.warn('⚠️ Message non trouvé dans le DOM:', messageId);
+      }
+    }, 300); // Délai pour laisser le dialog se fermer
   }, []);
 
   // Handlers pour la modération des messages
@@ -430,7 +477,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   }, []);
 
   const handleTranslation = useCallback((messageId: string, translations: any[]) => {
-    console.log('🌐 [BubbleStreamPage] Traductions reçues pour message:', messageId, translations);
     
     // Mettre à jour le message avec les nouvelles traductions
     updateMessageTranslations(messageId, (prevMessage) => {
@@ -583,7 +629,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
               top: 0,
               behavior: 'smooth'
             });
-            console.log('📜 Scroll vers le haut pour nouveau message reçu');
           }
         }
       }, 300);
@@ -728,6 +773,13 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       return;
     }
 
+    // OPTIMISATION: Appeler reconnect() automatiquement au chargement
+    // Cela garantit que la connexion WebSocket est établie dès le début
+    const reconnectTimeout = setTimeout(() => {
+      console.log('🔄 Auto-reconnect au chargement de la page...');
+      reconnect();
+    }, 500); // Petit délai pour laisser le temps à l'authentification
+
     // Délai pour vérifier la connexion établie
     const initTimeout = setTimeout(() => {
       const newDiagnostics = getDiagnostics();
@@ -749,8 +801,11 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       }
     }, 3000);
 
-    return () => clearTimeout(initTimeout);
-  }, [connectionStatus.isConnected, connectionStatus.hasSocket, hasShownConnectionToast, isLoadingTranslations, t]);
+    return () => {
+      clearTimeout(reconnectTimeout);
+      clearTimeout(initTimeout);
+    };
+  }, [connectionStatus.isConnected, connectionStatus.hasSocket, hasShownConnectionToast, isLoadingTranslations, t, reconnect]);
 
   // Surveillance du statut de connexion WebSocket
   useEffect(() => {
@@ -1106,7 +1161,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                 top: 0,
                 behavior: 'smooth'
               });
-              console.log('📜 Scroll vers le haut pour voir le message envoyé');
             }
           }, 300); // Délai pour laisser le message s'ajouter au DOM
         } else {
@@ -1320,18 +1374,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                       >
                         {t('bubbleStream.reconnect')}
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => {
-                          printWebSocketDiagnostics();
-                          toast.info('🔍 Diagnostics affichés dans la console');
-                        }}
-                        className="ml-2 text-xs px-2 py-1 h-auto hover:bg-orange-200/50"
-                        title="Afficher les diagnostics de connexion dans la console"
-                      >
-                        🔍 Debug
-                      </Button>
                     </>
                   )}
                 </div>
@@ -1419,7 +1461,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                   onKeyPress={handleKeyPress}
                   choices={languageChoices}
                   onAttachmentsChange={setAttachmentIds}
-                  token={typeof window !== 'undefined' ? localStorage.getItem('auth_token') || localStorage.getItem('anonymous_session_token') || undefined : undefined}
+                  token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
                 />
               </div>
             </div>
@@ -1545,7 +1587,8 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         open={galleryOpen}
         onClose={() => setGalleryOpen(false)}
         onNavigateToMessage={handleNavigateToMessageFromGallery}
-        token={typeof window !== 'undefined' ? localStorage.getItem('auth_token') || localStorage.getItem('anonymous_session_token') || undefined : undefined}
+        token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
+        attachments={imageAttachments}
       />
     </>
   );
