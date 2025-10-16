@@ -507,7 +507,7 @@ export class MeeshySocketIOManager {
 
           // Broadcast temps réel vers tous les clients de la conversation (y compris l'auteur)
           if (response.success && response.data?.id) {
-            // Récupérer le message depuis la base de données avec les attachments
+            // Récupérer le message depuis la base de données avec les attachments ET replyTo
             const message = await this.prisma.message.findUnique({
               where: { id: response.data.id },
               include: {
@@ -528,22 +528,43 @@ export class MeeshySocketIOManager {
                     username: true
                   }
                 },
-                attachments: true
+                attachments: true,
+                replyTo: {
+                  include: {
+                    sender: {
+                      select: {
+                        id: true,
+                        username: true,
+                        displayName: true,
+                        firstName: true,
+                        lastName: true
+                      }
+                    },
+                    anonymousSender: {
+                      select: {
+                        id: true,
+                        firstName: true,
+                        lastName: true,
+                        username: true
+                      }
+                    }
+                  }
+                }
               }
             });
             
             if (message) {
-              const normalizedConversationId = await this.normalizeConversationId(data.conversationId);
-              const room = `conversation_${normalizedConversationId}`;
+              console.log(`📤 [BROADCAST] Envoi message avec ${message.attachments?.length || 0} attachments et replyTo:`, {
+                hasReplyTo: !!(message as any).replyTo,
+                replyToId: message.replyToId
+              });
               
-              console.log(`📤 [BROADCAST] Envoi message avec ${message.attachments?.length || 0} attachments vers ${room}`);
-              
-              // Broadcast vers tous les clients de la conversation
+              // Utiliser la méthode _broadcastNewMessage pour un formatting cohérent
               const messageWithTimestamp = {
                 ...message,
                 timestamp: message.createdAt
               } as any;
-              this.io.to(room).emit(SERVER_EVENTS.MESSAGE_NEW, messageWithTimestamp);
+              await this._broadcastNewMessage(messageWithTimestamp, data.conversationId, socket);
             }
           }
         } catch (error: any) {
