@@ -25,8 +25,12 @@ cd "$FRONTEND_ROOT"
 
 # Préparation
 echo -e "\n${YELLOW}📦 Préparation du contexte...${NC}"
-if [ -f "$SCRIPT_DIR/prepare-docker-build.sh" ]; then
-    bash "$SCRIPT_DIR/prepare-docker-build.sh"
+SHARED_DIR="$(cd "$FRONTEND_ROOT/../shared" && pwd)"
+if [ -f "$SHARED_DIR/scripts/distribute.sh" ]; then
+    echo "📦 Running centralized shared distribution script..."
+    cd "$SHARED_DIR"
+    bash ./scripts/distribute.sh
+    cd "$FRONTEND_ROOT"
 fi
 
 # Vérifier buildx

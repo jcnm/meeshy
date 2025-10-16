@@ -46,10 +46,14 @@ docker buildx use "$BUILDER_NAME"
 
 # Step 2: Préparer le contexte
 echo -e "\n${YELLOW}📦 Step 2/6: Préparation du contexte Docker...${NC}"
-if [ -f "$SCRIPT_DIR/prepare-docker-build.sh" ]; then
-    bash "$SCRIPT_DIR/prepare-docker-build.sh"
+SHARED_DIR="$(cd "$FRONTEND_ROOT/../shared" && pwd)"
+if [ -f "$SHARED_DIR/scripts/distribute.sh" ]; then
+    echo "📦 Running centralized shared distribution script..."
+    cd "$SHARED_DIR"
+    bash ./scripts/distribute.sh
+    cd "$FRONTEND_ROOT"
 else
-    echo -e "${YELLOW}   ⚠️  Script prepare-docker-build.sh non trouvé, continuons...${NC}"
+    echo -e "${YELLOW}   ⚠️  Script shared/scripts/distribute.sh non trouvé, continuons...${NC}"
 fi
 
 # Step 3: Login Docker Hub (si nécessaire)

@@ -123,8 +123,8 @@ FILES_TO_CHECK=(
     "package.json"
     "Dockerfile"
     "Dockerfile.optimized"
-    "scripts/prepare-docker-build.sh"
     "scripts/docker-build-optimized.sh"
+    "../shared/scripts/distribute.sh"
 )
 
 for file in "${FILES_TO_CHECK[@]}"; do
