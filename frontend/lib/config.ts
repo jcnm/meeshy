@@ -226,8 +226,22 @@ export const API_ENDPOINTS = {
 // HTTP base URL for the Gateway - Gère automatiquement client/serveur
 export const getBackendUrl = (): string => {
   if (isBrowser()) {
-    // Côté client (navigateur) - utiliser NEXT_PUBLIC_BACKEND_URL
-    return trimSlashes(process.env.NEXT_PUBLIC_BACKEND_URL || 'https://gate.meeshy.me');
+    // Vérifier d'abord les variables d'environnement
+    const fromEnv = process.env.NEXT_PUBLIC_BACKEND_URL;
+    if (fromEnv) return trimSlashes(fromEnv);
+    
+    // CORRECTION: Détection automatique localhost en développement
+    const currentHost = window.location.hostname;
+    const isDev = currentHost === 'localhost' || currentHost === '127.0.0.1';
+    
+    if (isDev) {
+      // En développement local, utiliser http://localhost:3000 (gateway)
+      console.log('🔧 [CONFIG] Développement local détecté, utilisation de http://localhost:3000');
+      return 'http://localhost:3000';
+    }
+    
+    // En production, utiliser l'URL de production
+    return 'https://gate.meeshy.me';
   }
   // Côté serveur (SSR) - utiliser INTERNAL_BACKEND_URL
   return trimSlashes(process.env.INTERNAL_BACKEND_URL || 'http://gateway:3000');
@@ -250,8 +264,21 @@ export const getWebSocketUrl = (): string => {
     const fromEnv = process.env.NEXT_PUBLIC_WS_URL;
     if (fromEnv) return trimSlashes(fromEnv);
     
+    // CORRECTION: Détection automatique localhost en développement
+    const currentHost = window.location.hostname;
+    const isDev = currentHost === 'localhost' || currentHost === '127.0.0.1';
+    
+    if (isDev) {
+      // En développement local, utiliser ws://localhost:4000
+      console.log('🔧 [CONFIG] Développement local détecté, utilisation de ws://localhost:3000');
+      return 'ws://localhost:3000';
+    }
+    
     // Derive from backend if WS not provided
-    return trimSlashes(getBackendUrl().replace(/^http(s?):\/\//, (_m, s) => (s ? 'wss://' : 'ws://')));
+    const backendUrl = getBackendUrl();
+    const wsUrl = backendUrl.replace(/^http(s?):\/\//, (_m, s) => (s ? 'wss://' : 'ws://'));
+    console.log('🔧 [CONFIG] URL WebSocket dérivée:', wsUrl);
+    return trimSlashes(wsUrl);
   }
   // Côté serveur (SSR) - utiliser INTERNAL_WS_URL
   return trimSlashes(process.env.INTERNAL_WS_URL || 'ws://gateway:3000');

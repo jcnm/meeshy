@@ -134,7 +134,9 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
   const startTyping = useCallback(() => {
     if (!isTyping && conversationId && currentUser) {
       setIsTyping(true);
-      socketMessaging.startTyping(conversationId);
+      // Note: socketMessaging.startTyping() n'a pas besoin de conversationId
+      // car il est déjà dans le closure du hook
+      socketMessaging.startTyping();
       
       // Auto-stop après 3 secondes
       if (typingTimeoutRef.current) {
@@ -149,7 +151,9 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
   const stopTyping = useCallback(() => {
     if (isTyping && conversationId && currentUser) {
       setIsTyping(false);
-      socketMessaging.stopTyping(conversationId);
+      // Note: socketMessaging.stopTyping() n'a pas besoin de conversationId
+      // car il est déjà dans le closure du hook
+      socketMessaging.stopTyping();
       
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
@@ -177,31 +181,38 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
     setSendError(null);
 
     try {
-      // Préparer les métadonnées
-      const metadata = prepareMessageMetadata(content, originalLanguage);
+      // Déterminer la langue source (originalLanguage ou langue système de l'utilisateur)
+      const sourceLanguage = originalLanguage || currentUser?.systemLanguage || 'fr';
       
-      // Log de l'envoi
-      logMessageSend(content, conversationId, currentUser);
+      // Préparer les métadonnées
+      const metadata = prepareMessageMetadata(content, sourceLanguage);
+      
+      // Log de l'envoi avec les BONS paramètres
+      logMessageSend(content, sourceLanguage, conversationId);
 
-      // Envoyer via Socket.IO
-      const success = await socketMessaging.sendMessage(content, originalLanguage, replyToId);
+      // Envoyer via Socket.IO avec la langue correcte
+      // Note: socketMessaging.sendMessage prend (content, originalLanguage, replyToId)
+      // car conversationId est déjà dans le closure du hook
+      const success = await socketMessaging.sendMessage(content, sourceLanguage, replyToId);
 
       if (success) {
         // Arrêter la frappe
         stopTyping();
         
-        // Log du succès
-        logMessageSuccess(content, conversationId);
+        // Log du succès avec les BONS paramètres
+        logMessageSuccess(content, sourceLanguage);
         
         // Callback de succès
-        onMessageSent?.(content, originalLanguage || metadata.sourceLanguage);
+        onMessageSent?.(content, sourceLanguage);
         
         return true;
       } else {
         throw new Error('Failed to send message via Socket.IO');
       }
     } catch (error) {
-      const errorMessage = handleMessageError(error);
+      // Restaurer le message en cas d'erreur n'est pas nécessaire ici
+      // car le composant gère déjà l'état du message
+      const errorMessage = handleMessageError(error, content);
       setSendError(errorMessage);
       toast.error(errorMessage);
       
@@ -226,7 +237,7 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
       }
       return success;
     } catch (error) {
-      const errorMessage = handleMessageError(error);
+      const errorMessage = handleMessageError(error, newContent);
       setSendError(errorMessage);
       toast.error(errorMessage);
       return false;
@@ -247,7 +258,7 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
       }
       return success;
     } catch (error) {
-      const errorMessage = handleMessageError(error);
+      const errorMessage = handleMessageError(error, '');
       setSendError(errorMessage);
       toast.error(errorMessage);
       return false;

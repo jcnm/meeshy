@@ -47,6 +47,7 @@ interface UseSocketIOMessagingOptions {
 interface UseSocketIOMessagingReturn {
   // Actions
   sendMessage: (content: string, originalLanguage?: string, replyToId?: string) => Promise<boolean>;
+  sendMessageWithAttachments: (content: string, attachmentIds: string[], originalLanguage?: string, replyToId?: string) => Promise<boolean>;
   editMessage: (messageId: string, newContent: string) => Promise<boolean>;
   deleteMessage: (messageId: string) => Promise<boolean>;
   
@@ -339,6 +340,35 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
     return await meeshySocketIOService.sendMessage(conversationId, content, originalLanguage, replyToId);
   }, [conversationId]);
 
+  const sendMessageWithAttachments = useCallback(async (
+    content: string, 
+    attachmentIds: string[], 
+    originalLanguage?: string, 
+    replyToId?: string
+  ): Promise<boolean> => {
+    if (!conversationId) {
+      logger.messaging.error('useSocketIOMessaging: Impossible d\'envoyer - aucune conversation active');
+      return false;
+    }
+
+    logger.messaging.debug('useSocketIOMessaging: Envoi message avec attachments', { 
+      conversationId, 
+      contentLength: content.length,
+      attachmentCount: attachmentIds.length,
+      originalLanguage,
+      replyToId: replyToId || 'none',
+      content: content.substring(0, 50) + '...'
+    });
+
+    return await meeshySocketIOService.sendMessageWithAttachments(
+      conversationId, 
+      content, 
+      attachmentIds,
+      originalLanguage, 
+      replyToId
+    );
+  }, [conversationId]);
+
   const editMessage = useCallback(async (messageId: string, newContent: string): Promise<boolean> => {
     logger.messaging.debug('useSocketIOMessaging: Modification message', { 
       messageId, 
@@ -389,6 +419,7 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
 
   return {
     sendMessage,
+    sendMessageWithAttachments,
     editMessage,
     deleteMessage,
     joinConversation,

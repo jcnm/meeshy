@@ -312,7 +312,8 @@ export class MeeshySocketIOManager {
                     lastName: true,
                     username: true
                   }
-                }
+                },
+                attachments: true
               }
             });
             
@@ -350,6 +351,187 @@ export class MeeshySocketIOManager {
             const errorResponse: SocketIOResponse<{ messageId: string }> = {
               success: false,
               error: 'Failed to send message'
+            };
+            callback(errorResponse);
+          }
+        }
+      });
+      
+      // Envoi de message avec attachments
+      socket.on(CLIENT_EVENTS.MESSAGE_SEND_WITH_ATTACHMENTS, async (data: {
+        conversationId: string;
+        content: string;
+        originalLanguage?: string;
+        attachmentIds: string[];
+        replyToId?: string;
+      }, callback?: (response: SocketIOResponse<{ messageId: string }>) => void) => {
+        try {
+          const userId = this.socketToUser.get(socket.id);
+          if (!userId) {
+            const errorResponse: SocketIOResponse<{ messageId: string }> = {
+              success: false,
+              error: 'User not authenticated'
+            };
+            
+            if (callback) callback(errorResponse);
+            socket.emit('error', { message: 'User not authenticated' });
+            return;
+          }
+
+          // Vérifier que les attachments existent et appartiennent à l'utilisateur
+          const attachmentService = new (await import('../services/AttachmentService')).AttachmentService(this.prisma);
+          
+          for (const attachmentId of data.attachmentIds) {
+            const attachment = await attachmentService.getAttachment(attachmentId);
+            if (!attachment) {
+              const errorResponse: SocketIOResponse<{ messageId: string }> = {
+                success: false,
+                error: `Attachment ${attachmentId} not found`
+              };
+              if (callback) callback(errorResponse);
+              return;
+            }
+            
+            // Vérifier que l'attachment appartient à l'utilisateur
+            if (attachment.uploadedBy !== userId) {
+              const errorResponse: SocketIOResponse<{ messageId: string }> = {
+                success: false,
+                error: `Attachment ${attachmentId} does not belong to user`
+              };
+              if (callback) callback(errorResponse);
+              return;
+            }
+          }
+
+          // Récupérer les informations de l'utilisateur pour déterminer s'il est anonyme
+          const user = this.connectedUsers.get(userId);
+          const isAnonymous = user?.isAnonymous || false;
+
+          let anonymousDisplayName: string | undefined;
+          if (isAnonymous) {
+            try {
+              const userSessionToken = user?.sessionToken;
+              if (!userSessionToken) {
+                console.error('SessionToken manquant pour utilisateur anonyme:', userId);
+                anonymousDisplayName = 'Anonymous User';
+              } else {
+                const anonymousUser = await this.prisma.anonymousParticipant.findUnique({
+                  where: { sessionToken: userSessionToken },
+                  select: { username: true, firstName: true, lastName: true }
+                });
+              
+                if (anonymousUser) {
+                  const fullName = `${anonymousUser.firstName || ''} ${anonymousUser.lastName || ''}`.trim();
+                  anonymousDisplayName = fullName || anonymousUser.username || 'Anonymous User';
+                } else {
+                  anonymousDisplayName = 'Anonymous User';
+                }
+              }
+            } catch (error) {
+              console.error('Erreur lors de la récupération du nom anonyme:', error);
+              anonymousDisplayName = 'Anonymous User';
+            }
+          }
+
+          // Créer le message via MessagingService
+          const messageRequest: MessageRequest = {
+            conversationId: data.conversationId,
+            content: data.content,
+            originalLanguage: data.originalLanguage,
+            messageType: 'text', // Peut être déduit des attachments
+            replyToId: data.replyToId,
+            isAnonymous: isAnonymous,
+            anonymousDisplayName: anonymousDisplayName,
+            metadata: {
+              source: 'websocket',
+              socketId: socket.id,
+              clientTimestamp: Date.now()
+            }
+          };
+
+          console.log(`📎 [WEBSOCKET] Nouveau message avec ${data.attachmentIds.length} attachments de ${userId} dans ${data.conversationId}`);
+
+          const jwtToken = this.extractJWTToken(socket);
+          const sessionToken = this.extractSessionToken(socket);
+
+          const response: MessageResponse = await this.messagingService.handleMessage(
+            messageRequest, 
+            userId, 
+            true,
+            jwtToken,
+            sessionToken
+          );
+
+          // Associer les attachments au message
+          if (response.success && response.data?.id) {
+            await attachmentService.associateAttachmentsToMessage(data.attachmentIds, response.data.id);
+          }
+
+          // Réponse via callback
+          if (callback) {
+            if (response.success && response.data) {
+              const socketResponse: SocketIOResponse<{ messageId: string }> = { 
+                success: true, 
+                data: { messageId: response.data.id } 
+              };
+              callback(socketResponse);
+            } else {
+              const socketResponse: SocketIOResponse<{ messageId: string }> = {
+                success: false,
+                error: response.error || 'Failed to send message'
+              };
+              callback(socketResponse);
+            }
+          }
+
+          // Broadcast temps réel vers tous les clients de la conversation (y compris l'auteur)
+          if (response.success && response.data?.id) {
+            // Récupérer le message depuis la base de données avec les attachments
+            const message = await this.prisma.message.findUnique({
+              where: { id: response.data.id },
+              include: {
+                sender: {
+                  select: {
+                    id: true,
+                    username: true,
+                    displayName: true,
+                    firstName: true,
+                    lastName: true
+                  }
+                },
+                anonymousSender: {
+                  select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    username: true
+                  }
+                },
+                attachments: true
+              }
+            });
+            
+            if (message) {
+              const normalizedConversationId = await this.normalizeConversationId(data.conversationId);
+              const room = `conversation_${normalizedConversationId}`;
+              
+              console.log(`📤 [BROADCAST] Envoi message avec ${message.attachments?.length || 0} attachments vers ${room}`);
+              
+              // Broadcast vers tous les clients de la conversation
+              const messageWithTimestamp = {
+                ...message,
+                timestamp: message.createdAt
+              } as any;
+              this.io.to(room).emit(SERVER_EVENTS.MESSAGE_NEW, messageWithTimestamp);
+            }
+          }
+        } catch (error: any) {
+          console.error('❌ [WEBSOCKET] Erreur envoi message avec attachments:', error);
+          
+          if (callback) {
+            const errorResponse: SocketIOResponse<{ messageId: string }> = {
+              success: false,
+              error: 'Failed to send message with attachments'
             };
             callback(errorResponse);
           }
@@ -410,16 +592,23 @@ export class MeeshySocketIOManager {
   }
 
   private async _handleTokenAuthentication(socket: any): Promise<void> {
+    console.log('');
+    console.log('╔═══════════════════════════════════════════════════════════════╗');
+    console.log('║  🔐 DÉBUT AUTHENTIFICATION SOCKET                             ║');
+    console.log('╚═══════════════════════════════════════════════════════════════╝');
+    console.log(`  🆔 Socket ID: ${socket.id}`);
+    console.log(`  ⏰ Timestamp: ${new Date().toISOString()}`);
+    console.log('');
+    
     try {
       // Debug complet de socket.handshake
-      console.log(`🔍 DEBUG socket.handshake pour ${socket.id}:`, {
-        hasHandshake: !!socket.handshake,
-        headers: socket.handshake?.headers,
-        allHeaders: Object.keys(socket.handshake?.headers || {}),
-        auth: socket.handshake?.auth,
-        query: socket.handshake?.query,
-        address: socket.handshake?.address
-      });
+      console.log('  📋 DONNÉES HANDSHAKE:');
+      console.log('  ├─ Has Handshake:', !!socket.handshake);
+      console.log('  ├─ Available Headers:', Object.keys(socket.handshake?.headers || {}));
+      console.log('  ├─ Auth Object:', socket.handshake?.auth);
+      console.log('  ├─ Query Params:', socket.handshake?.query);
+      console.log('  └─ Client Address:', socket.handshake?.address);
+      console.log('');
 
       // Récupérer les tokens depuis différentes sources avec types précis
       const authToken = socket.handshake?.headers?.authorization?.replace('Bearer ', '') || 
@@ -432,24 +621,33 @@ export class MeeshySocketIOManager {
       const tokenType = socket.handshake?.auth?.tokenType;
       const sessionType = socket.handshake?.auth?.sessionType;
       
-      console.log(`🔍 Authentification hybride pour socket ${socket.id}:`, {
-        hasAuthToken: !!authToken,
-        hasSessionToken: !!sessionToken,
-        tokenType: tokenType || 'unknown',
-        sessionType: sessionType || 'unknown',
-        authTokenLength: authToken?.length,
-        sessionTokenLength: sessionToken?.length,
-        authTokenPreview: authToken ? authToken.substring(0, 30) + '...' : 'none',
-        sessionTokenPreview: sessionToken ? sessionToken.substring(0, 30) + '...' : 'none'
+      console.log('  🔑 EXTRACTION DES TOKENS:');
+      console.log('  ├─ JWT Token:', {
+        found: !!authToken,
+        type: tokenType || 'unknown',
+        length: authToken?.length || 0,
+        preview: authToken ? authToken.substring(0, 30) + '...' : 'N/A',
+        source: authToken ? (socket.handshake?.headers?.authorization ? 'header' : 'auth') : 'none'
       });
+      console.log('  └─ Session Token:', {
+        found: !!sessionToken,
+        type: sessionType || 'unknown',
+        length: sessionToken?.length || 0,
+        preview: sessionToken ? sessionToken.substring(0, 30) + '...' : 'N/A',
+        source: sessionToken ? (socket.handshake?.headers?.['x-session-token'] ? 'header' : 'auth') : 'none'
+      });
+      console.log('');
 
       // Tentative d'authentification avec Bearer token (utilisateur authentifié)
       if (authToken && (!tokenType || tokenType === 'jwt')) {
+        console.log('  🔐 TENTATIVE AUTHENTIFICATION JWT...');
         try {
           const jwtSecret = process.env.JWT_SECRET || 'default-secret';
           const decoded = jwt.verify(authToken, jwtSecret) as any;
           
-          console.log(`🔐 Token JWT vérifié pour utilisateur: ${decoded.userId} (type: ${tokenType || 'jwt'})`);
+          console.log('  ✓ Token JWT vérifié avec succès');
+          console.log('    ├─ User ID:', decoded.userId);
+          console.log('    └─ Token Type:', tokenType || 'jwt');
 
           // Récupérer l'utilisateur depuis la base de données
           const dbUser = await this.prisma.user.findUnique({
@@ -463,6 +661,11 @@ export class MeeshySocketIOManager {
           });
 
           if (dbUser && dbUser.isActive) {
+            console.log('  ✓ Utilisateur trouvé en base de données');
+            console.log('    ├─ Username:', dbUser.username);
+            console.log('    ├─ Language:', dbUser.systemLanguage);
+            console.log('    └─ Active:', dbUser.isActive);
+            
             // Créer l'utilisateur Socket.IO
             const user: SocketUser = {
               id: dbUser.id,
@@ -477,7 +680,7 @@ export class MeeshySocketIOManager {
               // Déconnecter l'ancienne socket
               const oldSocket = this.io.sockets.sockets.get(existingUser.socketId);
               if (oldSocket) {
-                console.log(`🔄 Déconnexion de l'ancienne socket ${existingUser.socketId} pour l'utilisateur ${user.id}`);
+                console.log(`  🔄 Déconnexion ancienne socket ${existingUser.socketId}`);
                 oldSocket.disconnect(true);
               }
               this.socketToUser.delete(existingUser.socketId);
@@ -496,28 +699,47 @@ export class MeeshySocketIOManager {
             // Rejoindre la room globale si elle existe (conversation "meeshy")
             try {
               socket.join(`conversation_any`);
-              console.log(`👥 Utilisateur authentifié ${user.id} rejoint conversation globale "meeshy"`);
+              console.log(`  👥 Rejoint conversation globale "meeshy"`);
             } catch {}
 
-            // CORRECTION: Émettre l'événement AUTHENTICATED pour que le frontend sache que l'auth a réussi
-            socket.emit(SERVER_EVENTS.AUTHENTICATED, { 
+            // CORRECTION CRITIQUE: Émettre l'événement AUTHENTICATED IMMÉDIATEMENT
+            console.log('');
+            console.log('  📤 ÉMISSION ÉVÉNEMENT AUTHENTICATED...');
+            const authResponse = { 
               success: true, 
               user: { id: user.id, language: user.language, isAnonymous: false } 
-            });
-
-            console.log(`✅ Utilisateur authentifié automatiquement: ${user.id}`);
+            };
+            console.log('    ├─ Event:', SERVER_EVENTS.AUTHENTICATED);
+            console.log('    ├─ Success:', authResponse.success);
+            console.log('    └─ User:', authResponse.user);
+            
+            socket.emit(SERVER_EVENTS.AUTHENTICATED, authResponse);
+            
+            console.log('');
+            console.log('╔═══════════════════════════════════════════════════════════════╗');
+            console.log('║  ✅ AUTHENTIFICATION JWT RÉUSSIE                              ║');
+            console.log('╚═══════════════════════════════════════════════════════════════╝');
+            console.log(`  👤 User: ${dbUser.username} (${user.id})`);
+            console.log(`  🔌 Socket: ${socket.id}`);
+            console.log(`  ⏰ Timestamp: ${new Date().toISOString()}`);
+            console.log('');
+            
             return; // Authentification réussie
           } else {
-            console.log(`❌ Utilisateur ${decoded.userId} non trouvé ou inactif`);
+            console.log('  ❌ Utilisateur non trouvé ou inactif');
+            console.log('    └─ User ID:', decoded.userId);
           }
-        } catch (jwtError) {
-          console.log(`⚠️ Token JWT invalide, tentative avec session token`);
+        } catch (jwtError: any) {
+          console.log('  ❌ Erreur vérification JWT');
+          console.log('    ├─ Error:', jwtError.message);
+          console.log('    └─ Tentative avec session token...');
         }
       }
 
       // Tentative d'authentification avec session token (participant anonyme)
       if (sessionToken && (!sessionType || sessionType === 'anonymous')) {
-        console.log(`🔍 Tentative d'authentification session token (type: ${sessionType || 'anonymous'})`);
+        console.log('  🔐 TENTATIVE AUTHENTIFICATION SESSION TOKEN...');
+        console.log('    └─ Type:', sessionType || 'anonymous');
         
         const participant = await this.prisma.anonymousParticipant.findUnique({
           where: { sessionToken },
@@ -536,7 +758,10 @@ export class MeeshySocketIOManager {
         if (participant && participant.isActive && participant.shareLink.isActive) {
           // Vérifier l'expiration du lien
           if (!participant.shareLink.expiresAt || participant.shareLink.expiresAt > new Date()) {
-            console.log(`✅ Session token valide pour participant anonyme: ${participant.id}`);
+            console.log('  ✓ Session token valide');
+            console.log('    ├─ Participant ID:', participant.id);
+            console.log('    ├─ Link ID:', participant.shareLink.linkId);
+            console.log('    └─ Language:', participant.language);
             
             // Créer l'utilisateur Socket.IO anonyme
             const user: SocketUser = {
@@ -550,10 +775,9 @@ export class MeeshySocketIOManager {
             // CORRECTION CRITIQUE: Gérer les connexions multiples (même anonyme, plusieurs onglets)
             const existingUser = this.connectedUsers.get(user.id);
             if (existingUser && existingUser.socketId !== socket.id) {
-              // Déconnecter l'ancienne socket
               const oldSocket = this.io.sockets.sockets.get(existingUser.socketId);
               if (oldSocket) {
-                console.log(`🔄 Déconnexion de l'ancienne socket ${existingUser.socketId} pour l'anonyme ${user.id}`);
+                console.log(`  🔄 Déconnexion ancienne socket ${existingUser.socketId}`);
                 oldSocket.disconnect(true);
               }
               this.socketToUser.delete(existingUser.socketId);
@@ -570,33 +794,79 @@ export class MeeshySocketIOManager {
             try {
               const conversationRoom = `conversation_${participant.shareLink.id}`;
               socket.join(conversationRoom);
-              console.log(`👥 Participant anonyme ${user.id} rejoint conversation ${conversationRoom}`);
+              console.log(`  👥 Rejoint conversation ${conversationRoom}`);
             } catch {}
 
-            // CORRECTION: Émettre l'événement AUTHENTICATED pour que le frontend sache que l'auth a réussi
-            socket.emit(SERVER_EVENTS.AUTHENTICATED, { 
+            // CORRECTION CRITIQUE: Émettre l'événement AUTHENTICATED IMMÉDIATEMENT
+            console.log('');
+            console.log('  📤 ÉMISSION ÉVÉNEMENT AUTHENTICATED...');
+            const authResponse = { 
               success: true, 
               user: { id: user.id, language: user.language, isAnonymous: true } 
-            });
-
-            console.log(`✅ Participant anonyme authentifié automatiquement: ${user.id}`);
+            };
+            console.log('    ├─ Event:', SERVER_EVENTS.AUTHENTICATED);
+            console.log('    ├─ Success:', authResponse.success);
+            console.log('    └─ User:', authResponse.user);
+            
+            socket.emit(SERVER_EVENTS.AUTHENTICATED, authResponse);
+            
+            console.log('');
+            console.log('╔═══════════════════════════════════════════════════════════════╗');
+            console.log('║  ✅ AUTHENTIFICATION ANONYME RÉUSSIE                          ║');
+            console.log('╚═══════════════════════════════════════════════════════════════╝');
+            console.log(`  👤 Participant: ${user.id}`);
+            console.log(`  🔌 Socket: ${socket.id}`);
+            console.log(`  ⏰ Timestamp: ${new Date().toISOString()}`);
+            console.log('');
+            
             return; // Authentification anonyme réussie
           } else {
-            console.log(`❌ Lien de partage expiré pour participant ${participant.id}`);
+            console.log('  ❌ Lien de partage expiré');
+            console.log('    ├─ Participant ID:', participant.id);
+            console.log('    └─ Expired at:', participant.shareLink.expiresAt);
           }
         } else {
-          console.log(`❌ Participant anonyme non trouvé ou inactif pour session token`);
+          console.log('  ❌ Participant anonyme non trouvé ou inactif');
         }
       }
 
       // Aucune authentification valide trouvée
-      console.log(`⚠️ Aucune authentification valide pour socket ${socket.id}`);
+      console.log('');
+      console.log('╔═══════════════════════════════════════════════════════════════╗');
+      console.log('║  ❌ ÉCHEC AUTHENTIFICATION                                     ║');
+      console.log('╚═══════════════════════════════════════════════════════════════╝');
+      console.log(`  🔌 Socket: ${socket.id}`);
+      console.log('  ⚠️ Aucun token valide trouvé');
+      console.log('  📤 Émission AUTHENTICATED avec success: false');
+      console.log('');
+      
+      // CORRECTION CRITIQUE: Émettre l'événement AUTHENTICATED avec échec
+      const failureResponse = { 
+        success: false,
+        error: 'Authentification requise. Veuillez fournir un Bearer token ou un x-session-token valide.'
+      };
+      
+      socket.emit(SERVER_EVENTS.AUTHENTICATED, failureResponse);
       socket.emit(SERVER_EVENTS.ERROR, { 
-        message: 'Authentification requise. Veuillez fournir un Bearer token ou un x-session-token valide.' 
+        message: failureResponse.error
       });
 
-    } catch (error) {
-      console.error(`❌ Erreur authentification hybride:`, error);
+    } catch (error: any) {
+      console.log('');
+      console.log('╔═══════════════════════════════════════════════════════════════╗');
+      console.log('║  ❌ ERREUR DURANT AUTHENTIFICATION                            ║');
+      console.log('╚═══════════════════════════════════════════════════════════════╝');
+      console.log(`  🔌 Socket: ${socket.id}`);
+      console.log('  ⚠️ Error:', error.message);
+      console.log('  📤 Émission AUTHENTICATED avec success: false');
+      console.log('');
+      
+      // CORRECTION CRITIQUE: Émettre l'événement AUTHENTICATED avec erreur
+      socket.emit(SERVER_EVENTS.AUTHENTICATED, { 
+        success: false,
+        error: 'Erreur d\'authentification'
+      });
+      
       socket.emit(SERVER_EVENTS.ERROR, { message: 'Erreur d\'authentification' });
     }
   }
