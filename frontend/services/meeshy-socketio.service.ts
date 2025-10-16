@@ -132,13 +132,11 @@ class MeeshySocketIOService {
   private ensureConnection(): void {
     // Si déjà connecté ou en cours, ne rien faire
     if (this.socket && (this.isConnected || this.isConnecting || this.socket.connected)) {
-      console.log('🔒 [ENSURE] Connexion déjà active, skip initialisation');
       return;
     }
     
     // Protection contre les appels multiples rapides
     if (this.isConnecting) {
-      console.log('🔒 [ENSURE] Connexion en cours, skip initialisation');
       return;
     }
     
@@ -147,7 +145,6 @@ class MeeshySocketIOService {
     const hasSessionToken = typeof window !== 'undefined' && !!localStorage.getItem('anonymous_session_token');
     
     if (hasAuthToken || hasSessionToken) {
-      console.log('🔄 [ENSURE] Initialisation automatique de la connexion...');
       this.initializeConnection();
     }
   }
@@ -163,18 +160,11 @@ class MeeshySocketIOService {
   /**
    * Obtenir l'instance singleton du service Socket.IO
    * CORRECTION: S'assurer qu'une seule instance existe JAMAIS
+   * OPTIMISATION: Pas de logs pour un chargement instantané
    */
   static getInstance(): MeeshySocketIOService {
     if (!MeeshySocketIOService.instance) {
-      // Ne logger que côté client en runtime (pas pendant le build Next.js)
-      if (typeof window !== 'undefined') {
-        console.log('🏗️ [SINGLETON] Création nouvelle instance MeeshySocketIOService');
-      }
       MeeshySocketIOService.instance = new MeeshySocketIOService();
-    } else {
-      if (typeof window !== 'undefined') {
-        console.log('🔄 [SINGLETON] Réutilisation instance existante MeeshySocketIOService');
-      }
     }
     return MeeshySocketIOService.instance;
   }
@@ -185,7 +175,7 @@ class MeeshySocketIOService {
   private initializeConnection(): void {
     // Vérifier si le code s'exécute côté client
     if (typeof window === 'undefined') {
-      logger.socketio.warn('MeeshySocketIOService: Exécution côté serveur, connexion ignorée');
+      logger.warn('[SOCKETIO]', 'Exécution côté serveur, connexion ignorée');
       return;
     }
 
@@ -194,20 +184,13 @@ class MeeshySocketIOService {
     const publicPaths = ['/about', '/contact', '/privacy', '/terms', '/partners'];
     
     if (publicPaths.includes(currentPath)) {
-      logger.socketio.debug('MeeshySocketIOService: Page publique détectée, connexion ignorée', { path: currentPath });
+      logger.debug('[SOCKETIO]', 'Page publique détectée, connexion ignorée', { path: currentPath });
       return;
     }
 
     // Empêcher les connexions multiples
     // Vérifier à la fois notre flag interne ET l'état réel de Socket.IO
     if (this.isConnecting || (this.socket && (this.isConnected || this.socket.connected))) {
-      console.log('🔌 Connexion déjà active, ignorée', {
-        isConnecting: this.isConnecting,
-        hasSocket: !!this.socket,
-        internalIsConnected: this.isConnected,
-        socketIoConnected: this.socket?.connected,
-        socketId: this.socket?.id
-      });
       return;
     }
 
@@ -216,18 +199,9 @@ class MeeshySocketIOService {
     const hasSessionToken = !!localStorage.getItem('anonymous_session_token');
     
     if (!hasAuthToken && !hasSessionToken) {
-      console.warn('🔒 MeeshySocketIOService: Aucun token configuré, connexion impossible');
       this.isConnecting = false;
       return;
     }
-    
-    // Pas besoin de currentUser si on a un token valide
-    // Le backend authentifiera via le token dans les headers
-    console.log('✓ Token disponible, connexion possible', {
-      hasAuthToken,
-      hasSessionToken,
-      hasCurrentUser: !!this.currentUser
-    });
 
     // CORRECTION CRITIQUE: Ne nettoyer QUE si le socket est connecté ou en erreur
     // Évite de fermer un socket en cours de connexion (problème avec React StrictMode)
@@ -238,11 +212,8 @@ class MeeshySocketIOService {
         connecting: !this.socket.connected && !this.socket.disconnected
       };
       
-      console.log('🔍 MeeshySocketIOService: Socket existant détecté', socketState);
-      
       // Ne nettoyer QUE si connecté ou déconnecté (pas si en cours de connexion)
       if (socketState.connected || socketState.disconnected) {
-        console.log('🧹 Nettoyage socket existant (état stable)');
         try {
           this.socket.removeAllListeners();
           if (socketState.connected) {
@@ -250,10 +221,9 @@ class MeeshySocketIOService {
           }
           this.socket = null;
         } catch (e) {
-          console.warn('⚠️ Erreur lors du nettoyage:', e);
+          console.warn('⚠️ Erreur lors du nettoyage socket:', e);
         }
       } else {
-        console.log('⏳ Socket en cours de connexion, réutilisation...');
         return; // Réutiliser le socket en cours de connexion
       }
     }
@@ -264,18 +234,8 @@ class MeeshySocketIOService {
     const authToken = localStorage.getItem('auth_token');
     const sessionToken = localStorage.getItem('anonymous_session_token');
     
-    logger.socketio.debug('MeeshySocketIOService: Vérification des tokens', {
-      hasAuthToken: !!authToken,
-      hasSessionToken: !!sessionToken,
-      authTokenLength: authToken?.length,
-      sessionTokenLength: sessionToken?.length,
-      authTokenPreview: authToken ? authToken.substring(0, 30) + '...' : 'none',
-      sessionTokenPreview: sessionToken ? sessionToken.substring(0, 30) + '...' : 'none'
-    });
-    
     // Vérifier qu'on a au moins un token
     if (!authToken && !sessionToken) {
-      console.warn('🔒 MeeshySocketIOService: Aucun token d\'authentification trouvé');
       this.isConnecting = false;
       return;
     }
@@ -292,22 +252,6 @@ class MeeshySocketIOService {
     if (sessionToken) {
       extraHeaders['x-session-token'] = sessionToken;
     }
-    
-    console.log('🔌 MeeshySocketIOService: Initialisation connexion Socket.IO...', {
-      serverUrl,
-      hasAuthToken: !!authToken,
-      hasSessionToken: !!sessionToken,
-      authTokenPreview: authToken ? authToken.substring(0, 20) + '...' : 'none',
-      sessionTokenPreview: sessionToken ? sessionToken.substring(0, 20) + '...' : 'none',
-      extraHeaders
-    });
-
-    console.log('🔐 MeeshySocketIOService: Headers d\'authentification préparés', {
-      extraHeaders,
-      headerKeys: Object.keys(extraHeaders),
-      hasAuthHeader: !!extraHeaders['Authorization'],
-      hasSessionHeader: !!extraHeaders['x-session-token']
-    });
 
     try {
       // Préparer les données d'authentification avec types de tokens précis
@@ -339,21 +283,12 @@ class MeeshySocketIOService {
         forceNew: false,
         autoConnect: false // ⚠️ DÉSACTIVÉ pour configurer les listeners d'abord
       });
-
-      console.log('🔧 [INIT] Socket créé, configuration des listeners...');
       
       // CORRECTION CRITIQUE: Configurer les listeners AVANT de connecter
       this.setupEventListeners();
       
-      console.log('🔌 [INIT] Listeners configurés, connexion en cours...');
-      
       // CORRECTION CRITIQUE: Connecter manuellement APRÈS avoir configuré les listeners
       this.socket.connect();
-      
-      console.log('✅ [INIT] Connexion initiée', {
-        socketId: this.socket.id,
-        connected: this.socket.connected
-      });
       
       this.isConnecting = false;
     } catch (error) {
@@ -368,53 +303,30 @@ class MeeshySocketIOService {
    * CORRECTION CRITIQUE: Permet d'envoyer des messages sans avoir à rejoindre manuellement
    */
   private _autoJoinLastConversation(): void {
-    console.log('');
-    console.log('🔄 ═══════════════════════════════════════════════════════');
-    console.log('🔄  AUTO-JOIN CONVERSATION');
-    console.log('🔄 ═══════════════════════════════════════════════════════');
-    
     // Vérifier si une conversation est mémorisée
     if (this.currentConversationId) {
-      console.log('  ✓ Conversation mémorisée:', this.currentConversationId);
-      console.log('  🚪 Rejoindre automatiquement...');
-      
       // Rejoindre la conversation mémorisée
       this.joinConversation(this.currentConversationId);
-      
-      console.log('  ✅ Auto-join effectué (mémorisée)');
-      console.log('🔄 ═══════════════════════════════════════════════════════');
-      console.log('');
       return;
     }
-    
-    console.log('  ℹ️ Aucune conversation mémorisée');
     
     // Essayer de détecter la conversation depuis l'URL
     if (typeof window !== 'undefined') {
       const path = window.location.pathname;
-      console.log('  🔍 Path actuel:', path);
       
       // CORRECTION CRITIQUE: Gérer les pages spéciales
       
       // 1. Page d'accueil "/" → Conversation globale "meeshy"
       if (path === '/' || path === '') {
-        console.log('  🏠 Page d\'accueil détectée → Conversation globale "meeshy"');
         this.joinConversation('meeshy');
-        console.log('  ✅ Auto-join effectué (page accueil)');
-        console.log('🔄 ═══════════════════════════════════════════════════════');
-        console.log('');
         return;
       }
       
       // 2. Page chat anonyme "/chat" → Récupérer conversation du share link
       if (path === '/chat' || path.startsWith('/chat?')) {
-        console.log('  💬 Page chat anonyme détectée');
-        
         // Récupérer le sessionToken anonyme
         const sessionToken = localStorage.getItem('anonymous_session_token');
         if (sessionToken) {
-          console.log('  ✓ Session token anonyme trouvé');
-          
           // Le conversationId est stocké dans le localStorage par le chat anonyme
           const chatData = localStorage.getItem('anonymous_chat_data');
           if (chatData) {
@@ -423,21 +335,13 @@ class MeeshySocketIOService {
               const conversationId = parsedData.conversationId || parsedData.conversation?.id;
               
               if (conversationId) {
-                console.log('  🎯 Conversation anonyme détectée:', conversationId);
                 this.joinConversation(conversationId);
-                console.log('  ✅ Auto-join effectué (chat anonyme)');
-                console.log('🔄 ═══════════════════════════════════════════════════════');
-                console.log('');
                 return;
               }
             } catch (e) {
-              console.warn('  ⚠️ Erreur parsing anonymous_chat_data:', e);
+              console.warn('⚠️ Erreur parsing anonymous_chat_data:', e);
             }
           }
-          
-          console.log('  ℹ️ Conversation anonyme pas encore chargée');
-        } else {
-          console.log('  ℹ️ Pas de session anonyme active');
         }
       }
       
@@ -445,22 +349,11 @@ class MeeshySocketIOService {
       const conversationMatch = path.match(/\/(conversations|chat)\/([^\/\?]+)/);
       if (conversationMatch && conversationMatch[2]) {
         const detectedConversationId = conversationMatch[2];
-        console.log('  🎯 Conversation détectée depuis URL:', detectedConversationId);
-        
         // Rejoindre la conversation détectée
         this.joinConversation(detectedConversationId);
-        
-        console.log('  ✅ Auto-join effectué (URL avec ID)');
-        console.log('🔄 ═══════════════════════════════════════════════════════');
-        console.log('');
         return;
       }
-      
-      console.log('  ℹ️ Aucune conversation détectée pour cette page');
     }
-    
-    console.log('🔄 ═══════════════════════════════════════════════════════');
-    console.log('');
   }
 
   /**
@@ -471,93 +364,31 @@ class MeeshySocketIOService {
 
     // Événements de connexion
     this.socket.on('connect', () => {
-      console.log('');
-      console.log('═══════════════════════════════════════════════════════');
-      console.log('🔌 [CONNECT] Socket.IO CONNECTÉ - En attente d\'authentification');
-      console.log('═══════════════════════════════════════════════════════');
-      console.log('  📊 État de connexion:', {
-        socketId: this.socket?.id,
-        transport: this.socket?.io.engine?.transport.name,
-        socketConnected: this.socket?.connected,
-        isConnected: this.isConnected,
-        isConnecting: this.isConnecting,
-        timestamp: new Date().toISOString()
-      });
-      console.log('  ⏳ Attente de l\'événement SERVER_EVENTS.AUTHENTICATED...');
-      console.log('═══════════════════════════════════════════════════════');
-      console.log('');
-      
       // NE PAS mettre isConnected = true ici, attendre la confirmation d'authentification
       this.isConnecting = false;
       this.reconnectAttempts = 0;
       
       // CORRECTION: Timeout de sécurité si AUTHENTICATED n'arrive pas dans les 5 secondes
-      // Augmenté de 3s à 5s pour éviter le mode fallback prématuré
       setTimeout(() => {
         if (!this.isConnected && this.socket?.connected) {
-          console.log('');
-          console.log('⚠️ ═══════════════════════════════════════════════════════');
-          console.log('⚠️  TIMEOUT: AUTHENTICATED non reçu après 5s');
-          console.log('⚠️ ═══════════════════════════════════════════════════════');
-          console.log('  📊 État actuel:', {
-            hasSocket: !!this.socket,
-            socketConnected: this.socket?.connected,
-            isConnected: this.isConnected,
-            socketId: this.socket?.id
-          });
-          console.log('  ⚠️ Problème d\'authentification probable');
-          console.log('  → Le backend devrait envoyer SERVER_EVENTS.AUTHENTICATED');
-          console.log('⚠️ ═══════════════════════════════════════════════════════');
-          console.log('');
-          
           // NE PAS activer le mode fallback - déconnecter et attendre
           // Le problème vient probablement de tokens invalides
           this.socket?.disconnect();
-          console.warn('⚠️ [INIT] Déconnexion forcée après timeout authentification');
         }
       }, 5000);
     });
 
     // CORRECTION: Écouter l'événement AUTHENTICATED du backend
     this.socket.on(SERVER_EVENTS.AUTHENTICATED, (response: any) => {
-      console.log('');
-      console.log('🎉 ═══════════════════════════════════════════════════════');
-      console.log('🎉  ÉVÉNEMENT AUTHENTICATED REÇU');
-      console.log('🎉 ═══════════════════════════════════════════════════════');
-      console.log('  📦 Response:', response);
-      console.log('  ✓ Success:', response?.success);
-      console.log('  👤 User:', response?.user);
-      console.log('🎉 ═══════════════════════════════════════════════════════');
-      console.log('');
-      
       if (response?.success) {
         this.isConnected = true;
-        console.log('✅ ═══════════════════════════════════════════════════════');
-        console.log('✅  AUTHENTIFICATION CONFIRMÉE PAR LE SERVEUR');
-        console.log('✅ ═══════════════════════════════════════════════════════');
-        console.log('  👤 User ID:', response.user?.id);
-        console.log('  🔒 Is Anonymous:', response.user?.isAnonymous);
-        console.log('  🌍 Language:', response.user?.language);
-        console.log('  🔌 Socket ID:', this.socket?.id);
-        console.log('  📊 isConnected:', this.isConnected);
-        console.log('  📊 socket.connected:', this.socket?.connected);
-        console.log('✅ ═══════════════════════════════════════════════════════');
-        console.log('');
         
         // CORRECTION CRITIQUE: Rejoindre automatiquement la dernière conversation active
         this._autoJoinLastConversation();
         
-        toast.success(this.t('websocket.connected'));
+        // Toast retiré pour éviter les notifications intrusives
       } else {
         this.isConnected = false;
-        console.log('');
-        console.log('❌ ═══════════════════════════════════════════════════════');
-        console.log('❌  AUTHENTIFICATION REFUSÉE PAR LE SERVEUR');
-        console.log('❌ ═══════════════════════════════════════════════════════');
-        console.log('  ⚠️ Error:', response?.error);
-        console.log('  📊 isConnected:', this.isConnected);
-        console.log('❌ ═══════════════════════════════════════════════════════');
-        console.log('');
         toast.error(this.t('websocket.authenticationFailed') + ': ' + (response?.error || 'Erreur inconnue'));
       }
     });
@@ -565,12 +396,6 @@ class MeeshySocketIOService {
     this.socket.on('disconnect', (reason) => {
       this.isConnected = false;
       this.isConnecting = false;
-      console.warn('🔌 MeeshySocketIOService: Socket.IO déconnecté', { 
-        reason,
-        socketId: this.socket?.id,
-        currentUser: this.currentUser?.username,
-        timestamp: new Date().toISOString()
-      });
       
       // CORRECTION CRITIQUE: Ne PAS reconnecter automatiquement si :
       // 1. Déconnexion volontaire (io client disconnect)
@@ -580,52 +405,41 @@ class MeeshySocketIOService {
       
       if (wasNeverConnected) {
         // Première connexion échouée - probablement un problème d'authentification
-        console.warn('⚠️ [INIT] Première connexion refusée par le serveur');
-        console.warn('  → Pas de reconnexion automatique (attente setCurrentUser)');
         return; // Ne PAS reconnecter, attendre que l'app initialise correctement
       }
       
       if (reason === 'io server disconnect') {
         // Le serveur a forcé la déconnexion (souvent connexion multiple ou redémarrage)
-        console.log('🔄 Déconnexion par le serveur - Reconnexion automatique dans 2s...');
         toast.warning(this.t('websocket.serverDisconnectedReconnecting'));
         
         // Reconnexion automatique après délai
         if (shouldReconnect) {
           setTimeout(() => {
             if (!this.isConnected && !this.isConnecting) {
-              console.log('🔄 Tentative de reconnexion automatique après déconnexion serveur...');
               this.reconnect();
             }
           }, 2000);
         }
       } else if (reason === 'transport close' || reason === 'transport error') {
         // Problème réseau ou serveur indisponible
-        console.log('🔄 Erreur transport - Reconnexion automatique dans 3s...');
         toast.warning(this.t('websocket.connectionLostReconnecting'));
         
         if (shouldReconnect) {
           setTimeout(() => {
             if (!this.isConnected && !this.isConnecting) {
-              console.log('🔄 Tentative de reconnexion automatique après erreur transport...');
               this.reconnect();
             }
           }, 3000);
         }
       } else if (shouldReconnect) {
         // Autres déconnexions inattendues
-        console.log(`🔄 Déconnexion inattendue (${reason}) - Reconnexion automatique dans 2s...`);
         toast.warning(this.t('websocket.connectionLostReconnecting'));
         
         setTimeout(() => {
           if (!this.isConnected && !this.isConnecting) {
-            console.log('🔄 Tentative de reconnexion automatique après déconnexion...');
             this.reconnect();
           }
         }, 2000);
-      } else {
-        // Déconnexion volontaire (changement de page, etc.)
-        console.log('✓ Déconnexion volontaire, pas de reconnexion automatique');
       }
     });
 
@@ -638,20 +452,8 @@ class MeeshySocketIOService {
 
     // Événements de messages
     this.socket.on(SERVER_EVENTS.MESSAGE_NEW, (socketMessage) => {
-      console.log('📨 MeeshySocketIOService: Nouveau message reçu', {
-        messageId: socketMessage.id,
-        conversationId: socketMessage.conversationId,
-        senderId: socketMessage.senderId,
-        replyToId: socketMessage.replyToId,
-        content: socketMessage.content?.substring(0, 50) + '...',
-        receivedOnPage: typeof window !== 'undefined' ? window.location.pathname : 'unknown',
-        listenersCount: this.messageListeners.size,
-        timestamp: new Date().toISOString()
-      });
-
       // Convertir en format Message standard
       const message: Message = this.convertSocketMessageToMessage(socketMessage);
-      console.log('🔄 Broadcasting message to', this.messageListeners.size, 'listeners');
       this.messageListeners.forEach(listener => listener(message));
 
       // Remonter les stats si incluses dans les métadonnées du message
@@ -668,7 +470,7 @@ class MeeshySocketIOService {
     });
 
     this.socket.on(SERVER_EVENTS.MESSAGE_EDITED, (socketMessage) => {
-      logger.socketio.debug('MeeshySocketIOService: Message modifié', {
+      logger.debug('[SOCKETIO]', 'Message modifié', {
         messageId: socketMessage.id
       });
 
@@ -677,7 +479,7 @@ class MeeshySocketIOService {
     });
 
     this.socket.on(SERVER_EVENTS.MESSAGE_DELETED, (data) => {
-      logger.socketio.debug('MeeshySocketIOService: Message supprimé', {
+      logger.debug('[SOCKETIO]', 'Message supprimé', {
         messageId: data.messageId
       });
 
@@ -736,7 +538,7 @@ class MeeshySocketIOService {
         } : null
       });
       
-      logger.socketio.debug('MeeshySocketIOService: Traduction reçue', {
+      logger.debug('[SOCKETIO]', 'Traduction reçue', {
         messageId: data.messageId,
         format: data.translation ? 'singulier' : 'pluriel',
         translationsCount: translations.length,
@@ -745,25 +547,19 @@ class MeeshySocketIOService {
 
       // Mise en cache de la traduction reçue
       if (translations && translations.length > 0) {
-        console.log('🔄 [SOCKETIO-SERVICE] Mise en cache des traductions...');
-        translations.forEach((translation, index) => {
+        translations.forEach((translation) => {
           const cacheKey = `${data.messageId}_${translation.targetLanguage}`;
           this.translationCache.set(cacheKey, translation);
-          console.log(`  ${index + 1}. Cache: ${cacheKey} → ${translation.translatedContent?.substring(0, 30)}...`);
         });
       }
 
-      console.log(`📡 [SOCKETIO-SERVICE] Notification à ${this.translationListeners.size} listeners...`);
       // Notifier tous les listeners avec format normalisé (toujours pluriel pour cohérence interne)
       const normalizedData = {
         messageId: data.messageId,
         translations: translations
       };
       
-      let listenerIndex = 0;
       this.translationListeners.forEach((listener) => {
-        listenerIndex++;
-        console.log(`  → Listener ${listenerIndex}: Envoi des données normalisées...`);
         listener(normalizedData);
       });
       
@@ -780,8 +576,6 @@ class MeeshySocketIOService {
 
     // Événements de frappe - gestion intelligente avec état
     this.socket.on(SERVER_EVENTS.TYPING_START, (event) => {
-      console.log('⌨️ MeeshySocketIOService: Frappe commencée', { userId: event.userId, conversationId: event.conversationId });
-      
       // Ajouter l'utilisateur à la liste des tapeurs pour cette conversation
       if (!this.typingUsers.has(event.conversationId)) {
         this.typingUsers.set(event.conversationId, new Set());
@@ -804,9 +598,7 @@ class MeeshySocketIOService {
       this.typingListeners.forEach(listener => listener({ ...event, isTyping: true } as any));
     });
 
-    this.socket.on(SERVER_EVENTS.TYPING_STOP, (event) => {
-      console.log('⌨️ MeeshySocketIOService: Frappe arrêtée', { userId: event.userId, conversationId: event.conversationId });
-      this.handleTypingStop(event);
+    this.socket.on(SERVER_EVENTS.TYPING_STOP, (event) => {      this.handleTypingStop(event);
     });
 
     // Événements de statut utilisateur
@@ -878,12 +670,117 @@ class MeeshySocketIOService {
     // Sinon fallback sur la reconstitution depuis le cache local
     let replyTo: Message | undefined = undefined;
     
-    if (socketMessage.replyTo) {
-      // Le backend a fourni l'objet complet replyTo
-      console.log(`💬 [MESSAGES] Message réponse fourni par le backend: ${socketMessage.replyTo.id}`);
-      replyTo = this.convertSocketMessageToMessage(socketMessage.replyTo);
-    } else if (socketMessage.replyToId && this.getMessageByIdCallback) {
-      // Fallback: Reconstituer depuis la liste locale
+    // 1. D'abord vérifier si le backend envoie déjà replyTo complet
+    if ((socketMessage as any).replyTo) {
+      const replyToMsg = (socketMessage as any).replyTo;
+      const replyToSender = replyToMsg.sender;
+      const replyToAnonymousSender = replyToMsg.anonymousSender;
+      
+      console.log(`💬 [MESSAGES] ReplyTo reçu depuis le backend:`, {
+        id: replyToMsg.id,
+        hasSender: !!replyToSender,
+        hasAnonymousSender: !!replyToAnonymousSender,
+        content: replyToMsg.content?.substring(0, 30) + '...'
+      });
+      
+      // Construire le sender pour replyTo (gérer utilisateurs authentifiés ET anonymes)
+      let replyToFinalSender;
+      if (replyToSender) {
+        replyToFinalSender = {
+          id: String(replyToSender.id || 'unknown'),
+          username: String(replyToSender.username || 'Unknown'),
+          displayName: String(replyToSender.displayName || replyToSender.username || 'Unknown'),
+          firstName: String(replyToSender.firstName || ''),
+          lastName: String(replyToSender.lastName || ''),
+          email: String(replyToSender.email || ''),
+          phoneNumber: '',
+          role: 'USER' as const,
+          systemLanguage: 'fr',
+          regionalLanguage: 'fr',
+          autoTranslateEnabled: true,
+          translateToSystemLanguage: true,
+          translateToRegionalLanguage: false,
+          useCustomDestination: false,
+          isOnline: false,
+          avatar: replyToSender.avatar,
+          lastSeen: new Date(),
+          createdAt: new Date(),
+          lastActiveAt: new Date(),
+          isActive: true,
+          updatedAt: new Date()
+        };
+      } else if (replyToAnonymousSender) {
+        const displayName = `${String(replyToAnonymousSender.firstName || '')} ${String(replyToAnonymousSender.lastName || '')}`.trim() || 
+                           String(replyToAnonymousSender.username) || 
+                           'Utilisateur anonyme';
+        replyToFinalSender = {
+          id: String(replyToAnonymousSender.id || 'unknown'),
+          username: String(replyToAnonymousSender.username || 'Anonymous'),
+          displayName: displayName,
+          firstName: String(replyToAnonymousSender.firstName || ''),
+          lastName: String(replyToAnonymousSender.lastName || ''),
+          email: '',
+          phoneNumber: '',
+          role: 'USER' as const,
+          systemLanguage: String(replyToAnonymousSender.language || 'fr'),
+          regionalLanguage: String(replyToAnonymousSender.language || 'fr'),
+          autoTranslateEnabled: false,
+          translateToSystemLanguage: false,
+          translateToRegionalLanguage: false,
+          useCustomDestination: false,
+          isOnline: false,
+          avatar: undefined,
+          lastSeen: new Date(),
+          createdAt: new Date(),
+          lastActiveAt: new Date(),
+          isActive: true,
+          updatedAt: new Date()
+        };
+      } else {
+        replyToFinalSender = {
+          id: String(replyToMsg.senderId || replyToMsg.anonymousSenderId || 'unknown'),
+          username: 'Unknown',
+          displayName: 'Utilisateur Inconnu',
+          firstName: '',
+          lastName: '',
+          email: '',
+          phoneNumber: '',
+          role: 'USER' as const,
+          systemLanguage: 'fr',
+          regionalLanguage: 'fr',
+          autoTranslateEnabled: true,
+          translateToSystemLanguage: true,
+          translateToRegionalLanguage: false,
+          useCustomDestination: false,
+          isOnline: false,
+          avatar: undefined,
+          lastSeen: new Date(),
+          createdAt: new Date(),
+          lastActiveAt: new Date(),
+          isActive: true,
+          updatedAt: new Date()
+        };
+      }
+      
+      replyTo = {
+        id: String(replyToMsg.id),
+        content: String(replyToMsg.content),
+        senderId: String(replyToMsg.senderId || replyToMsg.anonymousSenderId || ''),
+        conversationId: String(replyToMsg.conversationId),
+        originalLanguage: String(replyToMsg.originalLanguage || 'fr'),
+        messageType: String(replyToMsg.messageType || 'text') as any,
+        createdAt: new Date(replyToMsg.createdAt),
+        timestamp: new Date(replyToMsg.createdAt),
+        sender: replyToFinalSender,
+        translations: [],
+        isEdited: false,
+        isDeleted: false,
+        updatedAt: new Date(replyToMsg.updatedAt || replyToMsg.createdAt),
+      };
+    }
+    // 2. Sinon, essayer de reconstituer depuis la liste locale
+    else if (socketMessage.replyToId && this.getMessageByIdCallback) {
+      // Reconstituer depuis la liste locale
       replyTo = this.getMessageByIdCallback(socketMessage.replyToId);
       if (replyTo) {
         console.log(`💬 [MESSAGES] Message réponse reconstitué depuis la liste locale: ${socketMessage.replyToId}`);
@@ -894,34 +791,54 @@ class MeeshySocketIOService {
       console.warn(`⚠️ [MESSAGES] Callback getMessageById non défini, impossible de reconstituer replyTo`);
     }
 
-    return {
-      id: socketMessage.id,
-      conversationId: socketMessage.conversationId,
-      senderId: socketMessage.senderId || '',
-      content: socketMessage.content,
-      originalLanguage: socketMessage.originalLanguage || 'fr',
-      messageType: socketMessage.messageType,
-      timestamp: socketMessage.createdAt,
-      createdAt: socketMessage.createdAt,
-      updatedAt: socketMessage.updatedAt,
-      isEdited: false,
-      isDeleted: false,
-      translations: [],
-      // Utiliser le message depuis le backend ou le cache local
-      replyTo: replyTo,
-      // CORRECTION: Inclure les attachments depuis le backend
-      attachments: socketMessage.attachments || [],
-      sender: socketMessage.sender || {
-        id: socketMessage.senderId || '',
-        username: 'Utilisateur inconnu',
-        firstName: '',
-        lastName: '',
-        displayName: 'Utilisateur inconnu',
+    // Définir le sender par défaut UNE SEULE FOIS (pour les cas d'échec)
+    const defaultSender = {
+      id: socketMessage.senderId || (socketMessage as any).anonymousSenderId || 'unknown',
+      username: 'Utilisateur inconnu',
+      firstName: '',
+      lastName: '',
+      displayName: 'Utilisateur inconnu',
+      email: '',
+      phoneNumber: '',
+      role: 'USER' as const,
+      systemLanguage: 'fr',
+      regionalLanguage: 'fr',
+      customDestinationLanguage: undefined,
+      autoTranslateEnabled: true,
+      translateToSystemLanguage: true,
+      translateToRegionalLanguage: false,
+      useCustomDestination: false,
+      isOnline: false,
+      avatar: undefined,
+      lastSeen: new Date(),
+      createdAt: new Date(),
+      lastActiveAt: new Date(),
+      isActive: true,
+      updatedAt: new Date()
+    };
+    
+    // Construire l'objet sender en gérant les utilisateurs anonymes
+    let sender;
+    if (socketMessage.sender) {
+      // Utilisateur authentifié
+      sender = socketMessage.sender;
+    } else if ((socketMessage as any).anonymousSender) {
+      // Utilisateur anonyme - construire un objet sender à partir de anonymousSender
+      const anonymousSender = (socketMessage as any).anonymousSender;
+      const displayName = `${anonymousSender.firstName || ''} ${anonymousSender.lastName || ''}`.trim() || 
+                         anonymousSender.username || 
+                         'Utilisateur anonyme';
+      sender = {
+        id: anonymousSender.id || defaultSender.id,
+        username: anonymousSender.username || 'Anonymous',
+        firstName: anonymousSender.firstName || '',
+        lastName: anonymousSender.lastName || '',
+        displayName: displayName,
         email: '',
         phoneNumber: '',
-        role: 'USER',
-        systemLanguage: 'fr',
-        regionalLanguage: 'fr',
+        role: 'USER' as const,
+        systemLanguage: anonymousSender.language || 'fr',
+        regionalLanguage: anonymousSender.language || 'fr',
         customDestinationLanguage: undefined,
         autoTranslateEnabled: true,
         translateToSystemLanguage: true,
@@ -934,8 +851,49 @@ class MeeshySocketIOService {
         lastActiveAt: new Date(),
         isActive: true,
         updatedAt: new Date()
-      }
-    };
+      };
+    } else {
+      // Cas d'échec : utiliser le sender par défaut
+      sender = defaultSender;
+    }
+
+    // Transformer les attachments si présents
+    const attachments = Array.isArray((socketMessage as any).attachments)
+      ? (socketMessage as any).attachments.map((att: any) => ({
+          id: String(att.id || ''),
+          messageId: socketMessage.id,
+          fileName: String(att.fileName || ''),
+          originalName: String(att.originalName || att.fileName || ''),
+          fileUrl: String(att.fileUrl || ''),
+          mimeType: String(att.mimeType || ''),
+          fileSize: Number(att.fileSize) || 0,
+          thumbnailUrl: att.thumbnailUrl ? String(att.thumbnailUrl) : undefined,
+          width: att.width ? Number(att.width) : undefined,
+          height: att.height ? Number(att.height) : undefined,
+          duration: att.duration ? Number(att.duration) : undefined,
+          uploadedBy: String(att.uploadedBy || socketMessage.senderId || (socketMessage as any).anonymousSenderId || ''),
+          isAnonymous: Boolean(att.isAnonymous),
+          createdAt: String(att.createdAt || new Date().toISOString()),
+        }))
+      : [];
+
+    return {
+      id: socketMessage.id,
+      conversationId: socketMessage.conversationId,
+      senderId: socketMessage.senderId || (socketMessage as any).anonymousSenderId || '',
+      content: socketMessage.content,
+      originalLanguage: socketMessage.originalLanguage || 'fr',
+      messageType: socketMessage.messageType,
+      timestamp: socketMessage.createdAt,
+      createdAt: socketMessage.createdAt,
+      updatedAt: socketMessage.updatedAt,
+      isEdited: false,
+      isDeleted: false,
+      translations: [],
+      replyTo: replyTo,
+      sender: sender,
+      attachments: attachments.length > 0 ? attachments : undefined
+    } as Message;
   }
 
   /**
@@ -969,18 +927,6 @@ class MeeshySocketIOService {
    * CORRECTION: Simplifié pour utiliser ensureConnection()
    */
   public setCurrentUser(user: User): void {
-    console.log('');
-    console.log('═══════════════════════════════════════════════════════');
-    console.log('🔧 [SET_USER] Configuration utilisateur');
-    console.log('═══════════════════════════════════════════════════════');
-    console.log('  👤 User ID:', user.id);
-    console.log('  👤 Username:', user.username);
-    console.log('  📊 État avant:', {
-      hasSocket: !!this.socket,
-      isConnected: this.isConnected,
-      isConnecting: this.isConnecting
-    });
-    
     this.currentUser = user;
 
     // Vérifier que le token est disponible
@@ -988,14 +934,7 @@ class MeeshySocketIOService {
     const anonymousToken = localStorage.getItem('anonymous_session_token');
     const token = authToken || anonymousToken;
     
-    console.log('  🔑 Tokens:', {
-      hasAuthToken: !!authToken,
-      hasSessionToken: !!anonymousToken
-    });
-    
     if (!token) {
-      console.warn('  🔒 Token non disponible, attente avec retry...');
-      
       // OPTIMISATION: Retry très rapide et limité
       let attempts = 0;
       const maxAttempts = 3; // Réduit à 3 tentatives
@@ -1005,28 +944,17 @@ class MeeshySocketIOService {
         const retryAnonymousToken = localStorage.getItem('anonymous_session_token');
         const retryToken = retryAuthToken || retryAnonymousToken;
         
-        console.log(`  🔄 Tentative ${attempts}/${maxAttempts} de récupération token...`);
-        
         if (retryToken && this.currentUser) {
-          console.log('  ✅ Token trouvé, initialisation connexion...');
           clearInterval(retryInterval);
           this.ensureConnection();
         } else if (attempts >= maxAttempts) {
-          console.error('  ❌ Token toujours non disponible après', maxAttempts, 'tentatives');
           clearInterval(retryInterval);
         }
       }, 200); // Réduit à 200ms pour être plus rapide
       
-      console.log('═══════════════════════════════════════════════════════');
-      console.log('');
       return;
     }
 
-    console.log('  ✓ Token disponible');
-    console.log('  🔄 Appel ensureConnection()...');
-    console.log('═══════════════════════════════════════════════════════');
-    console.log('');
-    
     // CORRECTION: Utiliser ensureConnection() pour gérer intelligemment la connexion
     this.ensureConnection();
   }
@@ -1036,7 +964,6 @@ class MeeshySocketIOService {
    * Utile pour /chat quand anonymous_chat_data est chargé après l'authentification
    */
   public triggerAutoJoin(): void {
-    console.log('🔄 [TRIGGER] Auto-join manuel déclenché');
     this._autoJoinLastConversation();
   }
 
@@ -1049,8 +976,6 @@ class MeeshySocketIOService {
     this.ensureConnection();
     
     if (!this.socket) {
-      console.warn('⚠️ MeeshySocketIOService: Socket non connecté, join différé');
-      
       // Mémoriser la conversation pour l'auto-join après connexion
       try {
         let conversationId: string;
@@ -1061,9 +986,8 @@ class MeeshySocketIOService {
         }
         
         this.currentConversationId = conversationId;
-        console.log('  💾 Conversation mémorisée pour auto-join:', conversationId);
       } catch (error) {
-        console.error('  ❌ Erreur mémorisation conversation:', error);
+        console.error('❌ Erreur mémorisation conversation:', error);
       }
       
       return;
@@ -1185,9 +1109,7 @@ class MeeshySocketIOService {
   public async sendMessage(conversationOrId: any, content: string, originalLanguage?: string, replyToId?: string): Promise<boolean> {
     return new Promise(async (resolve) => {
       console.log('');
-      console.log('═══════════════════════════════════════════════════════');
       console.log('📤 [SEND_MESSAGE] Tentative d\'envoi de message');
-      console.log('═══════════════════════════════════════════════════════');
       
       // CORRECTION CRITIQUE: S'assurer que la connexion est établie
       this.ensureConnection();
@@ -1209,7 +1131,6 @@ class MeeshySocketIOService {
         const hasSessionToken = !!localStorage.getItem('anonymous_session_token');
         
         if (hasAuthToken || hasSessionToken) {
-          console.log('  ✓ Token disponible, initialisation forcée...');
           this.initializeConnection();
           
           // Attendre que le socket se crée
@@ -1217,19 +1138,11 @@ class MeeshySocketIOService {
           
           // Vérifier si le socket est maintenant créé
           if (!this.socket) {
-            console.log('  ❌ Socket toujours non créé après initialisation');
-            console.log('═══════════════════════════════════════════════════════');
-            console.log('');
             toast.error('Impossible d\'initialiser la connexion WebSocket');
             resolve(false);
             return;
           }
-          
-          console.log('  ✅ Socket créé avec succès');
         } else {
-          console.log('  ❌ Aucun token disponible');
-          console.log('═══════════════════════════════════════════════════════');
-          console.log('');
           toast.error('Veuillez vous connecter pour envoyer des messages');
           resolve(false);
           return;
@@ -1240,34 +1153,13 @@ class MeeshySocketIOService {
       const socketConnected = this.socket.connected === true;
       const socketDisconnected = this.socket.disconnected === true;
       
-      console.log('  📊 État actuel:');
-      console.log('    ├─ socket.connected:', socketConnected);
-      console.log('    ├─ socket.disconnected:', socketDisconnected);
-      console.log('    ├─ isConnected (flag):', this.isConnected);
-      console.log('    ├─ socketId:', this.socket.id);
-      console.log('    └─ currentUser:', this.currentUser?.username || 'N/A');
-      
       if (!socketConnected || socketDisconnected) {
-        console.log('');
-        console.log('  ❌ ÉCHEC: Socket déconnecté');
-        console.log('  🔄 Tentative de reconnexion immédiate...');
-        console.log('═══════════════════════════════════════════════════════');
-        console.log('');
-        
         // Tenter une reconnexion immédiate
         this.reconnect();
         
         toast.error('Connexion WebSocket perdue. Reconnexion en cours...');
         resolve(false);
         return;
-      }
-
-      // Vérification de l'authentification (moins critique que l'état du socket)
-      if (!this.isConnected) {
-        console.log('  ⚠️ WARNING: Flag isConnected=false mais socket connecté');
-        console.log('  → Tentative d\'envoi quand même...');
-      } else {
-        console.log('  ✓ Authentification OK');
       }
 
       try {
@@ -1331,7 +1223,6 @@ class MeeshySocketIOService {
         const timeout = setTimeout(() => {
           console.log('');
           console.log('  ❌ TIMEOUT: Aucune réponse après 10s');
-          console.log('═══════════════════════════════════════════════════════');
           console.log('');
           toast.error('Timeout: Le serveur n\'a pas répondu à temps');
           resolve(false);
@@ -1348,9 +1239,6 @@ class MeeshySocketIOService {
           
           if (response?.success) {
             console.log('');
-            console.log('╔═══════════════════════════════════════════════════════════════╗');
-            console.log('║  ✅ MESSAGE ENVOYÉ AVEC SUCCÈS                                ║');
-            console.log('╚═══════════════════════════════════════════════════════════════╝');
             console.log(`  📨 Message ID: ${response?.data?.messageId || 'N/A'}`);
             console.log(`  🔌 Socket ID: ${this.socket?.id}`);
             console.log(`  ⏰ Timestamp: ${new Date().toISOString()}`);
@@ -1358,9 +1246,6 @@ class MeeshySocketIOService {
             resolve(true);
           } else {
             console.log('');
-            console.log('╔═══════════════════════════════════════════════════════════════╗');
-            console.log('║  ❌ ERREUR ENVOI MESSAGE                                      ║');
-            console.log('╚═══════════════════════════════════════════════════════════════╝');
             console.log(`  ⚠️ Error: ${response?.error || 'Unknown error'}`);
             console.log(`  💬 Message: ${response?.message || 'N/A'}`);
             console.log(`  🔌 Socket ID: ${this.socket?.id}`);
@@ -1550,9 +1435,7 @@ class MeeshySocketIOService {
    */
   public reconnect(): void {
     console.log('');
-    console.log('═══════════════════════════════════════════════════════');
     console.log('🔄 [RECONNECT] Tentative de reconnexion');
-    console.log('═══════════════════════════════════════════════════════');
     console.log('  📊 État actuel:', {
       hasSocket: !!this.socket,
       socketConnected: this.socket?.connected,
@@ -1565,7 +1448,6 @@ class MeeshySocketIOService {
     // CORRECTION CRITIQUE 1: Ne PAS reconnecter si déjà en cours
     if (this.isConnecting) {
       console.log('  ⏳ Reconnexion déjà en cours, ignorée');
-      console.log('═══════════════════════════════════════════════════════');
       console.log('');
       return;
     }
@@ -1580,7 +1462,6 @@ class MeeshySocketIOService {
       console.log('    ├─ socket.connected:', this.socket.connected);
       console.log('    └─ socketId:', this.socket.id);
       console.log('  → Reconnexion ignorée');
-      console.log('═══════════════════════════════════════════════════════');
       console.log('');
       return; // Ne rien faire si déjà OK
     }
@@ -1604,7 +1485,6 @@ class MeeshySocketIOService {
         }
       } else if (socketState.connecting) {
         console.log('  ⏳ Socket en cours de connexion, attente...');
-        console.log('═══════════════════════════════════════════════════════');
         console.log('');
         return; // Ne pas interrompre une connexion en cours
       } else if (socketState.connected) {
@@ -1634,12 +1514,10 @@ class MeeshySocketIOService {
     
     if (this.currentUser || hasAuthToken || hasSessionToken) {
       console.log('  🔄 Initialisation de la connexion...');
-      console.log('═══════════════════════════════════════════════════════');
       console.log('');
       this.initializeConnection();
     } else {
       console.log('  ❌ Aucune authentification disponible');
-      console.log('═══════════════════════════════════════════════════════');
       console.log('');
       toast.warning('Veuillez vous reconnecter pour utiliser le chat en temps réel');
     }
@@ -1799,5 +1677,18 @@ class MeeshySocketIOService {
   }
 }
 
-// Instance singleton
-export const meeshySocketIOService = MeeshySocketIOService.getInstance();
+// Fonction pour obtenir le service de manière lazy (pas d'instanciation au chargement du module)
+// OPTIMISATION: Évite le log "🏗️ [SINGLETON] Création..." au chargement initial de la page
+export const getSocketIOService = (): MeeshySocketIOService => {
+  return MeeshySocketIOService.getInstance();
+};
+
+// Export pour compatibilité avec le code existant
+// Utilise un Proxy pour lazy loading - l'instance n'est créée qu'au premier accès
+export const meeshySocketIOService = new Proxy({} as MeeshySocketIOService, {
+  get: (target, prop) => {
+    const instance = MeeshySocketIOService.getInstance();
+    const value = (instance as any)[prop];
+    return typeof value === 'function' ? value.bind(instance) : value;
+  }
+});

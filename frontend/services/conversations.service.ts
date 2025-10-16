@@ -137,10 +137,24 @@ export class ConversationsService {
   private transformMessageData(backendMessage: unknown): Message {
     const msg = backendMessage as Record<string, unknown>;
     const sender = msg.sender as Record<string, unknown> | undefined;
+    const anonymousSender = msg.anonymousSender as Record<string, unknown> | undefined;
     
-    // Créer un sender par défaut si non fourni
+    // Définir les permissions par défaut une seule fois
+    const defaultPermissions = {
+      canAccessAdmin: false,
+      canManageUsers: false,
+      canManageGroups: false,
+      canManageConversations: false,
+      canViewAnalytics: false,
+      canModerateContent: false,
+      canViewAuditLogs: false,
+      canManageNotifications: false,
+      canManageTranslations: false,
+    };
+    
+    // Définir le sender par défaut UNE SEULE FOIS (pour les cas d'échec)
     const defaultSender: User = {
-      id: String(msg.senderId) || 'unknown',
+      id: String(msg.senderId || msg.anonymousSenderId) || 'unknown',
       username: 'Unknown User',
       firstName: '',
       lastName: '',
@@ -148,17 +162,7 @@ export class ConversationsService {
       email: 'unknown@example.com',
       phoneNumber: '',
       role: 'USER',
-      permissions: {
-        canAccessAdmin: false,
-        canManageUsers: false,
-        canManageGroups: false,
-        canManageConversations: false,
-        canViewAnalytics: false,
-        canModerateContent: false,
-        canViewAuditLogs: false,
-        canManageNotifications: false,
-        canManageTranslations: false,
-      },
+      permissions: defaultPermissions,
       systemLanguage: 'fr',
       regionalLanguage: 'fr',
       customDestinationLanguage: undefined,
@@ -174,6 +178,71 @@ export class ConversationsService {
       isActive: true,
       updatedAt: new Date(),
     };
+    
+    // Construire l'objet sender en gérant les utilisateurs anonymes
+    let finalSender: User;
+    
+    if (sender) {
+      // Utilisateur authentifié
+      finalSender = {
+        id: String(sender.id) || defaultSender.id,
+        username: String(sender.username) || defaultSender.username,
+        firstName: String(sender.firstName || ''),
+        lastName: String(sender.lastName || ''),
+        displayName: String(sender.displayName || sender.username || defaultSender.displayName),
+        email: String(sender.email || 'unknown@example.com'),
+        phoneNumber: String(sender.phoneNumber || ''),
+        role: (sender.role as any) || 'USER',
+        permissions: defaultPermissions,
+        systemLanguage: String(sender.systemLanguage || 'fr'),
+        regionalLanguage: String(sender.regionalLanguage || 'fr'),
+        customDestinationLanguage: undefined,
+        autoTranslateEnabled: Boolean(sender.autoTranslateEnabled ?? false),
+        translateToSystemLanguage: Boolean(sender.translateToSystemLanguage ?? false),
+        translateToRegionalLanguage: Boolean(sender.translateToRegionalLanguage ?? false),
+        useCustomDestination: Boolean(sender.useCustomDestination ?? false),
+        isOnline: Boolean(sender.isOnline ?? false),
+        avatar: sender.avatar as string | undefined,
+        lastSeen: new Date(sender.lastSeen as any || Date.now()),
+        createdAt: new Date(sender.createdAt as any || Date.now()),
+        lastActiveAt: new Date(sender.lastActiveAt as any || Date.now()),
+        isActive: Boolean(sender.isActive ?? true),
+        updatedAt: new Date(sender.updatedAt as any || Date.now()),
+      };
+    } else if (anonymousSender) {
+      // Utilisateur anonyme - construire un objet User à partir de anonymousSender
+      const displayName = `${String(anonymousSender.firstName || '')} ${String(anonymousSender.lastName || '')}`.trim() || 
+                         String(anonymousSender.username) || 
+                         'Utilisateur anonyme';
+      finalSender = {
+        id: String(anonymousSender.id) || defaultSender.id,
+        username: String(anonymousSender.username) || 'Anonymous',
+        firstName: String(anonymousSender.firstName || ''),
+        lastName: String(anonymousSender.lastName || ''),
+        displayName: displayName,
+        email: '',
+        phoneNumber: '',
+        role: 'USER',
+        permissions: defaultPermissions,
+        systemLanguage: String(anonymousSender.language || 'fr'),
+        regionalLanguage: String(anonymousSender.language || 'fr'),
+        customDestinationLanguage: undefined,
+        autoTranslateEnabled: false,
+        translateToSystemLanguage: false,
+        translateToRegionalLanguage: false,
+        useCustomDestination: false,
+        isOnline: false,
+        avatar: undefined,
+        lastSeen: new Date(),
+        createdAt: new Date(),
+        lastActiveAt: new Date(),
+        isActive: true,
+        updatedAt: new Date(),
+      };
+    } else {
+      // Cas d'échec : utiliser le sender par défaut
+      finalSender = defaultSender;
+    }
 
     // Transformer les traductions si elles existent
     const translations = Array.isArray(msg.translations) 
@@ -193,10 +262,85 @@ export class ConversationsService {
 
     const createdAt = new Date(String(msg.createdAt));
     
+    // Transformer les attachments si présents
+    const attachments = Array.isArray(msg.attachments)
+      ? msg.attachments.map((att: any) => ({
+          id: String(att.id || ''),
+          messageId: String(msg.id),
+          fileName: String(att.fileName || ''),
+          originalName: String(att.originalName || att.fileName || ''),
+          fileUrl: String(att.fileUrl || ''),
+          mimeType: String(att.mimeType || ''),
+          fileSize: Number(att.fileSize) || 0,
+          thumbnailUrl: att.thumbnailUrl ? String(att.thumbnailUrl) : undefined,
+          width: att.width ? Number(att.width) : undefined,
+          height: att.height ? Number(att.height) : undefined,
+          duration: att.duration ? Number(att.duration) : undefined,
+          uploadedBy: String(att.uploadedBy || msg.senderId || msg.anonymousSenderId || ''),
+          isAnonymous: Boolean(att.isAnonymous),
+          createdAt: String(att.createdAt || new Date().toISOString()),
+        }))
+      : [];
+    
+    // Transformer replyTo si présent (mais sans récursion infinie - une seule profondeur)
+    let replyTo: any = undefined;
+    if (msg.replyTo) {
+      const replyToMsg = msg.replyTo as Record<string, unknown>;
+      const replyToSender = replyToMsg.sender as Record<string, unknown> | undefined;
+      const replyToAnonymousSender = replyToMsg.anonymousSender as Record<string, unknown> | undefined;
+      
+      // Construire le sender pour replyTo (utiliser les mêmes règles)
+      let replyToFinalSender;
+      if (replyToSender) {
+        replyToFinalSender = {
+          id: String(replyToSender.id || 'unknown'),
+          username: String(replyToSender.username || 'Unknown'),
+          displayName: String(replyToSender.displayName || replyToSender.username || 'Unknown'),
+          firstName: String(replyToSender.firstName || ''),
+          lastName: String(replyToSender.lastName || ''),
+        };
+      } else if (replyToAnonymousSender) {
+        const displayName = `${String(replyToAnonymousSender.firstName || '')} ${String(replyToAnonymousSender.lastName || '')}`.trim() || 
+                           String(replyToAnonymousSender.username) || 
+                           'Utilisateur anonyme';
+        replyToFinalSender = {
+          id: String(replyToAnonymousSender.id || 'unknown'),
+          username: String(replyToAnonymousSender.username || 'Anonymous'),
+          displayName: displayName,
+          firstName: String(replyToAnonymousSender.firstName || ''),
+          lastName: String(replyToAnonymousSender.lastName || ''),
+        };
+      } else {
+        replyToFinalSender = {
+          id: String(replyToMsg.senderId || replyToMsg.anonymousSenderId || 'unknown'),
+          username: 'Unknown',
+          displayName: 'Utilisateur Inconnu',
+          firstName: '',
+          lastName: '',
+        };
+      }
+      
+      replyTo = {
+        id: String(replyToMsg.id),
+        content: String(replyToMsg.content),
+        senderId: String(replyToMsg.senderId || replyToMsg.anonymousSenderId || ''),
+        conversationId: String(replyToMsg.conversationId),
+        originalLanguage: String(replyToMsg.originalLanguage || 'fr'),
+        messageType: String(replyToMsg.messageType || 'text') as MessageType,
+        createdAt: new Date(String(replyToMsg.createdAt)),
+        timestamp: new Date(String(replyToMsg.createdAt)),
+        sender: replyToFinalSender,
+        translations: [],
+        isEdited: false,
+        isDeleted: false,
+        updatedAt: new Date(String(replyToMsg.updatedAt || replyToMsg.createdAt)),
+      };
+    }
+    
     return {
       id: String(msg.id),
       content: String(msg.content),
-      senderId: String(msg.senderId),
+      senderId: String(msg.senderId || msg.anonymousSenderId || ''),
       conversationId: String(msg.conversationId),
       originalLanguage: msg.originalLanguage ? String(msg.originalLanguage) : 'fr',
       messageType: (String(msg.messageType) || 'text') as MessageType,
@@ -204,8 +348,10 @@ export class ConversationsService {
       isDeleted: Boolean(msg.isDeleted),
       createdAt,
       updatedAt: new Date(String(msg.updatedAt)),
-      sender: sender ? socketIOUserToUser(sender as any) : defaultSender,
+      sender: finalSender,
       translations,
+      replyTo,
+      attachments: attachments.length > 0 ? attachments : undefined,
       timestamp: createdAt // Alias pour compatibilité
     };
   }
@@ -276,7 +422,6 @@ export class ConversationsService {
     
     // Vérifier le cache (seulement pour la première page sans offset)
     if (!skipCache && offset === 0 && this.isCacheValid()) {
-      console.log('🔄 Utilisation du cache pour les conversations');
       return {
         conversations: this.conversationsCache!.data,
         pagination: {
