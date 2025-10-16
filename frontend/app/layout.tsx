@@ -9,6 +9,7 @@ import { ErrorBoundary } from "@/components/common";
 import { ClientOnly } from "@/components/common/client-only";
 import { defaultFont, getAllFontVariables } from "@/lib/fonts";
 import { preloadCriticalComponents } from "@/lib/lazy-components";
+import "@/utils/console-override"; // 🔇 Désactive console.log en production
 
 export const metadata: Metadata = {
   title: 'Meeshy',

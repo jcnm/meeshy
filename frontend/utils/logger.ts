@@ -1,5 +1,17 @@
 /**
  * Utilitaire de logging pour contrôler la verbosité des logs
+ * 
+ * En production: Seuls les logs ERROR et WARN sont affichés
+ * En développement: Tous les logs sont affichés
+ * 
+ * Pour activer les logs en production, définir NEXT_PUBLIC_DEBUG_LOGS=true
+ * 
+ * @example
+ * import { logger } from '@/utils/logger';
+ * 
+ * logger.info('[COMPONENT]', 'Component mounted');
+ * logger.error('[API]', 'Request failed', error);
+ * logger.debug('[STATE]', 'State updated', newState);
  */
 
 export enum LogLevel {
@@ -11,9 +23,7 @@ export enum LogLevel {
 
 interface LoggerConfig {
   level: LogLevel;
-  enableSocketIO: boolean;
-  enableMessaging: boolean;
-  enableTranslations: boolean;
+  enabled: boolean;
 }
 
 class Logger {
@@ -22,76 +32,91 @@ class Logger {
   constructor() {
     // Configuration basée sur l'environnement
     const isDevelopment = process.env.NODE_ENV === 'development';
-    const isDebugMode = process.env.NEXT_PUBLIC_DEBUG_LOGS === 'true';
+    const isDebugMode = typeof window !== 'undefined' 
+      ? process.env.NEXT_PUBLIC_DEBUG_LOGS === 'true'
+      : false;
     
     this.config = {
       level: isDevelopment || isDebugMode ? LogLevel.DEBUG : LogLevel.WARN,
-      enableSocketIO: isDevelopment || isDebugMode,
-      enableMessaging: isDevelopment || isDebugMode,
-      enableTranslations: isDevelopment || isDebugMode
+      enabled: isDevelopment || isDebugMode
     };
   }
 
-  private shouldLog(level: LogLevel, category?: string): boolean {
-    if (level > this.config.level) return false;
+  private shouldLog(level: LogLevel): boolean {
+    // En production, seulement ERROR et WARN
+    if (!this.config.enabled && level > LogLevel.WARN) {
+      return false;
+    }
     
-    switch (category) {
-      case 'socketio':
-        return this.config.enableSocketIO;
-      case 'messaging':
-        return this.config.enableMessaging;
-      case 'translations':
-        return this.config.enableTranslations;
-      default:
-        return true;
+    return level <= this.config.level;
+  }
+
+  /**
+   * Log une erreur (toujours affiché)
+   */
+  error(tag: string, message: string, data?: any): void {
+    if (this.shouldLog(LogLevel.ERROR)) {
+      if (data !== undefined) {
+        console.error(`${tag} ${message}`, data);
+      } else {
+        console.error(`${tag} ${message}`);
+      }
     }
   }
 
-  error(message: string, data?: any, category?: string): void {
-    if (this.shouldLog(LogLevel.ERROR, category)) {
-      console.error(`❌ ${message}`, data);
+  /**
+   * Log un avertissement (toujours affiché)
+   */
+  warn(tag: string, message: string, data?: any): void {
+    if (this.shouldLog(LogLevel.WARN)) {
+      if (data !== undefined) {
+        console.warn(`${tag} ${message}`, data);
+      } else {
+        console.warn(`${tag} ${message}`);
+      }
     }
   }
 
-  warn(message: string, data?: any, category?: string): void {
-    if (this.shouldLog(LogLevel.WARN, category)) {
-      console.warn(`⚠️ ${message}`, data);
+  /**
+   * Log une information (uniquement en développement)
+   */
+  info(tag: string, message: string, data?: any): void {
+    if (this.shouldLog(LogLevel.INFO)) {
+      if (data !== undefined) {
+        console.log(`${tag} ${message}`, data);
+      } else {
+        console.log(`${tag} ${message}`);
+      }
     }
   }
 
-  info(message: string, data?: any, category?: string): void {
-    if (this.shouldLog(LogLevel.INFO, category)) {
-      console.log(`ℹ️ ${message}`, data);
+  /**
+   * Log de débogage (uniquement en développement)
+   */
+  debug(tag: string, message: string, data?: any): void {
+    if (this.shouldLog(LogLevel.DEBUG)) {
+      if (data !== undefined) {
+        console.log(`${tag} ${message}`, data);
+      } else {
+        console.log(`${tag} ${message}`);
+      }
     }
   }
 
-  debug(message: string, data?: any, category?: string): void {
-    if (this.shouldLog(LogLevel.DEBUG, category)) {
-      console.log(`🔍 ${message}`, data);
+  /**
+   * Log simple pour maintenir la compatibilité avec console.log
+   * (uniquement en développement)
+   */
+  log(message: string, ...args: any[]): void {
+    if (this.config.enabled) {
+      console.log(message, ...args);
     }
   }
-
-  // Méthodes spécialisées pour les catégories courantes
-  socketio = {
-    error: (message: string, data?: any) => this.error(message, data, 'socketio'),
-    warn: (message: string, data?: any) => this.warn(message, data, 'socketio'),
-    info: (message: string, data?: any) => this.info(message, data, 'socketio'),
-    debug: (message: string, data?: any) => this.debug(message, data, 'socketio')
-  };
-
-  messaging = {
-    error: (message: string, data?: any) => this.error(message, data, 'messaging'),
-    warn: (message: string, data?: any) => this.warn(message, data, 'messaging'),
-    info: (message: string, data?: any) => this.info(message, data, 'messaging'),
-    debug: (message: string, data?: any) => this.debug(message, data, 'messaging')
-  };
-
-  translations = {
-    error: (message: string, data?: any) => this.error(message, data, 'translations'),
-    warn: (message: string, data?: any) => this.warn(message, data, 'translations'),
-    info: (message: string, data?: any) => this.info(message, data, 'translations'),
-    debug: (message: string, data?: any) => this.debug(message, data, 'translations')
-  };
 }
 
 export const logger = new Logger();
+
+/**
+ * Helper pour vérifier si on est en mode développement
+ */
+export const isDevelopment = process.env.NODE_ENV === 'development';
