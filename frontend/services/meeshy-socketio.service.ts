@@ -112,7 +112,15 @@ class MeeshySocketIOService {
   private getMessageByIdCallback: ((messageId: string) => Message | undefined) | null = null;
 
   constructor() {
+    // CORRECTION CRITIQUE: Le constructeur ne doit s'exécuter QU'UNE SEULE FOIS
+    // Protection contre React StrictMode qui monte les composants 2 fois en dev
+    if (MeeshySocketIOService.instance) {
+      console.warn('⚠️ [CONSTRUCTOR] Instance singleton déjà existante, skip initialisation');
+      return MeeshySocketIOService.instance;
+    }
+    
     // CORRECTION: Initialiser automatiquement si des tokens sont disponibles
+    // MAIS SEULEMENT si c'est la première instance (singleton)
     if (typeof window !== 'undefined') {
       // Attendre un peu que le DOM soit prêt
       setTimeout(() => {
@@ -124,10 +132,18 @@ class MeeshySocketIOService {
   /**
    * Assure qu'une connexion est établie
    * CORRECTION CRITIQUE: Initialise automatiquement si tokens disponibles
+   * Protection contre les connexions multiples en mode React StrictMode
    */
   private ensureConnection(): void {
     // Si déjà connecté ou en cours, ne rien faire
     if (this.socket && (this.isConnected || this.isConnecting || this.socket.connected)) {
+      console.log('🔒 [ENSURE] Connexion déjà active, skip initialisation');
+      return;
+    }
+    
+    // Protection contre les appels multiples rapides
+    if (this.isConnecting) {
+      console.log('🔒 [ENSURE] Connexion en cours, skip initialisation');
       return;
     }
     
@@ -151,10 +167,14 @@ class MeeshySocketIOService {
 
   /**
    * Obtenir l'instance singleton du service Socket.IO
+   * CORRECTION: S'assurer qu'une seule instance existe JAMAIS
    */
   static getInstance(): MeeshySocketIOService {
     if (!MeeshySocketIOService.instance) {
+      console.log('🏗️ [SINGLETON] Création nouvelle instance MeeshySocketIOService');
       MeeshySocketIOService.instance = new MeeshySocketIOService();
+    } else {
+      console.log('🔄 [SINGLETON] Réutilisation instance existante MeeshySocketIOService');
     }
     return MeeshySocketIOService.instance;
   }
