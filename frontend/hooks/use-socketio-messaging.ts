@@ -53,16 +53,12 @@ export function useSocketIOMessaging(options: UseSocketIOMessagingOptions = {}) 
     
     console.log('🚪 [useSocketIOMessaging] Join conversation:', conversationId);
     
-    // Support des identifiants et ObjectId
-    const conversationIdOrObject = conversationId.includes('-') 
-      ? conversationId // ObjectId
-      : { identifier: conversationId }; // Identifiant lisible
-    
-    meeshySocketIOService.joinConversation(conversationIdOrObject);
+    // Passer l'identifiant directement - le service gère la conversion
+    meeshySocketIOService.joinConversation(conversationId);
     
     return () => {
       console.log('🚪 [useSocketIOMessaging] Leave conversation:', conversationId);
-      meeshySocketIOService.leaveConversation(conversationIdOrObject);
+      meeshySocketIOService.leaveConversation(conversationId);
     };
   }, [conversationId]);
 
@@ -142,11 +138,8 @@ export function useSocketIOMessaging(options: UseSocketIOMessagingOptions = {}) 
       return false;
     }
     
-    const conversationIdOrObject = conversationId.includes('-') 
-      ? conversationId 
-      : { identifier: conversationId };
-    
-    return await meeshySocketIOService.sendMessage(conversationIdOrObject, content, language, replyToId);
+    // Passer l'identifiant directement - le service gère la conversion
+    return await meeshySocketIOService.sendMessage(conversationId, content, language, replyToId);
   }, [conversationId]);
 
   const sendMessageWithAttachments = useCallback(async (
@@ -160,12 +153,9 @@ export function useSocketIOMessaging(options: UseSocketIOMessagingOptions = {}) 
       return false;
     }
     
-    const conversationIdOrObject = conversationId.includes('-') 
-      ? conversationId 
-      : { identifier: conversationId };
-    
+    // Passer l'identifiant directement - le service gère la conversion
     return await meeshySocketIOService.sendMessageWithAttachments(
-      conversationIdOrObject, 
+      conversationId, 
       content, 
       attachmentIds, 
       language, 
