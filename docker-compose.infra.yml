@@ -1,0 +1,111 @@
+# Docker Compose pour l'infrastructure (Base de données, Cache, UI)
+# Ce fichier démarre uniquement les containers d'infrastructure nécessaires
+# pour le développement local avec les services natifs
+
+services:
+  # Base de données MongoDB avec Replica Set
+  database:
+    image: mongo:latest
+    platform: linux/arm64
+    container_name: meeshy-dev-database
+    restart: unless-stopped
+    command: mongod --replSet rs0 --bind_ip_all --noauth
+    environment:
+      MONGO_INITDB_DATABASE: ${MONGODB_DATABASE:-meeshy}
+    ports:
+      - "27017:27017"
+    volumes:
+      - dev_database_data:/data/db
+      - dev_database_config:/data/configdb
+      - ./shared/init-mongodb-replica.sh:/docker-entrypoint-initdb.d/init-mongodb-replica.sh:ro
+      - ./shared/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - meeshy-dev-network
+    healthcheck:
+      test: ["CMD-SHELL", "echo 'db.runCommand(\"ping\").ok' | mongosh mongodb://localhost:27017/${MONGODB_DATABASE:-meeshy} --quiet || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # NoSQLClient - Interface MongoDB
+  nosqlclient:
+    image: mongoclient/mongoclient:latest
+    container_name: meeshy-dev-nosqlclient
+    restart: unless-stopped
+    environment:
+      MONGOCLIENT_DEFAULT_CONNECTION_URL: "mongodb://database:27017/${MONGODB_DATABASE:-meeshy}?replicaSet=rs0&directConnection=true"
+      ROOT_URL: "http://localhost:3001"
+      PORT: 3000
+    ports:
+      - "3001:3000"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - meeshy-dev-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Cache Redis  
+  redis:
+    image: redis:8-alpine
+    container_name: meeshy-dev-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - dev_redis_data:/data
+    networks:
+      - meeshy-dev-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # P3X Redis UI - Interface Redis
+  p3x-redis-ui:
+    image: patrikx3/p3x-redis-ui:latest
+    container_name: meeshy-dev-p3x-redis-ui
+    restart: unless-stopped
+    environment:
+      - P3X_REDIS_UI_SETTINGS={"hostname":"redis","port":6379,"password":"","meeshy-dev-database":0}
+      - P3X_REDIS_UI_HTTP_PORT=7843
+      - P3XRS_SETTINGS_PATH=/settings
+    ports:
+      - "7843:7843"
+    volumes:
+      - dev_redis_ui_data:/settings
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - meeshy-dev-network
+    healthcheck:
+      test: ["CMD-SHELL", "netstat -an | grep :7843 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+networks:
+  meeshy-dev-network:
+    driver: bridge
+    name: meeshy-dev-network
+
+volumes:
+  dev_database_data:
+    name: meeshy-dev-database-data
+  dev_database_config:
+    name: meeshy-dev-database-config
+  dev_redis_data:
+    name: meeshy-dev-redis-data
+  dev_redis_ui_data:
+    name: meeshy-dev-redis-ui-data
+
