@@ -121,7 +121,6 @@ export function MessagesDisplay({
       const message = messages.find(m => m.id === messageId);
       const sourceLanguage = message?.originalLanguage || 'fr';
 
-      console.log(`🔄 [FORCE TRANSLATION] Requesting translation with model: ${model || 'basic'}`);
 
       const result = await messageTranslationService.requestTranslation({
         messageId,
@@ -188,7 +187,6 @@ export function MessagesDisplay({
 
   // Gérer le changement de langue d'affichage
   const handleLanguageSwitch = useCallback((messageId: string, language: string) => {
-    console.log(`🔄 [LANGUAGE SWITCH] Message ${messageId}: switching to ${language}`);
     setMessageDisplayStates(prev => {
       const newState = {
         ...prev,
@@ -198,8 +196,6 @@ export function MessagesDisplay({
           translationError: prev[messageId]?.translationError
         }
       };
-      console.log(`📊 [LANGUAGE SWITCH] Previous state:`, prev[messageId]);
-      console.log(`📊 [LANGUAGE SWITCH] New state:`, newState[messageId]);
       return newState;
     });
   }, []);
@@ -244,7 +240,6 @@ export function MessagesDisplay({
           hasChanges = true;
 
           if (preferredLanguage !== message.originalLanguage) {
-            console.log(`🎯 [AUTO-TRANSLATION] Message ${message.id} initialisé en ${preferredLanguage} au lieu de ${message.originalLanguage}`);
           }
         }
       });
@@ -279,7 +274,6 @@ export function MessagesDisplay({
       
       // Mettre à jour tous les messages qui ont de nouvelles traductions
       if (Object.keys(messagesToUpdate).length > 0) {
-        console.log(`🎯 [AUTO-TRANSLATION] Mise à jour automatique de ${Object.keys(messagesToUpdate).length} messages`);
         
         const newState = { ...prev };
         Object.entries(messagesToUpdate).forEach(([messageId, language]) => {

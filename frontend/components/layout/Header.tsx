@@ -207,6 +207,24 @@ export function Header({
                 )}
               </>
             )}
+            
+            {/* Mode Default - affiche les boutons login/signin */}
+            {mode === 'default' && !user && (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost">
+                    <LogIn className="h-4 w-4 mr-2" />
+                    {t('login')}
+                  </Button>
+                </Link>
+                <Link href="/signin">
+                  <Button>
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    {t('signUp')}
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -388,6 +406,24 @@ export function Header({
                       </Link>
                     </>
                   )}
+                </>
+              )}
+              
+              {/* Mode Default - affiche les boutons login/signin en mobile */}
+              {mode === 'default' && !user && (
+                <>
+                  <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start">
+                      <LogIn className="h-4 w-4 mr-2" />
+                      {t('login')}
+                    </Button>
+                  </Link>
+                  <Link href="/signin" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button className="w-full justify-start">
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      {t('signUp')}
+                    </Button>
+                  </Link>
                 </>
               )}
             </nav>

@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useTheme, useAppActions } from '@/stores';
 import { useFixRadixZIndex } from '@/hooks/use-fix-z-index';
+import { logger } from '@/utils/logger';
 
 /**
  * ThemeProvider - Applique le thème immédiatement au chargement
@@ -27,10 +28,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       if (theme === 'auto') {
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         root.classList.add(prefersDark ? 'dark' : 'light');
-        console.log('[ThemeProvider] Mode auto détecté:', prefersDark ? 'dark' : 'light');
+        logger.debug('[ThemeProvider]', `Mode auto détecté: ${prefersDark ? 'dark' : 'light'}`);
       } else {
         root.classList.add(theme);
-        console.log('[ThemeProvider] Mode explicite:', theme);
+        logger.debug('[ThemeProvider]', `Mode explicite: ${theme}`);
       }
     };
 
@@ -41,7 +42,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (theme === 'auto') {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
       const handleChange = () => {
-        console.log('[ThemeProvider] Préférence système changée');
+        logger.debug('[ThemeProvider]', 'Préférence système changée');
         applyTheme();
       };
 

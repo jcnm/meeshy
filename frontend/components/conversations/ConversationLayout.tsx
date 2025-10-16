@@ -24,6 +24,7 @@ import { ArrowLeft, MessageSquare } from 'lucide-react';
 import type { Conversation, ThreadMember, UserRoleEnum } from '@shared/types';
 import { useReplyStore } from '@/stores/reply-store';
 import { toast } from 'sonner';
+import { getAuthToken } from '@/utils/token-utils';
 
 interface ConversationLayoutProps {
   selectedConversationId?: string;
@@ -686,7 +687,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               onKeyPress={handleKeyPress}
               choices={getUserLanguageChoices(user)}
               onAttachmentsChange={setAttachmentIds}
-              token={typeof window !== 'undefined' ? localStorage.getItem('auth_token') || undefined : undefined}
+              token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
             />
           </div>
 
@@ -835,7 +836,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                     onKeyPress={handleKeyPress}
                     choices={getUserLanguageChoices(user)}
                     onAttachmentsChange={setAttachmentIds}
-                    token={typeof window !== 'undefined' ? localStorage.getItem('auth_token') || undefined : undefined}
+                    token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
                   />
                 </div>
               </div>

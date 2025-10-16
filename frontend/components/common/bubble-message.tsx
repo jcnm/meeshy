@@ -161,7 +161,6 @@ function BubbleMessageInner({
   
   // Fonction pour gérer l'ouverture/fermeture de la popover de manière contrôlée
   const handlePopoverOpenChange = useCallback((open: boolean) => {
-    console.log(`🔧 Popover ${open ? 'OUVERTURE' : 'FERMETURE'}:`, { messageId: message.id, open });
     
     // Annuler le timer de fermeture si on réouvre
     if (open && closeTimerRef.current) {
@@ -194,7 +193,6 @@ function BubbleMessageInner({
   
   // Gérer la fermeture automatique quand la souris quitte le popover
   const handlePopoverMouseLeave = useCallback(() => {
-    console.log('🖱️ Souris quitte le popover, fermeture dans 300ms');
     // Délai de 300ms pour permettre de revenir dans le popover
     closeTimerRef.current = setTimeout(() => {
       handlePopoverOpenChange(false);
@@ -204,7 +202,6 @@ function BubbleMessageInner({
   // Annuler la fermeture si la souris revient dans le popover
   const handlePopoverMouseEnter = useCallback(() => {
     if (closeTimerRef.current) {
-      console.log('🖱️ Souris retourne dans le popover, annulation fermeture');
       clearTimeout(closeTimerRef.current);
       closeTimerRef.current = null;
     }
@@ -257,7 +254,6 @@ function BubbleMessageInner({
       );
       
       if (newTranslation && currentDisplayLanguage === userLanguage) {
-        console.log(`🎉 [AUTO-TRANSLATION] Affichage automatique de la traduction en ${userLanguage} pour le message ${message.id}`);
         toast.success(t('messageTranslatedTo', { language: userLanguage }), {
           duration: 2000,
           position: 'bottom-right'
@@ -282,7 +278,6 @@ function BubbleMessageInner({
   const isActuallyTranslating = useMemo(() => {
     // Si aucune traduction, on se base sur la prop
     if (!message.translations || message.translations.length === 0) {
-      console.log(`🔍 [BUBBLE] Message ${message.id}: Aucune traduction, isTranslating=${isTranslating}`);
       return isTranslating;
     }
 
@@ -299,19 +294,6 @@ function BubbleMessageInner({
       return !status || status === 'completed' || !!t.translatedContent;
     });
 
-    // Debug uniquement en mode développement et pour les cas problématiques
-    const shouldDebug = process.env.NODE_ENV === 'development' && (hasOngoingTranslations || isTranslating);
-    
-    if (shouldDebug) {
-      console.log(`🔍 [BUBBLE] Message ${message.id}:`, {
-        translationsCount: message.translations.length,
-        hasOngoingTranslations,
-        allCompleted,
-        isTranslatingProp: isTranslating,
-        translationStatuses: message.translations.map((t: any) => ({ lang: t.language || t.targetLanguage, status: t.status || 'completed' }))
-      });
-    }
-
     // Si toutes les traductions sont complétées, on n'est plus en cours de traduction
     if (allCompleted) {
       return false;
@@ -326,17 +308,8 @@ function BubbleMessageInner({
   const currentContent = useMemo(() => {
     const originalLang = message.originalLanguage || 'fr';
     
-    console.log(`📖 [BUBBLE-MESSAGE ${message.id.substring(0, 8)}] Getting content:`, {
-      currentDisplayLanguage,
-      originalLang,
-      isOriginal: currentDisplayLanguage === originalLang,
-      translationsCount: message.translations?.length || 0,
-      availableLanguages: message.translations?.map((t: any) => t.language || t.targetLanguage) || []
-    });
-    
     if (currentDisplayLanguage === originalLang) {
       const content = message.originalContent || message.content;
-      console.log(`✅ [BUBBLE-MESSAGE ${message.id.substring(0, 8)}] Showing ORIGINAL content`);
       return content;
     }
     
@@ -346,13 +319,36 @@ function BubbleMessageInner({
     
     if (translation) {
       const content = ((translation as any)?.content || (translation as any)?.translatedContent);
-      console.log(`✅ [BUBBLE-MESSAGE ${message.id.substring(0, 8)}] Showing TRANSLATED content in ${currentDisplayLanguage}`);
       return content || message.originalContent || message.content;
     }
     
-    console.log(`⚠️ [BUBBLE-MESSAGE ${message.id.substring(0, 8)}] No translation found for ${currentDisplayLanguage}, showing original`);
     return message.originalContent || message.content;
   }, [currentDisplayLanguage, message.id, message.originalLanguage, message.content, message.originalContent, message.translations]);
+
+  // Mémoriser le contenu traduit du message replyTo (même logique que currentContent)
+  const replyToContent = useMemo(() => {
+    if (!message.replyTo) return null;
+    
+    const originalLang = message.replyTo.originalLanguage || 'fr';
+    
+    // Si la langue d'affichage correspond à la langue originale, afficher l'original
+    if (currentDisplayLanguage === originalLang) {
+      return message.replyTo.content;
+    }
+    
+    // Chercher une traduction dans la langue d'affichage actuelle
+    const translation = message.replyTo.translations?.find((t: any) => 
+      (t?.language || t?.targetLanguage) === currentDisplayLanguage
+    );
+    
+    if (translation) {
+      const content = ((translation as any)?.content || (translation as any)?.translatedContent);
+      return content || message.replyTo.content;
+    }
+    
+    // Fallback: afficher le contenu original
+    return message.replyTo.content;
+  }, [currentDisplayLanguage, message.replyTo?.id, message.replyTo?.originalLanguage, message.replyTo?.content, message.replyTo?.translations]);
 
   const formatTimeAgo = (timestamp: string | Date) => {
     const now = new Date();
@@ -367,7 +363,6 @@ function BubbleMessageInner({
 
   // Handlers qui remontent les actions au parent
   const handleLanguageSwitch = (langCode: string) => {
-    console.log(`🔄 [BUBBLE-MESSAGE] Switching language for message ${message.id} to ${langCode}`);
     console.log(`📊 [BUBBLE-MESSAGE] Current display language: ${currentDisplayLanguage}`);
     handlePopoverOpenChange(false);
     onLanguageSwitch?.(message.id, langCode);
@@ -598,7 +593,7 @@ function BubbleMessageInner({
                           "text-xs line-clamp-2 leading-snug",
                           isOwnMessage ? "text-white/80" : "text-gray-600 dark:text-gray-300"
                         )}>
-                          {message.replyTo.content}
+                          {replyToContent || message.replyTo.content}
                         </p>
                       </div>
                       <MessageCircle className={cn(
