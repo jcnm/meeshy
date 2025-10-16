@@ -1,10 +1,8 @@
 // Hooks React personnalisés pour Meeshy
 
 // Hook de messaging unifié (Socket.IO + Envoi + Typing)
-export { useWebSocket } from './use-websocket'; // Nouveau service simplifié ⭐
+export { useSocketIOMessaging } from './use-socketio-messaging'; // Service mature et stable
 export { useMessaging } from './use-messaging'; // Hook de haut niveau
-// @deprecated - Utiliser useWebSocket à la place
-export { useSocketIOMessaging } from './use-socketio-messaging';
 
 // Traduction unifiée
 export { useMessageTranslation } from './useMessageTranslation'; // Pour traduction de messages API

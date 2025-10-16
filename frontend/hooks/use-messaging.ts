@@ -7,7 +7,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { useWebSocket } from './use-websocket';
+import { useSocketIOMessaging } from './use-socketio-messaging';
 import { 
   validateMessageContent, 
   prepareMessageMetadata, 
@@ -54,7 +54,7 @@ interface UseMessagingReturn {
   stopTyping: () => void;
   
   // Socket.IO messaging
-  socketMessaging: ReturnType<typeof useWebSocket>;
+  socketMessaging: ReturnType<typeof useSocketIOMessaging>;
 }
 
 export function useMessaging(options: UseMessagingOptions = {}): UseMessagingReturn {
@@ -79,21 +79,28 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Socket.IO messaging - NOUVEAU SERVICE SIMPLIFIÉ
-  const socketMessaging = useWebSocket({
+  // Socket.IO messaging - SERVICE MATURE
+  const socketMessaging = useSocketIOMessaging({
     conversationId,
+    currentUser,
+    events: {
+      message: true,
+      edit: true,
+      delete: true,
+      translation: true,
+      typing: true,
+      status: true,
+      conversationStats: true,
+      onlineStats: true
+    },
     onNewMessage,
-    onTyping: (event) => {
-      handleTypingEvent(event.userId, event.username, event.isTyping || false);
-      onUserTyping?.(event.userId, event.username, event.isTyping || false);
+    onUserTyping: (userId, username, isTyping) => {
+      handleTypingEvent(userId, username, isTyping);
+      onUserTyping?.(userId, username, isTyping);
     },
-    onUserStatus: (event) => {
-      onUserStatus?.(event.userId, event.username, event.isOnline);
-    },
-    onTranslation: onTranslation ? (data) => {
-      // Adapter format: TranslationEvent → (messageId, translations[])
-      onTranslation(data.messageId, data.translations);
-    } : undefined
+    onUserStatus,
+    onTranslation,
+    onConversationStats
   });
 
   // Gestion des indicateurs de frappe
@@ -127,8 +134,6 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
   const startTyping = useCallback(() => {
     if (!isTyping && conversationId && currentUser) {
       setIsTyping(true);
-      // Note: socketMessaging.startTyping() n'a pas besoin de conversationId
-      // car il est déjà dans le closure du hook
       socketMessaging.startTyping();
       
       // Auto-stop après 3 secondes
@@ -144,8 +149,6 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
   const stopTyping = useCallback(() => {
     if (isTyping && conversationId && currentUser) {
       setIsTyping(false);
-      // Note: socketMessaging.stopTyping() n'a pas besoin de conversationId
-      // car il est déjà dans le closure du hook
       socketMessaging.stopTyping();
       
       if (typingTimeoutRef.current) {
@@ -184,8 +187,7 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
       logMessageSend(content, sourceLanguage, conversationId);
 
       // Envoyer via Socket.IO avec la langue correcte
-      // Note: socketMessaging.sendMessage prend (content, originalLanguage, replyToId)
-      // car conversationId est déjà dans le closure du hook
+      // socketMessaging.sendMessage prend (content, language, replyToId)
       const success = await socketMessaging.sendMessage(content, sourceLanguage, replyToId);
 
       if (success) {
