@@ -5,6 +5,7 @@
 
 import type { SocketIOUser as User, MessageType } from './socketio-events';
 import type { AnonymousParticipant } from './anonymous';
+import type { Attachment } from './attachment';
 
 /**
  * Rôle utilisateur global (aligné avec schema.prisma User.role)
@@ -141,6 +142,9 @@ export interface Message {
 
   // ===== TRADUCTIONS =====
   readonly translations: readonly MessageTranslation[];
+
+  // ===== ATTACHMENTS =====
+  readonly attachments?: readonly Attachment[];
 
   // ===== COMPATIBILITÉ =====
   readonly timestamp: Date;             // Alias pour createdAt (requis pour compatibilité)
