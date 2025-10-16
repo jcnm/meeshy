@@ -18,7 +18,7 @@
     "expiresOn": "Expires on",
     "joinButton": "Join conversation",
     "joinAnonymously": "Join anonymously",
-    "includingAnonymous": "(including {{count}} anonymous)",
+    "includingAnonymous": "(including {count} anonymous)",
     "invalidLink": "Invalid link",
     "linkError": "The link you are trying to use is invalid or no longer active",
     "returnToHome": "Return to home",
@@ -54,11 +54,11 @@
     "joining": "Joining...",
     "back": "Back",
     "sessionClosed": "Session closed",
-    "welcome": "Welcome {{username}}!",
+    "welcome": "Welcome {username}!",
     "redirecting": "Redirecting to your conversation",
     "joinError": "Error joining the conversation",
     "usernameAlreadyTaken": "This username is already taken",
-    "suggestedUsername": "Suggested username: {{username}}",
+    "suggestedUsername": "Suggested username: {username}",
     "firstNameRequired": "First name and last name are required",
     "connectionError": "Connection error"
   }

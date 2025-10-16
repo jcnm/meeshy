@@ -1,10 +1,12 @@
 /**
  * Utilitaire pour logger les informations de détection de langue
  * Aide au débogage et à la compréhension du comportement de l'auto-détection
+ * 
+ * NOTE: Ce fichier est uniquement pour le développement
  */
 
 export function logLanguageDetectionInfo(): void {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined' || process.env.NODE_ENV !== 'development') return;
 
   console.group('🌐 MEESHY - Language Detection Information');
   
@@ -77,10 +79,10 @@ export function logLanguageDetectionInfo(): void {
 }
 
 /**
- * Version simplifiée pour le logging en production
+ * Version simplifiée pour le logging (uniquement en développement)
  */
 export function logLanguageDetectionSummary(): void {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined' || process.env.NODE_ENV !== 'development') return;
 
   const browserLanguages = navigator.languages || [navigator.language || 'en'];
   const supportedInterfaceLanguages = ['en', 'fr', 'pt'];
@@ -97,11 +99,10 @@ export function logLanguageDetectionSummary(): void {
 }
 
 /**
- * Fonction pour tester différents scénarios de langue
+ * Fonction pour tester différents scénarios de langue (uniquement en développement)
  */
 export function testLanguageDetection(): void {
-  if (typeof window === 'undefined') {
-    console.log('🚫 Cannot test language detection on server side');
+  if (typeof window === 'undefined' || process.env.NODE_ENV !== 'development') {
     return;
   }
 

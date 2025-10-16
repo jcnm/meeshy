@@ -2,11 +2,11 @@
   "upload": {
     "dragDrop": "Drag and drop files here",
     "orClick": "or click the icon to select",
-    "maxSize": "Max size: {{size}}",
+    "maxSize": "Max size: {size}",
     "uploading": "Uploading...",
     "complete": "Upload complete",
     "error": "Upload error",
-    "filesAttached": "{{count}} file(s) attached"
+    "filesAttached": "{count} file(s) attached"
   },
   "types": {
     "image": "Image",
@@ -24,12 +24,12 @@
   },
   "textDetection": {
     "title": "Long text detected",
-    "message": "Would you like to create an attachment for this {{length}} character text?",
+    "message": "Would you like to create an attachment for this {length} character text?",
     "create": "Create attachment",
     "keepInline": "No thanks"
   },
   "errors": {
-    "fileTooBig": "File too large (max {{size}})",
+    "fileTooBig": "File too large (max {size})",
     "invalidType": "Invalid file type",
     "uploadFailed": "Upload failed"
   }

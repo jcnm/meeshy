@@ -14,7 +14,9 @@ const translationsCache = new Map<string, Record<string, any>>();
 // Fonction pour vider le cache (utile lors de changements de structure)
 export function clearTranslationsCache() {
   translationsCache.clear();
-  console.log('[i18n] Cache cleared');
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[i18n] Cache cleared');
+  }
 }
 
 interface UseI18nOptions {
@@ -47,7 +49,9 @@ export function useI18n(namespace: string = 'common', options: UseI18nOptions = 
   
   // Charger les traductions pour un namespace et une locale donnés
   const loadTranslations = useCallback(async (locale: string, ns: string) => {
-    console.log(`[i18n] 🚀 Loading translations for ${locale}/${ns}...`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[i18n] 🚀 Loading translations for ${locale}/${ns}...`);
+    }
     const cacheKey = `${locale}-${ns}`;
     
     // En développement, ne PAS utiliser le cache pour voir les changements immédiatement
@@ -55,7 +59,9 @@ export function useI18n(namespace: string = 'common', options: UseI18nOptions = 
     
     // Vérifier le cache d'abord (seulement en production)
     if (useCache && translationsCache.has(cacheKey)) {
-      console.log(`[i18n] ✅ Using cached translations for ${locale}/${ns}`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[i18n] ✅ Using cached translations for ${locale}/${ns}`);
+      }
       return translationsCache.get(cacheKey)!;
     }
     
@@ -148,10 +154,14 @@ export function useI18n(namespace: string = 'common', options: UseI18nOptions = 
         }
         
         setTranslations(translationsData);
-        console.log(`[i18n] 💾 Set translations for ${currentInterfaceLanguage}/${namespace}:`, {
-          translationsDataKeys: Object.keys(translationsData),
-          translationsData
-        });
+        
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[i18n] 💾 Set translations for ${currentInterfaceLanguage}/${namespace}:`, {
+            translationsDataKeys: Object.keys(translationsData),
+            translationsData
+          });
+        }
+        
         setIsLoading(false);
       }
     };
