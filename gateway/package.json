@@ -15,9 +15,8 @@
     "test:watch": "jest --config=jest.config.json --watch",
     "test:coverage": "jest --config=jest.config.json --coverage",
     "proto:generate": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./src/generated --grpc_out=grpc_js:./src/generated --plugin=protoc-gen-grpc=./node_modules/.bin/grpc_tools_node_protoc_plugin ../shared/proto/messaging.proto",
-    "docker:prepare": "./scripts/prepare-docker-build.sh",
-    "docker:build": "pnpm run docker:prepare && docker buildx build --platform linux/arm64,linux/amd64 -t isopen/meeshy-gateway:latest -f ./Dockerfile .",
-    "docker:build:local": "pnpm run docker:prepare && docker buildx build --platform linux/arm64 --load -t isopen/meeshy-gateway:latest -f ./Dockerfile .",
+    "docker:build": "docker buildx build --platform linux/arm64,linux/amd64 -t isopen/meeshy-gateway:latest -f ./Dockerfile .",
+    "docker:build:local": "docker buildx build --platform linux/arm64 --load -t isopen/meeshy-gateway:latest -f ./Dockerfile .",
     "docker:push": "pnpm run docker:build && docker push isopen/meeshy-gateway:latest"
   },
   "dependencies": {
