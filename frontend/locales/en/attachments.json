@@ -17,8 +17,12 @@
   },
   "gallery": {
     "title": "Image Gallery",
+    "titleWithCounter": "Image Gallery - {current} of {total}",
     "goToMessage": "Go to message",
     "download": "Download",
+    "close": "Close",
+    "loading": "Loading...",
+    "noImage": "No image",
     "by": "by",
     "of": "of"
   },

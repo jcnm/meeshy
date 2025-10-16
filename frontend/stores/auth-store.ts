@@ -150,9 +150,6 @@ export const useAuthStore = create<AuthStore>()(
               }
               set({ isAuthenticated: true });
             } else {
-              if (process.env.NODE_ENV === 'development') {
-                console.log('[AUTH_STORE] No authentication data found');
-              }
               set({ isAuthenticated: false });
             }
           } catch (error) {

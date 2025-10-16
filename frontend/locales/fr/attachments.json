@@ -17,8 +17,12 @@
   },
   "gallery": {
     "title": "Galerie d'images",
+    "titleWithCounter": "Galerie d'images - {current} sur {total}",
     "goToMessage": "Aller au message",
     "download": "Télécharger",
+    "close": "Fermer",
+    "loading": "Chargement...",
+    "noImage": "Aucune image",
     "by": "par",
     "of": "sur"
   },

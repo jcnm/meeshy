@@ -212,19 +212,15 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
         
         // Si c'est notre propre message, TOUJOURS scroller
         if (lastMessage && lastMessage.senderId === currentUser?.id) {
-          console.log('[ConversationMessagesV2] 📩 Notre message envoyé - scroll vers le bas');
           scrollToBottom(false);
         } else {
           // Scénario 3 : Pour les messages d'autres utilisateurs, scroller SEULEMENT si l'utilisateur est en bas
           const userIsAtBottom = isUserAtBottom();
           
           if (userIsAtBottom) {
-            console.log('[ConversationMessagesV2] 📨 Nouveau message reçu - utilisateur en bas - scroll');
             scrollToBottom();
-          } else {
-            console.log('[ConversationMessagesV2] 📚 Nouveau message reçu - utilisateur consulte historique - PAS de scroll');
-            // Ne pas déranger l'utilisateur qui consulte l'historique
           }
+          // Ne pas déranger l'utilisateur qui consulte l'historique
         }
       }
       

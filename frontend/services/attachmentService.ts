@@ -75,7 +75,6 @@ export class AttachmentService {
     }
 
     const result = await response.json();
-    console.log('[AttachmentService] ✅ Upload réussi:', result);
     return result;
   }
 
@@ -154,9 +153,6 @@ export class AttachmentService {
     }
 
     const result = await response.json();
-    console.log('[AttachmentService] ✅ Attachments récupérés:', {
-      count: result.attachments?.length || 0
-    });
     return result;
   }
 

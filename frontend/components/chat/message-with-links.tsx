@@ -33,8 +33,6 @@ export function MessageWithLinks({
   // Parser le message pour extraire les liens
   const parsedParts = useMemo(() => {
     const parts = parseMessageLinks(content);
-    console.log('[MessageWithLinks] Content:', content);
-    console.log('[MessageWithLinks] Parsed parts:', parts);
     return parts;
   }, [content]);
 

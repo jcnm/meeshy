@@ -125,10 +125,6 @@ export const useAppStore = create<AppStore>()(
             
             set({ isInitialized: true });
             
-            if (process.env.NODE_ENV === 'development') {
-              console.log('[APP_STORE] Application initialized successfully');
-            }
-            
           } catch (error) {
             console.error('[APP_STORE] Initialization error:', error);
             get().addNotification({

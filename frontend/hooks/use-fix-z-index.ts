@@ -123,8 +123,6 @@ export function useFixTranslationPopoverZIndex() {
       translationWrappers.forEach((element) => {
         (element as HTMLElement).style.zIndex = Z_INDEX.MAX.toString();
       });
-
-      console.log(`🌐 ${translationPopovers.length} popovers de traduction fixés`);
     };
 
     // Fixer immédiatement

@@ -96,13 +96,10 @@ cleanup() {
         echo -e "${GREEN}✅ Translator arrêté${NC}"
     fi
     
-    # Arrêter les services Docker (seulement si démarrés par ce script)
+    # Les conteneurs Docker ne sont jamais arrêtés lors du Ctrl+C
+    echo -e "${CYAN}ℹ️  Les conteneurs Docker (MongoDB, Redis) restent actifs${NC}"
     if [ "$START_CONTAINERS" = true ]; then
-        echo -e "${YELLOW}🛑 Arrêt des services Docker (MongoDB, Redis)...${NC}"
-        docker-compose -f docker-compose.local.yml down 2>/dev/null || true
-        echo -e "${GREEN}✅ Services Docker arrêtés${NC}"
-    else
-        echo -e "${CYAN}ℹ️  Les conteneurs Docker ne sont pas arrêtés (non démarrés par ce script)${NC}"
+        echo -e "${YELLOW}💡 Pour les arrêter manuellement:${NC} docker-compose -f docker-compose.local.yml down"
     fi
     
     echo ""

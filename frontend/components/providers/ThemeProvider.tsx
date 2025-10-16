@@ -28,10 +28,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       if (theme === 'auto') {
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         root.classList.add(prefersDark ? 'dark' : 'light');
-        logger.debug('[ThemeProvider]', `Mode auto détecté: ${prefersDark ? 'dark' : 'light'}`);
       } else {
         root.classList.add(theme);
-        logger.debug('[ThemeProvider]', `Mode explicite: ${theme}`);
       }
     };
 

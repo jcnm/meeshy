@@ -127,6 +127,7 @@ function LandingPageContent() {
         <div className="h-full">
           <BubbleStreamPage 
             user={user}
+            // conversationId accepte soit un ID MongoDB soit un identifier comme "meeshy" pour la conversation globale
             conversationId="meeshy"
             isAnonymousMode={false}
           />

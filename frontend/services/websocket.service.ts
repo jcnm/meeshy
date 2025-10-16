@@ -67,7 +67,6 @@ class WebSocketService {
     }
     
     if (this.socket?.connected) {
-      console.log('✅ [WS] Déjà connecté');
       return;
     }
     
@@ -122,14 +121,13 @@ class WebSocketService {
     
     // Connexion
     this.socket.on('connect', () => {
-      console.log('✅ [WS] Connecté, socket ID:', this.socket?.id);
+      // Connexion établie
     });
     
     // Authentification
     this.socket.on(SERVER_EVENTS.AUTHENTICATED, (response: any) => {
       if (response?.success) {
         this.isAuthenticated = true;
-        console.log('✅ [WS] Authentifié:', response.user?.id);
         toast.success('Connexion établie');
       } else {
         console.error('❌ [WS] Auth échouée:', response?.error);
@@ -150,14 +148,12 @@ class WebSocketService {
     
     // Nouveaux messages
     this.socket.on(SERVER_EVENTS.MESSAGE_NEW, (socketMessage: any) => {
-      console.log('📨 [WS] Nouveau message:', socketMessage.id);
       const message = this.convertToMessage(socketMessage);
       this.messageListeners.forEach(listener => listener(message));
     });
     
     // Messages édités
     this.socket.on(SERVER_EVENTS.MESSAGE_EDITED, (socketMessage: any) => {
-      console.log('✏️ [WS] Message édité:', socketMessage.id);
       const message = this.convertToMessage(socketMessage);
       this.editListeners.forEach(listener => listener(message));
     });
@@ -272,7 +268,6 @@ class WebSocketService {
         clearTimeout(timeout);
         
         if (response?.success) {
-          console.log('✅ [WS] Message envoyé:', response.data?.messageId);
           resolve(true);
         } else {
           console.error('❌ [WS] Échec envoi:', response?.error);
@@ -311,7 +306,6 @@ class WebSocketService {
         replyToId
       }, (response: any) => {
         if (response?.success) {
-          console.log('✅ [WS] Message avec attachments envoyé');
           resolve(true);
         } else {
           console.error('❌ [WS] Échec envoi attachments:', response?.error);
@@ -334,7 +328,6 @@ class WebSocketService {
     return new Promise((resolve) => {
       this.socket!.emit(CLIENT_EVENTS.MESSAGE_EDIT, { messageId, content }, (response: any) => {
         if (response?.success) {
-          console.log('✅ [WS] Message édité');
           resolve(true);
         } else {
           console.error('❌ [WS] Échec édition:', response?.error);
@@ -357,7 +350,6 @@ class WebSocketService {
     return new Promise((resolve) => {
       this.socket!.emit(CLIENT_EVENTS.MESSAGE_DELETE, { messageId }, (response: any) => {
         if (response?.success) {
-          console.log('✅ [WS] Message supprimé');
           resolve(true);
         } else {
           console.error('❌ [WS] Échec suppression:', response?.error);

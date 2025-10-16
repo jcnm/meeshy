@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
 import { Attachment } from '../../shared/types/attachment';
 import { AttachmentService } from '../../services/attachmentService';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { useI18n } from '@/hooks/useI18n';
 
 interface AttachmentGalleryProps {
   conversationId: string;
@@ -32,6 +33,7 @@ export function AttachmentGallery({
   token,
   attachments: providedAttachments,
 }: AttachmentGalleryProps) {
+  const { t } = useI18n('attachments');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -132,7 +134,7 @@ export function AttachmentGallery({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl h-[90vh] p-0 bg-black/95 dark:bg-black border-none" showCloseButton={false}>
         <DialogTitle className="sr-only">
-          Galerie d'images - {currentIndex + 1} sur {attachments.length}
+          {t('gallery.titleWithCounter', { current: currentIndex + 1, total: attachments.length })}
         </DialogTitle>
         <div className="relative w-full h-full flex flex-col">
           {/* Header */}
@@ -150,7 +152,7 @@ export function AttachmentGallery({
                   size="sm"
                   onClick={handleDownload}
                   className="text-white hover:bg-white/10"
-                  title="Télécharger"
+                  title={t('gallery.download')}
                 >
                   <Download className="w-4 h-4" />
                 </Button>
@@ -159,7 +161,7 @@ export function AttachmentGallery({
                   size="sm"
                   onClick={onClose}
                   className="text-white hover:bg-white/10"
-                  title="Fermer"
+                  title={t('gallery.close')}
                 >
                   <X className="w-4 h-4" />
                 </Button>
@@ -170,7 +172,7 @@ export function AttachmentGallery({
           {/* Image principale */}
           <div className="flex-1 flex items-center justify-center p-4">
             {loading ? (
-              <div className="text-white">Chargement...</div>
+              <div className="text-white">{t('gallery.loading')}</div>
             ) : currentAttachment ? (
               <img
                 src={currentAttachment.fileUrl}
@@ -178,7 +180,7 @@ export function AttachmentGallery({
                 className="max-w-full max-h-full object-contain"
               />
             ) : (
-              <div className="text-white">Aucune image</div>
+              <div className="text-white">{t('gallery.noImage')}</div>
             )}
           </div>
 
@@ -224,7 +226,7 @@ export function AttachmentGallery({
                     className="text-white hover:bg-white/10"
                   >
                     <MessageSquare className="w-4 h-4 mr-2" />
-                    Aller au message
+                    {t('gallery.goToMessage')}
                   </Button>
                 )}
               </div>

@@ -138,12 +138,6 @@ export function useAuth() {
       return;
     }
 
-    devLog('[USE_AUTH] Vérification route:', pathname, 'Auth state:', {
-      isAuthenticated: authState.isAuthenticated,
-      hasUser: !!authState.user,
-      isChecking: authState.isChecking
-    });
-
     // Routes publiques (pas de vérification nécessaire)
     const publicRoutes = ['/', '/login', '/signin', '/register', '/partners', '/privacy', '/contact', '/about', '/terms'];
     const isPublicRoute = publicRoutes.includes(pathname);
@@ -269,8 +263,6 @@ export function useAuth() {
       router.push(loginUrl);
       return;
     }
-    
-    devLog('[USE_AUTH] Route autorisée:', pathname);
   }, [authState.isAuthenticated, authState.isChecking, pathname, isAuthChecking]);
 
   // Se connecter

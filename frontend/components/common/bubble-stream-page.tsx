@@ -218,12 +218,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       }
     });
     
-    console.log('[BubbleStreamPage] Images extraites pour galerie:', {
-      totalMessages: messages.length,
-      imageCount: allAttachments.length,
-      images: allAttachments.map(a => ({ id: a.id, fileName: a.fileName }))
-    });
-    
     return allAttachments;
   }, [messages]);
 
@@ -480,15 +474,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     
     // Mettre à jour le message avec les nouvelles traductions
     updateMessageTranslations(messageId, (prevMessage) => {
-      console.log('🔄 [BubbleStreamPage] Mise à jour des traductions pour message:', messageId, {
-        currentTranslations: prevMessage.translations?.length || 0,
-        newTranslations: translations.length,
-        translationsReceived: translations.map(t => ({ 
-          lang: t.targetLanguage || t.language, 
-          content: (t.translatedContent || t.content)?.substring(0, 30) + '...' 
-        }))
-      });
-
       // Fusionner les nouvelles traductions avec les existantes
       const existingTranslations = prevMessage.translations || [];
       const updatedTranslations = [...existingTranslations];
@@ -608,17 +593,8 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     // Ajouter le message enrichi à la liste (il sera inséré au début grâce au hook)
     addMessage(enrichedMessage);
     
-    // Notification UNIQUEMENT pour les nouveaux messages d'autres utilisateurs
+    // Scroll automatique pour les nouveaux messages d'autres utilisateurs
     if (message.senderId !== user.id && message.anonymousSenderId !== user.id) {
-      const senderName = enrichedMessage.sender?.firstName || 
-                        enrichedMessage.anonymousSender?.firstName || 
-                        enrichedMessage.sender?.username ||
-                        enrichedMessage.anonymousSender?.username ||
-                        'Utilisateur';
-      toast.info(`📨 Nouveau message de ${senderName}`, {
-        duration: TOAST_LONG_DURATION
-      });
-      
       // Scroll automatique SEULEMENT si l'utilisateur est déjà proche du haut (dans les 300px)
       setTimeout(() => {
         if (messagesContainerRef.current) {
@@ -632,9 +608,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           }
         }
       }, 300);
-    } else {
-      // Pour nos propres messages, c'est déjà géré dans handleSendMessage
-      // Mon message publié avec succès
     }
   }, [addMessage, user.id, user.username, user.firstName, user.lastName, user.displayName, user.avatar, user.systemLanguage, isAnonymousMode]);
 
@@ -764,10 +737,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   useEffect(() => {
     console.log('Initialisation de la connexion WebSocket...');
     
-    // Diagnostic initial
-    const diagnostics = getDiagnostics();
-    console.log('Diagnostic initial:', diagnostics);
-    
     // Attendre que les traductions soient chargées avant d'afficher les toasts
     if (isLoadingTranslations) {
       return;
@@ -776,7 +745,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     // OPTIMISATION: Appeler reconnect() automatiquement au chargement
     // Cela garantit que la connexion WebSocket est établie dès le début
     const reconnectTimeout = setTimeout(() => {
-      console.log('🔄 Auto-reconnect au chargement de la page...');
       reconnect();
     }, 500); // Petit délai pour laisser le temps à l'authentification
 
@@ -811,18 +779,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   useEffect(() => {
     const checkConnection = () => {
       const isReallyConnected = connectionStatus.isConnected && connectionStatus.hasSocket;
-      
-      if (isReallyConnected) {
-        console.log('Connexion WebSocket active');
-      } else {
-        console.log('WebSocket déconnecté');
-      }
-      
-      console.log('Statut connexion vérifié:', { 
-        isConnected: connectionStatus.isConnected,
-        hasSocket: connectionStatus.hasSocket,
-        connectionStatus 
-      });
+
     };
 
     checkConnection();
@@ -949,8 +906,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         console.log(`${t('bubbleStream.connected')}`);
         setHasShownConnectionToast(true);
       }
-    } else {
-      console.log('WebSocket en attente de connexion...');
     }
   }, [connectionStatus.isConnected, hasShownConnectionToast, isLoadingTranslations, t]);
 
@@ -958,7 +913,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   useEffect(() => {
     if (hasLoadedMessages && !isLoadingMessages) {
       setIsInitializing(false);
-      console.log('✅ Initialisation terminée : messages chargés');
     }
   }, [hasLoadedMessages, isLoadingMessages]);
 

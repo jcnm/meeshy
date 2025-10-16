@@ -292,7 +292,6 @@ class AdvancedTranslationService extends EventEmitter {
     this.processBatch(batch)
       .then(() => {
         this.stats.avgBatchSize = (this.stats.avgBatchSize + requests.length) / 2;
-        console.log(`✅ Batch ${batchId} traité: ${requests.length} requêtes`);
       })
       .catch((error) => {
         console.error(`❌ Erreur traitement batch ${batchId}:`, error);
@@ -335,7 +334,6 @@ class AdvancedTranslationService extends EventEmitter {
     this.stats.avgProcessingTime = (this.stats.avgProcessingTime + processingTime) / 2;
 
     batch.status = 'completed';
-    console.log(`✅ Batch ${batch.id} terminé en ${processingTime}ms`);
 
     // Émettre les résultats
     batch.requests.forEach(request => {

@@ -824,6 +824,20 @@ export async function conversationRoutes(fastify: FastifyInstance) {
               language: true
             }
           },
+          attachments: {
+            select: {
+              id: true,
+              fileName: true,
+              originalName: true,
+              mimeType: true,
+              fileSize: true,
+              fileUrl: true,
+              thumbnailUrl: true,
+              width: true,
+              height: true,
+              createdAt: true
+            }
+          },
           status: {
             select: {
               userId: true,
@@ -856,6 +870,20 @@ export async function conversationRoutes(fastify: FastifyInstance) {
                   firstName: true,
                   lastName: true,
                   language: true
+                }
+              },
+              attachments: {
+                select: {
+                  id: true,
+                  fileName: true,
+                  originalName: true,
+                  mimeType: true,
+                  fileSize: true,
+                  fileUrl: true,
+                  thumbnailUrl: true,
+                  width: true,
+                  height: true,
+                  createdAt: true
                 }
               },
               status: {
