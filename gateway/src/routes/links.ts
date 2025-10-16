@@ -1080,6 +1080,30 @@ export async function linksRoutes(fastify: FastifyInstance) {
               language: true
             }
           },
+          attachments: true,
+          replyTo: {
+            include: {
+              sender: {
+                select: {
+                  id: true,
+                  username: true,
+                  firstName: true,
+                  lastName: true,
+                  displayName: true,
+                  avatar: true
+                }
+              },
+              anonymousSender: {
+                select: {
+                  id: true,
+                  username: true,
+                  firstName: true,
+                  lastName: true,
+                  language: true
+                }
+              }
+            }
+          },
           status: {
             select: {
               userId: true,
@@ -1097,7 +1121,7 @@ export async function linksRoutes(fastify: FastifyInstance) {
         }
       });
 
-      // Retourner les messages avec sender et senderAnonymous distincts (pas d'unification)
+      // Retourner les messages avec sender, senderAnonymous, attachments et replyTo
       const formattedMessages = messages.map(message => ({
         id: message.id,
         content: message.content,
@@ -1127,6 +1151,31 @@ export async function linksRoutes(fastify: FastifyInstance) {
           firstName: message.anonymousSender.firstName,
           lastName: message.anonymousSender.lastName,
           language: message.anonymousSender.language
+        } : null,
+        // Inclure les attachments
+        attachments: (message as any).attachments || [],
+        // Inclure replyTo complet si présent
+        replyTo: (message as any).replyTo ? {
+          id: (message as any).replyTo.id,
+          content: (message as any).replyTo.content,
+          originalLanguage: (message as any).replyTo.originalLanguage || 'fr',
+          messageType: (message as any).replyTo.messageType,
+          createdAt: (message as any).replyTo.createdAt,
+          sender: (message as any).replyTo.sender ? {
+            id: (message as any).replyTo.sender.id,
+            username: (message as any).replyTo.sender.username,
+            firstName: (message as any).replyTo.sender.firstName,
+            lastName: (message as any).replyTo.sender.lastName,
+            displayName: (message as any).replyTo.sender.displayName,
+            avatar: (message as any).replyTo.sender.avatar
+          } : null,
+          anonymousSender: (message as any).replyTo.anonymousSender ? {
+            id: (message as any).replyTo.anonymousSender.id,
+            username: (message as any).replyTo.anonymousSender.username,
+            firstName: (message as any).replyTo.anonymousSender.firstName,
+            lastName: (message as any).replyTo.anonymousSender.lastName,
+            language: (message as any).replyTo.anonymousSender.language
+          } : null
         } : null
       }));
 
