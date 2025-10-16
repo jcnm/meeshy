@@ -113,11 +113,24 @@ export interface SocketIOMessage {
   editedAt?: Date; // Présent = message édité
   deletedAt?: Date; // Présent = message supprimé
   replyToId?: string; // Support des réponses
+  replyTo?: SocketIOMessage; // Objet message complet auquel on répond
   createdAt: Date;
   updatedAt?: Date; // Date de dernière modification
   // Sender résolu (authentifié ou anonyme) - sera attaché via requête
   sender?: SocketIOUser | AnonymousParticipant;
-
+  // Attachments du message
+  attachments?: Array<{
+    id: string;
+    fileName: string;
+    originalFileName: string;
+    mimeType: string;
+    fileSize: number;
+    fileUrl: string;
+    thumbnailUrl?: string;
+    fileType: 'image' | 'video' | 'audio' | 'document' | 'other';
+    metadata?: any;
+    createdAt: Date;
+  }>;
 }
 
 export interface UserPermissions {

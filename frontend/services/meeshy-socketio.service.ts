@@ -866,12 +866,19 @@ class MeeshySocketIOService {
    * Convertit un message Socket.IO en Message standard
    */
   private convertSocketMessageToMessage(socketMessage: SocketIOMessage): Message {
-    // Reconstituer replyTo depuis la liste des messages existants si replyToId est présent
+    // CORRECTION CRITIQUE: Utiliser replyTo depuis le backend si disponible
+    // Sinon fallback sur la reconstitution depuis le cache local
     let replyTo: Message | undefined = undefined;
-    if (socketMessage.replyToId && this.getMessageByIdCallback) {
+    
+    if (socketMessage.replyTo) {
+      // Le backend a fourni l'objet complet replyTo
+      console.log(`💬 [MESSAGES] Message réponse fourni par le backend: ${socketMessage.replyTo.id}`);
+      replyTo = this.convertSocketMessageToMessage(socketMessage.replyTo);
+    } else if (socketMessage.replyToId && this.getMessageByIdCallback) {
+      // Fallback: Reconstituer depuis la liste locale
       replyTo = this.getMessageByIdCallback(socketMessage.replyToId);
       if (replyTo) {
-        console.log(`💬 [MESSAGES] Message réponse reconstitué depuis la liste: ${socketMessage.replyToId}`);
+        console.log(`💬 [MESSAGES] Message réponse reconstitué depuis la liste locale: ${socketMessage.replyToId}`);
       } else {
         console.warn(`⚠️ [MESSAGES] Message ${socketMessage.replyToId} non trouvé dans la liste pour replyTo`);
       }
@@ -892,8 +899,10 @@ class MeeshySocketIOService {
       isEdited: false,
       isDeleted: false,
       translations: [],
-      // Utiliser le message depuis le cache si disponible
+      // Utiliser le message depuis le backend ou le cache local
       replyTo: replyTo,
+      // CORRECTION: Inclure les attachments depuis le backend
+      attachments: socketMessage.attachments || [],
       sender: socketMessage.sender || {
         id: socketMessage.senderId || '',
         username: 'Utilisateur inconnu',

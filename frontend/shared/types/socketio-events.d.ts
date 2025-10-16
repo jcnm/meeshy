@@ -152,9 +152,22 @@ export interface SocketIOMessage {
     editedAt?: Date;
     deletedAt?: Date;
     replyToId?: string;
+    replyTo?: SocketIOMessage;
     createdAt: Date;
     updatedAt?: Date;
     sender?: SocketIOUser | AnonymousParticipant;
+    attachments?: Array<{
+        id: string;
+        fileName: string;
+        originalFileName: string;
+        mimeType: string;
+        fileSize: number;
+        fileUrl: string;
+        thumbnailUrl?: string;
+        fileType: 'image' | 'video' | 'audio' | 'document' | 'other';
+        metadata?: any;
+        createdAt: Date;
+    }>;
 }
 export interface UserPermissions {
     canAccessAdmin: boolean;

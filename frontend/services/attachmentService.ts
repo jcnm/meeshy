@@ -13,11 +13,34 @@ import {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
+// Helper pour construire l'URL correcte sans duplication du préfixe /api
+const buildApiUrl = (path: string): string => {
+  const baseUrl = API_URL.replace(/\/$/, ''); // Enlever le slash final
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  
+  // Si baseUrl contient déjà /api, ne pas le rajouter
+  if (baseUrl.endsWith('/api')) {
+    const finalUrl = `${baseUrl}${cleanPath}`;
+    console.log('[AttachmentService] URL construite:', finalUrl, { baseUrl, cleanPath });
+    return finalUrl;
+  }
+  
+  const finalUrl = `${baseUrl}/api${cleanPath}`;
+  console.log('[AttachmentService] URL construite:', finalUrl, { baseUrl, cleanPath });
+  return finalUrl;
+};
+
 export class AttachmentService {
   /**
    * Upload un ou plusieurs fichiers
    */
   static async uploadFiles(files: File[], token?: string): Promise<UploadMultipleResponse> {
+    console.log('[AttachmentService] uploadFiles - Début', {
+      filesCount: files.length,
+      hasToken: !!token,
+      fileNames: files.map(f => f.name)
+    });
+    
     const formData = new FormData();
     
     files.forEach((file) => {
@@ -27,21 +50,36 @@ export class AttachmentService {
     const headers: HeadersInit = {};
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
+      console.log('[AttachmentService] Token ajouté aux headers');
+    } else {
+      console.warn('[AttachmentService] ⚠️ Pas de token fourni');
     }
 
-    const response = await fetch(`${API_URL}/api/attachments/upload`, {
+    const response = await fetch(buildApiUrl('/attachments/upload'), {
       method: 'POST',
       headers,
       body: formData,
       credentials: 'include',
     });
 
+    console.log('[AttachmentService] Réponse HTTP:', {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok
+    });
+
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: 'Upload failed' }));
+      console.error('[AttachmentService] ❌ Erreur upload:', {
+        status: response.status,
+        error
+      });
       throw new Error(error.error || 'Failed to upload files');
     }
 
-    return response.json();
+    const result = await response.json();
+    console.log('[AttachmentService] ✅ Upload réussi:', result);
+    return result;
   }
 
   /**
@@ -56,7 +94,7 @@ export class AttachmentService {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${API_URL}/api/attachments/upload-text`, {
+    const response = await fetch(buildApiUrl('/attachments/upload-text'), {
       method: 'POST',
       headers,
       credentials: 'include',
@@ -94,7 +132,7 @@ export class AttachmentService {
     }
 
     const response = await fetch(
-      `${API_URL}/api/conversations/${conversationId}/attachments?${params}`,
+      buildApiUrl(`/conversations/${conversationId}/attachments?${params}`),
       {
         headers,
         credentials: 'include',
@@ -117,7 +155,7 @@ export class AttachmentService {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${API_URL}/api/attachments/${attachmentId}`, {
+    const response = await fetch(buildApiUrl(`/attachments/${attachmentId}`), {
       method: 'DELETE',
       headers,
       credentials: 'include',
@@ -132,14 +170,14 @@ export class AttachmentService {
    * Génère l'URL d'un attachment
    */
   static getAttachmentUrl(attachmentId: string): string {
-    return `${API_URL}/api/attachments/${attachmentId}`;
+    return buildApiUrl(`/attachments/${attachmentId}`);
   }
 
   /**
    * Génère l'URL d'une miniature
    */
   static getThumbnailUrl(attachmentId: string): string {
-    return `${API_URL}/api/attachments/${attachmentId}/thumbnail`;
+    return buildApiUrl(`/attachments/${attachmentId}/thumbnail`);
   }
 
   /**

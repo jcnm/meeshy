@@ -106,7 +106,7 @@ import { MessagesDisplay } from '@/components/common/messages-display';
 import { printWebSocketDiagnostics } from '@/utils/websocket-diagnostics';
 
 export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousMode = false, linkId, initialParticipants }: BubbleStreamPageProps) {
-  const { t } = useI18n('conversations');
+  const { t, isLoading: isLoadingTranslations } = useI18n('conversations');
   const { t: tCommon } = useI18n('common');
   const router = useRouter();
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -196,6 +196,11 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   const [activeUsers, setActiveUsers] = useState<User[]>(initialParticipants || []);
   // État pour les attachments
   const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
+  
+  // Debug: log quand attachmentIds change
+  useEffect(() => {
+    console.log('📎 [BubbleStreamPage] attachmentIds mis à jour:', attachmentIds);
+  }, [attachmentIds]);
   // État pour la galerie d'images
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [selectedAttachmentId, setSelectedAttachmentId] = useState<string | null>(null);
@@ -718,6 +723,11 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     const diagnostics = getDiagnostics();
     console.log('Diagnostic initial:', diagnostics);
     
+    // Attendre que les traductions soient chargées avant d'afficher les toasts
+    if (isLoadingTranslations) {
+      return;
+    }
+
     // Délai pour vérifier la connexion établie
     const initTimeout = setTimeout(() => {
       const newDiagnostics = getDiagnostics();
@@ -740,7 +750,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     }, 3000);
 
     return () => clearTimeout(initTimeout);
-  }, [connectionStatus.isConnected, connectionStatus.hasSocket, hasShownConnectionToast]);
+  }, [connectionStatus.isConnected, connectionStatus.hasSocket, hasShownConnectionToast, isLoadingTranslations, t]);
 
   // Surveillance du statut de connexion WebSocket
   useEffect(() => {
@@ -871,6 +881,11 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
   // Separately handle WebSocket connection for real-time updates
   useEffect(() => {
+    // Attendre que les traductions soient chargées
+    if (isLoadingTranslations) {
+      return;
+    }
+
     if (connectionStatus.isConnected) {
       setHasEstablishedConnection(true);
       console.log(`${t('bubbleStream.websocketEstablished')}`);
@@ -882,7 +897,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     } else {
       console.log('WebSocket en attente de connexion...');
     }
-  }, [connectionStatus.isConnected, hasShownConnectionToast]);
+  }, [connectionStatus.isConnected, hasShownConnectionToast, isLoadingTranslations, t]);
 
   // Gérer l'état d'initialisation global
   useEffect(() => {
@@ -1006,7 +1021,9 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       sourceLanguage: selectedInputLanguage,
       languageChoice: languageChoices.find(choice => choice.code === selectedInputLanguage),
       replyToId: replyToId || 'none',
-      attachmentCount: attachmentIds.length
+      attachmentCount: attachmentIds.length,
+      attachmentIds: attachmentIds,
+      hasAttachments: hasAttachments
     });
     
     setNewMessage(''); // Réinitialiser immédiatement pour éviter les doubles envois
@@ -1060,6 +1077,17 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         console.log('📤 Envoi du message avec métadonnées de langue:', messageWithLanguage);
         
         // Envoyer le message avec ou sans attachments selon le cas
+        if (hasAttachments) {
+          console.log('📎 Envoi du message AVEC attachments:', {
+            messageContent,
+            attachmentIds: currentAttachmentIds,
+            sourceLanguage: selectedInputLanguage,
+            replyToId
+          });
+        } else {
+          console.log('📝 Envoi du message SANS attachments');
+        }
+        
         const sendResult = hasAttachments 
           ? await sendMessageWithAttachmentsToService(messageContent, currentAttachmentIds, selectedInputLanguage, replyToId)
           : await sendMessageToService(messageContent, selectedInputLanguage, replyToId);

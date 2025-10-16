@@ -46,6 +46,18 @@ export interface GatewayMessage {
     sender?: User | AnonymousParticipant;
     translations: MessageTranslation[];
     replyTo?: GatewayMessage;
+    attachments?: Array<{
+        id: string;
+        fileName: string;
+        originalFileName: string;
+        mimeType: string;
+        fileSize: number;
+        fileUrl: string;
+        thumbnailUrl?: string;
+        fileType: 'image' | 'video' | 'audio' | 'document' | 'other';
+        metadata?: any;
+        createdAt: Date;
+    }>;
 }
 /**
  * État de traduction pour l'interface utilisateur

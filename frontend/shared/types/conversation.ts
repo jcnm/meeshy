@@ -94,6 +94,20 @@ export interface Message {
   replyToId?: string;
   replyTo?: Message;           // Message de réponse (récursif)
 
+  // ===== PIÈCES JOINTES =====
+  attachments?: Array<{
+    id: string;
+    fileName: string;
+    originalFileName: string;
+    mimeType: string;
+    fileSize: number;
+    fileUrl: string;
+    thumbnailUrl?: string;
+    fileType: 'image' | 'video' | 'audio' | 'document' | 'other';
+    metadata?: any;
+    createdAt: Date;
+  }>;
+
   // ===== MÉTADONNÉES =====
   createdAt: Date;
   updatedAt?: Date;

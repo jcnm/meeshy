@@ -11,11 +11,11 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
   const attachmentService = new AttachmentService((fastify as any).prisma);
 
   /**
-   * POST /api/attachments/upload
+   * POST /attachments/upload
    * Upload un ou plusieurs fichiers
    */
   fastify.post(
-    '/api/attachments/upload',
+    '/attachments/upload',
     {
       onRequest: [fastify.authenticate],
     },
@@ -83,11 +83,11 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
   );
 
   /**
-   * POST /api/attachments/upload-text
+   * POST /attachments/upload-text
    * Crée un fichier texte à partir du contenu
    */
   fastify.post(
-    '/api/attachments/upload-text',
+    '/attachments/upload-text',
     {
       onRequest: [fastify.authenticate],
       schema: {
@@ -141,11 +141,11 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
   );
 
   /**
-   * GET /api/attachments/:attachmentId
+   * GET /attachments/:attachmentId
    * Stream le fichier original
    */
   fastify.get(
-    '/api/attachments/:attachmentId',
+    '/attachments/:attachmentId',
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { attachmentId } = request.params as { attachmentId: string };
@@ -194,11 +194,11 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
   );
 
   /**
-   * GET /api/attachments/:attachmentId/thumbnail
+   * GET /attachments/:attachmentId/thumbnail
    * Stream la miniature (images uniquement)
    */
   fastify.get(
-    '/api/attachments/:attachmentId/thumbnail',
+    '/attachments/:attachmentId/thumbnail',
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { attachmentId } = request.params as { attachmentId: string };
@@ -239,11 +239,11 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
   );
 
   /**
-   * GET /api/attachments/file/:filePath
+   * GET /attachments/file/:filePath
    * Stream un fichier via son chemin (utilisé pour les URLs générées)
    */
   fastify.get(
-    '/api/attachments/file/*',
+    '/attachments/file/*',
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         // Extraire le chemin du fichier
@@ -278,11 +278,11 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
   );
 
   /**
-   * DELETE /api/attachments/:attachmentId
+   * DELETE /attachments/:attachmentId
    * Supprime un attachment
    */
   fastify.delete(
-    '/api/attachments/:attachmentId',
+    '/attachments/:attachmentId',
     {
       onRequest: [fastify.authenticate],
     },
@@ -337,11 +337,11 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
   );
 
   /**
-   * GET /api/conversations/:conversationId/attachments
+   * GET /conversations/:conversationId/attachments
    * Récupère les attachments d'une conversation
    */
   fastify.get(
-    '/api/conversations/:conversationId/attachments',
+    '/conversations/:conversationId/attachments',
     {
       onRequest: [fastify.authenticate],
       schema: {

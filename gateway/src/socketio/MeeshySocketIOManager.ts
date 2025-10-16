@@ -313,7 +313,28 @@ export class MeeshySocketIOManager {
                     username: true
                   }
                 },
-                attachments: true
+                attachments: true,
+                replyTo: {
+                  include: {
+                    sender: {
+                      select: {
+                        id: true,
+                        username: true,
+                        displayName: true,
+                        firstName: true,
+                        lastName: true
+                      }
+                    },
+                    anonymousSender: {
+                      select: {
+                        id: true,
+                        firstName: true,
+                        lastName: true,
+                        username: true
+                      }
+                    }
+                  }
+                }
               }
             });
             
@@ -1671,8 +1692,33 @@ export class MeeshySocketIOManager {
           createdAt: (message.sender as any).createdAt || new Date(),
           updatedAt: (message.sender as any).updatedAt || new Date()
         } : undefined,
-        // Envoyer seulement l'ID du message auquel on répond (le frontend reconstituera replyTo localement)
+        // CORRECTION: Inclure les attachments dans le payload
+        attachments: (message as any).attachments || [],
+        // CORRECTION: Inclure l'objet replyTo complet ET replyToId
         replyToId: message.replyToId || undefined,
+        replyTo: (message as any).replyTo ? {
+          id: (message as any).replyTo.id,
+          conversationId: (message as any).replyTo.conversationId,
+          senderId: (message as any).replyTo.senderId || undefined,
+          anonymousSenderId: (message as any).replyTo.anonymousSenderId || undefined,
+          content: (message as any).replyTo.content,
+          originalLanguage: (message as any).replyTo.originalLanguage || 'fr',
+          messageType: (message as any).replyTo.messageType || 'text',
+          createdAt: (message as any).replyTo.createdAt || new Date(),
+          sender: (message as any).replyTo.sender ? {
+            id: (message as any).replyTo.sender.id,
+            username: (message as any).replyTo.sender.username,
+            firstName: (message as any).replyTo.sender.firstName || '',
+            lastName: (message as any).replyTo.sender.lastName || '',
+            displayName: (message as any).replyTo.sender.displayName || (message as any).replyTo.sender.username,
+          } : undefined,
+          anonymousSender: (message as any).replyTo.anonymousSender ? {
+            id: (message as any).replyTo.anonymousSender.id,
+            username: (message as any).replyTo.anonymousSender.username,
+            firstName: (message as any).replyTo.anonymousSender.firstName,
+            lastName: (message as any).replyTo.anonymousSender.lastName,
+          } : undefined
+        } : undefined,
         meta: {
           conversationStats: updatedStats
         }

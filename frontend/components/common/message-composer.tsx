@@ -132,6 +132,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   useEffect(() => {
     if (onAttachmentsChange) {
       const attachmentIds = uploadedAttachments.map(att => att.attachmentId);
+      console.log('📎 Notification parent - IDs d\'attachments:', attachmentIds);
       onAttachmentsChange(attachmentIds);
     }
   }, [uploadedAttachments, onAttachmentsChange]);
@@ -178,15 +179,29 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     setSelectedFiles(prev => [...prev, ...files]);
     setIsUploading(true);
 
+    console.log('📎 Début upload de', files.length, 'fichier(s)');
+
     try {
       // Upload les fichiers
       const response = await AttachmentService.uploadFiles(files, token);
       
+      console.log('📎 Réponse upload:', response);
+      
       if (response.success && response.attachments) {
-        setUploadedAttachments(prev => [...prev, ...response.attachments]);
+        console.log('✅ Upload réussi:', response.attachments.length, 'attachment(s)');
+        setUploadedAttachments(prev => {
+          const newAttachments = [...prev, ...response.attachments];
+          console.log('📎 Total attachments après ajout:', newAttachments.length);
+          return newAttachments;
+        });
+      } else {
+        console.warn('⚠️ Upload sans succès ou sans attachments:', response);
       }
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error('❌ Upload error:', error);
+      if (error instanceof Error) {
+        console.error('❌ Message d\'erreur:', error.message);
+      }
       // TODO: Afficher une notification d'erreur
     } finally {
       setIsUploading(false);
