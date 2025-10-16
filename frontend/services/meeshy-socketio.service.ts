@@ -574,24 +574,50 @@ class MeeshySocketIOService {
         timestamp: new Date().toISOString()
       });
       
-      // CORRECTION: Ne pas afficher de toast pour les déconnexions normales du client
-      // "io client disconnect" = déconnexion volontaire (changement de page, multi-onglets, etc.)
-      // "io server disconnect" = le serveur a forcé la déconnexion (onglet dupliqué détecté)
+      // CORRECTION: Reconnexion automatique pour TOUTES les déconnexions sauf volontaires
+      const shouldReconnect = reason !== 'io client disconnect'; // Déconnexion volontaire
+      
       if (reason === 'io server disconnect') {
-        // Le serveur a forcé la déconnexion (connexion multiple détectée)
-        // C'est normal quand on ouvre un deuxième onglet - pas besoin de toast d'erreur
-        console.log('🔄 Déconnexion par le serveur (connexion multiple détectée)');
-      } else if (reason !== 'io client disconnect' && reason !== 'transport close') {
-        // Seulement afficher un toast pour les déconnexions inattendues
+        // Le serveur a forcé la déconnexion (souvent connexion multiple ou redémarrage)
+        console.log('🔄 Déconnexion par le serveur - Reconnexion automatique dans 2s...');
+        toast.warning(this.t('websocket.serverDisconnectedReconnecting'));
+        
+        // Reconnexion automatique après délai
+        if (shouldReconnect) {
+          setTimeout(() => {
+            if (!this.isConnected && !this.isConnecting) {
+              console.log('🔄 Tentative de reconnexion automatique après déconnexion serveur...');
+              this.reconnect();
+            }
+          }, 2000);
+        }
+      } else if (reason === 'transport close' || reason === 'transport error') {
+        // Problème réseau ou serveur indisponible
+        console.log('🔄 Erreur transport - Reconnexion automatique dans 3s...');
         toast.warning(this.t('websocket.connectionLostReconnecting'));
         
-        // CORRECTION: Tenter une reconnexion automatique après 2 secondes
+        if (shouldReconnect) {
+          setTimeout(() => {
+            if (!this.isConnected && !this.isConnecting) {
+              console.log('🔄 Tentative de reconnexion automatique après erreur transport...');
+              this.reconnect();
+            }
+          }, 3000);
+        }
+      } else if (shouldReconnect) {
+        // Autres déconnexions inattendues
+        console.log(`🔄 Déconnexion inattendue (${reason}) - Reconnexion automatique dans 2s...`);
+        toast.warning(this.t('websocket.connectionLostReconnecting'));
+        
         setTimeout(() => {
           if (!this.isConnected && !this.isConnecting) {
             console.log('🔄 Tentative de reconnexion automatique après déconnexion...');
             this.reconnect();
           }
         }, 2000);
+      } else {
+        // Déconnexion volontaire (changement de page, etc.)
+        console.log('✓ Déconnexion volontaire, pas de reconnexion automatique');
       }
     });
 
