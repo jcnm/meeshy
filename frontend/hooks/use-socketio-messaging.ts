@@ -42,7 +42,14 @@ export function useSocketIOMessaging(options: UseSocketIOMessagingOptions = {}) 
     onConversationOnlineStats
   } = options;
 
-  const [isConnected, setIsConnected] = useState(false);
+  // CORRECTION: Utiliser un état complet pour le statut de connexion
+  const [connectionStatus, setConnectionStatus] = useState({ 
+    isConnected: false, 
+    hasSocket: false 
+  });
+  
+  // Compatibilité avec l'ancien code qui utilise isConnected directement
+  const isConnected = connectionStatus.isConnected;
 
   // ÉTAPE 1: Pas besoin d'initialiser explicitement - le service s'initialise automatiquement
   // avec les tokens disponibles dans localStorage
@@ -121,7 +128,11 @@ export function useSocketIOMessaging(options: UseSocketIOMessagingOptions = {}) 
   useEffect(() => {
     const interval = setInterval(() => {
       const diagnostics = meeshySocketIOService.getConnectionDiagnostics();
-      setIsConnected(diagnostics.isConnected);
+      // CORRECTION: Mettre à jour l'objet complet avec isConnected ET hasSocket
+      setConnectionStatus({
+        isConnected: diagnostics.isConnected,
+        hasSocket: diagnostics.hasSocket
+      });
     }, 1000);
     
     return () => clearInterval(interval);
@@ -199,8 +210,8 @@ export function useSocketIOMessaging(options: UseSocketIOMessagingOptions = {}) 
 
   return {
     isConnected,
-    status: { isConnected },
-    connectionStatus: { isConnected },
+    status: connectionStatus, // Retourner l'objet complet
+    connectionStatus, // CORRECTION: Retourner l'objet complet avec isConnected ET hasSocket
     sendMessage,
     sendMessageWithAttachments,
     editMessage,
