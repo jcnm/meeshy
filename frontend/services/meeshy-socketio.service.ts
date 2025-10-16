@@ -125,7 +125,7 @@ class MeeshySocketIOService {
       // Attendre un peu que le DOM soit prêt
       setTimeout(() => {
         this.ensureConnection();
-      }, 100);
+      }, 1000);
     }
   }
   
@@ -491,13 +491,13 @@ class MeeshySocketIOService {
       this.isConnecting = false;
       this.reconnectAttempts = 0;
       
-      // CORRECTION: Timeout de sécurité si AUTHENTICATED n'arrive pas dans les 3 secondes
-      // Réduit de 5s à 3s pour une réponse plus rapide
+      // CORRECTION: Timeout de sécurité si AUTHENTICATED n'arrive pas dans les 5 secondes
+      // Augmenté de 3s à 5s pour éviter le mode fallback prématuré
       setTimeout(() => {
         if (!this.isConnected && this.socket?.connected) {
           console.log('');
           console.log('⚠️ ═══════════════════════════════════════════════════════');
-          console.log('⚠️  TIMEOUT: AUTHENTICATED non reçu après 3s');
+          console.log('⚠️  TIMEOUT: AUTHENTICATED non reçu après 5s');
           console.log('⚠️ ═══════════════════════════════════════════════════════');
           console.log('  📊 État actuel:', {
             hasSocket: !!this.socket,
@@ -505,19 +505,17 @@ class MeeshySocketIOService {
             isConnected: this.isConnected,
             socketId: this.socket?.id
           });
-          console.log('  🔄 Activation du mode fallback...');
+          console.log('  ⚠️ Problème d\'authentification probable');
+          console.log('  → Le backend devrait envoyer SERVER_EVENTS.AUTHENTICATED');
           console.log('⚠️ ═══════════════════════════════════════════════════════');
           console.log('');
           
-          // Fallback: considérer la connexion comme établie si le socket est connecté
-          // Cela permet de débloquer l'envoi de messages même si AUTHENTICATED est perdu
-          this.isConnected = true;
-          console.log('✅ [FALLBACK] Connexion WebSocket établie (mode compatibilité)', {
-            socketId: this.socket?.id
-          });
-          toast.info('Connexion établie (mode compatibilité)');
+          // NE PAS activer le mode fallback - déconnecter et attendre
+          // Le problème vient probablement de tokens invalides
+          this.socket?.disconnect();
+          console.warn('⚠️ [INIT] Déconnexion forcée après timeout authentification');
         }
-      }, 3000);
+      }, 5000);
     });
 
     // CORRECTION: Écouter l'événement AUTHENTICATED du backend
@@ -574,8 +572,18 @@ class MeeshySocketIOService {
         timestamp: new Date().toISOString()
       });
       
-      // CORRECTION: Reconnexion automatique pour TOUTES les déconnexions sauf volontaires
-      const shouldReconnect = reason !== 'io client disconnect'; // Déconnexion volontaire
+      // CORRECTION CRITIQUE: Ne PAS reconnecter automatiquement si :
+      // 1. Déconnexion volontaire (io client disconnect)
+      // 2. Première connexion jamais établie (isConnected n'a jamais été true)
+      const shouldReconnect = reason !== 'io client disconnect';
+      const wasNeverConnected = this.reconnectAttempts === 0 && reason === 'io server disconnect';
+      
+      if (wasNeverConnected) {
+        // Première connexion échouée - probablement un problème d'authentification
+        console.warn('⚠️ [INIT] Première connexion refusée par le serveur');
+        console.warn('  → Pas de reconnexion automatique (attente setCurrentUser)');
+        return; // Ne PAS reconnecter, attendre que l'app initialise correctement
+      }
       
       if (reason === 'io server disconnect') {
         // Le serveur a forcé la déconnexion (souvent connexion multiple ou redémarrage)
