@@ -87,25 +87,31 @@ function LandingPageContent() {
   const isAnonymous = isCurrentUserAnonymous();
   const hasAuthToken = !!localStorage.getItem('auth_token');
   
-  console.log('[LANDING] État utilisateur:', {
-    hasUser: !!user,
-    isAnonymous,
-    hasAuthToken,
-    userId: user?.id,
-    username: user?.username
-  });
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[LANDING] État utilisateur:', {
+      hasUser: !!user,
+      isAnonymous,
+      hasAuthToken,
+      userId: user?.id,
+      username: user?.username
+    });
+  }
   
   // Si l'utilisateur a un token d'authentification ET un utilisateur, afficher BubbleStreamPage
   if (user && hasAuthToken) {
-    console.log('[LANDING] ✅ Utilisateur authentifié détecté, affichage BubbleStreamPage', {
-      username: user.username,
-      hasAuthToken,
-      userId: user.id
-    });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[LANDING] ✅ Utilisateur authentifié détecté, affichage BubbleStreamPage', {
+        username: user.username,
+        hasAuthToken,
+        userId: user.id
+      });
+    }
     
     // Nettoyer les données anonymes si elles existent (l'utilisateur est authentifié)
     if (isAnonymous) {
-      console.log('[LANDING] Nettoyage des données anonymes pour utilisateur authentifié');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[LANDING] Nettoyage des données anonymes pour utilisateur authentifié');
+      }
       localStorage.removeItem('anonymous_session_token');
       localStorage.removeItem('anonymous_participant');
       localStorage.removeItem('anonymous_current_share_link');
@@ -113,17 +119,25 @@ function LandingPageContent() {
       localStorage.removeItem('anonymous_just_joined');
     }
     
-    console.log('[LANDING] 🎨 Rendu du DashboardLayout avec BubbleStreamPage');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[LANDING] 🎨 Rendu du DashboardLayout avec BubbleStreamPage');
+    }
     return (
       <DashboardLayout title={tCommon('navigation.home') || t('navigation.home')}>
         <div className="h-full">
-          <BubbleStreamPage user={user} />
+          <BubbleStreamPage 
+            user={user}
+            conversationId="meeshy"
+            isAnonymousMode={false}
+          />
         </div>
       </DashboardLayout>
     );
   }
   
-  console.log('[LANDING] ⚠️ Pas d\'utilisateur authentifié, affichage landing page');
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[LANDING] ⚠️ Pas d\'utilisateur authentifié, affichage landing page');
+  }
 
   // Pour les utilisateurs anonymes et non connectés, afficher la landing page
 

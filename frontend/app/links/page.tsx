@@ -381,7 +381,7 @@ export default function LinksPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground mb-1">
-                    {mainTab === 'shareLinks' ? 'Liens actifs' : t('tracking.stats.activeLinks')}
+                    {t('tracking.stats.activeLinks')}
                   </p>
                   <p className="text-3xl font-bold text-green-600 dark:text-green-400">{stats.active}</p>
                 </div>

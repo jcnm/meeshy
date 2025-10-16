@@ -536,12 +536,12 @@ export default function ContactsPage() {
                               </div>
                               
                               <h3 className="text-2xl font-bold text-foreground mb-3 text-center">
-                                {searchQuery ? 'Aucun contact trouvé' : 'Aucun contact'}
+                                {searchQuery ? t('messages.noContactsFound') : t('messages.noContacts')}
                               </h3>
                               <p className="text-muted-foreground text-base mb-8 text-center max-w-md">
                                 {searchQuery 
-                                  ? 'Essayez de modifier votre recherche ou invitez de nouveaux contacts'
-                                  : 'Commencez à développer votre réseau en invitant des contacts'
+                                  ? t('messages.noContactsFoundDescription')
+                                  : t('messages.noContactsDescription')
                                 }
                               </p>
                               
