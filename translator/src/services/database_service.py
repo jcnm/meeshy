@@ -88,7 +88,15 @@ class DatabaseService:
                 return False
             
             # Créer la clé de cache unique
-            cache_key = f"{message_id}_{source_language}_{target_language}"
+            cache_key = f"{message_id}_{source_language}_{target_language}_{translator_model}"
+            
+            # Définir la hiérarchie des modèles
+            model_hierarchy = {
+                "basic": 1,
+                "medium": 2,
+                "premium": 3
+            }
+            current_model_level = model_hierarchy.get(translator_model, 1)
             
             # Vérifier si la traduction existe déjà
             existing_translation = await self.prisma.messagetranslation.find_unique(
@@ -101,23 +109,33 @@ class DatabaseService:
             )
             
             if existing_translation:
-                # Mettre à jour la traduction existante
-                await self.prisma.messagetranslation.update(
-                    where={
-                        "messageId_targetLanguage": {
-                            "messageId": message_id,
-                            "targetLanguage": target_language
-                        }
-                    },
-                    data={
-                        "translatedContent": translated_text,
-                        "translationModel": translator_model,
-                        "confidenceScore": confidence_score,
-                        "cacheKey": cache_key
-                    }
-                )
+                # Vérifier le niveau du modèle existant
+                existing_model_level = model_hierarchy.get(existing_translation.translationModel, 1)
                 
-                logger.info(f"🔄 [TRANSLATOR-DB] Traduction mise à jour: {message_id} -> {target_language}")
+                # Ne mettre à jour que si le nouveau modèle est de niveau supérieur ou égal
+                if current_model_level >= existing_model_level:
+                    await self.prisma.messagetranslation.update(
+                        where={
+                            "messageId_targetLanguage": {
+                                "messageId": message_id,
+                                "targetLanguage": target_language
+                            }
+                        },
+                        data={
+                            "translatedContent": translated_text,
+                            "translationModel": translator_model,
+                            "confidenceScore": confidence_score,
+                            "cacheKey": cache_key
+                        }
+                    )
+                    
+                    if current_model_level > existing_model_level:
+                        logger.info(f"⬆️ [TRANSLATOR-DB] Traduction améliorée: {message_id} -> {target_language} ({existing_translation.translationModel} → {translator_model})")
+                    else:
+                        logger.info(f"🔄 [TRANSLATOR-DB] Traduction mise à jour: {message_id} -> {target_language} ({translator_model})")
+                else:
+                    logger.info(f"⏭️ [TRANSLATOR-DB] Traduction existante de niveau supérieur ignorée: {message_id} -> {target_language} ({existing_translation.translationModel} > {translator_model})")
+                    return True
                 
             else:
                 # Créer une nouvelle traduction
@@ -133,7 +151,7 @@ class DatabaseService:
                     }
                 )
                 
-                logger.info(f"✅ [TRANSLATOR-DB] Nouvelle traduction sauvegardée: {message_id} -> {target_language}")
+                logger.info(f"✅ [TRANSLATOR-DB] Nouvelle traduction sauvegardée: {message_id} -> {target_language} ({translator_model})")
             
             return True
             
