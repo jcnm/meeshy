@@ -8,6 +8,7 @@ import { useConversationMessages } from '@/hooks/use-conversation-messages';
 import { useMessaging } from '@/hooks/use-messaging';
 import { useConversationsPagination } from '@/hooks/use-conversations-pagination';
 import { conversationsService } from '@/services/conversations.service';
+import { messageService } from '@/services/message.service';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Footer } from '@/components/layout/Footer';
 import { ConversationList } from './ConversationList';
@@ -165,6 +166,18 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     onUserTyping: useCallback((userId: string, username: string, isTyping: boolean) => {
       console.log('[ConversationLayout] 👤 Événement de frappe:', { userId, username, isTyping });
     }, []),
+    onMessageEdited: useCallback((message: any) => {
+      console.log('✏️ [ConversationLayout] Message édité reçu via Socket.IO:', message.id);
+      if (message.conversationId === selectedConversation?.id) {
+        updateMessage(message.id, message);
+        toast.info(tCommon('messages.messageEditedByOther'));
+      }
+    }, [updateMessage, selectedConversation?.id, tCommon]),
+    onMessageDeleted: useCallback((messageId: string) => {
+      console.log('🗑️ [ConversationLayout] Message supprimé reçu via Socket.IO:', messageId);
+      removeMessage(messageId);
+      toast.info(tCommon('messages.messageDeletedByOther'));
+    }, [removeMessage, tCommon]),
     onNewMessage: useCallback((message: any) => {
       console.log(`[ConversationLayout-${instanceId}] 🔥 NOUVEAU MESSAGE VIA WEBSOCKET:`, {
         messageId: message.id,
@@ -506,6 +519,43 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       toast.info(tCommon('messages.messageNotVisible'));
     }
   }, [tCommon]);
+
+  // Éditer un message
+  const handleEditMessage = useCallback(async (messageId: string, newContent: string) => {
+    if (!selectedConversation) return;
+    
+    try {
+      await messageService.editMessage(selectedConversation.id, messageId, {
+        content: newContent,
+        originalLanguage: selectedLanguage
+      });
+      
+      // Recharger les messages pour afficher la modification
+      await refresh();
+      toast.success(tCommon('messages.messageEdited'));
+    } catch (error) {
+      console.error('Erreur lors de l\'édition du message:', error);
+      toast.error(tCommon('messages.editError'));
+      throw error;
+    }
+  }, [selectedConversation, selectedLanguage, refresh, tCommon]);
+
+  // Supprimer un message
+  const handleDeleteMessage = useCallback(async (messageId: string) => {
+    if (!selectedConversation) return;
+    
+    try {
+      await messageService.deleteMessage(selectedConversation.id, messageId);
+      
+      // Recharger les messages pour afficher la suppression
+      await refresh();
+      toast.success(tCommon('messages.messageDeleted'));
+    } catch (error) {
+      console.error('Erreur lors de la suppression du message:', error);
+      toast.error(tCommon('messages.deleteError'));
+      throw error;
+    }
+  }, [selectedConversation, refresh, tCommon]);
   
   // Extraire tous les attachments images des messages pour la galerie
   const imageAttachments = useMemo(() => {
@@ -702,8 +752,8 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               conversationId={selectedConversation.id}
               addTranslatingState={addTranslatingState}
               isTranslating={isTranslating}
-              onEditMessage={async () => {}}
-              onDeleteMessage={async () => {}}
+              onEditMessage={handleEditMessage}
+              onDeleteMessage={handleDeleteMessage}
               onReplyMessage={handleReplyMessage}
               onNavigateToMessage={handleNavigateToMessage}
               onImageClick={handleImageClick}

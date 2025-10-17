@@ -626,6 +626,16 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     conversationId: conversationId, // Utiliser le conversationId passé en props
     currentUser: user,
     onNewMessage: handleNewMessage,
+    onMessageEdited: (message: Message) => {
+      console.log('✏️ [BubbleStreamPage] Message édité reçu via Socket.IO:', message.id);
+      updateMessageTranslations(message.id, message);
+      toast.info(tCommon('messages.messageEditedByOther'));
+    },
+    onMessageDeleted: (messageId: string) => {
+      console.log('🗑️ [BubbleStreamPage] Message supprimé reçu via Socket.IO:', messageId);
+      removeMessage(messageId);
+      toast.info(tCommon('messages.messageDeletedByOther'));
+    },
     onUserTyping: handleUserTyping,
     onUserStatus: handleUserStatus,
     onTranslation: handleTranslation,

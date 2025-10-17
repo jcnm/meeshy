@@ -31,6 +31,8 @@ interface UseMessagingOptions {
   onMessageSent?: (content: string, language: string) => void;
   onMessageFailed?: (content: string, error: Error) => void;
   onNewMessage?: (message: any) => void;
+  onMessageEdited?: (message: any) => void;
+  onMessageDeleted?: (messageId: string) => void;
   onUserTyping?: (userId: string, username: string, isTyping: boolean) => void;
   onUserStatus?: (userId: string, username: string, isOnline: boolean) => void;
   onTranslation?: (messageId: string, translations: any[]) => void;
@@ -65,6 +67,8 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
     onMessageSent,
     onMessageFailed,
     onNewMessage,
+    onMessageEdited,
+    onMessageDeleted,
     onUserTyping,
     onUserStatus,
     onTranslation,
@@ -95,6 +99,8 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
       onlineStats: true
     },
     onNewMessage,
+    onMessageEdited,
+    onMessageDeleted,
     onUserTyping: (userId, username, isTyping) => {
       handleTypingEvent(userId, username, isTyping);
       onUserTyping?.(userId, username, isTyping);

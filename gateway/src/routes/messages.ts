@@ -1,5 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { createUnifiedAuthMiddleware, UnifiedAuthRequest } from '../middleware/auth.js';
+import { AttachmentService } from '../services/AttachmentService.js';
+import { TranslationService } from '../services/TranslationService.js';
 
 interface MessageParams {
   messageId: string;
@@ -18,6 +20,11 @@ interface MessageStatusBody {
 export default async function messageRoutes(fastify: FastifyInstance) {
   // Récupérer prisma décoré par le serveur
   const prisma = fastify.prisma;
+  
+  // Instancier les services
+  const attachmentService = new AttachmentService(prisma);
+  const translationService: TranslationService = (fastify as any).translationService;
+  const socketIOHandler = fastify.socketIOHandler;
   
   // Middleware d'authentification requis pour les messages
   const requiredAuth = createUnifiedAuthMiddleware(prisma, { 
@@ -182,13 +189,53 @@ export default async function messageRoutes(fastify: FastifyInstance) {
         }
       });
 
-      // TODO: Diffuser la mise à jour via WebSocket quand websocketManager sera disponible
-      // if (fastify.websocketManager) {
-      //   fastify.websocketManager.broadcastToConversation(message.conversationId, {
-      //     type: 'message_updated',
-      //     data: updatedMessage
-      //   }, userId);
-      // }
+      // Déclencher la retraduction automatique du message modifié
+      try {
+        // Invalider les traductions existantes en base de données
+        const deletedCount = await prisma.messageTranslation.deleteMany({
+          where: {
+            messageId: messageId
+          }
+        });
+        console.log(`🗑️ [MESSAGES] ${deletedCount.count} traductions supprimées pour le message ${messageId}`);
+        
+        // Créer un objet message pour la retraduction
+        const messageForRetranslation = {
+          id: messageId,
+          content: content.trim(),
+          originalLanguage: message.originalLanguage,
+          conversationId: message.conversationId,
+          senderId: userId
+        };
+        
+        // Déclencher la retraduction via la méthode privée existante
+        if (translationService) {
+          await (translationService as any)._processRetranslationAsync(messageId, messageForRetranslation);
+          console.log('[MESSAGES] Retraduction initiée pour le message:', messageId);
+        } else {
+          console.warn('[MESSAGES] TranslationService non disponible, retraduction non effectuée');
+        }
+
+      } catch (translationError) {
+        console.error('[MESSAGES] Erreur lors de la retraduction:', translationError);
+        // Ne pas faire échouer l'édition si la retraduction échoue
+      }
+
+      // Diffuser la mise à jour via Socket.IO
+      try {
+        const socketIOManager = socketIOHandler.getManager();
+        if (socketIOManager) {
+          const room = `conversation_${message.conversationId}`;
+          (socketIOManager as any).io.to(room).emit('message:edited', {
+            ...updatedMessage,
+            conversationId: message.conversationId
+          });
+          console.log(`✅ [MESSAGES] Message édité diffusé à la conversation ${message.conversationId}`);
+        }
+      } catch (socketError) {
+        console.error('[MESSAGES] Erreur lors de la diffusion Socket.IO:', socketError);
+        // Ne pas faire échouer l'édition si la diffusion échoue
+      }
 
       return reply.send({
         success: true,
@@ -236,6 +283,11 @@ export default async function messageRoutes(fastify: FastifyInstance) {
                 select: { userId: true, role: true }
               }
             }
+          },
+          attachments: {
+            select: {
+              id: true
+            }
           }
         }
       });
@@ -267,6 +319,30 @@ export default async function messageRoutes(fastify: FastifyInstance) {
         });
       }
 
+      // Supprimer les attachments et leurs fichiers physiques
+      if (message.attachments && message.attachments.length > 0) {
+        console.log(`🗑️ [MESSAGES] Suppression de ${message.attachments.length} attachments pour le message ${messageId}`);
+        for (const attachment of message.attachments) {
+          try {
+            await attachmentService.deleteAttachment(attachment.id);
+            console.log(`✅ [MESSAGES] Attachment ${attachment.id} supprimé avec succès`);
+          } catch (error) {
+            console.error(`❌ [MESSAGES] Erreur lors de la suppression de l'attachment ${attachment.id}:`, error);
+            // Continuer même en cas d'erreur pour supprimer les autres
+          }
+        }
+      }
+
+      // Supprimer les traductions du message
+      const deletedTranslations = await prisma.messageTranslation.deleteMany({
+        where: {
+          messageId: messageId
+        }
+      });
+      if (deletedTranslations.count > 0) {
+        console.log(`🗑️ [MESSAGES] ${deletedTranslations.count} traductions supprimées pour le message ${messageId}`);
+      }
+
       // Marquer le message comme supprimé (soft delete)
       const deletedMessage = await prisma.message.update({
         where: { id: messageId },
@@ -294,13 +370,21 @@ export default async function messageRoutes(fastify: FastifyInstance) {
         }
       });
 
-      // TODO: Diffuser la suppression via WebSocket quand websocketManager sera disponible
-      // if (fastify.websocketManager) {
-      //   fastify.websocketManager.broadcastToConversation(message.conversationId, {
-      //     type: 'message_deleted',
-      //     data: { messageId, deletedBy: userId }
-      //   }, userId);
-      // }
+      // Diffuser la suppression via Socket.IO
+      try {
+        const socketIOManager = socketIOHandler.getManager();
+        if (socketIOManager) {
+          const room = `conversation_${message.conversationId}`;
+          (socketIOManager as any).io.to(room).emit('message:deleted', {
+            messageId,
+            conversationId: message.conversationId
+          });
+          console.log(`✅ [MESSAGES] Message supprimé diffusé à la conversation ${message.conversationId}`);
+        }
+      } catch (socketError) {
+        console.error('[MESSAGES] Erreur lors de la diffusion Socket.IO:', socketError);
+        // Ne pas faire échouer la suppression si la diffusion échoue
+      }
 
       return reply.send({
         success: true,
@@ -412,13 +496,23 @@ export default async function messageRoutes(fastify: FastifyInstance) {
           });
         }
 
-        // TODO: Diffuser le statut de lecture via WebSocket quand websocketManager sera disponible
-        // if (fastify.websocketManager) {
-        //   fastify.websocketManager.broadcastToConversation(message.conversationId, {
-        //     type: 'message_read',
-        //     data: { messageId, userId, readAt: status.readAt }
-        //   });
-        // }
+        // Diffuser le statut de lecture via Socket.IO
+        try {
+          const socketIOManager = socketIOHandler.getManager();
+          if (socketIOManager) {
+            const room = `conversation_${message.conversationId}`;
+            (socketIOManager as any).io.to(room).emit('message:read', {
+              messageId,
+              userId,
+              conversationId: message.conversationId,
+              readAt: status.readAt
+            });
+            console.log(`✅ [MESSAGES] Statut de lecture diffusé à la conversation ${message.conversationId}`);
+          }
+        } catch (socketError) {
+          console.error('[MESSAGES] Erreur lors de la diffusion Socket.IO:', socketError);
+          // Ne pas faire échouer la mise à jour si la diffusion échoue
+        }
 
         return reply.send({
           success: true,

@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { TranslationService } from '../services/TranslationService';
 import { TrackingLinkService } from '../services/TrackingLinkService';
+import { AttachmentService } from '../services/AttachmentService';
 import { conversationStatsService } from '../services/ConversationStatsService';
 import { z } from 'zod';
 import { UserRoleEnum } from '../../shared/types';
@@ -300,6 +301,8 @@ export async function conversationRoutes(fastify: FastifyInstance) {
   const prisma = fastify.prisma;
   const translationService: TranslationService = (fastify as any).translationService;
   const trackingLinkService = new TrackingLinkService(prisma);
+  const attachmentService = new AttachmentService(prisma);
+  const socketIOHandler = fastify.socketIOHandler;
   
   // Middleware d'authentification optionnel pour les conversations
   const optionalAuth = createUnifiedAuthMiddleware(prisma, { 
@@ -1604,6 +1607,22 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         () => []
       );
 
+      // Diffuser la mise à jour via Socket.IO
+      try {
+        const socketIOManager = socketIOHandler.getManager();
+        if (socketIOManager) {
+          const room = `conversation_${conversationId}`;
+          (socketIOManager as any).io.to(room).emit('message:edited', {
+            ...updatedMessage,
+            conversationId
+          });
+          console.log(`✅ [CONVERSATIONS] Message édité diffusé à la conversation ${conversationId}`);
+        }
+      } catch (socketError) {
+        console.error('[CONVERSATIONS] Erreur lors de la diffusion Socket.IO:', socketError);
+        // Ne pas faire échouer l'édition si la diffusion échoue
+      }
+
       reply.send({
         success: true,
         data: { ...updatedMessage, meta: { conversationStats: stats } }
@@ -1648,6 +1667,9 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         include: {
           sender: {
             select: { id: true }
+          },
+          attachments: {
+            select: { id: true }
           }
         }
       });
@@ -1691,6 +1713,30 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         });
       }
 
+      // Supprimer les attachments et leurs fichiers physiques
+      if (existingMessage.attachments && existingMessage.attachments.length > 0) {
+        console.log(`🗑️ [CONVERSATIONS] Suppression de ${existingMessage.attachments.length} attachments pour le message ${messageId}`);
+        for (const attachment of existingMessage.attachments) {
+          try {
+            await attachmentService.deleteAttachment(attachment.id);
+            console.log(`✅ [CONVERSATIONS] Attachment ${attachment.id} supprimé avec succès`);
+          } catch (error) {
+            console.error(`❌ [CONVERSATIONS] Erreur lors de la suppression de l'attachment ${attachment.id}:`, error);
+            // Continuer même en cas d'erreur pour supprimer les autres
+          }
+        }
+      }
+
+      // Supprimer les traductions du message
+      const deletedTranslations = await prisma.messageTranslation.deleteMany({
+        where: {
+          messageId: messageId
+        }
+      });
+      if (deletedTranslations.count > 0) {
+        console.log(`🗑️ [CONVERSATIONS] ${deletedTranslations.count} traductions supprimées pour le message ${messageId}`);
+      }
+
       // Soft delete du message
       await prisma.message.update({
         where: { id: messageId },
@@ -1706,6 +1752,22 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         conversationId,
         () => []
       );
+
+      // Diffuser la suppression via Socket.IO
+      try {
+        const socketIOManager = socketIOHandler.getManager();
+        if (socketIOManager) {
+          const room = `conversation_${conversationId}`;
+          (socketIOManager as any).io.to(room).emit('message:deleted', {
+            messageId,
+            conversationId
+          });
+          console.log(`✅ [CONVERSATIONS] Message supprimé diffusé à la conversation ${conversationId}`);
+        }
+      } catch (socketError) {
+        console.error('[CONVERSATIONS] Erreur lors de la diffusion Socket.IO:', socketError);
+        // Ne pas faire échouer la suppression si la diffusion échoue
+      }
 
       reply.send({
         success: true,

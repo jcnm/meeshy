@@ -206,6 +206,8 @@ interface TranslationRequest {
 declare module 'fastify' {
   interface FastifyInstance {
     prisma: PrismaClient;
+    translationService: TranslationService;
+    socketIOHandler: MeeshySocketIOHandler;
     authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
   }
 }
@@ -343,6 +345,7 @@ class MeeshyServer {
     // Decorators for dependency injection
     this.server.decorate('prisma', this.prisma);
     this.server.decorate('translationService', this.translationService);
+    this.server.decorate('socketIOHandler', this.socketIOHandler);
     this.server.decorate('authenticate', this.createAuthMiddleware());
 
     logger.info('✓ Middleware configured successfully');
