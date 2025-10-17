@@ -21,10 +21,11 @@ import { ConversationDetailsSidebar } from './conversation-details-sidebar';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, MessageSquare } from 'lucide-react';
-import type { Conversation, ThreadMember, UserRoleEnum } from '@shared/types';
+import type { Conversation, ThreadMember, UserRoleEnum, Attachment } from '@shared/types';
 import { useReplyStore } from '@/stores/reply-store';
 import { toast } from 'sonner';
 import { getAuthToken } from '@/utils/token-utils';
+import { AttachmentGallery } from '@/components/attachments/AttachmentGallery';
 
 interface ConversationLayoutProps {
   selectedConversationId?: string;
@@ -93,6 +94,10 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
   // Référence pour le textarea du MessageComposer
   const messageComposerRef = useRef<{ focus: () => void; blur: () => void; clearAttachments?: () => void }>(null);
+  
+  // États pour la galerie d'images
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [selectedAttachmentId, setSelectedAttachmentId] = useState<string | null>(null);
 
   // État pour les traductions
   const [translatingMessages, setTranslatingMessages] = useState<Map<string, Set<string>>>(new Map());
@@ -501,6 +506,43 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       toast.info(tCommon('messages.messageNotVisible'));
     }
   }, [tCommon]);
+  
+  // Extraire tous les attachments images des messages pour la galerie
+  const imageAttachments = useMemo(() => {
+    const allAttachments: Attachment[] = [];
+    
+    messages.forEach(message => {
+      if (message.attachments && message.attachments.length > 0) {
+        message.attachments.forEach(attachment => {
+          if (attachment.type === 'image') {
+            allAttachments.push(attachment);
+          }
+        });
+      }
+    });
+    
+    return allAttachments;
+  }, [messages]);
+
+  // Handler pour ouvrir la galerie d'images
+  const handleImageClick = useCallback((attachmentId: string) => {
+    console.log('🖼️ [ConversationLayout] Clic sur image:', attachmentId);
+    setSelectedAttachmentId(attachmentId);
+    setGalleryOpen(true);
+  }, []);
+
+  // Handler pour naviguer vers un message depuis la galerie
+  const handleNavigateToMessageFromGallery = useCallback((messageId: string) => {
+    console.log('🖼️ [ConversationLayout] Navigation vers le message depuis la galerie:', messageId);
+    
+    // Fermer la galerie
+    setGalleryOpen(false);
+    
+    // Attendre que la galerie se ferme avant de scroller
+    setTimeout(() => {
+      handleNavigateToMessage(messageId);
+    }, 300);
+  }, [handleNavigateToMessage]);
 
   // Envoi de message - attendre le retour serveur
   const handleSendMessage = useCallback(async () => {
@@ -664,6 +706,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               onDeleteMessage={async () => {}}
               onReplyMessage={handleReplyMessage}
               onNavigateToMessage={handleNavigateToMessage}
+              onImageClick={handleImageClick}
               onLoadMore={loadMore}
               t={t}
             />
@@ -817,6 +860,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                   onDeleteMessage={async () => {}}
                   onReplyMessage={handleReplyMessage}
                   onNavigateToMessage={handleNavigateToMessage}
+                  onImageClick={handleImageClick}
                   onLoadMore={loadMore}
                   t={t}
                 />
@@ -888,6 +932,19 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
             </div>
           )}
         </div>
+      )}
+      
+      {/* Galerie d'images - Disponible sur mobile et desktop */}
+      {selectedConversation && (
+        <AttachmentGallery
+          conversationId={selectedConversation.id}
+          initialAttachmentId={selectedAttachmentId || undefined}
+          open={galleryOpen}
+          onClose={() => setGalleryOpen(false)}
+          onNavigateToMessage={handleNavigateToMessageFromGallery}
+          token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
+          attachments={imageAttachments}
+        />
       )}
     </>
   );

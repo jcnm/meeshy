@@ -30,6 +30,7 @@ interface ConversationMessagesProps {
   onDeleteMessage: (messageId: string) => Promise<void>;
   onReplyMessage?: (message: Message) => void;
   onNavigateToMessage?: (messageId: string) => void;
+  onImageClick?: (attachmentId: string) => void;
   onLoadMore?: () => void;
   t: (key: string) => string;
 }
@@ -53,6 +54,7 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
   onDeleteMessage,
   onReplyMessage,
   onNavigateToMessage,
+  onImageClick,
   onLoadMore,
   t
 }: ConversationMessagesProps) {
@@ -280,6 +282,7 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
               onDeleteMessage={onDeleteMessage}
               onReplyMessage={onReplyMessage}
               onNavigateToMessage={onNavigateToMessage}
+              onImageClick={onImageClick}
               conversationType={conversationType || 'direct'}
               userRole={userRole}
               addTranslatingState={addTranslatingState}
