@@ -233,8 +233,8 @@ cat > .env.local << 'EOF'
 NODE_ENV=development
 LOG_LEVEL=debug
 
-# Base de données MongoDB
-DATABASE_URL=mongodb://meeshy:MeeshyPassword123@localhost:27017/meeshy?authSource=admin&replicaSet=rs0
+# Base de données MongoDB (sans authentification pour développement local)
+DATABASE_URL=mongodb://localhost:27017/meeshy?replicaSet=rs0&directConnection=true
 
 # Redis
 REDIS_URL=redis://localhost:6379
@@ -267,6 +267,9 @@ NEXT_PUBLIC_FRONTEND_URL=http://localhost:3100
 API_URL=http://localhost:3000
 BACKEND_URL=http://localhost:3000
 TRANSLATION_URL=http://localhost:8000
+
+# Base de données MongoDB (sans authentification pour développement local)
+DATABASE_URL=mongodb://localhost:27017/meeshy?replicaSet=rs0&directConnection=true
 EOF
 echo -e "${GREEN}✅ frontend/.env.local créé${NC}"
 
@@ -275,8 +278,8 @@ cat > gateway/.env.local << 'EOF'
 NODE_ENV=development
 LOG_LEVEL=debug
 
-# Base de données
-DATABASE_URL=mongodb://meeshy:MeeshyPassword123@localhost:27017/meeshy?authSource=admin&replicaSet=rs0
+# Base de données (sans authentification pour développement local)
+DATABASE_URL=mongodb://localhost:27017/meeshy?replicaSet=rs0&directConnection=true
 
 # Redis
 REDIS_URL=redis://localhost:6379
@@ -293,6 +296,9 @@ HOST=0.0.0.0
 
 # CORS
 CORS_ORIGINS=http://localhost:3100,http://localhost:3000
+
+# Prisma Engine (fix for development with tsx/ts-node)
+PRISMA_QUERY_ENGINE_LIBRARY=./shared/prisma/client/libquery_engine-darwin-arm64.dylib.node
 EOF
 echo -e "${GREEN}✅ gateway/.env.local créé${NC}"
 
@@ -302,8 +308,8 @@ cat > translator/.env.local << 'EOF'
 ENVIRONMENT=development
 LOG_LEVEL=DEBUG
 
-# Base de données
-DATABASE_URL=mongodb://meeshy:MeeshyPassword123@localhost:27017/meeshy?authSource=admin&replicaSet=rs0
+# Base de données (sans authentification pour développement local)
+DATABASE_URL=mongodb://localhost:27017/meeshy?replicaSet=rs0&directConnection=true
 
 # Redis
 REDIS_URL=redis://localhost:6379

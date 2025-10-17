@@ -379,7 +379,8 @@ class TranslationMLService:
             if model_type not in self.models:
                 raise Exception(f"Modèle {model_type} non chargé")
             
-            model_name = self.model_configs[model_type]['model_name']
+            # CORRECTION: Sauvegarder le model_name original pour éviter les collisions dans la boucle de fallback
+            original_model_name = self.model_configs[model_type]['model_name']
             
             # Traduction dans un thread - NOUVEAU: tokenizer thread-local
             def translate():
@@ -398,12 +399,12 @@ class TranslationMLService:
                     # Créer un tokenizer frais pour ce thread spécifique
                     # Utiliser le nom du modèle - HuggingFace gère automatiquement le cache local
                     thread_tokenizer = AutoTokenizer.from_pretrained(
-                        model_name,
+                        original_model_name,
                         cache_dir=str(self.models_path)
                     )
                     
                     # Différencier T5 et NLLB avec pipelines appropriés
-                    if "t5" in model_name.lower():
+                    if "t5" in original_model_name.lower():
                         # T5: utiliser text2text-generation avec tokenizer thread-local
                         temp_pipeline = pipeline(
                             "text2text-generation",
@@ -431,6 +432,8 @@ class TranslationMLService:
                         )
                         
                         # T5 retourne generated_text
+                        t5_success = False
+                        translated = None  # CORRECTION: Initialiser translated pour éviter UnboundLocalError
                         if result and len(result) > 0 and 'generated_text' in result[0]:
                             raw_text = result[0]['generated_text']
                             
@@ -445,13 +448,82 @@ class TranslationMLService:
                             else:
                                 translated = raw_text.strip()
                                 
-                            # Validation: si vide ou identique au texte original, utiliser fallback
-                            if not translated or translated.lower() == text.lower() or "translate" in translated.lower():
-                                logger.warning(f"T5 traduction invalide: '{translated}', utilisation fallback")
-                                translated = f"[T5-Fallback] {text}"
+                            # Validation: vérifier si T5 a vraiment traduit (pas juste répété l'instruction)
+                            # Rejeter SEULEMENT si:
+                            # 1. Vide
+                            # 2. Identique à l'original
+                            # 3. Contient l'instruction complète T5 (ex: "translate French to Spanish:")
+                            has_instruction = f"translate {source_name} to {target_name}:" in translated.lower()
+                            
+                            if not translated or translated.lower() == text.lower() or has_instruction:
+                                logger.warning(f"T5 traduction invalide: '{translated}', fallback vers NLLB")
+                                t5_success = False
+                            else:
+                                t5_success = True
                                 
-                        else:
-                            translated = f"[T5-No-Result] {text}"
+                        # Si T5 échoue, fallback automatique vers NLLB
+                        if not t5_success:
+                            logger.info(f"🔄 Fallback automatique: T5 → NLLB pour {source_lang}→{target_lang}")
+                            # Nettoyer le pipeline T5
+                            del temp_pipeline
+                            del thread_tokenizer
+                            
+                            # CORRECTION: Chercher un modèle NLLB parmi les modèles chargés
+                            # Les clés sont 'basic', 'medium', 'premium', pas les noms de modèles
+                            nllb_model_type = None
+                            nllb_model_name = None
+                            
+                            # Chercher medium ou premium (qui sont des modèles NLLB)
+                            # CORRECTION: Utiliser un nom de variable différent pour éviter la collision
+                            for fallback_model_type in ['medium', 'premium']:
+                                if fallback_model_type in self.models:
+                                    config = self.model_configs.get(fallback_model_type, {})
+                                    fallback_model_name = config.get('model_name', '')
+                                    if 'nllb' in fallback_model_name.lower():
+                                        nllb_model_type = fallback_model_type
+                                        nllb_model_name = fallback_model_name
+                                        break
+                            
+                            if nllb_model_type is None:
+                                logger.warning(f"Modèle NLLB non chargé, impossible de faire le fallback")
+                                translated = f"[Translation-Failed] {text}"
+                            else:
+                                nllb_model = self.models[nllb_model_type]
+                                nllb_tokenizer = AutoTokenizer.from_pretrained(
+                                    nllb_model_name,  # CORRECTION: Utiliser nllb_model_name au lieu de model_name
+                                    cache_dir=str(self.models_path)
+                                )
+                                
+                                nllb_pipeline = pipeline(
+                                    "translation",
+                                    model=nllb_model,
+                                    tokenizer=nllb_tokenizer,
+                                    device=0 if self.device == 'cuda' and torch.cuda.is_available() else -1,
+                                    max_length=128
+                                )
+                                
+                                nllb_source = self.lang_codes.get(source_lang, 'eng_Latn')
+                                nllb_target = self.lang_codes.get(target_lang, 'fra_Latn')
+                                
+                                nllb_result = nllb_pipeline(
+                                    text, 
+                                    src_lang=nllb_source, 
+                                    tgt_lang=nllb_target, 
+                                    max_length=128
+                                )
+                                
+                                if nllb_result and len(nllb_result) > 0 and 'translation_text' in nllb_result[0]:
+                                    translated = nllb_result[0]['translation_text']
+                                    logger.info(f"✅ Fallback NLLB réussi: '{text}' → '{translated}'")
+                                else:
+                                    translated = f"[NLLB-Fallback-Failed] {text}"
+                                
+                                # Nettoyer
+                                del nllb_tokenizer
+                                del nllb_pipeline
+                            
+                            # CORRECTION: thread_tokenizer déjà supprimé, ne pas le supprimer à nouveau
+                            return translated
                             
                     else:
                         # NLLB: utiliser translation avec tokenizer thread-local
@@ -487,7 +559,7 @@ class TranslationMLService:
                     return translated
                     
                 except Exception as e:
-                    logger.error(f"Erreur pipeline {model_name}: {e}")
+                    logger.error(f"Erreur pipeline {original_model_name}: {e}")
                     return f"[ML-Pipeline-Error] {text}"
             
             # Exécuter de manière asynchrone

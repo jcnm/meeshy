@@ -1,9 +1,24 @@
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 
-// Load environment variables from .env
-const conf = dotenv.config({
-  path: path.resolve(process.cwd(), '.env')
-});
+// Load environment variables in order of priority:
+// 1. .env.local (highest priority - local development overrides)
+// 2. .env (base configuration)
 
-export default conf;
+const envPath = path.resolve(process.cwd(), '.env');
+const envLocalPath = path.resolve(process.cwd(), '.env.local');
+
+// Load base .env first
+const baseConf = dotenv.config({ path: envPath });
+
+// Then load .env.local which will override base values
+let localConf;
+if (fs.existsSync(envLocalPath)) {
+  localConf = dotenv.config({ path: envLocalPath });
+  console.log('[ENV] Loaded .env.local for local development');
+} else {
+  console.log('[ENV] No .env.local found, using .env only');
+}
+
+export default localConf || baseConf;

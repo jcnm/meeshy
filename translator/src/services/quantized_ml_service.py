@@ -739,6 +739,7 @@ class QuantizedMLService:
                     )
                     
                     # T5 retourne generated_text
+                    t5_success = False
                     if result and len(result) > 0 and 'generated_text' in result[0]:
                         raw_text = result[0]['generated_text']
                         
@@ -753,13 +754,92 @@ class QuantizedMLService:
                         else:
                             translated = raw_text.strip()
                             
-                        # Validation: si vide ou identique au texte original, utiliser fallback
-                        if not translated or translated.lower() == text.lower() or "translate" in translated.lower():
-                            logger.warning(f"T5 traduction invalide: '{translated}', utilisation fallback")
-                            translated = f"[T5-Fallback] {text}"
+                        # Validation: vérifier si T5 a vraiment traduit (pas juste répété l'instruction)
+                        # Rejeter SEULEMENT si:
+                        # 1. Vide
+                        # 2. Identique à l'original
+                        # 3. Contient l'instruction complète T5 (ex: "translate French to Spanish:")
+                        has_instruction = f"translate {source_name} to {target_name}:" in translated.lower()
+                        
+                        if not translated or translated.lower() == text.lower() or has_instruction:
+                            logger.warning(f"T5 traduction invalide: '{translated}', fallback vers NLLB")
+                            t5_success = False
+                        else:
+                            t5_success = True
                             
-                    else:
-                        translated = f"[T5-No-Result] {text}"
+                    # Si T5 échoue, fallback automatique vers NLLB
+                    if not t5_success:
+                        logger.info(f"🔄 Fallback automatique: T5 → NLLB pour {source_language}→{target_language}")
+                        # Nettoyer le pipeline T5
+                        del temp_pipeline
+                        del thread_tokenizer
+                        
+                        # CORRECTION: Chercher un modèle NLLB parmi les modèles chargés
+                        # Les clés sont 'basic', 'medium', 'premium', pas les noms de modèles
+                        nllb_model_type = None
+                        nllb_model_name = None
+                        
+                        # Chercher medium ou premium (qui sont des modèles NLLB)
+                        for model_type_key in ['medium', 'premium']:
+                            if model_type_key in self.models:
+                                config = self.model_configs.get(model_type_key, {})
+                                model_name = config.get('model_name', '')
+                                if 'nllb' in model_name.lower():
+                                    nllb_model_type = model_type_key
+                                    nllb_model_name = model_name
+                                    break
+                        
+                        if nllb_model_type is None:
+                            logger.warning(f"Modèle NLLB non chargé, impossible de faire le fallback")
+                            translated = f"[Translation-Failed] {text}"
+                        else:
+                            try:
+                                # Utiliser le modèle NLLB déjà chargé
+                                nllb_model = self.models[nllb_model_type]
+                                nllb_tokenizer = AutoTokenizer.from_pretrained(
+                                    nllb_model_name,
+                                    cache_dir=str(self.settings.models_path),
+                                    local_files_only=True,
+                                    use_fast=True
+                                )
+                                
+                                nllb_pipeline = pipeline(
+                                    "translation",
+                                    model=nllb_model,
+                                    tokenizer=nllb_tokenizer,
+                                    device=-1,
+                                    max_length=128,
+                                    torch_dtype=torch.float32
+                                )
+                                
+                                nllb_source = self.lang_codes.get(source_language, 'eng_Latn')
+                                nllb_target = self.lang_codes.get(target_language, 'fra_Latn')
+                                
+                                nllb_result = nllb_pipeline(
+                                    text, 
+                                    src_lang=nllb_source, 
+                                    tgt_lang=nllb_target, 
+                                    max_length=128,
+                                    num_beams=2,
+                                    early_stopping=True
+                                )
+                                
+                                if nllb_result and len(nllb_result) > 0 and 'translation_text' in nllb_result[0]:
+                                    translated = nllb_result[0]['translation_text']
+                                    logger.info(f"✅ Fallback NLLB réussi: '{text}' → '{translated}'")
+                                else:
+                                    translated = f"[NLLB-Fallback-Failed] {text}"
+                                
+                                # Nettoyer (pas besoin de supprimer nllb_model car c'est self.models[nllb_model_type])
+                                del nllb_tokenizer
+                                del nllb_pipeline
+                                
+                            except Exception as e:
+                                logger.error(f"❌ Erreur fallback NLLB: {e}")
+                                translated = f"[NLLB-Fallback-Error] {text}"
+                        
+                        # CORRECTION: thread_tokenizer déjà supprimé, ne pas le supprimer à nouveau
+                        return translated
                         
                 else:
                     # NLLB: utiliser translation avec tokenizer thread-local

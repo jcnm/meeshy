@@ -271,12 +271,30 @@ export class InitService {
     console.log('[INIT] 🧹 Suppression de toutes les données existantes...');
     
     try {
-      // Supprimer dans l'ordre des dépendances
-      await this.prisma.messageTranslation.deleteMany();
-      await this.prisma.message.deleteMany();
-      await this.prisma.conversationMember.deleteMany();
-      await this.prisma.conversation.deleteMany();
-      await this.prisma.user.deleteMany();
+      // Utiliser $runCommandRaw pour drop les collections directement
+      // Ceci évite les problèmes de contraintes de clés étrangères avec les auto-relations
+      const collections = [
+        'MessageTranslation',
+        'MessageStatus',
+        'Message',
+        'ConversationMember',
+        'Conversation',
+        'User'
+      ];
+      
+      for (const collection of collections) {
+        try {
+          await this.prisma.$runCommandRaw({
+            drop: collection
+          });
+          console.log(`[INIT] ✓ Collection ${collection} supprimée`);
+        } catch (error: any) {
+          // Ignorer l'erreur si la collection n'existe pas (code 26)
+          if (error.code !== 26 && error.code !== 'P2010') {
+            console.log(`[INIT] ⚠️ Erreur lors de la suppression de ${collection}:`, error.message);
+          }
+        }
+      }
       
       console.log('[INIT] ✅ Base de données réinitialisée avec succès');
     } catch (error) {

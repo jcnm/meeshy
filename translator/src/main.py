@@ -12,8 +12,15 @@ from pathlib import Path
 # Charger les variables d'environnement
 try:
     from dotenv import load_dotenv
+    # Load .env first (base configuration)
     load_dotenv()
-    print("[TRANSLATOR] ✅ Variables d'environnement .env chargées")
+    # Then load .env.local (overrides base - local development)
+    env_local_path = Path(__file__).parent.parent / '.env.local'
+    if env_local_path.exists():
+        load_dotenv(env_local_path, override=True)
+        print("[TRANSLATOR] ✅ Variables d'environnement .env et .env.local chargées")
+    else:
+        print("[TRANSLATOR] ✅ Variables d'environnement .env chargées (.env.local non trouvé)")
 except ImportError:
     print("[TRANSLATOR] ⚠️ python-dotenv non disponible, utilisation des variables système")
 
