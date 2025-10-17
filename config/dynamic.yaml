@@ -52,7 +52,7 @@ http:
     # Timeout
     timeout:
       forwardAuth:
-        address: "http://gateway:3000/auth/timeout"
+        address: "https://gate.meeshy.me/auth/timeout"
         authResponseHeaders:
           - "X-User"
           - "X-Auth-Method"

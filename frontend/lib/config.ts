@@ -244,7 +244,7 @@ export const getBackendUrl = (): string => {
     return 'https://gate.meeshy.me';
   }
   // Côté serveur (SSR) - utiliser INTERNAL_BACKEND_URL
-  return trimSlashes(process.env.INTERNAL_BACKEND_URL || 'http://gateway:3000');
+  return trimSlashes(process.env.INTERNAL_BACKEND_URL || 'https://gate.meeshy.me');
 };
 
 // HTTP base URL for the Frontend - Gère automatiquement client/serveur
