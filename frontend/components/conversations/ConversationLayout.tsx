@@ -531,14 +531,14 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       });
       
       // Recharger les messages pour afficher la modification
-      await refresh();
+      await refreshMessages();
       toast.success(tCommon('messages.messageEdited'));
     } catch (error) {
       console.error('Erreur lors de l\'édition du message:', error);
       toast.error(tCommon('messages.editError'));
       throw error;
     }
-  }, [selectedConversation, selectedLanguage, refresh, tCommon]);
+  }, [selectedConversation, selectedLanguage, refreshMessages, tCommon]);
 
   // Supprimer un message
   const handleDeleteMessage = useCallback(async (messageId: string) => {
@@ -548,14 +548,14 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       await messageService.deleteMessage(selectedConversation.id, messageId);
       
       // Recharger les messages pour afficher la suppression
-      await refresh();
+      await refreshMessages();
       toast.success(tCommon('messages.messageDeleted'));
     } catch (error) {
       console.error('Erreur lors de la suppression du message:', error);
       toast.error(tCommon('messages.deleteError'));
       throw error;
     }
-  }, [selectedConversation, refresh, tCommon]);
+  }, [selectedConversation, refreshMessages, tCommon]);
   
   // Extraire tous les attachments images des messages pour la galerie
   const imageAttachments = useMemo(() => {
@@ -564,7 +564,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     messages.forEach(message => {
       if (message.attachments && message.attachments.length > 0) {
         message.attachments.forEach(attachment => {
-          if (attachment.type === 'image') {
+          if (attachment.mimeType?.startsWith('image/')) {
             allAttachments.push(attachment);
           }
         });
