@@ -115,6 +115,9 @@ services:
       - CORS_ORIGINS=${CORS_ORIGINS}
       - NODE_ENV=${NODE_ENV:-production}
       - LOG_LEVEL=${LOG_LEVEL:-info}
+      - UPLOAD_PATH=/app/uploads
+    volumes:
+      - gateway_uploads:/app/uploads
     networks:
       - meeshy-network
     depends_on:
@@ -178,6 +181,7 @@ volumes:
   redis_data:
   translator_models:
   traefik_certs:
+  gateway_uploads:
 
 networks:
   meeshy-network:

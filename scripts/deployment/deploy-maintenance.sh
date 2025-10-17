@@ -163,9 +163,9 @@ restart_services() {
             echo "Date: $(date)"
             echo ""
             
-            # Arrêter tous les services
-            echo "Arrêt des services..."
-            docker compose down
+            # Arrêter tous les services SANS supprimer les volumes
+            echo "Arrêt des services (conservation des volumes)..."
+            docker compose stop
             
             # Attendre un peu
             sleep 5
@@ -232,9 +232,9 @@ stop_services() {
             echo "Date: $(date)"
             echo ""
             
-            # Arrêter tous les services
-            echo "Arrêt des services..."
-            docker compose down
+            # Arrêter tous les services SANS supprimer les volumes ni les réseaux
+            echo "Arrêt des services (conservation des volumes et réseaux)..."
+            docker compose stop
             
             # Vérifier le statut
             echo "Vérification du statut..."

@@ -226,16 +226,34 @@ update_services() {
     cd "$PROJECT_DIR"
     
     if [ "$dry_run" = false ]; then
-        # Télécharger les dernières images
+        # === ÉTAPE 1: BACKUP AUTOMATIQUE ===
+        log_warning "⚠️  Sauvegarde automatique avant mise à jour..."
+        if [ -f "$SCRIPT_DIR/meeshy-auto-backup.sh" ]; then
+            bash "$SCRIPT_DIR/meeshy-auto-backup.sh" "$PROJECT_DIR/backups" || {
+                log_warning "Le backup automatique a échoué, mais on continue..."
+            }
+        else
+            log_warning "Script de backup non trouvé, on continue sans backup..."
+        fi
+        
+        # === ÉTAPE 2: TÉLÉCHARGEMENT DES IMAGES ===
         log_info "Téléchargement des dernières images..."
         $COMPOSE_CMD -f "$COMPOSE_FILE" --env-file "$ENV_FILE" pull
         
-        # Redémarrer les services
-        log_info "Redémarrage des services..."
-        $COMPOSE_CMD -f "$COMPOSE_FILE" --env-file "$ENV_FILE" down
+        # === ÉTAPE 3: ARRÊT DES SERVICES (SANS SUPPRIMER LES VOLUMES) ===
+        log_info "Arrêt des services (conservation des volumes)..."
+        $COMPOSE_CMD -f "$COMPOSE_FILE" --env-file "$ENV_FILE" stop
+        
+        # === ÉTAPE 4: SUPPRESSION DES ANCIENS CONTENEURS ===
+        log_info "Suppression des anciens conteneurs..."
+        $COMPOSE_CMD -f "$COMPOSE_FILE" --env-file "$ENV_FILE" rm -f
+        
+        # === ÉTAPE 5: REDÉMARRAGE AVEC LES NOUVELLES IMAGES ===
+        log_info "Redémarrage des services avec les nouvelles images..."
         $COMPOSE_CMD -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d
         
-        log_success "Mise à jour terminée"
+        log_success "✅ Mise à jour terminée (volumes et données préservés)"
+        log_info "💾 Backup disponible dans: $PROJECT_DIR/backups/"
     else
         log_info "Mode simulation - mise à jour simulée"
     fi

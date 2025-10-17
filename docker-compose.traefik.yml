@@ -206,6 +206,7 @@ services:
       - FRONTEND_URL=${FRONTEND_URL}
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+      - UPLOAD_PATH=/app/uploads
       # Variables d'initialisation des utilisateurs
       - FORCE_DB_RESET=${FORCE_DB_RESET:-false}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
@@ -227,6 +228,8 @@ services:
       - ATABETH_SYSTEM_LANGUAGE=${ATABETH_SYSTEM_LANGUAGE}
       - ATABETH_REGIONAL_LANGUAGE=${ATABETH_REGIONAL_LANGUAGE}
       - ATABETH_CUSTOM_DESTINATION_LANGUAGE=${ATABETH_CUSTOM_DESTINATION_LANGUAGE}
+    volumes:
+      - gateway_uploads:/app/uploads
     depends_on:
       database:
         condition: service_healthy
@@ -290,6 +293,7 @@ volumes:
   redis-ui-data:
   traefik_certs:
   models_data:
+  gateway_uploads:
 
 networks:
   meeshy-network:
