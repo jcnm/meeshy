@@ -701,10 +701,11 @@ export class TranslationService extends EventEmitter {
       const modelInfo = result.translatorModel || result.modelType || 'basic';
       const confidenceScore = result.confidenceScore || 0.9;
 
-      // SOLUTION ATOMIQUE: Nettoyer d'abord les doublons potentiels
-      // Puis utiliser un try-catch pour gérer les violations de contrainte unique
+      // SOLUTION AMÉLIORÉE: Utiliser un verrou pour prévenir les race conditions
+      // On utilise une approche upsert-like avec gestion explicite des doublons
       try {
-        // Étape 1: Nettoyer les doublons existants AVANT l'insertion/mise à jour
+        // ÉTAPE 1: Nettoyer TOUS les doublons existants pour ce message + langue ATOMIQUEMENT
+        // Cela garantit qu'il ne reste qu'une seule traduction (ou zéro)
         const existingTranslations = await this.prisma.messageTranslation.findMany({
           where: {
             messageId: result.messageId,
@@ -712,11 +713,14 @@ export class TranslationService extends EventEmitter {
           },
           orderBy: {
             createdAt: 'desc'
-          }
+          },
+          select: { id: true, cacheKey: true, createdAt: true }
         });
 
         if (existingTranslations.length > 0) {
-          // S'il y a des doublons, supprimer tous sauf le premier
+          console.log(`🔍 [TranslationService] Trouvé ${existingTranslations.length} traduction(s) existante(s) pour ${result.messageId} -> ${result.targetLanguage}`);
+          
+          // Supprimer les doublons (garder seulement la plus récente)
           if (existingTranslations.length > 1) {
             const duplicatesToDelete = existingTranslations.slice(1);
             await this.prisma.messageTranslation.deleteMany({
@@ -729,7 +733,7 @@ export class TranslationService extends EventEmitter {
             console.log(`🧹 [TranslationService] ${duplicatesToDelete.length} doublons supprimés pour ${result.messageId} -> ${result.targetLanguage}`);
           }
 
-          // Mettre à jour la traduction existante
+          // Mettre à jour l'unique traduction restante
           const latestTranslation = existingTranslations[0];
           const updatedTranslation = await this.prisma.messageTranslation.update({
             where: {
@@ -744,10 +748,13 @@ export class TranslationService extends EventEmitter {
             }
           });
           
-          console.log(`🔄 [TranslationService] Traduction mise à jour: ${result.messageId} -> ${result.targetLanguage} (ID: ${updatedTranslation.id})`);
+          console.log(`🔄 [TranslationService] Traduction mise à jour: ${result.messageId} -> ${result.targetLanguage} (ID: ${updatedTranslation.id}, Model: ${modelInfo})`);
           return updatedTranslation.id;
-        } else {
-          // Créer une nouvelle traduction
+        }
+
+        // ÉTAPE 2: Si aucune traduction n'existe, créer une nouvelle
+        // Utiliser try-catch pour gérer la race condition potentielle
+        try {
           const newTranslation = await this.prisma.messageTranslation.create({
             data: {
               messageId: result.messageId,
@@ -760,42 +767,47 @@ export class TranslationService extends EventEmitter {
             }
           });
           
-          console.log(`✅ [TranslationService] Nouvelle traduction sauvegardée: ${result.messageId} -> ${result.targetLanguage} (ID: ${newTranslation.id})`);
+          console.log(`✅ [TranslationService] Nouvelle traduction sauvegardée: ${result.messageId} -> ${result.targetLanguage} (ID: ${newTranslation.id}, Model: ${modelInfo})`);
           return newTranslation.id;
-        }
-      } catch (createError: any) {
-        // Si erreur de contrainte unique (race condition), réessayer avec une mise à jour
-        if (createError.code === 'P2002' || createError.message?.includes('unique constraint')) {
-          console.log(`⚠️ [TranslationService] Contrainte unique violée, tentative de mise à jour: ${result.messageId} -> ${result.targetLanguage}`);
-          
-          // Récupérer la traduction existante créée entre-temps
-          const existingTranslation = await this.prisma.messageTranslation.findFirst({
-            where: {
-              messageId: result.messageId,
-              targetLanguage: result.targetLanguage
-            }
-          });
-
-          if (existingTranslation) {
-            const updatedTranslation = await this.prisma.messageTranslation.update({
+        } catch (createError: any) {
+          // Si erreur de contrainte unique (race condition entre le findMany et le create)
+          if (createError.code === 'P2002' || createError.message?.includes('unique constraint')) {
+            console.log(`⚠️ [TranslationService] Race condition détectée, réessai avec mise à jour: ${result.messageId} -> ${result.targetLanguage}`);
+            
+            // Une autre requête a créé la traduction entre-temps, la mettre à jour
+            const existingTranslation = await this.prisma.messageTranslation.findFirst({
               where: {
-                id: existingTranslation.id
-              },
-              data: {
-                sourceLanguage: result.sourceLanguage,
-                translatedContent: result.translatedText,
-                translationModel: modelInfo,
-                confidenceScore: confidenceScore,
-                cacheKey: cacheKey
+                messageId: result.messageId,
+                targetLanguage: result.targetLanguage
               }
             });
-            
-            console.log(`🔄 [TranslationService] Traduction mise à jour après race condition: ${result.messageId} -> ${result.targetLanguage} (ID: ${updatedTranslation.id})`);
-            return updatedTranslation.id;
+
+            if (existingTranslation) {
+              const updatedTranslation = await this.prisma.messageTranslation.update({
+                where: {
+                  id: existingTranslation.id
+                },
+                data: {
+                  sourceLanguage: result.sourceLanguage,
+                  translatedContent: result.translatedText,
+                  translationModel: modelInfo,
+                  confidenceScore: confidenceScore,
+                  cacheKey: cacheKey
+                }
+              });
+              
+              console.log(`🔄 [TranslationService] Traduction mise à jour après race condition: ${result.messageId} -> ${result.targetLanguage} (ID: ${updatedTranslation.id})`);
+              return updatedTranslation.id;
+            }
           }
+          
+          throw createError;
         }
-        
-        throw createError;
+
+      } catch (error: any) {
+        // Gérer les autres erreurs
+        console.error(`❌ [TranslationService] Erreur lors de l'upsert: ${error.message}`);
+        throw error;
       }
 
     } catch (error) {

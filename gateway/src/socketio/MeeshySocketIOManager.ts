@@ -1327,6 +1327,26 @@ export class MeeshySocketIOManager {
         const clientCount = roomClients ? roomClients.size : 0;
         
         console.log(`📡 [SocketIOManager] Broadcasting traduction vers room ${roomName} (${clientCount} clients) - original: ${conversationIdForBroadcast}`);
+        console.log(`🔍 [SocketIOManager] Détails de la diffusion WebSocket:`, {
+          roomName,
+          clientCount,
+          eventType: SERVER_EVENTS.MESSAGE_TRANSLATION,
+          messageId: result.messageId,
+          targetLanguage,
+          translatedTextLength: result.translatedText?.length || 0,
+          modelType: result.translationModel || result.modelType,
+          hasTranslationData: !!translationData,
+          translationsArrayLength: translationData.translations.length
+        });
+        
+        // Log des clients dans la room pour debug
+        if (clientCount > 0 && roomClients) {
+          const clientSocketIds = Array.from(roomClients);
+          console.log(`👥 [SocketIOManager] Clients dans la room ${roomName}:`, clientSocketIds.map(sid => {
+            const user = this.socketToUser.get(sid);
+            return user ? `${user} (${sid.substr(0, 8)})` : `unknown (${sid.substr(0, 8)})`;
+          }));
+        }
         
         this.io.to(roomName).emit(SERVER_EVENTS.MESSAGE_TRANSLATION, translationData);
         this.stats.translations_sent += clientCount;
