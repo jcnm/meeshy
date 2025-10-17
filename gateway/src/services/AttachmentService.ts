@@ -51,8 +51,22 @@ export class AttachmentService {
   constructor(prisma: PrismaClient) {
     this.prisma = prisma;
     this.uploadBasePath = process.env.UPLOAD_PATH || path.join(process.cwd(), 'uploads', 'attachments');
-    // Utiliser le port 3000 par défaut (port du gateway) au lieu de 3001
-    this.publicUrl = process.env.PUBLIC_URL || 'http://localhost:3000';
+    
+    // Détection intelligente de l'URL publique selon l'environnement
+    // 1. Priorité à PUBLIC_URL si définie
+    // 2. Sinon, utiliser NEXT_PUBLIC_BACKEND_URL en production
+    // 3. Sinon, fallback à localhost:3000
+    const isProduction = (process.env.NODE_ENV !== 'development') && process.env.NODE_ENV !== 'local';
+    this.publicUrl = process.env.PUBLIC_URL 
+    || (isProduction ? process.env.NEXT_PUBLIC_BACKEND_URL : undefined)
+    || (isProduction ? process.env.NEXT_PUBLIC_API_URL : undefined) 
+    || 'http://localhost:3000';
+    
+    console.log('[AttachmentService] Configuration:', {
+      environment: process.env.NODE_ENV || 'development',
+      publicUrl: this.publicUrl,
+      uploadBasePath: this.uploadBasePath
+    });
   }
 
   /**
