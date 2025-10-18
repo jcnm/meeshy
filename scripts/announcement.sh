@@ -3,12 +3,26 @@
 #########################################
 # Meeshy Announcement Script
 # Publier un message dans la conversation globale "meeshy"
+#
+# ⚠️  DÉPRÉCIÉ: Ce script est déprécié.
+# Utilisez plutôt le nouveau script mmp.sh (Meeshy Message Publisher)
+# qui offre les mêmes fonctionnalités avec vérification des permissions.
+# 
+# Migration: ./mmp.sh [mêmes options]
+# Documentation: ./README-MMP.md
 #########################################
 
 set -e
 
+# Avertissement de dépréciation
+echo -e "\033[1;33m⚠️  AVERTISSEMENT: Ce script est déprécié.\033[0m"
+echo -e "\033[1;33m   Utilisez plutôt: ./mmp.sh (Meeshy Message Publisher)\033[0m"
+echo -e "\033[1;33m   Documentation: ./README-MMP.md\033[0m"
+echo ""
+sleep 2
+
 # Configuration
-GATEWAY_URL="${MEESHY_GATEWAY_URL:-https://gate.meeshy.me}"
+GATEWAY_URL="${MEESHY_API_URL:-${MEESHY_GATEWAY_URL:-https://gate.meeshy.me}}"
 USERNAME="${MEESHY_USERNAME:-meeshy}"
 PASSWORD="${MEESHY_PASSWORD}"
 CONVERSATION_ID="${MEESHY_CONVERSATION_ID:-meeshy}"
@@ -29,7 +43,7 @@ CONVERSATION_ID="${MEESHY_CONVERSATION_ID:-meeshy}"
 set -e
 
 # Configuration
-GATEWAY_URL="${MEESHY_GATEWAY_URL:-https://gate.meeshy.me}"
+GATEWAY_URL="${MEESHY_API_URL:-${MEESHY_GATEWAY_URL:-https://gate.meeshy.me}}"
 USERNAME="${MEESHY_USERNAME:-meeshy}"
 PASSWORD="${MEESHY_PASSWORD}"
 CONVERSATION_ID="${MEESHY_CONVERSATION_ID:-meeshy}"
