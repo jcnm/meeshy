@@ -207,6 +207,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
       - UPLOAD_PATH=/app/uploads
+      - PUBLIC_URL=${PUBLIC_URL:-https://gate.${DOMAIN:-localhost}}
       # Variables d'initialisation des utilisateurs
       - FORCE_DB_RESET=${FORCE_DB_RESET:-false}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}

@@ -82,6 +82,15 @@ deploy_complete() {
     log_info "🚀 Déploiement complet de Meeshy sur $ip"
     trace_deploy_operation "deploy_complete" "STARTED" "Starting complete deployment on $ip"
     
+    # Étape 0: Validation de la configuration (NOUVEAU)
+    log_info "Étape 0/7: Validation de la configuration"
+    if ! "$SCRIPT_DIR/deploy-validate-config.sh" "env.production"; then
+        log_error "Validation de configuration échouée - Déploiement annulé"
+        trace_deploy_operation "deploy_complete" "FAILED" "Configuration validation failed"
+        exit 1
+    fi
+    log_success "Configuration validée avec succès"
+    
     # Étape 1: Test de connexion
     log_info "Étape 1/7: Test de connexion SSH"
     "$SCRIPT_DIR/deploy-test-connection.sh" "$ip"
@@ -120,6 +129,15 @@ deploy_with_reset() {
     
     log_info "🔄 Déploiement avec reset complet sur $ip"
     trace_deploy_operation "deploy_reset" "STARTED" "Starting deployment with reset on $ip"
+    
+    # Validation critique de la configuration (NOUVEAU)
+    log_info "Validation de la configuration avant reset"
+    if ! "$SCRIPT_DIR/deploy-validate-config.sh" "env.production"; then
+        log_error "Validation de configuration échouée - Déploiement avec reset annulé"
+        trace_deploy_operation "deploy_reset" "FAILED" "Configuration validation failed"
+        exit 1
+    fi
+    log_success "Configuration validée avec succès"
     
     # Reset complet
     log_info "Reset complet du système..."

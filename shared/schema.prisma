@@ -269,7 +269,6 @@ model MessageStatus {
   response   Message?  @relation("MessageStatusResponse", fields: [answer], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([messageId, userId], name: "messageId_userId")
-  @@map("message_status")
 }
 
 /// Demande d'amitié entre utilisateurs

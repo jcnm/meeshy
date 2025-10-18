@@ -10,7 +10,6 @@ import { useConversationsPagination } from '@/hooks/use-conversations-pagination
 import { conversationsService } from '@/services/conversations.service';
 import { messageService } from '@/services/message.service';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Footer } from '@/components/layout/Footer';
 import { ConversationList } from './ConversationList';
 import { ConversationHeader } from './ConversationHeader';
 import { ConversationMessages } from './ConversationMessages';
@@ -27,6 +26,10 @@ import { useReplyStore } from '@/stores/reply-store';
 import { toast } from 'sonner';
 import { getAuthToken } from '@/utils/token-utils';
 import { AttachmentGallery } from '@/components/attachments/AttachmentGallery';
+import { FailedMessageBanner } from '@/components/messages/failed-message-banner';
+import { useFailedMessagesStore, type FailedMessage } from '@/stores/failed-messages-store';
+import { ConnectionStatusIndicator } from './connection-status-indicator';
+import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
 
 interface ConversationLayoutProps {
   selectedConversationId?: string;
@@ -103,6 +106,12 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   // État pour les traductions
   const [translatingMessages, setTranslatingMessages] = useState<Map<string, Set<string>>>(new Map());
   const [usedLanguages, setUsedLanguages] = useState<string[]>([]);
+  
+  // État de connexion WebSocket
+  const [connectionStatus, setConnectionStatus] = useState<{
+    isConnected: boolean;
+    hasSocket: boolean;
+  }>({ isConnected: false, hasSocket: false });
 
   // Fonctions pour gérer l'état des traductions en cours
   const addTranslatingState = useCallback((messageId: string, targetLanguage: string) => {
@@ -539,37 +548,50 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     if (!selectedConversation) return;
     
     try {
+      // Mettre à jour immédiatement l'état local pour une UI réactive
+      updateMessage(messageId, (prev) => ({
+        ...prev,
+        content: newContent,
+        isEdited: true,
+        editedAt: new Date()
+      }));
+      
+      // Appeler l'API pour mettre à jour sur le serveur
       await messageService.editMessage(selectedConversation.id, messageId, {
         content: newContent,
         originalLanguage: selectedLanguage
       });
       
-      // Recharger les messages pour afficher la modification
-      await refreshMessages();
       toast.success(tCommon('messages.messageEdited'));
     } catch (error) {
       console.error('Erreur lors de l\'édition du message:', error);
       toast.error(tCommon('messages.editError'));
+      // En cas d'erreur, recharger les messages pour restaurer l'état correct
+      await refreshMessages();
       throw error;
     }
-  }, [selectedConversation, selectedLanguage, refreshMessages, tCommon]);
+  }, [selectedConversation, selectedLanguage, updateMessage, refreshMessages, tCommon]);
 
   // Supprimer un message
   const handleDeleteMessage = useCallback(async (messageId: string) => {
     if (!selectedConversation) return;
     
     try {
+      // Supprimer immédiatement de l'état local pour une UI réactive
+      removeMessage(messageId);
+      
+      // Appeler l'API pour supprimer sur le serveur
       await messageService.deleteMessage(selectedConversation.id, messageId);
       
-      // Recharger les messages pour afficher la suppression
-      await refreshMessages();
       toast.success(tCommon('messages.messageDeleted'));
     } catch (error) {
       console.error('Erreur lors de la suppression du message:', error);
       toast.error(tCommon('messages.deleteError'));
+      // En cas d'erreur, recharger les messages pour restaurer l'état correct
+      await refreshMessages();
       throw error;
     }
-  }, [selectedConversation, refreshMessages, tCommon]);
+  }, [selectedConversation, removeMessage, refreshMessages, tCommon]);
   
   // Extraire tous les attachments images des messages pour la galerie
   const imageAttachments = useMemo(() => {
@@ -684,6 +706,123 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     }
   }, [handleSendMessage]);
 
+  // ===== GESTION DES MESSAGES EN ÉCHEC =====
+  
+  // Handler pour restaurer un message en échec dans le compositeur
+  const handleRestoreFailedMessage = useCallback((failedMsg: FailedMessage) => {
+    console.log('🔄 Restauration du message en échec:', failedMsg.id);
+    
+    // Restaurer le contenu
+    setNewMessage(failedMsg.content);
+    
+    // Restaurer la langue
+    setSelectedLanguage(failedMsg.originalLanguage);
+    
+    // Restaurer les attachments
+    if (failedMsg.attachmentIds.length > 0) {
+      setAttachmentIds(failedMsg.attachmentIds);
+    }
+    
+    // Restaurer le replyTo si présent
+    if (failedMsg.replyTo) {
+      useReplyStore.getState().setReplyingTo(failedMsg.replyTo as any);
+    }
+    
+    // Focus sur le compositeur
+    setTimeout(() => {
+      if (messageComposerRef.current) {
+        messageComposerRef.current.focus();
+      }
+    }, 100);
+    
+    toast.info(t('messageRestored') || 'Message restauré. Vous pouvez modifier et renvoyer.');
+  }, [t]);
+
+  // Handler pour renvoyer automatiquement un message en échec
+  const handleRetryFailedMessage = useCallback(async (failedMsg: FailedMessage): Promise<boolean> => {
+    console.log('🔄 Renvoi automatique du message:', failedMsg.id);
+    
+    if (!selectedConversation?.id || !user) {
+      toast.error('Impossible de renvoyer: conversation ou utilisateur manquant');
+      return false;
+    }
+    
+    // Forcer la reconnexion WebSocket avant de renvoyer
+    if (messaging.socketMessaging?.reconnect) {
+      console.log('🔌 Force reconnexion WebSocket...');
+      messaging.socketMessaging.reconnect();
+      
+      // Attendre un peu que la reconnexion s'établisse
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    
+    try {
+      let success = false;
+      
+      // Envoyer avec ou sans attachments
+      if (failedMsg.attachmentIds.length > 0 && messaging.sendMessageWithAttachments) {
+        success = await messaging.sendMessageWithAttachments(
+          failedMsg.content,
+          failedMsg.attachmentIds,
+          failedMsg.originalLanguage,
+          failedMsg.replyToId
+        );
+      } else {
+        success = await messaging.sendMessage(
+          failedMsg.content,
+          failedMsg.originalLanguage,
+          failedMsg.replyToId
+        );
+      }
+      
+      if (success) {
+        console.log('✅ Message renvoyé avec succès');
+        return true;
+      } else {
+        console.error('❌ Échec du renvoi du message');
+        return false;
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors du renvoi:', error);
+      return false;
+    }
+  }, [selectedConversation?.id, user, messaging]);
+
+  // Surveillance de l'état de connexion WebSocket
+  useEffect(() => {
+    const checkConnection = () => {
+      const diagnostics = meeshySocketIOService.getConnectionDiagnostics();
+      setConnectionStatus({
+        isConnected: diagnostics.isConnected,
+        hasSocket: diagnostics.hasSocket
+      });
+    };
+
+    // Vérification initiale
+    checkConnection();
+
+    // Vérifier toutes les 2 secondes
+    const interval = setInterval(checkConnection, 2000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Reconnexion automatique si la connexion est perdue
+  useEffect(() => {
+    if (!connectionStatus.isConnected && connectionStatus.hasSocket && user) {
+      console.log('[ConversationLayout] Connexion perdue, tentative de reconnexion...');
+      
+      // Attendre un peu avant de reconnecter pour éviter les boucles
+      const reconnectTimer = setTimeout(() => {
+        if (!connectionStatus.isConnected) {
+          meeshySocketIOService.reconnect();
+        }
+      }, 3000);
+
+      return () => clearTimeout(reconnectTimer);
+    }
+  }, [connectionStatus.isConnected, connectionStatus.hasSocket, user]);
+
   // Effets
   useEffect(() => {
     if (user) {
@@ -747,6 +886,12 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               t={t}
               showBackButton={!!selectedConversationId}
             />
+            {/* Indicateur de connexion en mobile */}
+            {!connectionStatus.isConnected && (
+              <div className="px-4 py-2">
+                <ConnectionStatusIndicator />
+              </div>
+            )}
           </header>
 
           {/* Zone des messages scrollable */}
@@ -761,7 +906,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               isLoadingMore={isLoadingMore}
               hasMore={hasMore}
               isMobile={isMobile}
-              conversationType={selectedConversation.type === 'anonymous' ? 'direct' : selectedConversation.type === 'broadcast' ? 'public' : selectedConversation.type as any}
+              conversationType={(selectedConversation.type as any) === 'anonymous' ? 'direct' : (selectedConversation.type as any) === 'broadcast' ? 'public' : selectedConversation.type as any}
               userRole={user.role as UserRoleEnum}
               conversationId={selectedConversation.id}
               addTranslatingState={addTranslatingState}
@@ -783,6 +928,15 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               paddingBottom: 'max(1rem, env(safe-area-inset-bottom))',
             }}
           >
+            {/* Bannière des messages en échec */}
+            {selectedConversation?.id && (
+              <FailedMessageBanner
+                conversationId={selectedConversation.id}
+                onRetry={handleRetryFailedMessage}
+                onRestore={handleRestoreFailedMessage}
+              />
+            )}
+            
             <MessageComposer
               ref={messageComposerRef}
               value={newMessage}
@@ -896,6 +1050,12 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                   t={t}
                   showBackButton={!!selectedConversationId}
                 />
+                {/* Indicateur de connexion en desktop */}
+                {!connectionStatus.isConnected && (
+                  <div className="px-6 py-2">
+                    <ConnectionStatusIndicator />
+                  </div>
+                )}
               </header>
 
               {/* Zone des messages */}
@@ -915,7 +1075,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                   isLoadingMore={isLoadingMore}
                   hasMore={hasMore}
                   isMobile={false}
-                  conversationType={selectedConversation.type === 'anonymous' ? 'direct' : selectedConversation.type === 'broadcast' ? 'public' : selectedConversation.type as any}
+                  conversationType={(selectedConversation.type as any) === 'anonymous' ? 'direct' : (selectedConversation.type as any) === 'broadcast' ? 'public' : selectedConversation.type as any}
                   userRole={user.role as UserRoleEnum}
                   conversationId={selectedConversation.id}
                   addTranslatingState={addTranslatingState}
@@ -933,6 +1093,15 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               {/* Zone de composition - Desktop */}
               <div className="bg-white/98 dark:bg-gray-950/98 backdrop-blur-xl border-t-2 border-gray-200 dark:border-gray-700 shadow-2xl sticky bottom-0 p-6 z-20">
                 <div className="max-w-5xl mx-auto">
+                  {/* Bannière des messages en échec */}
+                  {selectedConversation?.id && (
+                    <FailedMessageBanner
+                      conversationId={selectedConversation.id}
+                      onRetry={handleRetryFailedMessage}
+                      onRestore={handleRestoreFailedMessage}
+                    />
+                  )}
+                  
                   <MessageComposer
                     ref={messageComposerRef}
                     value={newMessage}
@@ -989,12 +1158,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
             </DashboardLayout>
           </div>
 
-          {/* Footer - En bas de la page, dans le gradient bleu - Desktop seulement */}
-          {!isMobile && (
-            <div className="relative z-20 flex-shrink-0">
-              <Footer />
-            </div>
-          )}
         </div>
       )}
       

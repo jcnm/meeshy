@@ -208,12 +208,20 @@ model MessageTranslation {
   sourceLanguage    String
   targetLanguage    String
   translatedContent String
-  translationModel  String
+  translationModel  String // "basic", "medium", "premium"
   cacheKey          String   @unique
   confidenceScore   Float?
   createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   message Message @relation(fields: [messageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  // Contrainte d'unicité: une seule traduction par message et langue cible
+  // Permet de mettre à jour la traduction existante vers un niveau supérieur
+  @@unique([messageId, targetLanguage], name: "messageId_targetLanguage")
+  @@index([messageId])
+  @@index([targetLanguage])
+  @@index([translationModel])
 }
 
 /// Attachement de fichier pour un message
@@ -261,7 +269,6 @@ model MessageStatus {
   response   Message?  @relation("MessageStatusResponse", fields: [answer], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([messageId, userId], name: "messageId_userId")
-  @@map("message_status")
 }
 
 /// Demande d'amitié entre utilisateurs

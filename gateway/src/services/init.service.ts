@@ -19,6 +19,16 @@ export class InitService {
    */
   async initializeDatabase(): Promise<void> {
     const forceReset = process.env.FORCE_DB_RESET === 'true';
+    const isProduction = process.env.NODE_ENV === 'production';
+    
+    // GARDE-FOU CRITIQUE: Empêcher FORCE_DB_RESET=true en production
+    if (forceReset && isProduction) {
+      const errorMessage = '🚨 ERREUR CRITIQUE: FORCE_DB_RESET=true détecté en PRODUCTION! Ceci supprimerait TOUTES les données!';
+      console.error(`[INIT] ${errorMessage}`);
+      console.error('[INIT] 🛡️ Protection activée: Réinitialisation bloquée pour protéger les données de production');
+      console.error('[INIT] 💡 Si vous devez vraiment réinitialiser en production, contactez un administrateur');
+      throw new Error('FORCE_DB_RESET=true est interdit en production pour protéger les données');
+    }
     
     if (forceReset) {
       console.log('[INIT] 🔄 FORCE_DB_RESET=true détecté - Réinitialisation forcée de la base de données...');
@@ -590,6 +600,13 @@ export class InitService {
    */
   async shouldInitialize(): Promise<boolean> {
     const forceReset = process.env.FORCE_DB_RESET === 'true';
+    const isProduction = process.env.NODE_ENV === 'production';
+    
+    // GARDE-FOU CRITIQUE: Bloquer FORCE_DB_RESET=true en production
+    if (forceReset && isProduction) {
+      console.error('[INIT] 🚨 FORCE_DB_RESET=true détecté en PRODUCTION - BLOQUÉ pour protection des données');
+      return false;
+    }
     
     if (forceReset) {
       console.log('[INIT] 🔄 FORCE_DB_RESET=true - Initialisation forcée requise');

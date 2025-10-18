@@ -729,13 +729,16 @@ export interface UpdateUserResponse {
  * Requête de création de conversation
  */
 export interface CreateConversationRequest {
-  readonly name: string;
+  readonly type: 'direct' | 'group' | 'public' | 'global';
+  readonly name?: string;
+  readonly title?: string; // Alias pour name
   readonly description?: string;
   readonly isPrivate?: boolean;
   readonly maxMembers?: number;
   readonly participantIds?: readonly string[];
   readonly participants?: readonly string[]; // Alias pour la rétrocompatibilité
-  readonly isGroup?: boolean;
+  readonly communityId?: string;
+  readonly identifier?: string;
 }
 
 /**

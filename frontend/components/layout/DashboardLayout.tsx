@@ -231,7 +231,7 @@ export function DashboardLayout({
                   
                   <DropdownMenuSeparator />
                   
-                  <DropdownMenuItem onClick={() => router.push('/profile')}>
+                  <DropdownMenuItem onClick={() => router.push('/u')}>
                     <UserIcon className="mr-2 h-4 w-4" />
                     <span>{t('navigation.profile')}</span>
                   </DropdownMenuItem>

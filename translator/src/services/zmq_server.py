@@ -159,20 +159,25 @@ class TranslationPoolManager:
     
     async def start_workers(self):
         """Démarre tous les workers avec gestion dynamique"""
+        logger.info(f"[TRANSLATOR] 🔄 Début du démarrage des workers...")
         self.normal_workers_running = True
         self.any_workers_running = True
         
+        logger.info(f"[TRANSLATOR] 🔄 Création des workers normaux ({self.normal_workers})...")
         # Démarrer les workers pour la pool normale
         self.normal_worker_tasks = [
             asyncio.create_task(self._normal_worker_loop(f"normal_worker_{i}"))
             for i in range(self.normal_workers)
         ]
+        logger.info(f"[TRANSLATOR] ✅ Workers normaux créés: {len(self.normal_worker_tasks)}")
         
+        logger.info(f"[TRANSLATOR] 🔄 Création des workers 'any' ({self.any_workers})...")
         # Démarrer les workers pour la pool "any"
         self.any_worker_tasks = [
             asyncio.create_task(self._any_worker_loop(f"any_worker_{i}"))
             for i in range(self.any_workers)
         ]
+        logger.info(f"[TRANSLATOR] ✅ Workers 'any' créés: {len(self.any_worker_tasks)}")
         
         logger.info(f"[TRANSLATOR] Workers haute performance démarrés: {self.normal_workers} normal, {self.any_workers} any")
         logger.info(f"[TRANSLATOR] Capacité totale: {self.normal_workers + self.any_workers} traductions simultanées")
@@ -521,16 +526,26 @@ class ZMQTranslationServer:
         logger.info(f"ZMQTranslationServer initialisé: Gateway PUSH {host}:{gateway_push_port} (PULL bind)")
         logger.info(f"ZMQTranslationServer initialisé: Gateway SUB {host}:{gateway_sub_port} (PUB bind)")
 
+    async def _connect_database_background(self):
+        """Connecte à la base de données en arrière-plan sans bloquer le démarrage"""
+        try:
+            logger.info("[TRANSLATOR-DB] 🔗 Tentative de connexion à MongoDB...")
+            db_connected = await self.database_service.connect()
+            if db_connected:
+                logger.info("[TRANSLATOR-DB] ✅ Connexion à la base de données établie")
+            else:
+                logger.warning("[TRANSLATOR-DB] ⚠️ Connexion à la base de données échouée, sauvegarde désactivée")
+        except Exception as e:
+            logger.error(f"[TRANSLATOR-DB] ❌ Erreur lors de la connexion à la base de données: {e}")
+    
     async def initialize(self):
         """Initialise les sockets ZMQ avec architecture PUSH/PULL + PUB/SUB"""
         try:
-            # Connexion à la base de données
-            logger.info("[TRANSLATOR] 🔗 Connexion à la base de données...")
-            db_connected = await self.database_service.connect()
-            if not db_connected:
-                logger.warning("[TRANSLATOR] ⚠️ Impossible de se connecter à la base de données, sauvegarde désactivée")
-            else:
-                logger.info("[TRANSLATOR] ✅ Connexion à la base de données établie")
+            # Connexion à la base de données en arrière-plan (non-bloquante)
+            logger.info("[TRANSLATOR] 🔗 Lancement de la connexion à la base de données en arrière-plan...")
+            # Créer une tâche asynchrone pour la connexion DB sans bloquer
+            asyncio.create_task(self._connect_database_background())
+            logger.info("[TRANSLATOR] ✅ Connexion DB lancée en arrière-plan, le serveur continue son démarrage...")
             
             # Socket PULL pour recevoir les commandes du Gateway (remplace SUB)
             self.pull_socket = self.context.socket(zmq.PULL)
@@ -542,9 +557,11 @@ class ZMQTranslationServer:
             
             # Petit délai pour établir les connexions ZMQ
             await asyncio.sleep(0.1)
+            logger.info("[TRANSLATOR] ✅ Sockets ZMQ créés, démarrage des workers...")
             
             # Démarrer les workers
             self.worker_tasks = await self.pool_manager.start_workers()
+            logger.info(f"[TRANSLATOR] ✅ Workers démarrés: {len(self.worker_tasks)} tâches")
             
             logger.info("ZMQTranslationServer initialisé avec succès")
             logger.info(f"🔌 Socket PULL lié au port: {self.host}:{self.gateway_push_port}")

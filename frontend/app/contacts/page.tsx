@@ -251,6 +251,12 @@ export default function ContactsPage() {
 
   const startConversation = async (userId: string) => {
     try {
+      // Validate userId before proceeding
+      if (!userId || userId.trim().length === 0) {
+        toast.error(t('errors.invalidUser'));
+        return;
+      }
+
       const contact = displayedUsers.find(u => u.id === userId);
       if (!contact) return;
 
@@ -276,7 +282,7 @@ export default function ContactsPage() {
         body: JSON.stringify({
           title: conversationTitle,
           type: 'direct',
-          participantIds: [userId]
+          participantIds: [userId] // Don't include currentUser.id - backend adds creator automatically
         })
       });
 
@@ -585,7 +591,7 @@ export default function ContactsPage() {
                                           {getUserDisplayName(contact)}
                                         </h3>
                                         <button
-                                          onClick={() => router.push(`/profile/${contact.id}`)}
+                                          onClick={() => router.push(`/u/${contact.id}`)}
                                           className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline mb-2 sm:mb-3 break-all transition-colors cursor-pointer text-left"
                                         >
                                           @{contact.username}
@@ -632,7 +638,7 @@ export default function ContactsPage() {
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end" className="w-56 z-[100]">
                                           <DropdownMenuItem 
-                                            onClick={() => router.push(`/profile/${contact.id}`)}
+                                            onClick={() => router.push(`/u/${contact.id}`)}
                                             className="py-3"
                                           >
                                             <UserCheck className="h-4 w-4 mr-3" />
@@ -709,7 +715,7 @@ export default function ContactsPage() {
                                             {getUserDisplayName(otherUser!)}
                                           </h3>
                                           <button
-                                            onClick={() => router.push(`/profile/${otherUser?.id}`)}
+                                            onClick={() => router.push(`/u/${otherUser?.id}`)}
                                             className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline mb-2 break-all transition-colors cursor-pointer text-left"
                                           >
                                             @{otherUser?.username}
@@ -808,7 +814,7 @@ export default function ContactsPage() {
                                             {getUserDisplayName(otherUser!)}
                                           </h3>
                                           <button
-                                            onClick={() => router.push(`/profile/${otherUserId}`)}
+                                            onClick={() => router.push(`/u/${otherUserId}`)}
                                             className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline mb-2 sm:mb-3 break-all transition-colors cursor-pointer text-left"
                                           >
                                             @{otherUser?.username}
@@ -960,7 +966,7 @@ export default function ContactsPage() {
                                           {getUserDisplayName(relation.referredUser)}
                                         </h3>
                                         <button
-                                          onClick={() => router.push(`/profile/${relation.referredUser.id}`)}
+                                          onClick={() => router.push(`/u/${relation.referredUser.id}`)}
                                           className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline mb-2 sm:mb-3 break-all transition-colors cursor-pointer text-left"
                                         >
                                           @{relation.referredUser.username}

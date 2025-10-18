@@ -671,8 +671,10 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         finalIdentifier = await ensureUniqueConversationIdentifier(prisma, baseIdentifier);
       }
 
-      // S'assurer que participantIds ne contient pas de doublons et n'inclut pas le créateur
-      const uniqueParticipantIds = [...new Set(participantIds)].filter(id => id !== userId);
+      // S'assurer que participantIds ne contient pas de doublons, n'inclut pas le créateur,
+      // et ne contient pas de valeurs null/undefined/empty
+      const uniqueParticipantIds = [...new Set(participantIds)]
+        .filter(id => id && id !== userId && id.trim().length > 0);
 
       const conversation = await prisma.conversation.create({
         data: {
@@ -1477,7 +1479,8 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       if (isAuthor && messageAge > oneHourInMs) {
         // Vérifier si l'utilisateur a des privilèges spéciaux
         const userRole = existingMessage.sender.role;
-        const hasSpecialPrivileges = userRole === 'MODERATOR' || userRole === 'ADMIN' || userRole === 'CREATOR' || userRole === 'BIGBOSS';
+        // Support both MODO and MODERATOR for backward compatibility
+        const hasSpecialPrivileges = userRole === 'MODO' || userRole === 'MODERATOR' || userRole === 'ADMIN' || userRole === 'CREATOR' || userRole === 'BIGBOSS';
         
         if (!hasSpecialPrivileges) {
           return reply.status(403).send({
@@ -1507,7 +1510,8 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
         if (membership) {
           const userRole = membership.user.role;
-          canModify = userRole === 'MODERATOR' || userRole === 'ADMIN' || userRole === 'CREATOR' || userRole === 'BIGBOSS';
+          // Support both MODO and MODERATOR for backward compatibility
+          canModify = userRole === 'MODO' || userRole === 'MODERATOR' || userRole === 'ADMIN' || userRole === 'CREATOR' || userRole === 'BIGBOSS';
         }
       }
 
@@ -1702,7 +1706,8 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
         if (membership) {
           const userRole = membership.user.role;
-          canDelete = userRole === 'MODERATOR' || userRole === 'ADMIN' || userRole === 'CREATOR' || userRole === 'BIGBOSS';
+          // Support both MODO and MODERATOR for backward compatibility
+          canDelete = userRole === 'MODO' || userRole === 'MODERATOR' || userRole === 'ADMIN' || userRole === 'CREATOR' || userRole === 'BIGBOSS';
         }
       }
 

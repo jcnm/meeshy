@@ -300,6 +300,28 @@ main() {
         log_warning "Mode --dry-run activé: Aucune modification ne sera effectuée"
     fi
     
+    # VALIDATION CRITIQUE DE LA CONFIGURATION (NOUVEAU)
+    log_info "Validation de la configuration avant mise à jour"
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    VALIDATE_SCRIPT="$SCRIPT_DIR/deployment/deploy-validate-config.sh"
+    
+    if [ -f "$VALIDATE_SCRIPT" ]; then
+        if ! "$VALIDATE_SCRIPT" "env.production"; then
+            log_error "Validation de configuration échouée - Mise à jour annulée"
+            log_error "Corrigez les erreurs de configuration avant de continuer"
+            exit 1
+        fi
+        log_success "Configuration validée avec succès"
+    else
+        log_warning "Script de validation non trouvé: $VALIDATE_SCRIPT"
+        log_warning "Continuer sans validation de configuration (non recommandé)"
+        read -p "Voulez-vous continuer sans validation? (yes/NO): " confirm
+        if [ "$confirm" != "yes" ]; then
+            log_info "Mise à jour annulée par l'utilisateur"
+            exit 0
+        fi
+    fi
+    
     log_info "Services à mettre à jour: Gateway et Frontend uniquement"
     log_warning "⚠️  La base de données et l'infrastructure ne seront PAS modifiées"
     

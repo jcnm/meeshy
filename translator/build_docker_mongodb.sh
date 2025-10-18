@@ -39,7 +39,8 @@ GRPC_PORT=50051
 ZMQ_PORT=5555
 
 # Base de données MongoDB
-DATABASE_URL=mongodb://localhost:27017/meeshy
+# Note: Cette URL est un fallback, utilisez DATABASE_URL via Docker env vars
+DATABASE_URL=mongodb://database:27017/meeshy?replicaSet=rs0
 PRISMA_POOL_SIZE=15
 
 # Cache (Memory pour simplicité)
@@ -92,7 +93,7 @@ echo -e "${YELLOW}🔨 Construction de l'image Docker MongoDB...${NC}"
 docker build \
     --tag "$FULL_IMAGE_NAME" \
     --file Dockerfile.mongodb \
-    --build-arg DATABASE_URL="mongodb://localhost:27017/meeshy" \
+    --build-arg DATABASE_URL="mongodb://database:27017/meeshy?replicaSet=rs0" \
     --build-arg REDIS_URL="memory://" \
     --progress=plain \
     .

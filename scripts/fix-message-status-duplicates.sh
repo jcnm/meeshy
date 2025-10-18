@@ -38,3 +38,4 @@ echo "   2. Redémarrer le translator:"
 echo "      docker-compose restart meeshy-translator"
 echo ""
 
+

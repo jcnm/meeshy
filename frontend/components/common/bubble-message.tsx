@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, memo, useMemo, useCallback } from 'react';
+import Link from 'next/link';
 import { 
   Star,
   Copy,
@@ -75,8 +76,8 @@ interface BubbleMessageProps {
   usedLanguages: string[];
   // Props pour les actions (remontées au parent)
   onForceTranslation?: (messageId: string, targetLanguage: string, model?: 'basic' | 'medium' | 'premium') => void;
-  onEditMessage?: (messageId: string, newContent: string) => void;
-  onDeleteMessage?: (messageId: string) => void;
+  onEditMessage?: (messageId: string, newContent: string) => Promise<void> | void;
+  onDeleteMessage?: (messageId: string) => Promise<void> | void;
   onLanguageSwitch?: (messageId: string, language: string) => void;
   onReplyMessage?: (message: Message) => void;
   onNavigateToMessage?: (messageId: string) => void;
@@ -404,17 +405,17 @@ function BubbleMessageInner({
     }
   };
 
-  const handleEditMessage = () => {
+  const handleEditMessage = async () => {
     const newContent = prompt(t('editMessagePrompt'), message.content);
     if (newContent && newContent.trim() !== message.content) {
-      onEditMessage?.(message.id, newContent.trim());
+      await onEditMessage?.(message.id, newContent.trim());
     }
   };
 
-  const handleDeleteMessage = () => {
+  const handleDeleteMessage = async () => {
     const confirmed = confirm(t('deleteMessageConfirm'));
     if (confirmed) {
-      onDeleteMessage?.(message.id);
+      await onDeleteMessage?.(message.id);
     }
   };
 
@@ -425,13 +426,13 @@ function BubbleMessageInner({
   const canModifyMessage = () => {
     if (isOwnMessage) return true;
     if (conversationType === 'group' || conversationType === 'public' || conversationType === 'global') {
-      return ['MODERATOR', 'ADMIN', 'CREATOR', 'BIGBOSS'].includes(userRole);
+      return ['MODERATOR', 'MODO', 'ADMIN', 'CREATOR', 'BIGBOSS'].includes(userRole);
     }
     return false;
   };
 
   const canDeleteMessage = () => {
-    if (['BIGBOSS', 'ADMIN', 'MODERATOR'].includes(userRole)) return true;
+    if (['BIGBOSS', 'ADMIN', 'MODERATOR', 'MODO'].includes(userRole)) return true;
     
     const messageAge = Date.now() - new Date(message.createdAt).getTime();
     const twelveHours = 12 * 60 * 60 * 1000;
@@ -523,14 +524,28 @@ function BubbleMessageInner({
             "flex items-center gap-2 mb-1 px-1",
             isOwnMessage && "flex-row-reverse"
           )}>
-            <span className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 truncate">
-              {message.anonymousSender 
+            {(() => {
+              const username = message.anonymousSender?.username || message.sender?.username;
+              const displayName = message.anonymousSender 
                 ? (message.anonymousSender.username || 
                    `${message.anonymousSender.firstName || ''} ${message.anonymousSender.lastName || ''}`.trim() || 
                    t('anonymous'))
-                : message.sender?.username || `@${message.sender?.username}`
-              }
-            </span>
+                : (message.sender?.username || t('anonymous'));
+              
+              return username ? (
+                <Link 
+                  href={`/u/${username}`}
+                  className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 truncate hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {displayName}
+                </Link>
+              ) : (
+                <span className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 truncate">
+                  {displayName}
+                </span>
+              );
+            })()}
             {message.anonymousSenderId && (
               <Ghost className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-400 dark:text-gray-500 flex-shrink-0" />
             )}
@@ -548,7 +563,7 @@ function BubbleMessageInner({
                 : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
             )}
           >
-            <CardContent className="p-1.5 sm:p-2 max-w-full overflow-hidden">
+            <CardContent className="p-1 sm:p-2 max-w-full overflow-hidden">
 
               {/* Message parent si c'est une réponse */}
               {message.replyTo && (
@@ -574,14 +589,32 @@ function BubbleMessageInner({
                     <div className="flex items-start justify-between gap-1.5">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 mb-0.5">
-                          <span className={cn(
-                            "text-xs font-semibold truncate",
-                            isOwnMessage ? "text-white/90" : "text-gray-700 dark:text-gray-200"
-                          )}>
-                            {message.replyTo.anonymousSender 
+                          {(() => {
+                            const replyUsername = message.replyTo.anonymousSender?.username || message.replyTo.sender?.username;
+                            const replyDisplayName = message.replyTo.anonymousSender 
                               ? (message.replyTo.anonymousSender.username || t('anonymous'))
-                              : (message.replyTo.sender?.username || t('unknownUser'))}
-                          </span>
+                              : (message.replyTo.sender?.username || t('unknownUser'));
+                            
+                            return replyUsername ? (
+                              <Link 
+                                href={`/u/${replyUsername}`}
+                                className={cn(
+                                  "text-xs font-semibold truncate hover:underline transition-colors cursor-pointer",
+                                  isOwnMessage ? "text-white/90 hover:text-white" : "text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
+                                )}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {replyDisplayName}
+                              </Link>
+                            ) : (
+                              <span className={cn(
+                                "text-xs font-semibold truncate",
+                                isOwnMessage ? "text-white/90" : "text-gray-700 dark:text-gray-200"
+                              )}>
+                                {replyDisplayName}
+                              </span>
+                            );
+                          })()}
                           <span className={cn(
                             "text-[10px]",
                             isOwnMessage ? "text-white/60" : "text-gray-500 dark:text-gray-400"

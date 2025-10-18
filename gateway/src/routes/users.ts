@@ -318,7 +318,7 @@ export async function userRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // Route pour obtenir les statistiques d'un utilisateur spécifique
+  // Route pour obtenir les statistiques d'un utilisateur spécifique (par ID ou username)
   fastify.get('/users/:userId/stats', {
     onRequest: [fastify.authenticate]
   }, async (request: FastifyRequest<{ Params: { userId: string } }>, reply: FastifyReply) => {
@@ -331,15 +331,49 @@ export async function userRoutes(fastify: FastifyInstance) {
         });
       }
 
-      const { userId } = request.params;
-      fastify.log.info(`[USER_STATS] Getting stats for user ${userId}`);
+      const { userId: userIdOrUsername } = request.params;
+      fastify.log.info(`[USER_STATS] Getting stats for user ${userIdOrUsername}`);
+
+      // Déterminer si c'est un ID MongoDB (24 caractères hexadécimaux) ou un username
+      const isMongoId = /^[a-f\d]{24}$/i.test(userIdOrUsername);
+      
+      // Récupérer l'utilisateur pour obtenir son ID réel
+      const user = await fastify.prisma.user.findFirst({
+        where: isMongoId 
+          ? { id: userIdOrUsername } 
+          : { 
+              username: { 
+                equals: userIdOrUsername,
+                mode: 'insensitive'  // Recherche insensible à la casse
+              } 
+            },
+        select: {
+          id: true,
+          createdAt: true,
+          isOnline: true,
+          lastSeen: true
+        }
+      });
+
+      if (!user) {
+        fastify.log.warn(`[USER_STATS] User not found: ${userIdOrUsername}`);
+        return reply.status(404).send({
+          success: false,
+          message: 'User not found'
+        });
+      }
+      
+      fastify.log.info(`[USER_STATS] User found: ${user.id}`);
+
+
+      const userId = user.id;
 
       // Récupérer les statistiques de base de l'utilisateur
       const [
         totalConversations,
-        totalMessages,
-        totalFriends,
-        userInfo
+        messagesSent,
+        messagesReceived,
+        groupsCount
       ] = await Promise.all([
         // Nombre de conversations où l'utilisateur est membre
         fastify.prisma.conversationMember.count({
@@ -355,33 +389,41 @@ export async function userRoutes(fastify: FastifyInstance) {
             isDeleted: false
           }
         }),
-        // Nombre d'amis (connexions acceptées)
-        fastify.prisma.friendRequest.count({
+        // Nombre de messages reçus (dans les conversations où l'utilisateur est membre)
+        fastify.prisma.message.count({
           where: {
-            OR: [
-              { senderId: userId, status: 'accepted' },
-              { receiverId: userId, status: 'accepted' }
-            ]
+            senderId: { not: userId },
+            isDeleted: false,
+            conversation: {
+              members: {
+                some: {
+                  userId: userId,
+                  isActive: true
+                }
+              }
+            }
           }
         }),
-        // Informations de base de l'utilisateur
-        fastify.prisma.user.findUnique({
-          where: { id: userId },
-          select: {
-            createdAt: true,
-            isOnline: true,
-            lastSeen: true
+        // Nombre de groupes (conversations de type groupe)
+        fastify.prisma.conversationMember.count({
+          where: {
+            userId: userId,
+            isActive: true,
+            conversation: {
+              type: 'group'
+            }
           }
         })
       ]);
 
       const stats = {
+        messagesSent,
+        messagesReceived,
+        conversationsCount: totalConversations,
+        groupsCount,
         totalConversations,
-        totalMessages,
-        totalFriends,
-        memberSince: userInfo?.createdAt,
-        isOnline: userInfo?.isOnline,
-        lastSeen: userInfo?.lastSeen
+        averageResponseTime: undefined,
+        lastActivity: user.lastSeen || user.createdAt
       };
 
       return reply.send({
@@ -768,9 +810,150 @@ export async function userRoutes(fastify: FastifyInstance) {
     reply.send({ message: 'Get all users - to be implemented' });
   });
 
-  // Route pour obtenir un utilisateur par ID
-  fastify.get('/users/:id', async (request, reply) => {
-    reply.send({ message: 'Get user by ID - to be implemented' });
+  // Route pour obtenir un utilisateur par username (profil public)
+  // Format: /u/username (ex: meeshy.me/u/johndoe)
+  fastify.get('/u/:username', async (request: FastifyRequest<{
+    Params: { username: string }
+  }>, reply: FastifyReply) => {
+    try {
+      const { username } = request.params;
+      
+      fastify.log.info(`[USER_PROFILE_U] Fetching user profile for: ${username}`);
+
+      // Récupérer l'utilisateur par username avec sélection de champs publics uniquement
+      // Recherche case-insensitive pour plus de flexibilité
+      const user = await fastify.prisma.user.findFirst({
+        where: { 
+          username: { 
+            equals: username,
+            mode: 'insensitive'  // Recherche insensible à la casse
+          } 
+        },
+        select: {
+          id: true,
+          username: true,
+          firstName: true,
+          lastName: true,
+          displayName: true,
+          avatar: true,
+          bio: true,
+          role: true,
+          isOnline: true,
+          lastSeen: true,
+          createdAt: true,
+          // Exclure les champs sensibles: email, phoneNumber, password
+        }
+      });
+
+      if (!user) {
+        fastify.log.warn(`[USER_PROFILE_U] User not found: ${username}`);
+        return reply.status(404).send({
+          success: false,
+          message: 'User not found'
+        });
+      }
+      
+      fastify.log.info(`[USER_PROFILE_U] User found: ${user.username} (${user.id})`);
+
+
+      return reply.status(200).send({
+        success: true,
+        data: user
+      });
+
+    } catch (error) {
+      logError(fastify.log, 'Get user profile error:', error);
+      return reply.status(500).send({
+        success: false,
+        message: 'Failed to get user profile'
+      });
+    }
+  });
+
+  // Route pour obtenir un utilisateur par ID ou username (profil public)
+  fastify.get('/users/:id', async (request: FastifyRequest<{
+    Params: { id: string }
+  }>, reply: FastifyReply) => {
+    try {
+      const { id } = request.params;
+
+      // Déterminer si c'est un ID MongoDB (24 caractères hexadécimaux) ou un username
+      const isMongoId = /^[a-f\d]{24}$/i.test(id);
+      
+      fastify.log.info(`[USER_PROFILE] Fetching user profile for: ${id} (isMongoId: ${isMongoId})`);
+      
+      // Récupérer l'utilisateur avec sélection de champs publics uniquement
+      // Chercher soit par ID MongoDB, soit par username (case-insensitive)
+      const user = await fastify.prisma.user.findFirst({
+        where: isMongoId 
+          ? { id } 
+          : { 
+              username: { 
+                equals: id,
+                mode: 'insensitive'  // Recherche insensible à la casse
+              } 
+            },
+        select: {
+          id: true,
+          username: true,
+          firstName: true,
+          lastName: true,
+          displayName: true,
+          avatar: true,
+          bio: true,
+          role: true,
+          isOnline: true,
+          lastSeen: true,
+          lastActiveAt: true,
+          systemLanguage: true,
+          regionalLanguage: true,
+          customDestinationLanguage: true,
+          autoTranslateEnabled: true,
+          translateToSystemLanguage: true,
+          translateToRegionalLanguage: true,
+          useCustomDestination: true,
+          isActive: true,
+          deactivatedAt: true,
+          createdAt: true,
+          updatedAt: true,
+          // Exclure les champs sensibles: email, phoneNumber, password
+          // Exclure aussi: emailVerified, phoneVerified, lastLoginAt, etc.
+        }
+      });
+
+      if (!user) {
+        fastify.log.warn(`[USER_PROFILE] User not found: ${id}`);
+        return reply.status(404).send({
+          success: false,
+          message: 'User not found'
+        });
+      }
+      
+      fastify.log.info(`[USER_PROFILE] User found: ${user.username} (${user.id})`);
+
+
+      // Ajouter les champs manquants pour compléter le type SocketIOUser
+      const publicUserProfile = {
+        ...user,
+        email: '', // Masqué pour la sécurité
+        phoneNumber: undefined, // Masqué pour la sécurité
+        permissions: undefined, // Non applicable pour les profils publics
+        isAnonymous: false, // Toujours false pour les utilisateurs enregistrés
+        isMeeshyer: true, // Toujours true pour les utilisateurs enregistrés
+      };
+
+      return reply.status(200).send({
+        success: true,
+        data: publicUserProfile
+      });
+
+    } catch (error) {
+      logError(fastify.log, 'Get user profile error:', error);
+      return reply.status(500).send({
+        success: false,
+        message: 'Failed to get user profile'
+      });
+    }
   });
 
   // Route pour mettre à jour un utilisateur

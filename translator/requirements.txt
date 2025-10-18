@@ -51,5 +51,7 @@ prometheus-client>=0.22.1
 pytest>=8.4.1
 pytest-asyncio>=1.1.0
 pytest-cov>=6.2.1
-httpx>=0.28.1
+# FIX: httpx 0.24.x pour compatibilité avec Prisma 0.15.0
+httpx==0.24.1
+httpcore==0.17.3
 

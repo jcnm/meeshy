@@ -364,8 +364,9 @@ export async function linksRoutes(fastify: FastifyInstance) {
         
         // Ajouter les membres spécifiés (sans doublons et sans le créateur)
         if (body.newConversation.memberIds && body.newConversation.memberIds.length > 0) {
-          // Filtrer les doublons et exclure le créateur
-          const uniqueMemberIds = [...new Set(body.newConversation.memberIds)].filter(id => id !== userId);
+          // Filtrer les doublons, exclure le créateur, et supprimer les valeurs null/undefined/empty
+          const uniqueMemberIds = [...new Set(body.newConversation.memberIds)]
+            .filter(id => id && id !== userId && id.trim().length > 0);
           
           for (const memberId of uniqueMemberIds) {
             // Vérifier que l'utilisateur existe

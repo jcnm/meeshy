@@ -5,6 +5,7 @@ Gère la sauvegarde et la récupération des traductions
 
 import asyncio
 import logging
+import os
 from typing import Optional, Dict, Any
 from prisma import Prisma
 
@@ -18,24 +19,77 @@ class DatabaseService:
         self.prisma = None
         self.is_connected = False
     
-    async def connect(self):
-        """Établit la connexion à la base de données"""
-        try:
-            if not self.prisma:
-                # Le client Prisma est déjà généré dans l'image Docker
-                self.prisma = Prisma()
-            
-            # Utiliser la configuration par défaut (le DATABASE_URL est dans .env)
-            await self.prisma.connect()
-            
-            self.is_connected = True
-            logger.info("✅ [TRANSLATOR-DB] Connexion à la base de données établie")
-            return True
-            
-        except Exception as e:
-            logger.error(f"❌ [TRANSLATOR-DB] Erreur connexion base de données: {e}")
-            self.is_connected = False
-            return False
+    async def connect(self, max_retries: int = 3):
+        """Établit la connexion à la base de données avec retry"""
+        # Afficher l'URL de connexion (masquée) pour debug
+        db_url = self.database_url or os.getenv('DATABASE_URL', 'NON DÉFINIE')
+        # Masquer le mot de passe dans l'URL
+        masked_url = db_url
+        if '@' in db_url and '://' in db_url:
+            protocol = db_url.split('://')[0]
+            rest = db_url.split('://')[1]
+            if '@' in rest:
+                credentials = rest.split('@')[0]
+                host_and_path = rest.split('@')[1]
+                if ':' in credentials:
+                    user = credentials.split(':')[0]
+                    masked_url = f"{protocol}://{user}:***@{host_and_path}"
+        
+        logger.info(f"[TRANSLATOR-DB] 🔗 DATABASE_URL: {masked_url}")
+        
+        for attempt in range(1, max_retries + 1):
+            try:
+                if not self.prisma:
+                    # Le client Prisma est déjà généré dans l'image Docker
+                    # CORRECTION: Configurer les timeouts pour éviter ReadTimeout
+                    self.prisma = Prisma(
+                        http={
+                            'timeout': 60.0,  # Timeout global de 60 secondes
+                            'limits': {
+                                'max_connections': 10,  # Limiter les connexions
+                                'max_keepalive_connections': 5
+                            }
+                        }
+                    )
+                
+                # Utiliser la configuration par défaut (le DATABASE_URL est dans .env)
+                # Ajouter un timeout pour éviter le blocage indéfini
+                logger.info(f"[TRANSLATOR-DB] Tentative {attempt}/{max_retries} de connexion à la base de données...")
+                
+                try:
+                    await asyncio.wait_for(self.prisma.connect(), timeout=10.0)
+                except asyncio.TimeoutError:
+                    logger.error(f"❌ [TRANSLATOR-DB] Timeout lors de la connexion (10s) - tentative {attempt}/{max_retries}")
+                    if attempt < max_retries:
+                        wait_time = 2 ** attempt  # Backoff exponentiel: 2s, 4s, 8s
+                        logger.info(f"⏳ [TRANSLATOR-DB] Nouvelle tentative dans {wait_time}s...")
+                        await asyncio.sleep(wait_time)
+                        continue
+                    self.is_connected = False
+                    return False
+                
+                self.is_connected = True
+                logger.info(f"✅ [TRANSLATOR-DB] Connexion à la base de données établie (tentative {attempt}/{max_retries})")
+                return True
+                
+            except Exception as e:
+                logger.error(f"❌ [TRANSLATOR-DB] Erreur connexion base de données (tentative {attempt}/{max_retries}): {type(e).__name__}: {e}")
+                # Afficher la stack trace complète pour diagnostic
+                import traceback
+                logger.error(f"[TRANSLATOR-DB] Stack trace:\n{traceback.format_exc()}")
+                
+                if attempt < max_retries:
+                    wait_time = 2 ** attempt  # Backoff exponentiel
+                    logger.info(f"⏳ [TRANSLATOR-DB] Nouvelle tentative dans {wait_time}s...")
+                    await asyncio.sleep(wait_time)
+                else:
+                    self.is_connected = False
+                    return False
+        
+        # Si on arrive ici, toutes les tentatives ont échoué
+        self.is_connected = False
+        logger.error(f"❌ [TRANSLATOR-DB] Échec de connexion après {max_retries} tentatives")
+        return False
     
     async def disconnect(self):
         """Ferme la connexion à la base de données"""
@@ -256,7 +310,9 @@ class DatabaseService:
             }
             
         except Exception as e:
-            logger.error(f"❌ [TRANSLATOR-DB] Erreur health check: {e}")
+            logger.error(f"❌ [TRANSLATOR-DB] Erreur health check: {type(e).__name__}: {str(e)}")
+            import traceback
+            logger.error(f"❌ [TRANSLATOR-DB] Stack trace: {traceback.format_exc()}")
             return {
                 "connected": False,
                 "status": "error",

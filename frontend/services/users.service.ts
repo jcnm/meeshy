@@ -137,8 +137,15 @@ export const usersService = {
    */
   async getUserProfile(userId: string): Promise<ApiResponse<User>> {
     try {
-      const response = await apiService.get<User>(`/users/${userId}`);
-      return response;
+      const response = await apiService.get<{ success: boolean; data: User }>(`/users/${userId}`);
+      if (!response.data.success || !response.data.data) {
+        throw new Error('User not found');
+      }
+      return {
+        data: response.data.data,
+        status: response.status,
+        message: response.message
+      };
     } catch (error) {
       console.error('Erreur lors de la récupération du profil utilisateur:', error);
       throw error;
@@ -150,8 +157,15 @@ export const usersService = {
    */
   async getUserStats(userId: string): Promise<ApiResponse<UserStats>> {
     try {
-      const response = await apiService.get<UserStats>(`/users/${userId}/stats`);
-      return response;
+      const response = await apiService.get<{ success: boolean; data: UserStats }>(`/users/${userId}/stats`);
+      if (!response.data.success || !response.data.data) {
+        throw new Error('Stats not found');
+      }
+      return {
+        data: response.data.data,
+        status: response.status,
+        message: response.message
+      };
     } catch (error) {
       console.error('Erreur lors de la récupération des statistiques utilisateur:', error);
       throw error;

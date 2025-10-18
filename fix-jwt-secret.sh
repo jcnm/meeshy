@@ -120,7 +120,7 @@ ATABETH_REGIONAL_LANGUAGE=fr
 ATABETH_CUSTOM_DESTINATION_LANGUAGE=en
 
 # ===== DATABASE RESET =====
-FORCE_DB_RESET=true
+FORCE_DB_RESET=false
 EOF"
 
 echo "✅ Fichier .env corrigé avec JWT_SECRET complet"

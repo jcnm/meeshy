@@ -344,14 +344,19 @@ export function CreateConversationModal({
         conversationTitle = t('createConversationModal.preview.defaultTitles.public');
       }
 
-      // Map conversation type for backend compatibility
-      const backendType = conversationType === 'public' ? 'broadcast' : conversationType;
+      // Use conversation type directly (backend accepts: direct, group, public, global)
+      const backendType = conversationType;
 
       // Prepare request body - identifier is mandatory for group and public only
+      // Filter out any invalid user IDs (null, undefined, or empty)
+      const validParticipantIds = selectedUsers
+        .map(u => u.id)
+        .filter(id => id && id.trim().length > 0);
+
       const requestBody: any = {
         title: conversationTitle,
         type: backendType,
-        participantIds: selectedUsers.map(u => u.id)
+        participantIds: validParticipantIds
       };
 
       // Add identifier only for group and public conversations

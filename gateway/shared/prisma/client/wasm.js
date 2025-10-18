@@ -253,7 +253,8 @@ exports.Prisma.MessageTranslationScalarFieldEnum = {
   translationModel: 'translationModel',
   cacheKey: 'cacheKey',
   confidenceScore: 'confidenceScore',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.MessageAttachmentScalarFieldEnum = {

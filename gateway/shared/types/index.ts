@@ -72,7 +72,7 @@ export interface TranslationRequest {
   modelType?: 'basic' | 'medium' | 'premium';
   conversationId?: string;
   participantIds?: string[];
-  requestType?: 'conversation_translation' | 'direct_translation' | 'forced_translation';
+  requestType?: 'conversation' | 'direct' | 'forced' | 'batch';
 }
 
 export interface TranslationResponse {
@@ -293,26 +293,16 @@ export const DEFAULT_PERMISSIONS: Readonly<Record<string, UserPermissions>> = {
 // Ces types sont remplacés par ceux dans conversation.ts
 // Gardés pour rétrocompatibilité temporaire
 
-// Importation du nouveau type Conversation unifié
+// Importation des types unifiés depuis conversation.ts
 import type { 
   Conversation as UnifiedConversation, 
-  ConversationParticipant as UnifiedConversationParticipant 
+  ConversationParticipant as UnifiedConversationParticipant,
+  ThreadMember as UnifiedThreadMember
 } from './conversation';
 
-// Alias pour rétrocompatibilité
-export interface ThreadMember {
-  id: string;
-  conversationId: string;
-  userId: string;
-  joinedAt: Date;
-  role: UserRoleEnum; // Rôle global de l'utilisateur
-  conversationRole?: UserRoleEnum; // Rôle dans cette conversation spécifique
-  user: SocketIOUser;
-}
-
-// Alias pour la rétrocompatibilité
-export interface ConversationMember extends ThreadMember {}
-
+// Export des types unifiés (plus de duplication)
+export type ThreadMember = UnifiedThreadMember;
+export type ConversationMember = UnifiedThreadMember; // Alias pour rétrocompatibilité
 export type Conversation = UnifiedConversation;
 export type ConversationParticipant = UnifiedConversationParticipant;
 
@@ -739,13 +729,16 @@ export interface UpdateUserResponse {
  * Requête de création de conversation
  */
 export interface CreateConversationRequest {
-  readonly name: string;
+  readonly type: 'direct' | 'group' | 'public' | 'global';
+  readonly name?: string;
+  readonly title?: string; // Alias pour name
   readonly description?: string;
   readonly isPrivate?: boolean;
   readonly maxMembers?: number;
   readonly participantIds?: readonly string[];
   readonly participants?: readonly string[]; // Alias pour la rétrocompatibilité
-  readonly isGroup?: boolean;
+  readonly communityId?: string;
+  readonly identifier?: string;
 }
 
 /**

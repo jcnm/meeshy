@@ -226,7 +226,7 @@ export function SearchPageContent() {
   const handleStartConversation = async (userId: string) => {
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(buildApiUrl('/conversation'), {
+      const response = await fetch(buildApiUrl('/api/conversations'), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

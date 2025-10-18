@@ -8,6 +8,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { useSocketIOMessaging } from './use-socketio-messaging';
+import { useFailedMessagesStore } from '@/stores/failed-messages-store';
 import { 
   validateMessageContent, 
   prepareMessageMetadata, 
@@ -83,6 +84,9 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Store pour les messages en échec
+  const { addFailedMessage } = useFailedMessagesStore();
 
   // Socket.IO messaging - SERVICE MATURE
   const socketMessaging = useSocketIOMessaging({
@@ -216,7 +220,32 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
       // car le composant gère déjà l'état du message
       const errorMessage = handleMessageError(error, content);
       setSendError(errorMessage);
-      toast.error(errorMessage);
+      
+      // NOUVEAU: Sauvegarder automatiquement le message en échec
+      if (conversationId) {
+        const failedMsgId = addFailedMessage({
+          conversationId,
+          content,
+          originalLanguage: originalLanguage || currentUser?.systemLanguage || 'fr',
+          attachmentIds: [],
+          replyToId,
+          error: errorMessage,
+        });
+        console.log('💾 Message sauvegardé en échec:', failedMsgId);
+        
+        // Toast avec action de restauration
+        toast.error(errorMessage, {
+          action: {
+            label: 'Restaurer',
+            onClick: () => {
+              // Le composant parent gérera la restauration via FailedMessageBanner
+            }
+          },
+          duration: 5000,
+        });
+      } else {
+        toast.error(errorMessage);
+      }
       
       // Callback d'erreur
       onMessageFailed?.(content, error as Error);
@@ -225,7 +254,7 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
     } finally {
       setIsSending(false);
     }
-  }, [conversationId, currentUser, socketMessaging, onMessageSent, onMessageFailed, stopTyping]);
+  }, [conversationId, currentUser, socketMessaging, onMessageSent, onMessageFailed, stopTyping, addFailedMessage]);
 
   // Envoi de message avec attachments
   const sendMessageWithAttachments = useCallback(async (
@@ -280,13 +309,39 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
     } catch (error) {
       const errorMessage = handleMessageError(error, content);
       setSendError(errorMessage);
-      toast.error(errorMessage);
+      
+      // NOUVEAU: Sauvegarder automatiquement le message avec attachments en échec
+      if (conversationId) {
+        const failedMsgId = addFailedMessage({
+          conversationId,
+          content,
+          originalLanguage: originalLanguage || currentUser?.systemLanguage || 'fr',
+          attachmentIds,
+          replyToId,
+          error: errorMessage,
+        });
+        console.log('💾 Message avec attachments sauvegardé en échec:', failedMsgId);
+        
+        // Toast avec action de restauration
+        toast.error(errorMessage, {
+          action: {
+            label: 'Restaurer',
+            onClick: () => {
+              // Le composant parent gérera la restauration via FailedMessageBanner
+            }
+          },
+          duration: 5000,
+        });
+      } else {
+        toast.error(errorMessage);
+      }
+      
       onMessageFailed?.(content, error as Error);
       return false;
     } finally {
       setIsSending(false);
     }
-  }, [conversationId, currentUser, socketMessaging, onMessageSent, onMessageFailed, stopTyping]);
+  }, [conversationId, currentUser, socketMessaging, onMessageSent, onMessageFailed, stopTyping, addFailedMessage]);
 
   // Édition de message
   const editMessage = useCallback(async (messageId: string, newContent: string): Promise<boolean> => {

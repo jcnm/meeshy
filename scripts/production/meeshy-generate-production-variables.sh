@@ -268,7 +268,7 @@ ATABETH_CUSTOM_DESTINATION_LANGUAGE="en"
 
 # ===== CONFIGURATION BASE DE DONNÉES =====
 # Forcer la réinitialisation pour la production
-FORCE_DB_RESET="true"
+FORCE_DB_RESET="false"
 
 # ===== INFORMATIONS DE DÉPLOIEMENT =====
 # Informations pour le déploiement

@@ -77,14 +77,22 @@ class TranslationMLService:
         self.settings = settings
         
         self.model_type = model_type
-        self.max_workers = max_workers
+        # OPTIMISATION CPU: Limiter les workers pour éviter le context switching
+        # Sur CPU, 2-4 workers suffisent largement
+        import os
+        cpu_workers = min(max_workers, int(os.getenv('ML_MAX_WORKERS', '4')))
+        self.max_workers = cpu_workers
         self.quantization_level = quantization_level
-        self.executor = ThreadPoolExecutor(max_workers=max_workers)
+        self.executor = ThreadPoolExecutor(max_workers=cpu_workers)
         
         # Modèles ML chargés (partagés entre tous les canaux)
         self.models = {}
         self.tokenizers = {}
         self.pipelines = {}
+        
+        # Cache thread-local de tokenizers pour éviter "Already borrowed"
+        self._thread_local_tokenizers = {}
+        self._tokenizer_lock = threading.Lock()
         
         # Configuration des modèles depuis les settings et .env
         self.models_path = Path(self.settings.models_path)
@@ -263,6 +271,36 @@ class TranslationMLService:
                 self.is_loading = False
                 return False
     
+    def _get_thread_local_tokenizer(self, model_type: str) -> Optional[AutoTokenizer]:
+        """Obtient ou crée un tokenizer pour le thread actuel (évite 'Already borrowed')"""
+        import threading
+        thread_id = threading.current_thread().ident
+        cache_key = f"{model_type}_{thread_id}"
+        
+        # Vérifier le cache thread-local
+        if cache_key in self._thread_local_tokenizers:
+            return self._thread_local_tokenizers[cache_key]
+        
+        # Créer un nouveau tokenizer pour ce thread
+        with self._tokenizer_lock:
+            # Double-check après acquisition du lock
+            if cache_key in self._thread_local_tokenizers:
+                return self._thread_local_tokenizers[cache_key]
+            
+            try:
+                model_name = self.model_configs[model_type]['model_name']
+                tokenizer = AutoTokenizer.from_pretrained(
+                    model_name,
+                    cache_dir=str(self.models_path),
+                    use_fast=True
+                )
+                self._thread_local_tokenizers[cache_key] = tokenizer
+                logger.debug(f"✅ Tokenizer thread-local créé: {cache_key}")
+                return tokenizer
+            except Exception as e:
+                logger.error(f"❌ Erreur création tokenizer thread-local: {e}")
+                return None
+    
     async def _load_model(self, model_type: str):
         """Charge un modèle spécifique depuis local ou HuggingFace"""
         if model_type in self.models:
@@ -287,13 +325,22 @@ class TranslationMLService:
                 )
                 
                 # Modèle avec quantification
+                # OPTIMISATION CPU: Utiliser float32 au lieu de float16 sur CPU pour éviter les erreurs
+                # et améliorer la compatibilité. Sur CPU, float16 n'apporte pas d'accélération.
+                dtype = torch.float32 if device == "cpu" else (
+                    getattr(torch, self.quantization_level) if hasattr(torch, self.quantization_level) else torch.float32
+                )
+                
                 model = AutoModelForSeq2SeqLM.from_pretrained(
                     model_name,
                     cache_dir=str(self.models_path), 
-                    torch_dtype=getattr(torch, self.quantization_level) if hasattr(torch, self.quantization_level) else torch.float32,
+                    torch_dtype=dtype,
                     low_cpu_mem_usage=True,  # Optimisation mémoire
                     device_map="auto" if device == "cuda" else None
                 )
+                
+                # OPTIMISATION CPU: Mettre le modèle en mode eval pour désactiver dropout
+                model.eval()
                 
                 # CORRECTION: Pas de pipeline partagé pour éviter "Already borrowed"
                 # On crée les pipelines à la demande dans _ml_translate
@@ -382,36 +429,31 @@ class TranslationMLService:
             # CORRECTION: Sauvegarder le model_name original pour éviter les collisions dans la boucle de fallback
             original_model_name = self.model_configs[model_type]['model_name']
             
-            # Traduction dans un thread - NOUVEAU: tokenizer thread-local
+            # Traduction dans un thread - OPTIMISATION: tokenizer thread-local caché
             def translate():
                 try:
-                    from transformers import pipeline, AutoTokenizer
+                    from transformers import pipeline
                     import threading
                     
-                    # SOLUTION: Créer un tokenizer unique pour ce thread
-                    thread_id = threading.current_thread().ident
-                    cache_key = f"{model_type}_{thread_id}"
-                    
-                    # Modèle partagé (thread-safe en lecture) mais tokenizer local
+                    # Modèle partagé (thread-safe en lecture)
                     shared_model = self.models[model_type]
-                    model_path = self.model_configs[model_type]['local_path']
                     
-                    # Créer un tokenizer frais pour ce thread spécifique
-                    # Utiliser le nom du modèle - HuggingFace gère automatiquement le cache local
-                    thread_tokenizer = AutoTokenizer.from_pretrained(
-                        original_model_name,
-                        cache_dir=str(self.models_path)
-                    )
+                    # OPTIMISATION: Utiliser le tokenizer thread-local caché (évite recréation)
+                    thread_tokenizer = self._get_thread_local_tokenizer(model_type)
+                    if thread_tokenizer is None:
+                        raise Exception(f"Impossible d'obtenir le tokenizer pour {model_type}")
                     
                     # Différencier T5 et NLLB avec pipelines appropriés
                     if "t5" in original_model_name.lower():
                         # T5: utiliser text2text-generation avec tokenizer thread-local
+                        # OPTIMISATION CPU: Réduire max_length pour accélérer les inférences
                         temp_pipeline = pipeline(
                             "text2text-generation",
                             model=shared_model,
                             tokenizer=thread_tokenizer,  # ← TOKENIZER THREAD-LOCAL
                             device=0 if self.device == 'cuda' and torch.cuda.is_available() else -1,
-                            max_length=128
+                            max_length=64,  # Réduit de 128 à 64 pour la vitesse
+                            batch_size=1  # Traiter un texte à la fois sur CPU
                         )
                         
                         # T5: format avec noms complets de langues
@@ -421,10 +463,12 @@ class TranslationMLService:
                         
                         logger.debug(f"T5 instruction: {instruction}")
                         
+                        # OPTIMISATION CPU: Réduire num_beams pour accélérer considérablement
+                        # num_beams=1 (greedy) est 4x plus rapide que num_beams=4
                         result = temp_pipeline(
                             instruction,
-                            max_new_tokens=64,
-                            num_beams=4,
+                            max_new_tokens=32,  # Réduit de 64 à 32
+                            num_beams=1,  # Réduit de 4 à 1 (greedy search = 4x plus rapide)
                             do_sample=False,
                             early_stopping=True,
                             repetition_penalty=1.1,
@@ -464,9 +508,8 @@ class TranslationMLService:
                         # Si T5 échoue, fallback automatique vers NLLB
                         if not t5_success:
                             logger.info(f"🔄 Fallback automatique: T5 → NLLB pour {source_lang}→{target_lang}")
-                            # Nettoyer le pipeline T5
+                            # Nettoyer le pipeline T5 (tokenizer reste en cache)
                             del temp_pipeline
-                            del thread_tokenizer
                             
                             # CORRECTION: Chercher un modèle NLLB parmi les modèles chargés
                             # Les clés sont 'basic', 'medium', 'premium', pas les noms de modèles
@@ -489,17 +532,21 @@ class TranslationMLService:
                                 translated = f"[Translation-Failed] {text}"
                             else:
                                 nllb_model = self.models[nllb_model_type]
-                                nllb_tokenizer = AutoTokenizer.from_pretrained(
-                                    nllb_model_name,  # CORRECTION: Utiliser nllb_model_name au lieu de model_name
-                                    cache_dir=str(self.models_path)
-                                )
+                                # OPTIMISATION: Utiliser tokenizer thread-local caché
+                                nllb_tokenizer = self._get_thread_local_tokenizer(nllb_model_type)
+                                if nllb_tokenizer is None:
+                                    logger.warning(f"Impossible d'obtenir tokenizer NLLB")
+                                    translated = f"[Translation-Failed] {text}"
+                                    return translated
                                 
+                                # OPTIMISATION CPU: Paramètres optimisés pour la vitesse
                                 nllb_pipeline = pipeline(
                                     "translation",
                                     model=nllb_model,
                                     tokenizer=nllb_tokenizer,
                                     device=0 if self.device == 'cuda' and torch.cuda.is_available() else -1,
-                                    max_length=128
+                                    max_length=64,  # Réduit de 128 à 64
+                                    batch_size=1  # Traiter un texte à la fois sur CPU
                                 )
                                 
                                 nllb_source = self.lang_codes.get(source_lang, 'eng_Latn')
@@ -509,7 +556,9 @@ class TranslationMLService:
                                     text, 
                                     src_lang=nllb_source, 
                                     tgt_lang=nllb_target, 
-                                    max_length=128
+                                    max_length=64,  # Réduit de 128 à 64
+                                    num_beams=1,  # Greedy search = 4x plus rapide
+                                    early_stopping=True
                                 )
                                 
                                 if nllb_result and len(nllb_result) > 0 and 'translation_text' in nllb_result[0]:
@@ -518,32 +567,35 @@ class TranslationMLService:
                                 else:
                                     translated = f"[NLLB-Fallback-Failed] {text}"
                                 
-                                # Nettoyer
-                                del nllb_tokenizer
+                                # Nettoyer le pipeline (tokenizer reste en cache)
                                 del nllb_pipeline
                             
-                            # CORRECTION: thread_tokenizer déjà supprimé, ne pas le supprimer à nouveau
                             return translated
                             
                     else:
                         # NLLB: utiliser translation avec tokenizer thread-local
+                        # OPTIMISATION CPU: Réduire max_length et batch_size
                         temp_pipeline = pipeline(
                             "translation",
                             model=shared_model,
                             tokenizer=thread_tokenizer,  # ← TOKENIZER THREAD-LOCAL
                             device=0 if self.device == 'cuda' and torch.cuda.is_available() else -1,
-                            max_length=128
+                            max_length=64,  # Réduit de 128 à 64
+                            batch_size=1  # Traiter un texte à la fois sur CPU
                         )
                         
                         # NLLB: codes de langue spéciaux
                         nllb_source = self.lang_codes.get(source_lang, 'eng_Latn')
                         nllb_target = self.lang_codes.get(target_lang, 'fra_Latn')
                         
+                        # OPTIMISATION CPU: Paramètres optimisés pour la vitesse
                         result = temp_pipeline(
                             text, 
                             src_lang=nllb_source, 
                             tgt_lang=nllb_target, 
-                            max_length=128
+                            max_length=64,  # Réduit de 128 à 64
+                            num_beams=1,  # Greedy search = 4x plus rapide
+                            early_stopping=True
                         )
                         
                         # NLLB retourne translation_text

@@ -11020,6 +11020,7 @@ export namespace Prisma {
     cacheKey: string | null
     confidenceScore: number | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type MessageTranslationMaxAggregateOutputType = {
@@ -11032,6 +11033,7 @@ export namespace Prisma {
     cacheKey: string | null
     confidenceScore: number | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type MessageTranslationCountAggregateOutputType = {
@@ -11044,6 +11046,7 @@ export namespace Prisma {
     cacheKey: number
     confidenceScore: number
     createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -11066,6 +11069,7 @@ export namespace Prisma {
     cacheKey?: true
     confidenceScore?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type MessageTranslationMaxAggregateInputType = {
@@ -11078,6 +11082,7 @@ export namespace Prisma {
     cacheKey?: true
     confidenceScore?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type MessageTranslationCountAggregateInputType = {
@@ -11090,6 +11095,7 @@ export namespace Prisma {
     cacheKey?: true
     confidenceScore?: true
     createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -11189,6 +11195,7 @@ export namespace Prisma {
     cacheKey: string
     confidenceScore: number | null
     createdAt: Date
+    updatedAt: Date
     _count: MessageTranslationCountAggregateOutputType | null
     _avg: MessageTranslationAvgAggregateOutputType | null
     _sum: MessageTranslationSumAggregateOutputType | null
@@ -11220,6 +11227,7 @@ export namespace Prisma {
     cacheKey?: boolean
     confidenceScore?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     message?: boolean | MessageDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["messageTranslation"]>
 
@@ -11235,9 +11243,10 @@ export namespace Prisma {
     cacheKey?: boolean
     confidenceScore?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type MessageTranslationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "messageId" | "sourceLanguage" | "targetLanguage" | "translatedContent" | "translationModel" | "cacheKey" | "confidenceScore" | "createdAt", ExtArgs["result"]["messageTranslation"]>
+  export type MessageTranslationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "messageId" | "sourceLanguage" | "targetLanguage" | "translatedContent" | "translationModel" | "cacheKey" | "confidenceScore" | "createdAt" | "updatedAt", ExtArgs["result"]["messageTranslation"]>
   export type MessageTranslationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     message?: boolean | MessageDefaultArgs<ExtArgs>
   }
@@ -11257,6 +11266,7 @@ export namespace Prisma {
       cacheKey: string
       confidenceScore: number | null
       createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["messageTranslation"]>
     composites: {}
   }
@@ -11659,6 +11669,7 @@ export namespace Prisma {
     readonly cacheKey: FieldRef<"MessageTranslation", 'String'>
     readonly confidenceScore: FieldRef<"MessageTranslation", 'Float'>
     readonly createdAt: FieldRef<"MessageTranslation", 'DateTime'>
+    readonly updatedAt: FieldRef<"MessageTranslation", 'DateTime'>
   }
     
 
@@ -27192,7 +27203,8 @@ export namespace Prisma {
     translationModel: 'translationModel',
     cacheKey: 'cacheKey',
     confidenceScore: 'confidenceScore',
-    createdAt: 'createdAt'
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type MessageTranslationScalarFieldEnum = (typeof MessageTranslationScalarFieldEnum)[keyof typeof MessageTranslationScalarFieldEnum]
@@ -28384,6 +28396,7 @@ export namespace Prisma {
     cacheKey?: StringFilter<"MessageTranslation"> | string
     confidenceScore?: FloatNullableFilter<"MessageTranslation"> | number | null
     createdAt?: DateTimeFilter<"MessageTranslation"> | Date | string
+    updatedAt?: DateTimeFilter<"MessageTranslation"> | Date | string
     message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
   }
 
@@ -28397,12 +28410,14 @@ export namespace Prisma {
     cacheKey?: SortOrder
     confidenceScore?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     message?: MessageOrderByWithRelationInput
   }
 
   export type MessageTranslationWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     cacheKey?: string
+    messageId_targetLanguage?: MessageTranslationMessageId_targetLanguageCompoundUniqueInput
     AND?: MessageTranslationWhereInput | MessageTranslationWhereInput[]
     OR?: MessageTranslationWhereInput[]
     NOT?: MessageTranslationWhereInput | MessageTranslationWhereInput[]
@@ -28413,8 +28428,9 @@ export namespace Prisma {
     translationModel?: StringFilter<"MessageTranslation"> | string
     confidenceScore?: FloatNullableFilter<"MessageTranslation"> | number | null
     createdAt?: DateTimeFilter<"MessageTranslation"> | Date | string
+    updatedAt?: DateTimeFilter<"MessageTranslation"> | Date | string
     message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
-  }, "id" | "cacheKey">
+  }, "id" | "cacheKey" | "messageId_targetLanguage">
 
   export type MessageTranslationOrderByWithAggregationInput = {
     id?: SortOrder
@@ -28426,6 +28442,7 @@ export namespace Prisma {
     cacheKey?: SortOrder
     confidenceScore?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: MessageTranslationCountOrderByAggregateInput
     _avg?: MessageTranslationAvgOrderByAggregateInput
     _max?: MessageTranslationMaxOrderByAggregateInput
@@ -28446,6 +28463,7 @@ export namespace Prisma {
     cacheKey?: StringWithAggregatesFilter<"MessageTranslation"> | string
     confidenceScore?: FloatNullableWithAggregatesFilter<"MessageTranslation"> | number | null
     createdAt?: DateTimeWithAggregatesFilter<"MessageTranslation"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"MessageTranslation"> | Date | string
   }
 
   export type MessageAttachmentWhereInput = {
@@ -30658,6 +30676,7 @@ export namespace Prisma {
     cacheKey: string
     confidenceScore?: number | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     message: MessageCreateNestedOneWithoutTranslationsInput
   }
 
@@ -30671,6 +30690,7 @@ export namespace Prisma {
     cacheKey: string
     confidenceScore?: number | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type MessageTranslationUpdateInput = {
@@ -30681,6 +30701,7 @@ export namespace Prisma {
     cacheKey?: StringFieldUpdateOperationsInput | string
     confidenceScore?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     message?: MessageUpdateOneRequiredWithoutTranslationsNestedInput
   }
 
@@ -30693,6 +30714,7 @@ export namespace Prisma {
     cacheKey?: StringFieldUpdateOperationsInput | string
     confidenceScore?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type MessageTranslationCreateManyInput = {
@@ -30705,6 +30727,7 @@ export namespace Prisma {
     cacheKey: string
     confidenceScore?: number | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type MessageTranslationUpdateManyMutationInput = {
@@ -30715,6 +30738,7 @@ export namespace Prisma {
     cacheKey?: StringFieldUpdateOperationsInput | string
     confidenceScore?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type MessageTranslationUncheckedUpdateManyInput = {
@@ -30726,6 +30750,7 @@ export namespace Prisma {
     cacheKey?: StringFieldUpdateOperationsInput | string
     confidenceScore?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type MessageAttachmentCreateInput = {
@@ -32805,6 +32830,11 @@ export namespace Prisma {
     isNot?: MessageWhereInput
   }
 
+  export type MessageTranslationMessageId_targetLanguageCompoundUniqueInput = {
+    messageId: string
+    targetLanguage: string
+  }
+
   export type MessageTranslationCountOrderByAggregateInput = {
     id?: SortOrder
     messageId?: SortOrder
@@ -32815,6 +32845,7 @@ export namespace Prisma {
     cacheKey?: SortOrder
     confidenceScore?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type MessageTranslationAvgOrderByAggregateInput = {
@@ -32831,6 +32862,7 @@ export namespace Prisma {
     cacheKey?: SortOrder
     confidenceScore?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type MessageTranslationMinOrderByAggregateInput = {
@@ -32843,6 +32875,7 @@ export namespace Prisma {
     cacheKey?: SortOrder
     confidenceScore?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type MessageTranslationSumOrderByAggregateInput = {
@@ -38597,6 +38630,7 @@ export namespace Prisma {
     cacheKey: string
     confidenceScore?: number | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type MessageTranslationUncheckedCreateWithoutMessageInput = {
@@ -38608,6 +38642,7 @@ export namespace Prisma {
     cacheKey: string
     confidenceScore?: number | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type MessageTranslationCreateOrConnectWithoutMessageInput = {
@@ -39020,6 +39055,7 @@ export namespace Prisma {
     cacheKey?: StringFilter<"MessageTranslation"> | string
     confidenceScore?: FloatNullableFilter<"MessageTranslation"> | number | null
     createdAt?: DateTimeFilter<"MessageTranslation"> | Date | string
+    updatedAt?: DateTimeFilter<"MessageTranslation"> | Date | string
   }
 
   export type MessageAttachmentUpsertWithWhereUniqueWithoutMessageInput = {
@@ -44868,6 +44904,7 @@ export namespace Prisma {
     cacheKey: string
     confidenceScore?: number | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type MessageAttachmentCreateManyMessageInput = {
@@ -44954,6 +44991,7 @@ export namespace Prisma {
     cacheKey?: StringFieldUpdateOperationsInput | string
     confidenceScore?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type MessageTranslationUncheckedUpdateWithoutMessageInput = {
@@ -44964,6 +45002,7 @@ export namespace Prisma {
     cacheKey?: StringFieldUpdateOperationsInput | string
     confidenceScore?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type MessageTranslationUncheckedUpdateManyWithoutMessageInput = {
@@ -44974,6 +45013,7 @@ export namespace Prisma {
     cacheKey?: StringFieldUpdateOperationsInput | string
     confidenceScore?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type MessageAttachmentUpdateWithoutMessageInput = {

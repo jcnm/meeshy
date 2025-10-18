@@ -52,9 +52,9 @@ class Settings:
         self.premium_model = os.getenv("PREMIUM_MODEL", "facebook/nllb-200-distilled-1.3B")
         
         # Configuration des performances
-        self.translation_timeout = int(os.getenv("TRANSLATION_TIMEOUT", "150"))  # Réduit de 30 à 15 secondes
+        self.translation_timeout = int(os.getenv("TRANSLATION_TIMEOUT", "30"))  # 30 secondes pour CPU
         self.max_text_length = int(os.getenv("MAX_TEXT_LENGTH", "1000"))
-        self.concurrent_translations = int(os.getenv("CONCURRENT_TRANSLATIONS", "10"))
+        self.concurrent_translations = int(os.getenv("CONCURRENT_TRANSLATIONS", "4"))  # Réduit pour CPU
         
         # Configuration des timeouts pour le chargement des modèles
         self.model_load_timeout = int(os.getenv("MODEL_LOAD_TIMEOUT", "60"))  # 60 secondes pour charger un modèle

@@ -1654,6 +1654,8 @@ export class MeeshySocketIOManager {
    * PHASE 3.1: Broadcast d'un nouveau message via MessagingService
    * Remplace l'ancienne logique de broadcast dans _handleNewMessage
    * Utilise le comportement simple et fiable de l'ancienne méthode
+   * 
+   * OPTIMISATION: Le calcul des stats est fait de manière asynchrone (non-bloquant)
    */
   private async _broadcastNewMessage(message: Message, conversationId: string, senderSocket?: any): Promise<void> {
     try {
@@ -1662,39 +1664,61 @@ export class MeeshySocketIOManager {
       
       console.log(`[PHASE 3.1] 📤 Broadcasting message ${message.id} vers conversation ${normalizedId} (original: ${conversationId})`);
       
-      // CORRECTION: Utiliser l'ObjectId original pour les requêtes Prisma
-      const updatedStats = await conversationStatsService.updateOnNewMessage(
-        this.prisma,
-        conversationId,  // Utiliser l'ID original (ObjectId) pour Prisma
-        message.originalLanguage || 'fr',
-        () => this.getConnectedUsers()
-      );
-
-      // CORRECTION CRITIQUE: Récupérer les traductions existantes du message
+      // OPTIMISATION: Récupérer les traductions et les stats en parallèle (non-bloquant)
+      // Les stats seront envoyées séparément si elles prennent du temps
       let messageTranslations: any[] = [];
-      try {
-        if (message.id) {
-          const messageWithTranslations = await this.prisma.message.findUnique({
-            where: { id: message.id },
-            include: {
-              translations: {
-                select: {
-                  id: true,
-                  targetLanguage: true,
-                  translatedContent: true,
-                  translationModel: true,
-                  cacheKey: true,
-                  confidenceScore: true
+      let updatedStats: any = null;
+      
+      // Lancer les 2 requêtes en parallèle
+      const [translationsResult, statsResult] = await Promise.allSettled([
+        // Récupérer les traductions existantes du message
+        (async () => {
+          if (!message.id) return [];
+          try {
+            const messageWithTranslations = await this.prisma.message.findUnique({
+              where: { id: message.id },
+              include: {
+                translations: {
+                  select: {
+                    id: true,
+                    targetLanguage: true,
+                    translatedContent: true,
+                    translationModel: true,
+                    cacheKey: true,
+                    confidenceScore: true
+                  }
                 }
               }
-            }
-          });
-          
-          messageTranslations = messageWithTranslations?.translations || [];
-          console.log(`🔍 [DEBUG] Message ${message.id} a ${messageTranslations.length} traductions existantes`);
-        }
-      } catch (error) {
-        console.warn(`⚠️ [DEBUG] Erreur récupération traductions pour ${message.id}:`, error);
+            });
+            return messageWithTranslations?.translations || [];
+          } catch (error) {
+            console.warn(`⚠️ [DEBUG] Erreur récupération traductions pour ${message.id}:`, error);
+            return [];
+          }
+        })(),
+        // OPTIMISATION: Calculer les stats de manière asynchrone
+        // Si c'est long, le broadcast du message ne sera pas bloqué
+        conversationStatsService.updateOnNewMessage(
+          this.prisma,
+          conversationId,  // Utiliser l'ID original (ObjectId) pour Prisma
+          message.originalLanguage || 'fr',
+          () => this.getConnectedUsers()
+        ).catch(error => {
+          console.warn(`⚠️ [PERF] Erreur calcul stats (non-bloquant): ${error}`);
+          return null; // Continuer même si les stats échouent
+        })
+      ]);
+
+      // Extraire les résultats
+      if (translationsResult.status === 'fulfilled') {
+        messageTranslations = translationsResult.value;
+        console.log(`🔍 [DEBUG] Message ${message.id} a ${messageTranslations.length} traductions existantes`);
+      }
+      
+      if (statsResult.status === 'fulfilled') {
+        updatedStats = statsResult.value;
+      } else {
+        console.warn(`⚠️ [PERF] Stats non disponibles, broadcast sans stats`);
       }
 
       // Construire le payload de message pour broadcast - compatible avec les types existants

@@ -167,11 +167,16 @@ RUN pip install --upgrade pip --no-cache-dir \
     # OPTIMISATION ML: Installation de PyTorch CPU optimisé
     && pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu \
     && pip install --default-timeout=300 --no-cache-dir -r requirements.txt \
+    # FIX: Downgrade httpx pour compatibilité avec Prisma 0.15.0
+    && pip install --no-cache-dir 'httpx==0.24.*' 'httpcore<0.18' \
     && pip install pymongo \
     && rm -rf ~/.cache/pip
 
 # Copie du code source et du schéma Prisma
 COPY --chown=translator:translator . .
+
+# FIX: Patch Prisma pour corriger l'incompatibilité httpx dict → Limits/Timeout
+RUN python3 /workspace/apply_prisma_patch.py
 
 # OPTIMISATION: Configuration des permissions et optimisation finale
 RUN chown -R translator:translator /workspace \

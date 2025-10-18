@@ -71,30 +71,30 @@ const SUPPORTED_LANGUAGES = [
 
 // Options prédéfinies pour les durées - seront traduites dans le composant
 const DURATION_OPTIONS = [
-  { value: 1, labelKey: 'durationOptions.1.label', descriptionKey: 'durationOptions.1.description' },
-  { value: 3, labelKey: 'durationOptions.3.label', descriptionKey: 'durationOptions.3.description' },
-  { value: 7, labelKey: 'durationOptions.7.label', descriptionKey: 'durationOptions.7.description' },
-  { value: 14, labelKey: 'durationOptions.14.label', descriptionKey: 'durationOptions.14.description' },
-  { value: 30, labelKey: 'durationOptions.30.label', descriptionKey: 'durationOptions.30.description' },
-  { value: 60, labelKey: 'durationOptions.60.label', descriptionKey: 'durationOptions.60.description' },
-  { value: 90, labelKey: 'durationOptions.90.label', descriptionKey: 'durationOptions.90.description' },
-  { value: 180, labelKey: 'durationOptions.180.label', descriptionKey: 'durationOptions.180.description' },
-  { value: 365, labelKey: 'durationOptions.365.label', descriptionKey: 'durationOptions.365.description' },
-  { value: 730, labelKey: 'durationOptions.730.label', descriptionKey: 'durationOptions.730.description' }
+  { value: 1, labelKey: 'createLinkModal.durationOptions.1.label', descriptionKey: 'createLinkModal.durationOptions.1.description' },
+  { value: 3, labelKey: 'createLinkModal.durationOptions.3.label', descriptionKey: 'createLinkModal.durationOptions.3.description' },
+  { value: 7, labelKey: 'createLinkModal.durationOptions.7.label', descriptionKey: 'createLinkModal.durationOptions.7.description' },
+  { value: 14, labelKey: 'createLinkModal.durationOptions.14.label', descriptionKey: 'createLinkModal.durationOptions.14.description' },
+  { value: 30, labelKey: 'createLinkModal.durationOptions.30.label', descriptionKey: 'createLinkModal.durationOptions.30.description' },
+  { value: 60, labelKey: 'createLinkModal.durationOptions.60.label', descriptionKey: 'createLinkModal.durationOptions.60.description' },
+  { value: 90, labelKey: 'createLinkModal.durationOptions.90.label', descriptionKey: 'createLinkModal.durationOptions.90.description' },
+  { value: 180, labelKey: 'createLinkModal.durationOptions.180.label', descriptionKey: 'createLinkModal.durationOptions.180.description' },
+  { value: 365, labelKey: 'createLinkModal.durationOptions.365.label', descriptionKey: 'createLinkModal.durationOptions.365.description' },
+  { value: 730, labelKey: 'createLinkModal.durationOptions.730.label', descriptionKey: 'createLinkModal.durationOptions.730.description' }
 ];
 
 // Options prédéfinies pour les limitations - seront traduites dans le composant
 const LIMIT_OPTIONS = [
-  { value: undefined, labelKey: 'limitOptions.unlimited.label', descriptionKey: 'limitOptions.unlimited.description' },
-  { value: 5, labelKey: 'limitOptions.5.label', descriptionKey: 'limitOptions.5.description' },
-  { value: 10, labelKey: 'limitOptions.10.label', descriptionKey: 'limitOptions.10.description' },
-  { value: 25, labelKey: 'limitOptions.25.label', descriptionKey: 'limitOptions.25.description' },
-  { value: 50, labelKey: 'limitOptions.50.label', descriptionKey: 'limitOptions.50.description' },
-  { value: 100, labelKey: 'limitOptions.100.label', descriptionKey: 'limitOptions.100.description' },
-  { value: 250, labelKey: 'limitOptions.250.label', descriptionKey: 'limitOptions.250.description' },
-  { value: 500, labelKey: 'limitOptions.500.label', descriptionKey: 'limitOptions.500.description' },
-  { value: 1000, labelKey: 'limitOptions.1000.label', descriptionKey: 'limitOptions.1000.description' },
-  { value: 5000, labelKey: 'limitOptions.5000.label', descriptionKey: 'limitOptions.5000.description' }
+  { value: undefined, labelKey: 'createLinkModal.limitOptions.unlimited.label', descriptionKey: 'createLinkModal.limitOptions.unlimited.description' },
+  { value: 5, labelKey: 'createLinkModal.limitOptions.5.label', descriptionKey: 'createLinkModal.limitOptions.5.description' },
+  { value: 10, labelKey: 'createLinkModal.limitOptions.10.label', descriptionKey: 'createLinkModal.limitOptions.10.description' },
+  { value: 25, labelKey: 'createLinkModal.limitOptions.25.label', descriptionKey: 'createLinkModal.limitOptions.25.description' },
+  { value: 50, labelKey: 'createLinkModal.limitOptions.50.label', descriptionKey: 'createLinkModal.limitOptions.50.description' },
+  { value: 100, labelKey: 'createLinkModal.limitOptions.100.label', descriptionKey: 'createLinkModal.limitOptions.100.description' },
+  { value: 250, labelKey: 'createLinkModal.limitOptions.250.label', descriptionKey: 'createLinkModal.limitOptions.250.description' },
+  { value: 500, labelKey: 'createLinkModal.limitOptions.500.label', descriptionKey: 'createLinkModal.limitOptions.500.description' },
+  { value: 1000, labelKey: 'createLinkModal.limitOptions.1000.label', descriptionKey: 'createLinkModal.limitOptions.1000.description' },
+  { value: 5000, labelKey: 'createLinkModal.limitOptions.5000.label', descriptionKey: 'createLinkModal.limitOptions.5000.description' }
 ];
 
 interface CreateLinkModalV2Props {
@@ -731,15 +731,15 @@ export function CreateLinkModalV2({
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
                     <Label htmlFor="conversationTitle" className="text-sm font-medium">
-                      {t('conversationForm.title')}
+                      {t('createLinkModal.conversationForm.title')}
                     </Label>
-                    <InfoIcon content={t('conversationForm.titleInfo')} />
+                    <InfoIcon content={t('createLinkModal.conversationForm.titleInfo')} />
                   </div>
                   <Input
                     id="conversationTitle"
                     value={newConversationData.title}
                     onChange={(e) => setNewConversationData(prev => ({ ...prev, title: e.target.value }))}
-                    placeholder={t('conversationForm.titlePlaceholder')}
+                    placeholder={t('createLinkModal.conversationForm.titlePlaceholder')}
                     className="text-lg"
                   />
                 </div>
@@ -748,15 +748,15 @@ export function CreateLinkModalV2({
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
                     <Label htmlFor="conversationDescription" className="text-sm font-medium">
-                      {t('conversationForm.description')}
+                      {t('createLinkModal.conversationForm.description')}
                     </Label>
-                    <InfoIcon content={t('conversationForm.descriptionInfo')} />
+                    <InfoIcon content={t('createLinkModal.conversationForm.descriptionInfo')} />
                   </div>
                   <Textarea
                     id="conversationDescription"
                     value={newConversationData.description}
                     onChange={(e) => setNewConversationData(prev => ({ ...prev, description: e.target.value }))}
-                    placeholder={t('conversationForm.descriptionPlaceholder')}
+                    placeholder={t('createLinkModal.conversationForm.descriptionPlaceholder')}
                     className="min-h-[80px]"
                   />
                 </div>
@@ -764,9 +764,9 @@ export function CreateLinkModalV2({
                 {/* Ajout de membres */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">{t('conversationForm.baseMembers')}</Label>
+                    <Label className="text-sm font-medium">{t('createLinkModal.conversationForm.baseMembers')}</Label>
                     <Badge variant="secondary">
-                      {t('conversationForm.memberCount', { count: newConversationData.memberIds.length })}
+                      {t('createLinkModal.conversationForm.memberCount', { count: newConversationData.memberIds.length })}
                     </Badge>
                   </div>
 
@@ -780,7 +780,7 @@ export function CreateLinkModalV2({
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     )}
                     <Input
-                      placeholder={t('conversationForm.searchUsers')}
+                      placeholder={t('createLinkModal.conversationForm.searchUsers')}
                       value={userSearchQuery}
                       onChange={(e) => setUserSearchQuery(e.target.value)}
                       className="pl-10"
@@ -796,7 +796,7 @@ export function CreateLinkModalV2({
                     ) : filteredUsers.length === 0 ? (
                       <div className="text-center py-4 text-muted-foreground">
                         <UserPlus className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <p className="text-sm">{t('conversationForm.noUsersFound')}</p>
+                        <p className="text-sm">{t('createLinkModal.conversationForm.noUsersFound')}</p>
                       </div>
                     ) : (
                       filteredUsers.map((user) => {
@@ -888,15 +888,15 @@ export function CreateLinkModalV2({
               {t('createLinkModal.linkDetails.title')}
             </CardTitle>
             <CardDescription>
-              {t('linkConfiguration.validityDurationInfo')}
+              {t('createLinkModal.linkConfiguration.validityDurationInfo')}
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
-                  <Label className="text-sm font-medium">{t('linkConfiguration.validityDuration')}</Label>
-                  <InfoIcon content={t('linkConfiguration.validityDurationInfo')} />
+                  <Label className="text-sm font-medium">{t('createLinkModal.linkConfiguration.validityDuration')}</Label>
+                  <InfoIcon content={t('createLinkModal.linkConfiguration.validityDurationInfo')} />
                 </div>
                 <Select value={expirationDays.toString()} onValueChange={(value) => setExpirationDays(parseInt(value))}>
                   <SelectTrigger className="w-full h-12">
@@ -917,8 +917,8 @@ export function CreateLinkModalV2({
 
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
-                  <Label className="text-sm font-medium">{t('linkConfiguration.usageLimit')}</Label>
-                  <InfoIcon content={t('linkConfiguration.usageLimitInfo')} />
+                  <Label className="text-sm font-medium">{t('createLinkModal.linkConfiguration.usageLimit')}</Label>
+                  <InfoIcon content={t('createLinkModal.linkConfiguration.usageLimitInfo')} />
                 </div>
                 <Select 
                   value={maxUses?.toString() || 'unlimited'} 
@@ -958,7 +958,7 @@ export function CreateLinkModalV2({
           <div className="flex items-center justify-between">
             <div className="flex items-center">
             <MessageSquare className="h-4 w-4 mr-2" />
-              <CardTitle className="text-lg">{t('permissions.title')}</CardTitle>
+              <CardTitle className="text-lg">{t('createLinkModal.permissions.title')}</CardTitle>
             </div>
             {isPermissionsOpen ? (
               <ChevronDown className="h-4 w-4" />
@@ -967,7 +967,7 @@ export function CreateLinkModalV2({
             )}
           </div>
           <CardDescription>
-            {t('permissions.description')}
+            {t('createLinkModal.permissions.description')}
           </CardDescription>
         </CardHeader>
         {isPermissionsOpen && (
@@ -976,32 +976,32 @@ export function CreateLinkModalV2({
               <SelectableSquare
                 checked={allowAnonymousMessages}
                 onChange={setAllowAnonymousMessages}
-                label={t('permissions.sendMessages.label')}
-                description={t('permissions.sendMessages.description')}
+                label={t('createLinkModal.permissions.sendMessages.label')}
+                description={t('createLinkModal.permissions.sendMessages.description')}
                 icon={<MessageSquare className="w-4 h-4" />}
               />
               
               <SelectableSquare
                 checked={allowAnonymousImages}
                 onChange={setAllowAnonymousImages}
-                label={t('permissions.shareImages.label')}
-                description={t('permissions.shareImages.description')}
+                label={t('createLinkModal.permissions.shareImages.label')}
+                description={t('createLinkModal.permissions.shareImages.description')}
                 icon={<Image className="w-4 h-4" />}
               />
               
               <SelectableSquare
                 checked={allowAnonymousFiles}
                 onChange={setAllowAnonymousFiles}
-                label={t('permissions.shareFiles.label')}
-                description={t('permissions.shareFiles.description')}
+                label={t('createLinkModal.permissions.shareFiles.label')}
+                description={t('createLinkModal.permissions.shareFiles.description')}
                 icon={<FileText className="w-4 h-4" />}
               />
               
               <SelectableSquare
                 checked={allowViewHistory}
                 onChange={setAllowViewHistory}
-                label={t('permissions.viewHistory.label')}
-                description={t('permissions.viewHistory.description')}
+                label={t('createLinkModal.permissions.viewHistory.label')}
+                description={t('createLinkModal.permissions.viewHistory.description')}
                 icon={<Eye className="w-4 h-4" />}
               />
           </div>
@@ -1012,16 +1012,16 @@ export function CreateLinkModalV2({
               <SelectableSquare
                 checked={requireNickname}
                 onChange={setRequireNickname}
-                label={t('permissions.requireNickname.label')}
-                description={t('permissions.requireNickname.description')}
+                label={t('createLinkModal.permissions.requireNickname.label')}
+                description={t('createLinkModal.permissions.requireNickname.description')}
                 icon={<Users className="w-4 h-4" />}
               />
               
               <SelectableSquare
                 checked={requireEmail}
                 onChange={setRequireEmail}
-                label={t('permissions.requireEmail.label')}
-                description={t('permissions.requireEmail.description')}
+                label={t('createLinkModal.permissions.requireEmail.label')}
+                description={t('createLinkModal.permissions.requireEmail.description')}
                 icon={<Settings className="w-4 h-4" />}
               />
           </div>
@@ -1038,7 +1038,7 @@ export function CreateLinkModalV2({
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Globe className="h-4 w-4 mr-2" />
-              <CardTitle className="text-lg">{t('allowedLanguages.title')}</CardTitle>
+              <CardTitle className="text-lg">{t('createLinkModal.allowedLanguages.title')}</CardTitle>
             </div>
             {isLanguagesOpen ? (
               <ChevronDown className="h-4 w-4" />
@@ -1047,7 +1047,7 @@ export function CreateLinkModalV2({
             )}
           </div>
           <CardDescription>
-            {t('allowedLanguages.description')}
+            {t('createLinkModal.allowedLanguages.description')}
           </CardDescription>
         </CardHeader>
         {isLanguagesOpen && (
@@ -1065,13 +1065,13 @@ export function CreateLinkModalV2({
                       }
                     }}
                   label={`${lang.flag} ${lang.name}`}
-                  description={t('allowedLanguages.allowLanguage', { language: lang.name })}
+                  description={t('createLinkModal.allowedLanguages.allowLanguage', { language: lang.name })}
                   icon={<Globe className="w-4 h-4" />}
                   />
               ))}
             </div>
             <p className="text-xs text-muted-foreground">
-              {t('allowedLanguages.allowAllLanguages')}
+              {t('createLinkModal.allowedLanguages.allowAllLanguages')}
             </p>
           </CardContent>
         )}
@@ -1087,19 +1087,19 @@ export function CreateLinkModalV2({
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center">
             <Link2 className="h-4 w-4 mr-2" />
-            {t('linkDetails.title')}
+            {t('createLinkModal.linkDetails.title')}
           </CardTitle>
           <CardDescription>
-            {t('linkDetails.description')}
+            {t('createLinkModal.linkDetails.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
               <Label htmlFor="linkName" className="text-sm font-medium">
-                {t('linkDetails.linkName')}
+                {t('createLinkModal.linkDetails.linkName')}
               </Label>
-              <InfoIcon content={t('linkDetails.linkNameInfo')} />
+              <InfoIcon content={t('createLinkModal.linkDetails.linkNameInfo')} />
             </div>
             <Input
               id="linkName"
@@ -1110,7 +1110,7 @@ export function CreateLinkModalV2({
                 return conversationTitle ? `${t('createLinkModal.linkDetails.linkNameDefaultPrefix')} ${conversationTitle}` : '';
               })()}
               onChange={(e) => setLinkTitle(e.target.value)}
-              placeholder={t('linkDetails.linkNamePlaceholder')}
+              placeholder={t('createLinkModal.linkDetails.linkNamePlaceholder')}
               className="text-lg"
             />
           </div>
@@ -1118,9 +1118,9 @@ export function CreateLinkModalV2({
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
               <Label htmlFor="linkIdentifier" className="text-sm font-medium">
-                {t('linkDetails.linkIdentifier')}
+                {t('createLinkModal.linkDetails.linkIdentifier')}
               </Label>
-              <InfoIcon content={t('linkDetails.linkIdentifierInfo')} />
+              <InfoIcon content={t('createLinkModal.linkDetails.linkIdentifierInfo')} />
             </div>
             <div className="flex items-center space-x-2">
               <Input
@@ -1145,7 +1145,7 @@ export function CreateLinkModalV2({
                     : conversations.find(c => c.id === selectedConversationId)?.title || 'link');
                   setLinkIdentifier(generateIdentifier(baseText));
                 }}
-                title={t('linkDetails.regenerateIdentifier')}
+                title={t('createLinkModal.linkDetails.regenerateIdentifier')}
               >
                 <RefreshCw className="h-4 w-4" />
               </Button>
@@ -1155,15 +1155,15 @@ export function CreateLinkModalV2({
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
               <Label htmlFor="welcomeMessage" className="text-sm font-medium">
-                {t('linkDetails.welcomeMessage')}
+                {t('createLinkModal.linkDetails.welcomeMessage')}
             </Label>
-              <InfoIcon content={t('linkDetails.welcomeMessageInfo')} />
+              <InfoIcon content={t('createLinkModal.linkDetails.welcomeMessageInfo')} />
             </div>
             <Textarea
               id="welcomeMessage"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder={t('linkDetails.welcomeMessagePlaceholder')}
+              placeholder={t('createLinkModal.linkDetails.welcomeMessagePlaceholder')}
               className="min-h-[80px]"
             />
           </div>
