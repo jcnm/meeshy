@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, KeyboardEvent, forwardRef, useImperativeHandle, useEffect, useCallback, memo } from 'react';
-import { Send, MapPin, X, MessageCircle, Languages, Paperclip } from 'lucide-react';
+import { Send, MapPin, X, MessageCircle, Languages, Paperclip, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { LanguageFlagSelector } from '@/components/translation';
@@ -422,8 +422,21 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       
       {/* Indicateurs dans le textarea */}
       <div className="absolute bottom-2 sm:bottom-3 left-3 flex items-center space-x-2 sm:space-x-3 text-xs sm:text-sm text-gray-600 pointer-events-auto">
+        {/* Indicateur d'upload */}
+        {isUploading && (
+          <div className="flex items-center space-x-1 text-blue-600 dark:text-blue-400">
+            <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+            <span className="hidden sm:inline">
+              {selectedFiles.length > 1 
+                ? t('uploadingMultiple', { count: selectedFiles.length })
+                : t('uploading')
+              }
+            </span>
+          </div>
+        )}
+        
         {/* Localisation */}
-        {location && (
+        {location && !isUploading && (
           <div className="flex items-center space-x-1">
             <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
             <span className="hidden sm:inline">{location}</span>
@@ -446,7 +459,11 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
           variant="ghost"
           className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full hover:bg-gray-100 relative"
         >
-          <Paperclip className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600" />
+          {isUploading ? (
+            <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600 animate-spin" />
+          ) : (
+            <Paperclip className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600" />
+          )}
           {selectedFiles.length > 0 && (
             <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
               {selectedFiles.length}

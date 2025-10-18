@@ -6,7 +6,7 @@
 'use client';
 
 import React, { useMemo, useEffect, useState } from 'react';
-import { X, File, Image, FileText, Video, Music, FileArchive } from 'lucide-react';
+import { X, File, Image, FileText, Video, Music, FileArchive, Loader2, CheckCircle } from 'lucide-react';
 import { formatFileSize, getAttachmentType } from '../../shared/types/attachment';
 import { Button } from '../ui/button';
 import {
@@ -154,6 +154,7 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
     const type = getAttachmentType(file.type);
     const progress = uploadProgress[index];
     const isUploading = progress !== undefined && progress < 100;
+    const isUploaded = progress === 100;
     const extension = getFileExtension(file.name);
     const fileKey = `${file.name}-${file.size}-${file.lastModified}`;
     const thumbnailUrl = thumbnails.get(fileKey);
@@ -166,7 +167,9 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
         <Tooltip delayDuration={300}>
           <TooltipTrigger asChild>
             <div className="relative group pt-3 pb-2">
-              <div className="relative flex flex-col items-center justify-center w-20 h-20 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-200 hover:shadow-md dark:hover:shadow-blue-500/20">
+              <div className={`relative flex flex-col items-center justify-center w-20 h-20 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-200 hover:shadow-md dark:hover:shadow-blue-500/20 ${
+                isUploading ? 'border-blue-400 dark:border-blue-500' : ''
+              } ${isUploaded ? 'border-green-400 dark:border-green-500' : ''}`}>
                 {/* Image preview avec miniature optimisée */}
                 {type === 'image' && thumbnailUrl ? (
                   <div className="absolute inset-0 rounded-lg overflow-hidden">
@@ -183,6 +186,25 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
                         {extension.toUpperCase()}
                       </div>
                     </div>
+                    
+                    {/* Indicateur d'upload pour les images */}
+                    {isUploading && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
+                        <div className="text-center">
+                          <Loader2 className="w-4 h-4 text-white animate-spin mx-auto mb-1" />
+                          <div className="text-white text-[8px] font-medium">
+                            {Math.round(progress)}%
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Indicateur d'upload terminé pour les images */}
+                    {isUploaded && (
+                      <div className="absolute top-1 right-1">
+                        <CheckCircle className="w-3 h-3 text-green-500 bg-white rounded-full" />
+                      </div>
+                    )}
                   </div>
                 ) : isLoadingThumbnail ? (
                   /* Placeholder pendant le chargement de la miniature */
@@ -201,18 +223,28 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
                         {extension.toUpperCase()}
                       </div>
                     </div>
+                    
+                    {/* Indicateur d'upload pour les autres fichiers */}
+                    {isUploading && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
+                        <div className="text-center">
+                          <Loader2 className="w-4 h-4 text-white animate-spin mx-auto mb-1" />
+                          <div className="text-white text-[8px] font-medium">
+                            {Math.round(progress)}%
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Indicateur d'upload terminé pour les autres fichiers */}
+                    {isUploaded && (
+                      <div className="absolute top-1 right-1">
+                        <CheckCircle className="w-3 h-3 text-green-500 bg-white rounded-full" />
+                      </div>
+                    )}
                   </>
                 )}
 
-                {/* Progress overlay */}
-                {isUploading && (
-                  <div className="absolute inset-0 bg-white/90 dark:bg-gray-800/90 rounded-lg flex flex-col items-center justify-center">
-                    <div className="w-10 h-10 border-3 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                    <div className="text-xs text-blue-600 dark:text-blue-400 font-medium mt-1">
-                      {progress}%
-                    </div>
-                  </div>
-                )}
 
                 {/* Remove button */}
                 {!disabled && !isUploading && (

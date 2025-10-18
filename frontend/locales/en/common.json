@@ -34,6 +34,8 @@
     "notSelected": "Not selected",
     "showMore": "Show more",
     "showLess": "Show less",
+    "uploading": "Uploading...",
+    "uploadingMultiple": "Uploading {count} files...",
     "days": "days",
     "step": "Step {step}",
     "insufficientRights": "You do not have the necessary rights to perform this operation",
