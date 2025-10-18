@@ -260,7 +260,7 @@ class MeeshyServer {
     await this.server.register(multipart, {
       limits: {
         fileSize: 104857600, // 100MB max file size
-        files: 10, // Max 10 files per request
+        files: 50, // Max 50 files per request
       },
     });
 
