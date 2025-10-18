@@ -548,7 +548,7 @@ function BubbleMessageInner({
                 : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
             )}
           >
-            <CardContent className="p-2.5 sm:p-3 max-w-full overflow-hidden">
+            <CardContent className="p-1.5 sm:p-2 max-w-full overflow-hidden">
 
               {/* Message parent si c'est une réponse */}
               {message.replyTo && (
