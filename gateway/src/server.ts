@@ -260,7 +260,7 @@ class MeeshyServer {
     await this.server.register(multipart, {
       limits: {
         fileSize: 104857600, // 100MB max file size
-        files: 50, // Max 50 files per request
+        files: 100, // Max 100 files per request
       },
     });
 
@@ -335,10 +335,10 @@ class MeeshyServer {
       if (error.code === 'FST_FILES_LIMIT') {
         return reply.code(413).send({
           error: 'Too Many Files',
-          message: `Vous ne pouvez uploader que 100 fichiers maximum à la fois. Veuillez réduire le nombre de fichiers.`,
+          message: `You can only upload a maximum of 100 files at once. Please reduce the number of files.`,
           details: {
             maxFiles: 100,
-            currentLimit: 'Limite de fichiers atteinte'
+            limit: 'Files limit reached'
           },
           statusCode: 413,
           timestamp: new Date().toISOString()
@@ -349,10 +349,10 @@ class MeeshyServer {
       if (error.code === 'FST_REQ_FILE_TOO_LARGE') {
         return reply.code(413).send({
           error: 'File Too Large',
-          message: `La taille du fichier dépasse la limite autorisée de 100 MB. Veuillez réduire la taille du fichier.`,
+          message: `File size exceeds the allowed limit of 100 MB. Please reduce the file size.`,
           details: {
             maxFileSize: '100 MB',
-            currentLimit: 'Taille de fichier dépassée'
+            limit: 'File size exceeded'
           },
           statusCode: 413,
           timestamp: new Date().toISOString()
@@ -363,7 +363,7 @@ class MeeshyServer {
       if (error.code === 'FST_PARTS_LIMIT') {
         return reply.code(413).send({
           error: 'Too Many Parts',
-          message: `Trop de parties dans la requête multipart. Veuillez réduire le nombre d'éléments.`,
+          message: `Too many parts in the multipart request. Please reduce the number of elements.`,
           statusCode: 413,
           timestamp: new Date().toISOString()
         });
