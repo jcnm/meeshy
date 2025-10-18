@@ -2258,7 +2258,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       }));
 
       // Combiner les participants authentifiés et anonymes
-      const allParticipants = [...formattedParticipants, ...anonymousParticipants];
+      const allParticipants = [...formattedParticipants, ...formattedAnonymousParticipants];
 
       reply.send({
         success: true,

@@ -387,7 +387,23 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         }))
       ];
       
-      setParticipants(allParticipants);
+      // Déduplication des participants basée sur userId
+      // Priorité aux participants authentifiés en cas de doublon
+      const participantsMap = new Map<string, ThreadMember>();
+      
+      // D'abord ajouter les participants anonymes
+      allParticipants
+        .filter(p => p.isAnonymous)
+        .forEach(p => participantsMap.set(p.userId, p));
+      
+      // Puis ajouter/écraser avec les participants authentifiés (prioritaires)
+      allParticipants
+        .filter(p => !p.isAnonymous)
+        .forEach(p => participantsMap.set(p.userId, p));
+      
+      const uniqueParticipants = Array.from(participantsMap.values());
+      
+      setParticipants(uniqueParticipants);
     } catch (error) {
       console.error('Erreur lors du chargement des participants:', error);
       setParticipants([]);
@@ -493,8 +509,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     if (messageComposerRef.current) {
       messageComposerRef.current.focus();
     }
-
-    toast.success(tCommon('messages.replyTo'));
   }, []);
 
   // Naviguer vers un message spécifique

@@ -306,8 +306,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     if (textareaRef.current) {
       textareaRef.current.focus();
     }
-    
-    toast.success(tCommon('messages.replyTo'));
   }, []);
 
   const handleNavigateToMessage = useCallback((messageId: string) => {
