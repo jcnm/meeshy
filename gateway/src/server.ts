@@ -331,6 +331,44 @@ class MeeshyServer {
         });
       }
 
+      // Gestion des erreurs de limite de fichiers multipart
+      if (error.code === 'FST_FILES_LIMIT') {
+        return reply.code(413).send({
+          error: 'Too Many Files',
+          message: `Vous ne pouvez uploader que 100 fichiers maximum à la fois. Veuillez réduire le nombre de fichiers.`,
+          details: {
+            maxFiles: 100,
+            currentLimit: 'Limite de fichiers atteinte'
+          },
+          statusCode: 413,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Gestion des erreurs de taille de fichier
+      if (error.code === 'FST_REQ_FILE_TOO_LARGE') {
+        return reply.code(413).send({
+          error: 'File Too Large',
+          message: `La taille du fichier dépasse la limite autorisée de 100 MB. Veuillez réduire la taille du fichier.`,
+          details: {
+            maxFileSize: '100 MB',
+            currentLimit: 'Taille de fichier dépassée'
+          },
+          statusCode: 413,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Gestion des erreurs de limite de parties (parts) multipart
+      if (error.code === 'FST_PARTS_LIMIT') {
+        return reply.code(413).send({
+          error: 'Too Many Parts',
+          message: `Trop de parties dans la requête multipart. Veuillez réduire le nombre d'éléments.`,
+          statusCode: 413,
+          timestamp: new Date().toISOString()
+        });
+      }
+
       // Default error handling
       const statusCode = error.statusCode || 500;
       return reply.code(statusCode).send({
