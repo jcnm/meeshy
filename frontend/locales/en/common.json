@@ -32,6 +32,8 @@
     "no": "No",
     "new": "New",
     "notSelected": "Not selected",
+    "showMore": "Show more",
+    "showLess": "Show less",
     "days": "days",
     "step": "Step {step}",
     "insufficientRights": "You do not have the necessary rights to perform this operation",

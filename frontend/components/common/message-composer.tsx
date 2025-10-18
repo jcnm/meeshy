@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, KeyboardEvent, forwardRef, useImperativeHandle, useEffect } from 'react';
+import { useState, useRef, KeyboardEvent, forwardRef, useImperativeHandle, useEffect, useCallback, memo } from 'react';
 import { Send, MapPin, X, MessageCircle, Languages, Paperclip } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -118,6 +118,46 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     }
   };
 
+  // Handler pour créer un attachment texte avec nom formaté - mémorisé (déclaré en premier car utilisé par le hook)
+  const handleCreateTextAttachment = useCallback(async (text: string) => {
+    if (!text) return;
+
+    setIsUploading(true);
+    try {
+      // Générer le nom de fichier avec la date actuelle
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      
+      const fileName = `presspaper-content-${year}${month}${day}-${hours}${minutes}${seconds}.txt`;
+      
+      // Créer un fichier virtuel pour l'affichage dans le carrousel
+      const textFile = new File([text], fileName, {
+        type: 'text/plain',
+      });
+      
+      // Ajouter immédiatement au carrousel pour feedback visuel
+      setSelectedFiles(prev => [...prev, textFile]);
+      
+      // Upload le texte
+      const response = await AttachmentService.uploadText(text, token);
+      if (response.success && response.attachment) {
+        setUploadedAttachments(prev => [...prev, response.attachment]);
+        console.log('✅ Texte collé créé comme attachment:', fileName);
+      }
+    } catch (error) {
+      console.error('❌ Erreur création text attachment:', error);
+      // Retirer le fichier du carrousel en cas d'erreur
+      setSelectedFiles(prev => prev.slice(0, -1));
+    } finally {
+      setIsUploading(false);
+    }
+  }, [token]);
+
   // Hook pour la détection de texte collé - création automatique
   useTextAttachmentDetection(textareaRef, {
     enabled: true,
@@ -137,35 +177,8 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     }
   }, [uploadedAttachments, onAttachmentsChange]);
 
-  // Handlers pour le drag & drop
-  const handleDragEnter = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(false);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDrop = async (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(false);
-
-    const files = Array.from(e.dataTransfer.files);
-    await handleFilesSelected(files);
-  };
-
-  // Handler pour la sélection de fichiers
-  const handleFilesSelected = async (files: File[]) => {
+  // Handler pour la sélection de fichiers - mémorisé
+  const handleFilesSelected = useCallback(async (files: File[]) => {
     if (files.length === 0) return;
 
     // Valider les fichiers
@@ -206,73 +219,60 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     } finally {
       setIsUploading(false);
     }
-  };
+  }, [token]);
 
-  // Handler pour le clic sur l'icône d'attachement
-  const handleAttachmentClick = () => {
+  // Handlers pour le drag & drop - mémorisés pour éviter les re-créations
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    await handleFilesSelected(files);
+  }, [handleFilesSelected]);
+
+  // Handler pour le clic sur l'icône d'attachement - mémorisé
+  const handleAttachmentClick = useCallback(() => {
     fileInputRef.current?.click();
-  };
+  }, []);
 
-  // Handler pour le changement de l'input file
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handler pour le changement de l'input file - mémorisé
+  const handleFileInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files ? Array.from(e.target.files) : [];
     handleFilesSelected(files);
     // Reset l'input pour permettre de sélectionner le même fichier à nouveau
     e.target.value = '';
-  };
+  }, [handleFilesSelected]);
 
-  // Handler pour retirer un fichier
-  const handleRemoveFile = (index: number) => {
+  // Handler pour retirer un fichier - mémorisé
+  const handleRemoveFile = useCallback((index: number) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
     setUploadedAttachments(prev => prev.filter((_, i) => i !== index));
-  };
+  }, []);
 
-  // Handler pour créer un attachment texte avec nom formaté
-  const handleCreateTextAttachment = async (text: string) => {
-    if (!text) return;
-
-    setIsUploading(true);
-    try {
-      // Générer le nom de fichier avec la date actuelle
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const seconds = String(now.getSeconds()).padStart(2, '0');
-      
-      const fileName = `presspaper-content-${year}${month}${day}-${hours}${minutes}${seconds}.txt`;
-      
-      // Créer un fichier virtuel pour l'affichage dans le carrousel
-      const textFile = new File([text], fileName, {
-        type: 'text/plain',
-      });
-      
-      // Ajouter immédiatement au carrousel pour feedback visuel
-      setSelectedFiles(prev => [...prev, textFile]);
-      
-      // Upload le texte
-      const response = await AttachmentService.uploadText(text, token);
-      if (response.success && response.attachment) {
-        setUploadedAttachments(prev => [...prev, response.attachment]);
-        console.log('✅ Texte collé créé comme attachment:', fileName);
-      }
-    } catch (error) {
-      console.error('❌ Erreur création text attachment:', error);
-      // Retirer le fichier du carrousel en cas d'erreur
-      setSelectedFiles(prev => prev.slice(0, -1));
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  // Clear attachments après envoi
-  const clearAttachments = () => {
+  // Clear attachments après envoi - mémorisé
+  const clearAttachments = useCallback(() => {
     setSelectedFiles([]);
     setUploadedAttachments([]);
     setUploadProgress({});
-  };
+  }, []);
 
   useImperativeHandle(ref, () => ({
     focus: () => textareaRef.current?.focus(),
@@ -291,14 +291,14 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     }
   }, []);
 
-  const handleKeyPress = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyPress = useCallback((e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (onKeyPress) {
       onKeyPress(e);
     }
-  };
+  }, [onKeyPress]);
 
-  // Handle blur for mobile to ensure zoom out
-  const handleBlur = () => {
+  // Handle blur for mobile to ensure zoom out - mémorisé
+  const handleBlur = useCallback(() => {
     if (isMobile && textareaRef.current) {
       // Force blur and zoom out on mobile devices
       textareaRef.current.blur();
@@ -307,10 +307,10 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         window.scrollTo(0, window.scrollY);
       }, 100);
     }
-  };
+  }, [isMobile]);
 
-  // Auto-resize du textarea comme dans BubbleStreamPage
-  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  // Auto-resize du textarea comme dans BubbleStreamPage - mémorisé
+  const handleTextareaChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
     onChange(newValue);
     
@@ -339,7 +339,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         console.warn('Erreur lors du redimensionnement du textarea:', error);
       }
     }
-  };
+  }, [onChange]);
 
   return (
     <div 

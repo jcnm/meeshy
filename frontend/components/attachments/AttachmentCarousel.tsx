@@ -1,10 +1,11 @@
 /**
  * Composant carrousel compact pour afficher les attachments sous forme d'icônes
+ * Optimisé pour mobile avec miniatures légères et traitement asynchrone
  */
 
 'use client';
 
-import React from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { X, File, Image, FileText, Video, Music, FileArchive } from 'lucide-react';
 import { formatFileSize, getAttachmentType } from '../../shared/types/attachment';
 import { Button } from '../ui/button';
@@ -14,6 +15,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '../ui/tooltip';
+import { createThumbnailsBatch, isLowEndDevice } from '@/lib/utils/image-thumbnail';
 
 interface AttachmentCarouselProps {
   files: File[];
@@ -22,12 +24,107 @@ interface AttachmentCarouselProps {
   disabled?: boolean;
 }
 
-export function AttachmentCarousel({ 
+export const AttachmentCarousel = React.memo(function AttachmentCarousel({ 
   files, 
   onRemove, 
   uploadProgress = {},
   disabled = false 
 }: AttachmentCarouselProps) {
+  // Mémoriser les miniatures d'images (beaucoup plus léger que les images complètes)
+  const [thumbnails, setThumbnails] = useState<Map<string, string>>(new Map());
+  const [isGeneratingThumbnails, setIsGeneratingThumbnails] = useState(false);
+  
+  // Détecter si c'est un appareil bas de gamme pour adapter les performances
+  const isLowEnd = useMemo(() => isLowEndDevice(), []);
+
+  // Créer les miniatures de manière asynchrone et optimisée
+  useEffect(() => {
+    let isCancelled = false;
+
+    const generateThumbnails = async () => {
+      setThumbnails((prevThumbnails) => {
+        // Identifier les nouveaux fichiers qui nécessitent des miniatures
+        const newFiles = files.filter((file) => {
+          const fileKey = `${file.name}-${file.size}-${file.lastModified}`;
+          return file.type.startsWith('image/') && !prevThumbnails.has(fileKey);
+        });
+
+        if (newFiles.length === 0) return prevThumbnails;
+
+        // Lancer la génération en arrière-plan
+        (async () => {
+          setIsGeneratingThumbnails(true);
+
+          try {
+            // Créer les miniatures par batch (non bloquant)
+            const newThumbnails = await createThumbnailsBatch(newFiles, {
+              maxWidth: isLowEnd ? 80 : 120,
+              maxHeight: isLowEnd ? 80 : 120,
+              quality: isLowEnd ? 0.6 : 0.7,
+            });
+
+            if (!isCancelled) {
+              setThumbnails((prev) => {
+                const updated = new Map(prev);
+                newThumbnails.forEach((url, key) => {
+                  updated.set(key, url);
+                });
+                return updated;
+              });
+            }
+          } catch (error) {
+            console.error('Erreur génération miniatures:', error);
+          } finally {
+            if (!isCancelled) {
+              setIsGeneratingThumbnails(false);
+            }
+          }
+        })();
+
+        return prevThumbnails;
+      });
+    };
+
+    // Différer légèrement pour ne pas bloquer le rendu initial
+    const timeoutId = setTimeout(() => {
+      generateThumbnails();
+    }, 0);
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(timeoutId);
+    };
+  }, [files, isLowEnd]);
+
+  // Nettoyer les miniatures qui ne sont plus utilisées
+  useEffect(() => {
+    const currentFileKeys = new Set(
+      files.map((file) => `${file.name}-${file.size}-${file.lastModified}`)
+    );
+
+    setThumbnails((prev) => {
+      let hasChanges = false;
+      const updated = new Map(prev);
+
+      prev.forEach((url, key) => {
+        if (!currentFileKeys.has(key)) {
+          URL.revokeObjectURL(url);
+          updated.delete(key);
+          hasChanges = true;
+        }
+      });
+
+      return hasChanges ? updated : prev;
+    });
+  }, [files]);
+
+  // Cleanup final : révoquer toutes les URLs au démontage
+  useEffect(() => {
+    return () => {
+      thumbnails.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, []);
+
   if (files.length === 0) return null;
 
   const getFileIcon = (file: File) => {
@@ -58,6 +155,11 @@ export function AttachmentCarousel({
     const progress = uploadProgress[index];
     const isUploading = progress !== undefined && progress < 100;
     const extension = getFileExtension(file.name);
+    const fileKey = `${file.name}-${file.size}-${file.lastModified}`;
+    const thumbnailUrl = thumbnails.get(fileKey);
+    
+    // Afficher un placeholder si la miniature est en cours de génération
+    const isLoadingThumbnail = type === 'image' && !thumbnailUrl && isGeneratingThumbnails;
     
     return (
       <TooltipProvider key={`${file.name}-${index}`}>
@@ -65,20 +167,29 @@ export function AttachmentCarousel({
           <TooltipTrigger asChild>
             <div className="relative group pt-3 pb-2">
               <div className="relative flex flex-col items-center justify-center w-20 h-20 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-200 hover:shadow-md dark:hover:shadow-blue-500/20">
-                {/* Image preview pour les images */}
-                {type === 'image' ? (
+                {/* Image preview avec miniature optimisée */}
+                {type === 'image' && thumbnailUrl ? (
                   <div className="absolute inset-0 rounded-lg overflow-hidden">
                     <img
-                      src={URL.createObjectURL(file)}
+                      src={thumbnailUrl}
                       alt={file.name}
                       className="w-full h-full object-cover"
-                      onLoad={(e) => URL.revokeObjectURL((e.target as HTMLImageElement).src)}
+                      loading="lazy"
+                      decoding="async"
                     />
                     {/* Overlay with extension */}
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-1 py-0.5">
                       <div className="text-white text-[10px] font-medium truncate">
                         {extension.toUpperCase()}
                       </div>
+                    </div>
+                  </div>
+                ) : isLoadingThumbnail ? (
+                  /* Placeholder pendant le chargement de la miniature */
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="text-[9px] text-gray-500 dark:text-gray-400">
+                      Aperçu...
                     </div>
                   </div>
                 ) : (
@@ -143,5 +254,15 @@ export function AttachmentCarousel({
       </div>
     </div>
   );
-}
+}, (prevProps, nextProps) => {
+  // Optimisation : ne re-rendre que si les fichiers, la progression ou le statut disabled changent
+  return (
+    prevProps.files.length === nextProps.files.length &&
+    prevProps.files.every((file, i) => 
+      file === nextProps.files[i] &&
+      prevProps.uploadProgress?.[i] === nextProps.uploadProgress?.[i]
+    ) &&
+    prevProps.disabled === nextProps.disabled
+  );
+});
 

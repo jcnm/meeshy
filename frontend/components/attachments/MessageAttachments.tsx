@@ -1,11 +1,12 @@
 /**
  * Composant pour afficher les attachments dans un message reçu
+ * Optimisé pour mobile avec affichage adaptatif
  */
 
 'use client';
 
-import React from 'react';
-import { Download, File, Image as ImageIcon, FileText, Video, Music } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Download, File, Image as ImageIcon, FileText, Video, Music, ChevronRight, Grid3X3 } from 'lucide-react';
 import { Attachment, formatFileSize, getAttachmentType } from '../../shared/types/attachment';
 import {
   Tooltip,
@@ -13,6 +14,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '../ui/tooltip';
+import { Button } from '../ui/button';
+import { useI18n } from '@/hooks/useI18n';
 
 interface MessageAttachmentsProps {
   attachments: Attachment[];
@@ -20,7 +23,31 @@ interface MessageAttachmentsProps {
 }
 
 export function MessageAttachments({ attachments, onImageClick }: MessageAttachmentsProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const { t } = useI18n('common');
+
+  // Détecter si on est sur mobile
+  React.useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   if (!attachments || attachments.length === 0) return null;
+
+  // Séparer les images des autres types
+  const imageAttachments = attachments.filter(att => getAttachmentType(att.mimeType) === 'image');
+  const otherAttachments = attachments.filter(att => getAttachmentType(att.mimeType) !== 'image');
+
+  // Seuil pour passer en mode multi-lignes : 10+ attachments
+  const multiRowThreshold = 10;
+  const shouldUseMultiRow = attachments.length >= multiRowThreshold;
+  const shouldShowExpandButton = attachments.length > multiRowThreshold;
+  const displayedAttachments = isExpanded || !shouldShowExpandButton 
+    ? attachments 
+    : attachments.slice(0, multiRowThreshold);
 
   const getFileIcon = (attachment: Attachment) => {
     const type = getAttachmentType(attachment.mimeType);
@@ -45,7 +72,7 @@ export function MessageAttachments({ attachments, onImageClick }: MessageAttachm
     return parts.length > 1 ? `.${parts[parts.length - 1]}` : '';
   };
 
-  const renderAttachment = (attachment: Attachment) => {
+  const renderAttachment = (attachment: Attachment, index: number) => {
     const type = getAttachmentType(attachment.mimeType);
     const extension = getExtension(attachment.originalName);
 
@@ -56,15 +83,18 @@ export function MessageAttachments({ attachments, onImageClick }: MessageAttachm
           <Tooltip delayDuration={300}>
             <TooltipTrigger asChild>
               <div 
-                className="relative group cursor-pointer"
+                className="relative group cursor-pointer flex-shrink-0 snap-start"
                 onClick={() => onImageClick?.(attachment.id)}
               >
-                <div className="relative w-16 h-16 bg-gray-100 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden hover:border-blue-400 dark:hover:border-blue-500 transition-all hover:shadow-md dark:hover:shadow-blue-500/20">
+                <div className={`relative bg-gray-100 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden hover:border-blue-400 dark:hover:border-blue-500 transition-all hover:shadow-md dark:hover:shadow-blue-500/20 flex-shrink-0 ${
+                  isMobile ? 'w-14 h-14' : 'w-16 h-16'
+                }`}>
                   <img
                     src={attachment.thumbnailUrl || attachment.fileUrl}
                     alt={attachment.originalName}
                     className="w-full h-full object-cover"
                     loading="lazy"
+                    decoding="async"
                   />
                   {/* Extension badge */}
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-1 py-0.5">
@@ -127,9 +157,11 @@ export function MessageAttachments({ attachments, onImageClick }: MessageAttachm
               href={attachment.fileUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="relative group"
+              className="relative group flex-shrink-0 snap-start"
             >
-              <div className="relative flex flex-col items-center justify-center w-16 h-16 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-400 dark:hover:border-blue-500 transition-all hover:shadow-md dark:hover:shadow-blue-500/20">
+              <div className={`relative flex flex-col items-center justify-center bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-400 dark:hover:border-blue-500 transition-all hover:shadow-md dark:hover:shadow-blue-500/20 flex-shrink-0 ${
+                isMobile ? 'w-14 h-14' : 'w-16 h-16'
+              }`}>
                 <div className="flex flex-col items-center gap-0.5">
                   {getFileIcon(attachment)}
                   <div className="text-[9px] font-medium text-gray-600 dark:text-gray-300">
@@ -161,10 +193,47 @@ export function MessageAttachments({ attachments, onImageClick }: MessageAttachm
   };
 
   return (
-    <div className="mt-2 p-2 bg-gray-50/50 dark:bg-gray-800/30 rounded-lg border border-gray-200 dark:border-gray-700">
-      <div className="flex items-center gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent pb-1">
-        {attachments.map((attachment) => renderAttachment(attachment))}
+    <div className="mt-2 p-2 bg-gray-50/50 dark:bg-gray-800/30 rounded-lg border border-gray-200 dark:border-gray-700 max-w-full overflow-hidden">
+      {/* Affichage principal des attachments */}
+      <div className={`flex items-center gap-2 pb-1 ${
+        shouldUseMultiRow
+          ? 'flex-wrap overflow-y-auto max-h-40 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent'
+          : 'overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent snap-x snap-mandatory'
+      }`}>
+        {displayedAttachments.map((attachment, index) => renderAttachment(attachment, index))}
+        
+        {/* Bouton d'expansion sur mobile */}
+        {shouldShowExpandButton && !isExpanded && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsExpanded(true)}
+            className="flex-shrink-0 h-14 w-14 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 border-2 border-dashed border-gray-300 dark:border-gray-500 rounded-lg"
+          >
+            <div className="flex flex-col items-center gap-1">
+              <Grid3X3 className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              <span className="text-[9px] text-gray-500 dark:text-gray-400 font-medium">
+                +{attachments.length - multiRowThreshold}
+              </span>
+            </div>
+          </Button>
+        )}
       </div>
+
+      {/* Bouton de réduction sur mobile */}
+      {isExpanded && shouldShowExpandButton && (
+        <div className="mt-2 flex justify-center">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsExpanded(false)}
+            className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+          >
+            <ChevronRight className="w-3 h-3 mr-1 rotate-90" />
+            {t('showLess')}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

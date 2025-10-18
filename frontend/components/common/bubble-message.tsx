@@ -515,7 +515,7 @@ function BubbleMessageInner({
 
         {/* Message Bubble */}
         <div className={cn(
-          "flex-1 min-w-0 max-w-[85%] sm:max-w-[75%] md:max-w-[65%]",
+          "flex-1 min-w-0 max-w-[85%] sm:max-w-[75%] md:max-w-[65%] overflow-hidden",
           isOwnMessage && "flex flex-col items-end"
         )}>
           {/* Header with sender name and time */}
@@ -542,13 +542,13 @@ function BubbleMessageInner({
           {/* Main Message Card */}
           <Card 
             className={cn(
-              "relative transition-colors duration-200 border shadow-none",
+              "relative transition-colors duration-200 border shadow-none max-w-full overflow-hidden",
               isOwnMessage 
                 ? 'bg-gradient-to-br from-blue-400 to-blue-500 border-blue-400 text-white' 
                 : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
             )}
           >
-            <CardContent className="p-2.5 sm:p-3">
+            <CardContent className="p-2.5 sm:p-3 max-w-full overflow-hidden">
 
               {/* Message parent si c'est une réponse */}
               {message.replyTo && (
@@ -640,10 +640,12 @@ function BubbleMessageInner({
 
                     {/* Attachments */}
                     {message.attachments && message.attachments.length > 0 && (
-                      <MessageAttachments
-                        attachments={message.attachments as any}
-                        onImageClick={onImageClick}
-                      />
+                      <div className="max-w-full overflow-hidden">
+                        <MessageAttachments
+                          attachments={message.attachments as any}
+                          onImageClick={onImageClick}
+                        />
+                      </div>
                     )}
                   </motion.div>
                 </AnimatePresence>
