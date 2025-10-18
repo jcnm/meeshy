@@ -542,7 +542,7 @@ function BubbleMessageInner({
           {/* Main Message Card */}
           <Card 
             className={cn(
-              "relative transition-colors duration-200 border shadow-none max-w-full overflow-hidden",
+              "relative transition-colors duration-200 border shadow-none max-w-full overflow-hidden group/message",
               isOwnMessage 
                 ? 'bg-gradient-to-br from-blue-400 to-blue-500 border-blue-400 text-white' 
                 : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
@@ -652,7 +652,7 @@ function BubbleMessageInner({
               </div>
 
               {/* Footer: Language badge + Actions */}
-              <div className="flex items-center justify-between gap-2 group/message">
+              <div className="flex items-center justify-between gap-2">
                 {/* Left: Language Badge + Action Buttons */}
                 <div className="flex items-center gap-1.5">
                   {translationError && (
