@@ -652,8 +652,8 @@ function BubbleMessageInner({
               </div>
 
               {/* Footer: Language badge + Actions */}
-              <div className="flex items-center justify-between gap-2">
-                {/* Language Badge - Flag only on mobile */}
+              <div className="flex items-center justify-between gap-2 group/message">
+                {/* Left: Language Badge + Action Buttons */}
                 <div className="flex items-center gap-1.5">
                   {translationError && (
                     <Tooltip>
@@ -701,10 +701,7 @@ function BubbleMessageInner({
                       }
                     </TooltipContent>
                   </Tooltip>
-                </div>
 
-                {/* Action Buttons */}
-                <div className="flex items-center gap-0.5">
                   {/* Bouton de réponse */}
                   {onReplyMessage && (
                     <Tooltip>
@@ -1077,8 +1074,11 @@ function BubbleMessageInner({
                     </TooltipContent>
                   </Tooltip>
 
-                  {/* Menu d'options si permissions */}
-                  {canModifyMessage() && (
+                </div>
+
+                {/* Right: Options Menu - Appears on hover/touch */}
+                {canModifyMessage() && (
+                  <div className="opacity-0 group-hover/message:opacity-100 active:opacity-100 transition-opacity duration-200">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
@@ -1110,8 +1110,8 @@ function BubbleMessageInner({
                         )}
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
