@@ -13,21 +13,21 @@ export type OgImageType = 'default' | 'signin' | 'affiliate';
 /**
  * Configuration des images Open Graph
  */
-const OG_IMAGE_CONFIG = {
+export const OG_IMAGE_CONFIG = {
   default: {
-    path: '/images/meeshy-og-default.svg',
+    path: '/meeshy-og-default.svg',
     width: 1200,
     height: 630,
     alt: 'Meeshy - Messagerie Multilingue en Temps Réel',
   },
   signin: {
-    path: '/images/meeshy-og-signin.svg',
+    path: '/meeshy-og-signin.svg',
     width: 1200,
     height: 630,
     alt: 'Inscription sur Meeshy - Rejoignez la communauté mondiale',
   },
   affiliate: {
-    path: '/images/meeshy-og-affiliate.svg',
+    path: '/meeshy-og-affiliate.svg',
     width: 1200,
     height: 630,
     alt: 'Rejoignez Meeshy par invitation - Programme de parrainage',
