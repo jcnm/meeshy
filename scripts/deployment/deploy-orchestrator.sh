@@ -82,8 +82,8 @@ deploy_complete() {
     log_info "🚀 Déploiement complet de Meeshy sur $ip"
     trace_deploy_operation "deploy_complete" "STARTED" "Starting complete deployment on $ip"
     
-    # Étape 0: Validation de la configuration (NOUVEAU)
-    log_info "Étape 0/7: Validation de la configuration"
+    # Étape 0: Validation de la configuration
+    log_info "Étape 0/8: Validation de la configuration"
     if ! "$SCRIPT_DIR/deploy-validate-config.sh" "env.production"; then
         log_error "Validation de configuration échouée - Déploiement annulé"
         trace_deploy_operation "deploy_complete" "FAILED" "Configuration validation failed"
@@ -91,32 +91,46 @@ deploy_complete() {
     fi
     log_success "Configuration validée avec succès"
     
-    # Étape 1: Test de connexion
-    log_info "Étape 1/7: Test de connexion SSH"
+    # Étape 1: Backup automatique PRÉ-DÉPLOIEMENT (PROTECTION DES DONNÉES)
+    if [ "$SKIP_BACKUP" = "false" ]; then
+        log_info "Étape 1/8: 💾 Backup automatique pré-déploiement"
+        log_warning "🛡️  Protection des données: sauvegarde avant modifications"
+        if [ "$DRY_RUN" = "true" ]; then
+            log_info "Mode --dry-run activé: simulation du backup pré-déploiement"
+        else
+            "$BACKUP_MODULE" backup-database "$ip" --pre-deployment
+            log_success "✅ Backup pré-déploiement créé avec succès"
+        fi
+    else
+        log_warning "Étape 1/8: Backup pré-déploiement ignoré (--skip-backup)"
+    fi
+    
+    # Étape 2: Test de connexion
+    log_info "Étape 2/8: Test de connexion SSH"
     "$SCRIPT_DIR/deploy-test-connection.sh" "$ip"
     
-    # Étape 2: Préparation des fichiers
-    log_info "Étape 2/7: Préparation des fichiers de déploiement"
+    # Étape 3: Préparation des fichiers
+    log_info "Étape 3/8: Préparation des fichiers de déploiement"
     "$SCRIPT_DIR/deploy-prepare-files.sh" "$ip" "meeshy.me"
     
-    # Étape 3: Installation des prérequis
-    log_info "Étape 3/7: Installation des prérequis"
+    # Étape 4: Installation des prérequis
+    log_info "Étape 4/8: Installation des prérequis"
     "$SCRIPT_DIR/deploy-install-prerequisites.sh" "$ip"
     
-    # Étape 4: Configuration MongoDB
-    log_info "Étape 4/7: Configuration MongoDB"
+    # Étape 5: Configuration MongoDB
+    log_info "Étape 5/8: Configuration MongoDB"
     "$SCRIPT_DIR/deploy-configure-mongodb.sh" "$ip"
     
-    # Étape 5: Démarrage des services
-    log_info "Étape 5/7: Démarrage des services"
+    # Étape 6: Démarrage des services
+    log_info "Étape 6/8: Démarrage des services"
     "$SCRIPT_DIR/deploy-start-services.sh" "$ip"
     
-    # Étape 6: Vérification de santé
-    log_info "Étape 6/7: Vérification de santé"
+    # Étape 7: Vérification de santé
+    log_info "Étape 7/8: Vérification de santé"
     "$SCRIPT_DIR/deploy-health-check.sh" "$ip"
     
-    # Étape 7: Rapport final
-    log_info "Étape 7/7: Génération du rapport de déploiement"
+    # Étape 8: Rapport final
+    log_info "Étape 8/8: Génération du rapport de déploiement"
     generate_deployment_report "$ip"
     
     log_success "Déploiement complet terminé avec succès"
@@ -130,7 +144,7 @@ deploy_with_reset() {
     log_info "🔄 Déploiement avec reset complet sur $ip"
     trace_deploy_operation "deploy_reset" "STARTED" "Starting deployment with reset on $ip"
     
-    # Validation critique de la configuration (NOUVEAU)
+    # Validation critique de la configuration
     log_info "Validation de la configuration avant reset"
     if ! "$SCRIPT_DIR/deploy-validate-config.sh" "env.production"; then
         log_error "Validation de configuration échouée - Déploiement avec reset annulé"
@@ -138,6 +152,20 @@ deploy_with_reset() {
         exit 1
     fi
     log_success "Configuration validée avec succès"
+    
+    # Backup CRITIQUE avant reset (protection maximale)
+    if [ "$SKIP_BACKUP" = "false" ]; then
+        log_warning "🛡️  BACKUP CRITIQUE AVANT RESET COMPLET"
+        log_info "💾 Sauvegarde complète des données avant destruction..."
+        if [ "$DRY_RUN" = "true" ]; then
+            log_info "Mode --dry-run activé: simulation du backup pré-reset"
+        else
+            "$BACKUP_MODULE" backup-all "$ip"
+            log_success "✅ Backup critique pré-reset créé avec succès"
+        fi
+    else
+        log_error "⚠️  ATTENTION: Reset sans backup! Risque de perte de données!"
+    fi
     
     # Reset complet
     log_info "Reset complet du système..."

@@ -65,6 +65,9 @@ show_help() {
     echo "  health      - Vérification de santé des services"
     echo "  info        - Informations sur l'environnement"
     echo "  version     - Version des services"
+    echo "  backup      - Créer un backup des données"
+    echo "  restore     - Restaurer un backup (interactif)"
+    echo "  list-backups- Lister les backups disponibles"
     echo ""
     echo -e "${YELLOW}🛠️  DÉVELOPPEMENT (dev):${NC}"
     echo "  start       - Démarrer l'environnement de développement"
@@ -86,6 +89,8 @@ show_help() {
     echo "  stop        - Arrêter les services sur le serveur"
     echo "  passwords   - Déployer les mots de passe Traefik"
     echo "  replica     - Configuration du replica set MongoDB"
+    echo "  backup      - Backup distant (DB, volumes, config)"
+    echo "  restore     - Restaurer un backup distant"
     echo ""
     echo "Options globales:"
     echo "  --help, -h  - Afficher cette aide"
@@ -175,11 +180,21 @@ handle_production() {
         "version")
             "$SCRIPT_DIR/production/meeshy-orchestrator.sh" "version" $args
             ;;
+        "backup")
+            "$SCRIPT_DIR/production/meeshy-auto-backup.sh" $args
+            ;;
+        "restore")
+            "$SCRIPT_DIR/production/meeshy-restore-backup.sh" $args
+            ;;
+        "list-backups")
+            "$SCRIPT_DIR/production/meeshy-restore-backup.sh" --list
+            ;;
         *)
             log_error "Commande de production inconnue: $cmd"
             echo ""
             echo "Commandes de production disponibles:"
             echo "  start, stop, restart, status, logs, maintenance, health, info, version"
+            echo "  backup, restore, list-backups"
             exit 1
             ;;
     esac
@@ -266,11 +281,19 @@ handle_deployment() {
         "replica")
             "$SCRIPT_DIR/deployment/deploy-orchestrator.sh" "replica" $args
             ;;
+        "backup")
+            "$SCRIPT_DIR/deployment/deploy-orchestrator.sh" "backup" $args
+            ;;
+        "restore")
+            log_info "Restauration de backup distant"
+            "$SCRIPT_DIR/deployment/deploy-backup.sh" "restore-interactive" $args
+            ;;
         *)
             log_error "Commande de déploiement inconnue: $cmd"
             echo ""
             echo "Commandes de déploiement disponibles:"
             echo "  deploy, deploy-reset, test, health, status, logs, restart, stop, passwords, replica"
+            echo "  backup, restore"
             exit 1
             ;;
     esac

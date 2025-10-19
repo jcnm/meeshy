@@ -194,7 +194,7 @@ compress_backup() {
     log_success "Backup compressé: pre-update-$TIMESTAMP.tar.gz ($backup_size)"
 }
 
-# Nettoyer les anciens backups (garder les 5 derniers)
+# Nettoyer les anciens backups (garder les 3 derniers)
 cleanup_old_backups() {
     log_info "Nettoyage des anciens backups..."
     
@@ -203,9 +203,9 @@ cleanup_old_backups() {
     # Compter les backups
     local backup_count=$(ls -1 pre-update-*.tar.gz 2>/dev/null | wc -l)
     
-    if [ "$backup_count" -gt 5 ]; then
-        log_info "Suppression des backups les plus anciens (conservation des 5 derniers)..."
-        ls -1t pre-update-*.tar.gz | tail -n +6 | xargs rm -f
+    if [ "$backup_count" -gt 3 ]; then
+        log_info "Suppression des backups les plus anciens (conservation des 3 derniers)..."
+        ls -1t pre-update-*.tar.gz | tail -n +4 | xargs rm -f
         log_success "Anciens backups supprimés"
     else
         log_info "Nombre de backups: $backup_count (pas de nettoyage nécessaire)"
