@@ -64,7 +64,7 @@ async function generateAffiliateMetadata(
         return {
           title: `Rejoignez Meeshy avec ${affiliateUser.firstName} ${affiliateUser.lastName}`,
           description: `Connectez-vous avec ${affiliateUser.firstName} et des milliers d'utilisateurs du monde entier sur Meeshy, la plateforme de messagerie multilingue en temps réel. Traduction automatique, conversations globales et plus encore !`,
-          image: affiliateUser.avatar || `${frontendUrl}/images/meeshy-og-affiliate.jpg`,
+          image: `${frontendUrl}/api/og-image-dynamic?type=affiliate&title=Rejoignez ${affiliateUser.firstName} ${affiliateUser.lastName}&subtitle=sur Meeshy&userAvatar=${encodeURIComponent(affiliateUser.avatar || '')}&userFirstName=${encodeURIComponent(affiliateUser.firstName || '')}&userLastName=${encodeURIComponent(affiliateUser.lastName || '')}&userName=${encodeURIComponent(affiliateUser.username || '')}`,
           url: `${frontendUrl}/signin?affiliate=${affiliateToken}`,
           type: 'website',
           siteName: 'Meeshy',

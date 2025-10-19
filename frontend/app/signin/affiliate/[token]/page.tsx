@@ -1,13 +1,13 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import SigninPageContent from '../page';
+import SigninPageContent from '../../page';
 
 interface AffiliateSigninPageProps {
   params: { token: string };
 }
 
 export async function generateMetadata({ params }: AffiliateSigninPageProps): Promise<Metadata> {
-  const { token } = params;
+  const { token } = await params;
   const frontendUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3100';
   
   try {
@@ -25,6 +25,19 @@ export async function generateMetadata({ params }: AffiliateSigninPageProps): Pr
         const title = `Rejoignez Meeshy avec ${affiliateUser.firstName} ${affiliateUser.lastName}`;
         const description = `Connectez-vous avec ${affiliateUser.firstName} et des milliers d'utilisateurs du monde entier sur Meeshy, la plateforme de messagerie multilingue en temps réel.`;
         
+        // Construire l'URL de l'image dynamique avec les paramètres de l'utilisateur
+        const imageParams = new URLSearchParams({
+          type: 'affiliate',
+          title: 'Rejoignez Meeshy',
+          subtitle: "Invitation d'un ami",
+          userAvatar: affiliateUser.avatar || '',
+          userFirstName: affiliateUser.firstName || '',
+          userLastName: affiliateUser.lastName || '',
+          userName: affiliateUser.username || ''
+        });
+        
+        const dynamicImageUrl = `${frontendUrl}/api/og-image-dynamic?${imageParams.toString()}`;
+        
         return {
           title,
           description,
@@ -35,7 +48,7 @@ export async function generateMetadata({ params }: AffiliateSigninPageProps): Pr
             siteName: 'Meeshy',
             images: [
               {
-                url: affiliateUser.avatar || `${frontendUrl}/api/og-image?type=affiliate&title=Rejoignez Meeshy&subtitle=Invitation d'un ami`,
+                url: dynamicImageUrl,
                 width: 1200,
                 height: 630,
                 alt: `${affiliateUser.firstName} ${affiliateUser.lastName} vous invite sur Meeshy`,
@@ -48,7 +61,7 @@ export async function generateMetadata({ params }: AffiliateSigninPageProps): Pr
             card: 'summary_large_image',
             title,
             description,
-            images: [affiliateUser.avatar || `${frontendUrl}/api/og-image?type=affiliate&title=Rejoignez Meeshy&subtitle=Invitation d'un ami`],
+            images: [dynamicImageUrl],
             creator: '@meeshy_app',
           },
           alternates: {
@@ -65,6 +78,7 @@ export async function generateMetadata({ params }: AffiliateSigninPageProps): Pr
   notFound();
 }
 
-export default function AffiliateSigninPage({ params }: AffiliateSigninPageProps) {
-  return <SigninPageContent affiliateToken={params.token} />;
+export default async function AffiliateSigninPage({ params }: AffiliateSigninPageProps) {
+  const { token } = await params;
+  return <SigninPageContent affiliateToken={token} />;
 }
