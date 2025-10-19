@@ -1,8 +1,89 @@
-# Scripts de Migration et Maintenance MongoDB
+# Meeshy Scripts Collection
 
-Ce dossier contient des scripts utilitaires pour la maintenance de la base de données MongoDB de Meeshy.
+Ce dossier contient les scripts utilitaires et outils CLI pour la plateforme Meeshy.
 
-## 📋 Scripts Disponibles
+## 🎯 Outils CLI Principaux
+
+### 📤 MMP (Meeshy Message Publisher) v1.0.1
+Script de publication de messages vers la plateforme Meeshy.
+
+**Fichier**: `mmp.sh`
+
+**Utilisation**:
+```bash
+# Publier depuis le fichier POST par défaut
+export MEESHY_PASSWORD="your_password"
+./mmp.sh
+
+# Publier un fichier spécifique
+./mmp.sh -f announcement.txt
+
+# Publier un message en ligne
+./mmp.sh "Hello Meeshy!"
+
+# Publier vers une conversation spécifique
+./mmp.sh -c tech-team -f update.txt
+```
+
+**Documentation complète**: [README_MMP.md](./README_MMP.md) (à créer si besoin)
+
+### 📥 MMR (Meeshy Message Receiver) v1.0.0
+Script de récupération et affichage de messages depuis la plateforme Meeshy.
+
+**Fichier**: `mmr.sh`
+
+**Utilisation**:
+```bash
+# Récupérer les 50 derniers messages
+export MEESHY_PASSWORD="your_password"
+./mmr.sh
+
+# Récupérer 200 messages
+./mmr.sh -n 200
+
+# Récupérer les messages des 2 dernières heures
+./mmr.sh -t 2h
+
+# Récupérer les messages des 3 derniers jours
+./mmr.sh -t 3d
+
+# Format JSON pour traitement
+./mmr.sh -n 100 -f json | jq '.[] | .content'
+
+# Format compact pour monitoring
+./mmr.sh -t 30m -f compact
+
+# Affichage complet avec traductions
+./mmr.sh -n 20 --show-translations --show-metadata
+```
+
+**Formats disponibles**:
+- `pretty` (défaut) - Affichage formaté avec couleurs
+- `json` - JSON brut pour traitement
+- `compact` - Une ligne par message
+- `raw` - Contenu uniquement
+- `ai` - **Format optimisé pour agents IA/RAG** (données structurées et propres)
+
+**Filtres temporels** (avec filtrage client-side précis):
+- Minutes: `10m`, `30min`, `45minutes`
+- Heures: `2h`, `5hour`, `12hours`
+- Jours: `1d`, `7day`, `14days`
+- Semaines: `1w`, `2week`, `4weeks`
+- Mois: `1M`, `2month`, `6months`
+
+**🤖 Spécial Agent IA**: Le format `ai` est conçu spécifiquement pour:
+- Ingestion RAG et construction de contexte
+- Agents conversationnels automatisés
+- Analyse de conversation multi-langue
+- Intégration LLM/Chatbot
+- Voir [MMR_AI_FORMAT.md](./MMR_AI_FORMAT.md) pour documentation complète
+
+**Documentation complète**: [README_MMR.md](./README_MMR.md)
+
+### 📚 Guide Complet MMP & MMR
+Comparaison détaillée, cas d'usage et intégrations: [MMP_MMR_GUIDE.md](./MMP_MMR_GUIDE.md)
+
+## 📋 Scripts de Migration et Maintenance MongoDB
 
 ### 1. `fix-null-identifiers.js`
 **Objectif**: Corriger les champs `identifier` null dans les collections qui nécessitent des identifiers uniques.
