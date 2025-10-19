@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -30,6 +30,15 @@ export function LanguageFlagSelector({
   interfaceOnly = false,
 }: LanguageFlagSelectorProps) {
   const [open, setOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Détection mobile
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Utiliser les choix fournis, les langues d'interface limitées, ou les langues supportées par défaut
   const availableLanguages = choices 
@@ -61,12 +70,18 @@ export function LanguageFlagSelector({
         </Button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-10 p-2" 
+        className={cn(
+          "p-2",
+          isMobile ? "w-auto max-h-[60vh] overflow-y-auto" : "w-10"
+        )}
         side="top" 
         align="center"
         sideOffset={4}
       >
-        <div className="flex flex-col gap-1 items-center">
+        <div className={cn(
+          "gap-1 items-center",
+          isMobile ? "grid grid-cols-3" : "flex flex-col"
+        )}>
           {availableLanguages.map((language) => (
             <Button
               key={language?.code}
@@ -78,10 +93,13 @@ export function LanguageFlagSelector({
                   setOpen(false);
                 }
               }}
-              className="h-8 w-8 p-0 flex items-center justify-center hover:bg-blue-100"
+              className={cn(
+                "p-0 flex items-center justify-center hover:bg-blue-100",
+                isMobile ? "h-10 w-10" : "h-8 w-8"
+              )}
               title={language?.code && formatLanguageName(language.code)}
             >
-              <span className="text-sm">{language?.flag}</span>
+              <span className={isMobile ? "text-lg" : "text-sm"}>{language?.flag}</span>
             </Button>
           ))}
         </div>

@@ -204,9 +204,10 @@ export const API_ENDPOINTS = {
     DETAILS: (id: string) => `/communities/${id}`,
     MEMBERS: (id: string) => `/communities/${id}/members`,
     UPDATE: (id: string) => `/communities/${id}`,
-    ADD_MEMBER: (groupId: string, userId: string) => `/communities/${groupId}/members/${userId}`,
-    REMOVE_MEMBER: (groupId: string, userId: string) => `/communities/${groupId}/members/${userId}`,
-    UPDATE_ROLE: (groupId: string, userId: string) => `/communities/${groupId}/members/${userId}/role`
+    ADD_MEMBER: (groupId: string) => `/communities/${groupId}/members`,
+    REMOVE_MEMBER: (groupId: string, memberId: string) => `/communities/${groupId}/members/${memberId}`,
+    UPDATE_MEMBER_ROLE: (groupId: string, memberId: string) => `/communities/${groupId}/members/${memberId}/role`,
+    CHECK_IDENTIFIER: (identifier: string) => `/communities/check-identifier/${identifier}`
   },
   TRACKING_LINK: {
     CREATE: '/api/tracking-links',

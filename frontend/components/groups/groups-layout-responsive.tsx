@@ -22,12 +22,14 @@ import {
   UserPlus,
   MessageSquare,
   Lock,
-  Globe
+  Globe,
+  X
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Group } from '@/types/frontend';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { cn } from '@/lib/utils';
+import { generateCommunityIdentifier, validateCommunityIdentifier, sanitizeCommunityIdentifier } from '@/utils/community-identifier';
 
 interface GroupsLayoutResponsiveProps {
   selectedGroupIdentifier?: string;
@@ -37,7 +39,7 @@ export function GroupsLayoutResponsive({ selectedGroupIdentifier }: GroupsLayout
   const router = useRouter();
   const searchParams = useSearchParams();
   const user = useUser(); const isAuthChecking = useIsAuthChecking();
-  const { t } = useI18n('groups');
+  const { t: tGroups } = useI18n('groups');
 
   // Si on est en train de vérifier l'authentification, afficher un loader
   if (isAuthChecking) {
@@ -45,7 +47,7 @@ export function GroupsLayoutResponsive({ selectedGroupIdentifier }: GroupsLayout
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">{t('authChecking')}</p>
+          <p className="text-muted-foreground">{tGroups('authChecking')}</p>
         </div>
       </div>
     );
@@ -78,6 +80,11 @@ export function GroupsLayoutResponsive({ selectedGroupIdentifier }: GroupsLayout
 
   // État pour la copie d'identifiant
   const [copiedIdentifier, setCopiedIdentifier] = useState<string | null>(null);
+
+  // États pour la vérification d'unicité de l'identifiant
+  const [isCheckingIdentifier, setIsCheckingIdentifier] = useState(false);
+  const [identifierAvailable, setIdentifierAvailable] = useState<boolean | null>(null);
+  const [identifierCheckTimeout, setIdentifierCheckTimeout] = useState<NodeJS.Timeout | null>(null);
 
   // Détecter si on est sur mobile
   useEffect(() => {
@@ -171,7 +178,9 @@ export function GroupsLayoutResponsive({ selectedGroupIdentifier }: GroupsLayout
   // Sélectionner un groupe depuis la liste
   const handleSelectGroup = useCallback((group: Group) => {
     setSelectedGroup(group);
-    router.push(`/groups/mshy_${group.identifier || group.name.toLowerCase().replace(/\s+/g, '-')}`);
+    // L'identifiant contient déjà mshy_ depuis le serveur
+    const identifier = group.identifier || '';
+    router.push(`/groups/${identifier}`);
   }, [router]);
 
   // Retour à la liste (mobile uniquement)
@@ -183,37 +192,71 @@ export function GroupsLayoutResponsive({ selectedGroupIdentifier }: GroupsLayout
     }
   }, [isMobile, router]);
 
-  // Générer l'identifiant depuis le nom
-  const generateIdentifier = useCallback((name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-zA-Z0-9-_@]/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '');
+  // Vérifier la disponibilité de l'identifiant
+  const checkIdentifierAvailability = useCallback(async (identifier: string) => {
+    if (!identifier || identifier.trim() === '') {
+      setIdentifierAvailable(null);
+      return;
+    }
+
+    // Ajouter le préfixe mshy_ pour la vérification côté serveur
+    const fullIdentifier = `mshy_${identifier}`;
+
+    setIsCheckingIdentifier(true);
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        setIsCheckingIdentifier(false);
+        return;
+      }
+
+      const response = await fetch(buildApiUrl(`/communities/check-identifier/${encodeURIComponent(fullIdentifier)}`), {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setIdentifierAvailable(result.available);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la vérification de l\'identifiant:', error);
+    } finally {
+      setIsCheckingIdentifier(false);
+    }
   }, []);
 
-  // Copier l'identifiant au presse-papier
+  // Copier l'identifiant au presse-papier (afficher sans mshy_)
   const copyIdentifier = useCallback(async (identifier: string) => {
     try {
-      await navigator.clipboard.writeText(`mshy_${identifier}`);
+      const displayIdentifier = identifier.replace(/^mshy_/, '');
+      await navigator.clipboard.writeText(displayIdentifier);
       setCopiedIdentifier(identifier);
-      toast.success('Identifiant copié !');
+      toast.success(tGroups('success.identifierCopied'));
       
       // Réinitialiser l'état de copie après 2 secondes
       setTimeout(() => {
         setCopiedIdentifier(null);
       }, 2000);
     } catch (error) {
-      console.error('Erreur copie:', error);
-      toast.error('Erreur lors de la copie');
+      console.error('[Groups] Error copying identifier:', error);
+      toast.error(tGroups('errors.copyError'));
     }
-  }, []);
+  }, [tGroups]);
 
   // Créer un groupe
   const createGroup = useCallback(async () => {
+    // Vérifier que l'identifiant est disponible
+    if (identifierAvailable === false) {
+      toast.error(tGroups('errors.identifierTaken'));
+      return;
+    }
+
     try {
       const token = localStorage.getItem('auth_token');
       if (!token) return;
+
+      // Ajouter le préfixe mshy_ pour l'envoi au serveur
+      const fullIdentifier = `mshy_${newGroupIdentifier}`;
 
       const response = await fetch(buildApiUrl(API_ENDPOINTS.GROUP.CREATE), {
         method: 'POST',
@@ -224,7 +267,7 @@ export function GroupsLayoutResponsive({ selectedGroupIdentifier }: GroupsLayout
         body: JSON.stringify({
           name: newGroupName,
           description: newGroupDescription,
-          identifier: newGroupIdentifier,
+          identifier: fullIdentifier,
           isPrivate: newGroupIsPrivate
         })
       });
@@ -241,18 +284,19 @@ export function GroupsLayoutResponsive({ selectedGroupIdentifier }: GroupsLayout
         setNewGroupDescription('');
         setNewGroupIdentifier('');
         setNewGroupIsPrivate(false);
+        setIdentifierAvailable(null);
         setIsCreateModalOpen(false);
         
-        toast.success('Groupe créé avec succès !');
+        toast.success(tGroups('success.groupCreated'));
       } else {
         const error = await response.json();
-        toast.error(error.message || 'Erreur lors de la création');
+        toast.error(error.message || tGroups('errors.createError'));
       }
     } catch (error) {
-      console.error('Erreur création groupe:', error);
-      toast.error('Erreur lors de la création du groupe');
+      console.error('[Groups] Error creating community:', error);
+      toast.error(tGroups('errors.createError'));
     }
-  }, [newGroupName, newGroupDescription, newGroupIdentifier, newGroupIsPrivate]);
+  }, [newGroupName, newGroupDescription, newGroupIdentifier, newGroupIsPrivate, identifierAvailable, tGroups]);
 
   // Charger les données initiales
   useEffect(() => {
@@ -279,10 +323,49 @@ export function GroupsLayoutResponsive({ selectedGroupIdentifier }: GroupsLayout
 
   // Mettre à jour l'identifiant automatiquement basé sur le nom
   useEffect(() => {
-    if (newGroupName && !newGroupIdentifier) {
-      setNewGroupIdentifier(generateIdentifier(newGroupName));
+    if (newGroupName && newGroupName.trim()) {
+      // Générer automatiquement un identifiant avec le titre + 6 caractères aléatoires
+      const generatedIdentifier = generateCommunityIdentifier(newGroupName);
+      setNewGroupIdentifier(generatedIdentifier);
+      
+      // Vérifier la disponibilité après un court délai (debounce)
+      if (identifierCheckTimeout) {
+        clearTimeout(identifierCheckTimeout);
+      }
+      
+      const timeout = setTimeout(() => {
+        checkIdentifierAvailability(generatedIdentifier);
+      }, 500);
+      
+      setIdentifierCheckTimeout(timeout);
     }
-  }, [newGroupName, newGroupIdentifier, generateIdentifier]);
+  }, [newGroupName]);
+
+  // Vérifier l'unicité lorsque l'utilisateur modifie manuellement l'identifiant
+  useEffect(() => {
+    if (newGroupIdentifier && newGroupIdentifier.trim()) {
+      // Annuler le timeout précédent
+      if (identifierCheckTimeout) {
+        clearTimeout(identifierCheckTimeout);
+      }
+      
+      // Vérifier après un délai (debounce)
+      const timeout = setTimeout(() => {
+        checkIdentifierAvailability(newGroupIdentifier);
+      }, 500);
+      
+      setIdentifierCheckTimeout(timeout);
+    } else {
+      setIdentifierAvailable(null);
+    }
+    
+    // Cleanup
+    return () => {
+      if (identifierCheckTimeout) {
+        clearTimeout(identifierCheckTimeout);
+      }
+    };
+  }, [newGroupIdentifier]);
 
   return (
     <DashboardLayout>
@@ -296,14 +379,14 @@ export function GroupsLayoutResponsive({ selectedGroupIdentifier }: GroupsLayout
           )}>
             <div className="p-4 border-b">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Communautés</h2>
+                <h2 className="text-lg font-semibold">{tGroups('list.communities')}</h2>
                 <Button
                   onClick={() => setIsCreateModalOpen(true)}
                   size="sm"
                   className="rounded-xl"
                 >
                   <Plus className="h-4 w-4 mr-1" />
-                  Créer
+                  {tGroups('createGroup')}
                 </Button>
               </div>
             </div>
@@ -333,7 +416,7 @@ export function GroupsLayoutResponsive({ selectedGroupIdentifier }: GroupsLayout
                       onClick={() => handleSelectGroup(group)}
                     >
                       <div className="flex items-start gap-3">
-                        <Avatar className="h-10 w-10">
+                        <Avatar className="h-10 w-10 flex-shrink-0">
                           <AvatarImage src={group.avatar || undefined} />
                           <AvatarFallback>
                             {group.name.substring(0, 2).toUpperCase()}
@@ -341,42 +424,52 @@ export function GroupsLayoutResponsive({ selectedGroupIdentifier }: GroupsLayout
                         </Avatar>
                         
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 mb-1">
                             <h3 className="font-medium truncate">{group.name}</h3>
                             {group.isPrivate && (
-                              <Lock className="h-3 w-3 text-muted-foreground" />
+                              <Lock className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                             )}
                           </div>
                           
-                          <div className="flex items-center gap-1 mt-1 group/identifier">
+                          {group.description && (
+                            <p className="text-xs text-muted-foreground truncate mb-2">
+                              {group.description}
+                            </p>
+                          )}
+                          
+                          <div className="flex items-center gap-1 mb-2 group/identifier">
                             <span 
                               className="text-xs text-primary font-mono cursor-pointer hover:text-primary/80 transition-colors"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                copyIdentifier(group.identifier || generateIdentifier(group.name));
+                                copyIdentifier(group.identifier || '');
                               }}
                               onMouseEnter={() => {}}
                             >
-                              mshy_{group.identifier || generateIdentifier(group.name)}
+                              {group.identifier?.replace(/^mshy_/, '') || ''}
                             </span>
-                            {copiedIdentifier === (group.identifier || generateIdentifier(group.name)) ? (
+                            {copiedIdentifier === group.identifier ? (
                               <CheckCircle2 className="h-3 w-3 text-green-500" />
                             ) : (
                               <Copy className="h-3 w-3 text-muted-foreground opacity-0 group-hover/identifier:opacity-100 transition-opacity" />
                             )}
                           </div>
                           
-                          {group.description && (
-                            <p className="text-xs text-muted-foreground truncate mt-1">
-                              {group.description}
-                            </p>
-                          )}
-                          
-                          <div className="flex items-center gap-2 mt-2">
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          {/* Ligne d'informations : membres, conversations, date */}
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1">
                               <Users className="h-3 w-3" />
-                              {group._count?.members || 0}
+                              <span>{group._count?.members || 0}</span>
                             </div>
+                            <div className="flex items-center gap-1">
+                              <MessageSquare className="h-3 w-3" />
+                              <span>{group._count?.conversations || 0}</span>
+                            </div>
+                            {group.createdAt && (
+                              <div className="flex items-center gap-1">
+                                <span>{new Date(group.createdAt).toLocaleDateString()}</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -432,11 +525,11 @@ export function GroupsLayoutResponsive({ selectedGroupIdentifier }: GroupsLayout
                     <div className="flex items-center gap-1 group/identifier">
                       <span 
                         className="text-sm text-primary font-mono cursor-pointer hover:text-primary/80 transition-colors"
-                        onClick={() => copyIdentifier(selectedGroup.identifier || generateIdentifier(selectedGroup.name))}
+                        onClick={() => copyIdentifier(selectedGroup.identifier || '')}
                       >
-                        mshy_{selectedGroup.identifier || generateIdentifier(selectedGroup.name)}
+                        {selectedGroup.identifier?.replace(/^mshy_/, '') || ''}
                       </span>
-                      {copiedIdentifier === (selectedGroup.identifier || generateIdentifier(selectedGroup.name)) ? (
+                      {copiedIdentifier === selectedGroup.identifier ? (
                         <CheckCircle2 className="h-4 w-4 text-green-500" />
                       ) : (
                         <Copy className="h-4 w-4 text-muted-foreground opacity-0 group-hover/identifier:opacity-100 transition-opacity" />
@@ -508,53 +601,72 @@ export function GroupsLayoutResponsive({ selectedGroupIdentifier }: GroupsLayout
       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
         <DialogContent className="max-w-md w-[95vw] sm:max-w-md sm:w-[90vw]">
           <DialogHeader>
-            <DialogTitle>Créer une communauté</DialogTitle>
+            <DialogTitle>{tGroups('createModal.title')}</DialogTitle>
           </DialogHeader>
           
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium">Nom</label>
+              <label className="text-sm font-medium">{tGroups('createModal.nameLabel')}</label>
               <Input
                 value={newGroupName}
                 onChange={(e) => setNewGroupName(e.target.value)}
-                placeholder="Nom de la communauté"
+                placeholder={tGroups('createModal.namePlaceholder')}
                 className="mt-1"
               />
             </div>
             
             <div>
-              <label className="text-sm font-medium">Description (optionnel)</label>
+              <label className="text-sm font-medium">{tGroups('createModal.descriptionLabel')}</label>
               <Input
                 value={newGroupDescription}
                 onChange={(e) => setNewGroupDescription(e.target.value)}
-                placeholder="Description de la communauté"
+                placeholder={tGroups('createModal.descriptionPlaceholder')}
                 className="mt-1"
               />
             </div>
             
             <div>
-              <label className="text-sm font-medium">Identifiant</label>
-              <div className="flex items-center mt-1">
-                <span className="text-sm text-muted-foreground bg-muted px-3 py-2 rounded-l-md border border-r-0">
-                  mshy_
-                </span>
+              <label className="text-sm font-medium">{tGroups('createModal.identifierLabel')}</label>
+              <div className="relative mt-1">
                 <Input
                   value={newGroupIdentifier}
-                  onChange={(e) => setNewGroupIdentifier(e.target.value.replace(/[^a-zA-Z0-9-_@]/g, ''))}
-                  placeholder="identifiant-unique"
-                  className="rounded-l-none"
+                  onChange={(e) => {
+                    const sanitized = sanitizeCommunityIdentifier(e.target.value);
+                    setNewGroupIdentifier(sanitized);
+                  }}
+                  placeholder={tGroups('createModal.identifierPlaceholder')}
+                  className={cn(
+                    "pr-10",
+                    identifierAvailable === true && "border-green-500 focus:border-green-500",
+                    identifierAvailable === false && "border-red-500 focus:border-red-500"
+                  )}
                 />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  {isCheckingIdentifier ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                  ) : identifierAvailable === true ? (
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  ) : identifierAvailable === false ? (
+                    <X className="h-4 w-4 text-red-500" />
+                  ) : null}
+                </div>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Lettres, chiffres, tirets, underscores et @ uniquement
+                {identifierAvailable === false ? (
+                  <span className="text-red-500">{tGroups('createModal.identifierTaken')}</span>
+                ) : identifierAvailable === true ? (
+                  <span className="text-green-500">{tGroups('createModal.identifierAvailable')}</span>
+                ) : (
+                  tGroups('createModal.identifierHelp')
+                )}
               </p>
             </div>
             
             <div className="flex items-center justify-between">
               <div>
-                <label className="text-sm font-medium">Communauté privée</label>
+                <label className="text-sm font-medium">{tGroups('createModal.privateLabel')}</label>
                 <p className="text-xs text-muted-foreground">
-                  Seuls les membres invités peuvent rejoindre
+                  {tGroups('createModal.privateHelp')}
                 </p>
               </div>
               <Switch
@@ -569,14 +681,14 @@ export function GroupsLayoutResponsive({ selectedGroupIdentifier }: GroupsLayout
                 onClick={() => setIsCreateModalOpen(false)}
                 className="flex-1"
               >
-                Annuler
+                {tGroups('createModal.cancel')}
               </Button>
               <Button
                 onClick={createGroup}
-                disabled={!newGroupName.trim() || !newGroupIdentifier.trim()}
+                disabled={!newGroupName.trim() || !newGroupIdentifier.trim() || identifierAvailable === false || isCheckingIdentifier}
                 className="flex-1"
               >
-                Créer
+                {tGroups('createModal.create')}
               </Button>
             </div>
           </div>

@@ -632,7 +632,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
   // Envoi de message - attendre le retour serveur
   const handleSendMessage = useCallback(async () => {
-    if (!newMessage.trim() || !selectedConversation || !user) {
+    if ((!newMessage.trim() && attachmentIds.length === 0) || !selectedConversation || !user) {
       return;
     }
 
@@ -700,11 +700,19 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
   // Gestion des touches clavier pour l'envoi de message
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
+    // Sur mobile, permettre les sauts de ligne avec Enter
+    // L'utilisateur doit utiliser le bouton d'envoi pour envoyer
+    if (isMobile) {
+      // Ne rien faire, laisser le comportement par défaut (nouvelle ligne)
+      return;
+    }
+    
+    // Sur desktop, Enter envoie le message (sauf avec Shift)
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
-  }, [handleSendMessage]);
+  }, [handleSendMessage, isMobile]);
 
   // ===== GESTION DES MESSAGES EN ÉCHEC =====
   
@@ -949,6 +957,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               choices={getUserLanguageChoices(user)}
               onAttachmentsChange={setAttachmentIds}
               token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
+              userRole={user.role}
             />
           </div>
 
@@ -1080,8 +1089,8 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                   conversationId={selectedConversation.id}
                   addTranslatingState={addTranslatingState}
                   isTranslating={isTranslating}
-                  onEditMessage={async () => {}}
-                  onDeleteMessage={async () => {}}
+                  onEditMessage={handleEditMessage}
+                  onDeleteMessage={handleDeleteMessage}
                   onReplyMessage={handleReplyMessage}
                   onNavigateToMessage={handleNavigateToMessage}
                   onImageClick={handleImageClick}
@@ -1114,6 +1123,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                     choices={getUserLanguageChoices(user)}
                     onAttachmentsChange={setAttachmentIds}
                     token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
+                    userRole={user.role}
                   />
                 </div>
               </div>

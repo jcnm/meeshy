@@ -10,11 +10,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { User as UserType } from '@/types';
 import { getUserInitials } from '@/utils/user';
 import { toast } from 'sonner';
-import { Upload, Camera, X } from 'lucide-react';
+import { Upload, Camera } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { buildApiUrl } from '@/lib/config';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { validateAvatarFile } from '@/utils/avatar-upload';
+import { AvatarCropDialog } from './avatar-crop-dialog';
 
 interface UserSettingsProps {
   user: UserType | null;
@@ -35,7 +35,6 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [showAvatarDialog, setShowAvatarDialog] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -68,8 +67,7 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
         return;
       }
 
-      setSelectedFile(file);
-      
+      // Lire le fichier et afficher le dialogue de recadrage
       const reader = new FileReader();
       reader.onloadend = () => {
         setAvatarPreview(reader.result as string);
@@ -79,14 +77,17 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
     }
   };
 
-  const handleAvatarUpload = async () => {
-    if (!selectedFile || !user) return;
+  /**
+   * Gère l'upload du fichier recadré
+   */
+  const handleCroppedFile = async (croppedFile: File) => {
+    if (!user) return;
 
     setIsUploadingAvatar(true);
     try {
-      // Étape 1: Upload du fichier vers l'API Next.js
+      // Étape 1: Upload du fichier recadré vers l'API Next.js
       const formData = new FormData();
-      formData.append('avatar', selectedFile);
+      formData.append('avatar', croppedFile);
 
       const uploadResponse = await fetch('/api/upload/avatar', {
         method: 'POST',
@@ -124,9 +125,10 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
       
       onUserUpdate(updatedUser);
       toast.success('Photo de profil mise à jour avec succès');
+      
+      // Fermer le dialogue et nettoyer
       setShowAvatarDialog(false);
       setAvatarPreview(null);
-      setSelectedFile(null);
     } catch (error) {
       console.error('Erreur lors de l\'upload:', error);
       toast.error(error instanceof Error ? error.message : 'Erreur lors de l\'upload de l\'avatar');
@@ -350,38 +352,19 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
 
       </Card>
 
-      {/* Modale de prévisualisation d'avatar */}
-      <Dialog open={showAvatarDialog} onOpenChange={setShowAvatarDialog}>
-        <DialogContent className="max-w-md w-[95vw] sm:max-w-md sm:w-[90vw]">
-          <DialogHeader>
-            <DialogTitle>{t('profile.photo.previewTitle')}</DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col items-center space-y-4">
-            {avatarPreview && (
-              <Avatar className="h-32 w-32">
-                <AvatarImage src={avatarPreview} alt="Preview" />
-                <AvatarFallback>{getUserInitials(user)}</AvatarFallback>
-              </Avatar>
-            )}
-            <div className="flex space-x-3">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowAvatarDialog(false);
-                  setAvatarPreview(null);
-                }}
-              >
-                {t('profile.actions.cancel')}
-              </Button>
-              <Button onClick={handleAvatarUpload} disabled={isUploadingAvatar}>
-                {isUploadingAvatar ? t('profile.actions.uploading') : t('profile.actions.confirm')}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      
+      {/* Dialogue de recadrage d'avatar */}
+      {avatarPreview && (
+        <AvatarCropDialog
+          open={showAvatarDialog}
+          onClose={() => {
+            setShowAvatarDialog(false);
+            setAvatarPreview(null);
+          }}
+          imageSrc={avatarPreview}
+          onCropComplete={handleCroppedFile}
+          isUploading={isUploadingAvatar}
+        />
+      )}
     </div>
   );
 }

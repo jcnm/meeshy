@@ -129,9 +129,6 @@ export function MessagesDisplay({
         model: model || 'basic'
       });
 
-      // Notification de succès
-      toast.success(`Traduction vers ${targetLanguage} demandée`);
-
       // Simuler la réception de traduction si onTranslation est fourni
       if (onTranslation) {
         setTimeout(() => {

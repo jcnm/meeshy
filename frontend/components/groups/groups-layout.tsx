@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser, useIsAuthChecking } from '@/stores';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { ResponsiveLayout } from '@/components/layout/ResponsiveLayout';
 import { useI18n } from '@/hooks/useI18n';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -25,7 +24,8 @@ import {
   MessageSquare,
   Lock,
   Globe,
-  Search
+  Search,
+  X
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Group } from '@/types/frontend';
@@ -35,6 +35,7 @@ import { isValidJWTFormat } from '@/utils/auth';
 import { communitiesService } from '@/services/communities.service';
 import { conversationsService } from '@/services/conversations.service';
 import type { Conversation } from '@shared/types';
+import { generateCommunityIdentifier, validateCommunityIdentifier, sanitizeCommunityIdentifier } from '@/utils/community-identifier';
 
 interface GroupsLayoutProps {
   selectedGroupIdentifier?: string;
@@ -44,7 +45,7 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const user = useUser(); const isAuthChecking = useIsAuthChecking();
-  const { t } = useI18n('groups');
+  const { t: tGroups } = useI18n('groups');
   const { t: tConv } = useI18n('conversations');
 
   // États principaux - TOUJOURS appelés avant tout return conditionnel
@@ -79,6 +80,11 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
 
   // État pour le filtre de recherche
   const [searchFilter, setSearchFilter] = useState('');
+
+  // États pour la vérification d'unicité de l'identifiant
+  const [isCheckingIdentifier, setIsCheckingIdentifier] = useState(false);
+  const [identifierAvailable, setIdentifierAvailable] = useState<boolean | null>(null);
+  const [identifierCheckTimeout, setIdentifierCheckTimeout] = useState<NodeJS.Timeout | null>(null);
 
   // Détecter si on est sur mobile - HOOK AVANT TOUT RETURN
   useEffect(() => {
@@ -255,13 +261,37 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
     }
   }, [isMobile]);
 
-  // Générer l'identifiant depuis le nom
-  const generateIdentifier = useCallback((name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-zA-Z0-9-_@]/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '');
+  // Vérifier la disponibilité de l'identifiant
+  const checkIdentifierAvailability = useCallback(async (identifier: string) => {
+    if (!identifier || identifier.trim() === '') {
+      setIdentifierAvailable(null);
+      return;
+    }
+
+    // Ajouter le préfixe mshy_ pour la vérification côté serveur
+    const fullIdentifier = `mshy_${identifier}`;
+
+    setIsCheckingIdentifier(true);
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        setIsCheckingIdentifier(false);
+        return;
+      }
+
+      const response = await fetch(buildApiUrl(`/communities/check-identifier/${encodeURIComponent(fullIdentifier)}`), {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setIdentifierAvailable(result.available);
+      }
+    } catch (error) {
+      console.error('[Groups] Error checking identifier availability:', error);
+    } finally {
+      setIsCheckingIdentifier(false);
+    }
   }, []);
 
   // Sélectionner un groupe depuis la liste
@@ -276,18 +306,15 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
         loadCommunityConversations(group.id);
       }
       
-      // S'assurer que l'identifiant commence par mshy_
-      let identifier = group.identifier || `mshy_${generateIdentifier(group.name)}`;
-      if (!identifier.startsWith('mshy_')) {
-        identifier = `mshy_${identifier}`;
-      }
+      // L'identifiant contient déjà mshy_ depuis le serveur
+      const identifier = group.identifier || '';
       
       console.log('[DEBUG] Navigating to:', `/groups/${identifier}`);
       router.push(`/groups/${identifier}`);
     } catch (error) {
       console.error('[ERROR] handleSelectGroup failed:', error);
     }
-  }, [router, generateIdentifier, loadCommunityConversations]);
+  }, [router, loadCommunityConversations]);
 
   // Retour à la liste (mobile uniquement)
   const handleBackToList = useCallback(() => {
@@ -298,28 +325,38 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
     }
   }, [isMobile, router]);
 
-  // Copier l'identifiant au presse-papier
+  // Copier l'identifiant au presse-papier (afficher sans mshy_)
   const copyIdentifier = useCallback(async (identifier: string) => {
     try {
-      await navigator.clipboard.writeText(identifier);
+      const displayIdentifier = identifier.replace(/^mshy_/, '');
+      await navigator.clipboard.writeText(displayIdentifier);
       setCopiedIdentifier(identifier);
-      toast.success('Identifiant copié !');
+      toast.success(tGroups('success.identifierCopied'));
       
       // Réinitialiser l'état de copie après 2 secondes
       setTimeout(() => {
         setCopiedIdentifier(null);
       }, 2000);
     } catch (error) {
-      console.error('Erreur copie:', error);
-      toast.error('Erreur lors de la copie');
+      console.error('[Groups] Error copying identifier:', error);
+      toast.error(tGroups('errors.copyError'));
     }
-  }, []);
+  }, [tGroups]);
 
   // Créer un groupe
   const createGroup = useCallback(async () => {
+    // Vérifier que l'identifiant est disponible
+    if (identifierAvailable === false) {
+      toast.error(tGroups('errors.identifierTaken'));
+      return;
+    }
+
     try {
       const token = localStorage.getItem('auth_token');
       if (!token) return;
+
+      // Ajouter le préfixe mshy_ pour l'envoi au serveur
+      const fullIdentifier = `mshy_${newGroupIdentifier}`;
 
       const response = await fetch(buildApiUrl(API_ENDPOINTS.GROUP.CREATE), {
         method: 'POST',
@@ -330,7 +367,7 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
         body: JSON.stringify({
           name: newGroupName,
           description: newGroupDescription,
-          identifier: newGroupIdentifier,
+          identifier: fullIdentifier,
           isPrivate: newGroupIsPrivate
         })
       });
@@ -347,18 +384,19 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
         setNewGroupDescription('');
         setNewGroupIdentifier('');
         setNewGroupIsPrivate(false);
+        setIdentifierAvailable(null);
         setIsCreateModalOpen(false);
         
-        toast.success('Groupe créé avec succès !');
+        toast.success(tGroups('success.groupCreated'));
       } else {
         const error = await response.json();
-        toast.error(error.message || 'Erreur lors de la création');
+        toast.error(error.message || tGroups('errors.createError'));
       }
     } catch (error) {
-      console.error('Erreur création groupe:', error);
-      toast.error('Erreur lors de la création du groupe');
+      console.error('[Groups] Error creating community:', error);
+      toast.error(tGroups('errors.createError'));
     }
-  }, [newGroupName, newGroupDescription, newGroupIdentifier, newGroupIsPrivate]);
+  }, [newGroupName, newGroupDescription, newGroupIdentifier, newGroupIsPrivate, identifierAvailable, tGroups]);
 
   // Charger les données initiales
   useEffect(() => {
@@ -405,10 +443,49 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
 
   // Mettre à jour l'identifiant automatiquement basé sur le nom
   useEffect(() => {
-    if (newGroupName && !newGroupIdentifier) {
-      setNewGroupIdentifier(generateIdentifier(newGroupName));
+    if (newGroupName && newGroupName.trim()) {
+      // Générer automatiquement un identifiant avec le titre + 6 caractères aléatoires
+      const generatedIdentifier = generateCommunityIdentifier(newGroupName);
+      setNewGroupIdentifier(generatedIdentifier);
+      
+      // Vérifier la disponibilité après un court délai (debounce)
+      if (identifierCheckTimeout) {
+        clearTimeout(identifierCheckTimeout);
+      }
+      
+      const timeout = setTimeout(() => {
+        checkIdentifierAvailability(generatedIdentifier);
+      }, 500);
+      
+      setIdentifierCheckTimeout(timeout);
     }
-  }, [newGroupName, newGroupIdentifier, generateIdentifier]);
+  }, [newGroupName]);
+
+  // Vérifier l'unicité lorsque l'utilisateur modifie manuellement l'identifiant
+  useEffect(() => {
+    if (newGroupIdentifier && newGroupIdentifier.trim()) {
+      // Annuler le timeout précédent
+      if (identifierCheckTimeout) {
+        clearTimeout(identifierCheckTimeout);
+      }
+      
+      // Vérifier après un délai (debounce)
+      const timeout = setTimeout(() => {
+        checkIdentifierAvailability(newGroupIdentifier);
+      }, 500);
+      
+      setIdentifierCheckTimeout(timeout);
+    } else {
+      setIdentifierAvailable(null);
+    }
+    
+    // Cleanup
+    return () => {
+      if (identifierCheckTimeout) {
+        clearTimeout(identifierCheckTimeout);
+      }
+    };
+  }, [newGroupIdentifier]);
 
   // Filtrer les groupes basé sur la recherche
   // Filtrer les groupes par tab et recherche
@@ -441,7 +518,7 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">{t('authChecking')}</p>
+          <p className="text-muted-foreground">{tGroups('authChecking')}</p>
         </div>
       </div>
     );
@@ -465,15 +542,15 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
         <div className="h-[calc(100vh-6rem)] flex bg-transparent">
           {/* Liste des groupes */}
           <div className={cn(
-            "flex flex-col bg-white/80 backdrop-blur-sm rounded-l-2xl border border-border/50 shadow-lg",
+            "flex flex-col bg-background/80 dark:bg-background/90 backdrop-blur-sm rounded-l-2xl border border-border/50 shadow-lg",
             isMobile ? (showGroupsList ? "w-full" : "hidden") : "w-96"
           )}>
             {/* Header fixe */}
-            <div className="flex-shrink-0 p-4 border-b border-border/30">
+            <div className="flex-shrink-0 p-4 border-b border-border/30 dark:border-border/50">
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <h2 className="text-xl font-bold text-foreground">Communautés</h2>
-                </div>
+              <div className="flex items-center gap-3">
+                <h2 className="text-xl font-bold text-foreground">{tGroups('list.communities')}</h2>
+              </div>
                 <div className="relative">
                   <Users className="h-6 w-6 text-primary" />
                 </div>
@@ -485,12 +562,12 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
                   <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="public" className="flex items-center space-x-2">
                       <Globe className="h-4 w-4" />
-                      <span>Publiques</span>
+                      <span>{tGroups('visibility.public')}</span>
                       <Badge variant="secondary">{groups.filter(g => !g.isPrivate).length}</Badge>
                     </TabsTrigger>
                     <TabsTrigger value="private" className="flex items-center space-x-2">
                       <Lock className="h-4 w-4" />
-                      <span>Privées</span>
+                      <span>{tGroups('visibility.private')}</span>
                       <Badge variant="secondary">{groups.filter(g => g.isPrivate).length}</Badge>
                     </TabsTrigger>
                   </TabsList>
@@ -500,15 +577,16 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
               {/* Champ de filtrage des groupes */}
               <div className="mb-2">
                 <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                  Filtrer les communautés
+                  {tGroups('list.filterPlaceholder')}
                 </label>
                 <div className="relative">
                   <input
                     type="text"
                     value={searchFilter}
                     onChange={(e) => setSearchFilter(e.target.value)}
-                    placeholder="Rechercher par nom, description..."
-                    className="w-full h-8 text-sm px-3 py-2 border border-border/30 rounded-lg bg-background/50 
+                    placeholder={tGroups('list.filterLabel')}
+                    className="w-full h-8 text-sm px-3 py-2 border border-border/30 dark:border-border/50 rounded-lg 
+                             bg-background/50 dark:bg-background/70 text-foreground
                              placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary/20 focus:border-primary/30 
                              transition-all outline-none"
                   />
@@ -522,12 +600,12 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
                 <div className="flex flex-col items-center justify-center h-full p-8 text-center">
                   <Users className="h-16 w-16 text-muted-foreground/50 mb-4" />
                   <h3 className="text-lg font-semibold text-foreground mb-2">
-                    {isLoading ? 'Chargement des communautés' : 'Aucune communauté'}
+                    {isLoading ? tGroups('list.loading') : tGroups('list.noCommunityFound')}
                   </h3>
                   <p className="text-muted-foreground mb-6">
                     {isLoading 
-                      ? 'Chargement des communautés en cours...'
-                      : 'Créez votre première communauté pour commencer'
+                      ? tGroups('list.loadingInProgress')
+                      : tGroups('noGroupsDescription')
                     }
                   </p>
                 </div>
@@ -535,12 +613,12 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
                 <div className="flex flex-col items-center justify-center h-full p-8 text-center">
                   <Users className="h-16 w-16 text-muted-foreground/50 mb-4" />
                   <h3 className="text-lg font-semibold text-foreground mb-2">
-                    Aucune communauté {activeTab === 'private' ? 'privée' : 'publique'}
+                    {tGroups('list.noCommunityFound')} {activeTab === 'private' ? tGroups('visibility.private').toLowerCase() : tGroups('visibility.public').toLowerCase()}
                   </h3>
                   <p className="text-muted-foreground mb-6">
                     {searchFilter.trim() 
-                      ? 'Aucune communauté trouvée pour cette recherche'
-                      : `Aucune communauté ${activeTab === 'private' ? 'privée' : 'publique'} trouvée`
+                      ? tGroups('list.noCommunityForSearch')
+                      : `${tGroups('list.noCommunityFound')} ${activeTab === 'private' ? tGroups('visibility.private').toLowerCase() : tGroups('visibility.public').toLowerCase()}`
                     }
                   </p>
                 </div>
@@ -552,13 +630,13 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
                         key={group.id}
                         onClick={() => handleSelectGroup(group)}
                         className={cn(
-                          "flex items-center p-4 rounded-2xl cursor-pointer transition-all border-2",
+                          "flex items-start p-4 rounded-2xl cursor-pointer transition-all border-2",
                           selectedGroup?.id === group.id
-                            ? "bg-primary/20 border-primary/40 shadow-md"
-                            : "hover:bg-accent/50 border-transparent hover:border-border/30"
+                            ? "bg-primary/20 dark:bg-primary/30 border-primary/40 dark:border-primary/50 shadow-md"
+                            : "hover:bg-accent/50 dark:hover:bg-accent/70 border-transparent hover:border-border/30 dark:hover:border-border/40"
                         )}
                       >
-                        <div className="relative">
+                        <div className="relative flex-shrink-0">
                           <Avatar className="h-12 w-12 ring-2 ring-primary/20">
                             <AvatarImage src={group.avatar || undefined} />
                             <AvatarFallback className="bg-primary/20 text-primary font-bold">
@@ -566,44 +644,59 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
                             </AvatarFallback>
                           </Avatar>
                           <div className={cn(
-                            "absolute -bottom-0 -right-0 h-4 w-4 rounded-full border-2 border-background",
-                            group.isPrivate ? "bg-orange-500" : "bg-green-500"
+                            "absolute -bottom-0 -right-0 h-4 w-4 rounded-full border-2 border-background dark:border-background",
+                            group.isPrivate ? "bg-orange-500 dark:bg-orange-600" : "bg-green-500 dark:bg-green-600"
                           )}></div>
                         </div>
 
                         <div className="ml-4 flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-bold text-foreground truncate">
-                                {group.name}
-                              </h3>
-                              {group.isPrivate && (
-                                <Lock className="h-4 w-4 text-muted-foreground" />
-                              )}
-                            </div>
-                            <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">
-                              {group._count?.members || 0} membres
-                            </span>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-bold text-foreground truncate">
+                              {group.name}
+                            </h3>
+                            {group.isPrivate && (
+                              <Lock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                            )}
                           </div>
+                          
                           {group.description && (
-                            <p className="text-sm text-muted-foreground truncate">
+                            <p className="text-sm text-muted-foreground truncate mb-2">
                               {group.description}
                             </p>
                           )}
-                          <div className="flex items-center gap-1 mt-1 group/identifier">
+                          
+                          <div className="flex items-center gap-1 mb-2 group/identifier">
                             <span 
                               className="text-xs text-primary font-mono cursor-pointer hover:text-primary/80 transition-colors"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                copyIdentifier(group.identifier || `mshy_${generateIdentifier(group.name)}`);
+                                const displayIdentifier = group.identifier?.replace(/^mshy_/, '') || '';
+                                copyIdentifier(group.identifier || '');
                               }}
                             >
-                              {group.identifier || `mshy_${generateIdentifier(group.name)}`}
+                              {group.identifier?.replace(/^mshy_/, '') || ''}
                             </span>
-                            {copiedIdentifier === (group.identifier || `mshy_${generateIdentifier(group.name)}`) ? (
+                            {copiedIdentifier === group.identifier ? (
                               <CheckCircle2 className="h-3 w-3 text-green-500" />
                             ) : (
                               <Copy className="h-3 w-3 text-muted-foreground opacity-0 group-hover/identifier:opacity-100 transition-opacity" />
+                            )}
+                          </div>
+
+                          {/* Ligne d'informations : membres, conversations, date */}
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <Users className="h-3 w-3" />
+                              <span>{group._count?.members || 0}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <MessageSquare className="h-3 w-3" />
+                              <span>{group._count?.conversations || 0}</span>
+                            </div>
+                            {group.createdAt && (
+                              <div className="flex items-center gap-1">
+                                <span>{new Date(group.createdAt).toLocaleDateString()}</span>
+                              </div>
                             )}
                           </div>
                         </div>
@@ -615,14 +708,14 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
             </div>
 
             {/* Footer fixe avec boutons */}
-            <div className="flex-shrink-0 p-4 border-t border-border/30 bg-background/50">
+            <div className="flex-shrink-0 p-4 border-t border-border/30 dark:border-border/50 bg-background/50 dark:bg-background/70">
               <div className="flex flex-col gap-3">
                 <Button
-                  className="w-full rounded-2xl h-12 bg-primary/10 hover:bg-primary/20 border-0 text-primary font-semibold"
+                  className="w-full rounded-2xl h-12 bg-primary/10 dark:bg-primary/20 hover:bg-primary/20 dark:hover:bg-primary/30 border-0 text-primary font-semibold"
                   onClick={() => setIsCreateModalOpen(true)}
                 >
                   <Plus className="h-5 w-5 mr-2" />
-                  Nouvelle communauté
+                  {tGroups('list.newCommunity')}
                 </Button>
               </div>
             </div>
@@ -636,7 +729,7 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
             {selectedGroup ? (
               <>
                 {/* En-tête du groupe */}
-                <div className="flex-shrink-0 p-4 border-b border-border/30 bg-white/90 backdrop-blur-sm rounded-tr-2xl">
+                <div className="flex-shrink-0 p-4 border-b border-border/30 dark:border-border/50 bg-background/90 dark:bg-background/95 backdrop-blur-sm rounded-tr-2xl">
                   <div className="flex items-center gap-3">
                     {isMobile && (
                       <Button
@@ -663,24 +756,24 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
                           <Lock className="h-4 w-4 text-muted-foreground" />
                         )}
                       </div>
-                      <div className="flex items-center gap-1 group/identifier">
-                        <span 
-                          className="text-sm text-primary font-mono cursor-pointer hover:text-primary/80 transition-colors"
-                          onClick={() => copyIdentifier(selectedGroup.identifier || `mshy_${generateIdentifier(selectedGroup.name)}`)}
-                        >
-                          {selectedGroup.identifier || `mshy_${generateIdentifier(selectedGroup.name)}`}
-                        </span>
-                        {copiedIdentifier === (selectedGroup.identifier || `mshy_${generateIdentifier(selectedGroup.name)}`) ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-500" />
-                        ) : (
-                          <Copy className="h-4 w-4 text-muted-foreground opacity-0 group-hover/identifier:opacity-100 transition-opacity" />
-                        )}
-                      </div>
+                    <div className="flex items-center gap-1 group/identifier">
+                      <span 
+                        className="text-sm text-primary font-mono cursor-pointer hover:text-primary/80 transition-colors"
+                        onClick={() => copyIdentifier(selectedGroup.identifier || '')}
+                      >
+                        {selectedGroup.identifier?.replace(/^mshy_/, '') || ''}
+                      </span>
+                      {copiedIdentifier === selectedGroup.identifier ? (
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <Copy className="h-4 w-4 text-muted-foreground opacity-0 group-hover/identifier:opacity-100 transition-opacity" />
+                      )}
+                    </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <Button variant="outline" size="sm" className="rounded-2xl">
                         <UserPlus className="h-4 w-4 mr-1" />
-                        Inviter
+                        {tGroups('actions.invite')}
                       </Button>
                       <Button 
                         variant="outline" 
@@ -695,63 +788,63 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
                 </div>
 
                 {/* Contenu principal du groupe */}
-                <div className="flex-1 overflow-y-auto bg-white/50 backdrop-blur-sm rounded-br-2xl p-6">
+                <div className="flex-1 overflow-y-auto bg-background/50 dark:bg-background/60 backdrop-blur-sm rounded-br-2xl p-6">
                   <div className="max-w-4xl mx-auto space-y-6">
                     {/* Section À propos */}
-                    <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-border/30 p-6 shadow-sm">
+                    <div className="bg-background/80 dark:bg-background/90 backdrop-blur-sm rounded-2xl border border-border/30 dark:border-border/50 p-6 shadow-sm">
                       <div className="flex items-center gap-3 mb-4">
                         <MessageSquare className="h-6 w-6 text-primary" />
-                        <h2 className="text-xl font-bold text-foreground">À propos</h2>
+                        <h2 className="text-xl font-bold text-foreground">{tGroups('details.about')}</h2>
                       </div>
                       
                       <p className="text-muted-foreground leading-relaxed mb-6">
-                        {selectedGroup.description || 'Aucune description disponible pour cette communauté.'}
+                        {selectedGroup.description || tGroups('details.noDescription')}
                       </p>
                       
                       <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-2">
                           <Users className="h-4 w-4" />
-                          <span>{selectedGroup._count?.members || 0} membres</span>
+                          <span>{selectedGroup._count?.members || 0} {tGroups('members')}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           {selectedGroup.isPrivate ? (
                             <>
                               <Lock className="h-4 w-4" />
-                              <span>Communauté privée</span>
+                              <span>{tGroups('visibility.private')} community</span>
                             </>
                           ) : (
                             <>
                               <Globe className="h-4 w-4" />
-                              <span>Communauté publique</span>
+                              <span>{tGroups('visibility.public')} community</span>
                             </>
                           )}
                         </div>
                         {selectedGroup.createdAt && (
                           <div>
-                            Créée le {new Date(selectedGroup.createdAt).toLocaleDateString('fr-FR')}
+                            {tGroups('details.createdOn')} {new Date(selectedGroup.createdAt).toLocaleDateString()}
                           </div>
                         )}
                       </div>
                     </div>
 
                     {/* Section Conversations */}
-                    <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-border/30 p-6 shadow-sm">
+                    <div className="bg-background/80 dark:bg-background/90 backdrop-blur-sm rounded-2xl border border-border/30 dark:border-border/50 p-6 shadow-sm">
                       <div className="flex items-center gap-3 mb-4">
                         <MessageSquare className="h-6 w-6 text-primary" />
-                        <h2 className="text-xl font-bold text-foreground">Conversations</h2>
+                        <h2 className="text-xl font-bold text-foreground">{tGroups('details.conversations')}</h2>
                       </div>
                       
                       {isLoadingConversations ? (
                         <div className="flex items-center justify-center py-8">
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                          <span className="ml-2 text-muted-foreground">Chargement des conversations...</span>
+                          <span className="ml-2 text-muted-foreground">{tGroups('details.loadingConversations')}</span>
                         </div>
                       ) : communityConversations.length > 0 ? (
                         <div className="space-y-3">
                           {communityConversations.map((conversation) => (
                             <div
                               key={conversation.id}
-                              className="flex items-center gap-3 p-3 rounded-xl border border-border/20 hover:bg-accent/50 transition-colors cursor-pointer"
+                              className="flex items-center gap-3 p-3 rounded-xl border border-border/20 dark:border-border/40 hover:bg-accent/50 dark:hover:bg-accent/70 transition-colors cursor-pointer"
                               onClick={() => router.push(`/conversations/${conversation.id}`)}
                             >
                               <div className="flex-shrink-0">
@@ -793,9 +886,9 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
                       ) : (
                         <div className="text-center py-8">
                           <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                          <h3 className="text-lg font-semibold text-foreground mb-2">Aucune conversation</h3>
+                          <h3 className="text-lg font-semibold text-foreground mb-2">{tGroups('details.noConversations')}</h3>
                           <p className="text-muted-foreground">
-                            Cette communauté n'a pas encore de conversations.
+                            {tGroups('details.noConversationsDescription')}
                           </p>
                         </div>
                       )}
@@ -805,12 +898,12 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
 
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center bg-white/30 backdrop-blur-sm rounded-r-2xl">
+              <div className="flex-1 flex items-center justify-center bg-background/30 dark:bg-background/40 backdrop-blur-sm rounded-r-2xl">
                 <div className="text-center p-8">
                   <Users className="h-16 w-16 mx-auto mb-6 text-muted-foreground/50" />
-                  <h3 className="text-xl font-bold text-foreground mb-3">Sélectionnez une communauté</h3>
+                  <h3 className="text-xl font-bold text-foreground mb-3">{tGroups('list.selectCommunity')}</h3>
                   <p className="text-muted-foreground leading-relaxed">
-                    Choisissez une communauté dans la liste pour voir ses détails et commencer à explorer.
+                    {tGroups('list.selectCommunityDescription')}
                   </p>
                 </div>
               </div>
@@ -823,53 +916,72 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
         <DialogContent className="max-w-md w-[95vw] sm:max-w-md sm:w-[90vw]">
           <DialogHeader>
-            <DialogTitle>Créer une communauté</DialogTitle>
+            <DialogTitle>{tGroups('createModal.title')}</DialogTitle>
           </DialogHeader>
           
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium">Nom</label>
+              <label className="text-sm font-medium">{tGroups('createModal.nameLabel')}</label>
               <Input
                 value={newGroupName}
                 onChange={(e) => setNewGroupName(e.target.value)}
-                placeholder="Nom de la communauté"
+                placeholder={tGroups('createModal.namePlaceholder')}
                 className="mt-1"
               />
             </div>
             
             <div>
-              <label className="text-sm font-medium">Description (optionnel)</label>
+              <label className="text-sm font-medium">{tGroups('createModal.descriptionLabel')}</label>
               <Input
                 value={newGroupDescription}
                 onChange={(e) => setNewGroupDescription(e.target.value)}
-                placeholder="Description de la communauté"
+                placeholder={tGroups('createModal.descriptionPlaceholder')}
                 className="mt-1"
               />
             </div>
             
             <div>
-              <label className="text-sm font-medium">Identifiant</label>
-              <div className="flex items-center mt-1">
-                <span className="text-sm text-muted-foreground bg-muted px-3 py-2 rounded-l-md border border-r-0">
-                  mshy_
-                </span>
+              <label className="text-sm font-medium">{tGroups('createModal.identifierLabel')}</label>
+              <div className="relative mt-1">
                 <Input
                   value={newGroupIdentifier}
-                  onChange={(e) => setNewGroupIdentifier(e.target.value.replace(/[^a-zA-Z0-9-_@]/g, ''))}
-                  placeholder="identifiant-unique"
-                  className="rounded-l-none"
+                  onChange={(e) => {
+                    const sanitized = sanitizeCommunityIdentifier(e.target.value);
+                    setNewGroupIdentifier(sanitized);
+                  }}
+                  placeholder={tGroups('createModal.identifierPlaceholder')}
+                  className={cn(
+                    "pr-10",
+                    identifierAvailable === true && "border-green-500 focus:border-green-500",
+                    identifierAvailable === false && "border-red-500 focus:border-red-500"
+                  )}
                 />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  {isCheckingIdentifier ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                  ) : identifierAvailable === true ? (
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  ) : identifierAvailable === false ? (
+                    <X className="h-4 w-4 text-red-500" />
+                  ) : null}
+                </div>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Lettres, chiffres, tirets, underscores et @ uniquement
+                {identifierAvailable === false ? (
+                  <span className="text-red-500">{tGroups('createModal.identifierTaken')}</span>
+                ) : identifierAvailable === true ? (
+                  <span className="text-green-500">{tGroups('createModal.identifierAvailable')}</span>
+                ) : (
+                  tGroups('createModal.identifierHelp')
+                )}
               </p>
             </div>
             
             <div className="flex items-center justify-between">
               <div>
-                <label className="text-sm font-medium">Communauté privée</label>
+                <label className="text-sm font-medium">{tGroups('createModal.privateLabel')}</label>
                 <p className="text-xs text-muted-foreground">
-                  Seuls les membres invités peuvent rejoindre
+                  {tGroups('createModal.privateHelp')}
                 </p>
               </div>
               <Switch
@@ -884,14 +996,14 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
                 onClick={() => setIsCreateModalOpen(false)}
                 className="flex-1"
               >
-                Annuler
+                {tGroups('createModal.cancel')}
               </Button>
               <Button
                 onClick={createGroup}
-                disabled={!newGroupName.trim() || !newGroupIdentifier.trim()}
+                disabled={!newGroupName.trim() || !newGroupIdentifier.trim() || identifierAvailable === false || isCheckingIdentifier}
                 className="flex-1"
               >
-                Créer
+                {tGroups('createModal.create')}
               </Button>
             </div>
           </div>

@@ -41,6 +41,12 @@ export function RegisterForm({
   });
   const [isLoading, setIsLoading] = useState(false);
 
+  const validateUsername = (username: string) => {
+    // Validation: uniquement lettres, chiffres, tirets et underscores
+    const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+    return usernameRegex.test(username);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -60,13 +66,23 @@ export function RegisterForm({
         toast.error(t('register.fillRequiredFields'));
         return;
       }
+      
+      // Validation du nom d'utilisateur
+      if (!validateUsername(formData.username)) {
+        toast.error(t('register.validation.usernameInvalid'));
+        return;
+      }
     }
 
     setIsLoading(true);
     try {
+      // Générer un username sécurisé à partir de l'email en mode lien (uniquement lettres, chiffres, tirets et underscores)
+      const emailUsername = formData.email.split('@')[0];
+      const cleanUsername = emailUsername.replace(/[^a-zA-Z0-9_-]/g, '_');
+      
       const requestBody = linkId ? {
         // Mode lien d'invitation
-        username: formData.email.split('@')[0], // Générer username depuis email
+        username: cleanUsername,
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
@@ -160,10 +176,17 @@ export function RegisterForm({
             type="text"
             placeholder={t('register.usernamePlaceholder')}
             value={formData.username}
-            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+            onChange={(e) => {
+              // Filtrer les caractères non autorisés en temps réel
+              const value = e.target.value.replace(/[^a-zA-Z0-9_-]/g, '');
+              setFormData({ ...formData, username: value });
+            }}
             disabled={isLoading || disabled}
             required
           />
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            {t('register.usernameHelp')}
+          </p>
         </div>
       )}
 
@@ -224,6 +247,9 @@ export function RegisterForm({
               ))}
             </SelectContent>
           </Select>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            {t('register.systemLanguageHelp')}
+          </p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="regionalLanguage">{t('register.regionalLanguageLabel')}</Label>
@@ -243,6 +269,9 @@ export function RegisterForm({
               ))}
             </SelectContent>
           </Select>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            {t('register.regionalLanguageHelp')}
+          </p>
         </div>
       </div>
 

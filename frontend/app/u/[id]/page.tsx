@@ -16,6 +16,7 @@ import {
 import { usersService, conversationsService, type UserStats } from '@/services';
 import { type User } from '@/types';
 import { useI18n } from '@/hooks/useI18n';
+import { useUser } from '@/stores';
 
 interface ProfilePageProps {
   params: Promise<{
@@ -31,7 +32,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
   const [user, setUser] = useState<User | null>(null);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const currentUser = useUser(); // Use global store instead of separate API call
   const [userId, setUserId] = useState<string | null>(null);
 
   // Résoudre les paramètres asynchrones
@@ -49,15 +50,6 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     };
     resolveParams();
   }, [params, router]);
-
-  const loadCurrentUser = async () => {
-    try {
-      const response = await usersService.getMyProfile();
-      setCurrentUser(response.data);
-    } catch (error) {
-      console.error('Error loading current user:', error);
-    }
-  };
 
   const loadUserProfile = useCallback(async () => {
     if (!userId) return;
@@ -84,18 +76,28 @@ export default function ProfilePage({ params }: ProfilePageProps) {
 
   useEffect(() => {
     const loadData = async () => {
-      await loadCurrentUser();
       await Promise.all([
         loadUserProfile(),
         loadUserStats(),
       ]);
     };
     
-    loadData();
+    if (userId) {
+      loadData();
+    }
   }, [userId, loadUserProfile, loadUserStats]);
 
   const handleStartConversation = async () => {
-    if (!user || !currentUser) return;
+    if (!user || !currentUser) {
+      console.warn('[ProfilePage] Missing user data:', { user: !!user, currentUser: !!currentUser });
+      return;
+    }
+
+    // Prevent creating conversation with oneself
+    if (user.id === currentUser.id) {
+      toast.error('Vous ne pouvez pas créer une conversation avec vous-même');
+      return;
+    }
 
     // Validate that user has a valid ID
     if (!user.id || user.id.trim().length === 0) {
@@ -104,8 +106,15 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     }
 
     try {
+      // Log user data for debugging
+      console.log('[ProfilePage] Creating conversation with users:', {
+        currentUser: { id: currentUser.id, username: currentUser.username, displayName: currentUser.displayName },
+        targetUser: { id: user.id, username: user.username, displayName: user.displayName }
+      });
+
       // Créer le nom de la conversation avec les deux usernames
-      const conversationName = `${currentUser.username} & ${user.username}`;
+      const conversationName = `${getUserUsername(currentUser)} & ${getUserUsername(user)}`;
+      console.log('[ProfilePage] Conversation name:', conversationName);
       
       const response = await conversationsService.createConversation({
         type: 'direct',
@@ -129,6 +138,10 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     const fullName = `${firstName} ${lastName}`.trim();
     
     return fullName || userData.username || 'User';
+  };
+
+  const getUserUsername = (userData: User): string => {
+    return userData.username || userData.displayName || userData.firstName || 'user';
   };
 
   const isMyProfile = currentUser?.id === userId;

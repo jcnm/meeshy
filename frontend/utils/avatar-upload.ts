@@ -19,7 +19,7 @@ export function generateAvatarPath(): { year: string; month: string; fullPath: s
   const now = new Date();
   const year = now.getFullYear().toString();
   const month = (now.getMonth() + 1).toString().padStart(2, '0');
-  const fullPath = `i/p/${year}/${month}`;
+  const fullPath = `u/i/${year}/${month}`;
   
   return { year, month, fullPath };
 }
@@ -33,7 +33,7 @@ export function generateAvatarUrl(filename: string, year: string, month: string)
   const port = window.location.port;
   const baseUrl = port ? `${protocol}//${hostname}:${port}` : `${protocol}//${hostname}`;
   
-  return `${baseUrl}/i/p/${year}/${month}/${filename}`;
+  return `${baseUrl}/u/i/${year}/${month}/${filename}`;
 }
 
 /**

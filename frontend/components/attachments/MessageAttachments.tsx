@@ -78,6 +78,9 @@ export function MessageAttachments({ attachments, onImageClick }: MessageAttachm
 
     // Image attachment - miniature cliquable
     if (type === 'image') {
+      // Déterminer si on doit afficher en grand (moins de 5 images)
+      const shouldDisplayLarge = imageAttachments.length < 5 && imageAttachments.length > 0;
+      
       return (
         <TooltipProvider key={attachment.id}>
           <Tooltip delayDuration={300}>
@@ -87,7 +90,9 @@ export function MessageAttachments({ attachments, onImageClick }: MessageAttachm
                 onClick={() => onImageClick?.(attachment.id)}
               >
                 <div className={`relative bg-gray-100 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden hover:border-blue-400 dark:hover:border-blue-500 transition-all hover:shadow-md dark:hover:shadow-blue-500/20 flex-shrink-0 ${
-                  isMobile ? 'w-14 h-14' : 'w-16 h-16'
+                  shouldDisplayLarge 
+                    ? isMobile ? 'w-24 h-24' : 'w-32 h-32'  // Taille plus grande pour moins de 5 images
+                    : isMobile ? 'w-14 h-14' : 'w-16 h-16'   // Taille normale pour 5+ images
                 }`}>
                   <img
                     src={attachment.thumbnailUrl || attachment.fileUrl}

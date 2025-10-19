@@ -409,7 +409,7 @@ class MeeshySocketIOService {
       
       if (reason === 'io server disconnect') {
         // Le serveur a forcé la déconnexion (souvent connexion multiple ou redémarrage)
-        toast.warning(this.t('websocket.serverDisconnectedReconnecting'));
+        // Toast supprimé pour éviter les notifications intrusives
         
         // Reconnexion automatique après délai
         if (shouldReconnect) {
@@ -421,7 +421,7 @@ class MeeshySocketIOService {
         }
       } else if (reason === 'transport close' || reason === 'transport error') {
         // Problème réseau ou serveur indisponible
-        toast.warning(this.t('websocket.connectionLostReconnecting'));
+        // Toast supprimé pour éviter les notifications intrusives
         
         if (shouldReconnect) {
           setTimeout(() => {
@@ -432,7 +432,7 @@ class MeeshySocketIOService {
         }
       } else if (shouldReconnect) {
         // Autres déconnexions inattendues
-        toast.warning(this.t('websocket.connectionLostReconnecting'));
+        // Toast supprimé pour éviter les notifications intrusives
         
         setTimeout(() => {
           if (!this.isConnected && !this.isConnecting) {

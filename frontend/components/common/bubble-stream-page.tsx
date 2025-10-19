@@ -57,7 +57,7 @@ import {
 } from '@shared/types';
 
 // Constantes locales (non disponibles dans shared)
-const MAX_MESSAGE_LENGTH = 300;
+import { getMaxMessageLength } from '@/lib/constants/languages';
 const TOAST_SHORT_DURATION = 2000;
 const TOAST_LONG_DURATION = 3000;
 const TOAST_ERROR_DURATION = 5000;
@@ -112,6 +112,9 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Déterminer la limite de caractères en fonction du rôle de l'utilisateur
+  const maxMessageLength = getMaxMessageLength(user?.role);
 
   // Hook pour fixer les z-index des composants Radix UI
   useFixRadixZIndex();
@@ -196,11 +199,22 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   const [activeUsers, setActiveUsers] = useState<User[]>(initialParticipants || []);
   // État pour les attachments
   const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
+  // État pour la détection mobile
+  const [isMobile, setIsMobile] = useState(false);
   
   // Debug: log quand attachmentIds change
   useEffect(() => {
     console.log('📎 [BubbleStreamPage] attachmentIds mis à jour:', attachmentIds);
   }, [attachmentIds]);
+  
+  // Détection mobile
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
   // État pour la galerie d'images
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [selectedAttachmentId, setSelectedAttachmentId] = useState<string | null>(null);
@@ -546,7 +560,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     // Message reçu via WebSocket
     
     // Enrichir le message avec les informations du sender si nécessaire
-    let enrichedMessage = { ...message };
+    const enrichedMessage = { ...message };
     
     // Si c'est notre propre message et que sender/anonymousSender manque, l'enrichir
     if ((message.senderId === user.id || message.anonymousSenderId === user.id) && 
@@ -773,7 +787,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           hasToken: !!localStorage.getItem('auth_token'),
           wsUrl: (typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_WS_URL || 'ws://meeshy.me/api') : 'ws://gateway:3000') + '/ws'
         });
-        toast.warning(t('bubbleStream.connectingWebSocket'));
+        // Toast de connexion supprimé pour éviter les notifications intrusives
       }
     }, 3000);
 
@@ -1025,7 +1039,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
   const handleSendMessage = async () => {
     // Vérifier qu'il y a soit du contenu soit des attachments
-    if ((!newMessage.trim() && attachmentIds.length === 0) || newMessage.length > MAX_MESSAGE_LENGTH) {
+    if ((!newMessage.trim() && attachmentIds.length === 0) || newMessage.length > maxMessageLength) {
       return;
     }
 
@@ -1073,7 +1087,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       // Vérifier l'état de la connexion avant l'envoi
       if (!connectionStatus.isConnected) {
         console.log('⚠️ WebSocket non connecté - Impossible d\'envoyer le message');
-        toast.warning(tCommon('messages.connectionInProgress'));
+        // Toast de connexion supprimé pour éviter les notifications intrusives
         // Restaurer le message pour permettre un nouvel essai
         setNewMessage(messageContent);
         setAttachmentIds(currentAttachmentIds);
@@ -1162,6 +1176,14 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
+    // Sur mobile, permettre les sauts de ligne avec Enter
+    // L'utilisateur doit utiliser le bouton d'envoi pour envoyer
+    if (isMobile) {
+      // Ne rien faire, laisser le comportement par défaut (nouvelle ligne)
+      return;
+    }
+    
+    // Sur desktop, Enter envoie le message (sauf avec Shift)
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
@@ -1270,14 +1292,18 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
             bottom: 0 !important;
             width: 100vw !important;
             height: 100vh !important;
+            height: 100dvh !important; /* Dynamic viewport height pour mobile */
             z-index: 40 !important;
             background: linear-gradient(to-br, #eff6ff, #ffffff, #e0e7ff) !important;
+            overflow: hidden !important;
           }
           
           .mobile-messages-container {
+            min-height: 100vh !important;
+            min-height: 100dvh !important; /* Dynamic viewport height */
             padding-top: 5rem !important;
-            padding-bottom: 6rem !important;
-            margin-bottom: 2rem !important;
+            padding-bottom: 2rem !important; /* Augmenté pour laisser plus d'espace sous la zone de saisie */
+            margin-bottom: 0 !important;
           }
           
           .mobile-input-zone {
@@ -1424,6 +1450,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                   choices={languageChoices}
                   onAttachmentsChange={setAttachmentIds}
                   token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
+                  userRole={user?.role}
                 />
               </div>
             </div>

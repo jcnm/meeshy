@@ -63,11 +63,19 @@ const ConversationComposerComponent = memo(function ConversationComposer({
 
   // Fonction pour gérer les touches
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
+    // Sur mobile, permettre les sauts de ligne avec Enter
+    // L'utilisateur doit utiliser le bouton d'envoi pour envoyer
+    if (isMobile) {
+      // Ne rien faire, laisser le comportement par défaut (nouvelle ligne)
+      return;
+    }
+    
+    // Sur desktop, Enter envoie le message (sauf avec Shift)
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
-  }, [handleSend]);
+  }, [handleSend, isMobile]);
 
   return (
     <div className={cn(
@@ -93,6 +101,7 @@ const ConversationComposerComponent = memo(function ConversationComposer({
         choices={currentUser ? getUserLanguageChoices(currentUser) : undefined}
         onKeyPress={handleKeyPress}
         className="w-full min-h-[60px]"
+        userRole={currentUser?.role}
       />
     </div>
   );

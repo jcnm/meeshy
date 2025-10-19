@@ -82,6 +82,14 @@ export function AnonymousChat({ linkId, participant, conversation }: AnonymousCh
 
   // Gérer la touche Entrée
   const handleKeyPress = (e: React.KeyboardEvent) => {
+    // Sur mobile, permettre les sauts de ligne avec Enter
+    // L'utilisateur doit utiliser le bouton d'envoi pour envoyer
+    if (isMobile) {
+      // Ne rien faire, laisser le comportement par défaut (nouvelle ligne)
+      return;
+    }
+    
+    // Sur desktop, Enter envoie le message (sauf avec Shift)
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();

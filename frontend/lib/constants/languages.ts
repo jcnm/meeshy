@@ -15,10 +15,26 @@ export const SUPPORTED_LANGUAGES = [
 ] as const;
 
 export const MAX_MESSAGE_LENGTH = 300;
+export const MAX_MESSAGE_LENGTH_MODERATOR = 500; // Limite pour modérateurs et au-dessus
 export const TOAST_SHORT_DURATION = 2000;
 export const TOAST_LONG_DURATION = 3000;
 export const TOAST_ERROR_DURATION = 5000;
 export const TYPING_CANCELATION_DELAY = 2000; // Délai avant d'annuler l'indicateur de frappe
+
+/**
+ * Obtient la limite de caractères pour un utilisateur en fonction de son rôle
+ * MODERATOR et au-dessus (ADMIN, BIGBOSS, AUDIT, ANALYST) ont 500 caractères
+ * USER a 300 caractères
+ */
+export function getMaxMessageLength(userRole?: string): number {
+  const moderatorRoles = ['MODERATOR', 'MODO', 'ADMIN', 'BIGBOSS', 'AUDIT', 'ANALYST'];
+  
+  if (userRole && moderatorRoles.includes(userRole.toUpperCase())) {
+    return MAX_MESSAGE_LENGTH_MODERATOR;
+  }
+  
+  return MAX_MESSAGE_LENGTH;
+}
 
 /**
  * Interface pour les statistiques de langues

@@ -40,7 +40,8 @@ export async function POST(request: NextRequest) {
     const extension = file.name.split('.').pop() || 'jpg';
     const filename = `avatar_${timestamp}_${random}.${extension}`;
     
-    const folderPath = join(process.cwd(), 'public', 'i', 'p', year, month);
+    // Nouveau chemin avec préfixe /u : /u/i/YYYY/MM/filename.jpg
+    const folderPath = join(process.cwd(), 'public', 'u', 'i', year, month);
     const filePath = join(folderPath, filename);
 
     // Créer le dossier s'il n'existe pas
@@ -54,18 +55,16 @@ export async function POST(request: NextRequest) {
     
     await writeFile(filePath, buffer);
 
-    // Générer l'URL de l'image
-    const protocol = request.headers.get('x-forwarded-proto') || 'http';
-    const host = request.headers.get('host') || 'localhost:3000';
-    const baseUrl = `${protocol}://${host}`;
-    const imageUrl = `${baseUrl}/i/p/${year}/${month}/${filename}`;
+    // Générer l'URL de l'image sur le sous-domaine static avec préfixe /u
+    const staticDomain = process.env.NEXT_PUBLIC_STATIC_URL || 'https://static.meeshy.me';
+    const imageUrl = `${staticDomain}/u/i/${year}/${month}/${filename}`;
 
     return NextResponse.json({
       success: true,
       data: {
         url: imageUrl,
         filename,
-        path: `/i/p/${year}/${month}/${filename}`
+        path: `/u/i/${year}/${month}/${filename}`
       }
     });
 

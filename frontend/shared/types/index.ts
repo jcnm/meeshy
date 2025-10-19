@@ -30,6 +30,9 @@ export * from './tracking-link';
 // Export des types unifiés Phase 5 - Attachments
 export * from './attachment';
 
+// Export des types communauté
+export * from './community';
+
 // ===== ÉVÉNEMENTS SOCKET.IO =====
 export * from './socketio-events';
 

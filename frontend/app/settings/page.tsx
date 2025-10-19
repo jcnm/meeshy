@@ -9,8 +9,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Footer } from '@/components/layout/Footer';
 import { useI18n } from '@/hooks/useI18n';
 import { toast } from 'sonner';
-import { Settings as SettingsIcon, User as UserIcon } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Settings as SettingsIcon } from 'lucide-react';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -70,13 +69,31 @@ export default function SettingsPage() {
         return;
       }
 
+      // Filtrer uniquement les champs autorisés par le backend
+      const filteredData: Record<string, any> = {};
+      
+      // Copier uniquement les champs autorisés
+      if ('firstName' in updatedUser) filteredData.firstName = updatedUser.firstName;
+      if ('lastName' in updatedUser) filteredData.lastName = updatedUser.lastName;
+      if ('displayName' in updatedUser) filteredData.displayName = updatedUser.displayName;
+      if ('email' in updatedUser) filteredData.email = updatedUser.email;
+      if ('phoneNumber' in updatedUser) filteredData.phoneNumber = updatedUser.phoneNumber;
+      if ('bio' in updatedUser) filteredData.bio = updatedUser.bio;
+      if ('systemLanguage' in updatedUser) filteredData.systemLanguage = updatedUser.systemLanguage;
+      if ('regionalLanguage' in updatedUser) filteredData.regionalLanguage = updatedUser.regionalLanguage;
+      if ('customDestinationLanguage' in updatedUser) filteredData.customDestinationLanguage = updatedUser.customDestinationLanguage;
+      if ('autoTranslateEnabled' in updatedUser) filteredData.autoTranslateEnabled = updatedUser.autoTranslateEnabled;
+      if ('translateToSystemLanguage' in updatedUser) filteredData.translateToSystemLanguage = updatedUser.translateToSystemLanguage;
+      if ('translateToRegionalLanguage' in updatedUser) filteredData.translateToRegionalLanguage = updatedUser.translateToRegionalLanguage;
+      if ('useCustomDestination' in updatedUser) filteredData.useCustomDestination = updatedUser.useCustomDestination;
+
       const response = await fetch(buildApiUrl('/users/me'), {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(updatedUser)
+        body: JSON.stringify(filteredData)
       });
 
       if (response.ok) {
@@ -117,7 +134,7 @@ export default function SettingsPage() {
       {/* Hero Section */}
       <section className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b dark:border-gray-700 shadow-sm -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
         <div className="w-full py-6 lg:py-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4">
             <div className="flex items-center gap-4">
               <div className="h-12 w-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
                 <SettingsIcon className="h-6 w-6 text-white" />
@@ -131,10 +148,6 @@ export default function SettingsPage() {
                 </p>
               </div>
             </div>
-            <Badge variant="secondary" className="flex items-center gap-2 px-4 py-2">
-              <UserIcon className="h-4 w-4" />
-              <span>{currentUser?.username}</span>
-            </Badge>
           </div>
           <p className="text-gray-600 dark:text-gray-400 text-lg">
             {t('subtitle') || 'Gérez vos préférences de compte, de langue et de confidentialité'}

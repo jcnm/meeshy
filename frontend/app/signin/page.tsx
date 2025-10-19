@@ -9,14 +9,14 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { MessageSquare, UserPlus, Eye, EyeOff, Mail, Phone, Globe, User, Lock, X } from 'lucide-react';
+import { MessageSquare, UserPlus, Mail, Phone, Globe, User, Lock, X } from 'lucide-react';
 // Pas d'import useAuth - la page signin ne doit pas être protégée
 import { useI18n } from '@/hooks/useI18n';
 import { SUPPORTED_LANGUAGES } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { LargeLogo } from '@/components/branding';
 
-function SigninPageContent() {
+function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateToken?: string } = {}) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     username: '',
@@ -29,8 +29,6 @@ function SigninPageContent() {
     regionalLanguage: 'en',
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [affiliateData, setAffiliateData] = useState<{
@@ -46,7 +44,7 @@ function SigninPageContent() {
 
   // Récupérer l'URL de retour et le token d'affiliation depuis les paramètres de recherche
   const returnUrl = searchParams.get('returnUrl');
-  const affiliateToken = searchParams.get('affiliate');
+  const affiliateToken = propAffiliateToken || searchParams.get('affiliate');
 
   // Pas de vérification d'authentification - la page signin est accessible à tous
 
@@ -77,11 +75,23 @@ function SigninPageContent() {
     }
   };
 
+  const validateUsername = (username: string) => {
+    // Validation: uniquement lettres, chiffres, tirets et underscores
+    const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+    return usernameRegex.test(username);
+  };
+
   const handleNextStep = () => {
     // Validation de l'étape 1
     if (currentStep === 1) {
       if (!formData.username.trim() || !formData.email.trim() || !formData.password.trim() || !confirmPassword.trim()) {
         toast.error(t('register.fillRequiredFields'));
+        return;
+      }
+      
+      // Validation du nom d'utilisateur
+      if (!validateUsername(formData.username)) {
+        toast.error(t('register.validation.usernameInvalid'));
         return;
       }
       
@@ -244,7 +254,7 @@ function SigninPageContent() {
               {currentStep === 1 ? (
                 // ÉTAPE 1: Informations de compte (pseudo, email, mot de passe répété)
                 <div className="space-y-4">
-                  {/* Nom d'utilisateur */}
+                  {/* Nom d'utilisateur (Pseudonyme) */}
                   <div className="space-y-2">
                     <div className="flex items-center space-x-2">
                       <User className="h-4 w-4 text-blue-600" />
@@ -253,15 +263,22 @@ function SigninPageContent() {
                       </Label>
                     </div>
                     <Input
-                      id="username"
+                      id="username whisper"
                       type="text"
                       value={formData.username}
-                      onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                      onChange={(e) => {
+                        // Filtrer les caractères non autorisés en temps réel
+                        const value = e.target.value.replace(/[^a-zA-Z0-9_-]/g, '');
+                        setFormData({ ...formData, username: value });
+                      }}
                       placeholder={t('register.usernamePlaceholder')}
                       disabled={isLoading}
                       required
                       className="h-10"
                     />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {t('register.usernameHelp')}
+                    </p>
                   </div>
 
                   {/* Email */}
@@ -293,27 +310,19 @@ function SigninPageContent() {
                           {t('register.passwordLabel')}
                         </Label>
                       </div>
-                      <div className="relative">
-                        <Input
-                          id="password"
-                          type={showPassword ? 'text' : 'password'}
-                          value={formData.password}
-                          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                          placeholder={t('register.passwordPlaceholder')}
-                          disabled={isLoading}
-                          required
-                          className="h-10 pr-10"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </Button>
-                      </div>
+                      <Input
+                        id="password"
+                        type="password"
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        placeholder={t('register.passwordPlaceholder')}
+                        disabled={isLoading}
+                        required
+                        className="h-10"
+                      />
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {t('register.passwordHelp')}
+                      </p>
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center space-x-2">
@@ -322,27 +331,19 @@ function SigninPageContent() {
                           {t('register.confirmPasswordLabel')}
                         </Label>
                       </div>
-                      <div className="relative">
-                        <Input
-                          id="confirmPassword"
-                          type={showConfirmPassword ? 'text' : 'password'}
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                          placeholder={t('register.confirmPasswordPlaceholder')}
-                          disabled={isLoading}
-                          required
-                          className="h-10 pr-10"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        >
-                          {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </Button>
-                      </div>
+                      <Input
+                        id="confirmPassword"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder={t('register.confirmPasswordPlaceholder')}
+                        disabled={isLoading}
+                        required
+                        className="h-10"
+                      />
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {t('register.confirmPasswordHelp')}
+                      </p>
                     </div>
                   </div>
 
@@ -442,6 +443,9 @@ function SigninPageContent() {
                           ))}
                         </SelectContent>
                       </Select>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {t('register.systemLanguageHelp')}
+                      </p>
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center space-x-2">
@@ -466,6 +470,9 @@ function SigninPageContent() {
                           ))}
                         </SelectContent>
                       </Select>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {t('register.regionalLanguageHelp')}
+                      </p>
                     </div>
                   </div>
 

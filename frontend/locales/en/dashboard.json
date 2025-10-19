@@ -34,6 +34,8 @@
     "recentCommunities": "Recent Communities",
     "recentGroups": "Recent Communities",
     "createLink": "Create Link",
+    "createConversation": "Create Conv.",
+    "shareApp": "Affiliate Link",
     "newConversation": "New Conv.",
     "createCommunity": "Create Comm.",
     "refresh": "Refresh",
@@ -52,7 +54,7 @@
       "createCommunityButton": "Create a community",
       "createGroupButton": "Create a community",
       "settings": "Settings",
-      "shareApp": "Share app"
+      "shareApp": "Create Affiliate Link"
     },
     "quickActions": {
       "title": "Quick Actions",
@@ -61,7 +63,7 @@
       "createLink": "Create a link",
       "createCommunity": "Create a community",
       "createGroup": "Create a community",
-      "shareApp": "Share app",
+      "shareApp": "Create Affiliate Link",
       "settings": "Settings"
     },
     "emptyStates": {

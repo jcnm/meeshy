@@ -29,6 +29,17 @@
         "photoUpdated": "Profile photo updated",
         "previewTitle": "Photo Preview"
       },
+      "cropAvatar": {
+        "cropAvatarTitle": "Crop your profile photo",
+        "zoom": "Zoom",
+        "rotation": "Rotation",
+        "reset": "Reset",
+        "cancel": "Cancel",
+        "saveAvatar": "Save",
+        "uploading": "Uploading...",
+        "processing": "Processing...",
+        "cropInstructions": "Use your mouse to move the image, sliders to zoom and rotate. The image will be cropped to a square."
+      },
       "personalInfo": {
         "title": "Personal Information",
         "description": "Modify your profile information",

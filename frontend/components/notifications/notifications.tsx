@@ -24,27 +24,11 @@ export interface NotificationConfig {
 export function useNotifications() {
   const [isOnline, setIsOnline] = useState(true);
 
-  // Surveiller l'état de la connexion
+  // Surveiller l'état de la connexion (sans toasts)
   useEffect(() => {
     const updateOnlineStatus = () => {
       const online = navigator.onLine;
       setIsOnline(online);
-
-      if (online) {
-        notify({
-          title: 'Connexion rétablie',
-          description: 'Vous êtes de nouveau en ligne',
-          type: 'success',
-          duration: 3000,
-        });
-      } else {
-        notify({
-          title: 'Connexion perdue',
-          description: 'Vérifiez votre connexion internet',
-          type: 'error',
-          duration: 5000,
-        });
-      }
     };
 
     window.addEventListener('online', updateOnlineStatus);
@@ -137,21 +121,7 @@ export function useNotifications() {
   };
 
   const notifyConnectionStatus = (connected: boolean, username?: string) => {
-    if (connected) {
-      notify({
-        title: 'Connecté au chat',
-        description: username ? `Connecté en tant que ${username}` : 'Connexion établie',
-        type: 'success',
-        duration: 3000,
-      });
-    } else {
-      notify({
-        title: 'Déconnecté du chat',
-        description: 'Tentative de reconnexion...',
-        type: 'warning',
-        duration: 4000,
-      });
-    }
+    // Toast de connexion désactivé pour éviter les notifications intrusives
   };
 
   const notifyUserJoined = (username: string) => {

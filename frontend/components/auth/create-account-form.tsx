@@ -35,6 +35,10 @@ export function CreateAccountForm({ linkId, onSuccess }: CreateAccountFormProps)
     setLoading(true);
 
     try {
+      // Générer un username sécurisé à partir de l'email (uniquement lettres, chiffres, tirets et underscores)
+      const emailUsername = formData.email.split('@')[0];
+      const cleanUsername = emailUsername.replace(/[^a-zA-Z0-9_-]/g, '_');
+      
       // Utiliser l'endpoint d'inscription standard avec les bonnes clés de langue
       const response = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.REGISTER), {
         method: 'POST',
@@ -42,7 +46,7 @@ export function CreateAccountForm({ linkId, onSuccess }: CreateAccountFormProps)
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username: formData.email.split('@')[0], // Générer un username à partir de l'email
+          username: cleanUsername,
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
@@ -56,14 +60,14 @@ export function CreateAccountForm({ linkId, onSuccess }: CreateAccountFormProps)
       const result = await response.json();
 
       if (result.success) {
-        toast.success('Compte créé avec succès !');
+        toast.success(t('createAccount.success'));
         onSuccess(result.data);
       } else {
-        toast.error(result.message || 'Erreur lors de la création du compte');
+        toast.error(result.message || t('createAccount.error'));
       }
     } catch (error) {
       console.error('Erreur:', error);
-      toast.error('Erreur de connexion au serveur');
+      toast.error(t('createAccount.serverError'));
     } finally {
       setLoading(false);
     }
@@ -85,70 +89,70 @@ export function CreateAccountForm({ linkId, onSuccess }: CreateAccountFormProps)
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="create-account-firstName">Prénom *</Label>
+              <Label htmlFor="create-account-firstName">{t('createAccount.firstNameRequired')}</Label>
               <Input
                 id="create-account-firstName"
                 value={formData.firstName}
                 onChange={(e) => updateFormData('firstName', e.target.value)}
                 required
-                placeholder="Jean"
+                placeholder={t('register.firstNamePlaceholder')}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="create-account-lastName">Nom *</Label>
+              <Label htmlFor="create-account-lastName">{t('createAccount.lastNameRequired')}</Label>
               <Input
                 id="create-account-lastName"
                 value={formData.lastName}
                 onChange={(e) => updateFormData('lastName', e.target.value)}
                 required
-                placeholder="Dupont"
+                placeholder={t('register.lastNamePlaceholder')}
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="create-account-email">Email *</Label>
+            <Label htmlFor="create-account-email">{t('createAccount.emailRequired')}</Label>
             <Input
               id="create-account-email"
               type="email"
               value={formData.email}
               onChange={(e) => updateFormData('email', e.target.value)}
               required
-              placeholder="jean.dupont@email.com"
+              placeholder={t('register.emailPlaceholder')}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="create-account-phoneNumber">Numéro de téléphone (optionnel)</Label>
+            <Label htmlFor="create-account-phoneNumber">{t('createAccount.phoneOptional')}</Label>
             <Input
               id="create-account-phoneNumber"
               type="tel"
               value={formData.phoneNumber}
               onChange={(e) => updateFormData('phoneNumber', e.target.value)}
-              placeholder="+33123456789"
+              placeholder={t('register.phonePlaceholder')}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="create-account-password">Mot de passe *</Label>
+            <Label htmlFor="create-account-password">{t('createAccount.passwordRequired')}</Label>
             <Input
               id="create-account-password"
               type="password"
               value={formData.password}
               onChange={(e) => updateFormData('password', e.target.value)}
               required
-              placeholder="Choisissez un mot de passe sécurisé"
+              placeholder={t('register.passwordPlaceholder')}
             />
             <p className="text-xs text-gray-500">
-              Le mot de passe doit contenir au moins 6 caractères
+              {t('register.passwordHelp')}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="spokenLanguage">Langue parlée *</Label>
+            <Label htmlFor="spokenLanguage">{t('createAccount.spokenLanguageLabel')}</Label>
             <Select value={formData.spokenLanguage} onValueChange={(value) => updateFormData('spokenLanguage', value)}>
               <SelectTrigger>
-                <SelectValue placeholder="Sélectionnez votre langue" />
+                <SelectValue placeholder={t('createAccount.spokenLanguagePlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {SUPPORTED_LANGUAGES.map((lang) => (
@@ -161,10 +165,10 @@ export function CreateAccountForm({ linkId, onSuccess }: CreateAccountFormProps)
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="receiveLanguage">Langue de réception des messages *</Label>
+            <Label htmlFor="receiveLanguage">{t('createAccount.receiveLanguageLabel')}</Label>
             <Select value={formData.receiveLanguage} onValueChange={(value) => updateFormData('receiveLanguage', value)}>
               <SelectTrigger>
-                <SelectValue placeholder="Dans quelle langue voulez-vous recevoir les messages ?" />
+                <SelectValue placeholder={t('createAccount.receiveLanguagePlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {SUPPORTED_LANGUAGES.map((lang) => (
@@ -181,7 +185,7 @@ export function CreateAccountForm({ linkId, onSuccess }: CreateAccountFormProps)
             className="w-full" 
             disabled={loading || !formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.spokenLanguage || !formData.receiveLanguage}
           >
-            {loading ? 'Création en cours...' : 'Créer le compte et rejoindre'}
+            {loading ? t('createAccount.submitting') : t('createAccount.submitButton')}
           </Button>
         </form>
       </CardContent>

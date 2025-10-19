@@ -46,7 +46,7 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
   }, [user]);
 
   const handleSettingChange = (key: string, value: boolean | string) => {
-    let newSettings = {
+    const newSettings = {
       ...settings,
       [key]: value
     };

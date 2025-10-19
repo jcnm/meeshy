@@ -69,7 +69,6 @@ function QuickLoginPageContent() {
     password: ''
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -188,23 +187,13 @@ function QuickLoginPageContent() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 {t('login.passwordLabel')}
               </label>
-              <div className="relative">
-                <SimpleInput
-                  type={showPassword ? 'text' : 'password'}
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  placeholder={t('login.passwordPlaceholder')}
-                  disabled={isLoading}
-                />
-                <button
-                  type="button"
-                  className="absolute right-3 top-2 text-gray-400 hover:text-gray-600 dark:text-gray-400"
-                  onClick={() => setShowPassword(!showPassword)}
-                  title={showPassword ? t('login.hidePassword') : t('login.showPassword')}
-                >
-                  {showPassword ? '🙈' : '👁️'}
-                </button>
-              </div>
+              <SimpleInput
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                placeholder={t('login.passwordPlaceholder')}
+                disabled={isLoading}
+              />
             </div>
 
             <SimpleButton type="submit" disabled={isLoading}>

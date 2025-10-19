@@ -5,7 +5,7 @@ import { Send, MapPin, X, MessageCircle, Languages, Paperclip, Loader2 } from 'l
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { LanguageFlagSelector } from '@/components/translation';
-import { MAX_MESSAGE_LENGTH } from '@/lib/constants/languages';
+import { getMaxMessageLength } from '@/lib/constants/languages';
 import { type LanguageChoice } from '@/lib/bubble-stream-modules';
 import { useI18n } from '@/hooks/useI18n';
 import { useReplyStore, type ReplyingToMessage } from '@/stores/reply-store';
@@ -29,6 +29,7 @@ interface MessageComposerProps {
   // Nouveaux props pour les attachments
   onAttachmentsChange?: (attachmentIds: string[]) => void;
   token?: string;
+  userRole?: string; // Rôle de l'utilisateur pour déterminer la limite de caractères
 }
 
 export interface MessageComposerRef {
@@ -54,10 +55,14 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   className = "",
   choices,
   onAttachmentsChange,
-  token
+  token,
+  userRole
 }, ref) => {
   const { t } = useI18n('conversations');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  
+  // Déterminer la limite de caractères en fonction du rôle
+  const maxMessageLength = getMaxMessageLength(userRole);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { replyingTo, clearReply } = useReplyStore();
   const [isMobile, setIsMobile] = useState(false);
@@ -411,7 +416,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
             ? 'rounded-b-2xl rounded-t-none border-t-0' 
             : 'rounded-2xl'
         } ${isMobile ? 'text-base' : 'text-sm sm:text-base'}`}
-        maxLength={MAX_MESSAGE_LENGTH}
+        maxLength={maxMessageLength}
         disabled={!isComposingEnabled}
         style={{
           borderRadius: replyingTo || selectedFiles.length > 0 ? '0 0 16px 16px' : '16px',
@@ -447,8 +452,8 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       {/* Bouton d'envoi, compteur et sélecteur de langue */}
       <div className="absolute bottom-2 sm:bottom-3 right-3 sm:right-4 flex items-center space-x-1 sm:space-x-2 pointer-events-auto">
         {/* Compteur de caractères - masqué sur mobile */}
-        <span className={`hidden sm:inline text-xs ${value.length > MAX_MESSAGE_LENGTH * 0.8 ? 'text-orange-500' : 'text-gray-500'}`}>
-          {value.length}/{MAX_MESSAGE_LENGTH}
+        <span className={`hidden sm:inline text-xs ${value.length > maxMessageLength * 0.8 ? 'text-orange-500' : 'text-gray-500'}`}>
+          {value.length}/{maxMessageLength}
         </span>
         
         {/* Icône d'attachement */}
