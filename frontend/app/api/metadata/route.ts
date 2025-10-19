@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getOgImageUrl } from '@/lib/og-images';
 
 interface MetadataResponse {
   title: string;
@@ -64,7 +65,7 @@ async function generateAffiliateMetadata(
         return {
           title: `Rejoignez Meeshy avec ${affiliateUser.firstName} ${affiliateUser.lastName}`,
           description: `Connectez-vous avec ${affiliateUser.firstName} et des milliers d'utilisateurs du monde entier sur Meeshy, la plateforme de messagerie multilingue en temps réel. Traduction automatique, conversations globales et plus encore !`,
-          image: `${frontendUrl}/api/og-image-dynamic?type=affiliate&title=Rejoignez ${affiliateUser.firstName} ${affiliateUser.lastName}&subtitle=sur Meeshy&userAvatar=${encodeURIComponent(affiliateUser.avatar || '')}&userFirstName=${encodeURIComponent(affiliateUser.firstName || '')}&userLastName=${encodeURIComponent(affiliateUser.lastName || '')}&userName=${encodeURIComponent(affiliateUser.username || '')}`,
+          image: getOgImageUrl('affiliate', frontendUrl),
           url: `${frontendUrl}/signin?affiliate=${affiliateToken}`,
           type: 'website',
           siteName: 'Meeshy',
@@ -100,7 +101,7 @@ async function generateConversationMetadata(
         return {
           title: `${shareLink.conversation?.title || 'Conversation Meeshy'} - Rejoignez la discussion`,
           description: shareLink.description || `Rejoignez cette conversation sur Meeshy et discutez en temps réel avec traduction automatique dans plus de 100 langues.`,
-          image: `${frontendUrl}/images/meeshy-og-conversation.jpg`,
+          image: getOgImageUrl('default', frontendUrl),
           url: `${frontendUrl}/join/${linkId}`,
           type: 'website',
           siteName: 'Meeshy',
@@ -136,7 +137,7 @@ async function generateJoinMetadata(
         return {
           title: `Rejoignez ${shareLink.conversation?.title || 'cette conversation'} sur Meeshy`,
           description: `Participez à une conversation multilingue en temps réel. Traduction automatique, partage de fichiers et discussions globales sur Meeshy.`,
-          image: `${frontendUrl}/images/meeshy-og-join.jpg`,
+          image: getOgImageUrl('signin', frontendUrl),
           url: `${frontendUrl}/join/${linkId}`,
           type: 'website',
           siteName: 'Meeshy',
@@ -155,7 +156,7 @@ function generateDefaultMetadata(frontendUrl: string = 'https://meeshy.me'): Met
   return {
     title: 'Meeshy - Messagerie Multilingue en Temps Réel',
     description: 'Connectez-vous avec le monde entier grâce à Meeshy, la plateforme de messagerie multilingue avec traduction automatique en temps réel. Plus de 100 langues supportées, conversations globales et partage de fichiers.',
-    image: `${frontendUrl}/images/meeshy-og-default.jpg`,
+    image: getOgImageUrl('default', frontendUrl),
     url: frontendUrl,
     type: 'website',
     siteName: 'Meeshy',

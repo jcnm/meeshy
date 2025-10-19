@@ -1,4 +1,8 @@
 import { Metadata } from 'next';
+import { getOgImageUrl } from '@/lib/og-images';
+
+const frontendUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://meeshy.me';
+const ogImageUrl = getOgImageUrl('signin', frontendUrl);
 
 export const metadata: Metadata = {
   title: 'Inscription - Meeshy',
@@ -10,7 +14,7 @@ export const metadata: Metadata = {
     siteName: 'Meeshy',
     images: [
       {
-        url: 'http://localhost:3100/android-chrome-512x512.png',
+        url: ogImageUrl,
         width: 1200,
         height: 630,
         alt: 'Inscription sur Meeshy - Messagerie multilingue',
@@ -23,7 +27,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Inscription - Meeshy',
     description: 'Créez votre compte Meeshy et rejoignez la communauté mondiale de messagerie multilingue en temps réel.',
-    images: ['http://localhost:3100/android-chrome-512x512.png'],
+    images: [ogImageUrl],
     creator: '@meeshy_app',
   },
   alternates: {

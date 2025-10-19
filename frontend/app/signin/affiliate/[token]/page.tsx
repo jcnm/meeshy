@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import SigninPageContent from '../../page';
+import { getOgImageUrl } from '@/lib/og-images';
 
 interface AffiliateSigninPageProps {
   params: { token: string };
@@ -25,18 +26,8 @@ export async function generateMetadata({ params }: AffiliateSigninPageProps): Pr
         const title = `Rejoignez Meeshy avec ${affiliateUser.firstName} ${affiliateUser.lastName}`;
         const description = `Connectez-vous avec ${affiliateUser.firstName} et des milliers d'utilisateurs du monde entier sur Meeshy, la plateforme de messagerie multilingue en temps réel.`;
         
-        // Construire l'URL de l'image dynamique avec les paramètres de l'utilisateur
-        const imageParams = new URLSearchParams({
-          type: 'affiliate',
-          title: 'Rejoignez Meeshy',
-          subtitle: "Invitation d'un ami",
-          userAvatar: affiliateUser.avatar || '',
-          userFirstName: affiliateUser.firstName || '',
-          userLastName: affiliateUser.lastName || '',
-          userName: affiliateUser.username || ''
-        });
-        
-        const dynamicImageUrl = `${frontendUrl}/api/og-image-dynamic?${imageParams.toString()}`;
+        // Utiliser l'image statique pour l'affiliation
+        const imageUrl = getOgImageUrl('affiliate', frontendUrl);
         
         return {
           title,
@@ -48,7 +39,7 @@ export async function generateMetadata({ params }: AffiliateSigninPageProps): Pr
             siteName: 'Meeshy',
             images: [
               {
-                url: dynamicImageUrl,
+                url: imageUrl,
                 width: 1200,
                 height: 630,
                 alt: `${affiliateUser.firstName} ${affiliateUser.lastName} vous invite sur Meeshy`,
@@ -61,7 +52,7 @@ export async function generateMetadata({ params }: AffiliateSigninPageProps): Pr
             card: 'summary_large_image',
             title,
             description,
-            images: [dynamicImageUrl],
+            images: [imageUrl],
             creator: '@meeshy_app',
           },
           alternates: {
