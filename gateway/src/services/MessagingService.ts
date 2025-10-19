@@ -200,11 +200,11 @@ export class MessagingService {
     const errors: MessageValidationResult['errors'] = [];
     const warnings: MessageValidationResult['warnings'] = [];
 
-    // Validation du contenu
-    if (!request.content || request.content.trim().length === 0) {
+    // Validation du contenu - permettre les messages sans contenu si il y a des attachements
+    if ((!request.content || request.content.trim().length === 0) && (!request.attachments || request.attachments.length === 0)) {
       errors.push({
         field: 'content',
-        message: 'Le contenu du message ne peut pas être vide',
+        message: 'Message content cannot be empty (unless attachments are included)',
         code: 'CONTENT_EMPTY'
       });
     }
@@ -212,7 +212,7 @@ export class MessagingService {
     if (request.content && request.content.length > 4000) {
       errors.push({
         field: 'content',
-        message: 'Le contenu du message ne peut pas dépasser 4000 caractères',
+        message: 'Message content cannot exceed 4000 characters',
         code: 'CONTENT_TOO_LONG'
       });
     }
@@ -221,7 +221,7 @@ export class MessagingService {
     if (!request.conversationId) {
       errors.push({
         field: 'conversationId',
-        message: 'L\'ID de conversation est requis',
+        message: 'Conversation ID is required',
         code: 'CONVERSATION_ID_REQUIRED'
       });
     }
@@ -230,7 +230,7 @@ export class MessagingService {
     if (request.isAnonymous && !request.anonymousDisplayName) {
       errors.push({
         field: 'anonymousDisplayName',
-        message: 'Le nom d\'affichage anonyme est requis pour les messages anonymes',
+        message: 'Anonymous display name is required for anonymous messages',
         code: 'ANONYMOUS_NAME_REQUIRED'
       });
     }
@@ -239,7 +239,7 @@ export class MessagingService {
     if (request.attachments && request.attachments.length > 10) {
       errors.push({
         field: 'attachments',
-        message: 'Maximum 10 pièces jointes par message',
+        message: 'Maximum 10 attachments per message',
         code: 'TOO_MANY_ATTACHMENTS'
       });
     }
@@ -248,7 +248,7 @@ export class MessagingService {
     if (request.content && request.content.length > 1000) {
       warnings.push({
         field: 'content',
-        message: 'Message long - traduction premium recommandée',
+        message: 'Long message - premium translation recommended',
         code: 'LONG_CONTENT_WARNING'
       });
     }
@@ -413,7 +413,7 @@ export class MessagingService {
           canUseHighPriority: false,
           restrictions: {
             maxContentLength: 1000, // Limite pour anonymes
-            maxAttachments: shareLink.allowAnonymousFiles ? 3 : 0,
+            maxAttachments: shareLink.allowAnonymousFiles ? 5 : 0,
             allowedAttachmentTypes: shareLink.allowAnonymousFiles ? 
               (shareLink.allowAnonymousImages ? ['image', 'file'] : ['file']) : [],
             rateLimitRemaining: 20 // Rate limit pour anonymes
@@ -459,7 +459,7 @@ export class MessagingService {
           canUseHighPriority: conversation.type !== 'public',
           restrictions: {
             maxContentLength: 4000,
-            maxAttachments: 10,
+            maxAttachments: 100,
             allowedAttachmentTypes: ['image', 'file', 'audio', 'video'],
             rateLimitRemaining: 100
           }

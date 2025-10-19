@@ -78,7 +78,7 @@ export default async function affiliateRoutes(fastify: FastifyInstance) {
       });
 
       // Construire le lien d'affiliation
-      const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3100';
       const affiliateLink = `${baseUrl}/signin?affiliate=${token}`;
 
       return reply.send({
@@ -134,7 +134,7 @@ export default async function affiliateRoutes(fastify: FastifyInstance) {
         }
       });
 
-      const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3100';
       
       const tokensWithLinks = tokens.map(token => ({
         id: token.id,

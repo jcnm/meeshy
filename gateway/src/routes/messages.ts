@@ -137,13 +137,6 @@ export default async function messageRoutes(fastify: FastifyInstance) {
       const authRequest = request as UnifiedAuthRequest;
       const userId = authRequest.authContext.userId;
 
-      if (!content || content.trim().length === 0) {
-        return reply.status(400).send({
-          success: false,
-          error: 'Le contenu du message ne peut pas être vide'
-        });
-      }
-
       // Vérifier que le message existe et appartient à l'utilisateur
       const message = await prisma.message.findFirst({
         where: {
@@ -152,6 +145,7 @@ export default async function messageRoutes(fastify: FastifyInstance) {
           isDeleted: false
         },
         include: {
+          attachments: true,
           conversation: {
             include: {
               members: {
@@ -166,7 +160,16 @@ export default async function messageRoutes(fastify: FastifyInstance) {
       if (!message) {
         return reply.status(404).send({
           success: false,
-          error: 'Message non trouvé ou vous n\'êtes pas autorisé à le modifier'
+          error: 'Message not found or you are not authorized to modify it'
+        });
+      }
+
+      // Permettre l'édition de messages sans contenu si le message a des attachements
+      const messageHasAttachments = message.attachments && message.attachments.length > 0;
+      if ((!content || content.trim().length === 0) && !messageHasAttachments) {
+        return reply.status(400).send({
+          success: false,
+          error: 'Message content cannot be empty (unless attachments are included)'
         });
       }
 

@@ -620,6 +620,22 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         });
       }
 
+      // Prevent creating conversation with oneself
+      if (type === 'direct' && participantIds.length === 1 && participantIds[0] === userId) {
+        return reply.status(400).send({
+          success: false,
+          error: 'Vous ne pouvez pas créer une conversation avec vous-même'
+        });
+      }
+
+      // Also check if userId is in participantIds (in case of manipulation)
+      if (participantIds.includes(userId)) {
+        return reply.status(400).send({
+          success: false,
+          error: 'Vous ne devez pas vous inclure dans la liste des participants'
+        });
+      }
+
       // Validate custom identifier if provided
       if (identifier) {
         const identifierRegex = /^[a-zA-Z0-9\-_@]*$/;
@@ -2611,7 +2627,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       });
 
       // Retour compatible avec le frontend de service conversations (string du lien complet)
-      const inviteLink = `${process.env.FRONTEND_URL || 'http://meeshy.me'}/join/${finalLinkId}`;
+      const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:3100'}/join/${finalLinkId}`;
       reply.send({
         success: true,
         data: {

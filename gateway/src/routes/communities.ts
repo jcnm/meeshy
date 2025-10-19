@@ -13,6 +13,13 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 
+// Enum des rôles de communauté (aligné avec shared/types/community.ts)
+enum CommunityRole {
+  ADMIN = 'admin',
+  MODERATOR = 'moderator',
+  MEMBER = 'member'
+}
+
 // Schémas de validation
 const CreateCommunitySchema = z.object({
   name: z.string().min(1).max(100),
@@ -33,6 +40,10 @@ const UpdateCommunitySchema = z.object({
 // Fonction pour générer un identifier à partir du nom
 function generateIdentifier(name: string, customIdentifier?: string): string {
   if (customIdentifier) {
+    // Si l'identifiant personnalisé commence déjà par mshy_, ne pas le rajouter
+    if (customIdentifier.startsWith('mshy_')) {
+      return customIdentifier;
+    }
     return `mshy_${customIdentifier}`;
   }
   
@@ -47,7 +58,12 @@ function generateIdentifier(name: string, customIdentifier?: string): string {
 }
 
 const AddMemberSchema = z.object({
-  userId: z.string()
+  userId: z.string(),
+  role: z.enum([CommunityRole.ADMIN, CommunityRole.MODERATOR, CommunityRole.MEMBER]).optional().default(CommunityRole.MEMBER)
+});
+
+const UpdateMemberRoleSchema = z.object({
+  role: z.enum([CommunityRole.ADMIN, CommunityRole.MODERATOR, CommunityRole.MEMBER])
 });
 
 /**
@@ -56,6 +72,30 @@ const AddMemberSchema = z.object({
  */
 export async function communityRoutes(fastify: FastifyInstance) {
   
+  // Route pour vérifier la disponibilité d'un identifiant de communauté
+  fastify.get('/communities/check-identifier/:identifier', { onRequest: [fastify.authenticate] }, async (request, reply) => {
+    try {
+      const { identifier } = request.params as { identifier: string };
+      
+      // Vérifier si l'identifiant existe déjà
+      const existingCommunity = await fastify.prisma.community.findUnique({
+        where: { identifier }
+      });
+      
+      return reply.send({
+        success: true,
+        available: !existingCommunity,
+        identifier
+      });
+    } catch (error) {
+      console.error('[COMMUNITIES] Error checking identifier availability:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Failed to check identifier availability'
+      });
+    }
+  });
+
   // Route pour obtenir toutes les communautés de l'utilisateur connecté
   fastify.get('/communities', { onRequest: [fastify.authenticate] }, async (request, reply) => {
     try {
@@ -287,12 +327,12 @@ export async function communityRoutes(fastify: FastifyInstance) {
       if (existingCommunity) {
         return reply.status(409).send({
           success: false,
-          error: 'Community identifier already exists',
+          error: 'Identifier already exists',
           message: `A community with identifier "${identifier}" already exists`
         });
       }
       
-      // Créer la communauté ET automatiquement ajouter le créateur comme membre
+      // Créer la communauté ET automatiquement ajouter le créateur comme membre ADMIN
       const community = await fastify.prisma.community.create({
         data: {
           name: validatedData.name,
@@ -301,10 +341,11 @@ export async function communityRoutes(fastify: FastifyInstance) {
           avatar: validatedData.avatar,
           isPrivate: validatedData.isPrivate ?? true,
           createdBy: userId,
-          // Automatiquement ajouter le créateur comme membre
+          // Automatiquement ajouter le créateur comme membre avec le rôle ADMIN
           members: {
             create: {
-              userId: userId
+              userId: userId,
+              role: CommunityRole.ADMIN as string
             }
           }
         },
@@ -445,10 +486,16 @@ export async function communityRoutes(fastify: FastifyInstance) {
       
       const userId = authContext.userId;
       
-      // Vérifier que l'utilisateur est le créateur de la communauté
+      // Vérifier que la communauté existe et que l'utilisateur est admin
       const community = await fastify.prisma.community.findFirst({
         where: { id },
-        select: { createdBy: true }
+        select: { 
+          createdBy: true,
+          members: {
+            where: { userId },
+            select: { role: true }
+          }
+        }
       });
 
       if (!community) {
@@ -458,10 +505,14 @@ export async function communityRoutes(fastify: FastifyInstance) {
         });
       }
 
-      if (community.createdBy !== userId) {
+      // Vérifier que l'utilisateur est admin (ou créateur)
+      const userMember = community.members[0];
+      const isAdmin = userMember && userMember.role === CommunityRole.ADMIN;
+      
+      if (!isAdmin) {
         return reply.status(403).send({
           success: false,
-          error: 'Only community creator can add members'
+          error: 'Only community admins can add members'
         });
       }
 
@@ -490,11 +541,12 @@ export async function communityRoutes(fastify: FastifyInstance) {
       if (existingMember) {
         member = existingMember;
       } else {
-        // Ajouter le membre
+        // Ajouter le membre avec le rôle spécifié (par défaut: MEMBER)
         member = await fastify.prisma.communityMember.create({
           data: {
             communityId: id,
-            userId: validatedData.userId
+            userId: validatedData.userId,
+            role: (validatedData.role || CommunityRole.MEMBER) as string
           },
           include: {
             user: {
@@ -523,6 +575,83 @@ export async function communityRoutes(fastify: FastifyInstance) {
     }
   });
 
+  // Route pour mettre à jour le rôle d'un membre
+  fastify.patch('/communities/:id/members/:memberId/role', { onRequest: [fastify.authenticate] }, async (request, reply) => {
+    try {
+      const { id, memberId } = request.params as { id: string; memberId: string };
+      const validatedData = UpdateMemberRoleSchema.parse(request.body);
+      
+      // Utiliser le nouveau système d'authentification unifié
+      const authContext = (request as any).authContext;
+      if (!authContext || !authContext.isAuthenticated || !authContext.registeredUser) {
+        return reply.status(401).send({
+          success: false,
+          message: 'Authentication required',
+          error: 'User must be authenticated'
+        });
+      }
+      
+      const userId = authContext.userId;
+      
+      // Vérifier que la communauté existe et que l'utilisateur est admin
+      const community = await fastify.prisma.community.findFirst({
+        where: { id },
+        select: { 
+          createdBy: true,
+          members: {
+            where: { userId },
+            select: { role: true }
+          }
+        }
+      });
+
+      if (!community) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Community not found'
+        });
+      }
+
+      // Vérifier que l'utilisateur est admin
+      const userMember = community.members[0];
+      const isAdmin = userMember && userMember.role === CommunityRole.ADMIN;
+      
+      if (!isAdmin) {
+        return reply.status(403).send({
+          success: false,
+          error: 'Only community admins can update member roles'
+        });
+      }
+
+      // Mettre à jour le rôle du membre
+      const updatedMember = await fastify.prisma.communityMember.update({
+        where: { id: memberId },
+        data: { role: validatedData.role as string },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              displayName: true,
+              avatar: true
+            }
+          }
+        }
+      });
+
+      reply.send({
+        success: true,
+        data: updatedMember
+      });
+    } catch (error) {
+      console.error('[COMMUNITIES] Error updating member role:', error);
+      reply.status(500).send({
+        success: false,
+        error: 'Failed to update member role'
+      });
+    }
+  });
+
   // Route pour retirer un membre de la communauté
   fastify.delete('/communities/:id/members/:memberId', { onRequest: [fastify.authenticate] }, async (request, reply) => {
     try {
@@ -540,10 +669,16 @@ export async function communityRoutes(fastify: FastifyInstance) {
       
       const userId = authContext.userId;
       
-      // Vérifier que l'utilisateur est le créateur de la communauté
+      // Vérifier que la communauté existe et que l'utilisateur est admin
       const community = await fastify.prisma.community.findFirst({
         where: { id },
-        select: { createdBy: true }
+        select: { 
+          createdBy: true,
+          members: {
+            where: { userId },
+            select: { role: true }
+          }
+        }
       });
 
       if (!community) {
@@ -553,10 +688,14 @@ export async function communityRoutes(fastify: FastifyInstance) {
         });
       }
 
-      if (community.createdBy !== userId) {
+      // Vérifier que l'utilisateur est admin
+      const userMember = community.members[0];
+      const isAdmin = userMember && userMember.role === CommunityRole.ADMIN;
+      
+      if (!isAdmin) {
         return reply.status(403).send({
           success: false,
-          error: 'Only community creator can remove members'
+          error: 'Only community admins can remove members'
         });
       }
 

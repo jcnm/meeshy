@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { logError } from '../utils/logger';
 import bcrypt from 'bcryptjs';
+import { normalizeEmail, normalizeUsername, capitalizeName, normalizeDisplayName } from '../utils/normalize';
 
 // Schéma de validation pour la mise à jour utilisateur
 const updateUserSchema = z.object({
@@ -9,16 +10,16 @@ const updateUserSchema = z.object({
   lastName: z.string().min(1).optional(),
   displayName: z.string().optional(),
   email: z.string().email().optional(),
-  phoneNumber: z.string().nullable().optional().or(z.literal('')),
+  phoneNumber: z.union([z.string(), z.null()]).optional(),
   bio: z.string().max(500).optional(),
   systemLanguage: z.string().min(2).max(5).optional(),
   regionalLanguage: z.string().min(2).max(5).optional(),
-  customDestinationLanguage: z.string().min(2).max(5).optional(),
+  customDestinationLanguage: z.union([z.string().min(2).max(5), z.literal(''), z.null()]).optional(), // Accept empty string for "None"
   autoTranslateEnabled: z.boolean().optional(),
   translateToSystemLanguage: z.boolean().optional(),
   translateToRegionalLanguage: z.boolean().optional(),
   useCustomDestination: z.boolean().optional(),
-});
+}).strict(); // Rejeter explicitement les champs inconnus pour éviter les erreurs silencieuses
 
 // Schéma de validation pour l'upload d'avatar
 const updateAvatarSchema = z.object({
@@ -31,15 +32,15 @@ const updateAvatarSchema = z.object({
     },
     'Invalid avatar format. Must be a valid URL or base64 image'
   )
-});
+}).strict(); // Accepter uniquement le champ avatar
 
 // Schéma de validation pour le changement de mot de passe
 const updatePasswordSchema = z.object({
-  currentPassword: z.string().min(1, 'Le mot de passe actuel est requis'),
-  newPassword: z.string().min(6, 'Le nouveau mot de passe doit contenir au moins 6 caractères'),
-  confirmPassword: z.string().min(1, 'La confirmation du mot de passe est requise')
+  currentPassword: z.string().min(1, 'Current password is required'),
+  newPassword: z.string().min(6, 'New password must be at least 6 characters'),
+  confirmPassword: z.string().min(1, 'Password confirmation is required')
 }).refine((data) => data.newPassword === data.confirmPassword, {
-  message: 'Les mots de passe ne correspondent pas',
+  message: 'Passwords do not match',
   path: ['confirmPassword']
 });
 
@@ -435,7 +436,7 @@ export async function userRoutes(fastify: FastifyInstance) {
       fastify.log.error(`[USER_STATS] Error getting user stats: ${error instanceof Error ? error.message : String(error)}`);
       return reply.status(500).send({
         success: false,
-        message: 'Erreur lors de la récupération des statistiques',
+        message: 'Error retrieving statistics',
         error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
@@ -445,9 +446,10 @@ export async function userRoutes(fastify: FastifyInstance) {
   fastify.patch('/users/me', {
     onRequest: [fastify.authenticate]
   }, async (request: FastifyRequest, reply: FastifyReply) => {
+    // Utiliser le nouveau système d'authentification unifié
+    const authContext = (request as any).authContext;
+    
     try {
-      // Utiliser le nouveau système d'authentification unifié
-      const authContext = (request as any).authContext;
       if (!authContext || !authContext.isAuthenticated || !authContext.registeredUser) {
         return reply.status(401).send({
           success: false,
@@ -457,26 +459,33 @@ export async function userRoutes(fastify: FastifyInstance) {
       }
       
       const userId = authContext.userId;
+      
+      // Logger les données reçues pour debug
+      fastify.log.info(`[PROFILE_UPDATE] User ${userId} updating profile. Body keys: ${Object.keys(request.body || {}).join(', ')}`);
+      
       const body = updateUserSchema.parse(request.body);
       
       // Construire l'objet de mise à jour avec uniquement les champs fournis
       const updateData: any = {};
       
-      // Champs de profil de base
-      if (body.firstName !== undefined) updateData.firstName = body.firstName;
-      if (body.lastName !== undefined) updateData.lastName = body.lastName;
-      if (body.displayName !== undefined) updateData.displayName = body.displayName;
-      if (body.email !== undefined) updateData.email = body.email;
+      // Champs de profil de base avec normalisation
+      if (body.firstName !== undefined) updateData.firstName = capitalizeName(body.firstName);
+      if (body.lastName !== undefined) updateData.lastName = capitalizeName(body.lastName);
+      if (body.displayName !== undefined) updateData.displayName = normalizeDisplayName(body.displayName);
+      if (body.email !== undefined) updateData.email = normalizeEmail(body.email);
       if (body.phoneNumber !== undefined) {
-        // Convertir les chaînes vides en null pour la base de données
-        updateData.phoneNumber = body.phoneNumber === '' ? null : body.phoneNumber;
+        // Convertir les chaînes vides et null en null pour la base de données
+        updateData.phoneNumber = (body.phoneNumber === '' || body.phoneNumber === null) ? null : body.phoneNumber.trim();
       }
       if (body.bio !== undefined) updateData.bio = body.bio;
       
       // Champs de configuration des langues
       if (body.systemLanguage !== undefined) updateData.systemLanguage = body.systemLanguage;
       if (body.regionalLanguage !== undefined) updateData.regionalLanguage = body.regionalLanguage;
-      if (body.customDestinationLanguage !== undefined) updateData.customDestinationLanguage = body.customDestinationLanguage;
+      if (body.customDestinationLanguage !== undefined) {
+        // Convert empty string to null for "None" option
+        updateData.customDestinationLanguage = body.customDestinationLanguage === '' ? null : body.customDestinationLanguage;
+      }
       
       // Champs de configuration de traduction
       if (body.autoTranslateEnabled !== undefined) updateData.autoTranslateEnabled = body.autoTranslateEnabled;
@@ -499,9 +508,10 @@ export async function userRoutes(fastify: FastifyInstance) {
 
       // Vérifier si l'email est unique (si modifié)
       if (body.email) {
+        const normalizedEmail = normalizeEmail(body.email);
         const existingUser = await fastify.prisma.user.findFirst({
           where: { 
-            email: body.email,
+            email: normalizedEmail,
             id: { not: userId }
           }
         });
@@ -509,16 +519,17 @@ export async function userRoutes(fastify: FastifyInstance) {
         if (existingUser) {
           return reply.status(400).send({
             success: false,
-            error: 'Cette adresse email est déjà utilisée'
+            error: 'This email address is already in use'
           });
         }
       }
 
       // Vérifier si le numéro de téléphone est unique (si modifié et non vide)
-      if (body.phoneNumber && body.phoneNumber.trim() !== '') {
+      if (body.phoneNumber && body.phoneNumber !== null && body.phoneNumber.trim() !== '') {
+        const cleanPhoneNumber = body.phoneNumber.trim();
         const existingUser = await fastify.prisma.user.findFirst({
           where: { 
-            phoneNumber: body.phoneNumber,
+            phoneNumber: cleanPhoneNumber,
             id: { not: userId }
           }
         });
@@ -526,7 +537,7 @@ export async function userRoutes(fastify: FastifyInstance) {
         if (existingUser) {
           return reply.status(400).send({
             success: false,
-            error: 'Ce numéro de téléphone est déjà utilisé'
+            error: 'This phone number is already in use'
           });
         }
       }
@@ -564,14 +575,16 @@ export async function userRoutes(fastify: FastifyInstance) {
       return reply.send({
         success: true,
         data: updatedUser,
-        message: 'Profil mis à jour avec succès'
+        message: 'Profile updated successfully'
       });
 
     } catch (error: unknown) {
       if (error instanceof z.ZodError) {
+        const userId = authContext?.userId || 'unknown';
+        fastify.log.error(`[PROFILE_UPDATE] Validation error for user ${userId}: ${JSON.stringify(error.errors)}`);
         return reply.status(400).send({
           success: false,
-          error: 'Données invalides',
+          error: 'Invalid data',
           details: error.errors
         });
       }
@@ -579,7 +592,7 @@ export async function userRoutes(fastify: FastifyInstance) {
       logError(fastify.log, 'Update user profile error:', error);
       return reply.status(500).send({
         success: false,
-        error: 'Erreur interne du serveur'
+        error: 'Internal server error'
       });
     }
   });
@@ -600,7 +613,13 @@ export async function userRoutes(fastify: FastifyInstance) {
       }
       
       const userId = authContext.userId;
+      
+      // Logger les données reçues pour debug
+      fastify.log.info(`[AVATAR_UPDATE] User ${userId} updating avatar. Body: ${JSON.stringify(request.body)}`);
+      
       const body = updateAvatarSchema.parse(request.body);
+      
+      fastify.log.info(`[AVATAR_UPDATE] Avatar URL validated: ${body.avatar}`);
       
       // Mettre à jour l'avatar de l'utilisateur
       const updatedUser = await fastify.prisma.user.update({
@@ -613,17 +632,20 @@ export async function userRoutes(fastify: FastifyInstance) {
         }
       });
 
+      fastify.log.info(`[AVATAR_UPDATE] Avatar updated successfully for user ${userId}`);
+
       return reply.send({
         success: true,
         data: { avatar: updatedUser.avatar },
-        message: 'Avatar mis à jour avec succès'
+        message: 'Avatar updated successfully'
       });
 
     } catch (error: unknown) {
       if (error instanceof z.ZodError) {
+        fastify.log.error(`[AVATAR_UPDATE] Validation error: ${JSON.stringify(error.errors)}`);
         return reply.status(400).send({
           success: false,
-          error: 'Format d\'image invalide',
+          error: 'Invalid image format. URL must start with http://, https:// or data:image/',
           details: error.errors
         });
       }
@@ -631,7 +653,7 @@ export async function userRoutes(fastify: FastifyInstance) {
       logError(fastify.log, 'Update user avatar error:', error);
       return reply.status(500).send({
         success: false,
-        error: 'Erreur interne du serveur'
+        error: 'Internal server error'
       });
     }
   });
@@ -665,7 +687,7 @@ export async function userRoutes(fastify: FastifyInstance) {
       if (!user) {
         return reply.status(404).send({
           success: false,
-          error: 'Utilisateur non trouvé'
+          error: 'User not found'
         });
       }
 
@@ -675,7 +697,7 @@ export async function userRoutes(fastify: FastifyInstance) {
       if (!isPasswordValid) {
         return reply.status(400).send({
           success: false,
-          error: 'Le mot de passe actuel est incorrect'
+          error: 'Current password is incorrect'
         });
       }
 
@@ -690,14 +712,14 @@ export async function userRoutes(fastify: FastifyInstance) {
 
       return reply.send({
         success: true,
-        message: 'Mot de passe mis à jour avec succès'
+        message: 'Password updated successfully'
       });
 
     } catch (error: unknown) {
       if (error instanceof z.ZodError) {
         return reply.status(400).send({
           success: false,
-          error: error.errors[0]?.message || 'Données invalides',
+          error: error.errors[0]?.message || 'Invalid data',
           details: error.errors
         });
       }
@@ -705,7 +727,7 @@ export async function userRoutes(fastify: FastifyInstance) {
       logError(fastify.log, 'Update password error:', error);
       return reply.status(500).send({
         success: false,
-        error: 'Erreur interne du serveur'
+        error: 'Internal server error'
       });
     }
   });
@@ -797,10 +819,10 @@ export async function userRoutes(fastify: FastifyInstance) {
       
       reply.send(users);
     } catch (error) {
-      logError(fastify.log, 'Erreur lors de la recherche d\'utilisateurs', error);
+      logError(fastify.log, 'Error searching users', error);
       reply.status(500).send({ 
-        error: 'Erreur interne du serveur',
-        message: 'Impossible de rechercher les utilisateurs'
+        error: 'Internal server error',
+        message: 'Unable to search users'
       });
     }
   });
@@ -1026,10 +1048,10 @@ export async function userRoutes(fastify: FastifyInstance) {
         data: friendRequests
       });
     } catch (error) {
-      console.error('Erreur récupération friend requests:', error);
+      console.error('Error retrieving friend requests:', error);
       return reply.status(500).send({
         success: false,
-        error: 'Erreur lors de la récupération des demandes d\'amitié'
+        error: 'Error retrieving friend requests'
       });
     }
   });
@@ -1055,7 +1077,7 @@ export async function userRoutes(fastify: FastifyInstance) {
       if (senderId === receiverId) {
         return reply.status(400).send({
           success: false,
-          error: 'Vous ne pouvez pas vous ajouter vous-même'
+          error: 'You cannot add yourself as a friend'
         });
       }
 
@@ -1067,7 +1089,7 @@ export async function userRoutes(fastify: FastifyInstance) {
       if (!receiver) {
         return reply.status(404).send({
           success: false,
-          error: 'Utilisateur non trouvé'
+          error: 'User not found'
         });
       }
 
@@ -1084,7 +1106,7 @@ export async function userRoutes(fastify: FastifyInstance) {
       if (existingRequest) {
         return reply.status(400).send({
           success: false,
-          error: 'Une demande d\'amitié existe déjà entre ces utilisateurs'
+          error: 'A friend request already exists between these users'
         });
       }
 
@@ -1124,10 +1146,10 @@ export async function userRoutes(fastify: FastifyInstance) {
         data: friendRequest
       });
     } catch (error) {
-      console.error('Erreur envoi friend request:', error);
+      console.error('Error sending friend request:', error);
       return reply.status(500).send({
         success: false,
-        error: 'Erreur lors de l\'envoi de la demande d\'amitié'
+        error: 'Error sending friend request'
       });
     }
   });
@@ -1163,7 +1185,7 @@ export async function userRoutes(fastify: FastifyInstance) {
       if (!friendRequest) {
         return reply.status(404).send({
           success: false,
-          error: 'Demande d\'amitié non trouvée ou déjà traitée'
+          error: 'Friend request not found or already processed'
         });
       }
 
@@ -1202,10 +1224,10 @@ export async function userRoutes(fastify: FastifyInstance) {
         data: updatedRequest
       });
     } catch (error) {
-      console.error('Erreur mise à jour friend request:', error);
+      console.error('Error updating friend request:', error);
       return reply.status(500).send({
         success: false,
-        error: 'Erreur lors de la mise à jour de la demande d\'amitié'
+        error: 'Error updating friend request'
       });
     }
   });

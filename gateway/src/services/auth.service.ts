@@ -2,6 +2,7 @@ import { PrismaClient } from '../../shared/prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { SocketIOUser, UserRoleEnum } from '../../shared/types';
+import { normalizeEmail, normalizeUsername, capitalizeName, normalizeDisplayName } from '../utils/normalize';
 
 export interface LoginCredentials {
   username: string;
@@ -39,12 +40,15 @@ export class AuthService {
    */
   async authenticate(credentials: LoginCredentials): Promise<SocketIOUser | null> {
     try {
-      // Rechercher l'utilisateur par username ou email
+      // Normaliser le username/email en minuscules pour la recherche
+      const normalizedIdentifier = credentials.username.trim().toLowerCase();
+      
+      // Rechercher l'utilisateur par username ou email (normalisés)
       const user = await this.prisma.user.findFirst({
         where: {
           OR: [
-            { username: credentials.username },
-            { email: credentials.username },
+            { username: normalizedIdentifier },
+            { email: normalizedIdentifier },
             { phoneNumber: credentials.username }
           ],
           isActive: true
@@ -85,25 +89,32 @@ export class AuthService {
    */
   async register(data: RegisterData): Promise<SocketIOUser | null> {
     try {
+      // Normaliser les données utilisateur
+      const normalizedEmail = normalizeEmail(data.email);
+      const normalizedUsername = normalizeUsername(data.username);
+      const normalizedFirstName = capitalizeName(data.firstName);
+      const normalizedLastName = capitalizeName(data.lastName);
+      const normalizedDisplayName = normalizeDisplayName(`${normalizedFirstName} ${normalizedLastName}`);
+      
       // Nettoyer le phoneNumber (traiter les chaînes vides comme null)
       const cleanPhoneNumber = data.phoneNumber && data.phoneNumber.trim() !== '' ? data.phoneNumber.trim() : null;
 
-      // Vérifier si l'username, l'email ou le phoneNumber existe déjà
+      // Vérifier si l'username, l'email ou le phoneNumber existe déjà (avec données normalisées)
       const existingUser = await this.prisma.user.findFirst({
         where: {
           OR: [
-            { username: data.username },
-            { email: data.email },
+            { username: normalizedUsername },
+            { email: normalizedEmail },
             ...(cleanPhoneNumber ? [{ phoneNumber: cleanPhoneNumber }] : [])
           ]
         }
       });
 
       if (existingUser) {
-        if (existingUser.username === data.username) {
+        if (existingUser.username === normalizedUsername) {
           throw new Error('Nom d\'utilisateur déjà utilisé');
         }
-        if (existingUser.email === data.email) {
+        if (existingUser.email === normalizedEmail) {
           throw new Error('Email déjà utilisé');
         }
         if (cleanPhoneNumber && existingUser.phoneNumber === cleanPhoneNumber) {
@@ -115,18 +126,18 @@ export class AuthService {
       // Hasher le mot de passe
       const hashedPassword = await bcrypt.hash(data.password, 10);
 
-      // Créer l'utilisateur
+      // Créer l'utilisateur avec les données normalisées
       const user = await this.prisma.user.create({
         data: {
-          username: data.username,
+          username: normalizedUsername,
           password: hashedPassword,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          email: data.email,
+          firstName: normalizedFirstName,
+          lastName: normalizedLastName,
+          email: normalizedEmail,
           phoneNumber: cleanPhoneNumber,
           systemLanguage: data.systemLanguage || 'fr',
           regionalLanguage: data.regionalLanguage || 'fr',
-          displayName: `${data.firstName} ${data.lastName}`,
+          displayName: normalizedDisplayName,
           isOnline: true,
           lastSeen: new Date(),
           lastActiveAt: new Date()

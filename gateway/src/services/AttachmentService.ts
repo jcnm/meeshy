@@ -53,20 +53,40 @@ export class AttachmentService {
     this.uploadBasePath = process.env.UPLOAD_PATH || path.join(process.cwd(), 'uploads', 'attachments');
     
     // Détection intelligente de l'URL publique selon l'environnement
-    // 1. Priorité à PUBLIC_URL si définie
-    // 2. Sinon, utiliser NEXT_PUBLIC_BACKEND_URL en production
-    // 3. Sinon, fallback à localhost:3000
-    const isProduction = (process.env.NODE_ENV !== 'development') && process.env.NODE_ENV !== 'local';
-    this.publicUrl = process.env.PUBLIC_URL 
-    || (isProduction ? process.env.NEXT_PUBLIC_BACKEND_URL : undefined)
-    || (isProduction ? process.env.NEXT_PUBLIC_API_URL : undefined) 
-    || 'http://localhost:3000';
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isDevelopment = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'local';
+    
+    // Déterminer l'URL publique avec une logique plus robuste
+    if (process.env.PUBLIC_URL) {
+      // 1. Priorité absolue à PUBLIC_URL si définie explicitement
+      this.publicUrl = process.env.PUBLIC_URL;
+    } else if (isProduction) {
+      // 2. En production, construire l'URL à partir du domaine
+      const domain = process.env.DOMAIN || 'meeshy.me';
+      this.publicUrl = `https://gate.${domain}`;
+      console.warn('[AttachmentService] ⚠️  PUBLIC_URL non définie, utilisation du domaine par défaut:', this.publicUrl);
+    } else if (isDevelopment) {
+      // 3. En développement, utiliser localhost
+      this.publicUrl = 'http://localhost:3000';
+    } else {
+      // 4. Fallback ultime (ne devrait jamais arriver)
+      this.publicUrl = 'http://localhost:3000';
+      console.error('[AttachmentService] ❌ Impossible de déterminer PUBLIC_URL, utilisation du fallback localhost');
+    }
     
     console.log('[AttachmentService] Configuration:', {
       environment: process.env.NODE_ENV || 'development',
       publicUrl: this.publicUrl,
-      uploadBasePath: this.uploadBasePath
+      uploadBasePath: this.uploadBasePath,
+      domain: process.env.DOMAIN,
+      publicUrlSource: process.env.PUBLIC_URL ? 'PUBLIC_URL env var' : 'auto-detected'
     });
+    
+    // Validation en production
+    if (isProduction && this.publicUrl.includes('localhost')) {
+      console.error('[AttachmentService] ❌ ERREUR CRITIQUE: PUBLIC_URL pointe vers localhost en production!');
+      console.error('[AttachmentService] Veuillez définir PUBLIC_URL=https://gate.meeshy.me dans le fichier .env');
+    }
   }
 
   /**

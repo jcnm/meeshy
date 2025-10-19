@@ -101,11 +101,11 @@ export class MessagingService {
   private async validateRequest(request: MessageRequest): Promise<MessageValidationResult> {
     const errors: MessageValidationResult['errors'] = [];
 
-    // Validation du contenu
-    if (!request.content || request.content.trim().length === 0) {
+    // Validation du contenu - permettre les messages sans contenu si il y a des attachements
+    if ((!request.content || request.content.trim().length === 0) && (!request.attachments || request.attachments.length === 0)) {
       errors.push({
         field: 'content',
-        message: 'Le contenu du message ne peut pas être vide',
+        message: 'Message content cannot be empty (unless attachments are included)',
         code: 'CONTENT_EMPTY'
       });
     }
@@ -113,7 +113,7 @@ export class MessagingService {
     if (request.content && request.content.length > 4000) {
       errors.push({
         field: 'content',
-        message: 'Le contenu du message ne peut pas dépasser 4000 caractères',
+        message: 'Message content cannot exceed 4000 characters',
         code: 'CONTENT_TOO_LONG'
       });
     }
@@ -122,7 +122,7 @@ export class MessagingService {
     if (!request.conversationId) {
       errors.push({
         field: 'conversationId',
-        message: 'L\'ID de conversation est requis',
+        message: 'Conversation ID is required',
         code: 'CONVERSATION_ID_REQUIRED'
       });
     }
@@ -131,7 +131,7 @@ export class MessagingService {
     if (request.isAnonymous && !request.anonymousDisplayName) {
       errors.push({
         field: 'anonymousDisplayName',
-        message: 'Le nom d\'affichage anonyme est requis pour les messages anonymes',
+        message: 'Anonymous display name is required for anonymous messages',
         code: 'ANONYMOUS_NAME_REQUIRED'
       });
     }
