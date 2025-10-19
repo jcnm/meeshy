@@ -57,9 +57,15 @@ const updateLinkSchema = z.object({
 
 // Schéma pour l'envoi de messages via lien
 const sendMessageSchema = z.object({
-  content: z.string().min(1, 'Le message ne peut pas être vide').max(1000, 'Le message est trop long'),
+  content: z.string().max(1000, 'Message is too long').optional(),
   originalLanguage: z.string().default('fr'),
-  messageType: z.string().default('text')
+  messageType: z.string().default('text'),
+  attachments: z.array(z.string()).optional()
+}).refine((data) => {
+  // Soit le contenu est fourni, soit des attachements sont fournis
+  return (data.content && data.content.trim().length > 0) || (data.attachments && data.attachments.length > 0);
+}, {
+  message: 'Message content cannot be empty (unless attachments are included)'
 });
 
 export async function linksRoutes(fastify: FastifyInstance) {
