@@ -570,6 +570,9 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
   );
 }
 
+// Export nommé pour réutilisation dans les pages d'affiliation
+export { SigninPageContent };
+
 export default function SigninPage() {
   return (
     <Suspense fallback={

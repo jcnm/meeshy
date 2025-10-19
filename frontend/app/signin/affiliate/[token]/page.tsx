@@ -1,7 +1,9 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import SigninPageContent from '../../page';
-import { getOgImageUrl } from '@/lib/og-images';
+import { Suspense } from 'react';
+import { SigninPageContent } from '../../page';
+import { buildOgMetadata } from '@/lib/og-images';
+import { LargeLogo } from '@/components/branding';
 
 interface AffiliateSigninPageProps {
   params: { token: string };
@@ -26,33 +28,28 @@ export async function generateMetadata({ params }: AffiliateSigninPageProps): Pr
         const title = `Rejoignez Meeshy avec ${affiliateUser.firstName} ${affiliateUser.lastName}`;
         const description = `Connectez-vous avec ${affiliateUser.firstName} et des milliers d'utilisateurs du monde entier sur Meeshy, la plateforme de messagerie multilingue en temps réel.`;
         
-        // Utiliser l'image statique pour l'affiliation
-        const imageUrl = getOgImageUrl('affiliate', frontendUrl);
+        const ogMetadata = buildOgMetadata('affiliate', {
+          title,
+          description,
+          url: `${frontendUrl}/signin/affiliate/${token}`,
+          frontendUrl,
+        });
         
         return {
           title,
           description,
           openGraph: {
-            title,
-            description,
-            url: `${frontendUrl}/signin/affiliate/${token}`,
-            siteName: 'Meeshy',
-            images: [
-              {
-                url: imageUrl,
-                width: 1200,
-                height: 630,
-                alt: `${affiliateUser.firstName} ${affiliateUser.lastName} vous invite sur Meeshy`,
-              },
-            ],
-            locale: 'fr_FR',
-            type: 'website',
+            ...ogMetadata,
+            images: ogMetadata.images.map(img => ({
+              ...img,
+              alt: `${affiliateUser.firstName} ${affiliateUser.lastName} vous invite sur Meeshy`,
+            })),
           },
           twitter: {
             card: 'summary_large_image',
             title,
             description,
-            images: [imageUrl],
+            images: [ogMetadata.images[0].url],
             creator: '@meeshy_app',
           },
           alternates: {
@@ -71,5 +68,22 @@ export async function generateMetadata({ params }: AffiliateSigninPageProps): Pr
 
 export default async function AffiliateSigninPage({ params }: AffiliateSigninPageProps) {
   const { token } = await params;
-  return <SigninPageContent affiliateToken={token} />;
+  
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
+        <div className="w-full max-w-md space-y-6">
+          <div className="text-center space-y-4">
+            <LargeLogo href="/" />
+            <p className="text-gray-600 dark:text-gray-400">Chargement...</p>
+            <div className="flex justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <SigninPageContent affiliateToken={token} />
+    </Suspense>
+  );
 }
