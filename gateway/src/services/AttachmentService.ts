@@ -101,6 +101,7 @@ export class AttachmentService {
       ...ACCEPTED_MIME_TYPES.AUDIO,
       ...ACCEPTED_MIME_TYPES.VIDEO,
       ...ACCEPTED_MIME_TYPES.TEXT,
+      ...ACCEPTED_MIME_TYPES.CODE,
     ];
 
     if (!allAcceptedTypes.includes(file.mimeType as any)) {
