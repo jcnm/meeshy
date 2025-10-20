@@ -7,10 +7,10 @@
     "clickToReact": "Cliquez pour réagir",
     "clickToRemove": "Cliquez pour retirer",
     "you": "Vous",
-    "youAndOthers": "Vous et {{count}} autre",
-    "youAndOthers_plural": "Vous et {{count}} autres",
-    "peopleReacted": "{{count}} personne a réagi",
-    "peopleReacted_plural": "{{count}} personnes ont réagi",
+    "youAndOthers": "Vous et {count} autre",
+    "youAndOthers_plural": "Vous et {count} autres",
+    "peopleReacted": "{count} personne a réagi",
+    "peopleReacted_plural": "{count} personnes ont réagi",
     "noReactions": "Aucune réaction",
     "loading": "Chargement des réactions...",
     "error": "Erreur lors du chargement",
@@ -19,7 +19,7 @@
     "picker": {
       "title": "Choisir un emoji",
       "search": "Rechercher un emoji...",
-      "noResults": "Aucun emoji trouvé pour \"{{query}}\"",
+      "noResults": "Aucun emoji trouvé pour \"{query}\"",
       "categories": {
         "frequent": "Fréquents",
         "smileys": "Smileys",
@@ -33,10 +33,10 @@
     },
     "tooltip": {
       "addReaction": "Ajouter une réaction",
-      "reactWith": "Réagir avec {{emoji}}",
-      "removeReaction": "Retirer {{emoji}}",
-      "peopleReacted": "{{count}} personne",
-      "peopleReacted_plural": "{{count}} personnes"
+      "reactWith": "Réagir avec {emoji}",
+      "removeReaction": "Retirer {emoji}",
+      "peopleReacted": "{count} personne",
+      "peopleReacted_plural": "{count} personnes"
     }
   }
 }

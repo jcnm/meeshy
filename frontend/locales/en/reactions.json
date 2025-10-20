@@ -7,10 +7,10 @@
     "clickToReact": "Click to react",
     "clickToRemove": "Click to remove",
     "you": "You",
-    "youAndOthers": "You and {{count}} other",
-    "youAndOthers_plural": "You and {{count}} others",
-    "peopleReacted": "{{count}} person reacted",
-    "peopleReacted_plural": "{{count}} people reacted",
+    "youAndOthers": "You and {count} other",
+    "youAndOthers_plural": "You and {count} others",
+    "peopleReacted": "{count} person reacted",
+    "peopleReacted_plural": "{count} people reacted",
     "noReactions": "No reactions",
     "loading": "Loading reactions...",
     "error": "Error loading reactions",
@@ -19,7 +19,7 @@
     "picker": {
       "title": "Choose an emoji",
       "search": "Search for an emoji...",
-      "noResults": "No emoji found for \"{{query}}\"",
+      "noResults": "No emoji found for \"{query}\"",
       "categories": {
         "frequent": "Frequent",
         "smileys": "Smileys",
@@ -33,10 +33,10 @@
     },
     "tooltip": {
       "addReaction": "Add a reaction",
-      "reactWith": "React with {{emoji}}",
-      "removeReaction": "Remove {{emoji}}",
-      "peopleReacted": "{{count}} person",
-      "peopleReacted_plural": "{{count}} people"
+      "reactWith": "React with {emoji}",
+      "removeReaction": "Remove {emoji}",
+      "peopleReacted": "{count} person",
+      "peopleReacted_plural": "{count} people"
     }
   }
 }
