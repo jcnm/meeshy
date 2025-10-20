@@ -6,6 +6,7 @@ import links from './links.json';
 import modals from './modals.json';
 import bubbleStream from './bubbleStream.json';
 import websocket from './websocket.json';
+import reactions from './reactions.json';
 
 export default {
   common,
@@ -16,6 +17,7 @@ export default {
   modals,
   bubbleStream,
   websocket,
+  reactions,
 };
 
 export {
@@ -27,5 +29,6 @@ export {
   modals,
   bubbleStream,
   websocket,
+  reactions,
 };
 
