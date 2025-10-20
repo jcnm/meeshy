@@ -95,6 +95,7 @@ import { useMessageTranslation } from '@/hooks/useMessageTranslation';
 import { useFixRadixZIndex } from '@/hooks/use-fix-z-index';
 import { detectLanguage } from '@/utils/language-detection';
 import { useI18n } from '@/hooks/useI18n';
+import { cn } from '@/lib/utils';
 import type { User, Message, BubbleTranslation, Attachment } from '@shared/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { messageTranslationService } from '@/services/message-translation.service';
@@ -1372,9 +1373,13 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           {/* Feed des messages avec scroll naturel - Padding top pour l'indicateur fixe */}
           <div 
             ref={messagesContainerRef}
-            className="relative h-full pt-4 md:pt-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-40 messages-container scroll-optimized scrollbar-thin overflow-y-auto mobile-messages-container"
+            className="relative h-full pt-4 md:pt-20 messages-container scroll-optimized scrollbar-thin overflow-y-auto mobile-messages-container"
             style={{ background: 'transparent' }}
           >
+            <div className={cn(
+              "flex flex-col max-w-4xl mx-auto pb-40",
+              isMobile ? "px-3 py-4" : "px-6 py-4"
+            )}>
             {/* 
               MODE BUBBLESTREAM: Messages récents EN HAUT (sous header)
               - Backend retourne: orderBy createdAt DESC = [récent...ancien]
@@ -1421,6 +1426,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
             {/* Espace supplémentaire pour éviter que le dernier message soit caché */}
             <div className="h-16" />
+            </div>
           </div>
         </div>
 

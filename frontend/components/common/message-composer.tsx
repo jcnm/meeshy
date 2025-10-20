@@ -13,6 +13,7 @@ import { AttachmentCarousel } from '@/components/attachments/AttachmentCarousel'
 import { useTextAttachmentDetection } from '@/hooks/useTextAttachmentDetection';
 import { AttachmentService } from '@/services/attachmentService';
 import { UploadedAttachmentResponse } from '@/shared/types/attachment';
+import { toast } from 'sonner';
 
 interface MessageComposerProps {
   value: string;
@@ -189,7 +190,10 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     // Valider les fichiers
     const validation = AttachmentService.validateFiles(files);
     if (!validation.valid) {
-      // TODO: Afficher une notification d'erreur
+      // Show toast for each validation error
+      validation.errors.forEach(error => {
+        toast.error(error);
+      });
       console.error('Validation errors:', validation.errors);
       return;
     }
@@ -218,9 +222,11 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     } catch (error) {
       console.error('❌ Upload error:', error);
       if (error instanceof Error) {
-        console.error('❌ Message d\'erreur:', error.message);
+        console.error('❌ Error message:', error.message);
+        toast.error(`Upload failed: ${error.message}`);
+      } else {
+        toast.error('Upload failed. Please try again.');
       }
-      // TODO: Afficher une notification d'erreur
     } finally {
       setIsUploading(false);
     }
@@ -503,7 +509,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         multiple
         className="hidden"
         onChange={handleFileInputChange}
-        accept="image/*,video/*,audio/*,application/pdf,text/plain,.doc,.docx,.ppt,.pptx"
+        accept="image/*,video/*,audio/*,application/pdf,text/plain,.doc,.docx,.ppt,.pptx,.md,.sh,.js,.ts,.py,.zip"
       />
     </div>
   );
