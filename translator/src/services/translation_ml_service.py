@@ -452,8 +452,8 @@ class TranslationMLService:
                             model=shared_model,
                             tokenizer=thread_tokenizer,  # ← TOKENIZER THREAD-LOCAL
                             device=0 if self.device == 'cuda' and torch.cuda.is_available() else -1,
-                            max_length=64,  # Réduit de 128 à 64 pour la vitesse
-                            batch_size=1  # Traiter un texte à la fois sur CPU
+                            max_length=128,  # Réduit de 512 à 128 pour la vitesse
+                            batch_size=4  # Traiter un texte à la fois sur CPU
                         )
                         
                         # T5: format avec noms complets de langues
@@ -467,8 +467,8 @@ class TranslationMLService:
                         # num_beams=1 (greedy) est 4x plus rapide que num_beams=4
                         result = temp_pipeline(
                             instruction,
-                            max_new_tokens=32,  # Réduit de 64 à 32
-                            num_beams=1,  # Réduit de 4 à 1 (greedy search = 4x plus rapide)
+                            max_new_tokens=128,  # Augmenté de 32 à 128 pour traductions plus longues
+                            num_beams=2,  # Réduit de 4 à 2 (greedy search = 2x plus rapide)
                             do_sample=False,
                             early_stopping=True,
                             repetition_penalty=1.1,
@@ -507,7 +507,7 @@ class TranslationMLService:
                                 
                         # Si T5 échoue, fallback automatique vers NLLB
                         if not t5_success:
-                            logger.info(f"🔄 Fallback automatique: T5 → NLLB pour {source_lang}→{target_lang}")
+                            logger.info(f"Fallback : T5 → NLLB {source_lang}→{target_lang}")
                             # Nettoyer le pipeline T5 (tokenizer reste en cache)
                             del temp_pipeline
                             
@@ -545,8 +545,8 @@ class TranslationMLService:
                                     model=nllb_model,
                                     tokenizer=nllb_tokenizer,
                                     device=0 if self.device == 'cuda' and torch.cuda.is_available() else -1,
-                                    max_length=64,  # Réduit de 128 à 64
-                                    batch_size=1  # Traiter un texte à la fois sur CPU
+                                    max_length=256,  # Augmenté de 64 à 256 pour traductions plus longues
+                                    batch_size=2  # Traiter un texte à la fois sur CPU
                                 )
                                 
                                 nllb_source = self.lang_codes.get(source_lang, 'eng_Latn')
@@ -556,8 +556,8 @@ class TranslationMLService:
                                     text, 
                                     src_lang=nllb_source, 
                                     tgt_lang=nllb_target, 
-                                    max_length=64,  # Réduit de 128 à 64
-                                    num_beams=1,  # Greedy search = 4x plus rapide
+                                    max_length=256,  # Augmenté de 64 à 512 pour traductions plus longues
+                                    num_beams=2,  # Greedy search = 4x plus rapide
                                     early_stopping=True
                                 )
                                 
@@ -580,8 +580,8 @@ class TranslationMLService:
                             model=shared_model,
                             tokenizer=thread_tokenizer,  # ← TOKENIZER THREAD-LOCAL
                             device=0 if self.device == 'cuda' and torch.cuda.is_available() else -1,
-                            max_length=64,  # Réduit de 128 à 64
-                            batch_size=1  # Traiter un texte à la fois sur CPU
+                            max_length=256,  # Augmenté de 64 à 256 pour traductions plus longues
+                            batch_size=2  # Traiter un texte à la fois sur CPU
                         )
                         
                         # NLLB: codes de langue spéciaux
@@ -593,8 +593,8 @@ class TranslationMLService:
                             text, 
                             src_lang=nllb_source, 
                             tgt_lang=nllb_target, 
-                            max_length=64,  # Réduit de 128 à 64
-                            num_beams=1,  # Greedy search = 4x plus rapide
+                            max_length=256,  # Augmenté de 64 à 256 pour traductions plus longues
+                            num_beams=2,  # Greedy search = 4x plus rapide
                             early_stopping=True
                         )
                         
