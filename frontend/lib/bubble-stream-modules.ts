@@ -16,4 +16,4 @@ export { SidebarLanguageHeader } from '@/components/language/sidebar-language-he
 export * from '@/utils/user-language-preferences';
 
 // Composant principal BubbleMessage (déjà existant)
-export { BubbleMessage } from '@/components/common/bubble-message-new';
+export { BubbleMessage } from '@/components/common/BubbleMessage';

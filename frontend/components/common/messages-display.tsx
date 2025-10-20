@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
 import { MessageSquare } from 'lucide-react';
-import { BubbleMessage } from './bubble-message-new';
+import { BubbleMessage } from './BubbleMessage';
 import { messageTranslationService } from '@/services/message-translation.service';
 import { useFixRadixZIndex } from '@/hooks/use-fix-z-index';
 import type { User, Message, MessageWithTranslations } from '@shared/types';

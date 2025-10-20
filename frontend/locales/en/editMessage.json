@@ -1,0 +1,15 @@
+{
+  "editMessage": "Edit message",
+  "close": "Close",
+  "save": "Save",
+  "cancel": "Cancel",
+  "saving": "Saving...",
+  "editingOriginalMessage": "Editing original message",
+  "willUpdateTranslations": "Translations will be updated automatically",
+  "charactersCount": "characters",
+  "unsavedChanges": "Unsaved changes",
+  "saveChangesFirst": "You have unsaved changes. Save them before leaving.",
+  "typeMessage": "Type your message...",
+  "enterToSave": "↵ Save",
+  "escToCancel": "Esc to cancel"
+}

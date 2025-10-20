@@ -3,7 +3,7 @@ export { ErrorBoundary } from './ErrorBoundary';
 export { LoadingSpinner, LoadingState, LoadingSkeleton, LoadingCard } from './LoadingStates';
 export { UserSelector } from './user-selector';
 export { BubbleStreamPage } from './bubble-stream-page';
-export { BubbleMessage } from './bubble-message-new';
+export { BubbleMessage } from './BubbleMessage';
 export { MessagesDisplay } from './messages-display';
 export { LanguageSwitcher } from './language-switcher';
 export { TranslationProvider } from './translation-provider';

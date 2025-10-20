@@ -7,7 +7,7 @@ import type { User, BubbleTranslation } from '@shared/types';
 import type { Message } from '@shared/types/conversation';
 import { useI18n } from '@/hooks/useI18n';
 import { useMessageView } from '@/hooks/use-message-view-state';
-import { BubbleMessageView } from './bubble-message/BubbleMessageView';
+import { BubbleMessageNormalView } from './bubble-message/BubbleMessageNormalView';
 import { ReactionSelectionMessageView } from './bubble-message/ReactionSelectionMessageView';
 import { LanguageSelectionMessageView } from './bubble-message/LanguageSelectionMessageView';
 import { EditMessageView } from './bubble-message/EditMessageView';
@@ -198,7 +198,7 @@ const BubbleMessageInner = memo(function BubbleMessageInner({
   return (
     <AnimatePresence mode="wait" initial={false}>
       {currentMode === 'normal' && (
-        <BubbleMessageView
+        <BubbleMessageNormalView
           key={`normal-${message.id}`}
           message={message}
           currentUser={currentUser}

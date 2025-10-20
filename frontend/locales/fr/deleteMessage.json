@@ -1,0 +1,16 @@
+{
+  "deleteMessage": "Supprimer le message",
+  "close": "Fermer",
+  "confirmDelete": "Confirmer la suppression",
+  "cancel": "Annuler",
+  "deleting": "Suppression...",
+  "deleteWarning": "Êtes-vous sûr de vouloir supprimer ce message ?",
+  "actionIrreversible": "Cette action est irréversible",
+  "willAlsoDelete": "Seront également supprimés :",
+  "reactions": "réaction(s)",
+  "translations": "traduction(s)",
+  "attachments": "pièce(s) jointe(s)",
+  "messagePreview": "Aperçu du message",
+  "shiftEnterToConfirm": "⇧↵ Confirmer",
+  "escToCancel": "Esc pour annuler"
+}

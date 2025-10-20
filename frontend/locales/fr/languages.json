@@ -1,0 +1,13 @@
+{
+  "selectLanguage": "Sélectionner la langue",
+  "close": "Fermer",
+  "searchLanguage": "Rechercher une langue...",
+  "available": "Disponibles",
+  "generate": "Générer",
+  "original": "Original",
+  "modelUsed": "Modèle utilisé",
+  "confidence": "Confiance",
+  "noLanguagesFound": "Aucune langue trouvée",
+  "clickToTranslate": "Cliquer pour traduire",
+  "allLanguagesTranslated": "Toutes les langues sont traduites"
+}

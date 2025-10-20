@@ -1,0 +1,15 @@
+{
+  "editMessage": "Modifier le message",
+  "close": "Fermer",
+  "save": "Enregistrer",
+  "cancel": "Annuler",
+  "saving": "Enregistrement...",
+  "editingOriginalMessage": "Modification du message original",
+  "willUpdateTranslations": "Les traductions seront mises à jour automatiquement",
+  "charactersCount": "caractères",
+  "unsavedChanges": "Modifications non enregistrées",
+  "saveChangesFirst": "Vous avez des modifications non enregistrées. Enregistrez-les avant de quitter.",
+  "typeMessage": "Tapez votre message...",
+  "enterToSave": "↵ Enregistrer",
+  "escToCancel": "Esc pour annuler"
+}

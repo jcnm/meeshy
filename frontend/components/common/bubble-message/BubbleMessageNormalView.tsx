@@ -67,7 +67,7 @@ import { CLIENT_EVENTS } from '@shared/types/socketio-events';
 import { useMessageReactions } from '@/hooks/use-message-reactions';
 import type { BubbleMessage, MessageTranslation, MessageVersion, MessageSender, AnonymousSender } from './types';
 
-interface BubbleMessageViewProps {
+interface BubbleMessageNormalViewProps {
   message: Message & {
     location?: string;
     originalLanguage: string;
@@ -104,7 +104,7 @@ interface BubbleMessageViewProps {
   onImageClick?: (attachmentId: string) => void;
 }
 
-export const BubbleMessageView = memo(function BubbleMessageView({
+export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
   message,
   currentUser,
   userLanguage,
@@ -128,7 +128,7 @@ export const BubbleMessageView = memo(function BubbleMessageView({
   onReplyMessage,
   onNavigateToMessage,
   onImageClick
-}: BubbleMessageViewProps) {
+}: BubbleMessageNormalViewProps) {
   const { t } = useI18n('bubbleStream');
   
   // États locaux (copiés de l'original)

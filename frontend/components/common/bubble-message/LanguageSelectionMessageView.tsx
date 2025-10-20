@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { SUPPORTED_LANGUAGES, getLanguageInfo } from '@shared/types';
 import type { Message, BubbleTranslation } from '@shared/types';
+import { useI18n } from '@/hooks/useI18n';
 
 interface LanguageSelectionMessageViewProps {
   message: Message & {
@@ -23,7 +24,6 @@ interface LanguageSelectionMessageViewProps {
   onSelectLanguage: (language: string) => void;
   onRequestTranslation: (language: string, model?: 'basic' | 'medium' | 'premium') => void;
   onClose: () => void;
-  t: (key: string) => string;
   userLanguage: string;
   usedLanguages: string[];
 }
@@ -36,10 +36,10 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
   onSelectLanguage,
   onRequestTranslation,
   onClose,
-  t,
   userLanguage,
   usedLanguages
 }: LanguageSelectionMessageViewProps) {
+  const { t } = useI18n('languages');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Grouper les traductions par langue

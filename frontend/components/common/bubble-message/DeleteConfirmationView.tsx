@@ -8,13 +8,13 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import type { Message } from '@shared/types';
 import type { BubbleMessage } from './types';
+import { useI18n } from '@/hooks/useI18n';
 
 interface DeleteConfirmationViewProps {
   message: BubbleMessage;
   isOwnMessage: boolean;
   onConfirm: (messageId: string) => Promise<void> | void;
   onCancel: () => void;
-  t: (key: string) => string;
   isDeleting?: boolean;
   deleteError?: string;
 }
@@ -24,10 +24,10 @@ export const DeleteConfirmationView = memo(function DeleteConfirmationView({
   isOwnMessage,
   onConfirm,
   onCancel,
-  t,
   isDeleting = false,
   deleteError
 }: DeleteConfirmationViewProps) {
+  const { t } = useI18n('deleteMessage');
 
   const handleConfirm = useCallback(async () => {
     try {

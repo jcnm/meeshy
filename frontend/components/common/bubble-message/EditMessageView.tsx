@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { getLanguageInfo } from '@shared/types';
 import type { Message } from '@shared/types';
+import { useI18n } from '@/hooks/useI18n';
 
 interface EditMessageViewProps {
   message: Message & {
@@ -19,7 +20,6 @@ interface EditMessageViewProps {
   isOwnMessage: boolean;
   onSave: (messageId: string, newContent: string) => Promise<void> | void;
   onCancel: () => void;
-  t: (key: string) => string;
   isSaving?: boolean;
   saveError?: string;
 }
@@ -29,10 +29,10 @@ export const EditMessageView = memo(function EditMessageView({
   isOwnMessage,
   onSave,
   onCancel,
-  t,
   isSaving = false,
   saveError
 }: EditMessageViewProps) {
+  const { t } = useI18n('editMessage');
   const [content, setContent] = useState(message.originalContent || message.content);
   const [hasChanges, setHasChanges] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);

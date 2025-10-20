@@ -6,13 +6,32 @@ Ce système transforme dynamiquement les messages entre 5 vues différentes avec
 
 ```
 bubble-message/
-├── BubbleMessageView.tsx           # Vue normale (état par défaut)
-├── ReactionSelectionMessageView.tsx # Sélection d'emoji avec hook intégré
+├── BubbleMessageNormalView.tsx     # Vue normale (état par défaut)
+├── ReactionSelectionMessageView.tsx # Sélection d'emoji avec hook intégré  
 ├── LanguageSelectionMessageView.tsx # Sélection de langue + traductions
 ├── EditMessageView.tsx            # Édition inline du message
 ├── DeleteConfirmationView.tsx     # Confirmation de suppression
+├── types.ts                       # Types TypeScript partagés
 └── README.md                      # Cette documentation
+
+../BubbleMessage.tsx               # Orchestrateur principal avec virtualisation
 ```
+
+## 🏗️ Architecture Clarifiée
+
+### **BubbleMessage.tsx** (Orchestrateur)
+- **Rôle** : Manager intelligent des 5 vues
+- **Fonction** : Virtualisation, state management, transitions
+- **Responsabilités** :
+  - Gestion du state global des vues
+  - Rendu conditionnel (1 seule vue active)
+  - Animations et transitions fluides
+  - Routage des actions entre vues
+
+### **BubbleMessageNormalView.tsx** (Vue standard)
+- **Rôle** : Vue par défaut d'affichage du message
+- **Contenu** : Texte, réactions, boutons d'action
+- **Compatibilité** : Fonctionne aussi en mode standalone
 
 ## 🚀 Installation et Configuration
 
@@ -36,23 +55,26 @@ export default function ConversationLayout({ children }) {
 ### 2. Migration du Composant
 
 ```typescript
-// Remplacer l'ancien import
-- import { BubbleMessage } from '@/components/common/bubble-message';
-+ import { BubbleMessage } from '@/components/common/bubble-message-new';
+// Import recommandé (nouveau système)
+import { BubbleMessage } from '@/components/common/BubbleMessage';
+
+// OU avec re-export
+import { BubbleMessage } from '@/components/common';
 
 // OU avec feature flag
 const BubbleMessageComponent = process.env.ENABLE_INLINE_ACTIONS === 'true'
-  ? require('@/components/common/bubble-message-new').BubbleMessage
+  ? require('@/components/common/BubbleMessage').BubbleMessage
   : require('@/components/common/bubble-message').BubbleMessage;
 ```
 
 ## 🎨 Fonctionnalités
 
-### ✅ Vue Normale (BubbleMessageView)
+### ✅ Vue Normale (BubbleMessageNormalView)
 - Affichage standard du message
 - Actions : Répondre, Traduire, Réagir, Plus d'options
 - Réactions affichées sous le message
 - Interface existante préservée
+- **Backward compatible** avec l'ancien système
 
 ### 😀 Vue Sélection Réaction (ReactionSelectionMessageView)
 - **Intégration complète** avec `useMessageReactions`
@@ -64,24 +86,26 @@ const BubbleMessageComponent = process.env.ENABLE_INLINE_ACTIONS === 'true'
 - **Performances** : Seulement 1 composant actif par conversation
 
 ### 🌐 Vue Sélection Langue (LanguageSelectionMessageView)
-- Aperçu du message original
-- Traductions disponibles avec preview
-- Génération de nouvelles traductions
-- Sélecteur de qualité (Basic/Standard/Premium)
-- Recherche de langues
+- **Design identique** à l'ancien popover
+- **Tabs "Disponibles/Générer"** avec compteurs
+- **Liste des traductions** avec aperçu et métadonnées
+- **Recherche de langues** en temps réel
+- **Génération de nouvelles traductions** avec sélection de modèle
+- **Animations fluides** d'entrée/sortie
 
 ### ✏️ Vue Édition (EditMessageView)
-- Édition inline avec textarea
-- Aperçu des langues
+- Édition inline avec textarea auto-focus
+- Aperçu des langues affectées
 - Avertissement re-génération traductions
-- Raccourcis clavier (Ctrl+Enter pour sauver)
-- Gestion d'erreurs
+- Raccourcis clavier (Ctrl+Enter pour sauver, Escape pour annuler)
+- Gestion d'erreurs et validation
 
 ### 🗑️ Vue Confirmation Suppression (DeleteConfirmationView)
 - Aperçu du contenu à supprimer
-- Liste détaillée : Message, traductions, attachments, réactions
+- Compteurs détaillés : Traductions, attachments, réactions
 - Avertissement irréversibilité
 - Raccourcis clavier (Shift+Enter pour confirmer)
+- Indicateur de progression lors de la suppression
 
 ## 🔧 API et Props
 
@@ -94,7 +118,7 @@ const BubbleMessageComponent = process.env.ENABLE_INLINE_ACTIONS === 'true'
   userLanguage={userLanguage}
   usedLanguages={usedLanguages}
   
-  // Actions (inchangé)
+  // Actions (API inchangée)
   onForceTranslation={handleForceTranslation}
   onEditMessage={handleEditMessage}
   onDeleteMessage={handleDeleteMessage}
@@ -103,7 +127,7 @@ const BubbleMessageComponent = process.env.ENABLE_INLINE_ACTIONS === 'true'
   onNavigateToMessage={handleNavigateToMessage}
   onImageClick={handleImageClick}
   
-  // États (inchangé)
+  // États (API inchangée)
   currentDisplayLanguage={currentDisplayLanguage}
   isTranslating={isTranslating}
   translationError={translationError}
@@ -151,7 +175,7 @@ const {
 const allowedTransitions = {
   normal: ['reaction', 'language', 'edit', 'delete'],
   reaction: ['normal'],
-  language: ['normal'],
+  language: ['normal'], 
   edit: ['normal'],
   delete: ['normal']
 };
@@ -160,17 +184,26 @@ const allowedTransitions = {
 ### Rendu Conditionnel
 
 ```typescript
-// Dans BubbleMessage
-if (currentMode === 'normal') {
-  return <BubbleMessageView />;
-}
-
-switch (currentMode) {
-  case 'reaction': return <ReactionSelectionMessageView />;
-  case 'language': return <LanguageSelectionMessageView />;
-  case 'edit': return <EditMessageView />;
-  case 'delete': return <DeleteConfirmationView />;
-}
+// Dans BubbleMessage.tsx (Orchestrateur)
+return (
+  <AnimatePresence mode="wait" initial={false}>
+    {currentMode === 'normal' && (
+      <BubbleMessageNormalView key={`normal-${message.id}`} {...props} />
+    )}
+    {currentMode === 'reaction' && (
+      <ReactionSelectionMessageView key={`reaction-${message.id}`} {...props} />
+    )}
+    {currentMode === 'language' && (
+      <LanguageSelectionMessageView key={`language-${message.id}`} {...props} />
+    )}
+    {currentMode === 'edit' && (
+      <EditMessageView key={`edit-${message.id}`} {...props} />
+    )}
+    {currentMode === 'delete' && (
+      <DeleteConfirmationView key={`delete-${message.id}`} {...props} />
+    )}
+  </AnimatePresence>
+);
 ```
 
 ## 🎨 Design System
@@ -180,6 +213,7 @@ switch (currentMode) {
 - **Framer Motion** : Animations fluides existantes
 - **Tailwind CSS** : Classes cohérentes avec le design Meeshy
 - **Mode sombre** : Support complet
+- **Types TypeScript** : Définitions strictes dans `types.ts`
 
 ### Responsive Design
 - **Mobile** : Grilles adaptatives, touch targets 44px+
@@ -237,7 +271,7 @@ useEffect(() => {
 
 ### Phase 1 : Setup (30 min)
 1. Ajouter MessageViewProvider
-2. Feature flag activation
+2. Changer les imports vers `BubbleMessage`
 3. Tests unitaires basiques
 
 ### Phase 2 : A/B Testing (1 semaine)
@@ -279,13 +313,14 @@ exitMode(); // Retour à normal
 setTimeout(() => enterEditMode(), 100); // Puis transition vers edit
 ```
 
-**3. "Reactions not updating in real-time"**
+**3. "Import error: BubbleMessageView not found"**
 ```typescript
-// Solution : Vérifier que conversationId est passé correctement
-<ReactionSelectionMessageView
-  conversationId={conversationId || message.conversationId} // ✅
-  // ...autres props
-/>
+// Solution : Utiliser les nouveaux noms de composants
+- import { BubbleMessageView } from './bubble-message/BubbleMessageView';
++ import { BubbleMessageNormalView } from './bubble-message/BubbleMessageNormalView';
+
+// Ou encore mieux, utiliser l'orchestrateur
++ import { BubbleMessage } from '@/components/common/BubbleMessage';
 ```
 
 ### Debug Mode
@@ -303,13 +338,26 @@ if (DEBUG) console.log('🔍 [MessageView] State:', state);
 
 ## 🎉 Résumé
 
-Cette architecture offre :
+Cette architecture refactorisée offre :
 
 - **🚀 Performance** : Virtualization smart - 80% moins de mémoire
 - **🎨 UX Moderne** : Actions inline fluides avec animations
 - **🔒 Backward Compatible** : API identique, 0 régression
 - **📱 Responsive** : Design adaptatif mobile-first
 - **♿ Accessible** : Navigation clavier + screen reader
-- **🔧 Maintenable** : Composants atomiques réutilisables
+- **🔧 Maintenable** : Composants atomiques avec nommage clair
+- **📝 Type Safe** : Définitions TypeScript strictes
+
+### Architecture Clarifiée
+
+```
+BubbleMessage.tsx (Orchestrateur Principal)
+└── Gère 5 vues avec virtualisation intelligente
+    ├── BubbleMessageNormalView.tsx (Vue par défaut)
+    ├── ReactionSelectionMessageView.tsx (Emoji picker)
+    ├── LanguageSelectionMessageView.tsx (Traductions)
+    ├── EditMessageView.tsx (Édition inline)
+    └── DeleteConfirmationView.tsx (Confirmation suppression)
+```
 
 **Prêt pour production !** ✅

@@ -17,12 +17,17 @@ Le système d'actions inline avec virtualization smart est maintenant **activé*
 ```
 
 ### 2. **Imports Mis à Jour**
-- ✅ `components/common/index.ts`
-- ✅ `components/common/bubble-stream-page.tsx`
-- ✅ `components/common/messages-display.tsx`
-- ✅ `lib/bubble-stream-modules.ts`
+- ✅ `components/common/index.ts` (bubble-message-new → BubbleMessage)
+- ✅ `lib/bubble-stream-modules.ts` (bubble-message-new → BubbleMessage) 
+- ✅ `components/common/messages-display.tsx` (bubble-message-new → BubbleMessage)
+- ✅ `components/common/bubble-stream-page.tsx` (bubble-message-new → BubbleMessage)
 
-### 3. **Hook Corrigé**
+### 3. **Architecture Clarifiée**
+- ✅ `bubble-message-new.tsx` → `BubbleMessage.tsx` (Orchestrateur principal)
+- ✅ `BubbleMessageView.tsx` → `BubbleMessageNormalView.tsx` (Vue par défaut)
+- ✅ Nommage cohérent et documentation mise à jour
+
+### 4. **Hook Corrigé**
 - ✅ `hooks/use-message-view-state.ts` → `hooks/use-message-view-state.tsx`
 - ✅ Support JSX pour le provider React
 

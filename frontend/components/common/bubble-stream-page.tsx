@@ -82,7 +82,7 @@ import {
   type LanguageChoice
 } from '@/lib/bubble-stream-modules';
 
-import { BubbleMessage } from '@/components/common/bubble-message-new';
+import { BubbleMessage } from '@/components/common/BubbleMessage';
 import { TrendingSection } from '@/components/common/trending-section';
 import { LoadingState } from '@/components/common/LoadingStates';
 import { useReplyStore } from '@/stores/reply-store';
