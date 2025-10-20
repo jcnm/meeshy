@@ -630,6 +630,29 @@ export class MeeshySocketIOManager {
       socket.on(CLIENT_EVENTS.TYPING_STOP, (data: { conversationId: string }) => {
         this._handleTypingStop(socket, data);
       });
+
+      // ===== ÉVÉNEMENTS DE RÉACTIONS =====
+      
+      // Ajouter une réaction
+      socket.on(CLIENT_EVENTS.REACTION_ADD, async (data: {
+        messageId: string;
+        emoji: string;
+      }, callback?: (response: SocketIOResponse<any>) => void) => {
+        await this._handleReactionAdd(socket, data, callback);
+      });
+
+      // Retirer une réaction
+      socket.on(CLIENT_EVENTS.REACTION_REMOVE, async (data: {
+        messageId: string;
+        emoji: string;
+      }, callback?: (response: SocketIOResponse<any>) => void) => {
+        await this._handleReactionRemove(socket, data, callback);
+      });
+
+      // Demander la synchronisation des réactions d'un message
+      socket.on(CLIENT_EVENTS.REACTION_REQUEST_SYNC, async (messageId: string, callback?: (response: SocketIOResponse<any>) => void) => {
+        await this._handleReactionSync(socket, messageId, callback);
+      });
     });
   }
 
@@ -1891,6 +1914,249 @@ export class MeeshySocketIOManager {
     }
     return false;
   }
+
+  // ===== HANDLERS DE RÉACTIONS =====
+
+  /**
+   * Gère l'ajout d'une réaction à un message
+   */
+  private async _handleReactionAdd(
+    socket: any,
+    data: { messageId: string; emoji: string },
+    callback?: (response: SocketIOResponse<any>) => void
+  ): Promise<void> {
+    try {
+      const userId = this.socketToUser.get(socket.id);
+      if (!userId) {
+        const errorResponse: SocketIOResponse<any> = {
+          success: false,
+          error: 'User not authenticated'
+        };
+        if (callback) callback(errorResponse);
+        return;
+      }
+
+      const user = this.connectedUsers.get(userId);
+      const isAnonymous = user?.isAnonymous || false;
+      const sessionToken = user?.sessionToken;
+
+      // Importer le ReactionService
+      const { ReactionService } = await import('../services/ReactionService.js');
+      const reactionService = new ReactionService(this.prisma);
+
+      // Ajouter la réaction
+      const reaction = await reactionService.addReaction({
+        messageId: data.messageId,
+        emoji: data.emoji,
+        userId: !isAnonymous ? userId : undefined,
+        anonymousUserId: isAnonymous && sessionToken ? sessionToken : undefined
+      });
+
+      if (!reaction) {
+        const errorResponse: SocketIOResponse<any> = {
+          success: false,
+          error: 'Failed to add reaction'
+        };
+        if (callback) callback(errorResponse);
+        return;
+      }
+
+      // Créer l'événement de mise à jour
+      const updateEvent = await reactionService.createUpdateEvent(
+        data.messageId,
+        data.emoji,
+        'add',
+        !isAnonymous ? userId : undefined,
+        isAnonymous && sessionToken ? sessionToken : undefined
+      );
+
+      // Envoyer la réponse au client
+      const successResponse: SocketIOResponse<any> = {
+        success: true,
+        data: reaction
+      };
+      if (callback) callback(successResponse);
+
+      // Broadcaster l'événement à tous les participants de la conversation
+      const message = await this.prisma.message.findUnique({
+        where: { id: data.messageId },
+        select: { conversationId: true }
+      });
+
+      if (message) {
+        const normalizedConversationId = await this.normalizeConversationId(message.conversationId);
+        console.log(`📡 [REACTION_ADDED] Broadcasting à la room:`, {
+          conversationId: normalizedConversationId,
+          messageId: data.messageId,
+          emoji: data.emoji,
+          userId: userId,
+          updateEvent: updateEvent
+        });
+        
+        this.io.to(normalizedConversationId).emit(SERVER_EVENTS.REACTION_ADDED, updateEvent);
+        
+        console.log(`✨ Réaction ajoutée et broadcastée: ${data.emoji} sur message ${data.messageId} par ${userId}`);
+      } else {
+        console.error(`❌ [REACTION_ADDED] Message ${data.messageId} non trouvé, impossible de broadcaster`);
+      }
+    } catch (error: any) {
+      console.error('❌ Erreur lors de l\'ajout de réaction:', error);
+      const errorResponse: SocketIOResponse<any> = {
+        success: false,
+        error: error.message || 'Failed to add reaction'
+      };
+      if (callback) callback(errorResponse);
+    }
+  }
+
+  /**
+   * Gère la suppression d'une réaction d'un message
+   */
+  private async _handleReactionRemove(
+    socket: any,
+    data: { messageId: string; emoji: string },
+    callback?: (response: SocketIOResponse<any>) => void
+  ): Promise<void> {
+    try {
+      const userId = this.socketToUser.get(socket.id);
+      if (!userId) {
+        const errorResponse: SocketIOResponse<any> = {
+          success: false,
+          error: 'User not authenticated'
+        };
+        if (callback) callback(errorResponse);
+        return;
+      }
+
+      const user = this.connectedUsers.get(userId);
+      const isAnonymous = user?.isAnonymous || false;
+      const sessionToken = user?.sessionToken;
+
+      // Importer le ReactionService
+      const { ReactionService } = await import('../services/ReactionService.js');
+      const reactionService = new ReactionService(this.prisma);
+
+      // Supprimer la réaction
+      const removed = await reactionService.removeReaction({
+        messageId: data.messageId,
+        emoji: data.emoji,
+        userId: !isAnonymous ? userId : undefined,
+        anonymousUserId: isAnonymous && sessionToken ? sessionToken : undefined
+      });
+
+      if (!removed) {
+        const errorResponse: SocketIOResponse<any> = {
+          success: false,
+          error: 'Reaction not found'
+        };
+        if (callback) callback(errorResponse);
+        return;
+      }
+
+      // Créer l'événement de mise à jour
+      const updateEvent = await reactionService.createUpdateEvent(
+        data.messageId,
+        data.emoji,
+        'remove',
+        !isAnonymous ? userId : undefined,
+        isAnonymous && sessionToken ? sessionToken : undefined
+      );
+
+      // Envoyer la réponse au client
+      const successResponse: SocketIOResponse<any> = {
+        success: true,
+        data: { message: 'Reaction removed successfully' }
+      };
+      if (callback) callback(successResponse);
+
+      // Broadcaster l'événement à tous les participants de la conversation
+      const message = await this.prisma.message.findUnique({
+        where: { id: data.messageId },
+        select: { conversationId: true }
+      });
+
+      if (message) {
+        const normalizedConversationId = await this.normalizeConversationId(message.conversationId);
+        this.io.to(normalizedConversationId).emit(SERVER_EVENTS.REACTION_REMOVED, updateEvent);
+      }
+
+      console.log(`🗑️ Réaction retirée: ${data.emoji} sur message ${data.messageId} par ${userId}`);
+    } catch (error: any) {
+      console.error('❌ Erreur lors de la suppression de réaction:', error);
+      const errorResponse: SocketIOResponse<any> = {
+        success: false,
+        error: error.message || 'Failed to remove reaction'
+      };
+      if (callback) callback(errorResponse);
+    }
+  }
+
+  /**
+   * Gère la synchronisation des réactions d'un message
+   */
+  private async _handleReactionSync(
+    socket: any,
+    messageId: string,
+    callback?: (response: SocketIOResponse<any>) => void
+  ): Promise<void> {
+    try {
+      console.log(`🔄 [REACTION_SYNC] Demande de synchronisation pour message ${messageId} par socket ${socket.id}`);
+      
+      const userId = this.socketToUser.get(socket.id);
+      if (!userId) {
+        console.error(`❌ [REACTION_SYNC] Utilisateur non authentifié pour socket ${socket.id}`);
+        const errorResponse: SocketIOResponse<any> = {
+          success: false,
+          error: 'User not authenticated'
+        };
+        if (callback) callback(errorResponse);
+        return;
+      }
+
+      const user = this.connectedUsers.get(userId);
+      const isAnonymous = user?.isAnonymous || false;
+      const sessionToken = user?.sessionToken;
+
+      console.log(`👤 [REACTION_SYNC] Utilisateur: ${userId}, isAnonymous: ${isAnonymous}`);
+
+      // Importer le ReactionService
+      const { ReactionService } = await import('../services/ReactionService.js');
+      const reactionService = new ReactionService(this.prisma);
+
+      // Récupérer les réactions avec agrégation
+      const reactionSync = await reactionService.getMessageReactions({
+        messageId,
+        currentUserId: !isAnonymous ? userId : undefined,
+        currentAnonymousUserId: isAnonymous && sessionToken ? sessionToken : undefined
+      });
+
+      console.log(`✅ [REACTION_SYNC] Réactions récupérées:`, {
+        messageId,
+        reactionsCount: reactionSync.reactions.length,
+        userReactionsCount: reactionSync.userReactions.length,
+        reactions: reactionSync.reactions,
+        userReactions: reactionSync.userReactions
+      });
+
+      // Envoyer la réponse au client
+      const successResponse: SocketIOResponse<any> = {
+        success: true,
+        data: reactionSync
+      };
+      if (callback) callback(successResponse);
+
+      console.log(`🔄 Synchronisation des réactions pour message ${messageId} terminée pour ${userId}`);
+    } catch (error: any) {
+      console.error('❌ Erreur lors de la synchronisation des réactions:', error);
+      const errorResponse: SocketIOResponse<any> = {
+        success: false,
+        error: error.message || 'Failed to sync reactions'
+      };
+      if (callback) callback(errorResponse);
+    }
+  }
+
+  // ===== FIN HANDLERS DE RÉACTIONS =====
 
   /**
    * Déconnecte un utilisateur spécifique

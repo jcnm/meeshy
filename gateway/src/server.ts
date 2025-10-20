@@ -40,6 +40,7 @@ import messageRoutes from './routes/messages';
 import { notificationRoutes } from './routes/notifications';
 import { friendRequestRoutes } from './routes/friends';
 import { attachmentRoutes } from './routes/attachments';
+import reactionRoutes from './routes/reactions';
 import { InitService } from './services/init.service';
 import { MeeshySocketIOHandler } from './socketio/MeeshySocketIOHandler';
 
@@ -552,6 +553,9 @@ class MeeshyServer {
     
     // Register attachment routes with /api prefix
     await this.server.register(attachmentRoutes, { prefix: '/api' });
+    
+    // Register reaction routes with /api prefix
+    await this.server.register(reactionRoutes, { prefix: '/api' });
     
     // Register notification routes with /api prefix
     await this.server.register(notificationRoutes, { prefix: '/api' });
