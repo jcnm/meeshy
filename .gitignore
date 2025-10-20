@@ -146,5 +146,8 @@ htmlcov/
 ./shared/*d.ts
 ./shared/**/*.d.ts
  */translator/.venv/
+ **/*/shared
+ **/*/shared/*
+ ./**/*/shared
 translator/.venv/
 logs/
