@@ -903,7 +903,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
           </header>
 
           {/* Zone des messages scrollable */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden bg-transparent pb-36">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden bg-transparent pb-24">
             <ConversationMessages
               messages={messages}
               translatedMessages={messages as any}
@@ -926,7 +926,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               onImageClick={handleImageClick}
               onLoadMore={loadMore}
               t={t}
-              reverseOrder={false}
+              reverseOrder={true}
             />
           </div>
 
@@ -999,8 +999,8 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               role="application"
               aria-label={t('conversationLayout.conversations.title')}
             >
-        {/* Liste des conversations - Sidebar gauche - Masquée si conversation sélectionnée via URL */}
-        {!selectedConversationId && (
+        {/* Liste des conversations - Sidebar gauche - Toujours visible en desktop, masquée en mobile si conversation sélectionnée */}
+        {(!isMobile || !selectedConversationId) && (
           <aside 
             className={cn(
               "flex-shrink-0 bg-white dark:bg-gray-950 border-r-2 border-gray-200 dark:border-gray-800 transition-all duration-300 shadow-lg",
@@ -1070,7 +1070,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
               {/* Zone des messages */}
               <div 
-                className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-900/50 dark:to-gray-950 pb-4"
+                className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-900/50 dark:to-gray-950 pb-24"
                 role="region"
                 aria-live="polite"
                 aria-label={t('conversationLayout.messagesList')}
@@ -1097,12 +1097,15 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                   onImageClick={handleImageClick}
                   onLoadMore={loadMore}
                   t={t}
-                  reverseOrder={false}
+                  reverseOrder={true}
                 />
               </div>
 
               {/* Zone de composition - Desktop */}
-              <div className="bg-white/98 dark:bg-gray-950/98 backdrop-blur-xl border-t-2 border-gray-200 dark:border-gray-700 shadow-2xl sticky bottom-0 p-6 z-20">
+              <div className={cn(
+                "bg-white/98 dark:bg-gray-950/98 backdrop-blur-xl border-t-2 border-gray-200 dark:border-gray-700 shadow-2xl fixed bottom-0 right-0 p-6 z-20",
+                isMobile ? "left-0" : "left-80 lg:left-96"
+              )}>
                 <div className="max-w-5xl mx-auto">
                   {/* Bannière des messages en échec */}
                   {selectedConversation?.id && (
