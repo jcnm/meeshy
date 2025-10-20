@@ -1108,6 +1108,16 @@ export async function linksRoutes(fastify: FastifyInstance) {
                   lastName: true,
                   language: true
                 }
+              },
+              attachments: true,
+              reactions: {
+                select: {
+                  id: true,
+                  emoji: true,
+                  userId: true,
+                  anonymousUserId: true,
+                  createdAt: true
+                }
               }
             }
           },
@@ -1115,6 +1125,15 @@ export async function linksRoutes(fastify: FastifyInstance) {
             select: {
               userId: true,
               readAt: true
+            }
+          },
+          reactions: {
+            select: {
+              id: true,
+              emoji: true,
+              userId: true,
+              anonymousUserId: true,
+              createdAt: true
             }
           }
         }
@@ -1183,7 +1202,9 @@ export async function linksRoutes(fastify: FastifyInstance) {
             lastName: (message as any).replyTo.anonymousSender.lastName,
             language: (message as any).replyTo.anonymousSender.language
           } : null
-        } : null
+        } : null,
+        // Inclure les réactions
+        reactions: (message as any).reactions || []
       }));
 
       return reply.send({

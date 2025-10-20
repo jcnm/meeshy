@@ -874,6 +874,15 @@ export async function conversationRoutes(fastify: FastifyInstance) {
               cacheKey: true
             }
           },
+          reactions: {
+            select: {
+              id: true,
+              emoji: true,
+              userId: true,
+              anonymousUserId: true,
+              createdAt: true
+            }
+          },
           replyTo: {
             include: {
               sender: {
@@ -920,6 +929,15 @@ export async function conversationRoutes(fastify: FastifyInstance) {
                   translatedContent: true,
                   translationModel: true,
                   cacheKey: true
+                }
+              },
+              reactions: {
+                select: {
+                  id: true,
+                  emoji: true,
+                  userId: true,
+                  anonymousUserId: true,
+                  createdAt: true
                 }
               }
             }
