@@ -104,7 +104,6 @@ import { conversationsService } from '@/services';
 import { messageService } from '@/services/message.service';
 import { TypingIndicator } from '@/components/conversations/typing-indicator';
 import { useConversationMessages } from '@/hooks/use-conversation-messages';
-import { MessagesDisplay } from '@/components/common/messages-display';
 import { ConversationMessages } from '@/components/conversations/ConversationMessages';
 
 export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousMode = false, linkId, initialParticipants }: BubbleStreamPageProps) {
@@ -1389,31 +1388,29 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
               - Scroll vers le bas charge les plus anciens (ajoutés à la FIN)
               - Résultat: Récent EN HAUT, Ancien EN BAS ✅
             */}
-            <MessagesDisplay
+            <ConversationMessages
               messages={messages}
               translatedMessages={translatedMessages}
               isLoadingMessages={isLoadingMessages}
+              isLoadingMore={isLoadingMore}
+              hasMore={hasMore}
               currentUser={user}
               userLanguage={userLanguage}
               usedLanguages={usedLanguages}
-              emptyStateMessage={t('bubbleStream.emptyStateMessage')}
-              emptyStateDescription={t('bubbleStream.emptyStateDescription')}
-              reverseOrder={false}
-              className=""
-              onTranslation={handleTranslation}
+              isMobile={isMobile}
+              conversationType="public"
+              userRole={getUserModerationRole()}
+              conversationId={conversationId}
+              addTranslatingState={addTranslatingState}
+              isTranslating={isTranslating}
               onEditMessage={handleEditMessage}
               onDeleteMessage={handleDeleteMessage}
               onReplyMessage={handleReplyMessage}
               onNavigateToMessage={handleNavigateToMessage}
               onImageClick={handleImageClick}
-              conversationType="public"
-              userRole={getUserModerationRole() as any}
-              addTranslatingState={addTranslatingState}
-              isTranslating={isTranslating}
-              containerRef={messagesContainerRef}
               onLoadMore={loadMore}
-              hasMore={hasMore}
-              isLoadingMore={isLoadingMore}
+              t={t}
+              reverseOrder={true} // BubbleStream: inverser l'ordre pour avoir récent en haut
             />
 
             {/* Indicateur si plus de messages disponibles - positionné après les messages */}
