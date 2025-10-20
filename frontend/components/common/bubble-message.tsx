@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, memo, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { 
-  Star,
+  Smile,
   Copy,
   AlertTriangle,
   Timer,
@@ -59,7 +59,12 @@ import { getMessageInitials } from '@/lib/avatar-utils';
 import { cn } from '@/lib/utils';
 import { useFixTranslationPopoverZIndex } from '@/hooks/use-fix-z-index';
 import { MessageWithLinks } from '@/components/chat/message-with-links';
-import { MessageAttachments } from '@/components/attachments/MessageAttachments'; 
+import { MessageAttachments } from '@/components/attachments/MessageAttachments';
+import { MessageReactions } from '@/components/common/message-reactions';
+import { EmojiPicker } from '@/components/common/emoji-picker';
+import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
+import { CLIENT_EVENTS } from '@shared/types/socketio-events';
+import { useMessageReactions } from '@/hooks/use-message-reactions'; 
 
 
 interface BubbleMessageProps {
@@ -110,6 +115,14 @@ function BubbleMessageInner({
 }: BubbleMessageProps) {
   const { t } = useI18n('bubbleStream');
   
+  // Hook pour gérer les réactions de ce message
+  const { addReaction } = useMessageReactions({
+    messageId: message.id,
+    currentUserId: currentUser.id,
+    isAnonymous: false,
+    enabled: true
+  });
+  
   // Hook pour fixer les z-index des popovers de traduction
   useFixTranslationPopoverZIndex();
   
@@ -152,10 +165,40 @@ function BubbleMessageInner({
   };
   
   // États UI locaux uniquement (pas de logique métier)
-  const [isFavorited, setIsFavorited] = useState(false);
   const [isTranslationPopoverOpen, setIsTranslationPopoverOpen] = useState(false);
   const [previousTranslationCount, setPreviousTranslationCount] = useState(0);
   const [isNewTranslation, setIsNewTranslation] = useState(false);
+  const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
+  const [isAddingReaction, setIsAddingReaction] = useState(false);
+  
+  // Fonction pour ajouter une réaction via le bouton emoji picker
+  const handleAddReaction = async (emoji: string) => {
+    // Protection contre les doubles clics
+    if (isAddingReaction) {
+      console.log('[BubbleMessage] Réaction déjà en cours d\'ajout, ignoré');
+      return;
+    }
+
+    try {
+      setIsAddingReaction(true);
+      
+      // Utiliser le hook useMessageReactions qui gère l'optimistic update
+      const success = await addReaction(emoji);
+      
+      if (success) {
+        console.log('[BubbleMessage] Reaction added successfully, closing picker');
+        setIsEmojiPickerOpen(false);
+      } else {
+        console.error('[BubbleMessage] Failed to add reaction');
+        toast.error(t('addReaction') + ': Failed');
+      }
+    } catch (error) {
+      console.error('[BubbleMessage] Error adding reaction:', error);
+      toast.error(t('addReaction') + ': Error');
+    } finally {
+      setIsAddingReaction(false);
+    }
+  };
   
   // Timer pour la fermeture automatique au mouse leave
   const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -496,34 +539,27 @@ function BubbleMessageInner({
         id={`message-${message.id}`}
         ref={messageRef}
         className={cn(
-          "bubble-message flex gap-2 sm:gap-3 mb-3 sm:mb-4 px-2 sm:px-4",
+          "bubble-message flex gap-2 sm:gap-3 mb-8 px-2 sm:px-4",
           isOwnMessage ? "flex-row-reverse" : "flex-row"
         )}
       >
-        {/* Avatar - Hidden on mobile for own messages */}
-        <Avatar className={cn(
-          "h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0 mt-1",
+        {/* Avatar + Nom + Date - Hidden on mobile for own messages */}
+        <div className={cn(
+          "flex flex-col items-center gap-1 flex-shrink-0",
           isOwnMessage && "hidden sm:flex"
         )}>
-          <AvatarImage 
-            src={(message.sender as any)?.avatar} 
-            alt={message.sender?.firstName} 
-          />
-          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xs sm:text-sm font-semibold">
-            {getMessageInitials(message)}
-          </AvatarFallback>
-        </Avatar>
-
-        {/* Message Bubble */}
-        <div className={cn(
-          "flex-1 min-w-0 max-w-[85%] sm:max-w-[75%] md:max-w-[65%] overflow-hidden",
-          isOwnMessage && "flex flex-col items-end"
-        )}>
-          {/* Header with sender name and time */}
-          <div className={cn(
-            "flex items-center gap-2 mb-1 px-1",
-            isOwnMessage && "flex-row-reverse"
-          )}>
+          <Avatar className="h-8 w-8 sm:h-9 sm:w-9">
+            <AvatarImage 
+              src={(message.sender as any)?.avatar} 
+              alt={message.sender?.firstName} 
+            />
+            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xs sm:text-sm font-semibold">
+              {getMessageInitials(message)}
+            </AvatarFallback>
+          </Avatar>
+          
+          {/* Nom de l'auteur */}
+          <div className="flex flex-col items-center gap-0.5 max-w-[60px]">
             {(() => {
               const username = message.anonymousSender?.username || message.sender?.username;
               const displayName = message.anonymousSender 
@@ -535,29 +571,39 @@ function BubbleMessageInner({
               return username ? (
                 <Link 
                   href={`/u/${username}`}
-                  className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 truncate hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                  className="text-[10px] font-semibold text-gray-700 dark:text-gray-300 truncate hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer text-center w-full"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {displayName}
                 </Link>
               ) : (
-                <span className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 truncate">
+                <span className="text-[10px] font-semibold text-gray-700 dark:text-gray-300 truncate text-center w-full">
                   {displayName}
                 </span>
               );
             })()}
-            {message.anonymousSenderId && (
-              <Ghost className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-400 dark:text-gray-500 flex-shrink-0" />
-            )}
-            <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
+            
+            {/* Date d'envoi */}
+            <span className="text-[9px] text-gray-400 dark:text-gray-500 flex-shrink-0 text-center">
               {formatTimeAgo(message.createdAt)}
             </span>
+            
+            {/* Badge anonyme si applicable */}
+            {message.anonymousSenderId && (
+              <Ghost className="h-2.5 w-2.5 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+            )}
           </div>
+        </div>
 
+        {/* Message Bubble */}
+        <div className={cn(
+          "relative flex-1 min-w-0 max-w-[85%] sm:max-w-[75%] md:max-w-[65%] overflow-visible",
+          isOwnMessage && "flex flex-col items-end"
+        )}>
           {/* Main Message Card */}
           <Card 
             className={cn(
-              "relative transition-colors duration-200 border shadow-none max-w-full overflow-hidden group/message",
+              "relative transition-colors duration-200 border shadow-none max-w-full overflow-visible group/message",
               isOwnMessage 
                 ? 'bg-gradient-to-br from-blue-400 to-blue-500 border-blue-400 text-white' 
                 : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
@@ -1046,32 +1092,40 @@ function BubbleMessageInner({
                     </Popover>
                   </Tooltip>
 
-                  {/* Bouton favoris */}
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setIsFavorited(!isFavorited)}
-                        aria-label={isFavorited ? t('removeFavorite') : t('addFavorite')}
-                        className={cn(
-                          "h-7 w-7 p-0 rounded-full transition-colors",
-                          isFavorited 
-                            ? isOwnMessage
-                              ? 'text-yellow-300 hover:text-yellow-200 hover:bg-white/20'
-                              : 'text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50 dark:text-yellow-400 dark:hover:text-yellow-300 dark:hover:bg-yellow-900/30'
-                            : isOwnMessage
-                              ? 'text-white/70 hover:text-white hover:bg-white/20'
-                              : 'text-gray-500 hover:text-yellow-500 hover:bg-yellow-50 dark:text-gray-400 dark:hover:text-yellow-400 dark:hover:bg-yellow-900/30'
-                        )}
-                      >
-                        <Star className={cn("h-3.5 w-3.5", isFavorited && "fill-current")} />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{isFavorited ? t('removeFavorite') : t('addFavorite')}</p>
-                    </TooltipContent>
-                  </Tooltip>
+                  {/* Bouton ajout de réaction */}
+                  <Popover open={isEmojiPickerOpen} onOpenChange={setIsEmojiPickerOpen}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            aria-label={t('addReaction') || 'Add reaction'}
+                            className={cn(
+                              "h-7 w-7 p-0 rounded-full transition-colors",
+                              isOwnMessage
+                                ? 'text-white/70 hover:text-white hover:bg-white/20'
+                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700'
+                            )}
+                          >
+                            <Smile className="h-3.5 w-3.5" />
+                          </Button>
+                        </PopoverTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{t('addReaction') || 'Add reaction'}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <PopoverContent 
+                      className="w-auto p-0 border-0 shadow-lg"
+                      align="start"
+                      side="top"
+                    >
+                      <EmojiPicker
+                        onEmojiSelect={handleAddReaction}
+                      />
+                    </PopoverContent>
+                  </Popover>
 
                   {/* Bouton copie */}
                   <Tooltip>
@@ -1148,6 +1202,23 @@ function BubbleMessageInner({
               </div>
             </CardContent>
           </Card>
+
+          {/* Message Reactions - Position selon l'expéditeur */}
+          <div 
+            className={cn(
+              "absolute -bottom-3 z-[9999]",
+              isOwnMessage ? "right-2" : "left-2"
+            )}
+            style={{ pointerEvents: 'auto' }}
+          >
+            <MessageReactions
+              messageId={message.id}
+              conversationId={message.conversationId}
+              currentUserId={currentUser.id}
+              isAnonymous={false}
+              showAddButton={false}
+            />
+          </div>
         </div>
       </div>
     </TooltipProvider>
