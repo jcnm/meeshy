@@ -1207,9 +1207,14 @@ function BubbleMessageInner({
           <div 
             className={cn(
               "absolute -bottom-3 z-[9999]",
-              isOwnMessage ? "right-2" : "left-2"
+              isOwnMessage ? "right-0" : "left-2"
             )}
-            style={{ pointerEvents: 'auto' }}
+            style={{ 
+              pointerEvents: 'auto',
+              ...(isOwnMessage && {
+                transform: 'translateX(-8px)' // Légèrement vers la gauche pour éviter la coupure
+              })
+            }}
           >
             <MessageReactions
               messageId={message.id}

@@ -1377,7 +1377,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
             style={{ background: 'transparent' }}
           >
             <div className={cn(
-              "flex flex-col max-w-4xl mx-auto pb-40",
+              "flex flex-col max-w-4xl mx-auto pb-48",
               isMobile ? "px-3 py-4" : "px-6 py-4"
             )}>
             {/* 
@@ -1410,7 +1410,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
               onImageClick={handleImageClick}
               onLoadMore={loadMore}
               t={t}
-              reverseOrder={true} // BubbleStream: inverser l'ordre pour avoir récent en haut
+              reverseOrder={false} // BubbleStream: garde l'ordre backend [récent...ancien] = récent en haut
             />
 
             {/* Indicateur si plus de messages disponibles - positionné après les messages */}
