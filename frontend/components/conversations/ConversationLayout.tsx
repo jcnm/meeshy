@@ -926,6 +926,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               onImageClick={handleImageClick}
               onLoadMore={loadMore}
               t={t}
+              reverseOrder={false}
             />
           </div>
 
@@ -1096,6 +1097,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                   onImageClick={handleImageClick}
                   onLoadMore={loadMore}
                   t={t}
+                  reverseOrder={false}
                 />
               </div>
 
