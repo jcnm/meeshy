@@ -63,6 +63,18 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
     isAnonymous
   });
 
+  // Debug: log reactions data (disabled to stop infinite loop)
+  // React.useEffect(() => {
+  //   console.log('🔍 [MessageReactions] Component state:', {
+  //     messageId,
+  //     conversationId,
+  //     reactions: reactions.length,
+  //     isLoading,
+  //     userReactions: userReactions.length,
+  //     reactionsData: reactions
+  //   });
+  // }, [messageId, conversationId, reactions, isLoading, userReactions]);
+
   // Limiter le nombre de réactions affichées
   const visibleReactions = useMemo(() => {
     return reactions.slice(0, maxVisibleReactions);

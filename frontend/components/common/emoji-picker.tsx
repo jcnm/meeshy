@@ -318,10 +318,14 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
         'bg-popover text-popover-foreground',
         'rounded-lg border shadow-lg',
         'overflow-hidden',
-        'w-full max-w-sm',
+        // Largeur responsive : réduite sur mobile pour rester visible
+        'w-full max-w-[min(320px,calc(100vw-24px))]',
         className
       )}
-      style={{ maxHeight }}
+      style={{ 
+        maxHeight,
+        maxWidth: 'min(320px, calc(100vw - 24px))'
+      }}
     >
       {/* Header avec recherche et close */}
       <div className="p-3 border-b bg-muted/30">

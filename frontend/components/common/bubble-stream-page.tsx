@@ -82,7 +82,7 @@ import {
   type LanguageChoice
 } from '@/lib/bubble-stream-modules';
 
-import { BubbleMessage } from '@/components/common/bubble-message';
+import { BubbleMessage } from '@/components/common/bubble-message-new';
 import { TrendingSection } from '@/components/common/trending-section';
 import { LoadingState } from '@/components/common/LoadingStates';
 import { useReplyStore } from '@/stores/reply-store';
@@ -154,7 +154,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
   // État pour les traductions en cours
   const [translatingMessages, setTranslatingMessages] = useState<Map<string, Set<string>>>(new Map());
-  const [translatedMessages, setTranslatedMessages] = useState<BubbleStreamMessage[]>([]);
 
   // Fonctions pour gérer l'état des traductions en cours
   const addTranslatingState = useCallback((messageId: string, targetLanguage: string) => {
@@ -841,17 +840,17 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     }
   }, [newMessage]);
 
-  // Définir le callback pour récupérer un message par ID (utilise la liste translatedMessages existante)
+  // Définir le callback pour récupérer un message par ID (utilise la liste messages existante)
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const meeshySocketIOService = require('@/services/meeshy-socketio.service').meeshySocketIOService;
       const getMessageById = (messageId: string) => {
-        return (translatedMessages as Message[]).find(msg => msg.id === messageId);
+        return (messages as Message[]).find(msg => msg.id === messageId);
       };
       meeshySocketIOService.setGetMessageByIdCallback(getMessageById);
-      console.log(`� [CALLBACK] Callback getMessageById défini (${translatedMessages.length} messages disponibles)`);
+      console.log(`🔗 [CALLBACK] Callback getMessageById défini (${messages.length} messages disponibles)`);
     }
-  }, [translatedMessages]);
+  }, [messages]);
 
   // Mise à jour de la langue sélectionnée basée sur les préférences utilisateur uniquement
   useEffect(() => {
@@ -948,12 +947,12 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
   // Calculer les statistiques de langues à partir des messages chargés
   useEffect(() => {
-    if (translatedMessages.length > 0) {
+    if (messages.length > 0) {
       // Calculer les statistiques des langues des messages
       const languageCounts: { [key: string]: number } = {};
       const userLanguages: { [key: string]: Set<string> } = {}; // Pour les langues des utilisateurs
       
-      translatedMessages.forEach(message => {
+      messages.forEach(message => {
         // Compter les langues originales des messages
         const originalLang = message.originalLanguage || 'fr';
         languageCounts[originalLang] = (languageCounts[originalLang] || 0) + 1;
@@ -1020,7 +1019,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         }
       });
     }
-  }, [translatedMessages.length]); // Supprimé les dépendances qui causent des boucles
+  }, [messages.length]); // Supprimé les dépendances qui causent des boucles
 
   // Afficher l'écran de chargement pendant l'initialisation
   if (isInitializing) {
@@ -1274,6 +1273,23 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           display: none;
         }
         
+        /* Force popover visibility in BubbleStream */
+        .radix-popover-fixed {
+          z-index: 99999 !important;
+          position: fixed !important;
+          pointer-events: auto !important;
+          overflow: visible !important;
+        }
+        
+        /* Ensure parent containers don't clip popovers */
+        .bubble-message-container {
+          overflow: visible !important;
+        }
+        
+        .bubble-message {
+          overflow: visible !important;
+        }
+        
         /* Style pour les conteneurs avec scroll caché */
         .scroll-hidden {
           scrollbar-width: none;
@@ -1296,7 +1312,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
             height: 100dvh !important; /* Dynamic viewport height pour mobile */
             z-index: 40 !important;
             background: linear-gradient(to-br, #eff6ff, #ffffff, #e0e7ff) !important;
-            overflow: hidden !important;
+            overflow: visible !important; /* Changed to visible for popovers */
           }
           
           .mobile-messages-container {
@@ -1373,7 +1389,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           {/* Feed des messages avec scroll naturel - Padding top pour l'indicateur fixe */}
           <div 
             ref={messagesContainerRef}
-            className="relative h-full pt-4 md:pt-20 messages-container scroll-optimized scrollbar-thin overflow-y-auto mobile-messages-container"
+            className="relative h-full pt-4 md:pt-20 messages-container scroll-optimized scrollbar-thin overflow-y-auto overflow-x-visible mobile-messages-container"
             style={{ background: 'transparent' }}
           >
             <div className={cn(
@@ -1390,7 +1406,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
             */}
             <ConversationMessages
               messages={messages}
-              translatedMessages={translatedMessages}
+              translatedMessages={messages as any}
               isLoadingMessages={isLoadingMessages}
               isLoadingMore={isLoadingMore}
               hasMore={hasMore}
@@ -1401,6 +1417,8 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
               conversationType="public"
               userRole={getUserModerationRole()}
               conversationId={conversationId}
+              isAnonymous={isAnonymousMode}
+              currentAnonymousUserId={isAnonymousMode ? user.id : undefined}
               addTranslatingState={addTranslatingState}
               isTranslating={isTranslating}
               onEditMessage={handleEditMessage}

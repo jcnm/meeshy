@@ -7,6 +7,7 @@ import { StoreInitializer } from "@/stores";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { ErrorBoundary } from "@/components/common";
 import { ClientOnly } from "@/components/common/client-only";
+import { MessageViewProvider } from "@/hooks/use-message-view-state";
 import { defaultFont, getAllFontVariables } from "@/lib/fonts";
 import { preloadCriticalComponents } from "@/lib/lazy-components";
 import "@/utils/console-override"; // 🔇 Désactive console.log en production
@@ -36,11 +37,13 @@ export default function RootLayout({
       <body className={`${getAllFontVariables()} antialiased font-nunito`}>
         <StoreInitializer>
           <ThemeProvider>
-            <ErrorBoundary>
-              <ClientOnly>
-                {children}
-              </ClientOnly>
-            </ErrorBoundary>
+            <MessageViewProvider>
+              <ErrorBoundary>
+                <ClientOnly>
+                  {children}
+                </ClientOnly>
+              </ErrorBoundary>
+            </MessageViewProvider>
           </ThemeProvider>
         </StoreInitializer>
         <Toaster 

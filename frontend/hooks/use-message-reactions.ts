@@ -65,12 +65,12 @@ export function useMessageReactions({
    */
   const refreshReactions = useCallback(async () => {
     if (!enabled || !messageId) {
-      console.log('[useMessageReactions] refreshReactions ignoré:', { enabled, messageId });
+      console.log('🚫 [useMessageReactions] refreshReactions ignoré:', { enabled, messageId });
       return;
     }
 
     try {
-      console.log('🔄 [useMessageReactions] Demande de synchronisation pour message:', messageId);
+      // console.log('🔄 [useMessageReactions] Demande de synchronisation pour message:', messageId);
       setIsLoading(true);
       setError(null);
 
@@ -81,31 +81,17 @@ export function useMessageReactions({
         throw new Error('Socket not connected');
       }
 
-      console.log('📡 [useMessageReactions] Émission de REACTION_REQUEST_SYNC pour:', messageId);
 
       socket.emit(
         CLIENT_EVENTS.REACTION_REQUEST_SYNC,
         messageId,
         (response: any) => {
-          console.log('📥 [useMessageReactions] Réponse REACTION_REQUEST_SYNC:', {
-            success: response.success,
-            hasData: !!response.data,
-            error: response.error,
-            data: response.data
-          });
 
           if (response.success && response.data) {
             const syncData = response.data as ReactionSync;
-            console.log('✅ [useMessageReactions] Synchronisation réussie:', {
-              reactionsCount: syncData.reactions.length,
-              userReactionsCount: syncData.userReactions.length,
-              reactions: syncData.reactions,
-              userReactions: syncData.userReactions
-            });
             setReactions(syncData.reactions as ReactionAggregation[]);
             setUserReactions(syncData.userReactions as string[]);
           } else {
-            console.error('❌ [useMessageReactions] Échec de synchronisation:', response.error);
             setError(response.error || 'Failed to sync reactions');
           }
         }
@@ -123,6 +109,7 @@ export function useMessageReactions({
    */
   const addReaction = useCallback(async (emoji: string): Promise<boolean> => {
     if (!enabled || !messageId) return false;
+
 
     // CORRECTION CRITIQUE: Ne PAS ajouter si déjà présente dans userReactions
     // Évite le double comptage avec l'événement WebSocket
@@ -295,11 +282,20 @@ export function useMessageReactions({
   }, [reactions]);
 
   /**
-   * Synchronisation initiale
+   * Synchronisation initiale avec délai pour la connexion WebSocket
    */
   useEffect(() => {
     if (enabled && messageId) {
-      refreshReactions();
+      // Attendre un peu que la connexion WebSocket soit établie
+      const timer = setTimeout(() => {
+        if (meeshySocketIOService.socket?.connected) {
+          refreshReactions();
+        } else {
+          setTimeout(() => refreshReactions(), 2000);
+        }
+      }, 500);
+      
+      return () => clearTimeout(timer);
     }
   }, [messageId, enabled, refreshReactions]);
 
@@ -310,37 +306,12 @@ export function useMessageReactions({
     if (!enabled || !messageId) return;
 
     const handleReactionAdded = (event: ReactionUpdateEvent) => {
-      console.log('🎉 [useMessageReactions] Réaction reçue (temps-réel):', {
-        eventMessageId: event.messageId,
-        expectedMessageId: messageId,
-        matches: event.messageId === messageId,
-        emoji: event.emoji,
-        action: event.action,
-        userId: event.userId,
-        aggregation: event.aggregation
-      });
-      
       if (event.messageId !== messageId) {
-        console.log('⚠️ [useMessageReactions] Message ID ne correspond pas, ignoré');
         return;
       }
 
-      console.log('✅ [useMessageReactions] Traitement de la réaction:', {
-        messageId: event.messageId,
-        emoji: event.emoji,
-        action: event.action,
-        userId: event.userId,
-        aggregation: event.aggregation
-      });
-
       setReactions(prev => {
         const existing = prev.find(r => r.emoji === event.emoji);
-        
-        console.log('📊 [useMessageReactions] État actuel reactions:', {
-          prevReactions: prev,
-          existing: existing,
-          newAggregation: event.aggregation
-        });
         
         if (existing) {
           // Mettre à jour l'agrégation existante
@@ -395,20 +366,15 @@ export function useMessageReactions({
     };
 
     // S'abonner aux événements
-    console.log('🔔 [useMessageReactions] S\'abonne aux événements pour message:', {
-      messageId,
-      currentUserId,
-      isAnonymous,
-      enabled
-    });
+    // console.log('🔔 [useMessageReactions] S\'abonne aux événements pour message:', messageId);
     
     const unsubAdded = meeshySocketIOService.onReactionAdded(handleReactionAdded);
     const unsubRemoved = meeshySocketIOService.onReactionRemoved(handleReactionRemoved);
     
-    console.log('✅ [useMessageReactions] Abonnement confirmé pour message:', messageId);
+    // console.log('✅ [useMessageReactions] Abonnement confirmé pour message:', messageId);
 
     return () => {
-      console.log('🔕 [useMessageReactions] Se désabonne des événements pour message:', messageId);
+      // console.log('🔕 [useMessageReactions] Se désabonne des événements pour message:', messageId);
       unsubAdded();
       unsubRemoved();
     };

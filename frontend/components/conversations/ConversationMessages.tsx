@@ -24,6 +24,8 @@ interface ConversationMessagesProps {
   conversationType?: 'direct' | 'group' | 'public' | 'global';
   userRole: UserRoleEnum;
   conversationId?: string;
+  isAnonymous?: boolean; // Add isAnonymous for anonymous reactions
+  currentAnonymousUserId?: string; // Add anonymous user ID for reactions
   addTranslatingState: (messageId: string, targetLanguage: string) => void;
   isTranslating: (messageId: string, targetLanguage: string) => boolean;
   onEditMessage: (messageId: string, newContent: string) => Promise<void>;
@@ -49,6 +51,8 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
   conversationType,
   userRole,
   conversationId,
+  isAnonymous = false,
+  currentAnonymousUserId,
   addTranslatingState,
   isTranslating,
   onEditMessage,
@@ -260,8 +264,8 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
           <div>
             {/* 
               Logique d'affichage selon reverseOrder:
-              - reverseOrder=false (BubbleStream): [récent...ancien] = Récent EN HAUT
-              - reverseOrder=true (Conversations): [ancien...récent] = Ancien EN HAUT
+              - reverseOrder=false (BubbleStream): garde [récent...ancien] = Récent EN HAUT
+              - reverseOrder=true (Conversations): inverse vers [ancien...récent] = Ancien EN HAUT
               - Backend retourne toujours: orderBy createdAt DESC = [récent...ancien]
             */}
             <MessagesDisplay
@@ -280,6 +284,9 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
               )}
               onEditMessage={onEditMessage}
               onDeleteMessage={onDeleteMessage}
+              conversationId={conversationId}
+              isAnonymous={isAnonymous}
+              currentAnonymousUserId={currentAnonymousUserId}
               onReplyMessage={onReplyMessage}
               onNavigateToMessage={onNavigateToMessage}
               onImageClick={onImageClick}

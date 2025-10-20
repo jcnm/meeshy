@@ -168,7 +168,7 @@ export function useI18n(namespace: string = 'common', options: UseI18nOptions = 
     
     // Remplacer les paramètres dans la traduction
     if (params) {
-      return value.replace(/\{\{(\w+)\}\}/g, (match, paramKey) => {
+      return value.replace(/\{(\w+)\}/g, (match, paramKey) => {
         return params[paramKey]?.toString() || match;
       });
     }

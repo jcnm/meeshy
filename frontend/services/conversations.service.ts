@@ -693,7 +693,7 @@ export class ConversationsService {
             lastName: participant.lastName,
             language: participant.systemLanguage || 'fr',
             isOnline: participant.isOnline,
-            joinedAt: participant.createdAt?.toISOString() || new Date().toISOString(),
+            joinedAt: participant.createdAt ? new Date(participant.createdAt).toISOString() : new Date().toISOString(),
             canSendMessages: participant.canSendMessages || false,
             canSendFiles: participant.canSendFiles || false,
             canSendImages: participant.canSendImages || false

@@ -11,12 +11,16 @@ export function useFixRadixZIndex() {
   useEffect(() => {
     // Fonction complète pour appliquer les z-index corrects et garantir le portail
     const fixZIndex = () => {
-      // 1. Popovers - Z-index maximum
+      // 1. Popovers - Z-index maximum avec forçage du portail
       const popoverWrappers = document.querySelectorAll('[data-radix-popper-content-wrapper]');
       popoverWrappers.forEach((element) => {
         const el = element as HTMLElement;
         el.style.setProperty('z-index', '99999', 'important');
         el.style.setProperty('position', 'fixed', 'important');
+        // Force portal to body for BubbleStream
+        if (!el.closest('body')) {
+          document.body.appendChild(el);
+        }
       });
 
       const popoverContents = document.querySelectorAll('[data-radix-popover-content]');
@@ -24,23 +28,30 @@ export function useFixRadixZIndex() {
         const el = element as HTMLElement;
         el.style.setProperty('z-index', '99999', 'important');
         el.style.setProperty('position', 'fixed', 'important');
+        el.style.setProperty('overflow', 'visible', 'important');
         el.classList.add('radix-popover-fixed');
+        // Force visibility above mobile containers
+        el.style.setProperty('pointer-events', 'auto', 'important');
       });
 
       // 2. Dropdown Menus
       const dropdownContents = document.querySelectorAll('[data-radix-dropdown-menu-content]');
       dropdownContents.forEach((element) => {
         const el = element as HTMLElement;
-        el.style.setProperty('z-index', '9998', 'important');
+        el.style.setProperty('z-index', '99998', 'important');
         el.style.setProperty('position', 'fixed', 'important');
+        el.style.setProperty('overflow', 'visible', 'important');
+        el.style.setProperty('pointer-events', 'auto', 'important');
       });
 
       // 3. Tooltips
       const tooltipContents = document.querySelectorAll('[data-radix-tooltip-content]');
       tooltipContents.forEach((element) => {
         const el = element as HTMLElement;
-        el.style.setProperty('z-index', '9997', 'important');
+        el.style.setProperty('z-index', '99997', 'important');
         el.style.setProperty('position', 'fixed', 'important');
+        el.style.setProperty('overflow', 'visible', 'important');
+        el.style.setProperty('pointer-events', 'auto', 'important');
       });
 
       // 4. Dialogs/Modals

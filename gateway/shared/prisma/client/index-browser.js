@@ -285,6 +285,16 @@ exports.Prisma.MessageStatusScalarFieldEnum = {
   answer: 'answer'
 };
 
+exports.Prisma.ReactionScalarFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  userId: 'userId',
+  anonymousUserId: 'anonymousUserId',
+  emoji: 'emoji',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.FriendRequestScalarFieldEnum = {
   id: 'id',
   senderId: 'senderId',
@@ -464,6 +474,7 @@ exports.Prisma.ModelName = {
   MessageTranslation: 'MessageTranslation',
   MessageAttachment: 'MessageAttachment',
   MessageStatus: 'MessageStatus',
+  Reaction: 'Reaction',
   FriendRequest: 'FriendRequest',
   TypingIndicator: 'TypingIndicator',
   Notification: 'Notification',

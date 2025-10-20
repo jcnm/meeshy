@@ -1070,7 +1070,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
               {/* Zone des messages */}
               <div 
-                className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-900/50 dark:to-gray-950 pb-24"
+                className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-900/50 dark:to-gray-950"
                 role="region"
                 aria-live="polite"
                 aria-label={t('conversationLayout.messagesList')}
@@ -1101,11 +1101,8 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                 />
               </div>
 
-              {/* Zone de composition - Desktop */}
-              <div className={cn(
-                "bg-white/98 dark:bg-gray-950/98 backdrop-blur-xl border-t-2 border-gray-200 dark:border-gray-700 shadow-2xl fixed bottom-0 right-0 p-6 z-20",
-                isMobile ? "left-0" : "left-80 lg:left-96"
-              )}>
+              {/* Zone de composition - Desktop - Position relative dans le flux */}
+              <div className="flex-shrink-0 bg-white/98 dark:bg-gray-950/98 backdrop-blur-xl border-t-2 border-gray-200 dark:border-gray-700 shadow-2xl p-6">
                 <div className="max-w-5xl mx-auto">
                   {/* Bannière des messages en échec */}
                   {selectedConversation?.id && (

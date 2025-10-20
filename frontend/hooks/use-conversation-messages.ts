@@ -97,17 +97,22 @@ export function useConversationMessages(
       // Calculer l'offset AVANT de faire l'appel API
       const currentOffset = isLoadMore ? offsetRef.current : 0;
 
-      // Déterminer l'endpoint selon le type d'utilisateur
+      // Déterminer l'endpoint selon le contexte
       let endpoint: string;
       const requestOptions: { headers?: Record<string, string> } = {};
       
       if (sessionToken && linkId) {
-        // Utilisateur anonyme : utiliser l'endpoint des liens
+        // Route "/chat/[linkId]" : PRIORITÉ à l'endpoint des liens partagés
         endpoint = `/api/links/${linkId}/messages`;
         requestOptions.headers = { 'x-session-token': sessionToken };
-      } else if (authToken && conversationId) {
-        // Utilisateur authentifié : endpoint classique
+      } else if (conversationId && (authToken || sessionToken)) {
+        // Route "/" ou "/conversations" : utiliser l'endpoint conversations
+        // Cela inclut conversationId="meeshy" pour la page publique "/"
         endpoint = `/conversations/${conversationId}/messages`;
+        if (sessionToken && !authToken) {
+          // Utilisateur anonyme sur route "/" (conversationId="meeshy")
+          requestOptions.headers = { 'x-session-token': sessionToken };
+        }
       } else {
         throw new Error('Configuration invalide pour charger les messages');
       }
@@ -116,7 +121,9 @@ export function useConversationMessages(
         endpoint,
         {
           limit: limit.toString(),
-          offset: currentOffset.toString()
+          offset: currentOffset.toString(),
+          include_reactions: 'true',
+          include_translations: 'true'
         },
         requestOptions.headers ? { headers: requestOptions.headers } : undefined
       );

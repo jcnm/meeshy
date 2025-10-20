@@ -93,6 +93,9 @@ interface BubbleMessageProps {
   translationError?: string;
   conversationType?: 'direct' | 'group' | 'public' | 'global';
   userRole?: 'USER' | 'MEMBER' | 'MODERATOR' | 'ADMIN' | 'CREATOR' | 'AUDIT' | 'ANALYST' | 'BIGBOSS';
+  conversationId?: string; // Add conversationId prop for reactions
+  isAnonymous?: boolean; // Add isAnonymous prop for reactions
+  currentAnonymousUserId?: string; // Add anonymous user ID for reactions
 }
 
 function BubbleMessageInner({ 
@@ -111,15 +114,31 @@ function BubbleMessageInner({
   isTranslating = false,
   translationError,
   conversationType = 'direct',
-  userRole = 'USER'
+  userRole = 'USER',
+  conversationId,
+  isAnonymous = false,
+  currentAnonymousUserId
 }: BubbleMessageProps) {
   const { t } = useI18n('bubbleStream');
+  
+  // Debug: log conversationId values (run only once per message) 
+  // Disabled to prevent infinite loops
+  // React.useEffect(() => {
+  //   console.log('🔍 [BubbleMessage] ConversationId check:', {
+  //     messageId: message.id,
+  //     propConversationId: conversationId,
+  //     messageConversationId: message.conversationId,
+  //     finalConversationId: conversationId || message.conversationId,
+  //     messageReactions: (message as any).reactions,
+  //     hasMessageReactions: !!(message as any).reactions
+  //   });
+  // }, [message.id]); // Only run when message ID changes
   
   // Hook pour gérer les réactions de ce message
   const { addReaction } = useMessageReactions({
     messageId: message.id,
-    currentUserId: currentUser.id,
-    isAnonymous: false,
+    currentUserId: isAnonymous ? currentAnonymousUserId : currentUser.id,
+    isAnonymous,
     enabled: true
   });
   
@@ -609,7 +628,7 @@ function BubbleMessageInner({
                 : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
             )}
           >
-            <CardContent className="p-1 sm:p-2 max-w-full overflow-hidden">
+            <CardContent className="p-1 sm:p-2 max-w-full overflow-visible">
 
               {/* Message parent si c'est une réponse */}
               {message.replyTo && (
@@ -860,14 +879,17 @@ function BubbleMessageInner({
                       </TooltipContent>
                 <PopoverContent 
                   className={cn(
-                    "w-[calc(100vw-32px)] sm:w-[270px] md:w-[294px] p-0 shadow-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 backdrop-blur-sm",
-                    Z_CLASSES.POPOVER
+                    // Largeur réduite sur mobile pour toujours rester visible
+                    "w-[min(calc(100vw-24px),280px)] sm:w-[270px] md:w-[294px] p-0 shadow-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 backdrop-blur-sm z-[99999] overflow-visible",
+                    Z_CLASSES.MAX
                   )}
                   side={getPopoverSide()} 
                   align="center"
                   sideOffset={8}
                   alignOffset={0}
-                  collisionPadding={{ top: 80, right: 16, bottom: 80, left: 16 }}
+                  avoidCollisions={true}
+                  // Padding de collision augmenté pour garantir la visibilité
+                  collisionPadding={{ top: 80, right: 12, bottom: 80, left: 12 }}
                   onOpenAutoFocus={(e) => e.preventDefault()}
                   onInteractOutside={(e) => {
                     e.preventDefault();
@@ -875,6 +897,10 @@ function BubbleMessageInner({
                   }}
                   onMouseEnter={handlePopoverMouseEnter}
                   onMouseLeave={handlePopoverMouseLeave}
+                  // Force le repositionnement si sort de l'écran
+                  style={{
+                    maxWidth: 'calc(100vw - 24px)',
+                  }}
                 >
                   <Tabs defaultValue="translations" className="w-full max-h-[min(500px,calc(100vh-160px))] flex flex-col">
                     <TabsList className="grid w-full grid-cols-2 mb-2 sm:mb-3 flex-shrink-0">
@@ -1117,12 +1143,21 @@ function BubbleMessageInner({
                       </TooltipContent>
                     </Tooltip>
                     <PopoverContent 
-                      className="w-auto p-0 border-0 shadow-lg"
+                      className="w-auto p-0 border-0 shadow-lg z-[99999] overflow-visible max-w-[calc(100vw-24px)]"
                       align="start"
                       side="top"
+                      avoidCollisions={true}
+                      // Padding de collision pour rester visible à l'écran
+                      collisionPadding={{ top: 80, right: 12, bottom: 80, left: 12 }}
+                      style={{
+                        zIndex: 99999,
+                        position: 'fixed',
+                        maxWidth: 'calc(100vw - 24px)'
+                      }}
                     >
                       <EmojiPicker
                         onEmojiSelect={handleAddReaction}
+                        className="max-w-[calc(100vw-24px)]"
                       />
                     </PopoverContent>
                   </Popover>
@@ -1207,20 +1242,16 @@ function BubbleMessageInner({
           <div 
             className={cn(
               "absolute -bottom-3 z-[9999]",
-              isOwnMessage ? "right-0" : "left-2"
+              isOwnMessage ? "right-2" : "left-2"
             )}
-            style={{ 
-              pointerEvents: 'auto',
-              ...(isOwnMessage && {
-                transform: 'translateX(-8px)' // Légèrement vers la gauche pour éviter la coupure
-              })
-            }}
+            style={{ pointerEvents: 'auto' }}
           >
             <MessageReactions
               messageId={message.id}
-              conversationId={message.conversationId}
+              conversationId={conversationId || message.conversationId}
               currentUserId={currentUser.id}
-              isAnonymous={false}
+              currentAnonymousUserId={currentAnonymousUserId}
+              isAnonymous={isAnonymous}
               showAddButton={false}
             />
           </div>

@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
 import { MessageSquare } from 'lucide-react';
-import { BubbleMessage } from './bubble-message';
+import { BubbleMessage } from './bubble-message-new';
 import { messageTranslationService } from '@/services/message-translation.service';
 import { useFixRadixZIndex } from '@/hooks/use-fix-z-index';
 import type { User, Message, MessageWithTranslations } from '@shared/types';
@@ -27,6 +27,9 @@ interface MessagesDisplayProps {
   onImageClick?: (attachmentId: string) => void;
   conversationType?: 'direct' | 'group' | 'public' | 'global';
   userRole?: 'USER' | 'MEMBER' | 'MODERATOR' | 'ADMIN' | 'CREATOR' | 'AUDIT' | 'ANALYST' | 'BIGBOSS';
+  conversationId?: string; // Add conversationId prop for reactions
+  isAnonymous?: boolean; // Add isAnonymous for anonymous reactions
+  currentAnonymousUserId?: string; // Add anonymous user ID for reactions
   
   // Additional props for unified handling
   addTranslatingState?: (messageId: string, targetLanguage: string) => void;
@@ -56,6 +59,9 @@ export function MessagesDisplay({
   onImageClick,
   conversationType = 'direct',
   userRole = 'USER',
+  conversationId,
+  isAnonymous = false,
+  currentAnonymousUserId,
   addTranslatingState,
   isTranslating,
   containerRef,
@@ -209,6 +215,7 @@ export function MessagesDisplay({
   const displayMessages = useMemo(() => {
     const messagesToUse = translatedMessages.length > 0 ? translatedMessages : messages;
     
+    
     // Transform messages to match BubbleMessage expected format
     const transformedMessages = messagesToUse.map(message => ({
       ...message,
@@ -305,7 +312,7 @@ export function MessagesDisplay({
   }
 
   return (
-    <div className={`${className} bubble-message-container flex flex-col gap-4 pb-6 max-w-full overflow-hidden`}>
+    <div className={`${className} bubble-message-container flex flex-col gap-4 pb-6 max-w-full overflow-visible`}>
       {displayMessages.map((message) => {
         const state = messageDisplayStates[message.id] || {
           currentDisplayLanguage: message.originalLanguage,
@@ -331,6 +338,9 @@ export function MessagesDisplay({
             translationError={state.translationError}
             conversationType={conversationType}
             userRole={userRole}
+            conversationId={conversationId}
+            isAnonymous={isAnonymous}
+            currentAnonymousUserId={currentAnonymousUserId}
           />
         );
       })}
