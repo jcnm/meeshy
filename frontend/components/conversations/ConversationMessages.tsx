@@ -33,6 +33,7 @@ interface ConversationMessagesProps {
   onImageClick?: (attachmentId: string) => void;
   onLoadMore?: () => void;
   t: (key: string) => string;
+  reverseOrder?: boolean; // true = récent en haut (BubbleStream), false = ancien en haut (Conversations)
 }
 
 const ConversationMessagesComponent = memo(function ConversationMessages({
@@ -56,7 +57,8 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
   onNavigateToMessage,
   onImageClick,
   onLoadMore,
-  t
+  t,
+  reverseOrder = false
 }: ConversationMessagesProps) {
   // Hook pour fixer les z-index des popovers Radix UI
   useFixRadixZIndex();
@@ -257,12 +259,10 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
           {/* Messages */}
           <div>
             {/* 
-              MODE CONVERSATION: Messages récents EN BAS (proche zone de saisie)
-              - Backend retourne: orderBy createdAt DESC = [récent...ancien]
-              - reverseOrder=true inverse pour afficher: [ancien...récent]
-              - scrollDirection='up' (défaut dans useConversationMessages)
-              - Scroll vers le haut charge les plus anciens (ajoutés au DÉBUT)
-              - Résultat: Ancien EN HAUT, Récent EN BAS ✅
+              Logique d'affichage selon reverseOrder:
+              - reverseOrder=false (BubbleStream): [récent...ancien] = Récent EN HAUT
+              - reverseOrder=true (Conversations): [ancien...récent] = Ancien EN HAUT
+              - Backend retourne toujours: orderBy createdAt DESC = [récent...ancien]
             */}
             <MessagesDisplay
               messages={messages}
@@ -273,7 +273,7 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
               usedLanguages={usedLanguages}
               emptyStateMessage={t('noMessages')}
               emptyStateDescription={t('noMessagesDescription')}
-              reverseOrder={true}
+              reverseOrder={reverseOrder}
               className={cn(
                 "space-y-3",
                 isMobile && "space-y-2"
