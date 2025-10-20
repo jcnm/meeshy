@@ -99,6 +99,8 @@ class MeeshySocketIOService {
   private statusListeners: Set<(event: UserStatusEvent) => void> = new Set();
   private conversationStatsListeners: Set<(data: { conversationId: string; stats: any }) => void> = new Set();
   private onlineStatsListeners: Set<(data: { conversationId: string; onlineUsers: any[]; updatedAt: Date }) => void> = new Set();
+  private reactionAddedListeners: Set<(data: any) => void> = new Set();
+  private reactionRemovedListeners: Set<(data: any) => void> = new Set();
 
   // Amélioration: Gestion des traductions en batch et mise en cache
   private translationCache: Map<string, any> = new Map(); // Cache pour éviter les traductions redondantes
@@ -545,6 +547,58 @@ class MeeshySocketIOService {
     });
     this.socket.on(SERVER_EVENTS.CONVERSATION_ONLINE_STATS as any, (data: any) => {
       this.onlineStatsListeners.forEach(listener => listener(data));
+    });
+
+    // Événements de réactions
+    this.socket.on(SERVER_EVENTS.REACTION_ADDED, (data: any) => {
+      console.log('🎉 [SOCKETIO] REACTION_ADDED reçu:', {
+        messageId: data.messageId,
+        emoji: data.emoji,
+        userId: data.userId,
+        action: data.action,
+        aggregation: data.aggregation,
+        listenersCount: this.reactionAddedListeners.size,
+        hasListeners: this.reactionAddedListeners.size > 0,
+        socketConnected: this.socket?.connected
+      });
+      
+      logger.debug('[SOCKETIO]', 'Réaction ajoutée', {
+        messageId: data.messageId,
+        emoji: data.emoji,
+        userId: data.userId
+      });
+      
+      if (this.reactionAddedListeners.size === 0) {
+        console.warn('⚠️ [SOCKETIO] Aucun listener pour REACTION_ADDED!');
+      }
+      
+      let listenerIndex = 0;
+      this.reactionAddedListeners.forEach((listener) => {
+        listenerIndex++;
+        console.log(`📢 [SOCKETIO] Appel du listener ${listenerIndex}/${this.reactionAddedListeners.size}`);
+        listener(data);
+      });
+      
+      console.log('✅ [SOCKETIO] REACTION_ADDED dispatché à tous les listeners');
+    });
+
+    this.socket.on(SERVER_EVENTS.REACTION_REMOVED, (data: any) => {
+      console.log('🗑️ [SOCKETIO] REACTION_REMOVED reçu:', {
+        messageId: data.messageId,
+        emoji: data.emoji,
+        userId: data.userId,
+        action: data.action,
+        aggregation: data.aggregation,
+        listenersCount: this.reactionRemovedListeners.size
+      });
+      
+      logger.debug('[SOCKETIO]', 'Réaction supprimée', {
+        messageId: data.messageId,
+        emoji: data.emoji,
+        userId: data.userId
+      });
+      
+      this.reactionRemovedListeners.forEach(listener => listener(data));
     });
 
     // Événements de frappe - gestion intelligente avec état
@@ -1375,6 +1429,16 @@ class MeeshySocketIOService {
   public onConversationOnlineStats(listener: (data: { conversationId: string; onlineUsers: any[]; updatedAt: Date }) => void): () => void {
     this.onlineStatsListeners.add(listener);
     return () => this.onlineStatsListeners.delete(listener);
+  }
+
+  public onReactionAdded(listener: (data: any) => void): () => void {
+    this.reactionAddedListeners.add(listener);
+    return () => this.reactionAddedListeners.delete(listener);
+  }
+
+  public onReactionRemoved(listener: (data: any) => void): () => void {
+    this.reactionRemovedListeners.add(listener);
+    return () => this.reactionRemovedListeners.delete(listener);
   }
 
   /**
