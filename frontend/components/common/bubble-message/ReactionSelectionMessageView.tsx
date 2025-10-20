@@ -2,21 +2,21 @@
 
 import { memo, useState, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { X, Search } from 'lucide-react';
+import { X, Search, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import type { Message } from '@shared/types/conversation';
 import { useMessageReactions } from '@/hooks/use-message-reactions';
+import { useI18n } from '@/hooks/useI18n';
 
 interface ReactionSelectionMessageViewProps {
   message: Message;
   isOwnMessage: boolean;
   onSelectReaction: (emoji: string) => void;
   onClose: () => void;
-  t: (key: string) => string;
   recentEmojis?: string[];
   // Props pour les réactions
   conversationId?: string;
@@ -25,15 +25,15 @@ interface ReactionSelectionMessageViewProps {
   isAnonymous?: boolean;
 }
 
-// Catégories d'emojis
+// Catégories d'emojis avec traductions
 const EMOJI_CATEGORIES = {
   recent: {
-    label: 'Récents',
+    key: 'recent',
     icon: '🕐',
     emojis: [] as string[], // Rempli dynamiquement
   },
   smileys: {
-    label: 'Smileys',
+    key: 'smileys',
     icon: '😀',
     emojis: [
       '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂',
@@ -52,7 +52,7 @@ const EMOJI_CATEGORIES = {
     ]
   },
   people: {
-    label: 'Personnes',
+    key: 'people',
     icon: '👤',
     emojis: [
       '👋', '🤚', '🖐️', '✋', '🖖', '🫱', '🫲', '🫳',
@@ -64,7 +64,7 @@ const EMOJI_CATEGORIES = {
     ]
   },
   nature: {
-    label: 'Nature',
+    key: 'nature',
     icon: '🌲',
     emojis: [
       '🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼',
@@ -76,7 +76,7 @@ const EMOJI_CATEGORIES = {
     ]
   },
   food: {
-    label: 'Nourriture',
+    key: 'food',
     icon: '🍔',
     emojis: [
       '🍎', '🍏', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇',
@@ -86,7 +86,7 @@ const EMOJI_CATEGORIES = {
     ]
   },
   activities: {
-    label: 'Activités',
+    key: 'activities',
     icon: '⚽',
     emojis: [
       '⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉',
@@ -96,7 +96,7 @@ const EMOJI_CATEGORIES = {
     ]
   },
   objects: {
-    label: 'Objets',
+    key: 'objects',
     icon: '💡',
     emojis: [
       '💌', '💎', '💍', '💡', '💰', '💳', '💸', '💻',
@@ -106,7 +106,7 @@ const EMOJI_CATEGORIES = {
     ]
   },
   symbols: {
-    label: 'Symboles',
+    key: 'symbols',
     icon: '❤️',
     emojis: [
       '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍',
@@ -116,7 +116,7 @@ const EMOJI_CATEGORIES = {
     ]
   },
   flags: {
-    label: 'Drapeaux',
+    key: 'flags',
     icon: '🏁',
     emojis: [
       '🏁', '🚩', '🎌', '🏴', '🏳️', '🏳️‍🌈', '🏳️‍⚧️', '🏴‍☠️',
@@ -133,13 +133,13 @@ export const ReactionSelectionMessageView = memo(function ReactionSelectionMessa
   isOwnMessage,
   onSelectReaction,
   onClose,
-  t,
   recentEmojis = ['❤️', '😀', '👍', '😂', '🔥', '🎉', '💯', '✨'],
   conversationId,
   currentUserId,
   currentAnonymousUserId,
   isAnonymous = false
 }: ReactionSelectionMessageViewProps) {
+  const { t } = useI18n('reactions');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('recent');
   const [hoveredEmoji, setHoveredEmoji] = useState<string | null>(null);
@@ -272,25 +272,25 @@ export const ReactionSelectionMessageView = memo(function ReactionSelectionMessa
       {!searchQuery && (
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="px-4">
           <TabsList className={cn(
-            "grid w-full h-8",
-            `grid-cols-${Object.keys(categories).length > 6 ? '6' : Object.keys(categories).length}`,
+            "grid w-full h-9 gap-1",
+            "grid-cols-8",
             isOwnMessage 
               ? "bg-white/10" 
               : "bg-gray-100 dark:bg-gray-900"
           )}>
-            {Object.entries(categories).slice(0, 6).map(([key, category]) => (
+            {Object.entries(categories).map(([key, category]) => (
               <TabsTrigger
                 key={key}
                 value={key}
                 className={cn(
-                  "text-xs px-2 py-1",
+                  "text-lg px-1 py-1 h-8 min-w-[40px]",
                   isOwnMessage 
-                    ? "data-[state=active]:bg-white/20 data-[state=active]:text-white" 
-                    : "data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800"
+                    ? "data-[state=active]:bg-white/30 data-[state=active]:text-white hover:bg-white/20" 
+                    : "data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
                 )}
-                title={category.label}
+                title={t(`category_${category.key}`)}
               >
-                <span className="text-base">{category.icon}</span>
+                <span className="text-xl">{category.icon}</span>
               </TabsTrigger>
             ))}
           </TabsList>
@@ -298,52 +298,92 @@ export const ReactionSelectionMessageView = memo(function ReactionSelectionMessa
       )}
 
       {/* Emoji Grid */}
-      <ScrollArea className="h-64 px-4 py-2">
-        <div className="grid grid-cols-8 gap-1">
-          {filteredEmojis.map((emoji, index) => (
-            <motion.button
-              key={`${emoji}-${index}`}
-              whileHover={{ scale: 1.2, rotate: [0, -5, 5, -5, 0] }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-              disabled={isLoading}
+      <ScrollArea className="h-72 px-4 py-3">
+        {filteredEmojis.length === 0 ? (
+          <div className={cn(
+            "flex flex-col items-center justify-center h-full py-12 text-center",
+            isOwnMessage ? "text-white/70" : "text-gray-500 dark:text-gray-400"
+          )}>
+            <Search className="h-12 w-12 mb-3 opacity-50" />
+            <p className="text-sm font-medium">{t('noEmojisFound')}</p>
+            <p className="text-xs mt-1">{t('tryDifferentSearch')}</p>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSearchQuery('')}
               className={cn(
-                "h-10 w-10 flex items-center justify-center rounded-md text-2xl transition-colors relative",
-                userReactions.includes(emoji)
-                  ? isOwnMessage
-                    ? "bg-white/40 border-2 border-white/60"
-                    : "bg-blue-100 border-2 border-blue-400 dark:bg-blue-900/50 dark:border-blue-600"
-                  : hoveredEmoji === emoji 
-                    ? isOwnMessage 
-                      ? "bg-white/30" 
-                      : "bg-gray-100 dark:bg-gray-700"
-                    : isOwnMessage 
-                      ? "hover:bg-white/20" 
-                      : "hover:bg-gray-100 dark:hover:bg-gray-700",
-                isLoading && "opacity-50 cursor-not-allowed"
+                "mt-4",
+                isOwnMessage 
+                  ? "text-white/80 hover:text-white hover:bg-white/20" 
+                  : "text-gray-600 hover:text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200"
               )}
-              onClick={() => handleEmojiSelect(emoji)}
-              onMouseEnter={() => setHoveredEmoji(emoji)}
-              onMouseLeave={() => setHoveredEmoji(null)}
-              aria-label={`${userReactions.includes(emoji) ? 'Remove' : 'Add'} ${emoji}`}
-              title={userReactions.includes(emoji) ? t('removeReaction') : t('addReaction')}
             >
-              {emoji}
-              {userReactions.includes(emoji) && (
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
+              {t('clearSearch')}
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-8 gap-1.5 pb-2">
+            {filteredEmojis.map((emoji, index) => {
+              const isReacted = userReactions.includes(emoji);
+              return (
+                <motion.button
+                  key={`${emoji}-${index}`}
+                  whileHover={{ scale: 1.15, rotate: [0, -8, 8, -8, 0] }}
+                  whileTap={{ scale: 0.9 }}
+                  transition={{ duration: 0.2, type: "spring", stiffness: 400 }}
+                  disabled={isLoading}
                   className={cn(
-                    "absolute -top-1 -right-1 w-3 h-3 rounded-full flex items-center justify-center",
-                    isOwnMessage ? "bg-white text-blue-600" : "bg-blue-600 text-white"
+                    "relative h-11 w-11 flex items-center justify-center rounded-lg text-2xl transition-all duration-200",
+                    "focus:outline-none focus:ring-2 focus:ring-offset-1",
+                    isReacted
+                      ? isOwnMessage
+                        ? "bg-white/40 border-2 border-white/70 shadow-md focus:ring-white/50"
+                        : "bg-blue-100 border-2 border-blue-500 shadow-md dark:bg-blue-900/60 dark:border-blue-500 focus:ring-blue-400"
+                      : hoveredEmoji === emoji 
+                        ? isOwnMessage 
+                          ? "bg-white/30 border border-white/50" 
+                          : "bg-gray-100 border border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+                        : isOwnMessage 
+                          ? "hover:bg-white/20 border border-transparent" 
+                          : "hover:bg-gray-100 border border-transparent dark:hover:bg-gray-700",
+                    isLoading && "opacity-40 cursor-not-allowed"
                   )}
+                  onClick={() => handleEmojiSelect(emoji)}
+                  onMouseEnter={() => setHoveredEmoji(emoji)}
+                  onMouseLeave={() => setHoveredEmoji(null)}
+                  aria-label={`${isReacted ? t('removeReaction') : t('addReaction')} ${emoji}`}
+                  title={isReacted ? t('removeReaction') : t('addReaction')}
                 >
-                  <span className="text-xs">✓</span>
-                </motion.div>
-              )}
-            </motion.button>
-          ))}
-        </div>
+                  <span className="leading-none select-none">{emoji}</span>
+                  {isReacted && (
+                    <motion.div
+                      initial={{ scale: 0, rotate: -180 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                      className={cn(
+                        "absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm",
+                        isOwnMessage 
+                          ? "bg-white text-blue-600" 
+                          : "bg-blue-600 text-white"
+                      )}
+                    >
+                      ✓
+                    </motion.div>
+                  )}
+                  {isLoading && hoveredEmoji === emoji && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg backdrop-blur-sm"
+                    >
+                      <Loader2 className="h-4 w-4 animate-spin text-white" />
+                    </motion.div>
+                  )}
+                </motion.button>
+              );
+            })}
+          </div>
+        )}
       </ScrollArea>
 
       {/* Most Used Section */}

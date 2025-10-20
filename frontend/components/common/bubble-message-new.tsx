@@ -218,6 +218,8 @@ const BubbleMessageInner = memo(function BubbleMessageInner({
           onLanguageSwitch={onLanguageSwitch}
           onEnterReactionMode={enterReactionMode}
           onEnterLanguageMode={enterLanguageMode}
+          onEnterEditMode={canEdit ? enterEditMode : undefined}
+          onEnterDeleteMode={canDelete ? enterDeleteMode : undefined}
           onEditMessage={canEdit ? onEditMessage : undefined}
           onDeleteMessage={canDelete ? onDeleteMessage : undefined}
         />
@@ -230,7 +232,6 @@ const BubbleMessageInner = memo(function BubbleMessageInner({
           isOwnMessage={isOwnMessage}
           onSelectReaction={handleReactionSelect}
           onClose={exitMode}
-          t={t}
           recentEmojis={recentEmojis}
           conversationId={conversationId || message.conversationId}
           currentUserId={currentUser?.id || ''}
