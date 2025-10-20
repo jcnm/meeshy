@@ -74,10 +74,6 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
       const emojis = new Set(reactions.map(r => r.emoji));
       setLoadedEmojis(emojis);
       setIsInitialLoad(false);
-      console.log('📥 [MessageReactions] Chargement initial:', { 
-        emojis: Array.from(emojis),
-        count: reactions.length 
-      });
     }
   }, [reactions, isInitialLoad]);
 
@@ -88,10 +84,6 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
     const currentCount = reactions.reduce((sum, r) => sum + r.count, 0);
     
     if (currentCount > previousReactionsCount && previousReactionsCount > 0) {
-      console.log('✨ [MessageReactions] Nouvelle réaction détectée!', {
-        previous: previousReactionsCount,
-        current: currentCount
-      });
       setIsNewReaction(true);
       
       // Arrêter l'animation après 600ms
@@ -112,6 +104,7 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
     const newCounts: Record<string, number> = {};
     const newAnimating = new Set<string>();
     const newEmojis = new Set<string>();
+    let hasChanges = false;
     
     reactions.forEach(reaction => {
       const prevCount = reactionCounts[reaction.emoji] || 0;
@@ -119,61 +112,54 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
       
       // Détecter un nouvel emoji (jamais vu avant)
       if (!loadedEmojis.has(reaction.emoji)) {
-        console.log('🆕 [MessageReactions] Nouvel emoji détecté:', reaction.emoji);
         newEmojis.add(reaction.emoji);
         newAnimating.add(reaction.emoji);
+        hasChanges = true;
       }
       // Si le compteur a augmenté sur un emoji existant
       else if (reaction.count > prevCount && prevCount > 0) {
-        console.log('🎯 [MessageReactions] Compteur augmenté pour:', reaction.emoji, {
-          from: prevCount,
-          to: reaction.count
-        });
         newAnimating.add(reaction.emoji);
+        hasChanges = true;
       }
     });
     
-    // Mettre à jour les emojis chargés
-    if (newEmojis.size > 0) {
-      setLoadedEmojis(prev => new Set([...prev, ...newEmojis]));
-    }
-    
-    setReactionCounts(newCounts);
-    
-    // Lancer les animations
-    if (newAnimating.size > 0) {
-      setAnimatingEmojis(prev => new Set([...prev, ...newAnimating]));
+    // Ne mettre à jour que si nécessaire pour éviter les boucles infinies
+    if (hasChanges) {
+      // Mettre à jour les emojis chargés
+      if (newEmojis.size > 0) {
+        setLoadedEmojis(prev => new Set([...prev, ...newEmojis]));
+      }
       
-      // Arrêter les animations après 500ms
-      setTimeout(() => {
-        setAnimatingEmojis(prev => {
-          const next = new Set(prev);
-          newAnimating.forEach(emoji => next.delete(emoji));
-          return next;
-        });
-      }, 500);
+      setReactionCounts(newCounts);
+      
+      // Lancer les animations
+      if (newAnimating.size > 0) {
+        setAnimatingEmojis(prev => new Set([...prev, ...newAnimating]));
+        
+        // Arrêter les animations après 500ms
+        setTimeout(() => {
+          setAnimatingEmojis(prev => {
+            const next = new Set(prev);
+            newAnimating.forEach(emoji => next.delete(emoji));
+            return next;
+          });
+        }, 500);
+      }
+    } else {
+      // Juste mettre à jour les compteurs sans déclencher d'animations
+      setReactionCounts(newCounts);
     }
-  }, [reactions, reactionCounts, loadedEmojis, isInitialLoad]);
+  }, [reactions, isInitialLoad]);
+  // IMPORTANT: Ne pas inclure reactionCounts et loadedEmojis dans les dépendances pour éviter boucle infinie
 
   const handleReactionClick = async (emoji: string) => {
     if (isLoading) return;
     await toggleReaction(emoji);
   };
 
-  // DEBUG: Log pour diagnostiquer
-  console.log('[MessageReactions] Rendu:', {
-    messageId,
-    reactionsCount: reactions.length,
-    visibleReactionsCount: visibleReactions.length,
-    showAddButton,
-    isLoading,
-    userReactions
-  });
-
   // Ne pas retourner null même si vide - le hook doit rester actif pour écouter les événements temps réel
   // Si pas de réactions, on rend un container vide mais présent
   if (visibleReactions.length === 0 && !showAddButton) {
-    console.log('[MessageReactions] Aucune réaction, mais container actif pour temps-réel');
     return (
       <TooltipProvider>
         <div className={cn('flex flex-wrap items-end gap-1 min-h-[1px]', className)} />
