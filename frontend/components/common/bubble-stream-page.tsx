@@ -105,6 +105,7 @@ import { messageService } from '@/services/message.service';
 import { TypingIndicator } from '@/components/conversations/typing-indicator';
 import { useConversationMessages } from '@/hooks/use-conversation-messages';
 import { MessagesDisplay } from '@/components/common/messages-display';
+import { ConversationMessages } from '@/components/conversations/ConversationMessages';
 
 export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousMode = false, linkId, initialParticipants }: BubbleStreamPageProps) {
   const { t, isLoading: isLoadingTranslations } = useI18n('conversations');
