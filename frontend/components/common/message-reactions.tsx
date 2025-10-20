@@ -152,12 +152,12 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
     <TooltipProvider>
       <motion.div
         animate={isNewReaction ? {
-          scale: [1, 1.05, 1],
+          scale: 1.05,
           transition: {
-            duration: 0.3,
-            ease: "easeInOut"
+            duration: 0.15,
+            ease: "easeOut"
           }
-        } : {}}
+        } : { scale: 1 }}
         className={cn(
           'flex flex-wrap items-end gap-1',
           className
@@ -215,7 +215,7 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
                       animate={
                         animatingEmojis.has(reaction.emoji)
                           ? {
-                              scale: [1, 1.3, 1],
+                              scale: 1.3,
                               rotate: [0, -15, 15, -15, 0],
                             }
                           : hasUserReacted 
@@ -237,7 +237,7 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
                       animate={
                         animatingEmojis.has(reaction.emoji)
                           ? { 
-                              scale: [1, 1.4, 1],
+                              scale: 1.2,
                               opacity: 1,
                             }
                           : { scale: 1, opacity: 1 }
@@ -246,7 +246,6 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
                         type: 'spring',
                         stiffness: 600,
                         damping: 20,
-                        duration: 0.4,
                       }}
                       className={cn(
                         'absolute -top-0.5 -right-0.5',
