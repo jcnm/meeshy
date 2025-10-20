@@ -2,15 +2,18 @@
 
 import { memo, useState, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { X, Search, Languages, CheckCircle2, ArrowUp, Loader2 } from 'lucide-react';
+import { X, Search, Languages, CheckCircle2, ArrowUp, Loader2, Clock, Zap, Star, Gem, Database, Cpu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { SUPPORTED_LANGUAGES, getLanguageInfo } from '@shared/types';
 import type { Message, BubbleTranslation } from '@shared/types';
 import { useI18n } from '@/hooks/useI18n';
+import { formatDistanceToNow } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 interface LanguageSelectionMessageViewProps {
   message: Message & {
@@ -41,6 +44,40 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
 }: LanguageSelectionMessageViewProps) {
   const { t } = useI18n('languages');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Utilitaires pour l'affichage des informations
+  const getModelIcon = (model: string) => {
+    switch (model) {
+      case 'basic': return <Zap className="h-3 w-3 text-yellow-500" />;
+      case 'medium': return <Star className="h-3 w-3 text-blue-500" />;
+      case 'premium': return <Gem className="h-3 w-3 text-purple-500" />;
+      default: return <Cpu className="h-3 w-3 text-gray-500" />;
+    }
+  };
+
+  const getModelLabel = (model: string) => {
+    switch (model) {
+      case 'basic': return 'Basic';
+      case 'medium': return 'Standard';
+      case 'premium': return 'Premium';
+      default: return 'Unknown';
+    }
+  };
+
+  const getConfidenceColor = (confidence: number) => {
+    if (confidence >= 0.9) return 'text-green-500';
+    if (confidence >= 0.7) return 'text-yellow-500';
+    return 'text-red-500';
+  };
+
+  const formatTimestamp = (date: Date | string) => {
+    try {
+      const timestamp = new Date(date);
+      return formatDistanceToNow(timestamp, { addSuffix: true, locale: fr });
+    } catch {
+      return 'Date invalide';
+    }
+  };
 
   // Grouper les traductions par langue
   const translationsByLanguage = useMemo(() => {
@@ -158,6 +195,22 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
           <span className="font-medium text-sm">{t('selectLanguage')}</span>
           {isTranslating && <Loader2 className="h-3 w-3 animate-spin text-blue-600" />}
           
+          {/* Statistiques globales */}
+          <div className="flex items-center gap-2 ml-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant="secondary" className="text-xs h-5 px-2">
+                    {availableVersions.length - 1}/{availableVersions.length + missingLanguages.length - 1}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{availableVersions.length - 1} traductions sur {availableVersions.length + missingLanguages.length - 1} langues possibles</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          
           <Button
             variant="ghost"
             size="sm"
@@ -226,28 +279,84 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
                           <CheckCircle2 className="h-3 w-3 text-blue-600" />
                         )}
                       </div>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 leading-snug">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 leading-snug mb-2">
                         {version.content}
                       </p>
-                      {!version.isOriginal && version.model && (
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[10px] text-gray-500">
-                            {t('modelUsed')}: {version.model}
-                          </span>
-                          {version.confidence && (
-                            <div className="flex items-center text-[10px] text-gray-500">
-                              <span className="mr-1">{t('confidence')}:</span>
-                              <div className="flex">
-                                {[...Array(5)].map((_, i) => (
-                                  <span key={i} className={cn(
-                                    "text-[8px]",
-                                    i < Math.round((version.confidence || 0) * 5) ? "text-yellow-400" : "text-gray-300"
-                                  )}>★</span>
-                                ))}
-                              </div>
+                      
+                      {!version.isOriginal && (
+                        <TooltipProvider>
+                          <div className="space-y-1">
+                            {/* Première ligne : Modèle + Confiance */}
+                            <div className="flex items-center gap-3">
+                              {version.model && (
+                                <div className="flex items-center gap-1">
+                                  {getModelIcon(version.model)}
+                                  <span className="text-[10px] font-medium text-gray-600 dark:text-gray-400">
+                                    {getModelLabel(version.model)}
+                                  </span>
+                                </div>
+                              )}
+                              
+                              {version.confidence !== undefined && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="flex items-center gap-1">
+                                      <div className={cn(
+                                        "flex items-center text-[10px] font-medium",
+                                        getConfidenceColor(version.confidence)
+                                      )}>
+                                        <span className="mr-1">★</span>
+                                        <span>{Math.round(version.confidence * 100)}%</span>
+                                      </div>
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Score de confiance: {(version.confidence * 100).toFixed(1)}%</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              )}
                             </div>
-                          )}
-                        </div>
+
+                            {/* Deuxième ligne : Cache + Timestamp */}
+                            <div className="flex items-center gap-3 text-[10px] text-gray-500 dark:text-gray-400">
+                              {/* Indicateur de cache */}
+                              {translationsByLanguage.get(version.language)?.[0] && (
+                                <>
+                                  {(translationsByLanguage.get(version.language)?.[0] as any).cached && (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <div className="flex items-center gap-1 text-green-600">
+                                          <Database className="h-2.5 w-2.5" />
+                                          <span>Cache</span>
+                                        </div>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>Traduction depuis le cache (plus rapide)</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  )}
+                                  
+                                  {/* Timestamp */}
+                                  {(translationsByLanguage.get(version.language)?.[0] as any).createdAt && (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <div className="flex items-center gap-1">
+                                          <Clock className="h-2.5 w-2.5" />
+                                          <span>
+                                            {formatTimestamp((translationsByLanguage.get(version.language)?.[0] as any).createdAt)}
+                                          </span>
+                                        </div>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>Date de création de la traduction</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </TooltipProvider>
                       )}
                     </div>
                   </div>
@@ -272,15 +381,56 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
                 >
                   <span className="text-lg">{lang.flag}</span>
                   <div className="flex-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 mb-1">
                       <span className="font-medium text-sm">{lang.name}</span>
                       <Badge variant="outline" className="text-xs h-4 px-1">
                         {lang.code.toUpperCase()}
                       </Badge>
                     </div>
-                    <span className="text-xs text-gray-500">{t('clickToTranslate')}</span>
+                    <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                      <span>{t('clickToTranslate')}</span>
+                      {/* Indicateur du modèle par défaut */}
+                      <div className="flex items-center gap-1">
+                        <Star className="h-2.5 w-2.5 text-blue-500" />
+                        <span>Standard</span>
+                      </div>
+                    </div>
+                    {/* Estimation du temps de traduction */}
+                    <div className="flex items-center gap-1 text-[10px] text-gray-400">
+                      <Clock className="h-2 w-2" />
+                      <span>~2-5 secondes</span>
+                    </div>
                   </div>
-                  <ArrowUp className="h-3 w-3 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                  <div className="flex flex-col items-end gap-1">
+                    <ArrowUp className="h-3 w-3 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                    {/* Indicateur de disponibilité du modèle */}
+                    <div className="flex gap-1">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Basic disponible</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Standard disponible</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Premium disponible</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </div>
                 </div>
               ))}
               
@@ -292,6 +442,82 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
             </div>
           </TabsContent>
         </Tabs>
+      </div>
+
+      {/* Footer avec informations sur les performances */}
+      <div className="px-3 py-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+          <div className="flex items-center gap-3">
+            {/* Traductions en cache */}
+            {translationsByLanguage.size > 0 && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1">
+                      <Database className="h-3 w-3 text-green-600" />
+                      <span>
+                        {Array.from(translationsByLanguage.values()).flat()
+                          .filter(t => (t as any).cached).length}
+                      </span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Traductions en cache (chargement instantané)</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            
+            {/* Modèles utilisés */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-1">
+                    <Cpu className="h-3 w-3" />
+                    <span>
+                      {Array.from(new Set(
+                        Array.from(translationsByLanguage.values())
+                          .flat()
+                          .map(t => (t as any).model || 'unknown')
+                          .filter(m => m !== 'unknown')
+                      )).length} modèles
+                    </span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Nombre de modèles de traduction différents utilisés</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          
+          {/* Indicateur de qualité moyenne */}
+          {translationsByLanguage.size > 0 && (
+            <div className="flex items-center gap-1">
+              <span>Qualité moyenne:</span>
+              <div className={cn(
+                "flex items-center gap-1 font-medium",
+                (() => {
+                  const avgConfidence = Array.from(translationsByLanguage.values())
+                    .flat()
+                    .filter(t => (t as any).confidence !== undefined)
+                    .reduce((sum, t, _, arr) => sum + ((t as any).confidence || 0) / arr.length, 0);
+                  return getConfidenceColor(avgConfidence);
+                })()
+              )}>
+                <span>★</span>
+                <span>
+                  {Math.round(
+                    Array.from(translationsByLanguage.values())
+                      .flat()
+                      .filter(t => (t as any).confidence !== undefined)
+                      .reduce((sum, t, _, arr) => sum + ((t as any).confidence || 0) / arr.length, 0) * 100
+                  )}%
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </motion.div>
   );
