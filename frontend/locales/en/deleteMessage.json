@@ -12,5 +12,14 @@
   "attachments": "attachment(s)",
   "messagePreview": "Message preview",
   "shiftEnterToConfirm": "⇧↵ Confirm",
-  "escToCancel": "Esc to cancel"
+  "escToCancel": "Esc to cancel",
+  "messageAndContent": "Message and content",
+  "allTranslations": "All translations",
+  "allAttachments": "All attachments",
+  "allReactions": "All reactions",
+  "deleteForever": "Delete forever",
+  "irreversibleAction": "Irreversible action",
+  "deleteMessageWarning": "Warning: permanent message deletion",
+  "itemsToDelete": "Items to delete",
+  "shortcutConfirm": "Shift+Enter"
 }
