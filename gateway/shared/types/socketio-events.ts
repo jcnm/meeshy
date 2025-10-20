@@ -28,7 +28,10 @@ export const SERVER_EVENTS = {
   NOTIFICATION: 'notification',
   SYSTEM_MESSAGE: 'system_message',
   CONVERSATION_STATS: 'conversation:stats',
-  CONVERSATION_ONLINE_STATS: 'conversation:online_stats'
+  CONVERSATION_ONLINE_STATS: 'conversation:online_stats',
+  REACTION_ADDED: 'reaction:added',
+  REACTION_REMOVED: 'reaction:removed',
+  REACTION_SYNC: 'reaction:sync'
 } as const;
 
 // Événements du client vers le serveur
@@ -43,7 +46,10 @@ export const CLIENT_EVENTS = {
   TYPING_STOP: 'typing:stop',
   USER_STATUS: 'user:status',
   AUTHENTICATE: 'authenticate',
-  REQUEST_TRANSLATION: 'request_translation'
+  REQUEST_TRANSLATION: 'request_translation',
+  REACTION_ADD: 'reaction:add',
+  REACTION_REMOVE: 'reaction:remove',
+  REACTION_REQUEST_SYNC: 'reaction:request_sync'
 } as const;
 
 // ===== ÉVÉNEMENTS SOCKET.IO =====
@@ -150,6 +156,41 @@ export interface ConversationOnlineStatsEventData {
   readonly updatedAt: Date;
 }
 
+/**
+ * Données pour l'événement de mise à jour de réaction
+ */
+export interface ReactionUpdateEventData {
+  readonly messageId: string;
+  readonly userId?: string;
+  readonly anonymousUserId?: string;
+  readonly emoji: string;
+  readonly action: 'add' | 'remove';
+  readonly aggregation: {
+    readonly emoji: string;
+    readonly count: number;
+    readonly userIds: readonly string[];
+    readonly anonymousUserIds: readonly string[];
+    readonly hasCurrentUser: boolean;
+  };
+  readonly timestamp: Date;
+}
+
+/**
+ * Données pour l'événement de synchronisation des réactions
+ */
+export interface ReactionSyncEventData {
+  readonly messageId: string;
+  readonly reactions: readonly {
+    readonly emoji: string;
+    readonly count: number;
+    readonly userIds: readonly string[];
+    readonly anonymousUserIds: readonly string[];
+    readonly hasCurrentUser: boolean;
+  }[];
+  readonly totalCount: number;
+  readonly userReactions: readonly string[];
+}
+
 // Événements du serveur vers le client
 export interface ServerToClientEvents {
   [SERVER_EVENTS.MESSAGE_NEW]: (message: SocketIOMessage) => void;
@@ -171,6 +212,9 @@ export interface ServerToClientEvents {
   [SERVER_EVENTS.SYSTEM_MESSAGE]: (data: SystemMessageEventData) => void;
   [SERVER_EVENTS.CONVERSATION_STATS]: (data: ConversationStatsEventData) => void;
   [SERVER_EVENTS.CONVERSATION_ONLINE_STATS]: (data: ConversationOnlineStatsEventData) => void;
+  [SERVER_EVENTS.REACTION_ADDED]: (data: ReactionUpdateEventData) => void;
+  [SERVER_EVENTS.REACTION_REMOVED]: (data: ReactionUpdateEventData) => void;
+  [SERVER_EVENTS.REACTION_SYNC]: (data: ReactionSyncEventData) => void;
 }
 
 /**
@@ -255,6 +299,22 @@ export interface RequestTranslationData {
   readonly targetLanguage: string;
 }
 
+/**
+ * Données pour ajouter une réaction
+ */
+export interface ReactionAddData {
+  readonly messageId: string;
+  readonly emoji: string;
+}
+
+/**
+ * Données pour retirer une réaction
+ */
+export interface ReactionRemoveData {
+  readonly messageId: string;
+  readonly emoji: string;
+}
+
 // Événements du client vers le serveur
 export interface ClientToServerEvents {
   [CLIENT_EVENTS.MESSAGE_SEND]: (data: MessageSendData, callback?: (response: SocketIOResponse<MessageSendResponseData>) => void) => void;
@@ -268,6 +328,9 @@ export interface ClientToServerEvents {
   [CLIENT_EVENTS.USER_STATUS]: (data: UserStatusData) => void;
   [CLIENT_EVENTS.AUTHENTICATE]: (data: AuthenticateData) => void;
   [CLIENT_EVENTS.REQUEST_TRANSLATION]: (data: RequestTranslationData) => void;
+  [CLIENT_EVENTS.REACTION_ADD]: (data: ReactionAddData, callback?: (response: SocketIOResponse<ReactionUpdateEventData>) => void) => void;
+  [CLIENT_EVENTS.REACTION_REMOVE]: (data: ReactionRemoveData, callback?: (response: SocketIOResponse<ReactionUpdateEventData>) => void) => void;
+  [CLIENT_EVENTS.REACTION_REQUEST_SYNC]: (messageId: string, callback?: (response: SocketIOResponse<ReactionSyncEventData>) => void) => void;
 }
 
 // ===== TYPES DE BASE =====

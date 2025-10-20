@@ -33,6 +33,9 @@ export * from './attachment';
 // Export des types communauté
 export * from './community';
 
+// Export des types réactions
+export * from './reaction';
+
 // ===== ÉVÉNEMENTS SOCKET.IO =====
 export * from './socketio-events';
 
