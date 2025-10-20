@@ -184,13 +184,17 @@ export const ReactionSelectionMessageView = memo(function ReactionSelectionMessa
       // Ajouter la réaction via le hook
       const success = await addReaction(emoji);
       
-      if (success) {
-        // Notifier le parent qui gérera la fermeture via exitMode()
-        onSelectReaction(emoji);
-      }
+      console.log('[ReactionSelection] addReaction result:', success, 'emoji:', emoji);
+      
+      // Toujours notifier le parent pour fermer la vue
+      // Le parent gérera la fermeture via exitMode()
+      onSelectReaction(emoji);
     } catch (error) {
       console.error('Failed to add reaction:', error);
-      // La vue reste ouverte en cas d'erreur pour que l'utilisateur puisse réessayer
+      // En cas d'erreur, on ferme quand même après un délai
+      setTimeout(() => {
+        onSelectReaction(emoji);
+      }, 500);
     }
   }, [addReaction, isLoading, onSelectReaction]);
 
@@ -326,9 +330,9 @@ export const ReactionSelectionMessageView = memo(function ReactionSelectionMessa
               return (
                 <motion.button
                   key={`${emoji}-${index}`}
-                  whileHover={{ scale: 1.15, rotate: [0, -8, 8, -8, 0] }}
+                  whileHover={{ scale: 1.15, rotate: 5 }}
                   whileTap={{ scale: 0.9 }}
-                  transition={{ duration: 0.2, type: "spring", stiffness: 400 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
                   disabled={isLoading}
                   className={cn(
                     "relative h-11 w-11 flex items-center justify-center rounded-lg text-2xl transition-all duration-200",
