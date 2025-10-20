@@ -185,16 +185,14 @@ export const ReactionSelectionMessageView = memo(function ReactionSelectionMessa
       const success = await addReaction(emoji);
       
       if (success) {
-        // Notifier le parent (pour actions additionnelles si nécessaire)
+        // Notifier le parent qui gérera la fermeture via exitMode()
         onSelectReaction(emoji);
-        // Fermer la vue
-        onClose();
       }
     } catch (error) {
       console.error('Failed to add reaction:', error);
       // La vue reste ouverte en cas d'erreur pour que l'utilisateur puisse réessayer
     }
-  }, [addReaction, isLoading, onSelectReaction, onClose]);
+  }, [addReaction, isLoading, onSelectReaction]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
