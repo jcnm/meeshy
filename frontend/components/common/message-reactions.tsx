@@ -45,10 +45,12 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
   onAddReactionClick,
 }) => {
   const { t } = useI18n('reactions');
+  const [isInitialLoad, setIsInitialLoad] = React.useState(true);
   const [previousReactionsCount, setPreviousReactionsCount] = React.useState(0);
   const [isNewReaction, setIsNewReaction] = React.useState(false);
   const [reactionCounts, setReactionCounts] = React.useState<Record<string, number>>({});
   const [animatingEmojis, setAnimatingEmojis] = React.useState<Set<string>>(new Set());
+  const [loadedEmojis, setLoadedEmojis] = React.useState<Set<string>>(new Set());
   
   const { 
     reactions, 
@@ -66,8 +68,23 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
     return reactions.slice(0, maxVisibleReactions);
   }, [reactions, maxVisibleReactions]);
 
+  // Marquer les emojis comme chargés au premier rendu
+  React.useEffect(() => {
+    if (reactions.length > 0 && isInitialLoad) {
+      const emojis = new Set(reactions.map(r => r.emoji));
+      setLoadedEmojis(emojis);
+      setIsInitialLoad(false);
+      console.log('📥 [MessageReactions] Chargement initial:', { 
+        emojis: Array.from(emojis),
+        count: reactions.length 
+      });
+    }
+  }, [reactions, isInitialLoad]);
+
   // Détecter les nouvelles réactions pour l'animation
   React.useEffect(() => {
+    if (isInitialLoad) return; // Skip pendant le chargement initial
+    
     const currentCount = reactions.reduce((sum, r) => sum + r.count, 0);
     
     if (currentCount > previousReactionsCount && previousReactionsCount > 0) {
@@ -86,41 +103,57 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
     }
     
     setPreviousReactionsCount(currentCount);
-  }, [reactions, previousReactionsCount]);
+  }, [reactions, previousReactionsCount, isInitialLoad]);
 
   // Tracker les changements de compteur par emoji pour animer
   React.useEffect(() => {
+    if (isInitialLoad) return; // Skip pendant le chargement initial
+    
     const newCounts: Record<string, number> = {};
     const newAnimating = new Set<string>();
+    const newEmojis = new Set<string>();
     
     reactions.forEach(reaction => {
       const prevCount = reactionCounts[reaction.emoji] || 0;
       newCounts[reaction.emoji] = reaction.count;
       
-      // Si le compteur a augmenté, animer cet emoji
-      if (reaction.count > prevCount && prevCount > 0) {
+      // Détecter un nouvel emoji (jamais vu avant)
+      if (!loadedEmojis.has(reaction.emoji)) {
+        console.log('🆕 [MessageReactions] Nouvel emoji détecté:', reaction.emoji);
+        newEmojis.add(reaction.emoji);
+        newAnimating.add(reaction.emoji);
+      }
+      // Si le compteur a augmenté sur un emoji existant
+      else if (reaction.count > prevCount && prevCount > 0) {
         console.log('🎯 [MessageReactions] Compteur augmenté pour:', reaction.emoji, {
           from: prevCount,
           to: reaction.count
         });
         newAnimating.add(reaction.emoji);
-        
-        // Arrêter l'animation après 500ms
-        setTimeout(() => {
-          setAnimatingEmojis(prev => {
-            const next = new Set(prev);
-            next.delete(reaction.emoji);
-            return next;
-          });
-        }, 500);
       }
     });
     
+    // Mettre à jour les emojis chargés
+    if (newEmojis.size > 0) {
+      setLoadedEmojis(prev => new Set([...prev, ...newEmojis]));
+    }
+    
     setReactionCounts(newCounts);
+    
+    // Lancer les animations
     if (newAnimating.size > 0) {
       setAnimatingEmojis(prev => new Set([...prev, ...newAnimating]));
+      
+      // Arrêter les animations après 500ms
+      setTimeout(() => {
+        setAnimatingEmojis(prev => {
+          const next = new Set(prev);
+          newAnimating.forEach(emoji => next.delete(emoji));
+          return next;
+        });
+      }, 500);
     }
-  }, [reactions]);
+  }, [reactions, reactionCounts, loadedEmojis, isInitialLoad]);
 
   const handleReactionClick = async (emoji: string) => {
     if (isLoading) return;
@@ -166,13 +199,14 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
         <AnimatePresence mode="popLayout">
           {visibleReactions.map((reaction) => {
             const hasUserReacted = userReactions.includes(reaction.emoji);
+            const isNewEmoji = !isInitialLoad && animatingEmojis.has(reaction.emoji);
             
             return (
               <Tooltip key={reaction.emoji}>
                 <TooltipTrigger asChild>
                   <motion.button
                     layout
-                    initial={{ scale: 0, opacity: 0, y: 10 }}
+                    initial={isNewEmoji ? { scale: 0, opacity: 0, y: 10 } : false}
                     animate={{ 
                       scale: 1, 
                       opacity: 1, 
