@@ -158,13 +158,18 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
   };
 
   // Ne pas retourner null même si vide - le hook doit rester actif pour écouter les événements temps réel
-  // Si pas de réactions, on rend un container vide mais présent
-  if (visibleReactions.length === 0 && !showAddButton) {
+  // Si pas de réactions ET pas de loading ET pas de bouton add, on rend un container vide mais présent
+  if (!isLoading && visibleReactions.length === 0 && !showAddButton) {
     return (
       <TooltipProvider>
         <div className={cn('flex flex-wrap items-end gap-1 min-h-[1px]', className)} />
       </TooltipProvider>
     );
+  }
+
+  // Pendant le chargement, afficher un skeleton ou rien pour éviter le flash
+  if (isLoading && visibleReactions.length === 0) {
+    return null;
   }
 
   return (
