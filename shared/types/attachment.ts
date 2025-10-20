@@ -6,7 +6,7 @@
 /**
  * Types d'attachements supportés
  */
-export type AttachmentType = 'image' | 'document' | 'audio' | 'video' | 'text';
+export type AttachmentType = 'image' | 'document' | 'audio' | 'video' | 'text' | 'code';
 
 /**
  * Statuts de progression d'upload
@@ -27,7 +27,9 @@ export type DocumentMimeType =
   | 'application/msword'
   | 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
   | 'application/vnd.ms-powerpoint'
-  | 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+  | 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+  | 'application/zip'
+  | 'application/x-zip-compressed';
 
 /**
  * Types MIME pour les fichiers audio
@@ -45,9 +47,24 @@ export type VideoMimeType = 'video/mp4' | 'video/webm' | 'video/ogg' | 'video/qu
 export type TextMimeType = 'text/plain';
 
 /**
+ * Types MIME pour les fichiers de code
+ */
+export type CodeMimeType = 
+  | 'text/markdown'
+  | 'text/x-markdown'
+  | 'application/x-sh'
+  | 'text/javascript'
+  | 'application/javascript'
+  | 'text/typescript'
+  | 'application/typescript'
+  | 'text/x-python'
+  | 'text/x-python-script'
+  | 'application/x-python-code';
+
+/**
  * Union de tous les types MIME acceptés
  */
-export type AcceptedMimeType = ImageMimeType | DocumentMimeType | AudioMimeType | VideoMimeType | TextMimeType;
+export type AcceptedMimeType = ImageMimeType | DocumentMimeType | AudioMimeType | VideoMimeType | TextMimeType | CodeMimeType;
 
 /**
  * Attachement de message
@@ -135,6 +152,7 @@ export const UPLOAD_LIMITS = {
   AUDIO: 104857600, // 100MB
   VIDEO: 104857600, // 100MB
   TEXT: 10485760, // 10MB
+  CODE: 10485760, // 10MB
 } as const;
 
 /**
@@ -154,10 +172,24 @@ export const ACCEPTED_MIME_TYPES = {
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/vnd.ms-powerpoint',
     'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/zip',
+    'application/x-zip-compressed',
   ] as const,
   AUDIO: ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/webm'] as const,
   VIDEO: ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'] as const,
   TEXT: ['text/plain'] as const,
+  CODE: [
+    'text/markdown',
+    'text/x-markdown',
+    'application/x-sh',
+    'text/javascript',
+    'application/javascript',
+    'text/typescript',
+    'application/typescript',
+    'text/x-python',
+    'text/x-python-script',
+    'application/x-python-code',
+  ] as const,
 } as const;
 
 /**
@@ -201,6 +233,13 @@ export function isDocumentMimeType(mimeType: string): mimeType is DocumentMimeTy
 }
 
 /**
+ * Type guard pour vérifier si un MIME type est code
+ */
+export function isCodeMimeType(mimeType: string): mimeType is CodeMimeType {
+  return (ACCEPTED_MIME_TYPES.CODE as unknown as string[]).includes(mimeType);
+}
+
+/**
  * Type guard pour vérifier si un MIME type est accepté
  */
 export function isAcceptedMimeType(mimeType: string): mimeType is AcceptedMimeType {
@@ -208,7 +247,8 @@ export function isAcceptedMimeType(mimeType: string): mimeType is AcceptedMimeTy
          isAudioMimeType(mimeType) || 
          isVideoMimeType(mimeType) || 
          isTextMimeType(mimeType) || 
-         isDocumentMimeType(mimeType);
+         isDocumentMimeType(mimeType) ||
+         isCodeMimeType(mimeType);
 }
 
 /**
@@ -227,6 +267,9 @@ export function getAttachmentType(mimeType: string): AttachmentType {
   if (isTextMimeType(mimeType)) {
     return 'text';
   }
+  if (isCodeMimeType(mimeType)) {
+    return 'code';
+  }
   return 'document';
 }
 
@@ -243,6 +286,8 @@ export function getSizeLimit(type: AttachmentType): number {
       return UPLOAD_LIMITS.VIDEO;
     case 'text':
       return UPLOAD_LIMITS.TEXT;
+    case 'code':
+      return UPLOAD_LIMITS.CODE;
     case 'document':
       return UPLOAD_LIMITS.DOCUMENT;
     default: {
