@@ -462,14 +462,20 @@ export default function JoinConversationPage() {
                     {t('signUp')}
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>{t('createAccount')}</DialogTitle>
-                    <DialogDescription>
-                      {t('createAccountToJoin')}
-                    </DialogDescription>
-                  </DialogHeader>
-                  <RegisterForm onSuccess={onAuthSuccess} />
+                <DialogContent className="max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+                  {/* Header fixe */}
+                  <div className="px-6 pt-6 pb-4 border-b shrink-0">
+                    <DialogHeader>
+                      <DialogTitle>{t('createAccount')}</DialogTitle>
+                      <DialogDescription>
+                        {t('createAccountToJoin')}
+                      </DialogDescription>
+                    </DialogHeader>
+                  </div>
+                  {/* Contenu scrollable */}
+                  <div className="flex-1 overflow-y-auto px-6 min-h-0">
+                    <RegisterForm onSuccess={onAuthSuccess} formPrefix="register-join-small" />
+                  </div>
                 </DialogContent>
               </Dialog>
             </div>
@@ -687,14 +693,20 @@ export default function JoinConversationPage() {
                               {t('signUp')}
                             </Button>
                           </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>{t('createAccount')}</DialogTitle>
-                              <DialogDescription>
-                                {t('createAccountToJoin')}
-                              </DialogDescription>
-                            </DialogHeader>
-                            <RegisterForm onSuccess={onAuthSuccess} />
+                          <DialogContent className="max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+                            {/* Header fixe */}
+                            <div className="px-6 pt-6 pb-4 border-b shrink-0">
+                              <DialogHeader>
+                                <DialogTitle>{t('createAccount')}</DialogTitle>
+                                <DialogDescription>
+                                  {t('createAccountToJoin')}
+                                </DialogDescription>
+                              </DialogHeader>
+                            </div>
+                            {/* Contenu scrollable */}
+                            <div className="flex-1 overflow-y-auto px-6 min-h-0">
+                              <RegisterForm onSuccess={onAuthSuccess} formPrefix="register-join-large" />
+                            </div>
                           </DialogContent>
                         </Dialog>
                       </div>

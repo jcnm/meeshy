@@ -139,33 +139,35 @@ export function RegisterForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor={`${formPrefix}-firstName`}>{t('register.firstNameLabel')}</Label>
-          <Input
-            id={`${formPrefix}-firstName`}
-            type="text"
-            placeholder={t('register.firstNamePlaceholder')}
-            value={formData.firstName}
-            onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-            disabled={isLoading || disabled}
-            required
-          />
+    <form onSubmit={handleSubmit} className="flex flex-col" autoComplete="off">
+      {/* Contenu des champs */}
+      <div className="space-y-4 py-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor={`${formPrefix}-firstName`}>{t('register.firstNameLabel')}</Label>
+            <Input
+              id={`${formPrefix}-firstName`}
+              type="text"
+              placeholder={t('register.firstNamePlaceholder')}
+              value={formData.firstName}
+              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+              disabled={isLoading || disabled}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor={`${formPrefix}-lastName`}>{t('register.lastNameLabel')}</Label>
+            <Input
+              id={`${formPrefix}-lastName`}
+              type="text"
+              placeholder={t('register.lastNamePlaceholder')}
+              value={formData.lastName}
+              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+              disabled={isLoading || disabled}
+              required
+            />
+          </div>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor={`${formPrefix}-lastName`}>{t('register.lastNameLabel')}</Label>
-          <Input
-            id={`${formPrefix}-lastName`}
-            type="text"
-            placeholder={t('register.lastNamePlaceholder')}
-            value={formData.lastName}
-            onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-            disabled={isLoading || disabled}
-            required
-          />
-        </div>
-      </div>
 
       {/* Champ username - seulement en mode inscription normale */}
       {!linkId && (
@@ -275,13 +277,17 @@ export function RegisterForm({
         </div>
       </div>
 
-      <Button 
-        type="submit" 
-        className="w-full" 
-        disabled={isLoading || disabled}
-      >
-        {isLoading ? t('register.creating') : t('register.registerButton')}
-      </Button>
+      {/* Bouton submit - avec padding bottom pour qu'il soit toujours visible */}
+      <div className="sticky bottom-0 bg-white dark:bg-gray-950 pt-4 pb-6 mt-4 border-t">
+        <Button 
+          type="submit" 
+          className="w-full" 
+          disabled={isLoading || disabled}
+        >
+          {isLoading ? t('register.creating') : t('register.registerButton')}
+        </Button>
+      </div>
+      </div>
     </form>
   );
 }
