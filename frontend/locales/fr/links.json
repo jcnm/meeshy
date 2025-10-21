@@ -38,6 +38,7 @@
       "lastClicked": "Dernier clic"
     },
     "actions": {
+      "menu": "Menu",
       "viewDetails": "Voir les détails",
       "copy": "Copier le lien",
       "edit": "Modifier",
