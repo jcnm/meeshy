@@ -101,22 +101,24 @@ export class MeeshySocketIOManager {
     try {
       // Si c'est un ObjectId MongoDB (24 caractères hex)
       if (/^[0-9a-fA-F]{24}$/.test(conversationId)) {
-        // Chercher la conversation pour obtenir son identifier
-        const conversation = await this.prisma.conversation.findUnique({
-          where: { id: conversationId },
-          select: { id: true, identifier: true }
-        });
-        
-        if (conversation) {
-          // Retourner l'identifier s'il existe, sinon l'ObjectId
-          const normalized = conversation.identifier || conversation.id;
-          console.log(`🔄 [NORMALIZE] ObjectId ${conversationId} → ${normalized}`);
-          return normalized;
-        }
+        // C'est déjà un ObjectId, le retourner directement
+        console.log(`🔄 [NORMALIZE] ObjectId ${conversationId} → ${conversationId} (invariant)`);
+        return conversationId;
       }
       
-      // Si c'est déjà un identifier ou non trouvé, retourner tel quel
-      console.log(`🔄 [NORMALIZE] Identifier ${conversationId} → ${conversationId}`);
+      // C'est un identifier, chercher l'ObjectId correspondant
+      const conversation = await this.prisma.conversation.findUnique({
+        where: { identifier: conversationId },
+        select: { id: true, identifier: true }
+      });
+      
+      if (conversation) {
+        console.log(`🔄 [NORMALIZE] Identifier ${conversationId} → ObjectId ${conversation.id}`);
+        return conversation.id; // Retourner l'ObjectId
+      }
+      
+      // Si non trouvé, retourner tel quel (peut-être un ObjectId invalide ou identifier inconnu)
+      console.log(`⚠️ [NORMALIZE] Conversation non trouvée pour: ${conversationId}, retour tel quel`);
       return conversationId;
     } catch (error) {
       console.error('❌ [NORMALIZE] Erreur normalisation:', error);
