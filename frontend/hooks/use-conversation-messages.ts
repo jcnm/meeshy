@@ -1,5 +1,5 @@
 /**
- * Hook spécialisé pour ConversationLayoutResponsive
+ * Hook spécialisé pour ConversationLayout et BubbleStreamPage
  * - Messages récents en bas, anciens en haut
  * - Scroll vers le haut pour charger plus de messages anciens
  * - Ordre chronologique strict (anciens → récents)

@@ -34,7 +34,7 @@ interface UseMessagingOptions {
   onNewMessage?: (message: any) => void;
   onMessageEdited?: (message: any) => void;
   onMessageDeleted?: (messageId: string) => void;
-  onUserTyping?: (userId: string, username: string, isTyping: boolean) => void;
+  onUserTyping?: (userId: string, username: string, isTyping: boolean, conversationId: string) => void;
   onUserStatus?: (userId: string, username: string, isOnline: boolean) => void;
   onTranslation?: (messageId: string, translations: any[]) => void;
   onConversationStats?: (data: any) => void;
@@ -105,9 +105,13 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
     onNewMessage,
     onMessageEdited,
     onMessageDeleted,
-    onUserTyping: (userId, username, isTyping) => {
+    onUserTyping: (userId, username, isTyping, typingConversationId) => {
+      // NE PAS FILTRER par conversationId !
+      // Le backend normalise les IDs et met tous les clients dans la même room
+      // Si tu reçois l'événement, c'est que tu es dans la bonne room
+      
       handleTypingEvent(userId, username, isTyping);
-      onUserTyping?.(userId, username, isTyping);
+      onUserTyping?.(userId, username, isTyping, typingConversationId);
     },
     onUserStatus,
     onTranslation,
@@ -147,13 +151,8 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
       setIsTyping(true);
       socketMessaging.startTyping();
       
-      // Auto-stop après 3 secondes
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-      typingTimeoutRef.current = setTimeout(() => {
-        stopTyping();
-      }, 3000);
+      // Note: Le timeout est géré dans le composant (ConversationLayout)
+      // pour permettre un meilleur contrôle du délai de 3 secondes
     }
   }, [isTyping, conversationId, currentUser, socketMessaging]);
 

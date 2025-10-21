@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser, useIsAuthChecking } from '@/stores';
 import { useI18n } from '@/hooks/useI18n';
 import { useConversationMessages } from '@/hooks/use-conversation-messages';
-import { useMessaging } from '@/hooks/use-messaging';
+import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { useConversationsPagination } from '@/hooks/use-conversations-pagination';
 import { conversationsService } from '@/services/conversations.service';
 import { messageService } from '@/services/message.service';
@@ -99,6 +99,12 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   // Référence pour le textarea du MessageComposer
   const messageComposerRef = useRef<{ focus: () => void; blur: () => void; clearAttachments?: () => void }>(null);
   
+  // Référence pour le timeout de frappe
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Constante pour le délai d'arrêt de frappe (3 secondes après la dernière frappe)
+  const TYPING_STOP_DELAY = 3000;
+  
   // États pour la galerie d'images
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [selectedAttachmentId, setSelectedAttachmentId] = useState<string | null>(null);
@@ -148,7 +154,11 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     return currentLanguages ? currentLanguages.has(targetLanguage) : false;
   }, [translatingMessages]);
 
-  // Hook pour les messages (doit être déclaré avant useMessaging)
+  // État pour les utilisateurs en train de taper
+  const [typingUsers, setTypingUsers] = useState<{id: string, displayName: string}[]>([]);
+  const [isTyping, setIsTyping] = useState(false);
+
+  // Hook pour les messages (doit être déclaré avant useSocketIOMessaging)
   const {
     messages,
     isLoading: isLoadingMessages,
@@ -165,19 +175,69 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     enabled: !!selectedConversation?.id
   });
 
-  // Hook messaging pour l'envoi de messages et indicateurs de frappe
-  const messaging = useMessaging({
+    // Callback pour gérer les événements de frappe
+  const handleUserTyping = useCallback((userId: string, username: string, isTyping: boolean, typingConversationId: string) => {
+    console.log('[ConversationLayout] 👤 Événement de frappe REÇU:', { 
+      userId, 
+      username, 
+      isTyping, 
+      typingConversationId,
+      currentUserId: user?.id,
+      willIgnore: !user || userId === user.id
+    });
+    
+    if (!user || userId === user.id) return; // Ignorer nos propres événements
+    
+    console.log('[ConversationLayout] ✅ Traitement événement de frappe (pas ignoré)');
+    
+    setTypingUsers(prev => {
+      if (isTyping) {
+        // Ajouter l'utilisateur s'il n'est pas déjà dans la liste
+        if (prev.some(u => u.id === userId)) {
+          console.log('[ConversationLayout] 📝 Utilisateur déjà dans la liste, pas d\'ajout');
+          return prev;
+        }
+        
+        // Rechercher l'utilisateur dans les participants pour obtenir son vrai nom
+        const participant = participants.find(p => p.userId === userId);
+        let displayName: string;
+        
+        if (participant?.user) {
+          const u = participant.user;
+          if (u.displayName) {
+            displayName = u.displayName;
+          } else if (u.firstName || u.lastName) {
+            displayName = `${u.firstName || ''} ${u.lastName || ''}`.trim();
+          } else {
+            displayName = u.username || username;
+          }
+        } else if (username && username !== userId) {
+          displayName = username;
+        } else {
+          displayName = `Utilisateur ${userId.slice(-6)}`;
+        }
+        
+        console.log('[ConversationLayout] ➕ Ajout utilisateur tapant:', { userId, displayName });
+        return [...prev, { id: userId, displayName }];
+      } else {
+        // Retirer l'utilisateur de la liste
+        console.log('[ConversationLayout] ➖ Retrait utilisateur tapant:', { userId });
+        return prev.filter(u => u.id !== userId);
+      }
+    });
+  }, [user, participants]);
+
+  // Hook Socket.IO messaging pour la communication temps réel
+  const {
+    sendMessage: sendMessageViaSocket,
+    sendMessageWithAttachments: sendMessageWithAttachmentsViaSocket,
+    connectionStatus: socketConnectionStatus,
+    startTyping,
+    stopTyping
+  } = useSocketIOMessaging({
     conversationId: selectedConversation?.id,
     currentUser: user || undefined,
-    onMessageSent: useCallback((content: string, language: string) => {
-      console.log('[ConversationLayout] Message envoyé avec succès:', { content: content.substring(0, 50), language });
-    }, []),
-    onMessageFailed: useCallback((content: string, error: Error) => {
-      console.error('[ConversationLayout] Échec envoi message:', { content: content.substring(0, 50), error });
-    }, []),
-    onUserTyping: useCallback((userId: string, username: string, isTyping: boolean) => {
-      console.log('[ConversationLayout] 👤 Événement de frappe:', { userId, username, isTyping });
-    }, []),
+    onUserTyping: handleUserTyping,
     onMessageEdited: useCallback((message: any) => {
       console.log('✏️ [ConversationLayout] Message édité reçu via Socket.IO:', message.id);
       if (message.conversationId === selectedConversation?.id) {
@@ -455,6 +515,21 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     }
   }, [effectiveSelectedId, conversations, isLoading, loadDirectConversation, instanceId]);
 
+  // Nettoyer le timeout de frappe quand le composant se démonte ou quand la conversation change
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+      // Arrêter la frappe si elle est active
+      if (isTyping) {
+        stopTyping();
+        setIsTyping(false);
+      }
+    };
+  }, [selectedConversation?.id, isTyping, stopTyping]);
+
   // Sélection d'une conversation (dynamique ou par URL)
   const handleSelectConversation = useCallback((conversation: Conversation) => {
     console.log(`[ConversationLayout-${instanceId}] Sélection conversation:`, {
@@ -647,7 +722,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     console.log('[ConversationLayout] handleSendMessage appelé:', {
       content,
       selectedConversationId: selectedConversation?.id,
-      hasMessaging: !!messaging,
+      hasSocketMessaging: !!sendMessageViaSocket,
       hasUser: !!user,
       selectedLanguage,
       replyToId,
@@ -664,12 +739,24 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     const currentAttachmentIds = [...attachmentIds];
     
     try {
+      // Arrêter immédiatement l'indicateur de frappe lors de l'envoi
+      if (isTyping) {
+        stopTyping();
+        setIsTyping(false);
+      }
+      
+      // Nettoyer le timeout de frappe
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+      
       // Envoyer avec ou sans attachments
-      if (hasAttachments && messaging.sendMessageWithAttachments) {
+      if (hasAttachments && sendMessageWithAttachmentsViaSocket) {
         console.log('[ConversationLayout] 📎 Envoi avec attachments:', currentAttachmentIds);
-        await messaging.sendMessageWithAttachments(content, currentAttachmentIds, selectedLanguage, replyToId);
+        await sendMessageWithAttachmentsViaSocket(content, currentAttachmentIds, selectedLanguage, replyToId);
       } else {
-        await messaging.sendMessage(content, selectedLanguage, replyToId);
+        await sendMessageViaSocket(content, selectedLanguage, replyToId);
       }
       
       console.log('[ConversationLayout] Message envoyé avec succès - en attente du retour serveur');
@@ -690,16 +777,45 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       // Restaurer les attachments en cas d'erreur
       setAttachmentIds(currentAttachmentIds);
     }
-  }, [newMessage, selectedConversation?.id, messaging, selectedLanguage, user, attachmentIds]);
+  }, [newMessage, selectedConversation?.id, sendMessageViaSocket, sendMessageWithAttachmentsViaSocket, selectedLanguage, user, attachmentIds, isTyping, stopTyping]);
 
-  // Gestion de la saisie avec auto-resize du textarea
+  // Gestion de la saisie avec indicateurs de frappe
   const handleTyping = useCallback((value: string) => {
     setNewMessage(value);
     
-    // Auto-resize textarea - similaire à BubbleStreamPage
-    // Note: Le MessageComposer gère son propre textarea, donc on ne peut pas directement accéder à sa ref
-    // L'auto-resize est géré par la classe CSS 'expandable-textarea' dans le MessageComposer
-  }, []);
+    // Gérer l'indicateur de frappe avec timeout
+    if (value.trim()) {
+      // Si l'utilisateur tape et qu'il n'était pas déjà en train de taper
+      if (!isTyping) {
+        setIsTyping(true);
+        startTyping();
+      }
+      
+      // Réinitialiser le timeout à chaque caractère tapé
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      
+      // Arrêter la frappe après 3 secondes d'inactivité
+      typingTimeoutRef.current = setTimeout(() => {
+        setIsTyping(false);
+        stopTyping();
+      }, TYPING_STOP_DELAY);
+      
+    } else {
+      // Si le champ est vide, arrêter immédiatement la frappe
+      if (isTyping) {
+        setIsTyping(false);
+        stopTyping();
+      }
+      
+      // Nettoyer le timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+    }
+  }, [isTyping, startTyping, stopTyping, TYPING_STOP_DELAY]);
 
   // Gestion des touches clavier pour l'envoi de message
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
@@ -759,10 +875,11 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     }
     
     // Forcer la reconnexion WebSocket avant de renvoyer
-    if (messaging.socketMessaging?.reconnect) {
-      console.log('🔌 Force reconnexion WebSocket...');
-      messaging.socketMessaging.reconnect();
-      
+    console.log('🔌 Vérification connexion WebSocket...');
+    const diagnostics = meeshySocketIOService.getConnectionDiagnostics();
+    if (!diagnostics.isConnected) {
+      console.log('🔌 Reconnexion WebSocket nécessaire...');
+      meeshySocketIOService.reconnect();
       // Attendre un peu que la reconnexion s'établisse
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
@@ -771,15 +888,15 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       let success = false;
       
       // Envoyer avec ou sans attachments
-      if (failedMsg.attachmentIds.length > 0 && messaging.sendMessageWithAttachments) {
-        success = await messaging.sendMessageWithAttachments(
+      if (failedMsg.attachmentIds.length > 0 && sendMessageWithAttachmentsViaSocket) {
+        success = await sendMessageWithAttachmentsViaSocket(
           failedMsg.content,
           failedMsg.attachmentIds,
           failedMsg.originalLanguage,
           failedMsg.replyToId
         );
       } else {
-        success = await messaging.sendMessage(
+        success = await sendMessageViaSocket(
           failedMsg.content,
           failedMsg.originalLanguage,
           failedMsg.replyToId
@@ -797,7 +914,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       console.error('❌ Erreur lors du renvoi:', error);
       return false;
     }
-  }, [selectedConversation?.id, user, messaging]);
+  }, [selectedConversation?.id, user, sendMessageViaSocket, sendMessageWithAttachmentsViaSocket]);
 
   // Surveillance de l'état de connexion WebSocket
   useEffect(() => {
@@ -904,7 +1021,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               conversation={selectedConversation}
               currentUser={user}
               conversationParticipants={participants}
-              typingUsers={messaging.typingUsers}
+              typingUsers={typingUsers.map(u => ({ userId: u.id, username: u.displayName, conversationId: selectedConversation.id, timestamp: Date.now() }))}
               isMobile={isMobile}
               onBackToList={handleBackToList}
               onOpenDetails={() => setIsDetailsOpen(true)}
@@ -1066,7 +1183,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                   conversation={selectedConversation}
                   currentUser={user}
                   conversationParticipants={participants}
-                  typingUsers={messaging.typingUsers}
+                  typingUsers={typingUsers.map(u => ({ userId: u.id, username: u.displayName, conversationId: selectedConversation.id, timestamp: Date.now() }))}
                   isMobile={false}
                   onBackToList={handleBackToList}
                   onOpenDetails={() => setIsDetailsOpen(true)}
