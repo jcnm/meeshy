@@ -473,13 +473,33 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
           {/* Attachments EN PREMIER (hors de la bulle) */}
           {message.attachments && message.attachments.length > 0 && (
             <div className={cn(
-              "mb-2 max-w-[85%] sm:max-w-[75%] md:max-w-[65%]",
+              "relative mb-2 max-w-[85%] sm:max-w-[75%] md:max-w-[65%]",
               isOwnMessage ? "ml-auto" : "mr-auto"
             )}>
               <MessageAttachments
                 attachments={message.attachments}
                 onImageClick={onImageClick}
               />
+              
+              {/* Réactions par-dessus les attachments (seulement si pas de contenu textuel) */}
+              {(!message.content || !message.content.trim()) && (
+                <div 
+                  className={cn(
+                    "absolute -bottom-3 z-[9999]",
+                    isOwnMessage ? "right-2" : "left-2"
+                  )}
+                  style={{ pointerEvents: 'auto' }}
+                >
+                  <MessageReactions
+                    messageId={message.id}
+                    conversationId={conversationId || message.conversationId}
+                    currentUserId={currentUser?.id || ''}
+                    currentAnonymousUserId={currentAnonymousUserId}
+                    isAnonymous={isAnonymous}
+                    showAddButton={false}
+                  />
+                </div>
+              )}
             </div>
           )}
 
@@ -992,7 +1012,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
 
           {/* Si attachments seuls (pas de texte) - Réactions simples */}
           {(!message.content || !message.content.trim()) && message.attachments && message.attachments.length > 0 && (
-            <div className="relative">
+            <div>
               {/* Actions simples pour attachments seuls */}
               <div className={cn(
                 "flex items-center gap-1.5 max-w-[85%] sm:max-w-[75%] md:max-w-[65%]",
@@ -1073,24 +1093,6 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                     </TooltipContent>
                   </Tooltip>
                 )}
-              </div>
-
-              {/* Message Reactions - Par-dessus les attachments (comme pour le texte) */}
-              <div 
-                className={cn(
-                  "absolute -bottom-3 z-[9999]",
-                  isOwnMessage ? "right-2" : "left-2"
-                )}
-                style={{ pointerEvents: 'auto' }}
-              >
-                <MessageReactions
-                  messageId={message.id}
-                  conversationId={conversationId || message.conversationId}
-                  currentUserId={currentUser?.id || ''}
-                  currentAnonymousUserId={currentAnonymousUserId}
-                  isAnonymous={isAnonymous}
-                  showAddButton={false}
-                />
               </div>
             </div>
           )}
