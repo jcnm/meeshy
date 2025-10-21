@@ -1386,70 +1386,70 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           }
         }
       `}</style>
-      {/* Layout principal */}
-      <div className="h-full relative mobile-fullscreen">
-        {/* Feed principal - Container avec gestion propre du scroll */}
-        <div className="w-full xl:pr-80 relative">{/* Indicateur dynamique - Frappe prioritaire sur connexion */}
-          <div className="fixed top-16 left-0 right-0 xl:right-80 z-[40] px-4 sm:px-6 lg:px-8 pt-4 pb-2 bg-gradient-to-b from-blue-50 to-transparent pointer-events-none realtime-indicator hidden md:block">
-            <div className="pointer-events-auto">
-              {/* Priorité à l'indicateur de frappe quand actif */}
-              {typingUsers.length > 0 && connectionStatus.isConnected ? (
-                <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm backdrop-blur-sm bg-blue-100/90 text-blue-800 border border-blue-200/80 transition-all">
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  <span>
-                    {typingUsers.length === 1 
-                      ? t('bubbleStream.typing.single', { name: typingUsers[0].displayName })
-                      : typingUsers.length === 2
-                      ? t('bubbleStream.typing.double', { name1: typingUsers[0].displayName, name2: typingUsers[1].displayName })
-                      : t('bubbleStream.typing.multiple', { name: typingUsers[0].displayName, count: typingUsers.length - 1 })
-                    }
-                  </span>
-                </div>
-              ) : (
-                /* Indicateur de connexion par défaut */
-                <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm backdrop-blur-sm transition-all ${
-                  connectionStatus.isConnected && connectionStatus.hasSocket
-                    ? 'bg-green-100/80 text-green-800 border border-green-200/60' 
-                    : 'bg-orange-100/80 text-orange-800 border border-orange-200/60'
-                }`}>
-                  <div className={`w-2 h-2 rounded-full animate-pulse ${
-                    connectionStatus.isConnected && connectionStatus.hasSocket ? 'bg-green-600' : 'bg-orange-600'
-                  }`} />
-                  <span className="font-medium">
-                    {t('bubbleStream.realTimeMessages')}
-                  </span>
-                  {!(connectionStatus.isConnected && connectionStatus.hasSocket) && (
-                    <span className="text-xs opacity-75">• {t('bubbleStream.connectionInProgress')}</span>
-                  )}
-                  {!(connectionStatus.isConnected && connectionStatus.hasSocket) && (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => {
-                          reconnect();
-                        }}
-                        className="ml-2 text-xs px-2 py-1 h-auto hover:bg-orange-200/50"
-                      >
-                        {t('bubbleStream.reconnect')}
-                      </Button>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
+      
+      {/* Layout principal simplifié */}
+      <div className="h-full flex flex-col">
+        
+        {/* Indicateur dynamique - Frappe prioritaire sur connexion */}
+        <div className="fixed top-16 left-0 right-0 xl:right-80 z-[40] px-4 sm:px-6 lg:px-8 pt-4 pb-2 bg-gradient-to-b from-blue-50 to-transparent pointer-events-none realtime-indicator hidden md:block">
+          <div className="pointer-events-auto">
+            {/* Priorité à l'indicateur de frappe quand actif */}
+            {typingUsers.length > 0 && connectionStatus.isConnected ? (
+              <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm backdrop-blur-sm bg-blue-100/90 text-blue-800 border border-blue-200/80 transition-all">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                <span>
+                  {typingUsers.length === 1 
+                    ? t('bubbleStream.typing.single', { name: typingUsers[0].displayName })
+                    : typingUsers.length === 2
+                    ? t('bubbleStream.typing.double', { name1: typingUsers[0].displayName, name2: typingUsers[1].displayName })
+                    : t('bubbleStream.typing.multiple', { name: typingUsers[0].displayName, count: typingUsers.length - 1 })
+                  }
+                </span>
+              </div>
+            ) : (
+              /* Indicateur de connexion par défaut */
+              <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm backdrop-blur-sm transition-all ${
+                connectionStatus.isConnected && connectionStatus.hasSocket
+                  ? 'bg-green-100/80 text-green-800 border border-green-200/60' 
+                  : 'bg-orange-100/80 text-orange-800 border border-orange-200/60'
+              }`}>
+                <div className={`w-2 h-2 rounded-full animate-pulse ${
+                  connectionStatus.isConnected && connectionStatus.hasSocket ? 'bg-green-600' : 'bg-orange-600'
+                }`} />
+                <span className="font-medium">
+                  {t('bubbleStream.realTimeMessages')}
+                </span>
+                {!(connectionStatus.isConnected && connectionStatus.hasSocket) && (
+                  <span className="text-xs opacity-75">• {t('bubbleStream.connectionInProgress')}</span>
+                )}
+                {!(connectionStatus.isConnected && connectionStatus.hasSocket) && (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        reconnect();
+                      }}
+                      className="ml-2 text-xs px-2 py-1 h-auto hover:bg-orange-200/50"
+                    >
+                      {t('bubbleStream.reconnect')}
+                    </Button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
+        </div>
 
-          {/* Feed des messages avec scroll naturel - Padding top pour l'indicateur fixe */}
-          <div 
-            ref={messagesContainerRef}
-            className="relative h-full pt-4 md:pt-20 messages-container scroll-optimized scrollbar-thin overflow-y-auto overflow-x-visible mobile-messages-container"
-            style={{ background: 'transparent' }}
-          >
-            <div className={cn(
-              "flex flex-col max-w-4xl mx-auto pb-48",
-              isMobile ? "px-3 py-4" : "px-6 py-4"
-            )}>
+        {/* Feed principal - Container de scroll avec ref pour le scroll infini */}
+        <div 
+          ref={messagesContainerRef}
+          className="flex-1 overflow-y-auto overflow-x-hidden pt-4 md:pt-20 pb-48 xl:pr-80"
+        >
+          <div className={cn(
+            "max-w-4xl mx-auto",
+            isMobile ? "px-3 py-4" : "px-6 py-4"
+          )}>
             {/* 
               MODE BUBBLESTREAM: Messages récents EN HAUT (sous header)
               - Backend retourne: orderBy createdAt DESC = [récent...ancien]
@@ -1482,11 +1482,11 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
               onImageClick={handleImageClick}
               onLoadMore={loadMore}
               t={t}
-              reverseOrder={false} // BubbleStream: garde l'ordre backend [récent...ancien] = récent en haut
-              scrollDirection="down" // BubbleStream: scroll vers le bas pour charger les messages plus anciens
+              reverseOrder={false}
+              scrollDirection="down"
             />
 
-            {/* Indicateur si plus de messages disponibles - positionné après les messages */}
+            {/* Indicateur si plus de messages disponibles */}
             {!hasMore && messages.length > 0 && (
               <div className="flex justify-center py-4">
                 <div className="text-sm text-muted-foreground">
@@ -1494,51 +1494,47 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                 </div>
               </div>
             )}
-
-            {/* Espace supplémentaire pour éviter que le dernier message soit caché */}
-            <div className="h-16" />
-            </div>
           </div>
         </div>
 
-        {/* Dégradé inférieur fixe - Transition progressive vers les couleurs générales de la page */}
+        {/* Dégradé inférieur fixe */}
         <div className="fixed bottom-0 left-0 right-0 xl:right-80 h-32 bg-gradient-to-t from-blue-50 dark:from-gray-950 via-blue-50/40 dark:via-gray-950/40 to-transparent pointer-events-none z-20" />
 
-        {/* Zone de composition flottante - Position fixe avec style plus large et aéré comme /conversations */}
-        <div className="fixed bottom-0 left-0 right-0 xl:right-80 z-30 mobile-input-zone">
-          {/* Dégradé de fond pour transition douce avec les couleurs générales */}
+        {/* Zone de composition flottante */}
+        <div className="fixed bottom-0 left-0 right-0 xl:right-80 z-30">
+          {/* Dégradé de fond */}
           <div className="h-10 bg-gradient-to-t from-blue-50 dark:from-gray-950 via-blue-50/40 dark:via-gray-950/40 to-transparent pointer-events-none" />
           
-          {/* Zone de saisie avec transparence et couleurs harmonisées */}
+          {/* Zone de saisie */}
           <div className="bg-blue-50/20 dark:bg-gray-900/80 backdrop-blur-lg border-t border-blue-200/50 dark:border-gray-800/50 shadow-xl shadow-blue-500/10 dark:shadow-gray-900/50">
-            <div className="p-4">
-              <div className="max-w-5xl mx-auto">
-                <MessageComposer
-                  ref={textareaRef}
-                  value={newMessage}
-                  onChange={handleTyping}
-                  onSend={handleSendMessage}
+            <div className="p-4 max-w-4xl mx-auto">
+              <MessageComposer
+                ref={textareaRef}
+                value={newMessage}
+                onChange={handleTyping}
+                onSend={handleSendMessage}
                   selectedLanguage={selectedInputLanguage}
                   onLanguageChange={setSelectedInputLanguage}
                   location={location}
                   isComposingEnabled={isComposingEnabled}
-                  placeholder={t('conversationSearch.shareMessage')}
-                  onKeyPress={handleKeyPress}
-                  choices={languageChoices}
-                  onAttachmentsChange={setAttachmentIds}
-                  token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
-                  userRole={user?.role}
-                />
-              </div>
+                selectedLanguage={selectedInputLanguage}
+                onLanguageChange={setSelectedInputLanguage}
+                location={location}
+                isComposingEnabled={isComposingEnabled}
+                placeholder={t('conversationSearch.shareMessage')}
+                onKeyPress={handleKeyPress}
+                choices={languageChoices}
+                onAttachmentsChange={setAttachmentIds}
+                token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
+                userRole={user?.role}
+              />
             </div>
           </div>
         </div>
 
-        {/* Sidebar droite - Desktop uniquement - FIXE avec scroll indépendant */}
+        {/* Sidebar droite - Desktop uniquement */}
         <div className="hidden xl:block w-80 fixed right-0 top-20 bottom-0 bg-white/60 dark:bg-gray-900/80 backdrop-blur-lg border-l border-blue-200/30 dark:border-gray-800/50 z-40">
-          <div 
-            className="h-full overflow-y-auto p-6 scroll-hidden"
-          >
+          <div className="h-full overflow-y-auto p-6 scroll-hidden">
             
             {/* Header avec langues globales */}
             <SidebarLanguageHeader 
