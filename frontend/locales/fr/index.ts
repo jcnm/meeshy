@@ -7,6 +7,16 @@ import modals from './modals.json';
 import bubbleStream from './bubbleStream.json';
 import websocket from './websocket.json';
 import reactions from './reactions.json';
+import editMessage from './editMessage.json';
+import deleteMessage from './deleteMessage.json';
+import languages from './languages.json';
+import conversations from './conversations.json';
+import settings from './settings.json';
+import dashboard from './dashboard.json';
+import profile from './profile.json';
+import joinPage from './joinPage.json';
+import chat from './chat.json';
+import attachments from './attachments.json';
 
 export default {
   common,
@@ -18,6 +28,16 @@ export default {
   bubbleStream,
   websocket,
   reactions,
+  editMessage,
+  deleteMessage,
+  languages,
+  conversations,
+  settings,
+  dashboard,
+  profile,
+  joinPage,
+  chat,
+  attachments,
 };
 
 export {
@@ -30,5 +50,15 @@ export {
   bubbleStream,
   websocket,
   reactions,
+  editMessage,
+  deleteMessage,
+  languages,
+  conversations,
+  settings,
+  dashboard,
+  profile,
+  joinPage,
+  chat,
+  attachments,
 };
 
