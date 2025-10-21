@@ -27,11 +27,6 @@ interface ReactionSelectionMessageViewProps {
 
 // Catégories d'emojis avec traductions
 const EMOJI_CATEGORIES = {
-  recent: {
-    key: 'recent',
-    icon: '🕐',
-    emojis: [] as string[], // Rempli dynamiquement
-  },
   smileys: {
     key: 'smileys',
     icon: '😀',
@@ -49,6 +44,16 @@ const EMOJI_CATEGORIES = {
       '😳', '🥺', '🥹', '😦', '😧', '😨', '😰', '😥',
       '😢', '😭', '😱', '😖', '😣', '😞', '😓', '😩',
       '😫', '🥱', '😤', '😡', '😠', '🤬', '😈', '👿'
+    ]
+  },
+  symbols: {
+    key: 'symbols',
+    icon: '❤️',
+    emojis: [
+      '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍',
+      '🤎', '❤️‍🔥', '❤️‍🩹', '💔', '❣️', '💕', '💞', '💓',
+      '💗', '💖', '💘', '💝', '💟', '☮️', '✝️', '☪️',
+      '🕉️', '☸️', '✡️', '🔯', '🕎', '☯️', '☦️', '🛐'
     ]
   },
   people: {
@@ -105,27 +110,6 @@ const EMOJI_CATEGORIES = {
       '📻', '🎙️', '🎚️', '🎛️', '🧭', '⏱️', '⏲️', '⏰'
     ]
   },
-  symbols: {
-    key: 'symbols',
-    icon: '❤️',
-    emojis: [
-      '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍',
-      '🤎', '❤️‍🔥', '❤️‍🩹', '💔', '❣️', '💕', '💞', '💓',
-      '💗', '💖', '💘', '💝', '💟', '☮️', '✝️', '☪️',
-      '🕉️', '☸️', '✡️', '🔯', '🕎', '☯️', '☦️', '🛐'
-    ]
-  },
-  flags: {
-    key: 'flags',
-    icon: '🏁',
-    emojis: [
-      '🏁', '🚩', '🎌', '🏴', '🏳️', '🏳️‍🌈', '🏳️‍⚧️', '🏴‍☠️',
-      '🇦🇫', '🇦🇽', '🇦🇱', '🇩🇿', '🇦🇸', '🇦🇩', '🇦🇴', '🇦🇮',
-      '🇦🇶', '🇦🇬', '🇦🇷', '🇦🇲', '🇦🇼', '🇦🇺', '🇦🇹', '🇦🇿',
-      '🇧🇸', '🇧🇭', '🇧🇩', '🇧🇧', '🇧🇾', '🇧🇪', '🇧🇿', '🇧🇯',
-      '🇧🇲', '🇧🇹', '🇧🇴', '🇧🇦', '🇧🇼', '🇧🇷', '🇮🇴', '🇻🇬'
-    ]
-  }
 };
 
 export const ReactionSelectionMessageView = memo(function ReactionSelectionMessageView({
@@ -141,7 +125,7 @@ export const ReactionSelectionMessageView = memo(function ReactionSelectionMessa
 }: ReactionSelectionMessageViewProps) {
   const { t } = useI18n('reactions');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('recent');
+  const [selectedCategory, setSelectedCategory] = useState('smileys');
   const [hoveredEmoji, setHoveredEmoji] = useState<string | null>(null);
 
   // Hook de réactions intégré
@@ -151,12 +135,10 @@ export const ReactionSelectionMessageView = memo(function ReactionSelectionMessa
     isAnonymous
   });
 
-  // Mettre à jour les emojis récents
+  // Utiliser les catégories sans recent
   const categories = useMemo(() => {
-    const cats = { ...EMOJI_CATEGORIES };
-    cats.recent.emojis = recentEmojis;
-    return cats;
-  }, [recentEmojis]);
+    return { ...EMOJI_CATEGORIES };
+  }, []);
 
   // Filtrer les emojis selon la recherche
   const filteredEmojis = useMemo(() => {
@@ -211,7 +193,8 @@ export const ReactionSelectionMessageView = memo(function ReactionSelectionMessa
       exit={{ opacity: 0, scale: 0.95, y: 10 }}
       transition={{ duration: 0.2, ease: 'easeInOut' }}
       className={cn(
-        "relative w-full max-w-md mx-auto rounded-lg border shadow-lg overflow-hidden",
+        "relative w-full mx-auto rounded-lg border shadow-lg overflow-hidden",
+        "max-w-[320px] sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl",
         isOwnMessage 
           ? "bg-gradient-to-br from-blue-400/95 to-blue-500/95 border-blue-400 backdrop-blur-sm" 
           : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
@@ -247,6 +230,65 @@ export const ReactionSelectionMessageView = memo(function ReactionSelectionMessa
         </Button>
       </div>
 
+      {/* Most Used Section - Déplacé avant la recherche */}
+      {recentEmojis.length > 0 && !searchQuery && (
+        <div className={cn(
+          "px-4 py-3 border-b",
+          isOwnMessage 
+            ? "border-white/20 bg-white/5" 
+            : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50"
+        )}>
+          <p className={cn(
+            "text-xs mb-2 font-medium",
+            isOwnMessage ? "text-white/80" : "text-gray-600 dark:text-gray-300"
+          )}>
+            {t('mostUsedReactions')}
+          </p>
+          <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-1 sm:gap-1.5">
+            {recentEmojis.slice(0, 12).map((emoji, index) => {
+              const isReacted = userReactions.includes(emoji);
+              return (
+                <motion.button
+                  key={`most-used-${emoji}-${index}`}
+                  whileHover={{ scale: 1.2 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={cn(
+                    "relative h-10 w-10 flex items-center justify-center rounded-lg text-xl transition-all duration-200",
+                    "focus:outline-none focus:ring-2 focus:ring-offset-1",
+                    isReacted
+                      ? isOwnMessage
+                        ? "bg-white/40 border-2 border-white/70 shadow-md focus:ring-white/50"
+                        : "bg-blue-100 border-2 border-blue-500 shadow-md dark:bg-blue-900/60 dark:border-blue-500 focus:ring-blue-400"
+                      : isOwnMessage 
+                        ? "hover:bg-white/20 border border-transparent" 
+                        : "hover:bg-gray-100 border border-transparent dark:hover:bg-gray-700"
+                  )}
+                  onClick={() => handleEmojiSelect(emoji)}
+                  aria-label={`${isReacted ? t('removeReaction') : t('addReaction')} ${emoji}`}
+                >
+                  <span className="leading-none select-none">{emoji}</span>
+                  {isReacted && (
+                    <motion.div
+                      initial={{ scale: 0, rotate: -180 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                      className={cn(
+                        "absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm",
+                        isOwnMessage 
+                          ? "bg-white text-blue-600" 
+                          : "bg-blue-600 text-white"
+                      )}
+                    >
+                      ✓
+                    </motion.div>
+                  )}
+                </motion.button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Search Bar */}
       <div className="px-4 py-3">
         <div className="relative">
@@ -273,31 +315,34 @@ export const ReactionSelectionMessageView = memo(function ReactionSelectionMessa
       {/* Category Tabs */}
       {!searchQuery && (
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="px-4">
-          <TabsList className={cn(
-            "grid w-full h-9 gap-1",
-            "grid-cols-8",
-            isOwnMessage 
-              ? "bg-white/10" 
-              : "bg-gray-100 dark:bg-gray-900"
-          )}>
-            {Object.entries(categories).map(([key, category]) => (
-              <TabsTrigger
-                key={key}
-                value={key}
-                className={cn(
-                  "text-lg px-1 py-1 h-8 min-w-[40px]",
-                  isOwnMessage 
-                    ? "data-[state=active]:bg-white/30 data-[state=active]:text-white hover:bg-white/20" 
-                    : "data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
-                )}
-                title={t(`category_${category.key}`)}
-              >
-                <span className="text-xl">{category.icon}</span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <div className="w-full overflow-x-auto scrollbar-hide">
+            <TabsList className={cn(
+              "flex h-8 gap-0 w-max min-w-full",
+              isOwnMessage 
+                ? "bg-white/10" 
+                : "bg-gray-100 dark:bg-gray-900"
+            )}>
+              {Object.entries(categories).map(([key, category]) => (
+                <TabsTrigger
+                  key={key}
+                  value={key}
+                  className={cn(
+                    "text-xs px-1 py-0.5 h-7 min-w-[32px] data-[state=active]:text-xs flex-shrink-0",
+                    "transition-colors duration-200 flex items-center justify-center",
+                    isOwnMessage 
+                      ? "data-[state=active]:bg-white/30 data-[state=active]:text-white hover:bg-white/20" 
+                      : "data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
+                  )}
+                  title={t(`category_${category.key}`)}
+                >
+                  <span className="text-sm">{category.icon}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
         </Tabs>
       )}
+
 
       {/* Emoji Grid */}
       <ScrollArea className="h-72 px-4 py-3">
@@ -387,42 +432,6 @@ export const ReactionSelectionMessageView = memo(function ReactionSelectionMessa
           </div>
         )}
       </ScrollArea>
-
-      {/* Most Used Section */}
-      {recentEmojis.length > 0 && (
-        <div className={cn(
-          "px-4 py-2 border-t",
-          isOwnMessage 
-            ? "border-white/20 bg-white/5" 
-            : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50"
-        )}>
-          <p className={cn(
-            "text-xs mb-1",
-            isOwnMessage ? "text-white/70" : "text-gray-500 dark:text-gray-400"
-          )}>
-            {t('mostUsed')}:
-          </p>
-          <div className="flex gap-1">
-            {recentEmojis.slice(0, 8).map((emoji, index) => (
-              <motion.button
-                key={`recent-${emoji}-${index}`}
-                whileHover={{ scale: 1.2 }}
-                whileTap={{ scale: 0.95 }}
-                className={cn(
-                  "h-8 w-8 flex items-center justify-center rounded text-xl transition-colors",
-                  isOwnMessage 
-                    ? "hover:bg-white/20" 
-                    : "hover:bg-gray-100 dark:hover:bg-gray-700"
-                )}
-                onClick={() => handleEmojiSelect(emoji)}
-                aria-label={`Select ${emoji}`}
-              >
-                {emoji}
-              </motion.button>
-            ))}
-          </div>
-        </div>
-      )}
     </motion.div>
   );
 });

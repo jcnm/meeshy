@@ -255,6 +255,39 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
     // Sinon, le popover normal s'ouvre
   };
 
+  const handleCopyMessage = useCallback(async () => {
+    try {
+      // Générer l'URL du message selon le contexte actuel
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+      
+      let messageUrl: string;
+      
+      if (conversationId) {
+        // Si on est déjà dans /chat/, utiliser /chat/, sinon utiliser /conversations/
+        if (currentPath.startsWith('/chat/')) {
+          messageUrl = `${baseUrl}/chat/${conversationId}#message-${message.id}`;
+        } else {
+          messageUrl = `${baseUrl}/conversations/${conversationId}#message-${message.id}`;
+        }
+      } else {
+        messageUrl = `${baseUrl}/message/${message.id}`;
+      }
+      
+      // Contenu à copier avec le lien
+      const contentToCopy = `${displayContent}\n\n${messageUrl}`;
+      
+      // Copier dans le presse-papiers
+      await navigator.clipboard.writeText(contentToCopy);
+      
+      // Afficher une notification de succès
+      toast.success(t('messageCopied'));
+    } catch (error) {
+      console.error('Failed to copy message:', error);
+      toast.error(t('copyFailed'));
+    }
+  }, [displayContent, conversationId, message.id, t]);
+
   // Logique de permissions (copiée)
   const isOwnMessage = currentUser && (
     message.senderId === currentUser.id || 
@@ -769,6 +802,29 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>{t('addReaction')}</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  {/* Bouton copier */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleCopyMessage}
+                        className={cn(
+                          "h-7 w-7 p-0 rounded-full transition-colors",
+                          isOwnMessage 
+                            ? "text-white/70 hover:text-white hover:bg-white/20" 
+                            : "text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
+                        )}
+                        aria-label={t('copyMessage')}
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{t('copyMessage')}</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
