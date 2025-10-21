@@ -40,7 +40,7 @@ interface ConversationMessagesProps {
   reverseOrder?: boolean; // true = récent en haut (BubbleStream), false = ancien en haut (Conversations)
   scrollDirection?: 'up' | 'down'; // Direction du scroll pour charger plus: 'up' = haut (défaut), 'down' = bas
   scrollButtonDirection?: 'up' | 'down'; // Direction du bouton scroll: 'up' = ArrowUp (BubbleStream), 'down' = ArrowDown (Conversations)
-  scrollContainerRef?: React.RefObject<HTMLDivElement>; // Ref externe du conteneur de scroll (pour BubbleStream)
+  scrollContainerRef?: React.RefObject<HTMLDivElement | null>; // Ref externe du conteneur de scroll (pour BubbleStream)
 }
 
 const ConversationMessagesComponent = memo(function ConversationMessages({
