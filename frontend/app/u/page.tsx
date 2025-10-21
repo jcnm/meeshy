@@ -23,11 +23,27 @@ import { User } from '@/types';
 import { useUser } from '@/stores';
 import { getUserInitials } from '@/utils/user';
 import { AuthGuard } from '@/components/auth/AuthGuard';
+import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 
 function ProfilePageContent() {
   const router = useRouter();
   const user = useUser();
   const [isLoading, setIsLoading] = useState(false);
+  const [userOnlineStatus, setUserOnlineStatus] = useState(user?.isOnline);
+
+  // Hook pour écouter les changements de statut en temps réel
+  const { } = useSocketIOMessaging({
+    onUserStatus: (statusUserId: string, username: string, isOnline: boolean) => {
+      if (statusUserId === user?.id) {
+        setUserOnlineStatus(isOnline);
+      }
+    }
+  });
+
+  // Synchroniser le statut initial avec l'utilisateur du store
+  useEffect(() => {
+    setUserOnlineStatus(user?.isOnline);
+  }, [user?.isOnline]);
 
 
   const formatDate = (dateString: string) => {
@@ -124,9 +140,9 @@ function ProfilePageContent() {
                 </div>
 
                 <div className="flex items-center space-x-1 mb-4">
-                  <div className={`w-3 h-3 rounded-full ${user.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
+                  <div className={`w-3 h-3 rounded-full ${userOnlineStatus ? 'bg-green-500' : 'bg-gray-400'}`} />
                   <span className="text-sm text-gray-600">
-                    {user.isOnline ? 'En ligne' : 'Hors ligne'}
+                    {userOnlineStatus ? 'En ligne' : 'Hors ligne'}
                   </span>
                 </div>
 
