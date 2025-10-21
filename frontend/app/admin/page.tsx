@@ -36,6 +36,10 @@ interface AdminStats {
   inactiveAnonymousUsers: number;
   totalShareLinks: number;
   activeShareLinks: number;
+  totalTranslations?: number;
+  totalReports?: number;
+  totalInvitations?: number;
+  topLanguages?: Array<{ language: string; count: number }>;
   usersByRole: Record<string, number>;
   messagesByType: Record<string, number>;
 }
@@ -55,6 +59,12 @@ interface DashboardData {
     newMessages: number;
     newAnonymousUsers: number;
   };
+  userInfo?: {
+    id: string;
+    username: string;
+    role: string;
+    [key: string]: any;
+  };
   userPermissions: any;
   timestamp: string;
 }
@@ -62,14 +72,14 @@ interface DashboardData {
 const AdminDashboard: React.FC = () => {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [dashboardData, setDashboardData] = useState<AdminDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
   const loadAdminStats = async () => {
     try {
       const response = await adminService.getDashboardStats();
-      if (response.data && response.data.data) {
-        setDashboardData(response.data.data);
+      if (response.data) {
+        setDashboardData(response.data);
       }
     } catch (error) {
       console.error('Erreur lors du chargement des statistiques admin:', error);
@@ -386,7 +396,7 @@ const AdminDashboard: React.FC = () => {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-900">Langues les plus utilisées</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {stats.topLanguages.slice(0, 6).map((lang, index) => (
+              {stats.topLanguages.slice(0, 6).map((lang: { language: string; count: number }, index: number) => (
                 <Card key={lang.language}>
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
@@ -401,8 +411,8 @@ const AdminDashboard: React.FC = () => {
                       </div>
                     </div>
                     <div className="mt-2">
-                      <Progress 
-                        value={(lang.count / stats.topLanguages[0].count) * 100} 
+                      <Progress
+                        value={(lang.count / (stats.topLanguages?.[0]?.count || 1)) * 100}
                         className="h-2"
                       />
                     </div>
