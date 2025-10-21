@@ -1928,8 +1928,35 @@ export class MeeshySocketIOManager {
     callback?: (response: SocketIOResponse<any>) => void
   ): Promise<void> {
     try {
+      console.log('🎯 [_handleReactionAdd] Called with:', {
+        socketId: socket.id,
+        messageId: data.messageId,
+        emoji: data.emoji
+      });
+
       const userId = this.socketToUser.get(socket.id);
+      console.log('🔍 [_handleReactionAdd] User lookup:', {
+        userId,
+        hasSocketMapping: this.socketToUser.has(socket.id),
+        socketToUserSize: this.socketToUser.size
+      });
+
       if (!userId) {
+        console.error('❌ [_handleReactionAdd] No userId found for socket:', socket.id);
+        console.log('📋 [_handleReactionAdd] Current socketToUser mappings:', 
+          Array.from(this.socketToUser.entries()).map(([sid, uid]) => ({
+            socketId: sid.substring(0, 8) + '...',
+            userId: uid.substring(0, 8) + '...'
+          }))
+        );
+        console.log('📋 [_handleReactionAdd] Current connectedUsers:', 
+          Array.from(this.connectedUsers.entries()).map(([uid, user]) => ({
+            userId: uid.substring(0, 8) + '...',
+            isAnonymous: user.isAnonymous,
+            hasSessionToken: !!user.sessionToken
+          }))
+        );
+        
         const errorResponse: SocketIOResponse<any> = {
           success: false,
           error: 'User not authenticated'
@@ -1941,6 +1968,13 @@ export class MeeshySocketIOManager {
       const user = this.connectedUsers.get(userId);
       const isAnonymous = user?.isAnonymous || false;
       const sessionToken = user?.sessionToken;
+
+      console.log('👤 [_handleReactionAdd] User info:', {
+        userId: userId.substring(0, 8) + '...',
+        isAnonymous,
+        hasSessionToken: !!sessionToken,
+        sessionTokenPreview: sessionToken?.substring(0, 8) + '...'
+      });
 
       // Importer le ReactionService
       const { ReactionService } = await import('../services/ReactionService.js');
