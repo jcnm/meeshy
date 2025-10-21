@@ -289,12 +289,17 @@ export function RegisterForm({
         
         {/* Liens de navigation */}
         <div className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
-          <span>Vous avez déjà un compte ? </span>
+          <span>{t('register.hasAccount')} </span>
           <a 
             href="/login" 
             className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium underline"
           >
-            Se connecter
+            {t('register.loginLink')}
+          </a> -  <a 
+            href="/signin" 
+            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium underline"
+          >
+            {t('login.registerLink')}
           </a>
         </div>
       </div>
