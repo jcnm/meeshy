@@ -1324,6 +1324,11 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           display: none;
         }
 
+        /* Fond gradient bleu pour toutes les tailles d'écran */
+        .mobile-fullscreen {
+          background: linear-gradient(to-br, #eff6ff, #ffffff, #e0e7ff) !important;
+        }
+
         /* Styles pour mobile */
         @media (max-width: 768px) {
           .mobile-fullscreen {
@@ -1336,7 +1341,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
             height: 100vh !important;
             height: 100dvh !important; /* Dynamic viewport height pour mobile */
             z-index: 40 !important;
-            background: linear-gradient(to-br, #eff6ff, #ffffff, #e0e7ff) !important;
             overflow: visible !important; /* Changed to visible for popovers */
           }
           
