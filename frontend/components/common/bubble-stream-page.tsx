@@ -23,8 +23,7 @@ import {
   TrendingUp, 
   ChevronUp,
   Loader2,
-  Share,
-  ArrowUp
+  Share
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -205,8 +204,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
   // État pour la détection mobile
   const [isMobile, setIsMobile] = useState(false);
-  // État pour le bouton de scroll vers le haut
-  const [showScrollButton, setShowScrollButton] = useState(false);
   
   // Debug: log quand attachmentIds change
   useEffect(() => {
@@ -219,22 +216,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-  
-  // Tracking du scroll pour afficher/masquer le bouton de scroll vers le haut
-  useEffect(() => {
-    const container = messagesContainerRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      // En mode BubbleStream (scrollDirection='down'), les messages récents sont EN HAUT
-      // Afficher le bouton si l'utilisateur a scrollé vers le bas (scrollTop > 200)
-      const shouldShowButton = container.scrollTop > 200;
-      setShowScrollButton(shouldShowButton);
-    };
-
-    container.addEventListener('scroll', handleScroll);
-    return () => container.removeEventListener('scroll', handleScroll);
   }, []);
   
   // État pour la galerie d'images
@@ -370,16 +351,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       // TODO: Implémenter le chargement des messages précédents si nécessaire
     }
   }, [tCommon]);
-
-  // Fonction pour scroller vers le haut (vers les messages les plus récents)
-  const scrollToTop = useCallback(() => {
-    if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    }
-  }, []);
 
   // Logique de permissions pour la modération
   const getUserModerationRole = useCallback(() => {
@@ -1387,8 +1358,8 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         }
       `}</style>
       
-      {/* Layout principal simplifié avec fond bleu gradient */}
-      <div className="h-full flex flex-col bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+      {/* Layout principal - fond gradient géré par CSS mobile-fullscreen */}
+      <div className="h-full flex flex-col mobile-fullscreen">
         
         {/* Indicateur dynamique - Frappe prioritaire sur connexion */}
         <div className="fixed top-16 left-0 right-0 xl:right-80 z-[40] px-4 sm:px-6 lg:px-8 pt-4 pb-2 bg-gradient-to-b from-blue-50 to-transparent pointer-events-none realtime-indicator hidden md:block">
@@ -1484,7 +1455,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
               t={t}
               reverseOrder={false}
               scrollDirection="down"
-              externalScrollContainer={true}
+              scrollButtonDirection="up"
             />
 
             {/* Indicateur si plus de messages disponibles */}
@@ -1642,25 +1613,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           </div>
         </div>
       </div>
-
-      {/* Bouton flottant pour scroller vers le haut (vers les messages récents) */}
-      {showScrollButton && !isLoadingMessages && messages.length > 0 && (
-        <Button
-          onClick={scrollToTop}
-          className={cn(
-            "fixed bottom-32 right-6 xl:right-[22rem] z-50",
-            "rounded-full w-12 h-12 p-0",
-            "shadow-2xl hover:shadow-3xl",
-            "bg-primary hover:bg-primary/90",
-            "transition-all duration-300 ease-in-out",
-            "animate-in slide-in-from-bottom-5"
-          )}
-          aria-label="Scroll to top"
-          title="Remonter vers les messages récents"
-        >
-          <ArrowUp className="h-5 w-5 text-primary-foreground" />
-        </Button>
-      )}
 
       {/* Galerie d'images */}
       <AttachmentGallery
