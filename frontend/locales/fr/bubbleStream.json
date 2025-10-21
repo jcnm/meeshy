@@ -43,6 +43,8 @@
     "copied": "Copié dans le presse-papiers",
     "copyFailed": "Échec de la copie",
     "copyMessage": "Copier le message",
+    "copyLink": "Copier le lien",
+    "linkCopied": "Lien copié !",
     "messageTranslatedTo": "Message traduit en {language}",
     "justNow": "à l'instant",
     "minutesAgo": "il y a {minutes}min",
@@ -68,12 +70,25 @@
     "clickToViewMessage": "Cliquez pour voir le message",
     "translationOptions": "Options de traduction",
     "copyShowingContent": "Copier le contenu affiché",
+    "showOriginal": "Afficher le texte original",
+    "showInUserLanguage": "Afficher dans votre langue",
+    "translate": "Traduire",
     "translation": {
       "showOriginal": "Afficher l'original",
       "showTranslation": "Afficher la traduction",
+      "showInUserLanguage": "Afficher dans votre langue",
       "translating": "Traduction en cours...",
       "translationFailed": "Échec de la traduction",
-      "improveTranslationQuality": "Améliorer la qualité de traduction"
+      "improveTranslationQuality": "Améliorer la qualité de traduction",
+      "basic": {
+        "title": "Basique"
+      },
+      "standard": {
+        "title": "Standard"
+      },
+      "premium": {
+        "title": "Premium"
+      }
     }
   }
 }

@@ -993,24 +993,6 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
           {/* Si attachments seuls (pas de texte) - Réactions simples */}
           {(!message.content || !message.content.trim()) && message.attachments && message.attachments.length > 0 && (
             <div className="relative">
-              {/* Message Reactions - Affichées AVANT les actions, au niveau des attachments */}
-              <div 
-                className={cn(
-                  "flex mb-2 max-w-[85%] sm:max-w-[75%] md:max-w-[65%]",
-                  isOwnMessage ? "ml-auto justify-end" : "mr-auto justify-start"
-                )}
-                style={{ pointerEvents: 'auto' }}
-              >
-                <MessageReactions
-                  messageId={message.id}
-                  conversationId={conversationId || message.conversationId}
-                  currentUserId={currentUser?.id || ''}
-                  currentAnonymousUserId={currentAnonymousUserId}
-                  isAnonymous={isAnonymous}
-                  showAddButton={false}
-                />
-              </div>
-
               {/* Actions simples pour attachments seuls */}
               <div className={cn(
                 "flex items-center gap-1.5 max-w-[85%] sm:max-w-[75%] md:max-w-[65%]",
@@ -1091,6 +1073,24 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                     </TooltipContent>
                   </Tooltip>
                 )}
+              </div>
+
+              {/* Message Reactions - Par-dessus les attachments (comme pour le texte) */}
+              <div 
+                className={cn(
+                  "absolute -bottom-3 z-[9999]",
+                  isOwnMessage ? "right-2" : "left-2"
+                )}
+                style={{ pointerEvents: 'auto' }}
+              >
+                <MessageReactions
+                  messageId={message.id}
+                  conversationId={conversationId || message.conversationId}
+                  currentUserId={currentUser?.id || ''}
+                  currentAnonymousUserId={currentAnonymousUserId}
+                  isAnonymous={isAnonymous}
+                  showAddButton={false}
+                />
               </div>
             </div>
           )}
