@@ -436,7 +436,7 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
                           <SelectValue placeholder={t('register.systemLanguageLabel')} />
                         </SelectTrigger>
                         <SelectContent>
-                          {SUPPORTED_LANGUAGES.filter(lang => lang.code !== 'auto').map((lang) => (
+                          {SUPPORTED_LANGUAGES.map((lang) => (
                             <SelectItem key={lang.code} value={lang.code}>
                               {lang.flag} {lang.name}
                             </SelectItem>
@@ -463,7 +463,7 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
                           <SelectValue placeholder={t('register.regionalLanguageLabel')} />
                         </SelectTrigger>
                         <SelectContent>
-                          {SUPPORTED_LANGUAGES.filter(lang => lang.code !== 'auto').map((lang) => (
+                          {SUPPORTED_LANGUAGES.map((lang) => (
                             <SelectItem key={lang.code} value={lang.code}>
                               {lang.flag} {lang.name}
                             </SelectItem>

@@ -125,9 +125,20 @@ export function RegisterForm({
           if (onSuccess) {
             onSuccess(data.data.user, data.data.token);
           } else {
-            // Redirection automatique après inscription réussie
+            // Comportement par défaut : Recharger la page si on est sur "/" sinon rediriger
+            const currentPath = window.location.pathname;
+            
+            // Petit délai pour permettre à l'état d'être mis à jour
             setTimeout(() => {
-              router.push('/dashboard');
+              if (currentPath === '/') {
+                // Sur la page d'accueil, recharger la page pour afficher la conversation meeshy
+                console.log('[REGISTER_FORM] Sur la page d\'accueil, rechargement de la page');
+                window.location.reload();
+              } else {
+                // Sur les autres pages, redirection normale vers le dashboard
+                console.log('[REGISTER_FORM] Redirection vers dashboard');
+                router.push('/dashboard');
+              }
             }, 100);
           }
         } else {
@@ -249,7 +260,7 @@ export function RegisterForm({
               <SelectValue placeholder={t('register.systemLanguageLabel')} />
             </SelectTrigger>
             <SelectContent>
-              {SUPPORTED_LANGUAGES.filter(lang => lang.code !== 'auto').map((lang) => (
+              {SUPPORTED_LANGUAGES.map((lang) => (
                 <SelectItem key={lang.code} value={lang.code}>
                   {lang.flag} {lang.name}
                 </SelectItem>
@@ -271,7 +282,7 @@ export function RegisterForm({
               <SelectValue placeholder={t('register.regionalLanguageLabel')} />
             </SelectTrigger>
             <SelectContent>
-              {SUPPORTED_LANGUAGES.filter(lang => lang.code !== 'auto').map((lang) => (
+              {SUPPORTED_LANGUAGES.map((lang) => (
                 <SelectItem key={lang.code} value={lang.code}>
                   {lang.flag} {lang.name}
                 </SelectItem>

@@ -244,7 +244,7 @@ export function SettingsLayout({ currentUser, initialTab = 'profile' }: Settings
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {SUPPORTED_LANGUAGES.filter(lang => lang.code !== 'auto').map((lang: LanguageCode) => (
+                          {SUPPORTED_LANGUAGES.map((lang: LanguageCode) => (
                             <SelectItem key={lang.code} value={lang.code}>
                               {lang.flag} {lang.name}
                             </SelectItem>
@@ -263,7 +263,7 @@ export function SettingsLayout({ currentUser, initialTab = 'profile' }: Settings
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {SUPPORTED_LANGUAGES.filter(lang => lang.code !== 'auto').map((lang: LanguageCode) => (
+                          {SUPPORTED_LANGUAGES.map((lang: LanguageCode) => (
                             <SelectItem key={lang.code} value={lang.code}>
                               {lang.flag} {lang.name}
                             </SelectItem>

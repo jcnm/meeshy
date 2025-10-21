@@ -148,7 +148,7 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {SUPPORTED_LANGUAGES.filter(lang => lang.code !== 'auto').map((lang) => (
+                  {SUPPORTED_LANGUAGES.map((lang) => (
                     <SelectItem key={lang.code} value={lang.code}>
                       <span className="flex items-center gap-2">
                         <span>{lang.flag}</span>
@@ -173,7 +173,7 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {SUPPORTED_LANGUAGES.filter(lang => lang.code !== 'auto').map((lang) => (
+                  {SUPPORTED_LANGUAGES.map((lang) => (
                     <SelectItem key={lang.code} value={lang.code}>
                       <span className="flex items-center gap-2">
                         <span>{lang.flag}</span>
