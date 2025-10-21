@@ -22,7 +22,8 @@ import {
   Sun,
   Moon,
   Monitor,
-  ChevronDown
+  ChevronDown,
+  LogOut
 } from 'lucide-react';
 import { AuthMode } from '@/types';
 import { useAuth } from '@/hooks/use-auth';
@@ -48,13 +49,26 @@ export function Header({
 }: HeaderProps) {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user, isAnonymous } = useAuth();
+  const { user, isAnonymous, logout, leaveAnonymousSession } = useAuth();
   const { theme, setTheme } = useAppStore();
   const { t } = useI18n('header');
 
   const handleAuthClick = (newMode: AuthMode) => {
     if (onAuthModeChange) {
       onAuthModeChange(newMode);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      if (isAnonymous) {
+        await leaveAnonymousSession();
+      } else {
+        await logout();
+      }
+      router.push('/');
+    } catch (error) {
+      console.error('Logout error:', error);
     }
   };
 
@@ -132,6 +146,10 @@ export function Header({
                           <DropdownMenuItem onClick={() => router.push('/signin')}>
                             <UserPlus className="h-4 w-4 mr-2" />
                             {t('signUp')}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={handleLogout} className="text-red-600 dark:text-red-400">
+                            <LogOut className="h-4 w-4 mr-2" />
+                            {t('logout')}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                         </>
@@ -289,6 +307,17 @@ export function Header({
                           >
                             <UserPlus className="h-4 w-4 mr-2" />
                             {t('signUp')}
+                          </Button>
+                          <Button 
+                            variant="ghost"
+                            className="w-full justify-start text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950"
+                            onClick={() => {
+                              handleLogout();
+                              setIsMobileMenuOpen(false);
+                            }}
+                          >
+                            <LogOut className="h-4 w-4 mr-2" />
+                            {t('logout')}
                           </Button>
                         </>
                       )}

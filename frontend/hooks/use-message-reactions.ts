@@ -110,6 +110,13 @@ export function useMessageReactions({
   const addReaction = useCallback(async (emoji: string): Promise<boolean> => {
     if (!enabled || !messageId) return false;
 
+    console.log('🎯 [useMessageReactions] addReaction called:', {
+      emoji,
+      messageId,
+      currentUserId,
+      isAnonymous,
+      enabled
+    });
 
     // CORRECTION CRITIQUE: Ne PAS ajouter si déjà présente dans userReactions
     // Évite le double comptage avec l'événement WebSocket
@@ -157,18 +164,28 @@ export function useMessageReactions({
       // Envoyer au serveur
       const socket = meeshySocketIOService.getSocket();
       if (!socket) {
+        console.error('❌ [useMessageReactions] Socket not connected');
         throw new Error('Socket not connected');
       }
+
+      console.log('📤 [useMessageReactions] Sending REACTION_ADD to server:', {
+        messageId,
+        emoji,
+        socketConnected: !!socket.connected
+      });
 
       return new Promise((resolve) => {
         socket.emit(
           CLIENT_EVENTS.REACTION_ADD,
           { messageId, emoji },
           (response: any) => {
+            console.log('📥 [useMessageReactions] Server response:', response);
+            
             if (response.success) {
               resolve(true);
             } else {
               // Revert optimistic update
+              console.error('❌ [useMessageReactions] Server returned error:', response.error);
               setError(response.error || 'Failed to add reaction');
               refreshReactions();
               resolve(false);
@@ -177,7 +194,7 @@ export function useMessageReactions({
         );
       });
     } catch (err) {
-      console.error('Error adding reaction:', err);
+      console.error('❌ [useMessageReactions] Error adding reaction:', err);
       setError(err instanceof Error ? err.message : 'Failed to add reaction');
       refreshReactions(); // Revert
       return false;
@@ -288,7 +305,8 @@ export function useMessageReactions({
     if (enabled && messageId) {
       // Attendre un peu que la connexion WebSocket soit établie
       const timer = setTimeout(() => {
-        if (meeshySocketIOService.socket?.connected) {
+        const socket = meeshySocketIOService.getSocket();
+        if (socket?.connected) {
           refreshReactions();
         } else {
           setTimeout(() => refreshReactions(), 2000);
