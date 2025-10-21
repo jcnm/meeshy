@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,6 +28,7 @@ export function RegisterForm({
   onJoinSuccess,
   formPrefix = 'register'
 }: RegisterFormProps) {
+  const router = useRouter();
   const { login } = useAuth();
   const { t } = useI18n('auth');
   const [formData, setFormData] = useState({
@@ -122,6 +124,11 @@ export function RegisterForm({
           
           if (onSuccess) {
             onSuccess(data.data.user, data.data.token);
+          } else {
+            // Redirection automatique après inscription réussie
+            setTimeout(() => {
+              router.push('/dashboard');
+            }, 100);
           }
         } else {
           throw new Error('Invalid response data');
