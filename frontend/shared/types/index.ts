@@ -134,6 +134,8 @@ export interface BubbleTranslation {
   status: 'pending' | 'translating' | 'completed';
   timestamp: Date;
   confidence: number; // 0-1 pour la qualité de traduction
+  translationModel?: 'basic' | 'medium' | 'premium'; // Modèle utilisé pour cette traduction
+  cached?: boolean; // Indique si la traduction vient du cache
 }
 
 /**
