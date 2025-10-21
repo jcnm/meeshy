@@ -1123,15 +1123,14 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
               {/* Zone de composition - Desktop - Position relative dans le flux */}
               <div className="flex-shrink-0 bg-white/98 dark:bg-gray-950/98 backdrop-blur-xl border-t-2 border-gray-200 dark:border-gray-700 shadow-2xl p-6">
-                <div className="max-w-5xl mx-auto">
-                  {/* Bannière des messages en échec */}
-                  {selectedConversation?.id && (
-                    <FailedMessageBanner
-                      conversationId={selectedConversation.id}
-                      onRetry={handleRetryFailedMessage}
-                      onRestore={handleRestoreFailedMessage}
-                    />
-                  )}
+                {/* Bannière des messages en échec */}
+                {selectedConversation?.id && (
+                  <FailedMessageBanner
+                    conversationId={selectedConversation.id}
+                    onRetry={handleRetryFailedMessage}
+                    onRestore={handleRestoreFailedMessage}
+                  />
+                )}
                   
                   <MessageComposer
                     ref={messageComposerRef}
@@ -1147,7 +1146,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                     token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
                     userRole={user.role}
                   />
-                </div>
               </div>
             </div>
           ) : (
