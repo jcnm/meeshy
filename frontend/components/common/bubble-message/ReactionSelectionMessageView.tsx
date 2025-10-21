@@ -210,7 +210,7 @@ export const ReactionSelectionMessageView = memo(function ReactionSelectionMessa
       )}>
         <h3 className={cn(
           "text-sm font-semibold",
-          isOwnMessage ? "text-white" : "text-gray-800 dark:text-gray-100"
+          isOwnMessage ? "text-blue-900" : "text-gray-800 dark:text-gray-100"
         )}>
           {t('chooseReaction')}
         </h3>
@@ -221,7 +221,7 @@ export const ReactionSelectionMessageView = memo(function ReactionSelectionMessa
           className={cn(
             "h-6 w-6 p-0 rounded-full",
             isOwnMessage 
-              ? "text-white/70 hover:text-white hover:bg-white/20" 
+              ? "text-blue-900 hover:text-blue-950 hover:bg-blue-900/20" 
               : "text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
           )}
           aria-label={t('close')}
@@ -240,7 +240,7 @@ export const ReactionSelectionMessageView = memo(function ReactionSelectionMessa
         )}>
           <p className={cn(
             "text-xs mb-2 font-medium",
-            isOwnMessage ? "text-white/80" : "text-gray-600 dark:text-gray-300"
+            isOwnMessage ? "text-blue-900" : "text-gray-600 dark:text-gray-300"
           )}>
             {t('mostUsedReactions')}
           </p>
@@ -294,7 +294,7 @@ export const ReactionSelectionMessageView = memo(function ReactionSelectionMessa
         <div className="relative">
           <Search className={cn(
             "absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4",
-            isOwnMessage ? "text-white/50" : "text-gray-400"
+            isOwnMessage ? "text-gray-500" : "text-gray-400"
           )} />
           <Input
             type="text"
@@ -304,7 +304,7 @@ export const ReactionSelectionMessageView = memo(function ReactionSelectionMessa
             className={cn(
               "pl-10 pr-4 h-9 text-sm",
               isOwnMessage 
-                ? "bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50" 
+                ? "bg-white border-blue-300 text-gray-900 placeholder:text-gray-500 focus:bg-white focus:border-blue-500" 
                 : "bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600"
             )}
             autoFocus
@@ -349,7 +349,7 @@ export const ReactionSelectionMessageView = memo(function ReactionSelectionMessa
         {filteredEmojis.length === 0 ? (
           <div className={cn(
             "flex flex-col items-center justify-center h-full py-12 text-center",
-            isOwnMessage ? "text-white/70" : "text-gray-500 dark:text-gray-400"
+            isOwnMessage ? "text-blue-900" : "text-gray-500 dark:text-gray-400"
           )}>
             <Search className="h-12 w-12 mb-3 opacity-50" />
             <p className="text-sm font-medium">{t('noEmojisFound')}</p>
@@ -361,7 +361,7 @@ export const ReactionSelectionMessageView = memo(function ReactionSelectionMessa
               className={cn(
                 "mt-4",
                 isOwnMessage 
-                  ? "text-white/80 hover:text-white hover:bg-white/20" 
+                  ? "text-blue-900 hover:text-blue-950 hover:bg-blue-900/20" 
                   : "text-gray-600 hover:text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200"
               )}
             >
