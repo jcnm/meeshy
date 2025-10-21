@@ -145,13 +145,18 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       
       {/* Liens de navigation */}
       <div className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
-        <span>Vous n'avez pas de compte ? </span>
+        <span>{t('login.noAccount')} </span>
         <a 
           href="/signin" 
           className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium underline"
         >
-          S'inscrire
-        </a>
+          {t('login.registerLink')}
+        </a> — <a 
+            href="/login" 
+            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium underline"
+          >
+            {t('register.loginLink')}
+          </a>
       </div>
     </form>
   );
