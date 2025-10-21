@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,6 +16,7 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ onSuccess }: LoginFormProps) {
+  const router = useRouter();
   const { login } = useAuth();
   const { t } = useI18n('auth');
   const [formData, setFormData] = useState({
@@ -89,6 +91,22 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         // Call optional success callback if provided
         if (onSuccess) {
           onSuccess(userData, token);
+        } else {
+          // Redirection automatique après connexion réussie
+          // Vérifier s'il y a une URL de retour dans les paramètres
+          const urlParams = new URLSearchParams(window.location.search);
+          const returnUrl = urlParams.get('returnUrl');
+          
+          // Petit délai pour permettre à l'état d'être mis à jour
+          setTimeout(() => {
+            if (returnUrl) {
+              console.log('[LOGIN_FORM] Redirection vers returnUrl:', returnUrl);
+              router.push(returnUrl);
+            } else {
+              console.log('[LOGIN_FORM] Redirection vers dashboard');
+              router.push('/dashboard');
+            }
+          }, 100);
         }
       } else {
         throw new Error('Données utilisateur ou token manquantes');
