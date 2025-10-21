@@ -64,7 +64,7 @@ export function ConversationDetailsSidebar({
   
   // États pour la gestion des conversations
   const [isEditingName, setIsEditingName] = useState(false);
-  const [conversationName, setConversationName] = useState(conversation.title || conversation.name || '');
+  const [conversationName, setConversationName] = useState(conversation.title || '');
   const [isLoading, setIsLoading] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
@@ -152,7 +152,7 @@ export function ConversationDetailsSidebar({
              otherParticipant.user.username;
     }
 
-    return conv.name || 'Conversation';
+    return conv.title || 'Conversation';
   };
 
   // Fonctions pour la gestion des conversations
@@ -166,7 +166,7 @@ export function ConversationDetailsSidebar({
         return;
       }
       
-      if (conversationName.trim() === (conversation.title || conversation.name || '')) {
+      if (conversationName.trim() === (conversation.title || '')) {
         // Pas de changement, juste fermer l'édition
         setIsEditingName(false);
         return;
@@ -197,7 +197,7 @@ export function ConversationDetailsSidebar({
       toast.error(errorMessage);
       
       // Restaurer le nom original en cas d'erreur
-      setConversationName(conversation.title || conversation.name || '');
+      setConversationName(conversation.title || '');
     } finally {
       setIsLoading(false);
     }
@@ -285,7 +285,7 @@ export function ConversationDetailsSidebar({
                           handleSaveName();
                         } else if (e.key === 'Escape') {
                           setIsEditingName(false);
-                          setConversationName(conversation.title || conversation.name || '');
+                          setConversationName(conversation.title || '');
                         }
                       }}
                       onBlur={handleSaveName}
@@ -303,7 +303,7 @@ export function ConversationDetailsSidebar({
                       variant="ghost"
                       onClick={() => {
                         setIsEditingName(false);
-                        setConversationName(conversation.title || conversation.name || '');
+                        setConversationName(conversation.title || '');
                       }}
                       className="h-8 px-2"
                     >
@@ -316,7 +316,7 @@ export function ConversationDetailsSidebar({
                       className="font-semibold text-lg cursor-pointer hover:text-primary transition-colors"
                       onClick={() => {
                         setIsEditingName(true);
-                        setConversationName(conversation.title || conversation.name || getConversationDisplayName(conversation));
+                        setConversationName(conversation.title || getConversationDisplayName(conversation));
                       }}
                       title={t('conversationDetails.clickToEdit')}
                     >
@@ -327,7 +327,7 @@ export function ConversationDetailsSidebar({
                       variant="ghost"
                       onClick={() => {
                         setIsEditingName(true);
-                        setConversationName(conversation.title || conversation.name || getConversationDisplayName(conversation));
+                        setConversationName(conversation.title || getConversationDisplayName(conversation));
                       }}
                       className="h-6 w-6 p-0"
                       title={t('conversationDetails.editName')}

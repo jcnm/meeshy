@@ -291,16 +291,16 @@ function DashboardPageContent() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <DashboardLayout className="!bg-none !bg-transparent !h-auto">
         {/* Greeting and quick actions */}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                       <div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                   {t('greeting', { name: user?.firstName || user?.username || t('greetingFallback') })}
                 </h2>
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-400">
                   {t('overview')}
                 </p>
               </div>
@@ -439,17 +439,18 @@ function DashboardPageContent() {
         {/* Main content in grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Recent conversations */}
-          <Card>
+          <Card className="dark:bg-gray-800/50 dark:border-gray-700">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center space-x-2">
-                  <MessageSquare className="h-5 w-5 text-blue-600" />
-                  <span>{t('recentConversations')}</span>
+                  <MessageSquare className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  <span className="dark:text-gray-100">{t('recentConversations')}</span>
                 </CardTitle>
                                   <Button 
                     variant="ghost" 
                     size="sm"
                     onClick={() => router.push('/conversations')}
+                    className="dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700"
                   >
                     {t('actions.viewAll')}
                   </Button>
@@ -460,11 +461,11 @@ function DashboardPageContent() {
                 {recentConversations.map((conversation) => (
                   <div 
                     key={conversation.id}
-                    className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                    className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
                     onClick={() => router.push(`/conversations/${conversation.id}`)}
                   >
                     <Avatar className="h-10 w-10">
-                      <AvatarFallback>
+                      <AvatarFallback className="dark:bg-gray-700 dark:text-gray-300">
                         {conversation.type === 'group' ? 
                           <Users className="h-5 w-5" /> : 
                           <UserIcon className="h-5 w-5" />
@@ -473,11 +474,11 @@ function DashboardPageContent() {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium text-gray-900 truncate">
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                           {conversation.title}
                         </p>
                         <div className="flex items-center space-x-2">
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
                             {conversation.lastMessage && new Date(conversation.lastMessage.createdAt).toLocaleTimeString(currentLanguage, { 
                               hour: '2-digit', 
                               minute: '2-digit' 
@@ -485,7 +486,7 @@ function DashboardPageContent() {
                           </p>
                         </div>
                       </div>
-                      <p className="text-sm text-gray-500 truncate">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                         {conversation.lastMessage?.content}
                       </p>
                     </div>
@@ -494,12 +495,12 @@ function DashboardPageContent() {
                 
                 {recentConversations.length === 0 && (
                   <div className="text-center py-8">
-                    <MessageSquare className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500 text-sm">{t('emptyStates.noRecentConversations')}</p>
+                    <MessageSquare className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">{t('emptyStates.noRecentConversations')}</p>
                                           <Button 
                         variant="outline" 
                         size="sm" 
-                        className="mt-2"
+                        className="mt-2 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
                         onClick={() => router.push('/conversations?new=true')}
                       >
                         {t('actions.startConversation')}
@@ -511,17 +512,18 @@ function DashboardPageContent() {
           </Card>
 
           {/* Recent groups */}
-          <Card>
+          <Card className="dark:bg-gray-800/50 dark:border-gray-700">
             <CardHeader>
               <div className="flex items-center justify-between">
                                   <CardTitle className="flex items-center space-x-2">
-                    <Users className="h-5 w-5 text-green-600" />
-                    <span>{t('recentCommunities')}</span>
+                    <Users className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    <span className="dark:text-gray-100">{t('recentCommunities')}</span>
                   </CardTitle>
                                   <Button 
                     variant="ghost" 
                     size="sm"
                     onClick={() => router.push('/groups')}
+                    className="dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700"
                   >
                     {t('actions.viewAll')}
                   </Button>
@@ -532,32 +534,32 @@ function DashboardPageContent() {
                 {recentCommunities.map((community) => (
                                     <div 
                     key={community.id}
-                    className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                    className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
                     onClick={() => router.push(`/groups/${community.id}`)}
                   >
                     <Avatar className="h-10 w-10">
-                      <AvatarFallback>
+                      <AvatarFallback className="dark:bg-gray-700 dark:text-gray-300">
                         <Users className="h-5 w-5" />
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium text-gray-900 truncate">
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                           {community.name}
                         </p>
                         <div className="flex items-center space-x-1">
                           {community.isPrivate && (
-                            <Badge variant="secondary" className="text-xs">
+                            <Badge variant="secondary" className="text-xs dark:bg-gray-700 dark:text-gray-300">
                               {t('communities.private')}
                             </Badge>
                           )}
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="text-xs dark:border-gray-600 dark:text-gray-300">
                             {t('communities.membersCount', { count: community.members.length.toString() })}
                           </Badge>
                         </div>
                       </div>
                       {community.description && (
-                        <p className="text-sm text-gray-500 truncate">
+                        <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                           {community.description}
                         </p>
                       )}
@@ -567,12 +569,12 @@ function DashboardPageContent() {
                 
                 {recentCommunities.length === 0 && (
                   <div className="text-center py-8">
-                    <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500 text-sm">{t('emptyStates.noRecentCommunities')}</p>
+                    <Users className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">{t('emptyStates.noRecentCommunities')}</p>
                                           <Button 
                         variant="outline" 
                         size="sm" 
-                        className="mt-2"
+                        className="mt-2 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
                         onClick={() => router.push('/groups?new=true')}
                       >
                         {t('actions.createCommunityButton')}
@@ -586,13 +588,13 @@ function DashboardPageContent() {
 
         {/* Quick actions at bottom */}
         <div className="mt-8">
-          <Card>
+          <Card className="dark:bg-gray-800/50 dark:border-gray-700">
             <CardHeader>
                               <CardTitle className="flex items-center space-x-2">
-                  <Zap className="h-5 w-5 text-yellow-600" />
-                  <span>{t('quickActions.title')}</span>
+                  <Zap className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                  <span className="dark:text-gray-100">{t('quickActions.title')}</span>
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="dark:text-gray-400">
                   {t('quickActions.description')}
                 </CardDescription>
             </CardHeader>
@@ -600,7 +602,7 @@ function DashboardPageContent() {
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                                   <Button 
                     variant="outline" 
-                    className="h-20 flex-col space-y-2"
+                    className="h-20 flex-col space-y-2 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-gray-100"
                     onClick={() => setIsCreateConversationModalOpen(true)}
                   >
                     <MessageSquare className="h-6 w-6" />
@@ -609,7 +611,7 @@ function DashboardPageContent() {
                   
                   <Button
                     variant="outline"
-                    className="h-20 flex-col space-y-2"
+                    className="h-20 flex-col space-y-2 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-gray-100"
                     onClick={() => setIsCreateLinkModalOpen(true)}
                   >
                     <Link2 className="h-6 w-6" />
@@ -618,7 +620,7 @@ function DashboardPageContent() {
                   
                   <Button 
                     variant="outline" 
-                    className="h-20 flex-col space-y-2"
+                    className="h-20 flex-col space-y-2 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-gray-100"
                     onClick={() => setIsCreateGroupModalOpen(true)}
                   >
                     <Users className="h-6 w-6" />
@@ -627,7 +629,7 @@ function DashboardPageContent() {
                   
                   <Button
                     variant="outline"
-                    className="h-20 flex-col space-y-2"
+                    className="h-20 flex-col space-y-2 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-gray-100"
                     onClick={() => setIsShareModalOpen(true)}
                   >
                     <Share2 className="h-6 w-6" />
@@ -636,7 +638,7 @@ function DashboardPageContent() {
                   
                   <Button 
                     variant="outline" 
-                    className="h-20 flex-col space-y-2"
+                    className="h-20 flex-col space-y-2 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-gray-100"
                     onClick={() => router.push('/settings')}
                   >
                     <Settings className="h-6 w-6" />
@@ -663,13 +665,13 @@ function DashboardPageContent() {
 
         {/* Modal de création de groupe améliorée */}
         <Dialog open={isCreateGroupModalOpen} onOpenChange={handleGroupModalClose}>
-          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto dark:bg-gray-800 dark:border-gray-700">
             <DialogHeader>
               <DialogTitle className="flex items-center space-x-2">
-                <Users className="h-5 w-5 text-blue-600" />
-                <span>Créer une nouvelle communauté</span>
+                <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <span className="dark:text-gray-100">Créer une nouvelle communauté</span>
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="dark:text-gray-400">
                 Créez une communauté pour organiser vos conversations avec plusieurs personnes
               </DialogDescription>
             </DialogHeader>
@@ -677,7 +679,7 @@ function DashboardPageContent() {
             <div className="space-y-4">
               {/* Nom du groupe */}
               <div>
-                <Label htmlFor="groupName" className="text-sm font-medium">
+                <Label htmlFor="groupName" className="text-sm font-medium dark:text-gray-200">
                   Nom de la communauté *
                 </Label>
                 <Input
@@ -685,13 +687,13 @@ function DashboardPageContent() {
                   value={groupName}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setGroupName(e.target.value)}
                   placeholder="Ex: Équipe Marketing, Famille, Amis..."
-                  className="mt-1"
+                  className="mt-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400"
                 />
               </div>
 
               {/* Description */}
               <div>
-                <Label htmlFor="groupDescription" className="text-sm font-medium">
+                <Label htmlFor="groupDescription" className="text-sm font-medium dark:text-gray-200">
                   Description (optionnelle)
                 </Label>
                 <Textarea
@@ -699,7 +701,7 @@ function DashboardPageContent() {
                   value={groupDescription}
                   onChange={(e) => setGroupDescription(e.target.value)}
                   placeholder="Décrivez le but de cette communauté..."
-                  className="mt-1"
+                  className="mt-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400"
                   rows={2}
                 />
               </div>
@@ -707,13 +709,13 @@ function DashboardPageContent() {
               {/* Confidentialité */}
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label className="text-sm font-medium">Communauté privée</Label>
-                  <p className="text-xs text-gray-500">
+                  <Label className="text-sm font-medium dark:text-gray-200">Communauté privée</Label>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     {isGroupPrivate ? 'Seuls les membres invités peuvent rejoindre' : 'La communauté peut être découverte et rejointe par d\'autres'}
                   </p>
                 </div>
                 <div className="flex items-center space-x-2">
-                  {isGroupPrivate ? <Shield className="h-4 w-4 text-blue-600" /> : <Eye className="h-4 w-4 text-gray-400" />}
+                  {isGroupPrivate ? <Shield className="h-4 w-4 text-blue-600 dark:text-blue-400" /> : <Eye className="h-4 w-4 text-gray-400 dark:text-gray-500" />}
                   <Switch
                     checked={isGroupPrivate}
                     onCheckedChange={setIsGroupPrivate}
@@ -723,17 +725,17 @@ function DashboardPageContent() {
               
               {/* Recherche d'utilisateurs */}
               <div>
-                <Label htmlFor="userSearch" className="text-sm font-medium">
+                <Label htmlFor="userSearch" className="text-sm font-medium dark:text-gray-200">
                   Rechercher des membres
                 </Label>
                 <div className="relative mt-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
                   <Input
                     id="userSearch"
                     value={groupSearchQuery}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setGroupSearchQuery(e.target.value)}
                     placeholder="Rechercher par nom ou username..."
-                    className="pl-10"
+                    className="pl-10 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400"
                   />
                 </div>
               </div>
@@ -741,7 +743,7 @@ function DashboardPageContent() {
               {/* Membres sélectionnés */}
               {selectedUsers.length > 0 && (
                 <div>
-                  <Label className="text-sm font-medium">
+                  <Label className="text-sm font-medium dark:text-gray-200">
                     Membres sélectionnés ({selectedUsers.length + 1} au total, vous inclus)
                   </Label>
                   <div className="flex flex-wrap gap-2 mt-2">
@@ -755,7 +757,7 @@ function DashboardPageContent() {
                       <Badge
                         key={user.id}
                         variant="secondary"
-                        className="flex items-center gap-1"
+                        className="flex items-center gap-1 dark:bg-gray-700 dark:text-gray-300"
                       >
                         {user.displayName || user.username}
                         <X
@@ -770,17 +772,17 @@ function DashboardPageContent() {
               
               {/* Liste des utilisateurs */}
               <div>
-                <Label className="text-sm font-medium">
+                <Label className="text-sm font-medium dark:text-gray-200">
                   Utilisateurs disponibles
                 </Label>
-                <ScrollArea className="h-48 mt-2 border rounded-lg">
+                <ScrollArea className="h-48 mt-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700/50">
                   {isLoadingUsers ? (
-                    <div className="p-4 text-center text-gray-500">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                    <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-2"></div>
                       Chargement des utilisateurs...
                     </div>
                   ) : availableUsers.length === 0 ? (
-                    <div className="p-4 text-center text-gray-500">
+                    <div className="p-4 text-center text-gray-500 dark:text-gray-400">
                       {groupSearchQuery.trim() ? 'Aucun utilisateur trouvé pour cette recherche' : 'Aucun utilisateur disponible'}
                     </div>
                   ) : (
@@ -790,25 +792,25 @@ function DashboardPageContent() {
                         return (
                           <div
                             key={user.id}
-                            className={`flex items-center space-x-3 p-2 rounded-lg cursor-pointer hover:bg-gray-50 ${
-                              isSelected ? 'bg-blue-50 border border-blue-200' : ''
+                            className={`flex items-center space-x-3 p-2 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600/50 ${
+                              isSelected ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700' : ''
                             }`}
                             onClick={() => toggleUserSelection(user)}
                           >
                             <Avatar className="h-8 w-8">
                               <AvatarImage src={user.avatar} />
-                              <AvatarFallback>
+                              <AvatarFallback className="dark:bg-gray-600 dark:text-gray-300">
                                 {(user.displayName || user.username).charAt(0).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1">
-                              <p className="font-medium text-sm">
+                              <p className="font-medium text-sm dark:text-gray-100">
                                 {user.displayName || user.username}
                               </p>
-                              <p className="text-xs text-gray-500">@{user.username}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">@{user.username}</p>
                             </div>
                             {isSelected && (
-                              <Check className="h-4 w-4 text-blue-600" />
+                              <Check className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                             )}
                           </div>
                         );
@@ -831,6 +833,7 @@ function DashboardPageContent() {
                 <Button
                   onClick={handleGroupModalClose}
                   variant="outline"
+                  className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
                 >
                   Annuler
                 </Button>
