@@ -297,12 +297,16 @@ export function DashboardLayout({
         !(isMobile && hideHeaderOnMobile) ? 'pt-16' : 'pt-0'
       } ${
         className.includes('!h-full') ? 'h-full' : 
-        className.includes('!h-auto') ? 'min-h-0' : 
+        className.includes('!h-auto') ? '' : 
         'h-screen'
       }`}>
-        <div className={`${className.includes('!h-auto') || className.includes('!h-full') ? 'h-full' : 'pt-2'}`}>
-          {children}
-        </div>
+        {className.includes('!h-auto') || className.includes('!px-0') ? (
+          children
+        ) : (
+          <div className="pt-2">
+            {children}
+          </div>
+        )}
       </main>
     </div>
   );

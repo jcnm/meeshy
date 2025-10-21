@@ -7,7 +7,7 @@
 export type { Message as BubbleMessage } from '@shared/types';
 export type { MessageTranslation } from '@shared/types/conversation';
 export type { User as MessageSender } from '@shared/types';
-export type { AnonymousUser as AnonymousSender } from '@shared/types';
+export type { AnonymousParticipant as AnonymousSender } from '@shared/types';
 
 // Types spécifiques au système de vues de messages
 export type MessageViewType = 'normal' | 'reaction-selection' | 'language-selection' | 'edit' | 'delete';

@@ -1358,11 +1358,8 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         }
       `}</style>
       
-      {/* Conteneur principal avec gradient - englobe TOUT comme /links et /profile */}
-      <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      
-      {/* Layout principal - Zone de contenu */}
-      <div className="flex-1 flex flex-col mobile-fullscreen">
+      {/* Conteneur principal avec gradient */}
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
         
         {/* Indicateur dynamique - Frappe prioritaire sur connexion */}
         <div className="fixed top-16 left-0 right-0 xl:right-80 z-[40] px-4 sm:px-6 lg:px-8 pt-4 pb-2 bg-gradient-to-b from-blue-50 to-transparent pointer-events-none realtime-indicator hidden md:block">
@@ -1509,7 +1506,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         </div>
 
         {/* Sidebar droite - Desktop uniquement */}
-        <div className="hidden xl:block w-80 fixed right-0 top-20 bottom-0 bg-white/60 dark:bg-gray-900/80 backdrop-blur-lg border-l border-blue-200/30 dark:border-gray-800/50 z-40">
+        <div className="hidden xl:block w-80 fixed right-0 top-16 bottom-0 bg-white/60 dark:bg-gray-900/80 backdrop-blur-lg border-l border-blue-200/30 dark:border-gray-800/50 z-40">
           <div className="h-full overflow-y-auto p-6 scroll-hidden">
             
             {/* Header avec langues globales */}
@@ -1616,7 +1613,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
             </div>
           </div>
         </div>
-      </div>
       
       {/* Fermeture du conteneur principal avec gradient */}
       </div>
