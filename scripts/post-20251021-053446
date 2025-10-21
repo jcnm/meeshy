@@ -1,0 +1,9 @@
+🎉 New update: Enhanced responsive UI for reactions & translations!
+
+✨ Features:
+• Smart horizontal scroll for reaction tabs (6 categories stay on one line)
+• Adaptive view widths across all devices (mobile→desktop) 
+• Intelligent message copy URLs: /conversations/{id} by default, /chat/{id} in chat
+• Optimized LanguageSelectionView with tier upgrade/downgrade buttons
+
+🚀 Better UX on all screen sizes! #ResponsiveDesign #UX
