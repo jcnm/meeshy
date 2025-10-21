@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useCallback, memo } from 'react';
+import { useRef, useEffect, useCallback, memo, useState } from 'react';
 import { cn } from '@/lib/utils';
 import type {
   Message,
@@ -10,6 +10,8 @@ import type {
 import { MessagesDisplay } from '@/components/common/messages-display';
 import { UserRoleEnum } from '@shared/types';
 import { useFixRadixZIndex } from '@/hooks/use-fix-z-index';
+import { Button } from '@/components/ui/button';
+import { ArrowDown } from 'lucide-react';
 
 interface ConversationMessagesProps {
   messages: Message[];
@@ -91,6 +93,9 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
   
   // Ref pour tracker si l'utilisateur est en train de consulter l'historique
   const isUserScrollingHistoryRef = useRef(false);
+  
+  // État pour afficher/masquer le bouton "Scroll to bottom"
+  const [showScrollButton, setShowScrollButton] = useState(false);
 
   // Fonction pour vérifier si l'utilisateur est en bas de la conversation
   const isUserAtBottom = useCallback(() => {
@@ -166,7 +171,7 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
     return firstUnread || null;
   }, [messages, currentUser]);
 
-  // Gestionnaire de scroll pour le chargement infini
+  // Gestionnaire de scroll pour le chargement infini ET le bouton flottant
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const target = e.currentTarget;
     const { scrollTop, scrollHeight, clientHeight } = target;
@@ -174,6 +179,10 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
     // Mettre à jour le flag de consultation de l'historique
     const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
     isUserScrollingHistoryRef.current = distanceFromBottom > 150;
+    
+    // AMÉLIORATION 2: Afficher/masquer le bouton "Scroll to bottom" selon la position
+    const shouldShowButton = distanceFromBottom > 200; // Afficher si plus de 200px du bas
+    setShowScrollButton(shouldShowButton);
     
     // Vérifier si l'utilisateur est proche du bas (auto-scroll)
     const isNearBottom = distanceFromBottom < 100;
@@ -211,35 +220,33 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
     previousMessageCountRef.current = 0;
   }, [conversationId]);
 
-  // Scénario 1 : Premier chargement - scroller vers le dernier message lu ou non lu
+  // AMÉLIORATION 1: Premier chargement - afficher DIRECTEMENT le dernier message lu SANS animation
   useEffect(() => {
     if (isFirstLoadRef.current && messages.length > 0 && !isLoadingMessages) {
-      // Petit délai pour s'assurer que les éléments DOM sont rendus
-      setTimeout(() => {
-        // En mode scrollDirection='down' (BubbleStream), les messages récents sont EN HAUT
-        // Donc on scroll toujours vers le haut (top: 0)
-        if (scrollDirection === 'down') {
-          console.log('[ConversationMessages] 🚀 Premier chargement (BubbleStream) - scroll vers le haut');
-          scrollToTop(false);
-        } else {
-          // Mode classique : chercher les messages non lus ou aller en bas
-          const firstUnreadMessage = findFirstUnreadMessage();
-          
-          if (firstUnreadMessage) {
-            console.log('[ConversationMessages] 🎯 Premier chargement - scroll vers premier message non lu:', firstUnreadMessage.id);
-            scrollToMessage(firstUnreadMessage.id, false);
-          } else {
-            console.log('[ConversationMessages] 🚀 Premier chargement - pas de messages non lus - scroll vers le bas');
-            scrollToBottom(false);
-          }
-        }
+      // CORRECTION: Pas de délai, affichage IMMÉDIAT pour éviter l'effet de scroll visible
+      // En mode scrollDirection='down' (BubbleStream), les messages récents sont EN HAUT
+      // Donc on scroll toujours vers le haut (top: 0)
+      if (scrollDirection === 'down') {
+        console.log('[ConversationMessages] 🚀 Premier chargement (BubbleStream) - position instantanée en haut');
+        scrollToTop(false); // false = pas d'animation
+      } else {
+        // Mode classique ConversationLayout : chercher les messages non lus ou aller en bas
+        const firstUnreadMessage = findFirstUnreadMessage();
         
-        isFirstLoadRef.current = false;
-      }, 100);
+        if (firstUnreadMessage) {
+          console.log('[ConversationMessages] 🎯 Premier chargement - position instantanée sur premier message non lu:', firstUnreadMessage.id);
+          scrollToMessage(firstUnreadMessage.id, false); // false = pas d'animation
+        } else {
+          console.log('[ConversationMessages] 🚀 Premier chargement - position instantanée en bas (tous les messages lus)');
+          scrollToBottom(false); // false = pas d'animation
+        }
+      }
+      
+      isFirstLoadRef.current = false;
     }
   }, [messages.length, isLoadingMessages, scrollDirection, scrollToBottom, scrollToTop, scrollToMessage, findFirstUnreadMessage]);
 
-  // Scénario 2 & 3 : Nouveaux messages en temps réel
+  // AMÉLIORATION 3: Nouveaux messages - Auto-scroll sur envoi/réception
   useEffect(() => {
     if (messages.length > 0 && !isFirstLoadRef.current) {
       const currentCount = messages.length;
@@ -247,7 +254,7 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
       
       // Scénario 2 : NE PAS scroller si on est en train de charger des messages anciens
       if (isLoadingMore) {
-        console.log('[ConversationMessagesV2] ⏸️ Chargement infini - pas de scroll automatique');
+        console.log('[ConversationMessages] ⏸️ Chargement infini - pas de scroll automatique');
         previousMessageCountRef.current = currentCount;
         return;
       }
@@ -256,30 +263,37 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
       if (currentCount > previousCount) {
         const lastMessage = messages[messages.length - 1];
         
-        // Si c'est notre propre message, TOUJOURS scroller
+        // AMÉLIORATION: Toujours scroller sur NOTRE propre message (envoi)
         if (lastMessage && lastMessage.senderId === currentUser?.id) {
+          console.log('[ConversationMessages] 📤 Message envoyé - scroll automatique vers le bas');
           // En mode scrollDirection='down' (BubbleStream), scroller vers le haut
           if (scrollDirection === 'down') {
-            scrollToTop(false);
+            scrollToTop(true); // true = avec animation fluide
           } else {
-            scrollToBottom(false);
+            scrollToBottom(true); // true = avec animation fluide
           }
         } else {
-          // Scénario 3 : Pour les messages d'autres utilisateurs, scroller SEULEMENT si l'utilisateur est proche
+          // AMÉLIORATION: Pour les messages reçus, scroller si l'utilisateur est proche du bas
+          console.log('[ConversationMessages] 📥 Message reçu - vérification position utilisateur');
           if (scrollDirection === 'down') {
             // En BubbleStream, vérifier si l'utilisateur est proche du haut
             const container = scrollAreaRef.current;
             if (container && container.scrollTop < 300) {
-              scrollToTop();
+              console.log('[ConversationMessages] ✅ Utilisateur proche du haut - scroll automatique');
+              scrollToTop(true); // Animation fluide pour les messages reçus
+            } else {
+              console.log('[ConversationMessages] ⏸️ Utilisateur dans l\'historique - pas de scroll');
             }
           } else {
             // Mode classique : vérifier si l'utilisateur est en bas
             const userIsAtBottom = isUserAtBottom();
             if (userIsAtBottom) {
-              scrollToBottom();
+              console.log('[ConversationMessages] ✅ Utilisateur en bas - scroll automatique');
+              scrollToBottom(true); // Animation fluide pour les messages reçus
+            } else {
+              console.log('[ConversationMessages] ⏸️ Utilisateur dans l\'historique - pas de scroll (afficher bouton)');
             }
           }
-          // Ne pas déranger l'utilisateur qui consulte l'historique
         }
       }
       
@@ -352,6 +366,25 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
           <div ref={messagesEndRef} className="h-1" />
         </div>
       </div>
+      
+      {/* AMÉLIORATION 2: Bouton flottant pour scroller vers le bas */}
+      {showScrollButton && !isLoadingMessages && messages.length > 0 && (
+        <Button
+          onClick={() => scrollToBottom(true)}
+          className={cn(
+            "fixed bottom-24 right-6 z-50",
+            "rounded-full w-12 h-12 p-0",
+            "shadow-2xl hover:shadow-3xl",
+            "bg-primary hover:bg-primary/90",
+            "transition-all duration-300 ease-in-out",
+            "animate-in slide-in-from-bottom-5"
+          )}
+          aria-label={t('scrollToBottom') || 'Scroll to bottom'}
+          title={t('scrollToBottom') || 'Aller au bas de la conversation'}
+        >
+          <ArrowDown className="h-5 w-5 text-primary-foreground" />
+        </Button>
+      )}
     </div>
   );
 });
