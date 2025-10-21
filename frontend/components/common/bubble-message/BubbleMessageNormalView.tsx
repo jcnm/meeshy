@@ -524,7 +524,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                 className={cn(
                   "relative transition-colors duration-200 border shadow-none max-w-[85%] sm:max-w-[75%] md:max-w-[65%] overflow-visible",
                   isOwnMessage 
-                    ? 'bg-gradient-to-br from-blue-400 to-blue-500 dark:from-blue-600 dark:to-blue-700 border-blue-400 dark:border-blue-600 text-white ml-auto' 
+                    ? 'bg-gradient-to-br from-blue-400 to-blue-500 dark:from-gray-700 dark:to-gray-800 border-blue-400 dark:border-gray-600 text-white ml-auto' 
                     : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 mr-auto'
                 )}
               >
