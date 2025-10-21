@@ -1456,6 +1456,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
               reverseOrder={false}
               scrollDirection="down"
               scrollButtonDirection="up"
+              scrollContainerRef={messagesContainerRef}
             />
 
             {/* Indicateur si plus de messages disponibles */}
