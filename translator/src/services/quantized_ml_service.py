@@ -137,17 +137,17 @@ class QuantizedMLService:
                 'basic': {
                     'model_name': self.settings.basic_model,
                     'description': f'{self.settings.basic_model} quantifié',
-                    'max_length': 256
+                    'max_length': 128
                 },
                 'medium': {
                     'model_name': self.settings.medium_model,
                     'description': f'{self.settings.medium_model} quantifié',
-                    'max_length': 512
+                    'max_length': 256
                 },
                 'premium': {
                     'model_name': self.settings.premium_model,
                     'description': f'{self.settings.premium_model} quantifié',
-                    'max_length': 1024
+                    'max_length': 512
                 }
             }
         return self._model_configs
@@ -553,7 +553,7 @@ class QuantizedMLService:
                 'trust_remote_code': True,
                 'cache_dir': str(cache_dir),
                 'torch_dtype': torch.float32,  # Fallback vers float32
-                'low_cpu_mem_usage': True,   # Activer l'optimisation mémoire
+                'low_cpu_mem_usage': False,   # Désactiver l'optimisation mémoire
                 'device_map': None,           # Pas de device mapping automatique
                 'attn_implementation': 'eager'  # Forcer eager
             }
@@ -717,7 +717,7 @@ class QuantizedMLService:
                         model=model,
                         tokenizer=thread_tokenizer,  # ← TOKENIZER THREAD-LOCAL
                         device=-1,  # Forcer CPU pour éviter les problèmes de tensors meta
-                        max_length=512,  # Augmenté de 128 à 512 pour traductions plus longues
+                        max_length=128,
                         torch_dtype=torch.float32  # Forcer float32
                     )
                     
@@ -729,7 +729,7 @@ class QuantizedMLService:
                     # OPTIMISATION: Traduction avec paramètres optimisés
                     result = temp_pipeline(
                         instruction,
-                        max_new_tokens=256,  # Augmenté de 64 à 256 pour traductions plus longues
+                        max_new_tokens=64,
                         num_beams=2,  # Réduire pour économiser la mémoire
                         do_sample=False,
                         early_stopping=True,
@@ -808,7 +808,7 @@ class QuantizedMLService:
                                     model=nllb_model,
                                     tokenizer=nllb_tokenizer,
                                     device=-1,
-                                    max_length=512,  # Augmenté de 128 à 512 pour traductions plus longues
+                                    max_length=128,
                                     torch_dtype=torch.float32
                                 )
                                 
@@ -819,7 +819,7 @@ class QuantizedMLService:
                                     text, 
                                     src_lang=nllb_source, 
                                     tgt_lang=nllb_target, 
-                                    max_length=512,  # Augmenté de 128 à 512 pour traductions plus longues
+                                    max_length=128,
                                     num_beams=2,
                                     early_stopping=True
                                 )
@@ -848,7 +848,7 @@ class QuantizedMLService:
                         model=model,
                         tokenizer=thread_tokenizer,  # ← TOKENIZER THREAD-LOCAL
                         device=0 if torch.cuda.is_available() else -1,
-                        max_length=512,  # Augmenté de 128 à 512 pour traductions plus longues
+                        max_length=128,
                         torch_dtype=torch.float32  # Type de données standard
                     )
                     
@@ -861,7 +861,7 @@ class QuantizedMLService:
                         text, 
                         src_lang=nllb_source, 
                         tgt_lang=nllb_target, 
-                        max_length=512,  # Augmenté de 128 à 512 pour traductions plus longues
+                        max_length=128,
                         num_beams=2,  # Réduire pour économiser la mémoire
                         early_stopping=True
                     )
