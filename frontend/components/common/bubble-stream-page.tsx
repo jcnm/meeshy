@@ -114,6 +114,9 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
+  // Ref pour éviter les reconnexions multiples au montage
+  const hasInitialized = useRef(false);
+  
   // Déterminer la limite de caractères en fonction du rôle de l'utilisateur
   const maxMessageLength = getMaxMessageLength(user?.role);
 
@@ -757,14 +760,21 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   // Protection contre les toasts multiples
   const [hasShownConnectionToast, setHasShownConnectionToast] = useState(false);
 
-  // Initialisation de la connexion WebSocket en temps réel
+  // Initialisation de la connexion WebSocket en temps réel (UNE SEULE FOIS au montage)
   useEffect(() => {
+    // CORRECTION CRITIQUE: N'initialiser QU'UNE SEULE FOIS pour éviter la boucle de reconnexion
+    if (hasInitialized.current) {
+      return;
+    }
+    
     console.log('Initialisation de la connexion WebSocket...');
     
     // Attendre que les traductions soient chargées avant d'afficher les toasts
     if (isLoadingTranslations) {
       return;
     }
+
+    hasInitialized.current = true;
 
     // OPTIMISATION: Appeler reconnect() automatiquement au chargement
     // Cela garantit que la connexion WebSocket est établie dès le début
@@ -797,7 +807,20 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       clearTimeout(reconnectTimeout);
       clearTimeout(initTimeout);
     };
-  }, [connectionStatus.isConnected, connectionStatus.hasSocket, hasShownConnectionToast, isLoadingTranslations, t, reconnect]);
+  }, [isLoadingTranslations, t, reconnect, getDiagnostics]);
+  
+  // Surveillance de l'état de connexion (SANS déclencher de reconnexion)
+  useEffect(() => {
+    if (!hasInitialized.current) {
+      return;
+    }
+    
+    // Afficher le toast de confirmation UNE SEULE FOIS
+    if (connectionStatus.isConnected && connectionStatus.hasSocket && !hasShownConnectionToast) {
+      console.log(`✅ ${t('bubbleStream.websocketConnected')}`);
+      setHasShownConnectionToast(true);
+    }
+  }, [connectionStatus.isConnected, connectionStatus.hasSocket, hasShownConnectionToast, t]);
 
   // Surveillance du statut de connexion WebSocket
   useEffect(() => {
