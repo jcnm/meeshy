@@ -94,8 +94,10 @@ const BubbleMessageInner = memo(function BubbleMessageInner({
 
   // Permissions
   const canEdit = useMemo(() => {
-    return isOwnMessage;
-  }, [isOwnMessage]);
+    if (isOwnMessage) return true;
+    if (userRole && ['MODERATOR', 'ADMIN', 'CREATOR', 'BIGBOSS'].includes(userRole)) return true;
+    return false;
+  }, [isOwnMessage, userRole]);
 
   const canDelete = useMemo(() => {
     if (isOwnMessage) return true;
@@ -263,7 +265,6 @@ const BubbleMessageInner = memo(function BubbleMessageInner({
           isOwnMessage={isOwnMessage}
           onSave={handleSaveEdit}
           onCancel={exitMode}
-          t={t}
         />
       )}
 
@@ -274,7 +275,6 @@ const BubbleMessageInner = memo(function BubbleMessageInner({
           isOwnMessage={isOwnMessage}
           onConfirm={handleConfirmDelete}
           onCancel={exitMode}
-          t={t}
         />
       )}
     </AnimatePresence>
