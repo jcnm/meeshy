@@ -14,7 +14,7 @@ import { EditMessageView } from './bubble-message/EditMessageView';
 import { DeleteConfirmationView } from './bubble-message/DeleteConfirmationView';
 
 interface BubbleMessageProps {
-  message: Message & {
+  message: Omit<Message, 'translations'> & {
     location?: string;
     originalLanguage: string;
     translations: BubbleTranslation[];
