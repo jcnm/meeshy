@@ -6,6 +6,7 @@
 // Re-export des types existants
 export type { Message as BubbleMessage } from '@shared/types';
 export type { MessageTranslation } from '@shared/types/conversation';
+export type { BubbleTranslation as MessageVersion } from '@shared/types';
 export type { User as MessageSender } from '@shared/types';
 export type { AnonymousParticipant as AnonymousSender } from '@shared/types';
 
