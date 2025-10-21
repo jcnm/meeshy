@@ -127,9 +127,11 @@ export function useMessageTranslations({
             content: content,
             status: 'completed' as const,
             timestamp: currentTimestamp,
-            confidence: t.confidenceScore || t.confidence || 0.9
+            confidence: t.confidenceScore || t.confidence || 0.9,
+            translationModel: t.translationModel as 'basic' | 'medium' | 'premium' | undefined,
+            cached: t.cached || false
           };
-          
+
           translationsMap.set(language, translation);
         }
       });

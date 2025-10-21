@@ -165,15 +165,15 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
     if (currentDisplayLanguage === (message.originalLanguage || 'fr')) {
       return message.originalContent || message.content;
     }
-    
-    const translation = message.translations?.find((t: any) => 
-      (t?.language || t?.targetLanguage) === currentDisplayLanguage
+
+    const translation = message.translations?.find((t) =>
+      t.language === currentDisplayLanguage
     );
-    
+
     if (translation) {
-      return (translation as MessageTranslation)?.content || (translation as MessageTranslation)?.translatedContent || message.content;
+      return translation.content || message.content;
     }
-    
+
     return message.content;
   }, [currentDisplayLanguage, message.originalLanguage, message.originalContent, message.content, message.translations]);
 
@@ -266,9 +266,9 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
       if (conversationId) {
         // Si on est déjà dans /chat/, utiliser /chat/, sinon utiliser /conversations/
         if (currentPath.startsWith('/chat/')) {
-          messageUrl = `${baseUrl}/chat/${conversationId}/#message-${message.id}`;
+          messageUrl = `${baseUrl}/chat/${conversationId}#message-${message.id}`;
         } else {
-          messageUrl = `${baseUrl}/conversations/${conversationId}/#message-${message.id}`;
+          messageUrl = `${baseUrl}/conversations/${conversationId}#message-${message.id}`;
         }
       } else {
         messageUrl = `${baseUrl}/message/${message.id}`;
@@ -300,9 +300,9 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
       if (conversationId) {
         // Si on est déjà dans /chat/, utiliser /chat/, sinon utiliser /conversations/
         if (currentPath.startsWith('/chat/')) {
-          messageUrl = `${baseUrl}/chat/${conversationId}/#message-${message.id}`;
+          messageUrl = `${baseUrl}/chat/${conversationId}#message-${message.id}`;
         } else {
-          messageUrl = `${baseUrl}/conversations/${conversationId}/#message-${message.id}`;
+          messageUrl = `${baseUrl}/conversations/${conversationId}#message-${message.id}`;
         }
       } else {
         messageUrl = `${baseUrl}/message/${message.id}`;

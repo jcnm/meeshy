@@ -123,7 +123,10 @@ function LandingPageContent() {
       console.log('[LANDING] 🎨 Rendu du DashboardLayout avec BubbleStreamPage');
     }
     return (
-      <DashboardLayout title={tCommon('navigation.home') || t('navigation.home')} className="!bg-none !bg-transparent !h-auto">
+      <DashboardLayout 
+        title={tCommon('navigation.home') || t('navigation.home')} 
+        className="!bg-none !bg-transparent !h-auto !max-w-none !px-0"
+      >
         <BubbleStreamPage 
           user={user}
           // conversationId accepte soit un ID MongoDB soit un identifier comme "meeshy" pour la conversation globale

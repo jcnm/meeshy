@@ -25,9 +25,9 @@ const handleCopyMessageLink = useCallback(async () => {
     if (conversationId) {
       // Si on est dans /chat/, utiliser /chat/, sinon /conversations/
       if (currentPath.startsWith('/chat/')) {
-        messageUrl = `${baseUrl}/chat/${conversationId}/#message-${message.id}`;
+        messageUrl = `${baseUrl}/chat/${conversationId}#message-${message.id}`;
       } else {
-        messageUrl = `${baseUrl}/conversations/${conversationId}/#message-${message.id}`;
+        messageUrl = `${baseUrl}/conversations/${conversationId}#message-${message.id}`;
       }
     } else {
       messageUrl = `${baseUrl}/message/${message.id}`;
@@ -107,8 +107,8 @@ Message avec attachments seuls:
 
 ### Dans une conversation
 ```
-/chat/{conversationId}/#message-{messageId}
-/conversations/{conversationId}/#message-{messageId}
+/chat/{conversationId}#message-{messageId}
+/conversations/{conversationId}#message-{messageId}
 ```
 
 ### Message isolé
