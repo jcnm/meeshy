@@ -59,7 +59,7 @@ export function ConversationParticipantsDrawer({
 
   // Vérifier si l'utilisateur actuel est admin
   const currentUserParticipant = participants.find(p => p.userId === currentUser.id);
-  const isAdmin = currentUserParticipant?.conversationRole === UserRoleEnum.ADMIN || currentUserParticipant?.conversationRole === UserRoleEnum.CREATOR;
+  const isAdmin = currentUserParticipant?.role === UserRoleEnum.ADMIN || currentUserParticipant?.role === UserRoleEnum.CREATOR;
 
   // Filtrer les participants selon la recherche
   const filteredParticipants = participants.filter(participant => {
@@ -211,8 +211,7 @@ export function ConversationParticipantsDrawer({
                                   {getDisplayName(user)}
                                   {isCurrentUser && ` (${t('conversationDetails.you')})`}
                                 </span>
-                                {(participant.role === UserRoleEnum.ADMIN || 
-                                  (conversationType !== 'direct' && participant.role === UserRoleEnum.CREATOR)) && 
+                                {(['ADMIN', 'CREATOR'].includes(participant.role)) &&
                                   <Crown className="h-3.5 w-3.5 text-yellow-500 flex-shrink-0" />}
                               </div>
                               <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -278,8 +277,7 @@ export function ConversationParticipantsDrawer({
                                   {getDisplayName(user)}
                                   {isCurrentUser && ` (${t('conversationDetails.you')})`}
                                 </span>
-                                {(participant.role === UserRoleEnum.ADMIN || 
-                                  (conversationType !== 'direct' && participant.role === UserRoleEnum.CREATOR)) && 
+                                {(['ADMIN', 'CREATOR'].includes(participant.role)) &&
                                   <Crown className="h-3.5 w-3.5 text-yellow-500 flex-shrink-0" />}
                               </div>
                               <div className="flex items-center gap-2 text-xs text-muted-foreground">

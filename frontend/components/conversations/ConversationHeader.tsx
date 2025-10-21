@@ -58,7 +58,7 @@ export function ConversationHeader({
     }
 
     const currentUserParticipant = conversationParticipants.find(p => p.userId === currentUser.id);
-    return currentUserParticipant?.conversationRole as UserRoleEnum || currentUser?.role as UserRoleEnum || UserRoleEnum.USER;
+    return currentUserParticipant?.role as UserRoleEnum || currentUser?.role as UserRoleEnum || UserRoleEnum.USER;
   }, [conversation, currentUser?.id, currentUser?.role, conversationParticipants]);
 
   // Obtenir le nom de la conversation
