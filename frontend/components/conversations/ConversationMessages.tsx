@@ -36,6 +36,7 @@ interface ConversationMessagesProps {
   onLoadMore?: () => void;
   t: (key: string) => string;
   reverseOrder?: boolean; // true = récent en haut (BubbleStream), false = ancien en haut (Conversations)
+  scrollDirection?: 'up' | 'down'; // Direction du scroll pour charger plus: 'up' = haut (défaut), 'down' = bas
 }
 
 const ConversationMessagesComponent = memo(function ConversationMessages({
@@ -62,7 +63,8 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
   onImageClick,
   onLoadMore,
   t,
-  reverseOrder = false
+  reverseOrder = false,
+  scrollDirection = 'up' // Par défaut: scroll vers le haut (comportement classique messagerie)
 }: ConversationMessagesProps) {
   // Hook pour fixer les z-index des popovers Radix UI
   useFixRadixZIndex();
@@ -122,6 +124,16 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
     }
   }, []);
 
+  // Fonction pour scroller vers le haut (pour BubbleStream avec scrollDirection='down')
+  const scrollToTop = useCallback((smooth = true) => {
+    if (scrollAreaRef.current) {
+      scrollAreaRef.current.scrollTo({
+        top: 0,
+        behavior: smooth ? 'smooth' : 'auto'
+      });
+    }
+  }, []);
+
   // Fonction pour scroller vers un message spécifique
   const scrollToMessage = useCallback((messageId: string, smooth = true) => {
     const messageElement = document.getElementById(`message-${messageId}`);
@@ -167,12 +179,30 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
     const isNearBottom = distanceFromBottom < 100;
     isAutoScrollingRef.current = isNearBottom;
     
-    // Charger plus de messages quand on est proche du haut
-    if (scrollTop < 100 && onLoadMore && hasMore && !isLoadingMore) {
-      console.log('[ConversationMessagesV2] 🔄 Déclenchement chargement anciens messages - scrollTop:', scrollTop);
-      onLoadMore();
+    // Charger plus de messages selon la direction configurée
+    if (onLoadMore && hasMore && !isLoadingMore) {
+      const threshold = 100;
+      let shouldLoadMore = false;
+      
+      if (scrollDirection === 'up') {
+        // Mode classique : charger quand on scrolle vers le haut
+        shouldLoadMore = scrollTop < threshold;
+        if (shouldLoadMore) {
+          console.log('[ConversationMessages] 🔄 Chargement anciens messages (scroll UP) - scrollTop:', scrollTop);
+        }
+      } else {
+        // Mode BubbleStream : charger quand on scrolle vers le bas
+        shouldLoadMore = distanceFromBottom < threshold;
+        if (shouldLoadMore) {
+          console.log('[ConversationMessages] 🔄 Chargement anciens messages (scroll DOWN) - distanceFromBottom:', distanceFromBottom);
+        }
+      }
+      
+      if (shouldLoadMore) {
+        onLoadMore();
+      }
     }
-  }, [onLoadMore, hasMore, isLoadingMore]);
+  }, [onLoadMore, hasMore, isLoadingMore, scrollDirection]);
 
   // Réinitialiser le flag de premier chargement quand la conversation change
   useEffect(() => {
@@ -186,20 +216,28 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
     if (isFirstLoadRef.current && messages.length > 0 && !isLoadingMessages) {
       // Petit délai pour s'assurer que les éléments DOM sont rendus
       setTimeout(() => {
-        const firstUnreadMessage = findFirstUnreadMessage();
-        
-        if (firstUnreadMessage) {
-          console.log('[ConversationMessages] 🎯 Premier chargement - scroll vers premier message non lu:', firstUnreadMessage.id);
-          scrollToMessage(firstUnreadMessage.id, false);
+        // En mode scrollDirection='down' (BubbleStream), les messages récents sont EN HAUT
+        // Donc on scroll toujours vers le haut (top: 0)
+        if (scrollDirection === 'down') {
+          console.log('[ConversationMessages] 🚀 Premier chargement (BubbleStream) - scroll vers le haut');
+          scrollToTop(false);
         } else {
-          console.log('[ConversationMessages] 🚀 Premier chargement - pas de messages non lus - scroll vers le bas');
-          scrollToBottom(false);
+          // Mode classique : chercher les messages non lus ou aller en bas
+          const firstUnreadMessage = findFirstUnreadMessage();
+          
+          if (firstUnreadMessage) {
+            console.log('[ConversationMessages] 🎯 Premier chargement - scroll vers premier message non lu:', firstUnreadMessage.id);
+            scrollToMessage(firstUnreadMessage.id, false);
+          } else {
+            console.log('[ConversationMessages] 🚀 Premier chargement - pas de messages non lus - scroll vers le bas');
+            scrollToBottom(false);
+          }
         }
         
         isFirstLoadRef.current = false;
       }, 100);
     }
-  }, [messages.length, isLoadingMessages, scrollToBottom, scrollToMessage, findFirstUnreadMessage]);
+  }, [messages.length, isLoadingMessages, scrollDirection, scrollToBottom, scrollToTop, scrollToMessage, findFirstUnreadMessage]);
 
   // Scénario 2 & 3 : Nouveaux messages en temps réel
   useEffect(() => {
@@ -220,13 +258,26 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
         
         // Si c'est notre propre message, TOUJOURS scroller
         if (lastMessage && lastMessage.senderId === currentUser?.id) {
-          scrollToBottom(false);
+          // En mode scrollDirection='down' (BubbleStream), scroller vers le haut
+          if (scrollDirection === 'down') {
+            scrollToTop(false);
+          } else {
+            scrollToBottom(false);
+          }
         } else {
-          // Scénario 3 : Pour les messages d'autres utilisateurs, scroller SEULEMENT si l'utilisateur est en bas
-          const userIsAtBottom = isUserAtBottom();
-          
-          if (userIsAtBottom) {
-            scrollToBottom();
+          // Scénario 3 : Pour les messages d'autres utilisateurs, scroller SEULEMENT si l'utilisateur est proche
+          if (scrollDirection === 'down') {
+            // En BubbleStream, vérifier si l'utilisateur est proche du haut
+            const container = scrollAreaRef.current;
+            if (container && container.scrollTop < 300) {
+              scrollToTop();
+            }
+          } else {
+            // Mode classique : vérifier si l'utilisateur est en bas
+            const userIsAtBottom = isUserAtBottom();
+            if (userIsAtBottom) {
+              scrollToBottom();
+            }
           }
           // Ne pas déranger l'utilisateur qui consulte l'historique
         }
@@ -235,7 +286,7 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
       // Mettre à jour le compteur
       previousMessageCountRef.current = currentCount;
     }
-  }, [messages, currentUser?.id, scrollToBottom, isLoadingMore, isUserAtBottom]);
+  }, [messages, currentUser?.id, scrollDirection, scrollToBottom, scrollToTop, isLoadingMore, isUserAtBottom]);
 
 
   return (
