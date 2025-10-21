@@ -463,6 +463,8 @@ export class MeeshySocketIOManager {
             replyToId: data.replyToId,
             isAnonymous: isAnonymous,
             anonymousDisplayName: anonymousDisplayName,
+            // IMPORTANT: Inclure les attachmentIds pour la validation
+            attachments: data.attachmentIds.map(id => ({ id } as any)),
             metadata: {
               source: 'websocket',
               socketId: socket.id,
