@@ -9,5 +9,10 @@
   "confidence": "Confidence",
   "noLanguagesFound": "No languages found",
   "clickToTranslate": "Click to translate",
-  "allLanguagesTranslated": "All languages are translated"
+  "allLanguagesTranslated": "All languages are translated",
+  "showOriginal": "Show original text",
+  "showInUserLanguage": "Show in your language",
+  "translate": "Translate",
+  "selectModelToTranslate": "Select a model to translate",
+  "translateWith": "Translate with"
 }

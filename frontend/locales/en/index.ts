@@ -24,6 +24,9 @@ import terms from './terms.json';
 import bubbleStream from './bubbleStream.json';
 import websocket from './websocket.json';
 import reactions from './reactions.json';
+import editMessage from './editMessage.json';
+import deleteMessage from './deleteMessage.json';
+import languages from './languages.json';
 
 export default {
   common,
@@ -52,6 +55,9 @@ export default {
   bubbleStream,
   websocket,
   reactions,
+  editMessage,
+  deleteMessage,
+  languages,
 };
 
 export {
@@ -81,4 +87,7 @@ export {
   bubbleStream,
   websocket,
   reactions,
+  editMessage,
+  deleteMessage,
+  languages,
 };
