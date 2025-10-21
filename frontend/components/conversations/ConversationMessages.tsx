@@ -344,12 +344,12 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
       "flex flex-col",
       isMobile ? "px-3 py-4" : "px-6 py-4"
     )}>
-      {/* Indicateur de chargement (messages anciens) */}
-      {isLoadingMore && hasMore && messages.length > 0 && (
+      {/* Indicateur de chargement EN HAUT - Mode classique (scroll up = charger anciens) */}
+      {scrollDirection === 'up' && isLoadingMore && hasMore && messages.length > 0 && (
         <div className="flex justify-center py-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
-            <span>{t('loadingOlderMessages')}</span>
+            <span>{t('common:messages.loadingOlderMessages')}</span>
           </div>
         </div>
       )}
@@ -390,6 +390,16 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
           isTranslating={isTranslating}
         />
       </div>
+
+      {/* Indicateur de chargement EN BAS - Mode BubbleStream (scroll down = charger anciens) */}
+      {scrollDirection === 'down' && isLoadingMore && hasMore && messages.length > 0 && (
+        <div className="flex justify-center py-4">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
+            <span>{t('common:messages.loadingOlderMessages')}</span>
+          </div>
+        </div>
+      )}
 
       {/* Élément pour le scroll automatique */}
       <div ref={messagesEndRef} className="h-1" />

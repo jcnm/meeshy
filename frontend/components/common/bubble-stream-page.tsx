@@ -142,7 +142,8 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     threshold: 200, // Scroll infini activé: charge automatiquement à 200px du bas
     linkId: isAnonymousMode ? linkId : undefined, // Passer le linkId pour les utilisateurs anonymes
     containerRef: messagesContainerRef,
-    scrollDirection: 'down' // Scroll vers le bas pour charger plus (page publique)
+    scrollDirection: 'down', // Scroll vers le bas pour charger plus (page publique)
+    disableAutoFill: true // Désactiver le chargement automatique pour remplir l'écran (feed public)
   });
 
   // Hook pour la gestion des traductions
@@ -1357,8 +1358,13 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         }
       `}</style>
       
-      {/* Layout principal - fond gradient géré par CSS mobile-fullscreen */}
-      <div className="h-full flex flex-col mobile-fullscreen">
+      {/* Layout principal - fond gradient couvre toute la page */}
+      <div 
+        className="h-full flex flex-col mobile-fullscreen"
+        style={{ 
+          background: 'linear-gradient(to bottom right, #eff6ff, #ffffff, #e0e7ff)'
+        }}
+      >
         
         {/* Indicateur dynamique - Frappe prioritaire sur connexion */}
         <div className="fixed top-16 left-0 right-0 xl:right-80 z-[40] px-4 sm:px-6 lg:px-8 pt-4 pb-2 bg-gradient-to-b from-blue-50 to-transparent pointer-events-none realtime-indicator hidden md:block">
@@ -1415,9 +1421,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         <div 
           ref={messagesContainerRef}
           className="flex-1 overflow-y-auto overflow-x-hidden pt-4 md:pt-20 pb-48 xl:pr-80"
-          style={{ 
-            background: 'linear-gradient(to bottom right, #eff6ff, #ffffff, #e0e7ff)'
-          }}
         >
           <div className={cn(
             "max-w-4xl mx-auto",

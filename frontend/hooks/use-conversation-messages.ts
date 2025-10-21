@@ -16,6 +16,7 @@ export interface ConversationMessagesOptions {
   threshold?: number;
   containerRef?: React.RefObject<HTMLDivElement | null>;
   scrollDirection?: 'up' | 'down'; // Direction du scroll pour charger plus: 'up' = haut (défaut), 'down' = bas
+  disableAutoFill?: boolean; // Désactive le chargement automatique pour remplir le conteneur
 }
 
 export interface ConversationMessagesReturn {
@@ -43,6 +44,7 @@ export function useConversationMessages(
     threshold = 100,
     containerRef,
     scrollDirection = 'up', // Par défaut: scroll vers le haut (comportement actuel)
+    disableAutoFill = false, // Par défaut: auto-fill activé
     linkId // Optionnel: utilisé pour les utilisateurs anonymes
   } = options;
 
@@ -381,9 +383,9 @@ export function useConversationMessages(
     }
   }, [conversationId, currentUser, enabled, isInitialized]);
 
-  // Vérification du contenu après initialisation
+  // Vérification du contenu après initialisation (peut être désactivé)
   useEffect(() => {
-    if (!isInitialized || !actualContainerRef.current || isLoadingMore) return;
+    if (disableAutoFill || !isInitialized || !actualContainerRef.current || isLoadingMore) return;
 
     const checkContentHeight = () => {
       if (!actualContainerRef.current || isLoadingMore || !hasMore) return;
@@ -400,9 +402,9 @@ export function useConversationMessages(
     return () => clearTimeout(timeoutId);
   }, [isInitialized, hasMore]); // Retirer loadMore des dépendances
 
-  // Chargement automatique si le conteneur n'est pas assez rempli
+  // Chargement automatique si le conteneur n'est pas assez rempli (peut être désactivé)
   useEffect(() => {
-    if (!isInitialized || isLoadingMore || !hasMore || !actualContainerRef.current) return;
+    if (disableAutoFill || !isInitialized || isLoadingMore || !hasMore || !actualContainerRef.current) return;
 
     // Utiliser un timeout pour éviter les appels en boucle
     const checkAndLoadMore = () => {
@@ -418,7 +420,7 @@ export function useConversationMessages(
 
     const timeoutId = setTimeout(checkAndLoadMore, 500);
     return () => clearTimeout(timeoutId);
-  }, [isInitialized, messages.length]); // Retirer loadMore et hasMore des dépendances
+  }, [disableAutoFill, isInitialized, messages.length]); // Retirer loadMore et hasMore des dépendances
 
   // Nettoyage à la destruction
   useEffect(() => {
