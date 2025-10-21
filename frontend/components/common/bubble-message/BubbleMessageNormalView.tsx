@@ -439,19 +439,33 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
             </time>
           </div>
 
-          {/* Message bubble wrapper with reactions */}
-          <div className="relative group/message">
-            <Card 
-              className={cn(
-                "relative transition-colors duration-200 border shadow-none max-w-[85%] sm:max-w-[75%] md:max-w-[65%] overflow-visible",
-                isOwnMessage 
-                  ? 'bg-gradient-to-br from-blue-400 to-blue-500 border-blue-400 text-white ml-auto' 
-                  : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 mr-auto'
-              )}
-            >
-              <CardContent className="p-1 sm:p-2 max-w-full overflow-visible">
+          {/* Attachments EN PREMIER (hors de la bulle) */}
+          {message.attachments && message.attachments.length > 0 && (
+            <div className={cn(
+              "mb-2 max-w-[85%] sm:max-w-[75%] md:max-w-[65%]",
+              isOwnMessage ? "ml-auto" : "mr-auto"
+            )}>
+              <MessageAttachments
+                attachments={message.attachments}
+                onImageClick={onImageClick}
+              />
+            </div>
+          )}
 
-              {/* Message parent si c'est une réponse */}
+          {/* Message bubble wrapper with reactions - Seulement si contenu textuel */}
+          {message.content && message.content.trim() && (
+            <div className="relative group/message">
+              <Card 
+                className={cn(
+                  "relative transition-colors duration-200 border shadow-none max-w-[85%] sm:max-w-[75%] md:max-w-[65%] overflow-visible",
+                  isOwnMessage 
+                    ? 'bg-gradient-to-br from-blue-400 to-blue-500 border-blue-400 text-white ml-auto' 
+                    : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 mr-auto'
+                )}
+              >
+                <CardContent className="p-1 sm:p-2 max-w-full overflow-visible">
+
+                {/* Message parent si c'est une réponse */}
               {message.replyTo && (
                 <motion.div
                   initial={{ opacity: 0, y: -3 }}
@@ -555,16 +569,6 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                         console.log(`Link clicked: ${url} (tracking: ${isTracking})`);
                       }}
                     />
-
-                    {/* Attachments */}
-                    {message.attachments && message.attachments.length > 0 && (
-                      <div className="max-w-full overflow-hidden">
-                        <MessageAttachments
-                          attachments={message.attachments}
-                          onImageClick={onImageClick}
-                        />
-                      </div>
-                    )}
                   </motion.div>
                 </AnimatePresence>
               </div>
@@ -681,7 +685,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                     {/* Popover de traduction (seulement si ancien système) */}
                     {!onEnterLanguageMode && (
                       <PopoverContent 
-                        className={cn("w-96 p-0 overflow-hidden", Z_CLASSES.POPOVER_CONTENT)}
+                        className={cn("w-96 p-0 overflow-hidden", Z_CLASSES.TRANSLATION_POPOVER)}
                         side="top"
                         align="start"
                         sideOffset={8}
@@ -851,43 +855,20 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                   {/* Bouton réaction */}
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      {onEnterReactionMode ? (
-                        // Nouveau système - bouton simple qui ouvre la vue inline
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={handleReactionClick}
-                          className={cn(
-                            "h-7 w-7 p-0 rounded-full transition-colors",
-                            isOwnMessage 
-                              ? "text-white/70 hover:text-white hover:bg-white/20" 
-                              : "text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
-                          )}
-                          aria-label={t('addReaction')}
-                        >
-                          <Smile className="h-3.5 w-3.5" />
-                        </Button>
-                      ) : (
-                        // Ancien système - popover avec EmojiPicker
-                        <EmojiPicker
-                          onEmojiSelect={addReaction}
-                          trigger={
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className={cn(
-                                "h-7 w-7 p-0 rounded-full transition-colors",
-                                isOwnMessage 
-                                  ? "text-white/70 hover:text-white hover:bg-white/20" 
-                                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
-                              )}
-                              aria-label={t('addReaction')}
-                            >
-                              <Smile className="h-3.5 w-3.5" />
-                            </Button>
-                          }
-                        />
-                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleReactionClick}
+                        className={cn(
+                          "h-7 w-7 p-0 rounded-full transition-colors",
+                          isOwnMessage 
+                            ? "text-white/70 hover:text-white hover:bg-white/20" 
+                            : "text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
+                        )}
+                        aria-label={t('addReaction')}
+                      >
+                        <Smile className="h-3.5 w-3.5" />
+                      </Button>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>{t('addReaction')}</p>
@@ -958,7 +939,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
             </CardContent>
           </Card>
 
-          {/* Message Reactions - Position selon l'expéditeur */}
+          {/* Message Reactions - Position selon l'expéditeur - Attachées au texte */}
           <div 
             className={cn(
               "absolute -bottom-3 z-[9999]",
@@ -976,6 +957,94 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
             />
           </div>
         </div>
+          )}
+
+          {/* Si attachments seuls (pas de texte) - Réactions simples */}
+          {(!message.content || !message.content.trim()) && message.attachments && message.attachments.length > 0 && (
+            <div className="relative group/message">
+              {/* Actions simples pour attachments seuls */}
+              <div className={cn(
+                "flex items-center gap-1.5 mt-2 max-w-[85%] sm:max-w-[75%] md:max-w-[65%]",
+                isOwnMessage ? "ml-auto justify-end" : "mr-auto justify-start"
+              )}>
+                {/* Bouton de réponse */}
+                {onReplyMessage && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onReplyMessage(message)}
+                        aria-label={t('replyToMessage')}
+                        className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-blue-600 hover:bg-blue-50"
+                      >
+                        <MessageCircle className="h-3.5 w-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{t('replyToMessage')}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+
+                {/* Bouton réaction */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleReactionClick}
+                      className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                      aria-label={t('addReaction')}
+                    >
+                      <Smile className="h-3.5 w-3.5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t('addReaction')}</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                {/* Bouton supprimer (seulement si permissions) */}
+                {canDeleteMessage() && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleDeleteMessage}
+                        className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-red-600 hover:bg-red-50"
+                        aria-label={t('delete')}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{t('delete')}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
+
+              {/* Message Reactions - Attachées aux attachments */}
+              <div 
+                className={cn(
+                  "absolute -bottom-3 z-[9999]",
+                  isOwnMessage ? "right-2" : "left-2"
+                )}
+                style={{ pointerEvents: 'auto' }}
+              >
+                <MessageReactions
+                  messageId={message.id}
+                  conversationId={conversationId || message.conversationId}
+                  currentUserId={currentUser?.id || ''}
+                  currentAnonymousUserId={currentAnonymousUserId}
+                  isAnonymous={isAnonymous}
+                  showAddButton={false}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </motion.div>
     </TooltipProvider>
