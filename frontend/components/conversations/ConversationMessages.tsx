@@ -40,6 +40,7 @@ interface ConversationMessagesProps {
   reverseOrder?: boolean; // true = récent en haut (BubbleStream), false = ancien en haut (Conversations)
   scrollDirection?: 'up' | 'down'; // Direction du scroll pour charger plus: 'up' = haut (défaut), 'down' = bas
   scrollButtonDirection?: 'up' | 'down'; // Direction du bouton scroll: 'up' = ArrowUp (BubbleStream), 'down' = ArrowDown (Conversations)
+  scrollContainerRef?: React.RefObject<HTMLDivElement>; // Ref externe du conteneur de scroll (pour BubbleStream)
 }
 
 const ConversationMessagesComponent = memo(function ConversationMessages({
@@ -68,7 +69,8 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
   t,
   reverseOrder = false,
   scrollDirection = 'up', // Par défaut: scroll vers le haut (comportement classique messagerie)
-  scrollButtonDirection = 'down' // Par défaut: ArrowDown pour Conversations (descendre vers récent)
+  scrollButtonDirection = 'down', // Par défaut: ArrowDown pour Conversations (descendre vers récent)
+  scrollContainerRef // Ref externe du conteneur de scroll (optionnelle)
 }: ConversationMessagesProps) {
   // Hook pour fixer les z-index des popovers Radix UI
   useFixRadixZIndex();
@@ -85,7 +87,10 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
     }
   }, [translatedMessages]);
 
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  // Utiliser le ref externe SI fourni, sinon créer un ref local
+  const internalScrollAreaRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = scrollContainerRef || internalScrollAreaRef;
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const previousMessageCountRef = useRef(0);
   const isAutoScrollingRef = useRef(true);
@@ -215,6 +220,23 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
     }
   }, [onLoadMore, hasMore, isLoadingMore, scrollDirection]);
 
+  // Attacher handleScroll au conteneur externe si fourni
+  useEffect(() => {
+    if (scrollContainerRef?.current) {
+      const container = scrollContainerRef.current;
+      // Wrapper pour convertir Event natif en React UIEvent
+      const handleNativeScroll = () => {
+        handleScroll({} as React.UIEvent<HTMLDivElement>);
+      };
+      container.addEventListener('scroll', handleNativeScroll);
+      console.log('[ConversationMessages] 📌 handleScroll attaché au conteneur externe');
+      return () => {
+        container.removeEventListener('scroll', handleNativeScroll);
+        console.log('[ConversationMessages] 🔓 handleScroll détaché du conteneur externe');
+      };
+    }
+  }, [scrollContainerRef, handleScroll]);
+
   // Réinitialiser le flag de premier chargement quand la conversation change
   useEffect(() => {
     console.log('[ConversationMessagesV2] 🔄 Changement de conversation - réinitialisation du flag premier chargement');
@@ -305,74 +327,97 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
   }, [messages, currentUser?.id, scrollDirection, scrollToBottom, scrollToTop, isLoadingMore, isUserAtBottom]);
 
 
+  // Choisir l'action du bouton selon la direction
+  const handleScrollButtonClick = useCallback(() => {
+    if (scrollButtonDirection === 'up') {
+      // BubbleStream: messages récents EN HAUT → remonter vers le haut
+      scrollToTop(true);
+    } else {
+      // Conversations: messages anciens EN HAUT → descendre vers le bas (récent)
+      scrollToBottom(true);
+    }
+  }, [scrollButtonDirection, scrollToTop, scrollToBottom]);
+
+  // Si un ref externe est fourni, ne pas créer de conteneur de scroll
+  const content = (
+    <div className={cn(
+      "flex flex-col",
+      isMobile ? "px-3 py-4" : "px-6 py-4"
+    )}>
+      {/* Indicateur de chargement (messages anciens) */}
+      {isLoadingMore && hasMore && messages.length > 0 && (
+        <div className="flex justify-center py-4">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
+            <span>{t('loadingOlderMessages')}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Messages */}
+      <div>
+        {/* 
+          Logique d'affichage selon reverseOrder:
+          - reverseOrder=false (BubbleStream): garde [récent...ancien] = Récent EN HAUT
+          - reverseOrder=true (Conversations): inverse vers [ancien...récent] = Ancien EN HAUT
+          - Backend retourne toujours: orderBy createdAt DESC = [récent...ancien]
+        */}
+        <MessagesDisplay
+          messages={messages}
+          translatedMessages={translatedMessages}
+          isLoadingMessages={isLoadingMessages}
+          currentUser={currentUser}
+          userLanguage={userLanguage}
+          usedLanguages={usedLanguages}
+          emptyStateMessage={t('noMessages')}
+          emptyStateDescription={t('noMessagesDescription')}
+          reverseOrder={reverseOrder}
+          className={cn(
+            "space-y-3",
+            isMobile && "space-y-'2"
+          )}
+          onEditMessage={onEditMessage}
+          onDeleteMessage={onDeleteMessage}
+          conversationId={conversationId}
+          isAnonymous={isAnonymous}
+          currentAnonymousUserId={currentAnonymousUserId}
+          onReplyMessage={onReplyMessage}
+          onNavigateToMessage={onNavigateToMessage}
+          onImageClick={onImageClick}
+          conversationType={conversationType || 'direct'}
+          userRole={userRole}
+          addTranslatingState={addTranslatingState}
+          isTranslating={isTranslating}
+        />
+      </div>
+
+      {/* Élément pour le scroll automatique */}
+      <div ref={messagesEndRef} className="h-1" />
+    </div>
+  );
+
   return (
     <div className="flex-1 flex flex-col h-full relative">
-      <div
-        ref={scrollAreaRef}
-        className="flex-1 messages-scroll conversation-scroll h-full overflow-y-auto overflow-x-visible"
-        onScroll={handleScroll}
-        style={{ position: 'relative' }}
-      >
-        <div className={cn(
-          "flex flex-col",
-          isMobile ? "px-3 py-4" : "px-6 py-4"
-        )}>
-          {/* Indicateur de chargement (messages anciens) */}
-          {isLoadingMore && hasMore && messages.length > 0 && (
-            <div className="flex justify-center py-4">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
-                <span>{t('loadingOlderMessages')}</span>
-              </div>
-            </div>
-          )}
-
-          {/* Messages */}
-          <div>
-            {/* 
-              Logique d'affichage selon reverseOrder:
-              - reverseOrder=false (BubbleStream): garde [récent...ancien] = Récent EN HAUT
-              - reverseOrder=true (Conversations): inverse vers [ancien...récent] = Ancien EN HAUT
-              - Backend retourne toujours: orderBy createdAt DESC = [récent...ancien]
-            */}
-            <MessagesDisplay
-              messages={messages}
-              translatedMessages={translatedMessages}
-              isLoadingMessages={isLoadingMessages}
-              currentUser={currentUser}
-              userLanguage={userLanguage}
-              usedLanguages={usedLanguages}
-              emptyStateMessage={t('noMessages')}
-              emptyStateDescription={t('noMessagesDescription')}
-              reverseOrder={reverseOrder}
-              className={cn(
-                "space-y-3",
-                isMobile && "space-y-'2"
-              )}
-              onEditMessage={onEditMessage}
-              onDeleteMessage={onDeleteMessage}
-              conversationId={conversationId}
-              isAnonymous={isAnonymous}
-              currentAnonymousUserId={currentAnonymousUserId}
-              onReplyMessage={onReplyMessage}
-              onNavigateToMessage={onNavigateToMessage}
-              onImageClick={onImageClick}
-              conversationType={conversationType || 'direct'}
-              userRole={userRole}
-              addTranslatingState={addTranslatingState}
-              isTranslating={isTranslating}
-            />
-          </div>
-
-          {/* Élément pour le scroll automatique */}
-          <div ref={messagesEndRef} className="h-1" />
+      {/* Si ref externe fourni, pas de conteneur scroll. Sinon, créer un conteneur scroll local */}
+      {scrollContainerRef ? (
+        // Pas de conteneur scroll - le parent gère le scroll
+        content
+      ) : (
+        // Conteneur scroll local
+        <div
+          ref={internalScrollAreaRef}
+          className="flex-1 messages-scroll conversation-scroll h-full overflow-y-auto overflow-x-visible"
+          onScroll={handleScroll}
+          style={{ position: 'relative' }}
+        >
+          {content}
         </div>
-      </div>
+      )}
       
       {/* Bouton flottant pour scroller - Direction adaptée au contexte */}
       {showScrollButton && !isLoadingMessages && messages.length > 0 && (
         <Button
-          onClick={() => scrollToBottom(true)}
+          onClick={handleScrollButtonClick}
           className={cn(
             "fixed bottom-32 right-6 z-50",
             "rounded-full w-12 h-12 p-0",
