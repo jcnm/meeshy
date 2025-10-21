@@ -372,7 +372,7 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
         <Button
           onClick={() => scrollToBottom(true)}
           className={cn(
-            "fixed bottom-24 right-6 z-50",
+            "fixed bottom-32 right-6 z-50",
             "rounded-full w-12 h-12 p-0",
             "shadow-2xl hover:shadow-3xl",
             "bg-primary hover:bg-primary/90",
