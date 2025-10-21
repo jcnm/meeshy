@@ -526,14 +526,20 @@ function LandingPageContent() {
 
       {/* Dialog Login - Contrôlé par authMode depuis Header */}
       <Dialog open={authMode === 'login'} onOpenChange={(open) => setAuthMode(open ? 'login' : 'welcome')}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{tAuth('login.title') || 'Connexion'}</DialogTitle>
-            <DialogDescription>
-              {tAuth('login.description') || 'Connectez-vous à votre compte Meeshy'}
-            </DialogDescription>
-          </DialogHeader>
-          <LoginForm />
+        <DialogContent className="max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+          {/* Header fixe */}
+          <div className="px-6 pt-6 pb-4 border-b shrink-0">
+            <DialogHeader>
+              <DialogTitle>{tAuth('login.title') || 'Connexion'}</DialogTitle>
+              <DialogDescription>
+                {tAuth('login.description') || 'Connectez-vous à votre compte Meeshy'}
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+          {/* Contenu scrollable */}
+          <div className="flex-1 overflow-y-auto px-6 min-h-0 py-4">
+            <LoginForm />
+          </div>
         </DialogContent>
       </Dialog>
     </div>
