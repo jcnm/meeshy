@@ -607,12 +607,14 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     
     // Scroll automatique pour les nouveaux messages d'autres utilisateurs
     if (message.senderId !== user.id && message.anonymousSenderId !== user.id) {
-      // Scroll automatique SEULEMENT si l'utilisateur est déjà proche du haut (dans les 300px)
+      // Scroll automatique SEULEMENT si l'utilisateur est déjà proche du haut (pour scrollDirection='down')
       setTimeout(() => {
         if (messagesContainerRef.current) {
-          const currentScrollTop = messagesContainerRef.current.scrollTop;
+          const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
           
-          if (currentScrollTop < 300) {
+          // En mode scrollDirection='down' (BubbleStream), les nouveaux messages sont EN HAUT
+          // Donc on scroll vers le haut (top: 0) si l'utilisateur est déjà proche du haut
+          if (scrollTop < 300) {
             messagesContainerRef.current.scrollTo({
               top: 0,
               behavior: 'smooth'
@@ -1130,7 +1132,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           // Log pour le debug - La langue source sera utilisée côté serveur
           console.log(`🔤 Langue source du message: ${selectedInputLanguage} (détectée: ${detectedLanguage})`);
           
-          // Scroll automatique vers le haut pour voir le message envoyé
+          // Scroll automatique vers le HAUT pour voir le message envoyé (scrollDirection='down')
           setTimeout(() => {
             if (messagesContainerRef.current) {
               messagesContainerRef.current.scrollTo({
@@ -1429,6 +1431,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
               onLoadMore={loadMore}
               t={t}
               reverseOrder={false} // BubbleStream: garde l'ordre backend [récent...ancien] = récent en haut
+              scrollDirection="down" // BubbleStream: scroll vers le bas pour charger les messages plus anciens
             />
 
             {/* Indicateur si plus de messages disponibles - positionné après les messages */}
