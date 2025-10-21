@@ -291,18 +291,19 @@ function DashboardPageContent() {
   }
 
   return (
-    <DashboardLayout>
-      {/* Greeting and quick actions */}
-      <div className="mb-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-                    <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                {t('greeting', { name: user?.firstName || user?.username || t('greetingFallback') })}
-              </h2>
-              <p className="text-gray-600">
-                {t('overview')}
-              </p>
-            </div>
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      <DashboardLayout className="!bg-none !bg-transparent !h-auto">
+        {/* Greeting and quick actions */}
+        <div className="mb-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                      <div>
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                  {t('greeting', { name: user?.firstName || user?.username || t('greetingFallback') })}
+                </h2>
+                <p className="text-gray-600">
+                  {t('overview')}
+                </p>
+              </div>
           
                                 <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-2 sm:gap-3">
             <Button 
@@ -843,7 +844,8 @@ function DashboardPageContent() {
           onClose={() => setIsShareModalOpen(false)}
           userLanguage={user?.systemLanguage || 'fr'}
         />
-    </DashboardLayout>
+      </DashboardLayout>
+    </div>
   );
 }
 
