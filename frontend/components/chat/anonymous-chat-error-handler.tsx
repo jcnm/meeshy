@@ -209,7 +209,7 @@ export function AnonymousChatErrorHandler({
                 onClick={action.action}
                 variant={action.variant}
                 className="w-full"
-                disabled={action.disabled || isRetrying}
+                disabled={'disabled' in action ? action.disabled || isRetrying : isRetrying}
               >
                 {action.label === t('generic.actions.retry') && isRetrying && (
                   <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
