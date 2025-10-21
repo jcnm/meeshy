@@ -185,14 +185,20 @@ function LandingPageContent() {
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>{tAuth('register.title')}</DialogTitle>
-                  <DialogDescription>
-                    {tAuth('register.description')}
-                  </DialogDescription>
-                </DialogHeader>
-                <RegisterForm formPrefix="main-register" />
+              <DialogContent className="max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+                {/* Header fixe */}
+                <div className="px-6 pt-6 pb-4 border-b shrink-0">
+                  <DialogHeader>
+                    <DialogTitle>{tAuth('register.title')}</DialogTitle>
+                    <DialogDescription>
+                      {tAuth('register.description')}
+                    </DialogDescription>
+                  </DialogHeader>
+                </div>
+                {/* Contenu scrollable */}
+                <div className="flex-1 overflow-y-auto px-6 min-h-0">
+                  <RegisterForm formPrefix="main-register" />
+                </div>
               </DialogContent>
             </Dialog>
             
