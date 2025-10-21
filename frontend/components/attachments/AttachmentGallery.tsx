@@ -4,8 +4,8 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { X, ChevronLeft, ChevronRight, Download, MessageSquare } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { X, ChevronLeft, ChevronRight, Download, MessageSquare, Maximize2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
 import { Attachment } from '../../shared/types/attachment';
@@ -37,6 +37,85 @@ export function AttachmentGallery({
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef<number>(0);
+  const touchEndX = useRef<number>(0);
+
+  const currentAttachment = attachments[currentIndex];
+
+  const handlePrevious = useCallback(() => {
+    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : attachments.length - 1));
+  }, [attachments.length]);
+
+  const handleNext = useCallback(() => {
+    setCurrentIndex((prev) => (prev < attachments.length - 1 ? prev + 1 : 0));
+  }, [attachments.length]);
+
+  const handleDownload = () => {
+    if (currentAttachment) {
+      window.open(currentAttachment.fileUrl, '_blank');
+    }
+  };
+
+  const handleFullscreen = () => {
+    if (currentAttachment) {
+      window.open(currentAttachment.fileUrl, '_blank');
+    }
+  };
+
+  const handleGoToMessage = () => {
+    if (currentAttachment && onNavigateToMessage) {
+      onNavigateToMessage(currentAttachment.messageId);
+      onClose();
+    }
+  };
+
+  // Navigation au clavier (flèches gauche/droite, Escape)
+  useEffect(() => {
+    if (!open) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        handlePrevious();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        handleNext();
+      } else if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open, handlePrevious, handleNext, onClose]);
+
+  // Gestion du swipe sur mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    const swipeThreshold = 50; // pixels minimum pour déclencher le swipe
+    const diff = touchStartX.current - touchEndX.current;
+
+    if (Math.abs(diff) > swipeThreshold) {
+      if (diff > 0) {
+        // Swipe vers la gauche -> image suivante
+        handleNext();
+      } else {
+        // Swipe vers la droite -> image précédente
+        handlePrevious();
+      }
+    }
+
+    touchStartX.current = 0;
+    touchEndX.current = 0;
+  };
 
   // Charger les attachments de la conversation
   useEffect(() => {
@@ -94,29 +173,6 @@ export function AttachmentGallery({
     loadAttachments();
   }, [open, conversationId, initialAttachmentId, token, providedAttachments]);
 
-  const currentAttachment = attachments[currentIndex];
-
-  const handlePrevious = () => {
-    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : attachments.length - 1));
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev < attachments.length - 1 ? prev + 1 : 0));
-  };
-
-  const handleDownload = () => {
-    if (currentAttachment) {
-      window.open(currentAttachment.fileUrl, '_blank');
-    }
-  };
-
-  const handleGoToMessage = () => {
-    if (currentAttachment && onNavigateToMessage) {
-      onNavigateToMessage(currentAttachment.messageId);
-      onClose();
-    }
-  };
-
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleString('fr-FR', {
@@ -150,6 +206,15 @@ export function AttachmentGallery({
                 <Button
                   variant="ghost"
                   size="sm"
+                  onClick={handleFullscreen}
+                  className="text-white hover:bg-white/10"
+                  title={t('gallery.fullscreen')}
+                >
+                  <Maximize2 className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={handleDownload}
                   className="text-white hover:bg-white/10"
                   title={t('gallery.download')}
@@ -169,33 +234,42 @@ export function AttachmentGallery({
             </div>
           </div>
 
-          {/* Image principale */}
-          <div className="flex-1 flex items-center justify-center p-4">
+          {/* Image principale avec support swipe mobile */}
+          <div 
+            ref={imageContainerRef}
+            className="flex-1 flex items-center justify-center p-4 overflow-hidden"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
             {loading ? (
               <div className="text-white">{t('gallery.loading')}</div>
             ) : currentAttachment ? (
               <img
                 src={currentAttachment.fileUrl}
                 alt={currentAttachment.originalName}
-                className="max-w-full max-h-full object-contain"
+                className="w-full h-full object-contain"
+                style={{ maxWidth: '100%', maxHeight: '100%' }}
               />
             ) : (
               <div className="text-white">{t('gallery.noImage')}</div>
             )}
           </div>
 
-          {/* Navigation */}
+          {/* Navigation - Visible en permanence sur desktop, masqué sur mobile (swipe) */}
           {attachments.length > 1 && (
             <>
               <button
                 onClick={handlePrevious}
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-colors"
+                className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 text-white rounded-full items-center justify-center transition-colors z-20"
+                aria-label={t('gallery.previous')}
               >
                 <ChevronLeft className="w-6 h-6" />
               </button>
               <button
                 onClick={handleNext}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-colors"
+                className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 text-white rounded-full items-center justify-center transition-colors z-20"
+                aria-label={t('gallery.next')}
               >
                 <ChevronRight className="w-6 h-6" />
               </button>
