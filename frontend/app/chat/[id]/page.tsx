@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { LinkConversationService, LinkConversationData } from '@/services/link-conversation.service';
 import { BubbleStreamPage } from '@/components/common/bubble-stream-page';
@@ -14,10 +14,11 @@ type ConversationData = LinkConversationData;
 
 export default function ChatLinkPage() {
   const params = useParams();
+  const router = useRouter();
   const id = params.id as string; // Peut être linkId OU conversationShareLinkId
   const { user } = useAuth();
   const { t } = useI18n('chat');
-  
+
   const [conversationData, setConversationData] = useState<ConversationData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -72,6 +73,22 @@ export default function ChatLinkPage() {
     }
   }, [id, t]);
 
+  // Redirection en cas d'erreur
+  useEffect(() => {
+    if (error && !isLoading) {
+      // Vérifier si l'id ressemble à un lien d'invitation (commence par "mshy_")
+      if (id && id.startsWith('mshy_')) {
+        // Rediriger vers /join/{id} pour permettre à l'utilisateur de rejoindre
+        console.log('[ChatLinkPage] Redirection vers /join/' + id);
+        router.push(`/join/${id}`);
+      } else {
+        // Sinon, rediriger vers l'accueil
+        console.log('[ChatLinkPage] Redirection vers l\'accueil');
+        router.push('/');
+      }
+    }
+  }, [error, isLoading, id, router]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -81,17 +98,24 @@ export default function ChatLinkPage() {
   }
 
   if (error) {
+    // La redirection se fait via useEffect, afficher un spinner pendant la redirection
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <AccessDenied description={error} />
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+        <p className="text-gray-600">Redirection en cours...</p>
       </div>
     );
   }
 
   if (!conversationData || !conversationData.currentUser) {
+    // Déclencher une erreur pour activer la redirection
+    if (!error) {
+      setError(t('errors.unableToLoadConversation'));
+    }
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <AccessDenied description={t('errors.unableToLoadConversation')} />
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+        <p className="text-gray-600">Redirection en cours...</p>
       </div>
     );
   }
