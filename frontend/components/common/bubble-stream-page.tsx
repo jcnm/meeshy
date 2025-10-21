@@ -1358,13 +1358,11 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         }
       `}</style>
       
-      {/* Layout principal - fond gradient couvre toute la page */}
-      <div 
-        className="h-full flex flex-col mobile-fullscreen"
-        style={{ 
-          background: 'linear-gradient(to bottom right, #eff6ff, #ffffff, #e0e7ff)'
-        }}
-      >
+      {/* Conteneur principal avec gradient - englobe TOUT comme /links et /profile */}
+      <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      
+      {/* Layout principal - Zone de contenu */}
+      <div className="flex-1 flex flex-col mobile-fullscreen">
         
         {/* Indicateur dynamique - Frappe prioritaire sur connexion */}
         <div className="fixed top-16 left-0 right-0 xl:right-80 z-[40] px-4 sm:px-6 lg:px-8 pt-4 pb-2 bg-gradient-to-b from-blue-50 to-transparent pointer-events-none realtime-indicator hidden md:block">
@@ -1618,6 +1616,9 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
             </div>
           </div>
         </div>
+      </div>
+      
+      {/* Fermeture du conteneur principal avec gradient */}
       </div>
 
       {/* Galerie d'images */}
