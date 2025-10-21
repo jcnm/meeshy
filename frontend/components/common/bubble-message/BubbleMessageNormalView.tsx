@@ -68,7 +68,7 @@ import { useMessageReactions } from '@/hooks/use-message-reactions';
 import type { BubbleMessage, MessageTranslation, MessageVersion, MessageSender, AnonymousSender } from './types';
 
 interface BubbleMessageNormalViewProps {
-  message: Message & {
+  message: Omit<Message, 'translations'> & {
     location?: string;
     originalLanguage: string;
     translations: BubbleTranslation[];

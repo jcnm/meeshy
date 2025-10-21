@@ -1359,14 +1359,14 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       `}</style>
       
       {/* Conteneur principal avec gradient */}
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         
         {/* Indicateur dynamique - Frappe prioritaire sur connexion */}
-        <div className="fixed top-16 left-0 right-0 xl:right-80 z-[40] px-4 sm:px-6 lg:px-8 pt-4 pb-2 bg-gradient-to-b from-blue-50 to-transparent pointer-events-none realtime-indicator hidden md:block">
+        <div className="fixed top-16 left-0 right-0 xl:right-80 z-[40] px-4 sm:px-6 lg:px-8 pt-4 pb-2 bg-gradient-to-b from-blue-50 to-transparent dark:from-gray-900/80 dark:to-transparent pointer-events-none realtime-indicator hidden md:block">
           <div className="pointer-events-auto">
             {/* Priorité à l'indicateur de frappe quand actif */}
             {typingUsers.length > 0 && connectionStatus.isConnected ? (
-              <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm backdrop-blur-sm bg-blue-100/90 text-blue-800 border border-blue-200/80 transition-all">
+              <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm backdrop-blur-sm bg-blue-100/90 text-blue-800 dark:bg-blue-900/90 dark:text-blue-200 border border-blue-200/80 dark:border-blue-700/80 transition-all">
                 <Loader2 className="h-3 w-3 animate-spin" />
                 <span>
                   {typingUsers.length === 1 
@@ -1381,11 +1381,11 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
               /* Indicateur de connexion par défaut */
               <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm backdrop-blur-sm transition-all ${
                 connectionStatus.isConnected && connectionStatus.hasSocket
-                  ? 'bg-green-100/80 text-green-800 border border-green-200/60' 
-                  : 'bg-orange-100/80 text-orange-800 border border-orange-200/60'
+                  ? 'bg-green-100/80 text-green-800 dark:bg-green-900/80 dark:text-green-200 border border-green-200/60 dark:border-green-700/60' 
+                  : 'bg-orange-100/80 text-orange-800 dark:bg-orange-900/80 dark:text-orange-200 border border-orange-200/60 dark:border-orange-700/60'
               }`}>
                 <div className={`w-2 h-2 rounded-full animate-pulse ${
-                  connectionStatus.isConnected && connectionStatus.hasSocket ? 'bg-green-600' : 'bg-orange-600'
+                  connectionStatus.isConnected && connectionStatus.hasSocket ? 'bg-green-600 dark:bg-green-400' : 'bg-orange-600 dark:bg-orange-400'
                 }`} />
                 <span className="font-medium">
                   {t('bubbleStream.realTimeMessages')}
@@ -1401,7 +1401,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                       onClick={() => {
                         reconnect();
                       }}
-                      className="ml-2 text-xs px-2 py-1 h-auto hover:bg-orange-200/50"
+                      className="ml-2 text-xs px-2 py-1 h-auto hover:bg-orange-200/50 dark:hover:bg-orange-800/50"
                     >
                       {t('bubbleStream.reconnect')}
                     </Button>
