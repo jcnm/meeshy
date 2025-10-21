@@ -288,6 +288,37 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
     }
   }, [displayContent, conversationId, message.id, t]);
 
+  // Copier uniquement le lien du message (pour attachments seuls)
+  const handleCopyMessageLink = useCallback(async () => {
+    try {
+      // Générer l'URL du message selon le contexte actuel
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+      
+      let messageUrl: string;
+      
+      if (conversationId) {
+        // Si on est déjà dans /chat/, utiliser /chat/, sinon utiliser /conversations/
+        if (currentPath.startsWith('/chat/')) {
+          messageUrl = `${baseUrl}/chat/${conversationId}/#message-${message.id}`;
+        } else {
+          messageUrl = `${baseUrl}/conversations/${conversationId}/#message-${message.id}`;
+        }
+      } else {
+        messageUrl = `${baseUrl}/message/${message.id}`;
+      }
+      
+      // Copier uniquement l'URL dans le presse-papiers
+      await navigator.clipboard.writeText(messageUrl);
+      
+      // Afficher une notification de succès
+      toast.success(t('linkCopied') || 'Lien copié !');
+    } catch (error) {
+      console.error('Failed to copy message link:', error);
+      toast.error(t('copyFailed'));
+    }
+  }, [conversationId, message.id, t]);
+
   // Logique de permissions (copiée)
   const isOwnMessage = currentUser && (
     message.senderId === currentUser.id || 
@@ -1002,6 +1033,24 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>{t('addReaction')}</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                {/* Bouton copier le lien */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleCopyMessageLink}
+                      className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                      aria-label={t('copyLink') || 'Copier le lien'}
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t('copyLink') || 'Copier le lien'}</p>
                   </TooltipContent>
                 </Tooltip>
 
