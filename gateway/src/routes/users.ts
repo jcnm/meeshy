@@ -276,18 +276,37 @@ export async function userRoutes(fastify: FastifyInstance) {
       };
 
       // Transformer les conversations récentes
-      const transformedConversations = recentConversations.map(conv => ({
-        id: conv.id,
-        name: conv.title || `Conversation ${conv.id.slice(-4)}`,
-        type: conv.type,
-        isActive: activeConversations > 0,
-        lastMessage: conv.messages && conv.messages.length > 0 ? {
-          content: conv.messages[0].content,
-          createdAt: conv.messages[0].createdAt,
-          sender: conv.messages[0].sender
-        } : null,
-        members: conv.members.map(member => member.user)
-      }));
+      const transformedConversations = recentConversations.map(conv => {
+        // S'assurer qu'un titre existe toujours
+        let displayTitle = conv.title;
+        if (!displayTitle || displayTitle.trim() === '') {
+          if (conv.type === 'direct' && conv.members && conv.members.length > 0) {
+            const otherMember = conv.members.find((m: any) => m.user?.id !== userId);
+            if (otherMember?.user) {
+              displayTitle = otherMember.user.displayName ||
+                            `${otherMember.user.username || ''}`.trim() ||
+                            'Conversation';
+            } else {
+              displayTitle = 'Direct Conversation';
+            }
+          } else {
+            displayTitle = conv.identifier || `Conversation ${conv.id.slice(-4)}`;
+          }
+        }
+
+        return {
+          id: conv.id,
+          title: displayTitle,
+          type: conv.type,
+          isActive: activeConversations > 0,
+          lastMessage: conv.messages && conv.messages.length > 0 ? {
+            content: conv.messages[0].content,
+            createdAt: conv.messages[0].createdAt,
+            sender: conv.messages[0].sender
+          } : null,
+          members: conv.members.map(member => member.user)
+        };
+      });
 
       // Transformer les communautés récentes
       const transformedCommunities = recentCommunities.map(community => ({
