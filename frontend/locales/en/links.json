@@ -38,6 +38,7 @@
       "lastClicked": "Last clicked"
     },
     "actions": {
+      "menu": "Menu",
       "viewDetails": "View details",
       "copy": "Copy link",
       "edit": "Edit",

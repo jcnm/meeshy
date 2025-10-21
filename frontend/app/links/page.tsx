@@ -604,14 +604,14 @@ export default function LinksPage() {
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
                     
                     <CardHeader className="relative z-10 pb-4">
-                      <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start justify-between gap-3 md:gap-4">
                         <div className="flex-1 min-w-0 space-y-2">
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-start gap-3">
                             <div className="p-2.5 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl flex-shrink-0">
                               <Link2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                             </div>
-                            <div className="flex-1 min-w-0 max-w-[calc(100%-3rem)]">
-                              <CardTitle className="text-xl font-bold">
+                            <div className="flex-1 min-w-0">
+                              <CardTitle className="text-lg md:text-xl font-bold break-words">
                                 <a
                                   href={`/join/${link.linkId}`}
                                   className="text-foreground hover:text-primary transition-colors"
@@ -620,7 +620,7 @@ export default function LinksPage() {
                                     router.push(`/join/${link.linkId}`);
                                   }}
                                 >
-                                  {truncateLinkName(link.name || t('unnamedLink'))}
+                                  {link.name || t('unnamedLink')}
                                 </a>
                               </CardTitle>
                             </div>
@@ -643,10 +643,10 @@ export default function LinksPage() {
                           </div>
                         </div>
                         
-                        <div className="flex items-start gap-2 flex-shrink-0">
+                        <div className="flex flex-col sm:flex-row items-end sm:items-start gap-2 flex-shrink-0">
                           <Badge 
                             variant={link.isActive ? 'default' : 'secondary'}
-                            className={`px-3 py-1.5 font-semibold flex-shrink-0 whitespace-nowrap ${
+                            className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-semibold flex-shrink-0 whitespace-nowrap ${
                               link.isActive 
                                 ? 'bg-green-500 hover:bg-green-600' 
                                 : 'bg-gray-400 hover:bg-gray-500'
@@ -658,6 +658,7 @@ export default function LinksPage() {
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="sm" className="relative z-20 h-9 w-9 p-0 flex-shrink-0 hover:bg-gray-200 dark:hover:bg-gray-700">
                                 <MoreVertical className="h-5 w-5" />
+                                <span className="sr-only">{t('actions.menu')}</span>
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-56 z-[100]">
@@ -827,35 +828,35 @@ export default function LinksPage() {
                       <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
                       
                       <CardHeader className="relative z-10 pb-4">
-                        <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start justify-between gap-3 md:gap-4">
                           <div className="flex-1 min-w-0 space-y-2">
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-start gap-3">
                               <div className="p-2.5 bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 rounded-xl flex-shrink-0">
                                 <Link2 className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <CardTitle className="text-lg font-bold truncate">
+                                <CardTitle className="text-lg md:text-xl font-bold break-words">
                                   {link.shortUrl}
                                 </CardTitle>
                               </div>
                             </div>
-                            <CardDescription className="flex items-center gap-2 text-sm">
-                              <ExternalLink className="h-4 w-4 flex-shrink-0" />
+                            <CardDescription className="flex items-start gap-2 text-sm">
+                              <ExternalLink className="h-4 w-4 flex-shrink-0 mt-0.5" />
                               <a 
                                 href={link.originalUrl} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                className="text-primary hover:underline font-medium truncate"
+                                className="text-primary hover:underline font-medium break-all"
                               >
                                 {link.originalUrl}
                               </a>
                             </CardDescription>
                           </div>
                           
-                          <div className="flex items-start gap-2 flex-shrink-0">
+                          <div className="flex flex-col sm:flex-row items-end sm:items-start gap-2 flex-shrink-0">
                             <Badge 
                               variant={link.isActive ? 'default' : 'secondary'}
-                              className={`px-3 py-1.5 font-semibold ${
+                              className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-semibold flex-shrink-0 whitespace-nowrap ${
                                 link.isActive 
                                   ? 'bg-green-500 hover:bg-green-600' 
                                   : 'bg-gray-400 hover:bg-gray-500'
@@ -865,11 +866,12 @@ export default function LinksPage() {
                             </Badge>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="h-9 w-9 p-0 flex-shrink-0">
+                                <Button variant="ghost" size="sm" className="relative z-20 h-9 w-9 p-0 flex-shrink-0 hover:bg-gray-200 dark:hover:bg-gray-700">
                                   <MoreVertical className="h-5 w-5" />
+                                  <span className="sr-only">{t('actions.menu')}</span>
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-56">
+                              <DropdownMenuContent align="end" className="w-56 z-[100]">
                                 <DropdownMenuItem onClick={() => handleCopyTrackingLink(link.shortUrl)} className="py-3">
                                   <Copy className="h-4 w-4 mr-3" />
                                   <span className="font-medium">{t('tracking.actions.copyShortUrl')}</span>
