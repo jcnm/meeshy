@@ -17,6 +17,7 @@ import { usersService, conversationsService, type UserStats } from '@/services';
 import { type User } from '@/types';
 import { useI18n } from '@/hooks/useI18n';
 import { useUser } from '@/stores';
+import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 
 interface ProfilePageProps {
   params: Promise<{
@@ -34,6 +35,15 @@ export default function ProfilePage({ params }: ProfilePageProps) {
   const [loading, setLoading] = useState(true);
   const currentUser = useUser(); // Use global store instead of separate API call
   const [userId, setUserId] = useState<string | null>(null);
+
+  // Hook pour écouter les changements de statut en temps réel
+  const { } = useSocketIOMessaging({
+    onUserStatus: (statusUserId: string, username: string, isOnline: boolean) => {
+      if (statusUserId === userId) {
+        setUser(prevUser => prevUser ? { ...prevUser, isOnline } : null);
+      }
+    }
+  });
 
   // Résoudre les paramètres asynchrones
   useEffect(() => {
