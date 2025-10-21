@@ -306,17 +306,27 @@ export function useConversationMessages(
 
   // Gestion du scroll infini (scroll vers le haut pour charger plus anciens)
   useEffect(() => {
-    if (!enabled || !actualContainerRef.current) {
+    if (!enabled) {
       return;
     }
 
     // Attendre que le DOM soit prêt avec un délai
     const timer = setTimeout(() => {
       if (!actualContainerRef.current) {
+        console.warn('[useConversationMessages] Container ref not available after 100ms delay');
         return;
       }
 
-    const container = actualContainerRef.current;
+      const container = actualContainerRef.current;
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[useConversationMessages] 🎯 Scroll listener attached:', {
+          scrollDirection,
+          threshold,
+          containerHeight: container.clientHeight,
+          scrollHeight: container.scrollHeight
+        });
+      }
     
     const handleScroll = () => {
       if (isLoadingMore || !hasMore) {
@@ -342,6 +352,13 @@ export function useConversationMessages(
       scrollTimeoutRef.current = setTimeout(() => {
         // Protection contre les conteneurs trop petits
         if (clientHeight >= scrollHeight || scrollHeight <= clientHeight + threshold) {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[useConversationMessages] ⚠️ Container too small, skipping load:', {
+              clientHeight,
+              scrollHeight,
+              threshold
+            });
+          }
           return;
         }
         
@@ -350,12 +367,32 @@ export function useConversationMessages(
         
         if (scrollDirection === 'up') {
           shouldLoadMore = scrollTop <= threshold;
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[useConversationMessages] 📏 Scroll UP detection:', {
+              scrollTop,
+              threshold,
+              shouldLoadMore
+            });
+          }
         } else {
           const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
           shouldLoadMore = distanceFromBottom <= threshold;
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[useConversationMessages] 📏 Scroll DOWN detection:', {
+              scrollTop,
+              scrollHeight,
+              clientHeight,
+              distanceFromBottom,
+              threshold,
+              shouldLoadMore
+            });
+          }
         }
 
         if (shouldLoadMore) {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[useConversationMessages] 🚀 Loading more messages...');
+          }
           loadMore();
         }
       }, 100);
@@ -363,7 +400,14 @@ export function useConversationMessages(
 
       container.addEventListener('scroll', handleScroll, { passive: true });
       
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[useConversationMessages] ✅ Scroll listener registered successfully');
+      }
+      
       return () => {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[useConversationMessages] 🧹 Cleaning up scroll listener');
+        }
         container.removeEventListener('scroll', handleScroll);
         if (scrollTimeoutRef.current) {
           clearTimeout(scrollTimeoutRef.current);
@@ -374,7 +418,7 @@ export function useConversationMessages(
     return () => {
       clearTimeout(timer);
     };
-  }, [enabled, actualContainerRef, isLoadingMore, hasMore, threshold, loadMore]);
+  }, [enabled, isLoadingMore, hasMore, threshold, loadMore, scrollDirection]);
 
   // Chargement initial
   useEffect(() => {
