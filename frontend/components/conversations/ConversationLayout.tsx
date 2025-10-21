@@ -1005,15 +1005,11 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
             <DashboardLayout 
               title={t('conversationLayout.conversations.title')} 
               hideHeaderOnMobile={false}
-              className={cn(
-                "!bg-none !bg-transparent !h-full",
-                selectedConversationId ? "!min-h-0 !max-w-none !px-0" : ""
-              )}
+              className="!bg-none !bg-transparent !h-full !min-h-0 !max-w-none !px-0"
             >
             <div 
               className={cn(
-                "flex bg-transparent conversation-layout relative z-10",
-                !selectedConversationId && "max-w-7xl mx-auto",
+                "flex bg-transparent conversation-layout relative z-10 w-full",
                 isMobile ? 'h-[calc(100vh-4rem)]' : 'h-full'
               )}
               role="application"
