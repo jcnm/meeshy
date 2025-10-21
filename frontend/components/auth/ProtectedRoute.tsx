@@ -12,12 +12,13 @@ interface ProtectedRouteProps {
   requireAuth?: boolean;
 }
 
-export function ProtectedRoute({ 
-  children, 
-  redirectTo = '/login', 
-  requireAuth = true 
+export function ProtectedRoute({
+  children,
+  redirectTo = '/login',
+  requireAuth = true
 }: ProtectedRouteProps) {
-  const { user, isAuthChecking } = useUser();
+  const user = useUser();
+  const isAuthChecking = useIsAuthChecking();
   const { forceLogout } = useAuth();
   const router = useRouter();
   const [timeoutReached, setTimeoutReached] = useState(false);

@@ -163,7 +163,14 @@ export default function JoinConversationPage() {
 
   // Wrapper function for auth success that handles dialog state management
   const onAuthSuccess = (user: User, token: string) => {
+    console.log('[JOIN_PAGE] onAuthSuccess - Connexion réussie, fermeture du dialog');
     setAuthMode('welcome');
+    
+    // Automatiquement rejoindre la conversation après la connexion
+    console.log('[JOIN_PAGE] Exécution automatique de joinConversation après connexion');
+    setTimeout(() => {
+      joinConversation();
+    }, 500); // Petit délai pour laisser le temps au dialog de se fermer et à l'état d'être mis à jour
   };
 
   // Fonction pour générer automatiquement le username
