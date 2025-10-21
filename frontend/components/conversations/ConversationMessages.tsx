@@ -39,6 +39,7 @@ interface ConversationMessagesProps {
   t: (key: string) => string;
   reverseOrder?: boolean; // true = récent en haut (BubbleStream), false = ancien en haut (Conversations)
   scrollDirection?: 'up' | 'down'; // Direction du scroll pour charger plus: 'up' = haut (défaut), 'down' = bas
+  externalScrollContainer?: boolean; // Si true, n'applique pas overflow-y-auto (scroll géré par parent)
 }
 
 const ConversationMessagesComponent = memo(function ConversationMessages({
@@ -66,7 +67,8 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
   onLoadMore,
   t,
   reverseOrder = false,
-  scrollDirection = 'up' // Par défaut: scroll vers le haut (comportement classique messagerie)
+  scrollDirection = 'up', // Par défaut: scroll vers le haut (comportement classique messagerie)
+  externalScrollContainer = false // Par défaut: scroll interne
 }: ConversationMessagesProps) {
   // Hook pour fixer les z-index des popovers Radix UI
   useFixRadixZIndex();
@@ -307,8 +309,11 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
     <div className="flex-1 flex flex-col h-full relative">
       <div
         ref={scrollAreaRef}
-        className="flex-1 messages-scroll conversation-scroll h-full overflow-y-auto overflow-x-visible"
-        onScroll={handleScroll}
+        className={cn(
+          "flex-1 messages-scroll conversation-scroll h-full overflow-x-visible",
+          externalScrollContainer ? "overflow-y-visible" : "overflow-y-auto"
+        )}
+        onScroll={externalScrollContainer ? undefined : handleScroll}
         style={{ position: 'relative' }}
       >
         <div className={cn(
@@ -345,7 +350,7 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
               reverseOrder={reverseOrder}
               className={cn(
                 "space-y-3",
-                isMobile && "space-y-2"
+                isMobile && "space-y-'2"
               )}
               onEditMessage={onEditMessage}
               onDeleteMessage={onDeleteMessage}
