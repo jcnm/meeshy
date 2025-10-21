@@ -81,11 +81,11 @@ export const DeleteConfirmationView = memo(function DeleteConfirmationView({
         <div className="flex items-center gap-2">
           <AlertTriangle className={cn(
             "h-4 w-4",
-            isOwnMessage ? "text-white" : "text-red-600 dark:text-red-400"
+            isOwnMessage ? "text-red-900" : "text-red-600 dark:text-red-400"
           )} />
           <h3 className={cn(
             "text-sm font-semibold",
-            isOwnMessage ? "text-white" : "text-red-800 dark:text-red-200"
+            isOwnMessage ? "text-red-900" : "text-red-800 dark:text-red-200"
           )}>
             {t('deleteMessage')}?
           </h3>
@@ -99,7 +99,7 @@ export const DeleteConfirmationView = memo(function DeleteConfirmationView({
           className={cn(
             "h-6 w-6 p-0 rounded-full",
             isOwnMessage 
-              ? "text-white/70 hover:text-white hover:bg-white/20" 
+              ? "text-red-900 hover:text-red-950 hover:bg-red-900/20" 
               : "text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
           )}
           aria-label={t('cancel')}
@@ -116,11 +116,11 @@ export const DeleteConfirmationView = memo(function DeleteConfirmationView({
             <div className="flex items-center gap-2 mb-2">
               <FileText className={cn(
                 "h-4 w-4",
-                isOwnMessage ? "text-white/70" : "text-gray-600 dark:text-gray-400"
+                isOwnMessage ? "text-red-800" : "text-gray-600 dark:text-gray-400"
               )} />
               <span className={cn(
                 "text-xs font-medium",
-                isOwnMessage ? "text-white/90" : "text-gray-700 dark:text-gray-300"
+                isOwnMessage ? "text-red-900" : "text-gray-700 dark:text-gray-300"
               )}>
                 {t('messagePreview')}:
               </span>
@@ -128,12 +128,12 @@ export const DeleteConfirmationView = memo(function DeleteConfirmationView({
             <div className={cn(
               "p-3 rounded-md border",
               isOwnMessage 
-                ? "bg-white/10 border-white/20" 
+                ? "bg-white/50 border-red-700" 
                 : "bg-gray-50 border-gray-200 dark:bg-gray-900/50 dark:border-gray-700"
             )}>
               <p className={cn(
                 "text-sm leading-relaxed",
-                isOwnMessage ? "text-white/90" : "text-gray-700 dark:text-gray-300"
+                isOwnMessage ? "text-gray-900" : "text-gray-700 dark:text-gray-300"
               )}>
                 "{previewContent}"
               </p>
@@ -160,23 +160,23 @@ export const DeleteConfirmationView = memo(function DeleteConfirmationView({
           <div className={cn(
             "flex items-start gap-2 p-3 rounded-md border",
             isOwnMessage 
-              ? "bg-white/10 border-white/20" 
+              ? "bg-white/50 border-red-700" 
               : "bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800"
           )}>
             <AlertTriangle className={cn(
               "h-4 w-4 mt-0.5 flex-shrink-0",
-              isOwnMessage ? "text-white/70" : "text-red-600 dark:text-red-400"
+              isOwnMessage ? "text-red-700" : "text-red-600 dark:text-red-400"
             )} />
             <div>
               <p className={cn(
                 "text-xs font-medium mb-1",
-                isOwnMessage ? "text-white/90" : "text-red-800 dark:text-red-200"
+                isOwnMessage ? "text-red-900" : "text-red-800 dark:text-red-200"
               )}>
                 {t('irreversibleAction')}!
               </p>
               <p className={cn(
                 "text-xs",
-                isOwnMessage ? "text-white/70" : "text-red-700 dark:text-red-300"
+                isOwnMessage ? "text-red-800" : "text-red-700 dark:text-red-300"
               )}>
                 {t('deleteMessageWarning')}
               </p>
@@ -187,13 +187,13 @@ export const DeleteConfirmationView = memo(function DeleteConfirmationView({
           <div>
             <p className={cn(
               "text-xs font-medium mb-2",
-              isOwnMessage ? "text-white/90" : "text-gray-700 dark:text-gray-300"
+              isOwnMessage ? "text-red-900" : "text-gray-700 dark:text-gray-300"
             )}>
               {t('itemsToDelete')}:
             </p>
             <ul className={cn(
               "space-y-1 text-xs",
-              isOwnMessage ? "text-white/80" : "text-gray-600 dark:text-gray-400"
+              isOwnMessage ? "text-red-800" : "text-gray-600 dark:text-gray-400"
             )}>
               <li className="flex items-center gap-2">
                 <div className="w-1 h-1 rounded-full bg-current" />
@@ -251,15 +251,6 @@ export const DeleteConfirmationView = memo(function DeleteConfirmationView({
           : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50"
       )}>
         <div className="flex items-center gap-2">
-          <p className={cn(
-            "text-xs",
-            isOwnMessage ? "text-white/60" : "text-gray-500 dark:text-gray-400"
-          )}>
-            {t('shortcutConfirm')}: <kbd className={cn(
-              "px-1 py-0.5 rounded text-xs font-mono",
-              isOwnMessage ? "bg-white/20 text-white/80" : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
-            )}>Shift+Enter</kbd>
-          </p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -271,7 +262,7 @@ export const DeleteConfirmationView = memo(function DeleteConfirmationView({
             className={cn(
               "h-8 px-3 text-xs",
               isOwnMessage 
-                ? "border-white/30 text-white/80 hover:bg-white/20" 
+                ? "border-red-700 bg-white text-red-900 hover:bg-red-50" 
                 : "border-gray-300 text-gray-600 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
             )}
           >
@@ -285,7 +276,7 @@ export const DeleteConfirmationView = memo(function DeleteConfirmationView({
             className={cn(
               "h-8 px-3 text-xs",
               isOwnMessage 
-                ? "bg-white/30 hover:bg-white/40 text-white border-white/50" 
+                ? "bg-red-700 hover:bg-red-800 text-white border-red-800" 
                 : "bg-red-600 hover:bg-red-700 text-white"
             )}
           >

@@ -348,6 +348,7 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
                                           size="sm"
                                           variant="ghost"
                                           className="h-5 w-5 p-0"
+                                          disabled={isTranslating}
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             onRequestTranslation(version.language, getNextTier(version.model) as 'basic' | 'medium' | 'premium');
@@ -371,6 +372,7 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
                                           size="sm"
                                           variant="ghost"
                                           className="h-5 w-5 p-0"
+                                          disabled={isTranslating}
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             onRequestTranslation(version.language, getPreviousTier(version.model) as 'basic' | 'medium' | 'premium');
@@ -480,6 +482,7 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
                               size="sm"
                               variant="ghost"
                               className="h-7 w-7 p-0 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
+                              disabled={isTranslating}
                               onClick={() => {
                                 onRequestTranslation(lang.code, 'basic');
                                 onClose();
@@ -500,6 +503,7 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
                               size="sm"
                               variant="ghost"
                               className="h-7 w-7 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                              disabled={isTranslating}
                               onClick={() => {
                                 onRequestTranslation(lang.code, 'medium');
                                 onClose();
@@ -520,6 +524,7 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
                               size="sm"
                               variant="ghost"
                               className="h-7 w-7 p-0 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                              disabled={isTranslating}
                               onClick={() => {
                                 onRequestTranslation(lang.code, 'premium');
                                 onClose();

@@ -103,14 +103,14 @@ export const EditMessageView = memo(function EditMessageView({
         <div className="flex items-center gap-2">
           <h3 className={cn(
             "text-sm font-semibold",
-            isOwnMessage ? "text-white" : "text-gray-800 dark:text-gray-100"
+            isOwnMessage ? "text-blue-900" : "text-gray-800 dark:text-gray-100"
           )}>
             {t('editMessage')}
           </h3>
           <Badge variant="outline" className={cn(
             "text-xs h-5",
             isOwnMessage 
-              ? "border-white/30 text-white/80" 
+              ? "border-blue-700 text-blue-900 bg-white/50" 
               : "border-gray-300 text-gray-600 dark:border-gray-600 dark:text-gray-400"
           )}>
             <span className="mr-1">{originalLanguageInfo.flag}</span>
@@ -126,7 +126,7 @@ export const EditMessageView = memo(function EditMessageView({
           className={cn(
             "h-6 w-6 p-0 rounded-full",
             isOwnMessage 
-              ? "text-white/70 hover:text-white hover:bg-white/20" 
+              ? "text-blue-900 hover:text-blue-950 hover:bg-blue-900/20" 
               : "text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
           )}
           aria-label={t('cancel')}
@@ -141,7 +141,7 @@ export const EditMessageView = memo(function EditMessageView({
           <div>
             <label className={cn(
               "block text-sm font-medium mb-2",
-              isOwnMessage ? "text-white/90" : "text-gray-700 dark:text-gray-300"
+              isOwnMessage ? "text-blue-900" : "text-gray-700 dark:text-gray-300"
             )}>
               {t('messageContent')}:
             </label>
@@ -153,7 +153,7 @@ export const EditMessageView = memo(function EditMessageView({
               className={cn(
                 "min-h-[120px] resize-none text-sm leading-relaxed",
                 isOwnMessage 
-                  ? "bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50" 
+                  ? "bg-white border-blue-300 text-gray-900 placeholder:text-gray-500 focus:bg-white focus:border-blue-500" 
                   : "bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600"
               )}
               disabled={isSaving}
@@ -170,18 +170,18 @@ export const EditMessageView = memo(function EditMessageView({
             )}>
               <AlertTriangle className={cn(
                 "h-4 w-4 mt-0.5 flex-shrink-0",
-                isOwnMessage ? "text-white/70" : "text-amber-600 dark:text-amber-400"
+                isOwnMessage ? "text-amber-700" : "text-amber-600 dark:text-amber-400"
               )} />
               <div>
                 <p className={cn(
                   "text-xs font-medium mb-1",
-                  isOwnMessage ? "text-white/90" : "text-amber-800 dark:text-amber-200"
+                  isOwnMessage ? "text-amber-900" : "text-amber-800 dark:text-amber-200"
                 )}>
                   {t('translationWarning')}
                 </p>
                 <p className={cn(
                   "text-xs",
-                  isOwnMessage ? "text-white/70" : "text-amber-700 dark:text-amber-300"
+                  isOwnMessage ? "text-amber-800" : "text-amber-700 dark:text-amber-300"
                 )}>
                   {t('translationWillBeRegenerated')}
                 </p>
@@ -220,15 +220,6 @@ export const EditMessageView = memo(function EditMessageView({
           : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50"
       )}>
         <div className="flex items-center gap-2">
-          <p className={cn(
-            "text-xs",
-            isOwnMessage ? "text-white/60" : "text-gray-500 dark:text-gray-400"
-          )}>
-            {t('shortcutSave')}: <kbd className={cn(
-              "px-1 py-0.5 rounded text-xs font-mono",
-              isOwnMessage ? "bg-white/20 text-white/80" : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
-            )}>Ctrl+Enter</kbd>
-          </p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -240,7 +231,7 @@ export const EditMessageView = memo(function EditMessageView({
             className={cn(
               "h-8 px-3 text-xs",
               isOwnMessage 
-                ? "border-white/30 text-white/80 hover:bg-white/20" 
+                ? "border-blue-700 bg-white text-blue-900 hover:bg-blue-50" 
                 : "border-gray-300 text-gray-600 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
             )}
           >
@@ -254,7 +245,7 @@ export const EditMessageView = memo(function EditMessageView({
             className={cn(
               "h-8 px-3 text-xs",
               isOwnMessage 
-                ? "bg-white/30 hover:bg-white/40 text-white border-white/50" 
+                ? "bg-blue-700 hover:bg-blue-800 text-white border-blue-800" 
                 : "bg-blue-600 hover:bg-blue-700 text-white"
             )}
           >
