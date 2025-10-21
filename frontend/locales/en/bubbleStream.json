@@ -43,6 +43,8 @@
     "copied": "Copied to clipboard",
     "copyFailed": "Copy failed",
     "copyMessage": "Copy message",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied!",
     "messageTranslatedTo": "Message translated to {language}",
     "justNow": "just now",
     "minutesAgo": "{minutes}min ago",
@@ -68,12 +70,25 @@
     "clickToViewMessage": "Click to view message",
     "translationOptions": "Translation options",
     "copyShowingContent": "Copy showing content",
+    "showOriginal": "Show original text",
+    "showInUserLanguage": "Show in your language", 
+    "translate": "Translate",
     "translation": {
       "showOriginal": "Show original",
       "showTranslation": "Show translation",
+      "showInUserLanguage": "Show in your language",
       "translating": "Translating...",
       "translationFailed": "Translation failed",
-      "improveTranslationQuality": "Improve translation quality"
+      "improveTranslationQuality": "Improve translation quality",
+      "basic": {
+        "title": "Basic"
+      },
+      "standard": {
+        "title": "Standard"
+      },
+      "premium": {
+        "title": "Premium"
+      }
     }
   }
 }
