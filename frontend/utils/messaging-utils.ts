@@ -81,7 +81,7 @@ export function createStandardMessageCallbacks(options: {
   onNewMessage?: (message: Message) => void;
   onMessageSent?: (content: string, language: string) => void;
   onMessageFailed?: (content: string, error: Error) => void;
-  onUserTyping?: (userId: string, username: string, isTyping: boolean) => void;
+  onUserTyping?: (userId: string, username: string, isTyping: boolean, conversationId: string) => void;
   onUserStatus?: (userId: string, username: string, isOnline: boolean) => void;
   onTranslation?: (messageId: string, translations: any[]) => void;
   onConversationStats?: (data: any) => void;
@@ -92,8 +92,8 @@ export function createStandardMessageCallbacks(options: {
       options.onNewMessage?.(message);
     },
     
-    onUserTyping: (userId: string, username: string, isTyping: boolean) => {
-      options.onUserTyping?.(userId, username, isTyping);
+    onUserTyping: (userId: string, username: string, isTyping: boolean, conversationId: string) => {
+      options.onUserTyping?.(userId, username, isTyping, conversationId);
     },
     
     onUserStatus: (userId: string, username: string, isOnline: boolean) => {

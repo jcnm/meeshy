@@ -61,7 +61,7 @@ import { getMaxMessageLength } from '@/lib/constants/languages';
 const TOAST_SHORT_DURATION = 2000;
 const TOAST_LONG_DURATION = 3000;
 const TOAST_ERROR_DURATION = 5000;
-const TYPING_CANCELATION_DELAY = 2000;
+const TYPING_STOP_DELAY = 3000; // 3 secondes après la dernière frappe
 
 // Interface pour les statistiques de langues (compatibilité)
 interface LanguageStats {
@@ -443,8 +443,12 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   const [typingUsers, setTypingUsers] = useState<{id: string, displayName: string}[]>([]);
 
   // Fonctions de gestion des événements utilisateur
-  const handleUserTyping = useCallback((userId: string, username: string, isTyping: boolean) => {
+  const handleUserTyping = useCallback((userId: string, username: string, isTyping: boolean, typingConversationId: string) => {
     if (userId === user.id) return; // Ignorer nos propres événements de frappe
+    
+    // NE PAS FILTRER par conversationId !
+    // Le backend normalise les IDs et met tous les clients dans la même room
+    // Si tu reçois l'événement, c'est que tu es dans la bonne room
     
     setTypingUsers(prev => {
       if (isTyping) {
@@ -480,7 +484,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         return prev.filter(u => u.id !== userId);
       }
     });
-  }, [user.id, activeUsers]); // Ajouter activeUsers aux dépendances
+  }, [user.id, activeUsers, conversationId]); // Ajouter conversationId aux dépendances
 
   const handleUserStatus = useCallback((userId: string, username: string, isOnline: boolean) => {
     // Statut utilisateur changé - géré par les événements socket
@@ -1083,8 +1087,19 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       hasAttachments: hasAttachments
     });
     
+    // Arrêter immédiatement l'indicateur de frappe lors de l'envoi
+    if (isTyping) {
+      setIsTyping(false);
+      stopTyping();
+    }
+    
+    // Nettoyer le timeout de frappe
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
+    }
+    
     setNewMessage(''); // Réinitialiser immédiatement pour éviter les doubles envois
-    setIsTyping(false);
     
     // Effacer l'état de réponse après l'envoi
     if (replyToId) {
@@ -1219,11 +1234,19 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   const handleTyping = (value: string) => {
     setNewMessage(value);
     
+    console.log('[BubbleStreamPage] 📝 handleTyping:', { 
+      valueLength: value.length,
+      hasTrim: !!value.trim(),
+      isTyping,
+      hasConversationId: !!conversationId
+    });
+    
     // Gérer l'indicateur de frappe avec timeout
     if (value.trim()) {
       // Si l'utilisateur tape et qu'il n'était pas déjà en train de taper
       if (!isTyping) {
         setIsTyping(true);
+        console.log('[BubbleStreamPage] 🟢 Appel startTyping()');
         startTyping();
       }
       
@@ -1235,13 +1258,15 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       // Arrêter la frappe après 3 secondes d'inactivité
       typingTimeoutRef.current = setTimeout(() => {
         setIsTyping(false);
+        console.log('[BubbleStreamPage] 🔴 Appel stopTyping() après timeout');
         stopTyping();
-      }, TYPING_CANCELATION_DELAY);
+      }, TYPING_STOP_DELAY);
       
     } else {
       // Si le champ est vide, arrêter immédiatement la frappe
       if (isTyping) {
         setIsTyping(false);
+        console.log('[BubbleStreamPage] 🔴 Appel stopTyping() (champ vide)');
         stopTyping();
       }
       
@@ -1486,10 +1511,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                 value={newMessage}
                 onChange={handleTyping}
                 onSend={handleSendMessage}
-                  selectedLanguage={selectedInputLanguage}
-                  onLanguageChange={setSelectedInputLanguage}
-                  location={location}
-                  isComposingEnabled={isComposingEnabled}
                 selectedLanguage={selectedInputLanguage}
                 onLanguageChange={setSelectedInputLanguage}
                 location={location}

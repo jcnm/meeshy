@@ -601,31 +601,72 @@ class MeeshySocketIOService {
       this.reactionRemovedListeners.forEach(listener => listener(data));
     });
 
-    // Événements de frappe - gestion intelligente avec état
+    // Événement de confirmation de join conversation
+    this.socket.on(SERVER_EVENTS.CONVERSATION_JOINED, (data: { conversationId: string; userId: string }) => {
+      console.log('[MeeshySocketIO] 🚪 CONVERSATION_JOINED reçu:', {
+        conversationIdFromBackend: data.conversationId,
+        userId: data.userId,
+        oldConversationId: this.currentConversationId
+      });
+      
+      // CRITIQUE: Mettre à jour currentConversationId avec l'ObjectId normalisé du backend
+      // Le backend normalise tous les IDs (identifier → ObjectId) avant de joindre les rooms
+      // et avant de broadcaster les événements. Tous les clients DOIVENT utiliser cet ObjectId.
+      // L'INVARIANT est l'ObjectId MongoDB (24 caractères hex).
+      if (data.conversationId) {
+        console.log('[MeeshySocketIO] ✅ Mise à jour currentConversationId avec ObjectId:', {
+          from: this.currentConversationId,
+          to: data.conversationId
+        });
+        this.currentConversationId = data.conversationId;
+      }
+    });
+
+    // Événements de frappe - réception immédiate sans timeout automatique
     this.socket.on(SERVER_EVENTS.TYPING_START, (event) => {
+      console.log('[MeeshySocketIO] 🟢 TYPING_START reçu:', event);
+      
       // Ajouter l'utilisateur à la liste des tapeurs pour cette conversation
       if (!this.typingUsers.has(event.conversationId)) {
         this.typingUsers.set(event.conversationId, new Set());
       }
       this.typingUsers.get(event.conversationId)!.add(event.userId);
       
-      // Nettoyer le timeout précédent s'il existe
+      // Nettoyer le timeout précédent s'il existe (fallback de sécurité uniquement)
       const timeoutKey = `${event.conversationId}:${event.userId}`;
       if (this.typingTimeouts.has(timeoutKey)) {
         clearTimeout(this.typingTimeouts.get(timeoutKey)!);
       }
       
-      // Auto-arrêt après 5 secondes
+      // Timeout de sécurité de 15 secondes uniquement pour éviter les indicateurs bloqués
+      // En temps normal, l'indicateur doit disparaître à réception de TYPING_STOP
       const timeout = setTimeout(() => {
         this.handleTypingStop(event);
-      }, 5000);
+      }, 15000);
       this.typingTimeouts.set(timeoutKey, timeout);
       
       // Notifier les listeners avec isTyping = true
+      console.log('[MeeshySocketIO] 📢 Notification de', this.typingListeners.size, 'listeners');
       this.typingListeners.forEach(listener => listener({ ...event, isTyping: true } as any));
     });
 
-    this.socket.on(SERVER_EVENTS.TYPING_STOP, (event) => {      this.handleTypingStop(event);
+    this.socket.on(SERVER_EVENTS.TYPING_STOP, (event) => {
+      console.log('[MeeshySocketIO] 🔴 TYPING_STOP reçu:', event);
+      // Ajouter un délai de 3 secondes avant de cacher l'indicateur
+      // pour que l'indicateur reste visible après la dernière frappe
+      const timeoutKey = `${event.conversationId}:${event.userId}`;
+      
+      // Nettoyer le timeout précédent s'il existe
+      if (this.typingTimeouts.has(timeoutKey)) {
+        clearTimeout(this.typingTimeouts.get(timeoutKey)!);
+      }
+      
+      // Attendre 3 secondes avant de cacher l'indicateur
+      const timeout = setTimeout(() => {
+        this.handleTypingStop(event);
+      }, 3000);
+      
+      this.typingTimeouts.set(timeoutKey, timeout);
     });
 
     // Événements de statut utilisateur
@@ -1033,6 +1074,11 @@ class MeeshySocketIOService {
       this.currentConversationId = conversationId;
       
       // Utiliser l'ID pour les communications WebSocket
+      console.log('[MeeshySocketIO] 🚪 Émission CONVERSATION_JOIN:', {
+        conversationId,
+        type: getConversationIdType(conversationId),
+        isConnected: this.socket.connected
+      });
       this.socket.emit(CLIENT_EVENTS.CONVERSATION_JOIN, { conversationId });
     } catch (error) {
       console.error('❌ MeeshySocketIOService: Erreur lors de l\'extraction de l\'ID conversation pour join:', error);
@@ -1305,7 +1351,16 @@ class MeeshySocketIOService {
    * Démarre l'indicateur de frappe
    */
   public startTyping(conversationId: string): void {
-    if (!this.socket) return;
+    if (!this.socket) {
+      console.warn('[MeeshySocketIO] ⚠️ startTyping: socket non disponible');
+      return;
+    }
+    console.log('[MeeshySocketIO] 🟢 TYPING_START émis:', { 
+      conversationId,
+      currentConversationId: this.currentConversationId,
+      match: conversationId === this.currentConversationId,
+      isConnected: this.isConnected
+    });
     this.socket.emit(CLIENT_EVENTS.TYPING_START, { conversationId });
   }
 
@@ -1313,7 +1368,14 @@ class MeeshySocketIOService {
    * Arrête l'indicateur de frappe
    */
   public stopTyping(conversationId: string): void {
-    if (!this.socket) return;
+    if (!this.socket) {
+      console.warn('[MeeshySocketIO] ⚠️ stopTyping: socket non disponible');
+      return;
+    }
+    console.log('[MeeshySocketIO] 🔴 TYPING_STOP émis:', { 
+      conversationId,
+      currentConversationId: this.currentConversationId
+    });
     this.socket.emit(CLIENT_EVENTS.TYPING_STOP, { conversationId });
   }
 
@@ -1402,8 +1464,12 @@ class MeeshySocketIOService {
   }
 
   public onTyping(listener: (event: TypingEvent) => void): () => void {
+    console.log('[MeeshySocketIO] 🎧 Ajout listener typing, total:', this.typingListeners.size + 1);
     this.typingListeners.add(listener);
-    return () => this.typingListeners.delete(listener);
+    return () => {
+      console.log('[MeeshySocketIO] 🗑️ Suppression listener typing, total:', this.typingListeners.size - 1);
+      this.typingListeners.delete(listener);
+    };
   }
 
   public onTypingStart(listener: (event: TypingEvent) => void): () => void {
@@ -1466,6 +1532,17 @@ class MeeshySocketIOService {
       hasSocket: !!this.socket,
       currentUser: this.currentUser?.username || 'Non défini'
     };
+  }
+
+  /**
+   * Obtient l'ID de conversation actuel normalisé (ObjectId)
+   * Retourne l'ObjectId normalisé reçu du backend via CONVERSATION_JOINED.
+   * Le backend normalise tous les IDs (identifier → ObjectId) pour garantir que
+   * tous les clients utilisent le même ObjectId pour les rooms et événements Socket.IO.
+   * L'INVARIANT est l'ObjectId MongoDB (24 caractères hex).
+   */
+  public getCurrentConversationId(): string | null {
+    return this.currentConversationId;
   }
 
   /**

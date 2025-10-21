@@ -18,7 +18,7 @@ export interface UseSocketIOMessagingOptions {
   onNewMessage?: (message: Message) => void;
   onMessageEdited?: (message: Message) => void;
   onMessageDeleted?: (messageId: string) => void;
-  onUserTyping?: (userId: string, username: string, isTyping: boolean) => void;
+  onUserTyping?: (userId: string, username: string, isTyping: boolean, conversationId: string) => void;
   onUserStatus?: (userId: string, username: string, isOnline: boolean) => void;
   onTranslation?: (messageId: string, translations: any[]) => void;
   onConversationStats?: (data: any) => void;
@@ -71,6 +71,16 @@ export function useSocketIOMessaging(options: UseSocketIOMessagingOptions = {}) 
 
   // ÉTAPE 3: Configurer les listeners
   useEffect(() => {
+    console.log('[use-socketio-messaging] 🔧 Configuration des listeners:', {
+      conversationId,
+      hasOnNewMessage: !!onNewMessage,
+      hasOnMessageEdited: !!onMessageEdited,
+      hasOnMessageDeleted: !!onMessageDeleted,
+      hasOnUserTyping: !!onUserTyping,
+      hasOnTranslation: !!onTranslation,
+      hasOnUserStatus: !!onUserStatus
+    });
+    
     const unsubscribers: Array<() => void> = [];
     
     if (onNewMessage) {
@@ -96,8 +106,10 @@ export function useSocketIOMessaging(options: UseSocketIOMessagingOptions = {}) 
     }
     
     if (onUserTyping) {
+      console.log('[use-socketio-messaging] ✅ Enregistrement du listener onUserTyping');
       const unsub = meeshySocketIOService.onTyping((event: TypingEvent) => {
-        onUserTyping(event.userId, event.username, event.isTyping || false);
+        console.log('[use-socketio-messaging] 📨 Événement typing reçu dans le hook:', event);
+        onUserTyping(event.userId, event.username, event.isTyping || false, event.conversationId);
       });
       unsubscribers.push(unsub);
     }
@@ -120,6 +132,7 @@ export function useSocketIOMessaging(options: UseSocketIOMessagingOptions = {}) 
     }
     
     return () => {
+      console.log('[use-socketio-messaging] 🧹 Nettoyage de', unsubscribers.length, 'listeners');
       unsubscribers.forEach(unsub => unsub());
     };
   }, [onNewMessage, onMessageEdited, onMessageDeleted, onTranslation, onUserTyping, onUserStatus, onConversationStats, onConversationOnlineStats]);
@@ -183,14 +196,40 @@ export function useSocketIOMessaging(options: UseSocketIOMessagingOptions = {}) 
   }, []);
 
   const startTyping = useCallback(() => {
-    if (conversationId) {
-      meeshySocketIOService.startTyping(conversationId);
+    // CORRECTION CRITIQUE: Utiliser l'ID normalisé du service au lieu du conversationId local
+    // Le service a reçu l'ID normalisé via CONVERSATION_JOINED
+    const normalizedId = meeshySocketIOService.getCurrentConversationId();
+    const idToUse = normalizedId || conversationId;
+    
+    console.log('[use-socketio-messaging] 🟢 startTyping appelé:', {
+      conversationIdProp: conversationId,
+      normalizedId: normalizedId,
+      idToUse: idToUse,
+      willMatch: normalizedId === idToUse
+    });
+    
+    if (idToUse) {
+      meeshySocketIOService.startTyping(idToUse);
+    } else {
+      console.warn('[use-socketio-messaging] ⚠️ Pas de conversationId pour startTyping');
     }
   }, [conversationId]);
 
   const stopTyping = useCallback(() => {
-    if (conversationId) {
-      meeshySocketIOService.stopTyping(conversationId);
+    // CORRECTION CRITIQUE: Utiliser l'ID normalisé du service au lieu du conversationId local
+    const normalizedId = meeshySocketIOService.getCurrentConversationId();
+    const idToUse = normalizedId || conversationId;
+    
+    console.log('[use-socketio-messaging] 🔴 stopTyping appelé:', {
+      conversationIdProp: conversationId,
+      normalizedId: normalizedId,
+      idToUse: idToUse
+    });
+    
+    if (idToUse) {
+      meeshySocketIOService.stopTyping(idToUse);
+    } else {
+      console.warn('[use-socketio-messaging] ⚠️ Pas de conversationId pour stopTyping');
     }
   }, [conversationId]);
 
