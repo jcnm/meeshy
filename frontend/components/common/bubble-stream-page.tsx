@@ -1387,8 +1387,8 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         }
       `}</style>
       
-      {/* Layout principal simplifié */}
-      <div className="h-full flex flex-col">
+      {/* Layout principal simplifié avec fond bleu gradient */}
+      <div className="h-full flex flex-col bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
         
         {/* Indicateur dynamique - Frappe prioritaire sur connexion */}
         <div className="fixed top-16 left-0 right-0 xl:right-80 z-[40] px-4 sm:px-6 lg:px-8 pt-4 pb-2 bg-gradient-to-b from-blue-50 to-transparent pointer-events-none realtime-indicator hidden md:block">
