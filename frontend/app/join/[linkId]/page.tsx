@@ -444,14 +444,20 @@ export default function JoinConversationPage() {
                     {t('signIn')}
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>{t('signIn')}</DialogTitle>
-                    <DialogDescription>
-                      {t('signInToJoin')}
-                    </DialogDescription>
-                  </DialogHeader>
-                  <LoginForm onSuccess={onAuthSuccess} />
+                <DialogContent className="max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+                  {/* Header fixe */}
+                  <div className="px-6 pt-6 pb-4 border-b shrink-0">
+                    <DialogHeader>
+                      <DialogTitle>{t('signIn')}</DialogTitle>
+                      <DialogDescription>
+                        {t('signInToJoin')}
+                      </DialogDescription>
+                    </DialogHeader>
+                  </div>
+                  {/* Contenu scrollable */}
+                  <div className="flex-1 overflow-y-auto px-6 min-h-0 py-4">
+                    <LoginForm onSuccess={onAuthSuccess} />
+                  </div>
                 </DialogContent>
               </Dialog>
               
@@ -675,14 +681,20 @@ export default function JoinConversationPage() {
                               {t('signIn')}
                             </Button>
                           </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>{t('signIn')}</DialogTitle>
-                              <DialogDescription>
-                                {t('signInToJoin')}
-                              </DialogDescription>
-                            </DialogHeader>
-                            <LoginForm onSuccess={onAuthSuccess} />
+                          <DialogContent className="max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+                            {/* Header fixe */}
+                            <div className="px-6 pt-6 pb-4 border-b shrink-0">
+                              <DialogHeader>
+                                <DialogTitle>{t('signIn')}</DialogTitle>
+                                <DialogDescription>
+                                  {t('signInToJoin')}
+                                </DialogDescription>
+                              </DialogHeader>
+                            </div>
+                            {/* Contenu scrollable */}
+                            <div className="flex-1 overflow-y-auto px-6 min-h-0 py-4">
+                              <LoginForm onSuccess={onAuthSuccess} />
+                            </div>
                           </DialogContent>
                         </Dialog>
                         
