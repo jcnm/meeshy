@@ -470,37 +470,51 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
             </time>
           </div>
 
-          {/* Attachments EN PREMIER (hors de la bulle) */}
+          {/* Attachments EN PREMIER (hors de la bulle) - Avec réactions si pas de texte */}
           {message.attachments && message.attachments.length > 0 && (
-            <div className={cn(
-              "relative mb-2 max-w-[85%] sm:max-w-[75%] md:max-w-[65%]",
-              isOwnMessage ? "ml-auto" : "mr-auto"
-            )}>
-              <MessageAttachments
-                attachments={message.attachments}
-                onImageClick={onImageClick}
-              />
-              
-              {/* Réactions par-dessus les attachments (seulement si pas de contenu textuel) */}
-              {(!message.content || !message.content.trim()) && (
-                <div 
-                  className={cn(
-                    "absolute -bottom-3 z-[9999]",
-                    isOwnMessage ? "right-2" : "left-2"
-                  )}
-                  style={{ pointerEvents: 'auto' }}
-                >
-                  <MessageReactions
-                    messageId={message.id}
-                    conversationId={conversationId || message.conversationId}
-                    currentUserId={currentUser?.id || ''}
-                    currentAnonymousUserId={currentAnonymousUserId}
-                    isAnonymous={isAnonymous}
-                    showAddButton={false}
+            <>
+              {(!message.content || !message.content.trim()) ? (
+                // Si attachments seuls : wrapper relative pour les réactions
+                <div className={cn(
+                  "relative mb-2 max-w-[85%] sm:max-w-[75%] md:max-w-[65%]",
+                  isOwnMessage ? "ml-auto" : "mr-auto"
+                )}>
+                  <MessageAttachments
+                    attachments={message.attachments}
+                    onImageClick={onImageClick}
+                  />
+                  
+                  {/* Réactions par-dessus les attachments */}
+                  <div 
+                    className={cn(
+                      "absolute -bottom-3 z-[9999]",
+                      isOwnMessage ? "right-2" : "left-2"
+                    )}
+                    style={{ pointerEvents: 'auto' }}
+                  >
+                    <MessageReactions
+                      messageId={message.id}
+                      conversationId={conversationId || message.conversationId}
+                      currentUserId={currentUser?.id || ''}
+                      currentAnonymousUserId={currentAnonymousUserId}
+                      isAnonymous={isAnonymous}
+                      showAddButton={false}
+                    />
+                  </div>
+                </div>
+              ) : (
+                // Si avec texte : pas de wrapper relative (les réactions sont sur la bulle)
+                <div className={cn(
+                  "mb-2 max-w-[85%] sm:max-w-[75%] md:max-w-[65%]",
+                  isOwnMessage ? "ml-auto" : "mr-auto"
+                )}>
+                  <MessageAttachments
+                    attachments={message.attachments}
+                    onImageClick={onImageClick}
                   />
                 </div>
               )}
-            </div>
+            </>
           )}
 
           {/* Message bubble wrapper with reactions - Seulement si contenu textuel */}
@@ -1010,90 +1024,87 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
         </div>
           )}
 
-          {/* Si attachments seuls (pas de texte) - Réactions simples */}
+          {/* Si attachments seuls (pas de texte) - Boutons d'action seulement */}
           {(!message.content || !message.content.trim()) && message.attachments && message.attachments.length > 0 && (
-            <div>
-              {/* Actions simples pour attachments seuls */}
-              <div className={cn(
-                "flex items-center gap-1.5 max-w-[85%] sm:max-w-[75%] md:max-w-[65%]",
-                isOwnMessage ? "ml-auto justify-end" : "mr-auto justify-start"
-              )}>
-                {/* Bouton de réponse */}
-                {onReplyMessage && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onReplyMessage(message)}
-                        aria-label={t('replyToMessage')}
-                        className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-blue-600 hover:bg-blue-50"
-                      >
-                        <MessageCircle className="h-3.5 w-3.5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{t('replyToMessage')}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-
-                {/* Bouton réaction */}
+            <div className={cn(
+              "flex items-center gap-1.5 max-w-[85%] sm:max-w-[75%] md:max-w-[65%]",
+              isOwnMessage ? "ml-auto justify-end" : "mr-auto justify-start"
+            )}>
+              {/* Bouton de réponse */}
+              {onReplyMessage && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={handleReactionClick}
-                      className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                      aria-label={t('addReaction')}
+                      onClick={() => onReplyMessage(message)}
+                      aria-label={t('replyToMessage')}
+                      className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-blue-600 hover:bg-blue-50"
                     >
-                      <Smile className="h-3.5 w-3.5" />
+                      <MessageCircle className="h-3.5 w-3.5" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{t('addReaction')}</p>
+                    <p>{t('replyToMessage')}</p>
                   </TooltipContent>
                 </Tooltip>
+              )}
 
-                {/* Bouton copier le lien */}
+              {/* Bouton réaction */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleReactionClick}
+                    className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                    aria-label={t('addReaction')}
+                  >
+                    <Smile className="h-3.5 w-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{t('addReaction')}</p>
+                </TooltipContent>
+              </Tooltip>
+
+              {/* Bouton copier le lien */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCopyMessageLink}
+                    className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                    aria-label={t('copyLink') || 'Copier le lien'}
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{t('copyLink') || 'Copier le lien'}</p>
+                </TooltipContent>
+              </Tooltip>
+
+              {/* Bouton supprimer (seulement si permissions) */}
+              {canDeleteMessage() && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={handleCopyMessageLink}
-                      className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                      aria-label={t('copyLink') || 'Copier le lien'}
+                      onClick={handleDeleteMessage}
+                      className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-red-600 hover:bg-red-50"
+                      aria-label={t('delete')}
                     >
-                      <Copy className="h-3.5 w-3.5" />
+                      <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{t('copyLink') || 'Copier le lien'}</p>
+                    <p>{t('delete')}</p>
                   </TooltipContent>
                 </Tooltip>
-
-                {/* Bouton supprimer (seulement si permissions) */}
-                {canDeleteMessage() && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleDeleteMessage}
-                        className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-red-600 hover:bg-red-50"
-                        aria-label={t('delete')}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{t('delete')}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-              </div>
+              )}
             </div>
           )}
         </div>
