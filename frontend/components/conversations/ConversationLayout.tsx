@@ -112,6 +112,9 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     isConnected: boolean;
     hasSocket: boolean;
   }>({ isConnected: false, hasSocket: false });
+  
+  // Ref pour éviter les reconnexions multiples
+  const hasAttemptedReconnect = useRef(false);
 
   // Fonctions pour gérer l'état des traductions en cours
   const addTranslatingState = useCallback((messageId: string, targetLanguage: string) => {
@@ -815,19 +818,36 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     return () => clearInterval(interval);
   }, []);
 
-  // Reconnexion automatique si la connexion est perdue
+  // Reconnexion automatique si la connexion est perdue (AVEC PROTECTION CONTRE BOUCLE)
   useEffect(() => {
+    // CORRECTION CRITIQUE: Empêcher les reconnexions répétées
     if (!connectionStatus.isConnected && connectionStatus.hasSocket && user) {
+      // Ne tenter UNE SEULE reconnexion
+      if (hasAttemptedReconnect.current) {
+        return;
+      }
+      
       console.log('[ConversationLayout] Connexion perdue, tentative de reconnexion...');
+      hasAttemptedReconnect.current = true;
       
       // Attendre un peu avant de reconnecter pour éviter les boucles
       const reconnectTimer = setTimeout(() => {
         if (!connectionStatus.isConnected) {
           meeshySocketIOService.reconnect();
+          
+          // Réinitialiser après 10 secondes pour permettre une nouvelle tentative si nécessaire
+          setTimeout(() => {
+            hasAttemptedReconnect.current = false;
+          }, 10000);
         }
       }, 3000);
 
       return () => clearTimeout(reconnectTimer);
+    }
+    
+    // Si la connexion est rétablie, réinitialiser le flag
+    if (connectionStatus.isConnected) {
+      hasAttemptedReconnect.current = false;
     }
   }, [connectionStatus.isConnected, connectionStatus.hasSocket, user]);
 
