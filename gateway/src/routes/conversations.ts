@@ -468,8 +468,29 @@ export async function conversationRoutes(fastify: FastifyInstance) {
             }
           });
 
+          // S'assurer qu'un titre existe toujours
+          let displayTitle = conversation.title;
+          if (!displayTitle || displayTitle.trim() === '') {
+            if (conversation.type === 'direct' && conversation.members && conversation.members.length > 0) {
+              // Pour les conversations directes, utiliser le nom de l'autre participant
+              const otherMember = conversation.members.find((m: any) => m.userId !== userId);
+              if (otherMember?.user) {
+                displayTitle = otherMember.user.displayName ||
+                              `${otherMember.user.username || ''}`.trim() ||
+                              otherMember.user.username ||
+                              'Conversation';
+              } else {
+                displayTitle = 'Direct Conversation';
+              }
+            } else {
+              // Pour les groupes et autres types
+              displayTitle = conversation.identifier || 'Group Conversation';
+            }
+          }
+
           return {
             ...conversation,
+            title: displayTitle,
             lastMessage: conversation.messages[0] || null,
             unreadCount
           };
@@ -561,6 +582,26 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         });
       }
 
+      // S'assurer qu'un titre existe toujours
+      let displayTitle = conversation.title;
+      if (!displayTitle || displayTitle.trim() === '') {
+        if (conversation.type === 'direct' && conversation.members && conversation.members.length > 0) {
+          // Pour les conversations directes, utiliser le nom de l'autre participant
+          const otherMember = conversation.members.find((m: any) => m.userId !== userId);
+          if (otherMember?.user) {
+            displayTitle = otherMember.user.displayName ||
+                          `${otherMember.user.firstName || ''} ${otherMember.user.lastName || ''}`.trim() ||
+                          otherMember.user.username ||
+                          'Conversation';
+          } else {
+            displayTitle = 'Conversation directe';
+          }
+        } else {
+          // Pour les groupes et autres types
+          displayTitle = conversation.identifier || 'Conversation';
+        }
+      }
+
       // Ajouter les statistiques de conversation dans les métadonnées (via cache 1h)
       const stats = await conversationStatsService.getOrCompute(
         prisma,
@@ -572,6 +613,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         success: true,
         data: {
           ...conversation,
+          title: displayTitle,
           meta: {
             conversationStats: stats
           }
@@ -758,9 +800,32 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         }
       }
 
+      // S'assurer qu'un titre existe toujours
+      let displayTitle = conversation.title;
+      if (!displayTitle || displayTitle.trim() === '') {
+        if (conversation.type === 'direct' && conversation.members && conversation.members.length > 0) {
+          // Pour les conversations directes, utiliser le nom de l'autre participant
+          const otherMember = conversation.members.find((m: any) => m.userId !== userId);
+          if (otherMember?.user) {
+            displayTitle = otherMember.user.displayName ||
+                          `${otherMember.user.firstName || ''} ${otherMember.user.lastName || ''}`.trim() ||
+                          otherMember.user.username ||
+                          'Conversation';
+          } else {
+            displayTitle = 'Conversation directe';
+          }
+        } else {
+          // Pour les groupes et autres types
+          displayTitle = conversation.identifier || 'Conversation';
+        }
+      }
+
       reply.status(201).send({
         success: true,
-        data: conversation
+        data: {
+          ...conversation,
+          title: displayTitle
+        }
       });
 
     } catch (error) {
@@ -1453,7 +1518,35 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         orderBy: { lastMessageAt: 'desc' }
       });
 
-      reply.send({ success: true, data: conversations });
+      // Transformer les conversations pour garantir qu'un titre existe toujours
+      const conversationsWithTitle = conversations.map((conversation) => {
+        let displayTitle = conversation.title;
+        if (!displayTitle || displayTitle.trim() === '') {
+          if (conversation.type === 'direct' && conversation.members && conversation.members.length > 0) {
+            // Pour les conversations directes, utiliser le nom de l'autre participant
+            const otherMember = conversation.members.find((m: any) => m.userId !== userId);
+            if (otherMember?.user) {
+              displayTitle = otherMember.user.displayName ||
+                            `${otherMember.user.firstName || ''} ${otherMember.user.lastName || ''}`.trim() ||
+                            otherMember.user.username ||
+                            'Conversation';
+            } else {
+              displayTitle = 'Conversation directe';
+            }
+          } else {
+            // Pour les groupes et autres types
+            displayTitle = conversation.identifier || 'Conversation';
+          }
+        }
+
+        return {
+          ...conversation,
+          title: displayTitle,
+          lastMessage: conversation.messages[0] || null
+        };
+      });
+
+      reply.send({ success: true, data: conversationsWithTitle });
     } catch (error) {
       console.error('[GATEWAY] Error searching conversations:', error);
       reply.status(500).send({ success: false, error: 'Erreur lors de la recherche de conversations' });
