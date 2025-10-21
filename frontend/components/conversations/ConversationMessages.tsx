@@ -11,7 +11,7 @@ import { MessagesDisplay } from '@/components/common/messages-display';
 import { UserRoleEnum } from '@shared/types';
 import { useFixRadixZIndex } from '@/hooks/use-fix-z-index';
 import { Button } from '@/components/ui/button';
-import { ArrowDown } from 'lucide-react';
+import { ArrowDown, ArrowUp } from 'lucide-react';
 
 interface ConversationMessagesProps {
   messages: Message[];
@@ -39,7 +39,7 @@ interface ConversationMessagesProps {
   t: (key: string) => string;
   reverseOrder?: boolean; // true = récent en haut (BubbleStream), false = ancien en haut (Conversations)
   scrollDirection?: 'up' | 'down'; // Direction du scroll pour charger plus: 'up' = haut (défaut), 'down' = bas
-  externalScrollContainer?: boolean; // Si true, n'applique pas overflow-y-auto (scroll géré par parent)
+  scrollButtonDirection?: 'up' | 'down'; // Direction du bouton scroll: 'up' = ArrowUp (BubbleStream), 'down' = ArrowDown (Conversations)
 }
 
 const ConversationMessagesComponent = memo(function ConversationMessages({
@@ -68,7 +68,7 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
   t,
   reverseOrder = false,
   scrollDirection = 'up', // Par défaut: scroll vers le haut (comportement classique messagerie)
-  externalScrollContainer = false // Par défaut: scroll interne
+  scrollButtonDirection = 'down' // Par défaut: ArrowDown pour Conversations (descendre vers récent)
 }: ConversationMessagesProps) {
   // Hook pour fixer les z-index des popovers Radix UI
   useFixRadixZIndex();
@@ -309,11 +309,8 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
     <div className="flex-1 flex flex-col h-full relative">
       <div
         ref={scrollAreaRef}
-        className={cn(
-          "flex-1 messages-scroll conversation-scroll h-full overflow-x-visible",
-          externalScrollContainer ? "overflow-y-visible" : "overflow-y-auto"
-        )}
-        onScroll={externalScrollContainer ? undefined : handleScroll}
+        className="flex-1 messages-scroll conversation-scroll h-full overflow-y-auto overflow-x-visible"
+        onScroll={handleScroll}
         style={{ position: 'relative' }}
       >
         <div className={cn(
@@ -372,7 +369,7 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
         </div>
       </div>
       
-      {/* AMÉLIORATION 2: Bouton flottant pour scroller vers le bas */}
+      {/* Bouton flottant pour scroller - Direction adaptée au contexte */}
       {showScrollButton && !isLoadingMessages && messages.length > 0 && (
         <Button
           onClick={() => scrollToBottom(true)}
@@ -384,10 +381,14 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
             "transition-all duration-300 ease-in-out",
             "animate-in slide-in-from-bottom-5"
           )}
-          aria-label={t('scrollToBottom') || 'Scroll to bottom'}
-          title={t('scrollToBottom') || 'Aller au bas de la conversation'}
+          aria-label={scrollButtonDirection === 'up' ? 'Scroll to top' : 'Scroll to bottom'}
+          title={scrollButtonDirection === 'up' ? 'Remonter vers les messages récents' : 'Aller au bas de la conversation'}
         >
-          <ArrowDown className="h-5 w-5 text-primary-foreground" />
+          {scrollButtonDirection === 'up' ? (
+            <ArrowUp className="h-5 w-5 text-primary-foreground" />
+          ) : (
+            <ArrowDown className="h-5 w-5 text-primary-foreground" />
+          )}
         </Button>
       )}
     </div>
