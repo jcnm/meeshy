@@ -485,7 +485,7 @@ class TranslationMLService:
                             translated = await self._ml_translate(
                                 segment_text,
                                 detected_lang,
-                                target_lang,
+                                target_language,
                                 model_type
                             )
                             translated_segments.append({
