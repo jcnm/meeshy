@@ -12,6 +12,7 @@ import asyncio
 
 # Import du health router
 from api.health import health_router, set_services
+from config.message_limits import can_translate_message, MessageLimits
 
 logger = logging.getLogger(__name__)
 
@@ -119,6 +120,21 @@ class TranslationAPI:
                 if not request.text.strip():
                     raise HTTPException(status_code=400, detail="Text cannot be empty")
                 
+                # Vérification de la longueur pour la traduction
+                if not can_translate_message(request.text):
+                    logger.warning(f"⚠️ [TRANSLATOR-API] Message too long to be translated: {len(request.text)} caractères (max: {MessageLimits.MAX_TRANSLATION_LENGTH})")
+                    # Retourner le texte original sans traduction
+                    return TranslationResponse(
+                        original_text=request.text,
+                        translated_text=request.text,
+                        source_language=request.source_language,
+                        target_language=request.target_language,
+                        model_used="none",
+                        confidence_score=1.0,
+                        processing_time_ms=0,
+                        from_cache=False
+                    )
+                
                 # OPTIMISATION: Éviter la traduction si source = target
                 if request.source_language != "auto" and request.source_language == request.target_language:
                     logger.info(f"🔄 [TRANSLATOR-API] Langues identiques ({request.source_language} → {request.target_language}), pas de traduction nécessaire")
@@ -133,8 +149,10 @@ class TranslationAPI:
                         from_cache=False
                     )
                 
-                # Appel au service de traduction unifié
-                result = await self.translation_service.translate(
+                # Appel au service de traduction unifié avec préservation de structure
+                # La méthode translate_with_structure détecte automatiquement si le texte
+                # nécessite une traduction structurée (paragraphes, emojis) ou non
+                result = await self.translation_service.translate_with_structure(
                     text=request.text,
                     source_language=request.source_language,
                     target_language=request.target_language,
