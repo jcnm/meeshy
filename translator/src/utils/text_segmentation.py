@@ -78,43 +78,103 @@ class TextSegmenter:
 
         return result
 
-    def segment_by_lines(self, text: str) -> List[Tuple[str, str]]:
+    def is_list_item(self, line: str) -> bool:
         """
-        Segmente le texte ligne par ligne pour préserver les listes et la structure
+        Détecte si une ligne est un élément de liste
+
+        Patterns reconnus:
+        - Tirets: -, •, *, →
+        - Numéros: 1., 2., 3., etc.
+        - Lettres: a), b), c)
+        """
+        stripped = line.strip()
+        if not stripped:
+            return False
+
+        # Pattern pour listes à puces
+        bullet_pattern = r'^[-•*→]\s+'
+        # Pattern pour listes numérotées (1., 2., etc.)
+        numbered_pattern = r'^\d+\.\s+'
+        # Pattern pour listes avec lettres (a), b), etc.)
+        lettered_pattern = r'^[a-z]\)\s+'
+
+        return (re.match(bullet_pattern, stripped) is not None or
+                re.match(numbered_pattern, stripped) is not None or
+                re.match(lettered_pattern, stripped) is not None)
+
+    def segment_by_sentences_and_lines(self, text: str) -> List[Tuple[str, str]]:
+        """
+        Segmente le texte intelligemment :
+        - Priorité aux phrases complètes (même sur plusieurs lignes)
+        - Exception : éléments de liste = segments séparés
+        - Préserve les paragraphes (double \\n)
 
         Returns:
             Liste de tuples (segment, type)
-            - segment: texte de la ligne
-            - type: 'line' (ligne avec contenu) ou 'empty_line' (ligne vide) ou 'paragraph_break' (double \n)
+            - type: 'sentence' (phrase complète), 'list_item' (élément de liste),
+                   'paragraph_break' (double \\n), 'empty_line' (ligne vide)
         """
-        # Séparer le texte en lignes individuelles
-        lines = text.split('\n')
+        # Séparer en paragraphes (par double \n)
+        paragraphs = text.split('\n\n')
 
         segments = []
-        i = 0
-        while i < len(lines):
-            line = lines[i]
 
-            # Vérifier si c'est une ligne vide
-            if not line.strip():
-                # Compter les lignes vides consécutives
-                empty_count = 1
-                while i + empty_count < len(lines) and not lines[i + empty_count].strip():
-                    empty_count += 1
+        for para_idx, paragraph in enumerate(paragraphs):
+            if not paragraph.strip():
+                continue
 
-                # Si plusieurs lignes vides = séparateur de paragraphes
-                if empty_count >= 1:
-                    segments.append(("", "paragraph_break"))
-                    i += empty_count
-                else:
-                    segments.append(("", "empty_line"))
+            # Ajouter séparateur de paragraphe sauf pour le premier
+            if para_idx > 0:
+                segments.append(("", "paragraph_break"))
+
+            # Traiter les lignes du paragraphe
+            lines = paragraph.split('\n')
+
+            i = 0
+            while i < len(lines):
+                line = lines[i].strip()
+
+                if not line:
                     i += 1
-            else:
-                # Ligne avec contenu
-                segments.append((line, "line"))
-                i += 1
+                    continue
 
-        logger.debug(f"[SEGMENTER] Split into {len(segments)} lines")
+                # Si c'est un élément de liste, le traiter séparément
+                if self.is_list_item(line):
+                    segments.append((line, "list_item"))
+                    i += 1
+                else:
+                    # Collecter une phrase complète (peut s'étendre sur plusieurs lignes)
+                    sentence_parts = [line]
+                    i += 1
+
+                    # Vérifier si la phrase est terminée (., !, ?, ;)
+                    ends_with_punctuation = re.search(r'[.!?;]$', line.rstrip())
+
+                    # Si pas de ponctuation finale, continuer sur les lignes suivantes
+                    # SAUF si la prochaine ligne est un élément de liste
+                    while i < len(lines) and not ends_with_punctuation:
+                        next_line = lines[i].strip()
+
+                        if not next_line:
+                            # Ligne vide, arrêter
+                            break
+
+                        if self.is_list_item(next_line):
+                            # Élément de liste, arrêter
+                            break
+
+                        # Ajouter la ligne à la phrase en cours
+                        sentence_parts.append(next_line)
+                        i += 1
+
+                        # Vérifier si cette ligne termine la phrase
+                        ends_with_punctuation = re.search(r'[.!?;]$', next_line.rstrip())
+
+                    # Joindre les parties de la phrase avec un espace
+                    complete_sentence = ' '.join(sentence_parts)
+                    segments.append((complete_sentence, "sentence"))
+
+        logger.debug(f"[SEGMENTER] Segmented into {len(segments)} parts (sentences + lists)")
         return segments
 
     def segment_by_sentences(self, text: str) -> List[str]:
@@ -160,65 +220,69 @@ class TextSegmenter:
 
     def segment_text(self, text: str) -> Tuple[List[Dict], Dict[int, str]]:
         """
-        Segmente le texte complet ligne par ligne en préservant la structure
+        Segmente le texte intelligemment en préservant la structure
 
         Returns:
             (liste_segments, mapping_emojis)
             Chaque segment est un dict: {
                 'text': str,
-                'type': 'line' | 'empty_line' | 'paragraph_break',
+                'type': 'sentence' | 'list_item' | 'paragraph_break',
                 'index': int
             }
         """
         # 1. Extraire les emojis
         text_no_emojis, emojis_map = self.extract_emojis(text)
 
-        # 2. Segmenter ligne par ligne
-        lines = self.segment_by_lines(text_no_emojis)
+        # 2. Segmenter intelligemment (phrases + listes)
+        parts = self.segment_by_sentences_and_lines(text_no_emojis)
 
         # 3. Créer les segments
         segments = []
         segment_index = 0
 
-        for line_text, line_type in lines:
+        for part_text, part_type in parts:
             segments.append({
-                'text': line_text,
-                'type': line_type,
+                'text': part_text,
+                'type': part_type,
                 'index': segment_index
             })
             segment_index += 1
 
-        logger.info(f"[SEGMENTER] Text segmented into {len(segments)} lines with {len(emojis_map)} emojis")
+        logger.info(f"[SEGMENTER] Text segmented into {len(segments)} parts ({len([s for s in segments if s['type'] in ['sentence', 'list_item']])} translatable) with {len(emojis_map)} emojis")
         return segments, emojis_map
 
     def reassemble_text(self, translated_segments: List[Dict], emojis_map: Dict[int, str]) -> str:
         """
-        Réassemble les segments traduits ligne par ligne en préservant la structure
+        Réassemble les segments traduits en préservant la structure
 
         Args:
             translated_segments: Liste de segments avec 'text' et 'type'
             emojis_map: Mapping des emojis à restaurer
         """
-        result_lines = []
+        result_parts = []
 
         for i, segment in enumerate(translated_segments):
             segment_type = segment['type']
             segment_text = segment['text']
 
-            if segment_type == 'line':
-                # Ligne avec contenu
-                result_lines.append(segment_text)
-            elif segment_type in ['paragraph_break', 'empty_line']:
-                # Ligne vide (simple ou double)
-                result_lines.append('')
+            if segment_type == 'paragraph_break':
+                # Ajouter une ligne vide pour créer le double \n
+                result_parts.append('\n\n')
+            elif segment_type in ['sentence', 'list_item']:
+                # Ajouter le contenu
+                if i > 0 and translated_segments[i-1]['type'] not in ['paragraph_break']:
+                    # Pas le premier élément et pas après un paragraph_break
+                    # Ajouter un saut de ligne avant
+                    result_parts.append('\n')
+                result_parts.append(segment_text)
 
-        # Joindre toutes les lignes avec \n
-        reassembled = '\n'.join(result_lines)
+        # Joindre toutes les parties
+        reassembled = ''.join(result_parts)
 
         # Restaurer les emojis
         final_text = self.restore_emojis(reassembled, emojis_map)
 
-        logger.info(f"[SEGMENTER] Text reassembled: {len(final_text)} chars from {len(translated_segments)} lines")
+        logger.info(f"[SEGMENTER] Text reassembled: {len(final_text)} chars from {len(translated_segments)} segments")
         return final_text
 
 
