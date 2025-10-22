@@ -16,6 +16,9 @@ from pathlib import Path
 # Import des settings
 from config.settings import get_settings
 
+# Import du module de segmentation pour préservation de structure
+from utils.text_segmentation import TextSegmenter
+
 # Import des modèles ML optimisés
 try:
     import torch
@@ -93,7 +96,10 @@ class TranslationMLService:
         # Cache thread-local de tokenizers pour éviter "Already borrowed"
         self._thread_local_tokenizers = {}
         self._tokenizer_lock = threading.Lock()
-        
+
+        # Segmenteur de texte pour préservation de structure
+        self.text_segmenter = TextSegmenter(max_segment_length=100)
+
         # Configuration des modèles depuis les settings et .env
         self.models_path = Path(self.settings.models_path)
         self.device = os.getenv('DEVICE', 'cpu')
@@ -414,12 +420,113 @@ class TranslationMLService:
             
             logger.info(f"✅ [ML-{source_channel.upper()}] '{text[:20]}...' → '{translated_text[:20]}...' ({processing_time:.3f}s)")
             return result
-            
+
         except Exception as e:
             logger.error(f"❌ Erreur traduction ML [{source_channel}]: {e}")
             # Fallback en cas d'erreur
             return await self._fallback_translate(text, source_language, target_language, model_type, source_channel)
-    
+
+    async def translate_with_structure(self, text: str, source_language: str = "auto",
+                                      target_language: str = "en", model_type: str = "basic",
+                                      source_channel: str = "unknown") -> Dict[str, Any]:
+        """
+        Traduction avec préservation de structure (paragraphes, emojis, sauts de ligne)
+
+        Cette méthode segmente le texte, traduit chaque segment séparément,
+        puis réassemble en préservant la structure originale
+        """
+        start_time = time.time()
+
+        try:
+            # Validation
+            if not text.strip():
+                raise ValueError("Text cannot be empty")
+
+            # Vérifier si le texte est court et sans structure complexe
+            if len(text) <= 100 and '\n\n' not in text and not self.text_segmenter.extract_emojis(text)[1]:
+                # Texte simple, utiliser la traduction standard
+                logger.debug(f"[STRUCTURED] Text is simple, using standard translation")
+                return await self.translate(text, source_language, target_language, model_type, source_channel)
+
+            logger.info(f"[STRUCTURED] Starting structured translation: {len(text)} chars")
+
+            # Vérifier que le service est initialisé
+            if not self.is_initialized:
+                logger.warning("Service ML non initialisé, utilisation du fallback")
+                return await self._fallback_translate(text, source_language, target_language, model_type, source_channel)
+
+            # Fallback si modèle spécifique pas disponible
+            if model_type not in self.models:
+                available_models = list(self.models.keys())
+                if available_models:
+                    model_type = available_models[0]
+                    logger.info(f"Modèle demandé non disponible, utilisation de: {model_type}")
+                else:
+                    return await self._fallback_translate(text, source_language, target_language, model_type, source_channel)
+
+            # Détecter la langue source si nécessaire
+            detected_lang = source_language if source_language != "auto" else self._detect_language(text)
+
+            # 1. Segmenter le texte (extraction emojis + découpage par paragraphes)
+            segments, emojis_map = self.text_segmenter.segment_text(text)
+            logger.info(f"[STRUCTURED] Text segmented into {len(segments)} parts with {len(emojis_map)} emojis")
+
+            # 2. Traduire chaque segment
+            translated_segments = []
+            for segment in segments:
+                if segment['type'] == 'empty_line':
+                    # Préserver les lignes vides
+                    translated_segments.append(segment)
+                else:
+                    # Traduire le segment
+                    segment_text = segment['text']
+                    if segment_text.strip():
+                        try:
+                            translated = await self._ml_translate(
+                                segment_text,
+                                detected_lang,
+                                target_lang,
+                                model_type
+                            )
+                            translated_segments.append({
+                                'text': translated,
+                                'type': segment['type'],
+                                'index': segment['index']
+                            })
+                            logger.debug(f"[STRUCTURED] Segment {segment['index']} translated: '{segment_text[:30]}...' → '{translated[:30]}...'")
+                        except Exception as e:
+                            logger.error(f"[STRUCTURED] Error translating segment {segment['index']}: {e}")
+                            # En cas d'erreur, garder le texte original
+                            translated_segments.append(segment)
+                    else:
+                        translated_segments.append(segment)
+
+            # 3. Réassembler le texte traduit
+            final_text = self.text_segmenter.reassemble_text(translated_segments, emojis_map)
+
+            processing_time = time.time() - start_time
+            self._update_stats(processing_time, source_channel)
+
+            result = {
+                'translated_text': final_text,
+                'detected_language': detected_lang,
+                'confidence': 0.95,
+                'model_used': f"{model_type}_ml_structured",
+                'from_cache': False,
+                'processing_time': processing_time,
+                'source_channel': source_channel,
+                'segments_count': len(segments),
+                'emojis_count': len(emojis_map)
+            }
+
+            logger.info(f"✅ [ML-STRUCTURED-{source_channel.upper()}] {len(text)}→{len(final_text)} chars, {len(segments)} segments, {len(emojis_map)} emojis ({processing_time:.3f}s)")
+            return result
+
+        except Exception as e:
+            logger.error(f"❌ Erreur traduction structurée [{source_channel}]: {e}")
+            # Fallback vers traduction standard en cas d'erreur
+            return await self.translate(text, source_language, target_language, model_type, source_channel)
+
     async def _ml_translate(self, text: str, source_lang: str, target_lang: str, model_type: str) -> str:
         """Traduction avec le vrai modèle ML - tokenizers thread-local pour éviter 'Already borrowed'"""
         try:
