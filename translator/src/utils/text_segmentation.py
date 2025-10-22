@@ -24,11 +24,13 @@ EMOJI_PATTERN = re.compile(
     flags=re.UNICODE
 )
 
-# Marqueur spécial pour les emojis (utilise des caractères rares)
-EMOJI_PLACEHOLDER = "⟨⟨EMOJI_{index}⟩⟩"
+# Marqueur spécial pour les emojis (utilise format XML qui survit aux tokenizers)
+# Format: __EMOJI_X__ où X est l'index
+# Les underscores doubles + majuscules sont généralement préservés par les tokenizers
+EMOJI_PLACEHOLDER = "__EMOJI_{index}__"
 
 # Marqueur pour les sauts de ligne (pour préservation explicite)
-NEWLINE_MARKER = "⟨⟨NL⟩⟩"
+NEWLINE_MARKER = "__NL__"
 
 class TextSegmenter:
     """Gère la segmentation de texte pour traduction avec préservation de structure"""
@@ -195,7 +197,6 @@ class TextSegmenter:
             translated_segments: Liste de segments avec 'text' et 'type'
             emojis_map: Mapping des emojis à restaurer
         """
-        # Grouper les segments par type pour recréer les paragraphes
         result_parts = []
 
         i = 0
@@ -203,8 +204,8 @@ class TextSegmenter:
             segment = translated_segments[i]
 
             if segment['type'] == 'empty_line':
-                # Ajouter une ligne vide
-                result_parts.append('\n')
+                # Ajouter un double saut de ligne (séparateur de paragraphes)
+                result_parts.append('\n\n')
                 i += 1
             else:
                 # Collecter tous les segments consécutifs du même paragraphe
@@ -213,17 +214,12 @@ class TextSegmenter:
 
                 # Continuer tant qu'on a des segments de paragraphe (pas de ligne vide)
                 while i < len(translated_segments) and translated_segments[i]['type'] == 'paragraph':
-                    # Vérifier si c'est la continuation du même paragraphe (pas séparé par ligne vide)
                     paragraph_parts.append(translated_segments[i]['text'])
                     i += 1
 
                 # Joindre les parties du paragraphe avec un espace
                 paragraph = ' '.join(paragraph_parts)
                 result_parts.append(paragraph)
-
-                # Ajouter un double saut de ligne après chaque paragraphe
-                if i < len(translated_segments):
-                    result_parts.append('\n\n')
 
         # Joindre toutes les parties
         reassembled = ''.join(result_parts)
