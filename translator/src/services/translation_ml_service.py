@@ -471,39 +471,41 @@ class TranslationMLService:
             segments, emojis_map = self.text_segmenter.segment_text(text)
             logger.info(f"[STRUCTURED] Text segmented into {len(segments)} parts with {len(emojis_map)} emojis")
 
-            # 2. Traduire chaque segment (ligne par ligne)
+            # 2. Traduire chaque segment (phrases + éléments de liste)
             translated_segments = []
             for segment in segments:
                 segment_type = segment['type']
 
-                # Préserver les lignes vides et séparateurs de paragraphes
-                if segment_type in ['paragraph_break', 'empty_line']:
+                # Préserver les séparateurs de paragraphes
+                if segment_type == 'paragraph_break':
                     translated_segments.append(segment)
                     continue
 
-                # Traduire les lignes avec contenu
-                segment_text = segment['text']
-                if segment_text.strip():
-                    try:
-                        translated = await self._ml_translate(
-                            segment_text,
-                            detected_lang,
-                            target_language,
-                            model_type
-                        )
-                        translated_segments.append({
-                            'text': translated,
-                            'type': segment['type'],
-                            'index': segment['index']
-                        })
-                        logger.debug(f"[STRUCTURED] Line {segment['index']} translated: '{segment_text[:30]}...' → '{translated[:30]}...'")
-                    except Exception as e:
-                        logger.error(f"[STRUCTURED] Error translating line {segment['index']}: {e}")
-                        # En cas d'erreur, garder le texte original
+                # Traduire les phrases et éléments de liste
+                if segment_type in ['sentence', 'list_item']:
+                    segment_text = segment['text']
+                    if segment_text.strip():
+                        try:
+                            translated = await self._ml_translate(
+                                segment_text,
+                                detected_lang,
+                                target_language,
+                                model_type
+                            )
+                            translated_segments.append({
+                                'text': translated,
+                                'type': segment['type'],
+                                'index': segment['index']
+                            })
+                            seg_type_label = "LIST ITEM" if segment_type == 'list_item' else "SENTENCE"
+                            logger.debug(f"[STRUCTURED] {seg_type_label} {segment['index']} translated: '{segment_text[:30]}...' → '{translated[:30]}...'")
+                        except Exception as e:
+                            logger.error(f"[STRUCTURED] Error translating {segment_type} {segment['index']}: {e}")
+                            # En cas d'erreur, garder le texte original
+                            translated_segments.append(segment)
+                    else:
+                        # Texte vide (ne devrait pas arriver)
                         translated_segments.append(segment)
-                else:
-                    # Ligne vide (ne devrait pas arriver mais par sécurité)
-                    translated_segments.append(segment)
 
             # 3. Réassembler le texte traduit
             final_text = self.text_segmenter.reassemble_text(translated_segments, emojis_map)
