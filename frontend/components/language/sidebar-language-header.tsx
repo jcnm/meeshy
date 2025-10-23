@@ -2,6 +2,7 @@
 
 import { Globe2 } from 'lucide-react';
 import type { LanguageStats } from '@shared/types';
+import { useI18n } from '@/hooks/useI18n';
 
 /**
  * Composant pour l'en-tête des langues dans la sidebar
@@ -18,6 +19,8 @@ export function SidebarLanguageHeader({
   userLanguage,
   className = "" 
 }: SidebarLanguageHeaderProps) {
+  const { t } = useI18n('common');
+  
   const topLanguages = [...languageStats]
     .sort((a, b) => b.count - a.count)
     .slice(0, 5);
@@ -29,7 +32,7 @@ export function SidebarLanguageHeader({
     <div className={`mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200/50 dark:border-blue-800/30 ${className}`}>
       <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
         <Globe2 className="h-4 w-4 mr-2" />
-        Communication Globale
+        {t('sidebar.globalCommunication')}
       </h2>
       <div className="flex flex-wrap gap-2 mb-3">
         {topLanguages.map((stat) => (
@@ -47,8 +50,7 @@ export function SidebarLanguageHeader({
         ))}
       </div>
       <p className="text-xs text-gray-600 dark:text-gray-400">
-        <span className="font-medium">{totalMessages}</span> messages 
-        en <span className="font-medium">{totalLanguages}</span> langues actives
+        <span className="font-medium">{totalMessages}</span> {t('sidebar.messagesIn')} <span className="font-medium">{totalLanguages}</span> {t('sidebar.activeLanguages')}
       </p>
     </div>
   );

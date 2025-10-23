@@ -27,7 +27,9 @@
     "dark": "Sombre",
     "system": "Système",
     "continueChat": "Continuer la discussion",
-    "signUp": "S'inscrire"
+    "signUp": "S'inscrire",
+    "language": "Langue",
+    "interfaceLanguage": "Langue d'interface"
   }
 }
 
