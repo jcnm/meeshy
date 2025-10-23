@@ -508,7 +508,28 @@ class TranslationMLService:
             segments, emojis_map = self.text_segmenter.segment_text(text)
             logger.info(f"[STRUCTURED] Text segmented into {len(segments)} parts with {len(emojis_map)} emojis")
 
+            # XXX: PARALLÉLISATION OPPORTUNITÉ #1 - Traduction de segments indépendants
+            # TODO: Les segments sont INDÉPENDANTS les uns des autres après segmentation
+            # TODO: Chaque paragraphe/ligne peut être traduit en PARALLÈLE avec asyncio.gather()
+            # TODO: Gains potentiels:
+            #       - Pour 10 paragraphes de 100 chars chacun: 10x plus rapide
+            #       - Pour 50 lignes de liste: 50x plus rapide (si GPU/CPU disponibles)
+            #       - Limiter la concurrence selon les ressources: asyncio.Semaphore(max_concurrent=5)
+            # TODO: Implémentation suggérée:
+            #       async def translate_segment(segment):
+            #           if segment['type'] == 'paragraph_break':
+            #               return segment
+            #           return await self._ml_translate(segment['text'], ...)
+            #       
+            #       tasks = [translate_segment(seg) for seg in segments]
+            #       translated_segments = await asyncio.gather(*tasks)
+            # TODO: Considérations:
+            #       - Préserver l'ordre des segments (gather() le fait automatiquement)
+            #       - Gérer les erreurs individuellement (return_exceptions=True)
+            #       - Limiter la charge mémoire GPU avec Semaphore
+            
             # 2. Traduire chaque segment (paragraphes, lignes + éléments de liste)
+            # XXX: ACTUELLEMENT SÉQUENTIEL - voir TODO ci-dessus pour parallélisation
             translated_segments = []
             for segment in segments:
                 segment_type = segment['type']
@@ -604,7 +625,31 @@ class TranslationMLService:
             return await self.translate(text, source_language, target_language, model_type, source_channel)
 
     async def _ml_translate(self, text: str, source_lang: str, target_lang: str, model_type: str) -> str:
-        """Traduction avec le vrai modèle ML - tokenizers thread-local pour éviter 'Already borrowed'"""
+        """
+        Traduction avec le vrai modèle ML - tokenizers thread-local pour éviter 'Already borrowed'
+        
+        XXX: PARALLÉLISATION OPPORTUNITÉ #2 - Traduction batch pour multiples segments
+        TODO: Cette méthode pourrait accepter une LISTE de textes au lieu d'un seul
+        TODO: Avantages du batch processing:
+              - Réduire l'overhead de création de pipeline (1 fois au lieu de N fois)
+              - Utiliser batch_size optimal du modèle (traiter 8-16 segments à la fois)
+              - Meilleure utilisation GPU/CPU (pas de temps mort entre segments)
+        TODO: Signature suggérée:
+              async def _ml_translate_batch(
+                  self, 
+                  texts: List[str], 
+                  source_lang: str, 
+                  target_lang: str, 
+                  model_type: str
+              ) -> List[str]:
+                  # Créer pipeline UNE fois
+                  # Traduire tous les textes en batch_size chunks
+                  # Retourner résultats dans le même ordre
+        TODO: Gains attendus:
+              - 3-5x plus rapide pour 10+ segments
+              - Réduction de 70% du temps de setup (pipeline creation)
+              - Meilleure utilisation mémoire GPU
+        """
         try:
             if model_type not in self.models:
                 raise Exception(f"Modèle {model_type} non chargé")
