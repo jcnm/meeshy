@@ -7,6 +7,7 @@ import os
 import logging
 import time
 import asyncio
+import re
 from typing import Dict, Optional, List, Any, Union
 from dataclasses import dataclass
 from concurrent.futures import ThreadPoolExecutor
@@ -522,12 +523,45 @@ class TranslationMLService:
                     segment_text = segment['text']
                     if segment_text.strip():
                         try:
+                            # Détecter les placeholders d'emojis AVANT traduction
+                            placeholders_before = re.findall(r'<EMOJI_\d+/>', segment_text)
+
                             translated = await self._ml_translate(
                                 segment_text,
                                 detected_lang,
                                 target_language,
                                 model_type
                             )
+
+                            # VÉRIFICATION CRITIQUE: Détecter les placeholders APRÈS traduction
+                            placeholders_after = re.findall(r'<EMOJI_\d+/>', translated)
+
+                            # Comparer les placeholders avant/après
+                            if len(placeholders_before) != len(placeholders_after):
+                                logger.error(f"[STRUCTURED] ❌ EMOJI PLACEHOLDERS LOST during translation!")
+                                logger.error(f"    Before: {placeholders_before}")
+                                logger.error(f"    After:  {placeholders_after}")
+                                logger.error(f"    Original: '{segment_text}'")
+                                logger.error(f"    Translated: '{translated}'")
+
+                                # FALLBACK: Réinjecter les placeholders manquants
+                                # (simple heuristique: ajouter à la fin si perdus)
+                                missing_placeholders = set(placeholders_before) - set(placeholders_after)
+                                if missing_placeholders:
+                                    logger.warning(f"[STRUCTURED] ⚠️  Attempting to restore {len(missing_placeholders)} lost placeholders")
+                                    # On ajoute les placeholders manquants là où ils devraient être
+                                    # Pour l'instant, on les ajoute simplement au texte traduit
+                                    for placeholder in missing_placeholders:
+                                        # Trouver la position dans l'original
+                                        original_pos = segment_text.find(placeholder)
+                                        if original_pos >= 0:
+                                            # Essayer d'estimer la position dans la traduction
+                                            # (approximativement au même ratio de position)
+                                            ratio = original_pos / len(segment_text) if len(segment_text) > 0 else 0
+                                            insert_pos = int(len(translated) * ratio)
+                                            translated = translated[:insert_pos] + placeholder + ' ' + translated[insert_pos:]
+                                            logger.info(f"[STRUCTURED] ✅ Restored placeholder {placeholder} at position {insert_pos}")
+
                             translated_segments.append({
                                 'text': translated,
                                 'type': segment['type'],

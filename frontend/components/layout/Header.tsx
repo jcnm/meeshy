@@ -191,38 +191,18 @@ export function Header({
                     {t('continueChat')}
                   </Button>
                 )}
-                {mode === 'landing' ? (
-                  <>
-                    <Button 
-                      variant="ghost" 
-                      onClick={() => handleAuthClick('login')}
-                    >
-                      <LogIn className="h-4 w-4 mr-2" />
-                      {t('login')}
-                    </Button>
-                    <Button 
-                      onClick={() => handleAuthClick('register')}
-                    >
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      {t('signUp')}
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Link href="/login">
-                      <Button variant="ghost">
-                        <LogIn className="h-4 w-4 mr-2" />
-                        {t('login')}
-                      </Button>
-                    </Link>
-                    <Link href="/signin">
-                      <Button>
-                        <UserPlus className="h-4 w-4 mr-2" />
-                        {t('signUp')}
-                      </Button>
-                    </Link>
-                  </>
-                )}
+                <Link href="/login">
+                  <Button variant="ghost">
+                    <LogIn className="h-4 w-4 mr-2" />
+                    {t('login')}
+                  </Button>
+                </Link>
+                <Link href="/signin">
+                  <Button>
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    {t('signUp')}
+                  </Button>
+                </Link>
               </>
             )}
             
@@ -395,46 +375,18 @@ export function Header({
                       {t('continueChat')}
                     </Button>
                   )}
-                  {mode === 'landing' ? (
-                    <>
-                      <Button 
-                        variant="ghost" 
-                        className="w-full justify-start"
-                        onClick={() => {
-                          handleAuthClick('login');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <LogIn className="h-4 w-4 mr-2" />
-                        {t('login')}
-                      </Button>
-                      <Button 
-                        className="w-full justify-start"
-                        onClick={() => {
-                          handleAuthClick('register');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <UserPlus className="h-4 w-4 mr-2" />
-                        {t('signUp')}
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                        <Button variant="ghost" className="w-full justify-start">
-                          <LogIn className="h-4 w-4 mr-2" />
-                          {t('login')}
-                        </Button>
-                      </Link>
-                      <Link href="/signin" onClick={() => setIsMobileMenuOpen(false)}>
-                        <Button className="w-full justify-start">
-                          <UserPlus className="h-4 w-4 mr-2" />
-                          {t('signUp')}
-                        </Button>
-                      </Link>
-                    </>
-                  )}
+                  <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start">
+                      <LogIn className="h-4 w-4 mr-2" />
+                      {t('login')}
+                    </Button>
+                  </Link>
+                  <Link href="/signin" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button className="w-full justify-start">
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      {t('signUp')}
+                    </Button>
+                  </Link>
                 </>
               )}
               
