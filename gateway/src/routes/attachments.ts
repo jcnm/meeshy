@@ -144,11 +144,12 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
   /**
    * POST /attachments/upload-text
    * Crée un fichier texte à partir du contenu
+   * Support utilisateurs authentifiés ET anonymes (pour BubbleStream)
    */
   fastify.post(
     '/attachments/upload-text',
     {
-      onRequest: [fastify.authenticate],
+      onRequest: [authOptional], // Utiliser authOptional au lieu de fastify.authenticate
       schema: {
         body: {
           type: 'object',

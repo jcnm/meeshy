@@ -304,10 +304,10 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
               onChange={(e) => handleInputChange('bio', e.target.value)}
               placeholder={t('profile.personalInfo.bioPlaceholder')}
               className="w-full min-h-[100px]"
-              maxLength={500}
+              maxLength={2000}
             />
             <p className="text-xs sm:text-sm text-muted-foreground text-right">
-              {formData.bio.length}/500
+              {formData.bio.length}/2000
             </p>
           </div>
 

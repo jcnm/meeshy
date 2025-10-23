@@ -6,6 +6,7 @@ import { MessageSquare } from 'lucide-react';
 import { BubbleMessage } from './BubbleMessage';
 import { messageTranslationService } from '@/services/message-translation.service';
 import { useFixRadixZIndex } from '@/hooks/use-fix-z-index';
+import { useI18n } from '@/hooks/useI18n';
 import type { User, Message, MessageWithTranslations } from '@shared/types';
 
 interface MessagesDisplayProps {
@@ -72,6 +73,9 @@ export function MessagesDisplay({
 
   // Hook pour fixer les z-index des popovers Radix UI
   useFixRadixZIndex();
+  
+  // Hook pour les traductions
+  const { t } = useI18n('bubbleStream');
 
   // États pour contrôler l'affichage des messages depuis le parent
   const [messageDisplayStates, setMessageDisplayStates] = useState<Record<string, {
@@ -122,6 +126,19 @@ export function MessagesDisplay({
   // Fonction pour forcer la traduction
   const handleForceTranslation = useCallback(async (messageId: string, targetLanguage: string, model?: 'basic' | 'medium' | 'premium') => {
     try {
+      // Vérifier si cette traduction spécifique (même message + même langue) est déjà en cours
+      const translationKey = `${messageId}-${targetLanguage}`;
+      const isAlreadyTranslating = addTranslatingState 
+        ? isTranslating?.(messageId, targetLanguage)
+        : localTranslatingStates.has(translationKey);
+
+      // Bloquer UNIQUEMENT si c'est la MÊME traduction (même message + même langue)
+      if (isAlreadyTranslating) {
+        console.log(`⏸️ [MessagesDisplay] Traduction déjà en cours pour ${messageId} → ${targetLanguage}`);
+        toast.info(t('translation.translationAlreadyInProgress'));
+        return;
+      }
+
       // Marquer comme en cours de traduction
       setMessageDisplayStates(prev => ({
         ...prev,
@@ -136,7 +153,7 @@ export function MessagesDisplay({
       if (addTranslatingState) {
         addTranslatingState(messageId, targetLanguage);
       } else {
-        setLocalTranslatingStates(prev => new Set(prev).add(`${messageId}-${targetLanguage}`));
+        setLocalTranslatingStates(prev => new Set(prev).add(translationKey));
       }
 
       const message = messages.find(m => m.id === messageId);
@@ -169,7 +186,7 @@ export function MessagesDisplay({
         [messageId]: {
           ...prev[messageId],
           isTranslating: false,
-          translationError: 'Erreur lors de la traduction'
+          translationError: t('translation.translationError')
         }
       }));
 
@@ -182,7 +199,7 @@ export function MessagesDisplay({
         });
       }
 
-      toast.error('Erreur lors de la demande de traduction');
+      toast.error(t('translation.translationRequestError'));
     }
   }, [messages, addTranslatingState, onTranslation]);
 
@@ -332,7 +349,7 @@ export function MessagesDisplay({
             onImageClick={onImageClick}
             onLanguageSwitch={handleLanguageSwitch}
             currentDisplayLanguage={state.currentDisplayLanguage}
-            isTranslating={state.isTranslating || checkIsTranslating(message.id, state.currentDisplayLanguage)}
+            isTranslating={checkIsTranslating(message.id, state.currentDisplayLanguage)}
             translationError={state.translationError}
             conversationType={conversationType}
             userRole={userRole}

@@ -387,8 +387,8 @@ class TranslationPoolManager:
         try:
             # Utiliser le service de traduction partagé
             if self.translation_service:
-                # Effectuer la vraie traduction avec le service ML unifié
-                result = await self.translation_service.translate(
+                # Effectuer la vraie traduction avec préservation de structure (retours à la ligne, paragraphes, emojis)
+                result = await self.translation_service.translate_with_structure(
                     text=task.text,
                     source_language=task.source_language,
                     target_language=target_language,
@@ -416,7 +416,10 @@ class TranslationPoolManager:
                     'confidenceScore': result.get('confidence', 0.95),
                     'processingTime': processing_time,
                     'modelType': task.model_type,
-                    'workerName': worker_name
+                    'workerName': worker_name,
+                    # Métriques de préservation de structure
+                    'segmentsCount': result.get('segments_count', 0),
+                    'emojisCount': result.get('emojis_count', 0)
                 }
             else:
                 # Fallback si pas de service de traduction

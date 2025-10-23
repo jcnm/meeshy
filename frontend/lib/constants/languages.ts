@@ -14,8 +14,8 @@ export const SUPPORTED_LANGUAGES = [
   { code: 'ar', name: 'العربية', flag: '🇸🇦', color: 'bg-green-600' },
 ] as const;
 
-export const MAX_MESSAGE_LENGTH = 300;
-export const MAX_MESSAGE_LENGTH_MODERATOR = 500; // Limite pour modérateurs et au-dessus
+export const MAX_MESSAGE_LENGTH = 1500;
+export const MAX_MESSAGE_LENGTH_MODERATOR = 2000; // Limite pour modérateurs et au-dessus
 export const TOAST_SHORT_DURATION = 2000;
 export const TOAST_LONG_DURATION = 3000;
 export const TOAST_ERROR_DURATION = 5000;

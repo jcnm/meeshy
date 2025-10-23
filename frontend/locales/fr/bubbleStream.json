@@ -80,7 +80,12 @@
       "showInUserLanguage": "Afficher dans votre langue",
       "translating": "Traduction en cours...",
       "translationFailed": "Échec de la traduction",
+      "translationError": "Erreur lors de la traduction",
+      "translationRequestError": "Erreur lors de la demande de traduction",
+      "translationAlreadyInProgress": "Traduction déjà en cours pour cette langue",
       "improveTranslationQuality": "Améliorer la qualité de traduction",
+      "clickToTranslateWith": "Cliquer pour traduire avec le modèle {model}",
+      "translateWith": "Traduire avec",
       "aiDisclaimer": "Les traductions sont générées par des modèles d'IA et peuvent contenir des erreurs ou des inexactitudes.",
       "basic": {
         "title": "Basique"

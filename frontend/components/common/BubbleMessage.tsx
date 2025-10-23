@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useMemo, useCallback, useRef, useState } from 'react';
+import { memo, useMemo, useCallback, useRef, useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import type { User, BubbleTranslation } from '@shared/types';
@@ -74,6 +74,12 @@ const BubbleMessageInner = memo(function BubbleMessageInner({
   // State local pour la langue d'affichage (permet la mise à jour immédiate du contenu)
   const [localDisplayLanguage, setLocalDisplayLanguage] = useState<string | null>(null);
   const effectiveDisplayLanguage = localDisplayLanguage || currentDisplayLanguage;
+
+  // Synchroniser localDisplayLanguage avec currentDisplayLanguage quand il change depuis le parent
+  // Cela permet au bouton de langue originale de fonctionner correctement
+  useEffect(() => {
+    setLocalDisplayLanguage(currentDisplayLanguage);
+  }, [currentDisplayLanguage]);
 
   // Hook de virtualization pour ce message spécifique
   const {

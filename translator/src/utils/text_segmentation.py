@@ -9,18 +9,68 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Regex pour identifier les emojis (Unicode ranges)
+# Pattern ULTRA-ROBUSTE pour tous les types d'emojis
+# Inclut tous les ranges Unicode emoji + modificateurs + ZWJ sequences
 EMOJI_PATTERN = re.compile(
-    "["
-    "\U0001F600-\U0001F64F"  # emoticons
-    "\U0001F300-\U0001F5FF"  # symbols & pictographs
-    "\U0001F680-\U0001F6FF"  # transport & map symbols
-    "\U0001F1E0-\U0001F1FF"  # flags (iOS)
-    "\U00002702-\U000027B0"  # dingbats
-    "\U000024C2-\U0001F251"
-    "\U0001F900-\U0001F9FF"  # supplemental symbols
-    "\U0001FA00-\U0001FAFF"  # extended pictographs
-    "]+",
+    "(?:"
+    # Emojis avec modificateurs de peau (skin tone) et ZWJ
+    "[\U0001F3FB-\U0001F3FF]|"  # Modificateurs de peau
+    "\U0000200D|"  # Zero Width Joiner (ZWJ)
+    "\U0000FE0F|"  # Variation Selector-16 (présentation emoji)
+    "\U0000FE0E|"  # Variation Selector-15 (présentation texte)
+    # Emojis de base
+    "[\U0001F600-\U0001F64F]|"  # Emoticons
+    "[\U0001F300-\U0001F5FF]|"  # Symbols & Pictographs
+    "[\U0001F680-\U0001F6FF]|"  # Transport & Map Symbols
+    "[\U0001F700-\U0001F77F]|"  # Alchemical Symbols
+    "[\U0001F780-\U0001F7FF]|"  # Geometric Shapes Extended
+    "[\U0001F800-\U0001F8FF]|"  # Supplemental Arrows-C
+    "[\U0001F900-\U0001F9FF]|"  # Supplemental Symbols and Pictographs
+    "[\U0001FA00-\U0001FA6F]|"  # Chess Symbols
+    "[\U0001FA70-\U0001FAFF]|"  # Symbols and Pictographs Extended-A
+    "[\U00002702-\U000027B0]|"  # Dingbats
+    "[\U000024C2-\U0001F251]|"  # Enclosed characters
+    "[\U0001F1E0-\U0001F1FF]|"  # Regional Indicator Symbols (flags)
+    "[\U00002600-\U000026FF]|"  # Miscellaneous Symbols
+    "[\U00002700-\U000027BF]|"  # Dingbats
+    "[\U0001F900-\U0001F9FF]|"  # Supplemental Symbols
+    "[\U0001FA00-\U0001FAFF]|"  # Extended Pictographs
+    # Symboles additionnels souvent utilisés comme emojis
+    "[\u2600-\u26FF]|"  # Miscellaneous Symbols
+    "[\u2700-\u27BF]|"  # Dingbats
+    "[\u2B50]|"  # Star
+    "[\u2934-\u2935]|"  # Arrows
+    "[\u3030]|"  # Wavy dash
+    "[\u303D]|"  # Part alternation mark
+    "[\u3297]|"  # Circled Ideograph Congratulation
+    "[\u3299]|"  # Circled Ideograph Secret
+    # Keycap sequences
+    "[\u0023\u002A\u0030-\u0039]\uFE0F?\u20E3|"  # Keycaps
+    # Copyright, registered, trademark
+    "[\u00A9\u00AE\u203C\u2049\u2122\u2139]|"
+    # Arrows
+    "[\u2194-\u2199\u21A9-\u21AA]|"
+    # Checkmarks, crosses
+    "[\u231A-\u231B\u2328\u23CF\u23E9-\u23F3\u23F8-\u23FA\u24C2]|"
+    # Geometric shapes
+    "[\u25AA-\u25AB\u25B6\u25C0\u25FB-\u25FE]|"
+    # Additional symbols
+    "[\u2934-\u2935\u2B05-\u2B07\u2B1B-\u2B1C\u2B50\u2B55]|"
+    # Emojis récents (Unicode 13.0+)
+    "[\U0001F90C-\U0001F971]|"  # Nouveaux emojis
+    "[\U0001F973-\U0001F976]|"
+    "[\U0001F97A-\U0001F9A2]|"
+    "[\U0001F9A5-\U0001F9AA]|"
+    "[\U0001F9AE-\U0001F9CA]|"
+    "[\U0001F9CD-\U0001F9FF]|"
+    "[\U0001FA70-\U0001FA74]|"
+    "[\U0001FA78-\U0001FA7A]|"
+    "[\U0001FA80-\U0001FA86]|"
+    "[\U0001FA90-\U0001FAA8]|"
+    "[\U0001FAB0-\U0001FAB6]|"
+    "[\U0001FAC0-\U0001FAC2]|"
+    "[\U0001FAD0-\U0001FAD6]"
+    ")+",
     flags=re.UNICODE
 )
 
@@ -44,7 +94,8 @@ class TextSegmenter:
 
     def extract_emojis(self, text: str) -> Tuple[str, Dict[int, str]]:
         """
-        Extrait les emojis et les remplace par des marqueurs
+        Extrait TOUS les emojis (y compris complexes avec ZWJ, modificateurs de peau, etc.)
+        et les remplace par des marqueurs robustes
 
         Returns:
             (texte_sans_emojis, mapping_index_vers_emoji)
@@ -52,9 +103,16 @@ class TextSegmenter:
         emojis_map = {}
         emoji_index = 0
 
+        # Log du texte avant extraction
+        logger.debug(f"[SEGMENTER] Texte avant extraction emojis: {repr(text[:100])}")
+
         def replacer(match):
             nonlocal emoji_index
             emoji = match.group(0)
+            # Log chaque emoji extrait avec son code Unicode pour debug
+            emoji_codes = ' '.join([f'U+{ord(c):04X}' for c in emoji])
+            logger.debug(f"[SEGMENTER] Emoji {emoji_index} extrait: {emoji} ({emoji_codes})")
+
             emojis_map[emoji_index] = emoji
             placeholder = EMOJI_PLACEHOLDER.format(index=emoji_index)
             emoji_index += 1
@@ -63,18 +121,50 @@ class TextSegmenter:
         text_without_emojis = EMOJI_PATTERN.sub(replacer, text)
 
         if emojis_map:
-            logger.debug(f"[SEGMENTER] Extracted {len(emojis_map)} emojis: {emojis_map}")
+            logger.info(f"[SEGMENTER] ✅ Extracted {len(emojis_map)} emojis: {list(emojis_map.values())}")
+        else:
+            logger.debug(f"[SEGMENTER] ℹ️  No emojis found in text")
+
+        # Vérification: s'assurer qu'aucun emoji n'est resté
+        remaining_emojis = EMOJI_PATTERN.findall(text_without_emojis)
+        if remaining_emojis:
+            logger.warning(f"[SEGMENTER] ⚠️  {len(remaining_emojis)} emojis NOT extracted: {remaining_emojis}")
 
         return text_without_emojis, emojis_map
 
     def restore_emojis(self, text: str, emojis_map: Dict[int, str]) -> str:
         """
-        Restaure les emojis à partir des marqueurs
+        Restaure TOUS les emojis à partir des marqueurs avec vérification
         """
         result = text
+        restored_count = 0
+        not_found_placeholders = []
+
         for index, emoji in emojis_map.items():
             placeholder = EMOJI_PLACEHOLDER.format(index=index)
-            result = result.replace(placeholder, emoji)
+
+            # Vérifier si le placeholder est présent
+            if placeholder in result:
+                result = result.replace(placeholder, emoji)
+                restored_count += 1
+                logger.debug(f"[SEGMENTER] Emoji {index} restauré: {emoji}")
+            else:
+                not_found_placeholders.append((index, emoji, placeholder))
+                logger.warning(f"[SEGMENTER] ⚠️  Placeholder {placeholder} NOT FOUND for emoji {emoji}")
+
+        # Log final
+        if emojis_map:
+            logger.info(f"[SEGMENTER] ✅ Restored {restored_count}/{len(emojis_map)} emojis")
+
+        if not_found_placeholders:
+            logger.error(f"[SEGMENTER] ❌ {len(not_found_placeholders)} emojis NOT restored:")
+            for idx, emoji, placeholder in not_found_placeholders:
+                logger.error(f"    - Index {idx}: {emoji} (placeholder: {placeholder})")
+
+        # Vérification finale: s'assurer qu'il ne reste aucun placeholder
+        remaining_placeholders = re.findall(r'__EMOJI_\d+__', result)
+        if remaining_placeholders:
+            logger.error(f"[SEGMENTER] ❌ {len(remaining_placeholders)} placeholders NOT replaced: {remaining_placeholders}")
 
         return result
 
@@ -104,14 +194,14 @@ class TextSegmenter:
 
     def segment_by_sentences_and_lines(self, text: str) -> List[Tuple[str, str]]:
         """
-        Segmente le texte intelligemment :
-        - Priorité aux phrases complètes (même sur plusieurs lignes)
-        - Exception : éléments de liste = segments séparés
+        Segmente le texte avec priorité aux retours à la ligne :
+        - PRIORITÉ 1: Préserver chaque retour à la ligne
+        - Chaque ligne est traduite séparément pour maintenir la structure
         - Préserve les paragraphes (double \\n)
 
         Returns:
             Liste de tuples (segment, type)
-            - type: 'sentence' (phrase complète), 'list_item' (élément de liste),
+            - type: 'line' (ligne simple), 'list_item' (élément de liste),
                    'paragraph_break' (double \\n), 'empty_line' (ligne vide)
         """
         # Séparer en paragraphes (par double \n)
@@ -127,54 +217,23 @@ class TextSegmenter:
             if para_idx > 0:
                 segments.append(("", "paragraph_break"))
 
-            # Traiter les lignes du paragraphe
+            # Traiter chaque ligne du paragraphe séparément
             lines = paragraph.split('\n')
 
-            i = 0
-            while i < len(lines):
-                line = lines[i].strip()
-
-                if not line:
-                    i += 1
+            for line in lines:
+                # Garder les espaces en début de ligne pour l'indentation
+                if not line.strip():
+                    # Ligne vide - ignorer
                     continue
 
-                # Si c'est un élément de liste, le traiter séparément
-                if self.is_list_item(line):
+                # Si c'est un élément de liste, le marquer spécifiquement
+                if self.is_list_item(line.strip()):
                     segments.append((line, "list_item"))
-                    i += 1
                 else:
-                    # Collecter une phrase complète (peut s'étendre sur plusieurs lignes)
-                    sentence_parts = [line]
-                    i += 1
+                    # Ligne normale - préserver telle quelle
+                    segments.append((line, "line"))
 
-                    # Vérifier si la phrase est terminée (., !, ?, ;)
-                    ends_with_punctuation = re.search(r'[.!?;]$', line.rstrip())
-
-                    # Si pas de ponctuation finale, continuer sur les lignes suivantes
-                    # SAUF si la prochaine ligne est un élément de liste
-                    while i < len(lines) and not ends_with_punctuation:
-                        next_line = lines[i].strip()
-
-                        if not next_line:
-                            # Ligne vide, arrêter
-                            break
-
-                        if self.is_list_item(next_line):
-                            # Élément de liste, arrêter
-                            break
-
-                        # Ajouter la ligne à la phrase en cours
-                        sentence_parts.append(next_line)
-                        i += 1
-
-                        # Vérifier si cette ligne termine la phrase
-                        ends_with_punctuation = re.search(r'[.!?;]$', next_line.rstrip())
-
-                    # Joindre les parties de la phrase avec un espace
-                    complete_sentence = ' '.join(sentence_parts)
-                    segments.append((complete_sentence, "sentence"))
-
-        logger.debug(f"[SEGMENTER] Segmented into {len(segments)} parts (sentences + lists)")
+        logger.debug(f"[SEGMENTER] Segmented into {len(segments)} lines (preserving all line breaks)")
         return segments
 
     def segment_by_sentences(self, text: str) -> List[str]:
@@ -248,7 +307,7 @@ class TextSegmenter:
             })
             segment_index += 1
 
-        logger.info(f"[SEGMENTER] Text segmented into {len(segments)} parts ({len([s for s in segments if s['type'] in ['sentence', 'list_item']])} translatable) with {len(emojis_map)} emojis")
+        logger.info(f"[SEGMENTER] Text segmented into {len(segments)} parts ({len([s for s in segments if s['type'] in ['line', 'sentence', 'list_item']])} translatable) with {len(emojis_map)} emojis")
         return segments, emojis_map
 
     def reassemble_text(self, translated_segments: List[Dict], emojis_map: Dict[int, str]) -> str:
@@ -268,7 +327,7 @@ class TextSegmenter:
             if segment_type == 'paragraph_break':
                 # Ajouter une ligne vide pour créer le double \n
                 result_parts.append('\n\n')
-            elif segment_type in ['sentence', 'list_item']:
+            elif segment_type in ['line', 'sentence', 'list_item']:
                 # Ajouter le contenu
                 if i > 0 and translated_segments[i-1]['type'] not in ['paragraph_break']:
                     # Pas le premier élément et pas après un paragraph_break

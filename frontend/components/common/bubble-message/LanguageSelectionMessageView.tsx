@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useState, useCallback, useMemo } from 'react';
+import { memo, useState, useCallback, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { X, Search, Languages, CheckCircle2, Loader2, Clock, Zap, Star, Gem, Database, Cpu, ChevronUp, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -38,7 +38,39 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
 }: LanguageSelectionMessageViewProps) {
   const { t } = useI18n('bubbleStream');
   const [searchQuery, setSearchQuery] = useState('');
-
+  
+  // État local pour tracker les traductions en cours par langue
+  // Permet de bloquer uniquement le bouton de la langue en cours de traduction
+  const [translatingLanguages, setTranslatingLanguages] = useState<Set<string>>(new Set());
+  
+  // Fonction pour marquer une langue comme en cours de traduction
+  const markLanguageAsTranslating = useCallback((language: string) => {
+    setTranslatingLanguages(prev => new Set(prev).add(language));
+  }, []);
+  
+  // Fonction pour retirer une langue de l'état "en cours"
+  const unmarkLanguageAsTranslating = useCallback((language: string) => {
+    setTranslatingLanguages(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(language);
+      return newSet;
+    });
+  }, []);
+  
+  // Effet pour nettoyer l'état quand une traduction arrive
+  // Détecte les nouvelles traductions et retire la langue de translatingLanguages
+  useEffect(() => {
+    if (message.translations && message.translations.length > 0) {
+      // Pour chaque traduction disponible, retirer la langue de l'état "en cours"
+      message.translations.forEach((translation: any) => {
+        const lang = translation.targetLanguage || translation.language;
+        if (lang && translatingLanguages.has(lang)) {
+          unmarkLanguageAsTranslating(lang);
+        }
+      });
+    }
+  }, [message.translations, translatingLanguages, unmarkLanguageAsTranslating]);
+  
   // Utilitaires pour l'affichage des informations
   const getModelIcon = (model: string, size = "h-3 w-3") => {
     switch (model?.toLowerCase()) {
@@ -52,10 +84,10 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
 
   const getModelLabel = (model: string) => {
     switch (model?.toLowerCase()) {
-      case 'basic': return 'Basic';
+      case 'basic': return t('translation.basic.title');
       case 'medium':
-      case 'standard': return 'Standard';
-      case 'premium': return 'Premium';
+      case 'standard': return t('translation.standard.title');
+      case 'premium': return t('translation.premium.title');
       default: return 'Unknown';
     }
   };
@@ -213,7 +245,7 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
         <div className="flex items-center gap-2 mb-2">
           <Languages className="h-4 w-4 text-blue-600" />
           <span className="font-medium text-sm">{t('selectLanguage')}</span>
-          {isTranslating && <Loader2 className="h-3 w-3 animate-spin text-blue-600" />}
+          {translatingLanguages.size > 0 && <Loader2 className="h-3 w-3 animate-spin text-blue-600" />}
           
           {/* Statistiques globales */}
           <div className="flex items-center gap-2 ml-2">
@@ -316,12 +348,14 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
                                       size="sm"
                                       variant="ghost"
                                       className="h-5 w-5 p-0"
-                                      disabled={isTranslating}
+                                      disabled={translatingLanguages.has(version.language)}
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         const nextTier = getNextTier(version.model || 'basic');
                                         if (nextTier) {
+                                          markLanguageAsTranslating(version.language);
                                           onRequestTranslation(version.language, nextTier as 'basic' | 'medium' | 'premium');
+                                          // Note: unmarkLanguageAsTranslating sera appelé quand la traduction arrive via WebSocket
                                         }
                                       }}
                                     >
@@ -345,11 +379,12 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
                                       size="sm"
                                       variant="ghost"
                                       className="h-5 w-5 p-0"
-                                      disabled={isTranslating}
+                                      disabled={translatingLanguages.has(version.language)}
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         const prevTier = getPreviousTier(version.model || 'basic');
                                         if (prevTier) {
+                                          markLanguageAsTranslating(version.language);
                                           onRequestTranslation(version.language, prevTier as 'basic' | 'medium' | 'premium');
                                         }
                                       }}
@@ -415,12 +450,12 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
                         <div className="flex items-center gap-1">
                           <Zap className="h-3 w-3 text-yellow-500" />
                           <Badge variant="outline" className="text-xs h-4 px-1.5">
-                            Basic
+                            {t('translation.basic.title')}
                           </Badge>
                         </div>
                       </div>
                       <div className="text-xs text-gray-500">
-                        Click to translate with Basic model
+                        {t('translation.clickToTranslateWith', { model: t('translation.basic.title') })}
                       </div>
                     </div>
                     
@@ -434,9 +469,10 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
                               size="sm"
                               variant="ghost"
                               className="h-7 w-7 p-0 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
-                              disabled={isTranslating}
+                              disabled={translatingLanguages.has(lang.code)}
                               onClick={(e) => {
                                 e.stopPropagation();
+                                markLanguageAsTranslating(lang.code);
                                 onRequestTranslation(lang.code, 'basic');
                               }}
                             >
@@ -455,9 +491,10 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
                               size="sm"
                               variant="ghost"
                               className="h-7 w-7 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                              disabled={isTranslating}
+                              disabled={translatingLanguages.has(lang.code)}
                               onClick={(e) => {
                                 e.stopPropagation();
+                                markLanguageAsTranslating(lang.code);
                                 onRequestTranslation(lang.code, 'medium');
                               }}
                             >
@@ -476,9 +513,10 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
                               size="sm"
                               variant="ghost"
                               className="h-7 w-7 p-0 hover:bg-purple-50 dark:hover:bg-purple-900/20"
-                              disabled={isTranslating}
+                              disabled={translatingLanguages.has(lang.code)}
                               onClick={(e) => {
                                 e.stopPropagation();
+                                markLanguageAsTranslating(lang.code);
                                 onRequestTranslation(lang.code, 'premium');
                               }}
                             >
