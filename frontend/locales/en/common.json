@@ -86,6 +86,17 @@
       "created": "Created successfully",
       "welcome": "Welcome"
     },
+    "sidebar": {
+      "activeUsers": "Active Users",
+      "trends": "Trends",
+      "globalCommunication": "Global Communication",
+      "messagesIn": "messages in",
+      "activeLanguages": "active languages"
+    },
+    "languageSelector": {
+      "selectLanguage": "Select a language...",
+      "noLanguageFound": "No language found."
+    },
     "toasts": {
       "error": "An error occurred",
       "success": "Operation successful",

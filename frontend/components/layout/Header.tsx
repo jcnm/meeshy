@@ -23,12 +23,16 @@ import {
   Moon,
   Monitor,
   ChevronDown,
-  LogOut
+  LogOut,
+  Languages
 } from 'lucide-react';
 import { AuthMode } from '@/types';
 import { useAuth } from '@/hooks/use-auth';
 import { useAppStore } from '@/stores/app-store';
 import { useI18n } from '@/hooks/useI18n';
+import { LanguageFlagSelector } from '@/components/translation/language-flag-selector';
+import { useLanguageStore } from '@/stores';
+import { INTERFACE_LANGUAGES } from '@/types/frontend';
 
 interface HeaderProps {
   mode?: 'landing' | 'chat' | 'default';
@@ -52,6 +56,10 @@ export function Header({
   const { user, isAnonymous, logout, leaveAnonymousSession } = useAuth();
   const { theme, setTheme } = useAppStore();
   const { t } = useI18n('header');
+  
+  // Language store pour le sélecteur de langue
+  const currentInterfaceLanguage = useLanguageStore(state => state.currentInterfaceLanguage);
+  const setInterfaceLanguage = useLanguageStore(state => state.setInterfaceLanguage);
 
   const handleAuthClick = (newMode: AuthMode) => {
     if (onAuthModeChange) {
@@ -174,6 +182,24 @@ export function Header({
                         {t('system')}
                         {theme === 'auto' && <span className="ml-auto">✓</span>}
                       </DropdownMenuItem>
+                      
+                      {/* Sélecteur de langue d'interface pour les utilisateurs anonymes */}
+                      {isAnonymous && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuLabel className="text-xs text-gray-500 dark:text-gray-400">
+                            {t('interfaceLanguage')}
+                          </DropdownMenuLabel>
+                          <div className="px-2 py-1.5">
+                            <LanguageFlagSelector
+                              value={currentInterfaceLanguage}
+                              onValueChange={setInterfaceLanguage}
+                              interfaceOnly={true}
+                              className="w-full"
+                            />
+                          </div>
+                        </>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
@@ -191,6 +217,14 @@ export function Header({
                     {t('continueChat')}
                   </Button>
                 )}
+                
+                {/* Sélecteur de langue pour la page d'accueil */}
+                <LanguageFlagSelector
+                  value={currentInterfaceLanguage}
+                  onValueChange={setInterfaceLanguage}
+                  interfaceOnly={true}
+                />
+                
                 <Link href="/login">
                   <Button variant="ghost">
                     <LogIn className="h-4 w-4 mr-2" />
@@ -209,6 +243,13 @@ export function Header({
             {/* Mode Default - affiche les boutons login/signin */}
             {mode === 'default' && !user && (
               <>
+                {/* Sélecteur de langue pour les utilisateurs non connectés */}
+                <LanguageFlagSelector
+                  value={currentInterfaceLanguage}
+                  onValueChange={setInterfaceLanguage}
+                  interfaceOnly={true}
+                />
+                
                 <Link href="/login">
                   <Button variant="ghost">
                     <LogIn className="h-4 w-4 mr-2" />
@@ -344,6 +385,23 @@ export function Header({
                           {theme === 'auto' && <span className="ml-auto">✓</span>}
                         </Button>
                       </div>
+                      
+                      {/* Sélecteur de langue pour utilisateurs anonymes en mobile */}
+                      {isAnonymous && (
+                        <div className="space-y-2">
+                          <div className="px-2 py-1.5">
+                            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{t('interfaceLanguage')}</span>
+                          </div>
+                          <div className="px-2">
+                            <LanguageFlagSelector
+                              value={currentInterfaceLanguage}
+                              onValueChange={setInterfaceLanguage}
+                              interfaceOnly={true}
+                              className="w-full"
+                            />
+                          </div>
+                        </div>
+                      )}
                     </>
                   )}
                   
@@ -362,6 +420,21 @@ export function Header({
               
               {mode === 'landing' && (
                 <>
+                  {/* Sélecteur de langue en mobile pour landing */}
+                  <div className="space-y-2">
+                    <div className="px-2 py-1.5">
+                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{t('interfaceLanguage')}</span>
+                    </div>
+                    <div className="px-2">
+                      <LanguageFlagSelector
+                        value={currentInterfaceLanguage}
+                        onValueChange={setInterfaceLanguage}
+                        interfaceOnly={true}
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+                  
                   {anonymousChatLink && (
                     <Button
                       variant="outline"
@@ -393,6 +466,21 @@ export function Header({
               {/* Mode Default - affiche les boutons login/signin en mobile */}
               {mode === 'default' && !user && (
                 <>
+                  {/* Sélecteur de langue en mobile pour default */}
+                  <div className="space-y-2">
+                    <div className="px-2 py-1.5">
+                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{t('interfaceLanguage')}</span>
+                    </div>
+                    <div className="px-2">
+                      <LanguageFlagSelector
+                        value={currentInterfaceLanguage}
+                        onValueChange={setInterfaceLanguage}
+                        interfaceOnly={true}
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+                  
                   <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
                     <Button variant="ghost" className="w-full justify-start">
                       <LogIn className="h-4 w-4 mr-2" />

@@ -27,7 +27,9 @@
     "dark": "Dark",
     "system": "System",
     "continueChat": "Continue Chat",
-    "signUp": "Sign Up"
+    "signUp": "Sign Up",
+    "language": "Language",
+    "interfaceLanguage": "Interface Language"
   }
 }
 
