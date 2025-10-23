@@ -165,9 +165,10 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   }, [token]);
 
   // Hook pour la détection de texte collé - création automatique
+  // Utilise maxMessageLength comme threshold (1500 pour USER, 2000 pour MODERATOR+)
   useTextAttachmentDetection(textareaRef, {
     enabled: true,
-    threshold: 300,
+    threshold: maxMessageLength,
     onTextDetected: async (text) => {
       // Créer automatiquement l'attachement sans demander
       await handleCreateTextAttachment(text);
