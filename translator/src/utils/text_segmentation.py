@@ -74,10 +74,11 @@ EMOJI_PATTERN = re.compile(
     flags=re.UNICODE
 )
 
-# Marqueur spécial pour les emojis (utilise format XML qui survit aux tokenizers)
-# Format: __EMOJI_X__ où X est l'index
-# Les underscores doubles + majuscules sont généralement préservés par les tokenizers
-EMOJI_PLACEHOLDER = "__EMOJI_{index}__"
+# Marqueur spécial pour les emojis - Format XML/HTML plus robuste
+# Format: <EMOJI_X/> où X est l'index
+# Les balises XML sont mieux préservées par les tokenizers ML que les underscores
+# Utilisation de balise auto-fermante pour éviter confusion avec HTML réel
+EMOJI_PLACEHOLDER = "<EMOJI_{index}/>"
 
 # Marqueur pour les sauts de ligne (pour préservation explicite)
 NEWLINE_MARKER = "__NL__"
@@ -162,7 +163,7 @@ class TextSegmenter:
                 logger.error(f"    - Index {idx}: {emoji} (placeholder: {placeholder})")
 
         # Vérification finale: s'assurer qu'il ne reste aucun placeholder
-        remaining_placeholders = re.findall(r'__EMOJI_\d+__', result)
+        remaining_placeholders = re.findall(r'<EMOJI_\d+/>', result)
         if remaining_placeholders:
             logger.error(f"[SEGMENTER] ❌ {len(remaining_placeholders)} placeholders NOT replaced: {remaining_placeholders}")
 

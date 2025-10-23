@@ -198,31 +198,14 @@ function LandingPageContent() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             
-            {/* Dialog Register */}
-            <Dialog open={authMode === 'register'} onOpenChange={(open) => setAuthMode(open ? 'register' : 'welcome')}>
-              <DialogTrigger asChild>
-                <Button size="lg" className="flex items-center space-x-2">
-                  <UserPlus className="h-5 w-5" />
-                  <span>{t('hero.startFree')}</span>
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
-                {/* Header fixe */}
-                <div className="px-6 pt-6 pb-4 border-b shrink-0">
-                  <DialogHeader>
-                    <DialogTitle>{tAuth('register.title')}</DialogTitle>
-                    <DialogDescription>
-                      {tAuth('register.description')}
-                    </DialogDescription>
-                  </DialogHeader>
-                </div>
-                {/* Contenu scrollable */}
-                <div className="flex-1 overflow-y-auto px-6 min-h-0">
-                  <RegisterForm formPrefix="main-register" />
-                </div>
-              </DialogContent>
-            </Dialog>
+            {/* Bouton Inscription */}
+            <Link href="/signin">
+              <Button size="lg" className="flex items-center space-x-2">
+                <UserPlus className="h-5 w-5" />
+                <span>{t('hero.startFree')}</span>
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
             
             {/* Dialog Join */}
             <Dialog open={authMode === 'join'} onOpenChange={(open) => setAuthMode(open ? 'join' : 'welcome')}>
@@ -429,17 +412,18 @@ function LandingPageContent() {
             {t('cta.subtitle')}
           </p>
           
-          {/* Bouton qui ouvre le même Dialog que dans la section hero */}
-          <Button 
-            size="lg" 
-            variant="secondary" 
-            className="flex items-center space-x-2"
-            onClick={() => setAuthMode('register')}
-          >
-            <UserPlus className="h-5 w-5" />
-            <span>{t('cta.createAccount')}</span>
-            <ArrowRight className="h-4 w-4" />
-          </Button>
+          {/* Bouton qui redirige vers la page d'inscription */}
+          <Link href="/signin">
+            <Button 
+              size="lg" 
+              variant="secondary" 
+              className="flex items-center space-x-2"
+            >
+              <UserPlus className="h-5 w-5" />
+              <span>{t('cta.createAccount')}</span>
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </Link>
         </div>
       </section>
 

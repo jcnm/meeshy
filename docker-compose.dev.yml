@@ -109,8 +109,8 @@ services:
     container_name: meeshy-dev-translator
     restart: unless-stopped
     environment:
-      - DATABASE_TYPE=${DATABASE_TYPE:-MONGODB}
-      - DATABASE_URL=${DATABASE_URL:-mongodb://meeshy-dev-database:27017/meeshy}
+      - DATABASE_TYPE=MONGODB
+      - DATABASE_URL=mongodb://database:27017/meeshy?replicaSet=rs0&directConnection=true
       - PRISMA_SCHEMA_PATH=${PRISMA_SCHEMA_PATH}
       - PYTHONPATH=/workspace:/workspace/generated
       - PYTHONUNBUFFERED=1
@@ -143,8 +143,8 @@ services:
     container_name: meeshy-dev-gateway
     restart: unless-stopped
     environment:
-      - DATABASE_TYPE=${DATABASE_TYPE:-MONGODB}
-      - DATABASE_URL=${DATABASE_URL:-mongodb://meeshy-dev-database:27017/meeshy}
+      - DATABASE_TYPE=MONGODB
+      - DATABASE_URL=mongodb://database:27017/meeshy?replicaSet=rs0&directConnection=true
       - REDIS_URL=redis://redis:6379
       - TRANSLATOR_URL=http://translator:8000
       - ZMQ_PUSH_URL=tcp://translator:5555
@@ -204,10 +204,11 @@ services:
     container_name: meeshy-dev-frontend
     restart: unless-stopped
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:3000
       - NEXT_PUBLIC_WS_URL=ws://localhost:3000
       - NEXT_PUBLIC_TRANSLATION_URL=http://localhost:8000/translate
-      - NEXT_PUBLIC_BACKEND_URL=http://localhost:3000
+      - NEXT_PUBLIC_API_URL=http://localhost:3000
+      - NEXT_PUBLIC_BACKEND_URL=http://gateway:3000
+      - INTERNAL_BACKEND_URL=http://gateway:3000
       - NEXT_PUBLIC_FRONTEND_URL=http://localhost:3100
       - NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION=${NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION:-true}
       - NEXT_PUBLIC_USE_API_TRANSLATION_ONLY=${NEXT_PUBLIC_USE_API_TRANSLATION_ONLY:-true}
