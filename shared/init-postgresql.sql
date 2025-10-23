@@ -72,7 +72,7 @@ INSERT INTO "User" (
     username, "firstName", "lastName", email, password, "displayName", 
     role, "isActive", "systemLanguage", "regionalLanguage"
 ) VALUES (
-    'admin', 'Admin', 'User', 'admin@meeshy.com', 
+    'admin', 'Admin', 'User', 'admin@meeshy.me', 
     crypt('admin123', gen_salt('bf')), 'Administrator',
     'ADMIN', true, 'fr', 'fr'
 ) ON CONFLICT (username) DO NOTHING;
@@ -82,7 +82,7 @@ INSERT INTO "User" (
     username, "firstName", "lastName", email, password, "displayName", 
     role, "isActive", "systemLanguage", "regionalLanguage"
 ) VALUES (
-    'bigboss', 'Big', 'Boss', 'bigboss@meeshy.com', 
+    'bigboss', 'Big', 'Boss', 'bigboss@meeshy.me', 
     crypt('bigboss123', gen_salt('bf')), 'Big Boss',
     'BIGBOSS', true, 'fr', 'fr'
 ) ON CONFLICT (username) DO NOTHING;
@@ -100,8 +100,8 @@ BEGIN
     RAISE NOTICE '- Users created: %', (SELECT COUNT(*) FROM "User");
     RAISE NOTICE '';
     RAISE NOTICE '🔐 Default users:';
-    RAISE NOTICE '- Admin: admin@meeshy.com / admin123';
-    RAISE NOTICE '- BigBoss: bigboss@meeshy.com / bigboss123';
+    RAISE NOTICE '- Admin: admin@meeshy.me / admin123';
+    RAISE NOTICE '- BigBoss: bigboss@meeshy.me / bigboss123';
     RAISE NOTICE '- PostgreSQL: meeshy / MeeshyPassword123';
     RAISE NOTICE '';
     RAISE NOTICE '✅ Ready for Prisma client connections!';

@@ -11,7 +11,7 @@ class Settings:
     def __init__(self):
         # Configuration générale
         self.debug = os.getenv("DEBUG", "false").lower() == "true"
-        self.workers = int(os.getenv("WORKERS", "4"))
+        self.workers = int(os.getenv("WORKERS", "16"))
         
         # Configuration des ports
         self.fastapi_port = int(os.getenv("FASTAPI_PORT", "8000"))
@@ -28,18 +28,21 @@ class Settings:
         self.cache_max_entries = int(os.getenv("CACHE_MAX_ENTRIES", "10000"))
         
         # Configuration ML
-        self.ml_batch_size = int(os.getenv("ML_BATCH_SIZE", "32"))
+        self.ml_batch_size = int(os.getenv("ML_BATCH_SIZE", "16"))
         self.gpu_memory_fraction = float(os.getenv("GPU_MEMORY_FRACTION", "0.8"))
         
         # Chemin des modèles - utiliser le dossier models local du translator
         models_path_env = os.getenv("MODELS_PATH", "models")
+        print(f"[SETTINGS] 🔍 MODELS_PATH depuis os.getenv: '{models_path_env}'")
         if os.path.isabs(models_path_env):
             self.models_path = models_path_env
+            print(f"[SETTINGS] ✅ Chemin absolu utilisé: '{self.models_path}'")
         else:
             # Si chemin relatif, le calculer depuis le dossier translator
             current_dir = os.path.dirname(os.path.abspath(__file__))
             translator_dir = os.path.dirname(os.path.dirname(current_dir))  # remonte de src/config vers translator
             self.models_path = os.path.join(translator_dir, models_path_env)
+            print(f"[SETTINGS] ✅ Chemin relatif calculé: '{self.models_path}'")
         
         # Configuration des langues
         self.default_language = os.getenv("DEFAULT_LANGUAGE", "fr")
@@ -52,13 +55,13 @@ class Settings:
         self.premium_model = os.getenv("PREMIUM_MODEL", "facebook/nllb-200-distilled-1.3B")
         
         # Configuration des performances
-        self.translation_timeout = int(os.getenv("TRANSLATION_TIMEOUT", "30"))  # 30 secondes pour CPU
+        self.translation_timeout = int(os.getenv("TRANSLATION_TIMEOUT", "20"))  # 20 secondes pour multicore AMD
         self.max_text_length = int(os.getenv("MAX_TEXT_LENGTH", "1000"))
-        self.concurrent_translations = int(os.getenv("CONCURRENT_TRANSLATIONS", "4"))  # Réduit pour CPU
-        
+        self.concurrent_translations = int(os.getenv("CONCURRENT_TRANSLATIONS", "4"))  # Optimisé pour 4 cores
+
         # Configuration des timeouts pour le chargement des modèles
         self.model_load_timeout = int(os.getenv("MODEL_LOAD_TIMEOUT", "60"))  # 60 secondes pour charger un modèle
-        self.tokenizer_load_timeout = int(os.getenv("TOKENIZER_LOAD_TIMEOUT", "30"))  # 30 secondes pour charger un tokenizer
+        self.tokenizer_load_timeout = int(os.getenv("TOKENIZER_LOAD_TIMEOUT", "20"))  # 20 secondes pour charger un tokenizer
         self.huggingface_timeout = int(os.getenv("HUGGINGFACE_TIMEOUT", "120"))  # 120 secondes pour les téléchargements HF
         
         # Configuration des retries pour le téléchargement des modèles

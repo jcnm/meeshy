@@ -13,8 +13,33 @@ from concurrent.futures import ThreadPoolExecutor
 import threading
 from pathlib import Path
 
+# CRITIQUE: Charger les variables d'environnement AVANT tout import
+try:
+    from dotenv import load_dotenv
+    # Charger .env puis .env.local (override)
+    env_path = Path(__file__).parent.parent.parent / '.env'
+    env_local_path = Path(__file__).parent.parent.parent / '.env.local'
+    
+    if env_path.exists():
+        load_dotenv(env_path)
+    
+    if env_local_path.exists():
+        load_dotenv(env_local_path, override=True)
+        print(f"🔧 [ML-SERVICE] .env.local chargé depuis: {env_local_path}")
+        print(f"🔧 [ML-SERVICE] MODELS_PATH: {os.getenv('MODELS_PATH', 'NOT SET')}")
+except ImportError:
+    print("⚠️ [ML-SERVICE] python-dotenv non disponible")
+
 # Import des settings
 from config.settings import get_settings
+
+# CRITIQUE: Définir les variables d'environnement AVANT d'importer transformers
+# Transformers lit ces variables au moment de l'import
+_settings = get_settings()
+os.environ['HF_HOME'] = str(_settings.models_path)
+os.environ['TRANSFORMERS_CACHE'] = str(_settings.models_path)
+os.environ['HUGGINGFACE_HUB_CACHE'] = str(_settings.models_path)
+print(f"🔧 [ML-SERVICE] Variables HuggingFace définies: {_settings.models_path}")
 
 # Import du module de segmentation pour préservation de structure
 from utils.text_segmentation import TextSegmenter
@@ -80,10 +105,10 @@ class TranslationMLService:
         self.settings = settings
         
         self.model_type = model_type
-        # OPTIMISATION CPU: Limiter les workers pour éviter le context switching
-        # Sur CPU, 2-4 workers suffisent largement
+        # OPTIMISATION CPU MULTICORE: Utiliser 16 workers pour AMD 18 cores
+        # Laisser 2 cores pour l'OS et les opérations système
         import os
-        cpu_workers = min(max_workers, int(os.getenv('ML_MAX_WORKERS', '4')))
+        cpu_workers = min(max_workers, int(os.getenv('ML_MAX_WORKERS', '16')))
         self.max_workers = cpu_workers
         self.quantization_level = quantization_level
         self.executor = ThreadPoolExecutor(max_workers=cpu_workers)
@@ -102,6 +127,10 @@ class TranslationMLService:
 
         # Configuration des modèles depuis les settings et .env
         self.models_path = Path(self.settings.models_path)
+        logger.info(f"🔍 [ML-SERVICE] models_path configuré: {self.models_path}")
+        logger.info(f"🔍 [ML-SERVICE] models_path existe: {self.models_path.exists()}")
+        logger.info(f"🔍 [ML-SERVICE] HF_HOME env: {os.getenv('HF_HOME', 'NOT SET')}")
+        logger.info(f"🔍 [ML-SERVICE] TRANSFORMERS_CACHE env: {os.getenv('TRANSFORMERS_CACHE', 'NOT SET')}")
         self.device = os.getenv('DEVICE', 'cpu')
         
         self.model_configs = {
@@ -239,6 +268,13 @@ class TranslationMLService:
             
             try:
                 logger.info("🚀 Initialisation du Service ML Unifié...")
+                
+                # Configuration optimale des threads PyTorch pour AMD multicore
+                if ML_AVAILABLE:
+                    torch.set_num_threads(16)  # Utiliser 16 threads pour inference
+                    torch.set_num_interop_threads(2)  # 2 threads pour opérations inter-op
+                    logger.info(f"⚙️ PyTorch configuré: {torch.get_num_threads()} threads intra-op, {torch.get_num_interop_threads()} threads inter-op")
+                
                 logger.info("📚 Chargement des modèles NLLB...")
                 
                 # Charger les modèles par ordre de priorité
@@ -565,8 +601,8 @@ class TranslationMLService:
                             model=shared_model,
                             tokenizer=thread_tokenizer,  # ← TOKENIZER THREAD-LOCAL
                             device=0 if self.device == 'cuda' and torch.cuda.is_available() else -1,
-                            max_length=128,  # Réduit de 512 à 128 pour la vitesse
-                            batch_size=4  # Traiter un texte à la fois sur CPU
+                            max_length=256,  # Augmenté pour traductions de qualité
+                            batch_size=8  # Optimisé pour multicore AMD
                         )
                         
                         # T5: format avec noms complets de langues
@@ -576,12 +612,12 @@ class TranslationMLService:
                         
                         logger.debug(f"T5 instruction: {instruction}")
                         
-                        # OPTIMISATION CPU: Réduire num_beams pour accélérer considérablement
-                        # num_beams=1 (greedy) est 4x plus rapide que num_beams=4
+                        # OPTIMISATION MULTICORE: Paramètres optimisés pour AMD 18 cores
+                        # num_beams=4 pour qualité avec multicore
                         result = temp_pipeline(
                             instruction,
-                            max_new_tokens=128,  # Augmenté de 32 à 128 pour traductions plus longues
-                            num_beams=2,  # Réduit de 4 à 2 (greedy search = 2x plus rapide)
+                            max_new_tokens=256,  # Augmenté pour traductions complètes
+                            num_beams=4,  # Équilibre qualité/vitesse
                             do_sample=False,
                             early_stopping=True,
                             repetition_penalty=1.1,
@@ -652,14 +688,14 @@ class TranslationMLService:
                                     translated = f"[Translation-Failed] {text}"
                                     return translated
                                 
-                                # OPTIMISATION CPU: Paramètres optimisés pour la vitesse
+                                # OPTIMISATION MULTICORE: Paramètres optimisés pour AMD 18 cores
                                 nllb_pipeline = pipeline(
                                     "translation",
                                     model=nllb_model,
                                     tokenizer=nllb_tokenizer,
                                     device=0 if self.device == 'cuda' and torch.cuda.is_available() else -1,
-                                    max_length=256,  # Augmenté de 64 à 256 pour traductions plus longues
-                                    batch_size=2  # Traiter un texte à la fois sur CPU
+                                    max_length=512,  # Augmenté pour qualité
+                                    batch_size=8  # Optimisé pour multicore
                                 )
                                 
                                 nllb_source = self.lang_codes.get(source_lang, 'eng_Latn')
@@ -669,8 +705,8 @@ class TranslationMLService:
                                     text, 
                                     src_lang=nllb_source, 
                                     tgt_lang=nllb_target, 
-                                    max_length=256,  # Augmenté de 64 à 512 pour traductions plus longues
-                                    num_beams=2,  # Greedy search = 4x plus rapide
+                                    max_length=512,  # Augmenté pour qualité
+                                    num_beams=4,  # Équilibre qualité/vitesse
                                     early_stopping=True
                                 )
                                 
@@ -687,27 +723,27 @@ class TranslationMLService:
                             
                     else:
                         # NLLB: utiliser translation avec tokenizer thread-local
-                        # OPTIMISATION CPU: Réduire max_length et batch_size
+                        # OPTIMISATION MULTICORE: Paramètres optimisés pour AMD 18 cores
                         temp_pipeline = pipeline(
                             "translation",
                             model=shared_model,
                             tokenizer=thread_tokenizer,  # ← TOKENIZER THREAD-LOCAL
                             device=0 if self.device == 'cuda' and torch.cuda.is_available() else -1,
-                            max_length=256,  # Augmenté de 64 à 256 pour traductions plus longues
-                            batch_size=2  # Traiter un texte à la fois sur CPU
+                            max_length=512,  # Augmenté pour qualité
+                            batch_size=8  # Optimisé pour multicore
                         )
                         
                         # NLLB: codes de langue spéciaux
                         nllb_source = self.lang_codes.get(source_lang, 'eng_Latn')
                         nllb_target = self.lang_codes.get(target_lang, 'fra_Latn')
                         
-                        # OPTIMISATION CPU: Paramètres optimisés pour la vitesse
+                        # OPTIMISATION MULTICORE: Paramètres optimisés pour qualité et vitesse
                         result = temp_pipeline(
                             text, 
                             src_lang=nllb_source, 
                             tgt_lang=nllb_target, 
-                            max_length=256,  # Augmenté de 64 à 256 pour traductions plus longues
-                            num_beams=2,  # Greedy search = 4x plus rapide
+                            max_length=512,  # Augmenté pour qualité
+                            num_beams=4,  # Équilibre qualité/vitesse sur multicore
                             early_stopping=True
                         )
                         

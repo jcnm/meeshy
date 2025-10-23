@@ -85,8 +85,17 @@ export function MessagesDisplay({
 
   // Fonction pour déterminer la langue d'affichage préférée pour un message
   const getPreferredDisplayLanguage = useCallback((message: any): string => {
+    console.log(`🔍 [MESSAGES-DISPLAY] Calcul de la langue préférée pour message ${message.id.substring(0, 8)}:`, {
+      originalLanguage: message.originalLanguage,
+      userLanguage,
+      hasTranslations: !!(message.translations && message.translations.length > 0),
+      translationsCount: message.translations?.length || 0,
+      availableLanguages: message.translations?.map((t: any) => t.language || t.targetLanguage).join(', ') || 'none'
+    });
+    
     // Si le message est dans la langue de l'utilisateur, l'afficher tel quel
     if (message.originalLanguage === userLanguage) {
+      console.log(`✅ [MESSAGES-DISPLAY] Message ${message.id.substring(0, 8)} déjà en ${userLanguage} (original)`);
       return message.originalLanguage;
     }
     
@@ -96,10 +105,16 @@ export function MessagesDisplay({
     );
     
     if (userLanguageTranslation) {
-      console.log(`🌐 [AUTO-TRANSLATION] Traduction trouvée pour ${message.id} en ${userLanguage}`);
+      console.log(`🌐 [MESSAGES-DISPLAY] Traduction trouvée pour ${message.id.substring(0, 8)} en ${userLanguage}`, {
+        hasTranslatedContent: !!userLanguageTranslation.translatedContent,
+        hasContent: !!userLanguageTranslation.content,
+        translatedContentPreview: userLanguageTranslation.translatedContent?.substring(0, 50) || 'none',
+        contentPreview: userLanguageTranslation.content?.substring(0, 50) || 'none'
+      });
       return userLanguage;
     }
     
+    console.log(`⚠️ [MESSAGES-DISPLAY] Pas de traduction en ${userLanguage} pour ${message.id.substring(0, 8)}, affichage en ${message.originalLanguage || 'fr'}`);
     // Sinon, afficher dans la langue originale
     return message.originalLanguage || 'fr';
   }, [userLanguage]);
@@ -128,39 +143,22 @@ export function MessagesDisplay({
       const sourceLanguage = message?.originalLanguage || 'fr';
 
 
+      // Utiliser 'basic' comme modèle par défaut si non spécifié
       const result = await messageTranslationService.requestTranslation({
         messageId,
         targetLanguage,
         sourceLanguage,
-        model: model || 'basic'
+        model: model || 'basic' // Par défaut, commencer avec le modèle basic
       });
 
-      // Simuler la réception de traduction si onTranslation est fourni
-      if (onTranslation) {
-        setTimeout(() => {
-          onTranslation(messageId, [{
-            id: `trans-${messageId}-${targetLanguage}`,
-            messageId,
-            targetLanguage,
-            translatedContent: result.translationId ? 'Translation in progress...' : 'Translation requested',
-            sourceLanguage,
-            translationModel: (model || 'basic') as 'basic' | 'medium' | 'premium',
-            cacheKey: '',
-            confidenceScore: 0.95,
-            createdAt: new Date(),
-            cached: false
-          }]);
-          
-          // Arrêter l'état de traduction
-          setMessageDisplayStates(prev => ({
-            ...prev,
-            [messageId]: {
-              ...prev[messageId],
-              isTranslating: false
-            }
-          }));
-        }, 1000);
-      }
+      // NOTE: Ne pas simuler de traduction !
+      // La vraie traduction sera reçue via WebSocket (événement MESSAGE_TRANSLATION)
+      // et traitée par le callback onTranslation du composant parent
+      
+      console.log(`🔄 [MessagesDisplay] Traduction demandée pour ${messageId} vers ${targetLanguage}`, result);
+      
+      // Garder l'état "isTranslating" actif jusqu'à réception de la vraie traduction via WebSocket
+      // L'état sera désactivé dans le callback onTranslation quand la traduction arrivera
 
     } catch (error) {
       console.error('Erreur traduction forcée:', error);

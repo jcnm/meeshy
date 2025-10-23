@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useMemo, useCallback, useRef } from 'react';
+import { memo, useMemo, useCallback, useRef, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import type { User, BubbleTranslation } from '@shared/types';
@@ -71,6 +71,10 @@ const BubbleMessageInner = memo(function BubbleMessageInner({
   const { t } = useI18n();
   const contentRef = useRef<HTMLDivElement>(null);
 
+  // State local pour la langue d'affichage (permet la mise à jour immédiate du contenu)
+  const [localDisplayLanguage, setLocalDisplayLanguage] = useState<string | null>(null);
+  const effectiveDisplayLanguage = localDisplayLanguage || currentDisplayLanguage;
+
   // Hook de virtualization pour ce message spécifique
   const {
     currentMode,
@@ -105,28 +109,32 @@ const BubbleMessageInner = memo(function BubbleMessageInner({
     return false;
   }, [isOwnMessage, userRole]);
 
-  // Contenu affiché actuellement
+  // Contenu affiché actuellement (utilise effectiveDisplayLanguage pour mise à jour immédiate)
   const currentContent = useMemo(() => {
-    if (currentDisplayLanguage === (message.originalLanguage || 'fr')) {
+    if (effectiveDisplayLanguage === (message.originalLanguage || 'fr')) {
       return message.originalContent || message.content;
     }
     
-    const translation = message.translations.find(t => t.language === currentDisplayLanguage);
-    return translation?.content || message.content;
-  }, [currentDisplayLanguage, message.originalLanguage, message.originalContent, message.content, message.translations]);
+    const translation = message.translations.find((t: any) => 
+      (t.language || t.targetLanguage) === effectiveDisplayLanguage
+    );
+    return translation ? ((translation as any).content || (translation as any).translatedContent || message.content) : message.content;
+  }, [effectiveDisplayLanguage, message.originalLanguage, message.originalContent, message.content, message.translations]);
 
-  // Contenu de réponse (pour les messages parents)
+  // Contenu de réponse (pour les messages parents - utilise effectiveDisplayLanguage)
   const replyToContent = useMemo(() => {
     if (!message.replyTo) return undefined;
     
-    const replyMessage = message.replyTo;
-    if (currentDisplayLanguage === (replyMessage.originalLanguage || 'fr')) {
+    const replyMessage = message.replyTo as any;
+    if (effectiveDisplayLanguage === (replyMessage.originalLanguage || 'fr')) {
       return replyMessage.originalContent || replyMessage.content;
     }
     
-    const translation = replyMessage.translations?.find(t => t.language === currentDisplayLanguage);
-    return translation?.content || replyMessage.content;
-  }, [message.replyTo, currentDisplayLanguage]);
+    const translation = replyMessage.translations?.find((t: any) => 
+      (t.language || t.targetLanguage) === effectiveDisplayLanguage
+    );
+    return translation ? (translation.content || translation.translatedContent || replyMessage.content) : replyMessage.content;
+  }, [message.replyTo, effectiveDisplayLanguage]);
 
   // Format de date pour les réponses
   const formatReplyDate = useCallback((date: Date | string) => {
@@ -152,6 +160,8 @@ const BubbleMessageInner = memo(function BubbleMessageInner({
   }, [exitMode]);
 
   const handleLanguageSelect = useCallback((language: string) => {
+    // Mise à jour immédiate du state local pour changer le contenu affiché
+    setLocalDisplayLanguage(language);
     onLanguageSwitch?.(message.id, language);
     exitMode();
   }, [onLanguageSwitch, message.id, exitMode]);
@@ -206,7 +216,7 @@ const BubbleMessageInner = memo(function BubbleMessageInner({
           currentUser={currentUser}
           userLanguage={userLanguage}
           usedLanguages={usedLanguages}
-          currentDisplayLanguage={currentDisplayLanguage}
+          currentDisplayLanguage={effectiveDisplayLanguage}
           isTranslating={isTranslating}
           translationError={translationError}
           conversationType={conversationType}
@@ -246,15 +256,11 @@ const BubbleMessageInner = memo(function BubbleMessageInner({
         <LanguageSelectionMessageView
           key={`language-${message.id}`}
           message={message}
-          currentDisplayLanguage={currentDisplayLanguage}
-          isOwnMessage={isOwnMessage}
+          currentDisplayLanguage={effectiveDisplayLanguage}
           isTranslating={isTranslating}
           onSelectLanguage={handleLanguageSelect}
           onRequestTranslation={handleRequestTranslation}
           onClose={exitMode}
-          t={t}
-          userLanguage={userLanguage}
-          usedLanguages={usedLanguages}
         />
       )}
 

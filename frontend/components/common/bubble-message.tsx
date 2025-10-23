@@ -190,6 +190,9 @@ function BubbleMessageInner({
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isAddingReaction, setIsAddingReaction] = useState(false);
   
+  // State local pour la langue d'affichage sélectionnée par l'utilisateur
+  const [localDisplayLanguage, setLocalDisplayLanguage] = useState<string | null>(null);
+  
   // Fonction pour ajouter une réaction via le bouton emoji picker
   const handleAddReaction = async (emoji: string) => {
     // Protection contre les doubles clics
@@ -367,26 +370,30 @@ function BubbleMessageInner({
     return result;
   }, [message.translations, isTranslating]);
 
+  // Langue d'affichage effective : utilise la sélection locale si définie, sinon la prop du parent
+  const effectiveDisplayLanguage = localDisplayLanguage || currentDisplayLanguage;
+  
   // Mémoriser le contenu actuel pour qu'il se mette à jour quand la langue change
   const currentContent = useMemo(() => {
     const originalLang = message.originalLanguage || 'fr';
     
-    if (currentDisplayLanguage === originalLang) {
+    if (effectiveDisplayLanguage === originalLang) {
       const content = message.originalContent || message.content;
       return content;
     }
     
     const translation = message.translations?.find((t: any) => 
-      (t?.language || t?.targetLanguage) === currentDisplayLanguage
+      (t?.language || t?.targetLanguage) === effectiveDisplayLanguage
     );
     
     if (translation) {
-      const content = ((translation as any)?.content || (translation as any)?.translatedContent);
+      // CRITIQUE: Prioriser translatedContent (backend) sur content (legacy)
+      const content = ((translation as any)?.translatedContent || (translation as any)?.content);
       return content || message.originalContent || message.content;
     }
     
     return message.originalContent || message.content;
-  }, [currentDisplayLanguage, message.id, message.originalLanguage, message.content, message.originalContent, message.translations]);
+  }, [effectiveDisplayLanguage, message.id, message.originalLanguage, message.content, message.originalContent, message.translations]);
 
   // Mémoriser le contenu traduit du message replyTo (même logique que currentContent)
   const replyToContent = useMemo(() => {
@@ -395,23 +402,24 @@ function BubbleMessageInner({
     const originalLang = message.replyTo.originalLanguage || 'fr';
     
     // Si la langue d'affichage correspond à la langue originale, afficher l'original
-    if (currentDisplayLanguage === originalLang) {
+    if (effectiveDisplayLanguage === originalLang) {
       return message.replyTo.content;
     }
     
     // Chercher une traduction dans la langue d'affichage actuelle
     const translation = message.replyTo.translations?.find((t: any) => 
-      (t?.language || t?.targetLanguage) === currentDisplayLanguage
+      (t?.language || t?.targetLanguage) === effectiveDisplayLanguage
     );
     
     if (translation) {
-      const content = ((translation as any)?.content || (translation as any)?.translatedContent);
+      // CRITIQUE: Prioriser translatedContent (backend) sur content (legacy)
+      const content = ((translation as any)?.translatedContent || (translation as any)?.content);
       return content || message.replyTo.content;
     }
     
     // Fallback: afficher le contenu original
     return message.replyTo.content;
-  }, [currentDisplayLanguage, message.replyTo?.id, message.replyTo?.originalLanguage, message.replyTo?.content, message.replyTo?.translations]);
+  }, [effectiveDisplayLanguage, message.replyTo?.id, message.replyTo?.originalLanguage, message.replyTo?.content, message.replyTo?.translations]);
 
   const formatTimeAgo = (timestamp: string | Date) => {
     const now = new Date();
@@ -426,14 +434,16 @@ function BubbleMessageInner({
 
   // Handlers qui remontent les actions au parent
   const handleLanguageSwitch = (langCode: string) => {
-    console.log(`📊 [BUBBLE-MESSAGE] Current display language: ${currentDisplayLanguage}`);
+    console.log(`📊 [BUBBLE-MESSAGE] Switching to language: ${langCode}`);
+    setLocalDisplayLanguage(langCode); // Mise à jour locale immédiate
     handlePopoverOpenChange(false);
-    onLanguageSwitch?.(message.id, langCode);
+    onLanguageSwitch?.(message.id, langCode); // Notifier le parent aussi
   };
 
   const handleForceTranslation = (targetLanguage: string) => {
     handlePopoverOpenChange(false);
-    onForceTranslation?.(message.id, targetLanguage);
+    // Utiliser 'basic' comme modèle par défaut si non spécifié
+    onForceTranslation?.(message.id, targetLanguage, 'basic');
   };
 
   // Fonction pour obtenir le tier supérieur
@@ -512,9 +522,16 @@ function BubbleMessageInner({
       confidence: 1,
       model: 'original'
     },
-    ...message.translations?.map((t: any) => ({
+    // Filtrer les traductions : n'afficher QUE celles qui sont complétées
+    ...message.translations?.filter((t: any) => {
+      const status = t?.status;
+      const hasContent = !!(t.translatedContent || t.content);
+      // N'afficher que si status est 'completed' OU si pas de statut mais translatedContent/content existe
+      return (!status || status === 'completed') && hasContent;
+    }).map((t: any) => ({
       language: t.language || t.targetLanguage,
-      content: t.content || t.translatedContent,
+      // CRITIQUE: Prioriser translatedContent (backend) sur content (legacy)
+      content: t.translatedContent || t.content,
       isOriginal: false,
       confidence: t.confidence || t.confidenceScore || 0.9,
       model: t.model || t.translationModel || 'basic'
@@ -522,12 +539,27 @@ function BubbleMessageInner({
   ];
 
   const getMissingLanguages = () => {
-    const translatedLanguages = new Set([
-      message.originalLanguage || 'fr',
-      ...message.translations?.map((t: any) => t?.language || t?.targetLanguage).filter(Boolean) || []
-    ]);
+    // Créer un Set des langues qui sont EN COURS de traduction (pending/processing)
+    const translatingLanguages = new Set<string>();
     
-    return SUPPORTED_LANGUAGES.filter(lang => !translatedLanguages.has(lang.code));
+    message.translations?.forEach((t: any) => {
+      const targetLang = t?.language || t?.targetLanguage;
+      const status = t?.status;
+      
+      // Bloquer UNIQUEMENT les langues en cours de traduction
+      if (targetLang && (status === 'pending' || status === 'processing')) {
+        translatingLanguages.add(targetLang);
+      }
+    });
+    
+    // Retourner toutes les langues SAUF :
+    // 1. La langue originale (pas besoin de traduire vers elle-même)
+    // 2. Les langues en cours de traduction (pending/processing)
+    // On PERMET la retraduction vers une langue déjà traduite (pour changer de modèle)
+    return SUPPORTED_LANGUAGES.filter(lang => 
+      lang.code !== (message.originalLanguage || 'fr') && 
+      !translatingLanguages.has(lang.code)
+    );
   };
 
 
@@ -707,7 +739,7 @@ function BubbleMessageInner({
               <div className="mb-2" style={{ position: 'relative', zIndex: 1 }}>
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
-                    key={`content-${message.id}-${currentDisplayLanguage}-${currentContent.substring(0, 10)}`}
+                    key={`content-${message.id}-${effectiveDisplayLanguage}-${currentContent.substring(0, 10)}`}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -775,7 +807,7 @@ function BubbleMessageInner({
                         variant="outline" 
                         className={cn(
                           "cursor-pointer transition-all text-xs border font-medium h-5 sm:h-6",
-                          currentDisplayLanguage === (message.originalLanguage || 'fr')
+                          effectiveDisplayLanguage === (message.originalLanguage || 'fr')
                             ? isOwnMessage 
                               ? "bg-white/20 border-white/40 text-white hover:bg-white/30"
                               : "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
@@ -793,9 +825,9 @@ function BubbleMessageInner({
                       </Badge>
                     </TooltipTrigger>
                     <TooltipContent>
-                      {currentDisplayLanguage === (message.originalLanguage || 'fr')
+                      {effectiveDisplayLanguage === (message.originalLanguage || 'fr')
                         ? `${t('originalLanguage')}: ${getLanguageInfo(message.originalLanguage || 'fr').name}`
-                        : `${t('viewing')}: ${getLanguageInfo(currentDisplayLanguage).name}`
+                        : `${t('viewing')}: ${getLanguageInfo(effectiveDisplayLanguage).name}`
                       }
                     </TooltipContent>
                   </Tooltip>
@@ -945,7 +977,7 @@ function BubbleMessageInner({
                         filteredVersions.map((version, index) => {
                           const versionAny = version as any;
                           const langInfo = getLanguageInfo(versionAny.language);
-                          const isCurrentlyDisplayed = currentDisplayLanguage === versionAny.language;
+                          const isCurrentlyDisplayed = effectiveDisplayLanguage === versionAny.language;
                           
                           return (
                             <button
@@ -978,39 +1010,26 @@ function BubbleMessageInner({
                                     <CheckCircle2 className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                                   )}
                                 </div>
-                                {!versionAny.isOriginal && (
-                                  <div className="flex items-center space-x-1">
-                                    {/* Icône d'upgrade vers tier supérieur */}
-                                    {getNextTier && getNextTier(versionAny.model || 'basic') && (
-                                      <Tooltip>
-                                        <TooltipTrigger asChild>
-                                          <div
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              handleUpgradeTier && handleUpgradeTier(versionAny.language, versionAny.model || 'basic');
-                                            }}
-                                            className="p-1 rounded hover:bg-green-100 dark:hover:bg-green-900 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors cursor-pointer"
-                                          >
-                                            <ArrowUp className="h-3 w-3" />
-                                          </div>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                          {t('improveQuality', { 
-                                            current: versionAny.model || 'basic', 
-                                            next: getNextTier(versionAny.model || 'basic') 
-                                          })}
-                                        </TooltipContent>
-                                      </Tooltip>
-                                    )}
-                                    <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100/60 dark:bg-gray-700/60 px-1.5 py-0.5 rounded">
-                                      {Math.round(versionAny.confidence * 100)}%
-                                    </span>
-                                    {versionAny.model && (
-                                      <span className="text-xs text-blue-600 dark:text-blue-400 bg-blue-100/60 dark:bg-blue-900/60 px-1.5 py-0.5 rounded">
-                                        {versionAny.model}
-                                      </span>
-                                    )}
-                                  </div>
+                                {!versionAny.isOriginal && getNextTier && getNextTier(versionAny.model || 'basic') && (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <div
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleUpgradeTier && handleUpgradeTier(versionAny.language, versionAny.model || 'basic');
+                                        }}
+                                        className="p-1 rounded hover:bg-green-100 dark:hover:bg-green-900 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors cursor-pointer"
+                                      >
+                                        <ArrowUp className="h-3 w-3" />
+                                      </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      {t('improveQuality', { 
+                                        current: versionAny.model || 'basic', 
+                                        next: getNextTier(versionAny.model || 'basic') 
+                                      })}
+                                    </TooltipContent>
+                                  </Tooltip>
                                 )}
                               </div>
                               
@@ -1018,15 +1037,18 @@ function BubbleMessageInner({
                                 {versionAny.content}
                               </p>
                               
-                              {/* Indicateur de qualité discret */}
+                              {/* Barre de qualité avec pourcentage */}
                               {!versionAny.isOriginal && (
-                                <div className="mt-1.5 flex items-center space-x-1">
+                                <div className="mt-1.5 flex items-center space-x-2">
                                   <div className="flex-1 bg-gray-200/40 dark:bg-gray-700/40 rounded-full h-0.5">
                                     <div 
                                       className="bg-green-400 dark:bg-green-500 h-0.5 rounded-full transition-all duration-300"
                                       style={{ width: `${Math.round((versionAny.confidence || 0.9) * 100)}%` }}
                                     />
                                   </div>
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                    {Math.round((versionAny.confidence || 0.9) * 100)}%
+                                  </span>
                                 </div>
                               )}
                             </button>
@@ -1041,6 +1063,18 @@ function BubbleMessageInner({
                             </div>
                           )}
                         </div>
+
+                        {/* Message explicatif sur les traductions IA */}
+                        {availableVersions.some(v => !(v as any).isOriginal) && (
+                          <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                            <div className="flex items-start space-x-2 text-xs text-gray-500 dark:text-gray-400 px-1">
+                              <Languages className="h-3.5 w-3.5 mt-0.5 flex-shrink-0 opacity-60" />
+                              <p className="leading-relaxed">
+                                {t('translation.aiDisclaimer')}
+                              </p>
+                            </div>
+                          </div>
+                        )}
 
                         {isActuallyTranslating && (
                           <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">

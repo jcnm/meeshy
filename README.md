@@ -89,8 +89,8 @@ cd frontend && ./frontend.sh
 
 ```bash
 # Configurer le domaine
-export DOMAIN=meeshy.com
-export CERTBOT_EMAIL=admin@meeshy.com
+export DOMAIN=meeshy.me
+export CERTBOT_EMAIL=admin@meeshy.me
 
 # Démarrer avec SSL automatique
 docker-compose -f docker-compose.traefik.yml up -d
@@ -181,19 +181,19 @@ docker-compose -f docker-compose.traefik.yml ps
 ```
 
 **Accès en production:**
-- Frontend: https://meeshy.com
-- Gateway: https://gate.meeshy.com
-- Translator: https://ml.meeshy.com
-- MongoDB UI: https://mongo.meeshy.com (avec auth)
-- Redis UI: https://redis.meeshy.com (avec auth)
-- Traefik Dashboard: https://traefik.meeshy.com (avec auth)
+- Frontend: https://meeshy.me
+- Gateway: https://gate.meeshy.me
+- Translator: https://ml.meeshy.me
+- MongoDB UI: https://mongo.meeshy.me (avec auth)
+- Redis UI: https://redis.meeshy.me (avec auth)
+- Traefik Dashboard: https://traefik.meeshy.me (avec auth)
 
 ### Variables d'Environnement Importantes
 
 ```env
 # Domaine
-DOMAIN=meeshy.com
-CERTBOT_EMAIL=admin@meeshy.com
+DOMAIN=meeshy.me
+CERTBOT_EMAIL=admin@meeshy.me
 
 # Database
 DATABASE_TYPE=MONGODB
@@ -327,7 +327,7 @@ cat secrets/clear.txt
 
 - **NoSQLClient** (MongoDB): http://localhost:3001
 - **P3X Redis UI** (Redis): http://localhost:7843
-- **Traefik Dashboard** (Prod): https://traefik.meeshy.com
+- **Traefik Dashboard** (Prod): https://traefik.meeshy.me
 
 ### Health Checks
 

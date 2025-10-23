@@ -3,11 +3,11 @@
 FROM python:3.12-slim
 
 # === MAINTAINER INFORMATION ===
-LABEL maintainer="Meeshy Development Team <dev@meeshy.com>" \
+LABEL maintainer="Meeshy Development Team <dev@meeshy.me>" \
       description="Meeshy Translator - FastAPI Service with ML Models" \
       version="1.0.0" \
       org.opencontainers.image.source="https://github.com/jcnm/meeshy/translator" \
-      org.opencontainers.image.documentation="https://docs.meeshy.com/translator" \
+      org.opencontainers.image.documentation="https://docs.meeshy.me/translator" \
       org.opencontainers.image.vendor="Meeshy" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.title="Meeshy Translator" \

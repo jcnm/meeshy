@@ -91,6 +91,15 @@ fi
 
 # Variables d'environnement avec valeurs par défaut
 export NODE_ENV=${NODE_ENV:-development}
+# IMPORTANT: Forcer DATABASE_URL pour le développement local si .env.local existe
+if [[ -f ".env.local" ]]; then
+    # Relire DATABASE_URL depuis .env.local pour override le .env
+    local_db_url=$(grep "^DATABASE_URL=" .env.local 2>/dev/null | cut -d '=' -f2- | tr -d '"' | xargs)
+    if [[ -n "$local_db_url" ]]; then
+        export DATABASE_URL="$local_db_url"
+        echo -e "${GREEN}✅ [TRA] DATABASE_URL overridden from .env.local: $DATABASE_URL${NC}"
+    fi
+fi
 export DATABASE_URL=${DATABASE_URL:-"file:./dev.db"}
 export REDIS_URL=${REDIS_URL:-"memory://"}
 export TRANSLATOR_CACHE_TYPE=${TRANSLATOR_CACHE_TYPE:-"memory"}

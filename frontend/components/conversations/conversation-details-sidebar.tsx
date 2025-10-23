@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -65,6 +66,8 @@ export function ConversationDetailsSidebar({
   // États pour la gestion des conversations
   const [isEditingName, setIsEditingName] = useState(false);
   const [conversationName, setConversationName] = useState(conversation.title || '');
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [conversationDescription, setConversationDescription] = useState(conversation.description || '');
   const [isLoading, setIsLoading] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
@@ -198,6 +201,46 @@ export function ConversationDetailsSidebar({
       
       // Restaurer le nom original en cas d'erreur
       setConversationName(conversation.title || '');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSaveDescription = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Vérifier si la description a changé
+      if (conversationDescription.trim() === (conversation.description || '')) {
+        // Pas de changement, juste fermer l'édition
+        setIsEditingDescription(false);
+        return;
+      }
+      
+      await conversationsService.updateConversation(conversation.id, {
+        description: conversationDescription.trim()
+      });
+      
+      setIsEditingDescription(false);
+      toast.success(t('conversationDetails.descriptionUpdated') || 'Description mise à jour avec succès');
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de la description:', error);
+      
+      // Gestion d'erreur améliorée
+      let errorMessage = t('conversationDetails.updateError');
+      
+      if (error.status === 403) {
+        errorMessage = t('conversationDetails.noPermissionToModify');
+      } else if (error.status === 404) {
+        errorMessage = t('conversationDetails.conversationNotFound');
+      } else if (error.status === 400) {
+        errorMessage = t('conversationDetails.invalidData');
+      }
+      
+      toast.error(errorMessage);
+      
+      // Restaurer la description originale en cas d'erreur
+      setConversationDescription(conversation.description || '');
     } finally {
       setIsLoading(false);
     }
@@ -340,6 +383,94 @@ export function ConversationDetailsSidebar({
                   {conversation.type !== 'direct' ? t('conversationDetails.conversationGroup') : t('conversationDetails.conversationPrivate')}
                 </p>
               </div>
+
+              {/* Section description - Seulement pour les conversations de groupe */}
+              {conversation.type !== 'direct' && (
+                <div className="space-y-2">
+                  {isEditingDescription ? (
+                    <div className="space-y-2">
+                      <Textarea
+                        value={conversationDescription}
+                        onChange={(e) => setConversationDescription(e.target.value)}
+                        className="min-h-[80px] text-sm resize-none"
+                        placeholder={t('conversationDetails.descriptionPlaceholder') || 'Ajoutez une description...'}
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === 'Escape') {
+                            setIsEditingDescription(false);
+                            setConversationDescription(conversation.description || '');
+                          }
+                          // Ctrl/Cmd + Enter pour sauvegarder
+                          if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                            handleSaveDescription();
+                          }
+                        }}
+                      />
+                      <div className="flex items-center gap-2 justify-end">
+                        <Button
+                          size="sm"
+                          onClick={handleSaveDescription}
+                          disabled={isLoading}
+                          className="h-8 px-3"
+                        >
+                          <Save className="h-3 w-3 mr-1" />
+                          {t('conversationDetails.save') || 'Enregistrer'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setIsEditingDescription(false);
+                            setConversationDescription(conversation.description || '');
+                          }}
+                          className="h-8 px-3"
+                        >
+                          <X className="h-3 w-3 mr-1" />
+                          {t('conversationDetails.cancel') || 'Annuler'}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div 
+                      className="group relative p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
+                      onClick={() => {
+                        if (isAdmin) {
+                          setIsEditingDescription(true);
+                          setConversationDescription(conversation.description || '');
+                        }
+                      }}
+                    >
+                      {conversation.description ? (
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                          {conversation.description}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-muted-foreground/50 italic">
+                          {isAdmin 
+                            ? (t('conversationDetails.addDescription') || 'Cliquez pour ajouter une description...')
+                            : (t('conversationDetails.noDescription') || 'Aucune description')
+                          }
+                        </p>
+                      )}
+                      {isAdmin && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsEditingDescription(true);
+                            setConversationDescription(conversation.description || '');
+                          }}
+                          title={t('conversationDetails.editDescription') || 'Modifier la description'}
+                        >
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <Separator />

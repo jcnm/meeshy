@@ -42,18 +42,31 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
   const searchParams = useSearchParams();
   const { t } = useI18n('auth');
 
-  // Récupérer l'URL de retour et le token d'affiliation depuis les paramètres de recherche
+  // Récupérer l'URL de retour depuis les paramètres de recherche
   const returnUrl = searchParams.get('returnUrl');
-  const affiliateToken = propAffiliateToken || searchParams.get('affiliate');
+  const urlAffiliateToken = searchParams.get('affiliate');
+  
+  // Récupérer le token d'affiliation depuis localStorage (sauvegardé par le middleware)
+  const [affiliateToken, setAffiliateToken] = useState<string | null>(null);
 
-  // Pas de vérification d'authentification - la page signin est accessible à tous
-
-  // Valider le token d'affiliation au chargement de la page
+  // Charger le token d'affiliation depuis localStorage ou URL au chargement
   useEffect(() => {
-    if (affiliateToken) {
-      validateAffiliateToken(affiliateToken);
+    // Priorité 1: paramètre URL (si présent, le sauvegarder)
+    if (urlAffiliateToken) {
+      localStorage.setItem('meeshy_affiliate_token', urlAffiliateToken);
+      document.cookie = `meeshy_affiliate_token=${urlAffiliateToken}; max-age=${30 * 24 * 60 * 60}; path=/; samesite=lax`;
+      setAffiliateToken(urlAffiliateToken);
+      validateAffiliateToken(urlAffiliateToken);
+      return;
     }
-  }, [affiliateToken]);
+    
+    // Priorité 2: localStorage
+    const storedToken = localStorage.getItem('meeshy_affiliate_token');
+    if (storedToken) {
+      setAffiliateToken(storedToken);
+      validateAffiliateToken(storedToken);
+    }
+  }, [urlAffiliateToken]);
 
   const validateAffiliateToken = async (token: string) => {
     try {
@@ -153,8 +166,8 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
         localStorage.setItem('auth_token', data.data.token);
         localStorage.setItem('user_data', JSON.stringify(data.data.user));
         
-        // Gérer l'affiliation si un token valide est présent
-        if (affiliateToken && affiliateData?.isValid) {
+        // Gérer l'affiliation si un token est présent
+        if (affiliateToken) {
           try {
             await fetch(buildApiUrl('/affiliate/register'), {
               method: 'POST',
@@ -166,6 +179,11 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
                 referredUserId: data.data.user.id
               })
             });
+            
+            // Nettoyer le token d'affiliation après utilisation
+            localStorage.removeItem('meeshy_affiliate_token');
+            // Supprimer également le cookie
+            document.cookie = 'meeshy_affiliate_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
           } catch (affiliateError) {
             console.error('Erreur enregistrement affiliation:', affiliateError);
             // Ne pas bloquer l'inscription si l'affiliation échoue
@@ -196,38 +214,6 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
         <div className="text-center">
           <LargeLogo href="/" />
           <p className="text-gray-600 dark:text-gray-400 text-lg">{t('register.description')}</p>
-          
-          {/* Affichage des informations d'affiliation */}
-          {affiliateToken && (
-            <div className="mt-4">
-              {isValidatingAffiliate ? (
-                <div className="flex items-center justify-center space-x-2 text-blue-600">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                  <span className="text-sm">Validation du lien d'invitation...</span>
-                </div>
-              ) : affiliateData?.isValid ? (
-                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
-                  <div className="flex items-center justify-center space-x-2 text-purple-700 mb-2">
-                    <UserPlus className="h-5 w-5" />
-                    <span className="font-semibold">Invitation de {affiliateData.affiliateUser?.firstName} {affiliateData.affiliateUser?.lastName}</span>
-                  </div>
-                  <p className="text-sm text-purple-600">
-                    Rejoignez Meeshy et discutez avec {affiliateData.affiliateUser?.firstName} et d'autres personnes du monde entier !
-                  </p>
-                </div>
-              ) : (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                  <div className="flex items-center justify-center space-x-2 text-red-700 mb-2">
-                    <X className="h-5 w-5" />
-                    <span className="font-semibold">Lien d'invitation invalide</span>
-                  </div>
-                  <p className="text-sm text-red-600">
-                    Ce lien d'invitation n'est plus valide ou a expiré. Vous pouvez toujours vous inscrire normalement.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Formulaire d'inscription en 2 étapes */}

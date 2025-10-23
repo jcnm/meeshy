@@ -18,7 +18,7 @@ import { fr } from 'date-fns/locale';
 interface LanguageSelectionMessageViewProps {
   message: Message & {
     originalLanguage: string;
-    translations: BubbleTranslation[];
+    translations: Array<BubbleTranslation | any>; // Accepte BubbleTranslation ou MessageTranslation du backend
     originalContent: string;
   };
   currentDisplayLanguage: string;
@@ -36,7 +36,7 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
   onRequestTranslation,
   onClose
 }: LanguageSelectionMessageViewProps) {
-  const { t } = useI18n('languages');
+  const { t } = useI18n('bubbleStream');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Utilitaires pour l'affichage des informations
@@ -99,10 +99,10 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
 
   // Grouper les traductions par langue
   const translationsByLanguage = useMemo(() => {
-    const map = new Map<string, BubbleTranslation[]>();
-    message.translations.forEach(translation => {
-      // BubbleTranslation utilise 'language', pas 'targetLanguage'
-      const lang = (translation as BubbleTranslation & { targetLanguage?: string }).targetLanguage || translation.language;
+    const map = new Map<string, any[]>();
+    message.translations.forEach((translation: any) => {
+      // Supporte BubbleTranslation (language) et MessageTranslation (targetLanguage)
+      const lang = translation.language || translation.targetLanguage;
       const existing = map.get(lang) || [];
       existing.push(translation);
       map.set(lang, existing);
@@ -138,12 +138,13 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
         
         versions.push({
           language: lang,
-          // BubbleTranslation a 'content', pas 'translatedContent'
-          content: bestTranslation.content || (bestTranslation as BubbleTranslation & { translatedContent?: string }).translatedContent || '',
+          // Supporte BubbleTranslation (content) et MessageTranslation (translatedContent)
+          content: bestTranslation.content || bestTranslation.translatedContent || '',
           isOriginal: false,
-          confidence: bestTranslation.confidence,
-          // model n'existe pas dans BubbleTranslation, c'est une extension
-          model: (bestTranslation as BubbleTranslation & { model?: string; translationModel?: string }).model || (bestTranslation as BubbleTranslation & { model?: string; translationModel?: string }).translationModel
+          // Supporte confidence et confidenceScore
+          confidence: bestTranslation.confidence || bestTranslation.confidenceScore || 0.9,
+          // Supporte translationModel et model
+          model: bestTranslation.translationModel || bestTranslation.model || 'basic'
         });
       }
     });
@@ -286,157 +287,102 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-medium text-sm">{langInfo.name}</span>
-                        <Badge variant="outline" className="text-xs h-4 px-1">
-                          {version.language.toUpperCase()}
-                        </Badge>
+                        {!version.isOriginal && version.model && (
+                          <div className="flex items-center gap-1">
+                            {getModelIcon(version.model, "h-3 w-3")}
+                            <Badge variant="outline" className="text-xs h-4 px-1.5">
+                              {getModelLabel(version.model)}
+                            </Badge>
+                          </div>
+                        )}
                         {version.isOriginal && (
                           <Badge variant="secondary" className="text-xs h-4 px-1">
-                            {t('original')}
+                            {t('originalBadge')}
                           </Badge>
                         )}
                         {isCurrentlyDisplayed && (
                           <CheckCircle2 className="h-3 w-3 text-blue-600" />
+                        )}
+                        
+                        {/* Boutons pour changer de modèle */}
+                        {!version.isOriginal && version.model && (
+                          <div className="flex items-center gap-0.5 ml-auto">
+                            <TooltipProvider>
+                              {/* Upgrade tier */}
+                              {getNextTier(version.model || 'basic') && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-5 w-5 p-0"
+                                      disabled={isTranslating}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const nextTier = getNextTier(version.model || 'basic');
+                                        if (nextTier) {
+                                          onRequestTranslation(version.language, nextTier as 'basic' | 'medium' | 'premium');
+                                        }
+                                      }}
+                                    >
+                                      <ChevronUp className="h-3 w-3 text-green-600" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>{t('improveQuality', { 
+                                      current: getModelLabel(version.model || 'basic'), 
+                                      next: getModelLabel(getNextTier(version.model || 'basic') || '') 
+                                    })}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              )}
+                              
+                              {/* Downgrade tier */}
+                              {getPreviousTier(version.model || 'basic') && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-5 w-5 p-0"
+                                      disabled={isTranslating}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const prevTier = getPreviousTier(version.model || 'basic');
+                                        if (prevTier) {
+                                          onRequestTranslation(version.language, prevTier as 'basic' | 'medium' | 'premium');
+                                        }
+                                      }}
+                                    >
+                                      <ChevronDown className="h-3 w-3 text-orange-600" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Réduire vers {getModelLabel(getPreviousTier(version.model || 'basic') || '')}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              )}
+                            </TooltipProvider>
+                          </div>
                         )}
                       </div>
                       <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 leading-snug mb-2">
                         {version.content}
                       </p>
                       
-                      {!version.isOriginal && (
-                        <TooltipProvider>
-                          <div className="space-y-1">
-                            {/* Première ligne : Modèle + Actions tier + Confiance */}
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                {version.model && (
-                                  <div className="flex items-center gap-1">
-                                    {getModelIcon(version.model)}
-                                    <span className="text-[10px] font-medium text-gray-600 dark:text-gray-400">
-                                      {getModelLabel(version.model)}
-                                    </span>
-                                  </div>
-                                )}
-                                
-                                {version.confidence !== undefined && (
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <div className="flex items-center gap-1">
-                                        <div className={cn(
-                                          "flex items-center text-[10px] font-medium",
-                                          getConfidenceColor(version.confidence)
-                                        )}>
-                                          <span className="mr-1">★</span>
-                                          <span>{Math.round(version.confidence * 100)}%</span>
-                                        </div>
-                                      </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Score de confiance: {(version.confidence * 100).toFixed(1)}%</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                )}
-                              </div>
-
-                              {/* Boutons pour changer de tier */}
-                              {version.model && (
-                                <div className="flex items-center gap-1">
-                                  {/* Upgrade tier */}
-                                  {getNextTier(version.model) && (
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Button
-                                          size="sm"
-                                          variant="ghost"
-                                          className="h-5 w-5 p-0"
-                                          disabled={isTranslating}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            onRequestTranslation(version.language, getNextTier(version.model) as 'basic' | 'medium' | 'premium');
-                                            onClose();
-                                          }}
-                                        >
-                                          <ChevronUp className="h-3 w-3 text-green-600" />
-                                        </Button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p>Améliorer avec {getModelLabel(getNextTier(version.model)!)}</p>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  )}
-                                  
-                                  {/* Downgrade tier */}
-                                  {getPreviousTier(version.model) && (
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Button
-                                          size="sm"
-                                          variant="ghost"
-                                          className="h-5 w-5 p-0"
-                                          disabled={isTranslating}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            onRequestTranslation(version.language, getPreviousTier(version.model) as 'basic' | 'medium' | 'premium');
-                                            onClose();
-                                          }}
-                                        >
-                                          <ChevronDown className="h-3 w-3 text-orange-600" />
-                                        </Button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p>Réduire avec {getModelLabel(getPreviousTier(version.model)!)}</p>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Deuxième ligne : Cache + Timestamp */}
-                            <div className="flex items-center gap-3 text-[10px] text-gray-500 dark:text-gray-400">
-                              {/* Indicateur de cache et timestamp */}
-                              {translationsByLanguage.get(version.language)?.[0] && (
-                                <>
-                                  {/* Cache - propriété étendue, pas dans BubbleTranslation de base */}
-                                  {((translationsByLanguage.get(version.language)?.[0] as BubbleTranslation & { cached?: boolean; fromCache?: boolean }).cached || 
-                                    (translationsByLanguage.get(version.language)?.[0] as BubbleTranslation & { cached?: boolean; fromCache?: boolean }).fromCache) && (
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <div className="flex items-center gap-1 text-green-600">
-                                          <Database className="h-2.5 w-2.5" />
-                                          <span>Cache</span>
-                                        </div>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p>Traduction depuis le cache (plus rapide)</p>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  )}
-                                  
-                                  {/* Timestamp - BubbleTranslation a 'timestamp', pas 'createdAt' */}
-                                  {(translationsByLanguage.get(version.language)?.[0].timestamp || 
-                                    (translationsByLanguage.get(version.language)?.[0] as BubbleTranslation & { createdAt?: Date | string }).createdAt) && (
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <div className="flex items-center gap-1">
-                                          <Clock className="h-2.5 w-2.5" />
-                                          <span>
-                                            {formatTimestamp(
-                                              translationsByLanguage.get(version.language)?.[0].timestamp || 
-                                              (translationsByLanguage.get(version.language)?.[0] as BubbleTranslation & { createdAt?: Date | string }).createdAt
-                                            )}
-                                          </span>
-                                        </div>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p>Date de création de la traduction</p>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  )}
-                                </>
-                              )}
-                            </div>
+                      {/* Barre de qualité avec pourcentage */}
+                      {!version.isOriginal && version.confidence !== undefined && (
+                        <div className="mt-1 flex items-center space-x-2">
+                          <div className="flex-1 bg-gray-200/40 dark:bg-gray-700/40 rounded-full h-0.5">
+                            <div 
+                              className="bg-green-400 dark:bg-green-500 h-0.5 rounded-full transition-all duration-300"
+                              style={{ width: `${Math.round(version.confidence * 100)}%` }}
+                            />
                           </div>
-                        </TooltipProvider>
+                          <span className="text-xs text-gray-500 dark:text-gray-400 tabular-nums">
+                            {Math.round(version.confidence * 100)}%
+                          </span>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -456,26 +402,32 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
               {filteredMissingLanguages.map((lang) => (
                 <div
                   key={lang.code}
-                  className="p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group"
+                  onClick={() => {
+                    onRequestTranslation(lang.code, 'basic');
+                  }}
+                  className="p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{lang.flag}</span>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-medium text-sm">{lang.name}</span>
-                        <Badge variant="outline" className="text-xs h-4 px-1">
-                          {lang.code.toUpperCase()}
-                        </Badge>
+                        <div className="flex items-center gap-1">
+                          <Zap className="h-3 w-3 text-yellow-500" />
+                          <Badge variant="outline" className="text-xs h-4 px-1.5">
+                            Basic
+                          </Badge>
+                        </div>
                       </div>
                       <div className="text-xs text-gray-500">
-                        {t('selectModelToTranslate')}
+                        Click to translate with Basic model
                       </div>
                     </div>
                     
                     {/* Actions pour chaque tier - Icônes seulement */}
                     <div className="flex items-center gap-1">
                       <TooltipProvider>
-                        {/* Basic tier */}
+                        {/* Basic tier - déjà actif par défaut */}
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
@@ -483,9 +435,9 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
                               variant="ghost"
                               className="h-7 w-7 p-0 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
                               disabled={isTranslating}
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 onRequestTranslation(lang.code, 'basic');
-                                onClose();
                               }}
                             >
                               <Zap className="h-4 w-4 text-yellow-500" />
@@ -504,9 +456,9 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
                               variant="ghost"
                               className="h-7 w-7 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                               disabled={isTranslating}
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 onRequestTranslation(lang.code, 'medium');
-                                onClose();
                               }}
                             >
                               <Star className="h-4 w-4 text-blue-500" />
@@ -525,9 +477,9 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
                               variant="ghost"
                               className="h-7 w-7 p-0 hover:bg-purple-50 dark:hover:bg-purple-900/20"
                               disabled={isTranslating}
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 onRequestTranslation(lang.code, 'premium');
-                                onClose();
                               }}
                             >
                               <Gem className="h-4 w-4 text-purple-500" />
@@ -553,58 +505,13 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
         </div>
       </Tabs>
 
-      {/* Footer avec informations sur les performances */}
-      <div className="px-3 py-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-          <div className="flex items-center gap-3">
-            {/* Traductions en cache */}
-            {translationsByLanguage.size > 0 && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="flex items-center gap-1">
-                      <Database className="h-3 w-3 text-green-600" />
-                      <span>
-                        {Array.from(translationsByLanguage.values()).flat()
-                          .filter(t => (t as BubbleTranslation & { cached?: boolean; fromCache?: boolean }).cached || (t as BubbleTranslation & { cached?: boolean; fromCache?: boolean }).fromCache).length}
-                      </span>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Traductions en cache (chargement instantané)</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-            
-          </div>
-          
-          {/* Indicateur de qualité moyenne */}
-          {translationsByLanguage.size > 0 && (
-            <div className="flex items-center gap-1">
-              <span>Qualité moyenne:</span>
-              <div className={cn(
-                "flex items-center gap-1 font-medium",
-                (() => {
-                  const avgConfidence = Array.from(translationsByLanguage.values())
-                    .flat()
-                    .filter(t => t.confidence !== undefined)
-                    .reduce((sum, t, _, arr) => sum + (t.confidence || 0) / arr.length, 0);
-                  return getConfidenceColor(avgConfidence);
-                })()
-              )}>
-                <span>★</span>
-                <span>
-                  {Math.round(
-                    Array.from(translationsByLanguage.values())
-                      .flat()
-                      .filter(t => t.confidence !== undefined)
-                      .reduce((sum, t, _, arr) => sum + (t.confidence || 0) / arr.length, 0) * 100
-                  )}%
-                </span>
-              </div>
-            </div>
-          )}
+      {/* Footer avec disclaimer AI */}
+      <div className="px-3 py-2.5 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+        <div className="flex items-start space-x-2 text-xs text-gray-500 dark:text-gray-400">
+          <Languages className="h-3.5 w-3.5 mt-0.5 flex-shrink-0 opacity-60" />
+          <p className="leading-relaxed">
+            {t('translation.aiDisclaimer')}
+          </p>
         </div>
       </div>
     </motion.div>

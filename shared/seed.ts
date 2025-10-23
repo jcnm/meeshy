@@ -141,13 +141,13 @@ async function main() {
     where: {
       email: {
         in: [
-          'alice@meeshy.com',
-          'bob@meeshy.com',
-          'carlos@meeshy.com',
-          'dieter@meeshy.com',
-          'li@meeshy.com',
-          'yuki@meeshy.com',
-          'maria@meeshy.com'
+          'alice@meeshy.me',
+          'bob@meeshy.me',
+          'carlos@meeshy.me',
+          'dieter@meeshy.me',
+          'li@meeshy.me',
+          'yuki@meeshy.me',
+          'maria@meeshy.me'
         ]
       }
     }
@@ -209,7 +209,7 @@ async function main() {
   const alice = await prisma.user.create({
     data: {
       username: 'alice_fr',
-      email: 'alice@meeshy.com',
+      email: 'alice@meeshy.me',
       firstName: 'Alice',
       lastName: 'Dubois',
       password: '$2b$10$UxJ6jmYYODq6QnsTm8TZMu9AlWUDlY/fZdw/e0YA1gjqz9Cjmwlqq', // password123
@@ -227,7 +227,7 @@ async function main() {
   const bob = await prisma.user.create({
     data: {
       username: 'bob_en',
-      email: 'bob@meeshy.com',
+      email: 'bob@meeshy.me',
       firstName: 'Bob',
       lastName: 'Johnson',
       password: '$2b$10$UxJ6jmYYODq6QnsTm8TZMu9AlWUDlY/fZdw/e0YA1gjqz9Cjmwlqq', // password123
@@ -246,7 +246,7 @@ async function main() {
   const carlos = await prisma.user.create({
     data: {
       username: 'carlos_es',
-      email: 'carlos@meeshy.com',
+      email: 'carlos@meeshy.me',
       firstName: 'Carlos',
       lastName: 'García',
       password: '$2b$10$UxJ6jmYYODq6QnsTm8TZMu9AlWUDlY/fZdw/e0YA1gjqz9Cjmwlqq', // password123
@@ -264,7 +264,7 @@ async function main() {
   const dieter = await prisma.user.create({
     data: {
       username: 'dieter_de',
-      email: 'dieter@meeshy.com',
+      email: 'dieter@meeshy.me',
       firstName: 'Dieter',
       lastName: 'Schmidt',
       password: '$2b$10$UxJ6jmYYODq6QnsTm8TZMu9AlWUDlY/fZdw/e0YA1gjqz9Cjmwlqq', // password123
@@ -282,7 +282,7 @@ async function main() {
   const li = await prisma.user.create({
     data: {
       username: 'li_zh',
-      email: 'li@meeshy.com',
+      email: 'li@meeshy.me',
       firstName: 'Li',
       lastName: 'Wei',
       password: '$2b$10$UxJ6jmYYODq6QnsTm8TZMu9AlWUDlY/fZdw/e0YA1gjqz9Cjmwlqq', // password123
@@ -301,7 +301,7 @@ async function main() {
   const yuki = await prisma.user.create({
     data: {
       username: 'yuki_ja',
-      email: 'yuki@meeshy.com',
+      email: 'yuki@meeshy.me',
       firstName: 'Yuki',
       lastName: 'Tanaka',
       password: '$2b$10$UxJ6jmYYODq6QnsTm8TZMu9AlWUDlY/fZdw/e0YA1gjqz9Cjmwlqq', // password123
@@ -320,7 +320,7 @@ async function main() {
   const maria = await prisma.user.create({
     data: {
       username: 'maria_pt',
-      email: 'maria@meeshy.com',
+      email: 'maria@meeshy.me',
       firstName: 'Maria',
       lastName: 'Silva',
       password: '$2b$10$UxJ6jmYYODq6QnsTm8TZMu9AlWUDlY/fZdw/e0YA1gjqz9Cjmwlqq', // password123
@@ -434,13 +434,13 @@ async function main() {
 💭 Conversations: ${totalConversations}
 
 🎯 === DÉTAILS DES UTILISATEURS ===
-🇫🇷 Alice Dubois (alice@meeshy.com) - Français - Admin
-🇺🇸 Bob Johnson (bob@meeshy.com) - Anglais - User  
-🇪🇸 Carlos García (carlos@meeshy.com) - Espagnol - User
-🇩🇪 Dieter Schmidt (dieter@meeshy.com) - Allemand - User
-🇨🇳 Li Wei (li@meeshy.com) - Chinois - User
-🇯🇵 Yuki Tanaka (yuki@meeshy.com) - Japonais - User
-🇵🇹 Maria Silva (maria@meeshy.com) - Portugais - User
+🇫🇷 Alice Dubois (alice@meeshy.me) - Français - Admin
+🇺🇸 Bob Johnson (bob@meeshy.me) - Anglais - User  
+🇪🇸 Carlos García (carlos@meeshy.me) - Espagnol - User
+🇩🇪 Dieter Schmidt (dieter@meeshy.me) - Allemand - User
+🇨🇳 Li Wei (li@meeshy.me) - Chinois - User
+🇯🇵 Yuki Tanaka (yuki@meeshy.me) - Japonais - User
+🇵🇹 Maria Silva (maria@meeshy.me) - Portugais - User
 
 🔑 === INFORMATIONS DE CONNEXION ===
 Mot de passe pour tous: password123

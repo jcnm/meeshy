@@ -2,9 +2,9 @@
 FROM node:22-alpine
 
 # === MAINTAINER INFORMATION ===
-LABEL maintainer="Meeshy Development Team <dev@meeshy.com>" \
+LABEL maintainer="Meeshy Development Team <dev@meeshy.me>" \
       org.opencontainers.image.source="https://github.com/jcnm/meeshy/gateway" \
-      org.opencontainers.image.documentation="https://docs.meeshy.com/gateway" \
+      org.opencontainers.image.documentation="https://docs.meeshy.me/gateway" \
       org.opencontainers.image.vendor="Meeshy" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.title="Meeshy Gateway" \
@@ -108,9 +108,13 @@ RUN pnpm install --no-frozen-lockfile --prod=false \
     && rm -rf /tmp/.npm /tmp/.yarn ~/.cache
 
 # === APPLICATION BUILD ===
-# Copie du code source et des ressources partagées
+# Copie du code source et des ressources partagées (sources TypeScript uniquement)
 COPY --chown=gateway:nodejs src/ ./src/
-COPY --chown=gateway:nodejs shared/ ./shared/
+COPY --chown=gateway:nodejs shared/prisma/ ./shared/prisma/
+COPY --chown=gateway:nodejs shared/proto/ ./shared/proto/
+COPY --chown=gateway:nodejs shared/types/*.ts ./shared/types/
+COPY --chown=gateway:nodejs shared/utils/*.ts ./shared/utils/
+COPY --chown=gateway:nodejs shared/package.json ./shared/
 COPY --chown=gateway:nodejs tsconfig.json ./
 COPY --chown=gateway:nodejs docker-entrypoint.sh ./
 
@@ -120,10 +124,15 @@ RUN echo "🔧 Génération du client Prisma Node.js..." \
     && echo "✅ Client Prisma Node.js généré avec succès" \
     && echo "🏗️  Building TypeScript application..." \
     && CI=true DATABASE_URL=mongodb://dummy:dummy@localhost:27017/dummy pnpm exec tsc \
+    && echo "📦 Copying shared resources to dist..." \
     && cp -r shared/prisma dist/shared/ \
+    && echo "📂 Verifying compiled structure..." \
+    && ls -la dist/shared/ || true \
+    && ls -la dist/shared/utils/ 2>/dev/null && echo "✅ shared/utils successfully compiled" || echo "⚠️  dist/shared/utils not found" \
+    && ls -la dist/shared/types/ 2>/dev/null && echo "✅ shared/types successfully compiled" || echo "⚠️  dist/shared/types not found" \
     && echo "✅ Build completed successfully" \
-    && echo "🧹 Cleaning up development dependencies..." \
-    && rm -rf src/ tsconfig.json \
+    && echo "🧹 Cleaning up TypeScript source files..." \
+    && rm -rf src/ shared/ tsconfig.json \
     && CI=true pnpm install --prod --ignore-scripts \
     && pnpm store prune \
     && rm -rf /tmp/.npm /tmp/.yarn ~/.cache \

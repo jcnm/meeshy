@@ -5,6 +5,10 @@
 
 import type { User, Message } from '@/types';
 
+// Configuration des limites de messages (doit correspondre aux variables d'environnement)
+export const MAX_MESSAGE_LENGTH = parseInt(process.env.NEXT_PUBLIC_MAX_MESSAGE_LENGTH || '1024', 10);
+export const MAX_TEXT_ATTACHMENT_THRESHOLD = parseInt(process.env.NEXT_PUBLIC_MAX_TEXT_ATTACHMENT_THRESHOLD || '2000', 10);
+
 export interface MessageSenderConfig {
   conversationId?: string;
   currentUser?: User;
@@ -24,7 +28,7 @@ export interface MessageSendOptions {
  */
 export function validateMessageContent(
   content: string, 
-  maxLength: number = 2000
+  maxLength: number = MAX_MESSAGE_LENGTH
 ): { isValid: boolean; error?: string } {
   if (!content.trim()) {
     return { isValid: false, error: 'Le message ne peut pas être vide' };

@@ -58,19 +58,23 @@ distribute_to_service() {
 
     case $target_lang in
         "typescript")
-            # Pour TypeScript (Gateway, Frontend) - Copier le contenu compilé de dist/
+            # Pour TypeScript (Gateway, Frontend) - Copier les sources TypeScript (.ts)
             echo "  📝 Distribution shared vers $service_name/shared"
             
-            # Copier les types compilés depuis dist/
-            if [ -d "dist" ]; then
-                cp -pir dist/* "$service_dir/shared/" 2>/dev/null || true
-                echo "  ✅ Types compilés copiés depuis dist/ vers $service_name/shared/"
+            # Copier le dossier types/ source (fichiers .ts uniquement)
+            if [ -d "types" ]; then
+                mkdir -p "$service_dir/shared/types"
+                # Copier tous les fichiers .ts du dossier types
+                cp types/*.ts "$service_dir/shared/types/" 2>/dev/null || true
+                echo "  ✅ Dossier types/ source (.ts) copié vers $service_name/shared/types/"
             fi
             
-            # Copier le dossier types/ source pour le frontend
-            if [ -d "types" ]; then
-                cp -pir types "$service_dir/shared/" 2>/dev/null || true
-                echo "  ✅ Dossier types/ source copié vers $service_name/shared/types/"
+            # Copier le dossier utils/ source (fichiers .ts uniquement)
+            if [ -d "utils" ]; then
+                mkdir -p "$service_dir/shared/utils"
+                # Copier tous les fichiers .ts du dossier utils
+                cp utils/*.ts "$service_dir/shared/utils/" 2>/dev/null || true
+                echo "  ✅ Dossier utils/ source (.ts) copié vers $service_name/shared/utils/"
             fi
             
             # Copier le client Prisma généré

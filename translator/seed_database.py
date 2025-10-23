@@ -102,7 +102,7 @@ try:
             # 1. Utilisateur français (Admin)
             alice = await prisma.user.create({
                 "username": "alice_fr",
-                "email": "alice@meeshy.com",
+                "email": "alice@meeshy.me",
                 "firstName": "Alice",
                 "lastName": "Dubois",
                 "password": "$2b$10$UxJ6jmYYODq6QnsTm8TZMu9AlWUDlY/fZdw/e0YA1gjqz9Cjmwlqq",  # password123
@@ -118,7 +118,7 @@ try:
             # 2. Utilisateur anglais
             bob = await prisma.user.create({
                 "username": "bob_en",
-                "email": "bob@meeshy.com",
+                "email": "bob@meeshy.me",
                 "firstName": "Bob",
                 "lastName": "Johnson",
                 "password": "$2b$10$UxJ6jmYYODq6QnsTm8TZMu9AlWUDlY/fZdw/e0YA1gjqz9Cjmwlqq",  # password123
@@ -134,7 +134,7 @@ try:
             # 3. Utilisateur espagnol
             carlos = await prisma.user.create({
                 "username": "carlos_es",
-                "email": "carlos@meeshy.com",
+                "email": "carlos@meeshy.me",
                 "firstName": "Carlos",
                 "lastName": "García",
                 "password": "$2b$10$UxJ6jmYYODq6QnsTm8TZMu9AlWUDlY/fZdw/e0YA1gjqz9Cjmwlqq",  # password123
@@ -150,7 +150,7 @@ try:
             # 4. Utilisateur allemand
             dieter = await prisma.user.create({
                 "username": "dieter_de",
-                "email": "dieter@meeshy.com",
+                "email": "dieter@meeshy.me",
                 "firstName": "Dieter",
                 "lastName": "Schmidt",
                 "password": "$2b$10$UxJ6jmYYODq6QnsTm8TZMu9AlWUDlY/fZdw/e0YA1gjqz9Cjmwlqq",  # password123
@@ -166,7 +166,7 @@ try:
             # 5. Utilisateur chinois
             li = await prisma.user.create({
                 "username": "li_zh",
-                "email": "li@meeshy.com",
+                "email": "li@meeshy.me",
                 "firstName": "Li",
                 "lastName": "Wei",
                 "password": "$2b$10$UxJ6jmYYODq6QnsTm8TZMu9AlWUDlY/fZdw/e0YA1gjqz9Cjmwlqq",  # password123
@@ -182,7 +182,7 @@ try:
             # 6. Utilisateur japonais
             yuki = await prisma.user.create({
                 "username": "yuki_ja",
-                "email": "yuki@meeshy.com",
+                "email": "yuki@meeshy.me",
                 "firstName": "Yuki",
                 "lastName": "Tanaka",
                 "password": "$2b$10$UxJ6jmYYODq6QnsTm8TZMu9AlWUDlY/fZdw/e0YA1gjqz9Cjmwlqq",  # password123
@@ -198,7 +198,7 @@ try:
             # 7. Utilisateur portugais
             maria = await prisma.user.create({
                 "username": "maria_pt",
-                "email": "maria@meeshy.com",
+                "email": "maria@meeshy.me",
                 "firstName": "Maria",
                 "lastName": "Silva",
                 "password": "$2b$10$UxJ6jmYYODq6QnsTm8TZMu9AlWUDlY/fZdw/e0YA1gjqz9Cjmwlqq",  # password123
@@ -291,13 +291,13 @@ try:
 💭 Conversations: {total_conversations}
 
 🎯 === DÉTAILS DES UTILISATEURS ===
-🇫🇷 Alice Dubois (alice@meeshy.com) - Français - Admin
-🇺🇸 Bob Johnson (bob@meeshy.com) - Anglais - User  
-🇪🇸 Carlos García (carlos@meeshy.com) - Espagnol - User
-🇩🇪 Dieter Schmidt (dieter@meeshy.com) - Allemand - User
-🇨🇳 Li Wei (li@meeshy.com) - Chinois - User
-🇯🇵 Yuki Tanaka (yuki@meeshy.com) - Japonais - User
-🇵🇹 Maria Silva (maria@meeshy.com) - Portugais - User
+🇫🇷 Alice Dubois (alice@meeshy.me) - Français - Admin
+🇺🇸 Bob Johnson (bob@meeshy.me) - Anglais - User  
+🇪🇸 Carlos García (carlos@meeshy.me) - Espagnol - User
+🇩🇪 Dieter Schmidt (dieter@meeshy.me) - Allemand - User
+🇨🇳 Li Wei (li@meeshy.me) - Chinois - User
+🇯🇵 Yuki Tanaka (yuki@meeshy.me) - Japonais - User
+🇵🇹 Maria Silva (maria@meeshy.me) - Portugais - User
 
 🔑 === INFORMATIONS DE CONNEXION ===
 Mot de passe pour tous: password123

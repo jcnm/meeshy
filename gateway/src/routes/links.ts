@@ -800,7 +800,12 @@ export async function linksRoutes(fastify: FastifyInstance) {
             select: {
               id: true,
               targetLanguage: true,
-              translatedContent: true
+              translatedContent: true,
+              translationModel: true,
+              sourceLanguage: true,
+              cacheKey: true,
+              confidenceScore: true,
+              createdAt: true
             }
           }
         }
@@ -840,6 +845,17 @@ export async function linksRoutes(fastify: FastifyInstance) {
         },
         translations: message.translations || []
       }));
+
+      // Log des traductions pour debugging
+      console.log(`📥 [LINKS_GET] Messages formatés avec traductions:`, {
+        messagesCount: formattedMessages.length,
+        translationsStats: formattedMessages.map((m: any) => ({
+          messageId: m.id.substring(0, 8),
+          hasTranslations: !!(m.translations && m.translations.length > 0),
+          translationsCount: m.translations?.length || 0,
+          languages: m.translations?.map((t: any) => t.targetLanguage).join(', ') || 'none'
+        }))
+      });
 
       // Déterminer le type d'utilisateur et les données de l'utilisateur actuel
       let userType: 'anonymous' | 'member';
@@ -1135,6 +1151,18 @@ export async function linksRoutes(fastify: FastifyInstance) {
               anonymousUserId: true,
               createdAt: true
             }
+          },
+          translations: {
+            select: {
+              id: true,
+              targetLanguage: true,
+              translatedContent: true,
+              translationModel: true,
+              sourceLanguage: true,
+              cacheKey: true,
+              confidenceScore: true,
+              createdAt: true
+            }
           }
         }
       });
@@ -1204,8 +1232,21 @@ export async function linksRoutes(fastify: FastifyInstance) {
           } : null
         } : null,
         // Inclure les réactions
-        reactions: (message as any).reactions || []
+        reactions: (message as any).reactions || [],
+        // Inclure les traductions
+        translations: (message as any).translations || []
       }));
+
+      // Log des traductions pour debugging
+      console.log(`📥 [LINKS/:identifier/messages] Messages formatés:`, {
+        messagesCount: formattedMessages.length,
+        translationsStats: formattedMessages.map((m: any) => ({
+          messageId: m.id.substring(0, 8),
+          hasTranslations: !!(m.translations && m.translations.length > 0),
+          translationsCount: m.translations?.length || 0,
+          languages: m.translations?.map((t: any) => t.targetLanguage).join(', ') || 'none'
+        }))
+      });
 
       return reply.send({
         success: true,

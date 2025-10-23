@@ -2,11 +2,11 @@
 FROM node:22-alpine AS base
 
 # === MAINTAINER INFORMATION ===
-LABEL maintainer="Meeshy Development Team <dev@meeshy.com>" \
+LABEL maintainer="Meeshy Development Team <dev@meeshy.me>" \
       description="Meeshy Frontend - Next.js Application with SSR/SSG support" \
       version="1.0.0" \
       org.opencontainers.image.source="https://github.com/jcnm/meeshy/frontend" \
-      org.opencontainers.image.documentation="https://docs.meeshy.com/frontend" \
+      org.opencontainers.image.documentation="https://docs.meeshy.me/frontend" \
       org.opencontainers.image.vendor="Meeshy" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.title="Meeshy Frontend" \
