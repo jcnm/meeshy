@@ -177,36 +177,43 @@ class TextSegmenter:
         - Tirets: -, •, *, →
         - Numéros: 1., 2., 3., etc.
         - Lettres: a), b), c)
+        - Lettres romaines: I), II), III), etc.
         """
         stripped = line.strip()
         if not stripped:
             return False
 
         # Pattern pour listes à puces
-        bullet_pattern = r'^[-•*→]\s+'
+        bullet_pattern = r'^[+-•*→]\s+'
         # Pattern pour listes numérotées (1., 2., etc.)
         numbered_pattern = r'^\d+\.\s+'
         # Pattern pour listes avec lettres (a), b), etc.)
         lettered_pattern = r'^[a-z]\)\s+'
+        # Pattern pour listes avec lettres (I), II), etc.)
+        roman_lettered_pattern = r'^[IVXLCDM]+\)\s+'
 
         return (re.match(bullet_pattern, stripped) is not None or
                 re.match(numbered_pattern, stripped) is not None or
-                re.match(lettered_pattern, stripped) is not None)
+                re.match(lettered_pattern, stripped) is not None or
+                re.match(roman_lettered_pattern, stripped) is not None)
 
     def segment_by_sentences_and_lines(self, text: str) -> List[Tuple[str, str]]:
         """
-        Segmente le texte avec priorité aux retours à la ligne :
-        - PRIORITÉ 1: Préserver chaque retour à la ligne
-        - Chaque ligne est traduite séparément pour maintenir la structure
-        - Préserve les paragraphes (double \\n)
+        Segmente le texte avec priorité aux paragraphes et retours à la ligne :
+        - PRIORITÉ 1: Découper par paragraphes (double \\n ou plus)
+        - PRIORITÉ 2: Préserver chaque retour à la ligne dans un paragraphe
+        - Chaque paragraphe est traduit comme une unité cohérente
+        - Les lignes individuelles au sein d'un paragraphe sont préservées
 
         Returns:
             Liste de tuples (segment, type)
-            - type: 'line' (ligne simple), 'list_item' (élément de liste),
-                   'paragraph_break' (double \\n), 'empty_line' (ligne vide)
+            - type: 'paragraph' (paragraphe complet), 'line' (ligne simple), 
+                   'list_item' (élément de liste), 'paragraph_break' (double \\n), 
+                   'empty_line' (ligne vide)
         """
-        # Séparer en paragraphes (par double \n)
-        paragraphs = text.split('\n\n')
+        # Séparer en paragraphes (par double \n ou plus)
+        # On considère 2+ sauts de ligne comme séparateur de paragraphe
+        paragraphs = re.split(r'\n\s*\n+', text)
 
         segments = []
 
@@ -218,23 +225,31 @@ class TextSegmenter:
             if para_idx > 0:
                 segments.append(("", "paragraph_break"))
 
-            # Traiter chaque ligne du paragraphe séparément
+            # Traiter le paragraphe entier comme une unité
+            # Cela permet de préserver le contexte pour une meilleure traduction
+            paragraph = paragraph.strip()
+            
+            # Vérifier si le paragraphe contient des éléments de liste
             lines = paragraph.split('\n')
+            has_list_items = any(self.is_list_item(line.strip()) for line in lines)
+            
+            if has_list_items:
+                # Si c'est une liste, traiter chaque élément séparément pour préserver la structure
+                for line in lines:
+                    line_stripped = line.strip()
+                    if not line_stripped:
+                        continue
+                    
+                    if self.is_list_item(line_stripped):
+                        segments.append((line, "list_item"))
+                    else:
+                        segments.append((line, "line"))
+            else:
+                # Paragraphe normal sans liste: le traiter comme une unité complète
+                # Cela permet au modèle de mieux comprendre le contexte
+                segments.append((paragraph, "paragraph"))
 
-            for line in lines:
-                # Garder les espaces en début de ligne pour l'indentation
-                if not line.strip():
-                    # Ligne vide - ignorer
-                    continue
-
-                # Si c'est un élément de liste, le marquer spécifiquement
-                if self.is_list_item(line.strip()):
-                    segments.append((line, "list_item"))
-                else:
-                    # Ligne normale - préserver telle quelle
-                    segments.append((line, "line"))
-
-        logger.debug(f"[SEGMENTER] Segmented into {len(segments)} lines (preserving all line breaks)")
+        logger.debug(f"[SEGMENTER] Segmented into {len(segments)} parts (paragraphs and lines)")
         return segments
 
     def segment_by_sentences(self, text: str) -> List[str]:
@@ -328,8 +343,15 @@ class TextSegmenter:
             if segment_type == 'paragraph_break':
                 # Ajouter une ligne vide pour créer le double \n
                 result_parts.append('\n\n')
+            elif segment_type == 'paragraph':
+                # Paragraphe complet - préserver les sauts de ligne internes
+                if i > 0 and translated_segments[i-1]['type'] not in ['paragraph_break']:
+                    # Pas le premier élément et pas après un paragraph_break
+                    # Ajouter un saut de ligne avant
+                    result_parts.append('\n')
+                result_parts.append(segment_text)
             elif segment_type in ['line', 'sentence', 'list_item']:
-                # Ajouter le contenu
+                # Ajouter le contenu avec saut de ligne
                 if i > 0 and translated_segments[i-1]['type'] not in ['paragraph_break']:
                     # Pas le premier élément et pas après un paragraph_break
                     # Ajouter un saut de ligne avant

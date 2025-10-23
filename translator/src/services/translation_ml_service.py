@@ -508,7 +508,7 @@ class TranslationMLService:
             segments, emojis_map = self.text_segmenter.segment_text(text)
             logger.info(f"[STRUCTURED] Text segmented into {len(segments)} parts with {len(emojis_map)} emojis")
 
-            # 2. Traduire chaque segment (lignes + éléments de liste)
+            # 2. Traduire chaque segment (paragraphes, lignes + éléments de liste)
             translated_segments = []
             for segment in segments:
                 segment_type = segment['type']
@@ -518,8 +518,8 @@ class TranslationMLService:
                     translated_segments.append(segment)
                     continue
 
-                # Traduire les lignes et éléments de liste
-                if segment_type in ['line', 'sentence', 'list_item']:
+                # Traduire les paragraphes, lignes et éléments de liste
+                if segment_type in ['paragraph', 'line', 'sentence', 'list_item']:
                     segment_text = segment['text']
                     if segment_text.strip():
                         try:
@@ -567,7 +567,7 @@ class TranslationMLService:
                                 'type': segment['type'],
                                 'index': segment['index']
                             })
-                            seg_type_label = "LIST ITEM" if segment_type == 'list_item' else ("LINE" if segment_type == 'line' else "SENTENCE")
+                            seg_type_label = "PARAGRAPH" if segment_type == 'paragraph' else ("LIST ITEM" if segment_type == 'list_item' else ("LINE" if segment_type == 'line' else "SENTENCE"))
                             logger.debug(f"[STRUCTURED] {seg_type_label} {segment['index']} translated: '{segment_text[:30]}...' → '{translated[:30]}...'")
                         except Exception as e:
                             logger.error(f"[STRUCTURED] Error translating {segment_type} {segment['index']}: {e}")

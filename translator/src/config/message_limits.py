@@ -17,11 +17,12 @@ class MessageLimits:
     MAX_TEXT_ATTACHMENT_THRESHOLD = int(os.getenv('MAX_TEXT_ATTACHMENT_THRESHOLD', '2000'))
     
     # Limite maximale de caractères pour la traduction
-    # Les messages dépassant cette limite ne seront pas traduits
-    MAX_TRANSLATION_LENGTH = int(os.getenv('MAX_TRANSLATION_LENGTH', '500'))
+    # SUPPRIMÉE: Plus de limite, les longs textes sont découpés en paragraphes
+    # Les messages sont traduits paragraphe par paragraphe pour gérer n'importe quelle longueur
+    MAX_TRANSLATION_LENGTH = int(os.getenv('MAX_TRANSLATION_LENGTH', '100000'))  # Limite très élevée pour désactivation
     
     # Limite maximale pour les textes longs (ancienne limite)
-    MAX_TEXT_LENGTH = int(os.getenv('MAX_TEXT_LENGTH', '5000'))
+    MAX_TEXT_LENGTH = int(os.getenv('MAX_TEXT_LENGTH', '100000'))  # Limite très élevée
 
 
 def validate_message_length(content: str) -> tuple[bool, str | None]:
