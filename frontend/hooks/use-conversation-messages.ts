@@ -139,6 +139,19 @@ export function useConversationMessages(
       const newMessages = data.data.messages || [];
       const hasMoreMessages = (data.data as any).hasMore || false;
 
+      // Log des traductions reçues pour debugging
+      console.log(`📥 [useConversationMessages] Messages chargés:`, {
+        count: newMessages.length,
+        offset: currentOffset,
+        hasMore: hasMoreMessages,
+        translationsStats: newMessages.map(m => ({
+          messageId: m.id.substring(0, 8),
+          hasTranslations: !!(m.translations && m.translations.length > 0),
+          translationsCount: m.translations?.length || 0,
+          languages: m.translations?.map((t: any) => t.targetLanguage || t.language).join(', ') || 'none'
+        }))
+      });
+
       if (isLoadMore) {
         // Sauvegarder la position de scroll et la hauteur AVANT d'ajouter les messages
         const container = actualContainerRef.current;

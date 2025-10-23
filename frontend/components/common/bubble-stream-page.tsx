@@ -491,9 +491,30 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   }, []);
 
   const handleTranslation = useCallback((messageId: string, translations: any[]) => {
+    console.log(`🌍 [BubbleStreamPage] Traduction reçue via WebSocket:`, {
+      messageId,
+      translationsCount: translations.length,
+      translations: translations.map(t => ({
+        targetLanguage: t.targetLanguage || t.language,
+        contentPreview: (t.translatedContent || t.content)?.substring(0, 50) + '...',
+        hasTranslatedContent: !!t.translatedContent,
+        hasContent: !!t.content
+      }))
+    });
     
     // Mettre à jour le message avec les nouvelles traductions
     updateMessageTranslations(messageId, (prevMessage) => {
+      if (!prevMessage) {
+        console.warn('⚠️ [BubbleStreamPage] Message introuvable pour traduction:', messageId);
+        return prevMessage;
+      }
+      
+      console.log(`🔍 [BubbleStreamPage] Message avant mise à jour des traductions:`, {
+        messageId: prevMessage.id,
+        existingTranslationsCount: prevMessage.translations?.length || 0,
+        originalLanguage: prevMessage.originalLanguage
+      });
+      
       // Fusionner les nouvelles traductions avec les existantes
       const existingTranslations = prevMessage.translations || [];
       const updatedTranslations = [...existingTranslations];
@@ -534,10 +555,21 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         }
       });
 
-      return {
+      const updatedMessage = {
         ...prevMessage,
         translations: updatedTranslations
       };
+      
+      console.log(`✅ [BubbleStreamPage] Message après mise à jour des traductions:`, {
+        messageId: updatedMessage.id,
+        updatedTranslationsCount: updatedTranslations.length,
+        translationsPreview: updatedTranslations.map(t => ({
+          language: t.targetLanguage,
+          contentLength: t.translatedContent?.length || 0
+        }))
+      });
+      
+      return updatedMessage;
     });
     
     // Vérifier si on a des nouvelles traductions pour cet utilisateur

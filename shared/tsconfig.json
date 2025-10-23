@@ -14,7 +14,6 @@
     "declarationMap": true,
     "sourceMap": true,
     "outDir": "./dist",
-    "rootDir": "./types",
     "removeComments": false,
     "preserveConstEnums": true,
     "declarationDir": "./dist",
@@ -40,7 +39,7 @@
     /* Completeness */
     "skipLibCheck": true
   },
-  "include": ["types/**/*.ts"],
+  "include": ["types/**/*.ts", "utils/**/*.ts"],
   "exclude": [
     "node_modules",
     "dist",

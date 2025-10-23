@@ -20,6 +20,9 @@ from collections import defaultdict
 # Import du service de base de données
 from .database_service import DatabaseService
 
+# Import de la configuration des limites
+from config.message_limits import can_translate_message, MessageLimits
+
 # Configuration du logging
 logging.basicConfig(
     level=logging.INFO,
@@ -210,27 +213,27 @@ class TranslationPoolManager:
         if normal_queue_size > 100 and normal_utilization > 0.8 and self.normal_workers < self.max_normal_workers:
             new_normal_workers = min(self.normal_workers + 5, self.max_normal_workers)
             if new_normal_workers > self.normal_workers:
-                await self._scale_normal_workers(new_normal_workers)
                 logger.info(f"[TRANSLATOR] 🔧 Scaling UP normal workers: {self.normal_workers} → {new_normal_workers}")
+                await self._scale_normal_workers(new_normal_workers)
         
         elif normal_queue_size < 10 and normal_utilization < 0.3 and self.normal_workers > self.normal_workers_min:
             new_normal_workers = max(self.normal_workers - 2, self.normal_workers_min)
             if new_normal_workers < self.normal_workers:
-                await self._scale_normal_workers(new_normal_workers)
                 logger.info(f"[TRANSLATOR] 🔧 Scaling DOWN normal workers: {self.normal_workers} → {new_normal_workers}")
+                await self._scale_normal_workers(new_normal_workers)
         
         # Ajuster les workers "any"
         if any_queue_size > 50 and any_utilization > 0.8 and self.any_workers < self.max_any_workers:
             new_any_workers = min(self.any_workers + 3, self.max_any_workers)
             if new_any_workers > self.any_workers:
-                await self._scale_any_workers(new_any_workers)
                 logger.info(f"[TRANSLATOR] 🔧 Scaling UP any workers: {self.any_workers} → {new_any_workers}")
+                await self._scale_any_workers(new_any_workers)
         
         elif any_queue_size < 5 and any_utilization < 0.3 and self.any_workers > self.any_workers_min:
             new_any_workers = max(self.any_workers - 1, self.any_workers_min)
             if new_any_workers < self.any_workers:
-                await self._scale_any_workers(new_any_workers)
                 logger.info(f"[TRANSLATOR] 🔧 Scaling DOWN any workers: {self.any_workers} → {new_any_workers}")
+                await self._scale_any_workers(new_any_workers)
     
     async def _scale_normal_workers(self, new_count: int):
         """Ajuste le nombre de workers normaux"""
@@ -628,11 +631,30 @@ class ZMQTranslationServer:
                 logger.warning(f"⚠️ [TRANSLATOR] Requête invalide reçue: {request_data}")
                 return
             
+            # Vérifier la longueur du message pour la traduction
+            message_text = request_data.get('text', '')
+            if not can_translate_message(message_text):
+                logger.warning(f"⚠️ [TRANSLATOR] Message too long to be translated: {len(message_text)} caractères (max: {MessageLimits.MAX_TRANSLATION_LENGTH})")
+                # Ne pas traiter ce message, retourner un résultat vide ou le texte original
+                # On pourrait aussi envoyer une notification à la gateway ici si nécessaire
+                no_translation_message = {
+                    'type': 'translation_skipped',
+                    'messageId': request_data.get('messageId'),
+                    'reason': 'message_too_long',
+                    'length': len(message_text),
+                    'max_length': MessageLimits.MAX_TRANSLATION_LENGTH,
+                    'conversationId': request_data.get('conversationId', 'unknown')
+                }
+                if self.pub_socket:
+                    await self.pub_socket.send(json.dumps(no_translation_message).encode('utf-8'))
+                    logger.info(f"[TRANSLATOR] translation message ignored for message {request_data.get('messageId')}")
+                return
+            
             # Créer la tâche de traduction
             task = TranslationTask(
                 task_id=str(uuid.uuid4()),
                 message_id=request_data.get('messageId'),
-                text=request_data.get('text'),
+                text=message_text,
                 source_language=request_data.get('sourceLanguage', 'fr'),
                 target_languages=request_data.get('targetLanguages', []),
                 conversation_id=request_data.get('conversationId', 'unknown'),

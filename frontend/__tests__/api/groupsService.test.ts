@@ -310,7 +310,7 @@ describe('GroupsService', () => {
       const groupId = 'group-1';
       const mockResponse = {
         data: {
-          link: 'https://app.meeshy.com/join/group-1/abc123',
+          link: 'https://app.meeshy.me/join/group-1/abc123',
           expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         },
         status: 200,
@@ -332,7 +332,7 @@ describe('GroupsService', () => {
 
       const mockResponse = {
         data: {
-          link: 'https://app.meeshy.com/join/group-1/xyz789',
+          link: 'https://app.meeshy.me/join/group-1/xyz789',
           expiresAt: new Date(Date.now() + customExpiration),
         },
         status: 200,

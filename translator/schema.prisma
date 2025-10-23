@@ -49,6 +49,7 @@ model User {
   sentFriendRequests          FriendRequest[]          @relation("FriendRequestSender")
   messageStatus               MessageStatus[]
   sentMessages                Message[]                @relation("MessageSender")
+  reactions                   Reaction[]               @relation("UserReactions")
   notifications               Notification[]
   typingIndicators            TypingIndicator[]
   preferences                 UserPreference[]
@@ -171,6 +172,7 @@ model AnonymousParticipant {
   shareLink       ConversationShareLink @relation("ShareLinkParticipants", fields: [shareLinkId], references: [id])
   conversation    Conversation          @relation(fields: [conversationId], references: [id])
   sentMessages    Message[]             @relation("AnonymousMessageSender")
+  reactions       Reaction[]            @relation("AnonymousReactions")
   trackingLinkClicks TrackingLinkClick[] @relation("TrackingLinkClickAnonymous")
 }
 
@@ -196,6 +198,7 @@ model Message {
   statusResponses   MessageStatus[]       @relation("MessageStatusResponse")
   translations      MessageTranslation[]
   attachments       MessageAttachment[]
+  reactions         Reaction[]            @relation("MessageReactions")
   replyTo           Message?              @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   replies           Message[]             @relation("MessageReplies")
   anonymousSender   AnonymousParticipant? @relation("AnonymousMessageSender", fields: [anonymousSenderId], references: [id])
@@ -271,6 +274,30 @@ model MessageStatus {
   response   Message?  @relation("MessageStatusResponse", fields: [answer], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([messageId, userId], name: "messageId_userId")
+}
+
+/// Réaction emoji sur un message par un utilisateur
+model Reaction {
+  id              String                @id @default(auto()) @map("_id") @db.ObjectId
+  messageId       String                @db.ObjectId
+  userId          String?               @db.ObjectId // null pour utilisateurs anonymes
+  anonymousUserId String?               @db.ObjectId // ID de l'utilisateur anonyme
+  emoji           String                // Emoji libre (ex: 🎉, ❤️, 🔥, ⭐)
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  
+  message         Message               @relation("MessageReactions", fields: [messageId], references: [id], onDelete: Cascade)
+  user            User?                 @relation("UserReactions", fields: [userId], references: [id], onDelete: Cascade)
+  anonymousUser   AnonymousParticipant? @relation("AnonymousReactions", fields: [anonymousUserId], references: [id], onDelete: Cascade)
+  
+  // Contrainte: un utilisateur ne peut ajouter le même emoji qu'une seule fois par message
+  @@unique([messageId, userId, emoji], name: "user_reaction_unique")
+  // Contrainte: un utilisateur anonyme ne peut ajouter le même emoji qu'une seule fois par message
+  @@unique([messageId, anonymousUserId, emoji], name: "anonymous_reaction_unique")
+  @@index([messageId])
+  @@index([userId])
+  @@index([anonymousUserId])
+  @@index([emoji])
 }
 
 /// Demande d'amitié entre utilisateurs

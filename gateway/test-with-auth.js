@@ -18,7 +18,7 @@ async function testWithAuth() {
     // 1. Se connecter avec les identifiants admin
     console.log('🔐 Connexion avec les identifiants admin...');
     const loginResponse = await axios.post(`${GATEWAY_URL}/auth/login`, {
-      email: 'admin@meeshy.com',
+      email: 'admin@meeshy.me',
       password: 'admin123'
     });
     

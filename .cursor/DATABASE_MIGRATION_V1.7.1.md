@@ -78,7 +78,7 @@ Error code 11000 (DuplicateKey): E11000 duplicate key error ... UserStats_userId
 
 **Solution**:
 - Modification de `shared/seed.ts` pour un seeding intelligent
-- Vérifie d'abord si les utilisateurs de seed existent (alice@meeshy.com, bob@meeshy.com, etc.)
+- Vérifie d'abord si les utilisateurs de seed existent (alice@meeshy.me, bob@meeshy.me, etc.)
 - Ne supprime QUE les données créées par le seed
 - Préserve toutes les autres données de la base
 
@@ -87,7 +87,7 @@ Error code 11000 (DuplicateKey): E11000 duplicate key error ... UserStats_userId
 const existingUsers = await prisma.user.findMany({
   where: {
     email: {
-      in: ['alice@meeshy.com', 'bob@meeshy.com', ...]
+      in: ['alice@meeshy.me', 'bob@meeshy.me', ...]
     }
   }
 });

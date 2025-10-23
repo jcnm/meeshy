@@ -26,6 +26,9 @@ try:
     if env_local_path.exists():
         load_dotenv(env_local_path, override=True)
         print("[TRANSLATOR] ✅ Variables d'environnement .env.local chargées (override)")
+        print(f"[TRANSLATOR] 🔍 MODELS_PATH depuis .env.local: {os.getenv('MODELS_PATH', 'NOT SET')}")
+        print(f"[TRANSLATOR] 🔍 HF_HOME depuis .env.local: {os.getenv('HF_HOME', 'NOT SET')}")
+        print(f"[TRANSLATOR] 🔍 TRANSFORMERS_CACHE depuis .env.local: {os.getenv('TRANSFORMERS_CACHE', 'NOT SET')}")
 except ImportError:
     print("[TRANSLATOR] ⚠️ python-dotenv non disponible, utilisation des variables système")
 

@@ -60,6 +60,27 @@ function LandingPageContent() {
   // État pour gérer l'affichage du lien de conversation anonyme
   const [anonymousChatLink, setAnonymousChatLink] = useState<string | null>(null);
 
+  // Sauvegarder le token d'affiliation depuis le cookie dans le localStorage
+  useEffect(() => {
+    // Récupérer le cookie d'affiliation
+    const getCookie = (name: string) => {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(';').shift();
+      return null;
+    };
+
+    const affiliateToken = getCookie('meeshy_affiliate_token');
+    if (affiliateToken) {
+      // Sauvegarder dans localStorage pour persistance
+      localStorage.setItem('meeshy_affiliate_token', affiliateToken);
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[LANDING] Token d\'affiliation détecté:', affiliateToken);
+      }
+    }
+  }, []);
+
   // Vérifier si l'utilisateur anonyme a une conversation en cours
   useEffect(() => {
     const isAnonymous = isCurrentUserAnonymous();

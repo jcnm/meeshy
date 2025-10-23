@@ -444,7 +444,7 @@ describe('Groups API Integration - Real Data Flow', () => {
     it('should generate and use invite links', async () => {
       // 1. Générer un lien d'invitation
       const inviteLink = {
-        link: 'https://app.meeshy.com/join/group-789/inv_abc123def456',
+        link: 'https://app.meeshy.me/join/group-789/inv_abc123def456',
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 jours dans le futur
       };
 

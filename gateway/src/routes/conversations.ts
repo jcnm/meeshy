@@ -3,10 +3,16 @@ import { TranslationService } from '../services/TranslationService';
 import { TrackingLinkService } from '../services/TrackingLinkService';
 import { AttachmentService } from '../services/AttachmentService';
 import { conversationStatsService } from '../services/ConversationStatsService';
-import { z } from 'zod';
-import { UserRoleEnum } from '../../shared/types';
+import { UserRoleEnum, ErrorCode } from '../../shared/types';
+import { createError, sendErrorResponse } from '../../shared/utils/errors';
+import { ConversationSchemas, validateSchema } from '../../shared/utils/validation';
+import { 
+  resolveUserLanguage, 
+  generateConversationIdentifier as sharedGenerateConversationIdentifier,
+  isValidMongoId,
+  generateDefaultConversationTitle
+} from '../../shared/utils/conversation-helpers';
 import { createUnifiedAuthMiddleware, UnifiedAuthRequest } from '../middleware/auth';
-import * as path from 'path';
 
 /**
  * Vérifie si un utilisateur peut accéder à une conversation
@@ -121,33 +127,10 @@ function generateFinalLinkId(conversationShareLinkId: string, initialId: string)
 /**
  * Génère un identifiant unique pour une conversation
  * Format: mshy_<titre_sanitisé>-YYYYMMDDHHMMSS ou mshy_<unique_id>-YYYYMMDDHHMMSS si pas de titre
+ * @deprecated Utiliser sharedGenerateConversationIdentifier de shared/utils/conversation-helpers
  */
 function generateConversationIdentifier(title?: string): string {
-  const now = new Date();
-  const timestamp = now.getFullYear().toString() +
-    (now.getMonth() + 1).toString().padStart(2, '0') +
-    now.getDate().toString().padStart(2, '0') +
-    now.getHours().toString().padStart(2, '0') +
-    now.getMinutes().toString().padStart(2, '0') +
-    now.getSeconds().toString().padStart(2, '0');
-  
-  if (title) {
-    // Sanitiser le titre : enlever les caractères spéciaux, remplacer les espaces par des tirets
-    const sanitizedTitle = title
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '') // Garder seulement lettres, chiffres, espaces et tirets
-      .replace(/\s+/g, '-') // Remplacer les espaces par des tirets
-      .replace(/-+/g, '-') // Remplacer les tirets multiples par un seul
-      .replace(/^-|-$/g, ''); // Enlever les tirets en début/fin
-    
-    if (sanitizedTitle.length > 0) {
-      return `mshy_${sanitizedTitle}-${timestamp}`;
-    }
-  }
-  
-  // Fallback: générer un identifiant unique avec préfixe mshy_
-  const uniqueId = Math.random().toString(36).slice(2, 10);
-  return `mshy_${uniqueId}-${timestamp}`;
+  return sharedGenerateConversationIdentifier(title);
 }
 
 /**
@@ -321,7 +304,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
    */
   async function resolveConversationId(identifier: string): Promise<string | null> {
     // Si c'est déjà un ObjectID valide (24 caractères hexadécimaux), le retourner directement
-    if (/^[0-9a-fA-F]{24}$/.test(identifier)) {
+    if (isValidMongoId(identifier)) {
       return identifier;
     }
     
@@ -353,8 +336,6 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       // Paramètres de pagination
       const limit = parseInt(request.query.limit || '20', 10);
       const offset = parseInt(request.query.offset || '0', 10);
-      
-      console.log(`📄 [GET /conversations] Pagination: limit=${limit}, offset=${offset}, userId=${userId}`);
 
       const conversations = await prisma.conversation.findMany({
         where: {
@@ -423,7 +404,9 @@ export async function conversationRoutes(fastify: FastifyInstance) {
           },
           _count: {
             select: {
-              messages: true
+              messages: true,
+              members: true,
+              anonymousParticipants: true
             }
           }
         },
@@ -448,8 +431,6 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       });
       
       const hasMore = offset + conversations.length < totalCount;
-      
-      console.log(`📊 [GET /conversations] Résultats: ${conversations.length} conversations, total=${totalCount}, hasMore=${hasMore}`);
 
       // Calculer le nombre de messages non lus pour chaque conversation
       const conversationsWithUnreadCount = await Promise.all(
@@ -469,24 +450,18 @@ export async function conversationRoutes(fastify: FastifyInstance) {
           });
 
           // S'assurer qu'un titre existe toujours
-          let displayTitle = conversation.title;
-          if (!displayTitle || displayTitle.trim() === '') {
-            if (conversation.type === 'direct' && conversation.members && conversation.members.length > 0) {
-              // Pour les conversations directes, utiliser le nom de l'autre participant
-              const otherMember = conversation.members.find((m: any) => m.userId !== userId);
-              if (otherMember?.user) {
-                displayTitle = otherMember.user.displayName ||
-                              `${otherMember.user.username || ''}`.trim() ||
-                              otherMember.user.username ||
-                              'Conversation';
-              } else {
-                displayTitle = 'Direct Conversation';
-              }
-            } else {
-              // Pour les groupes et autres types
-              displayTitle = conversation.identifier || 'Group Conversation';
-            }
-          }
+          const displayTitle = conversation.title && conversation.title.trim() !== ''
+            ? conversation.title
+            : generateDefaultConversationTitle(
+                conversation.members.map((m: any) => ({
+                  id: m.userId,
+                  displayName: m.user?.displayName,
+                  username: m.user?.username,
+                  firstName: m.user?.firstName,
+                  lastName: m.user?.lastName
+                })),
+                userId
+              );
 
           return {
             ...conversation,
@@ -583,24 +558,18 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       }
 
       // S'assurer qu'un titre existe toujours
-      let displayTitle = conversation.title;
-      if (!displayTitle || displayTitle.trim() === '') {
-        if (conversation.type === 'direct' && conversation.members && conversation.members.length > 0) {
-          // Pour les conversations directes, utiliser le nom de l'autre participant
-          const otherMember = conversation.members.find((m: any) => m.userId !== userId);
-          if (otherMember?.user) {
-            displayTitle = otherMember.user.displayName ||
-                          `${otherMember.user.firstName || ''} ${otherMember.user.lastName || ''}`.trim() ||
-                          otherMember.user.username ||
-                          'Conversation';
-          } else {
-            displayTitle = 'Conversation directe';
-          }
-        } else {
-          // Pour les groupes et autres types
-          displayTitle = conversation.identifier || 'Conversation';
-        }
-      }
+      const displayTitle = conversation.title && conversation.title.trim() !== ''
+        ? conversation.title
+        : generateDefaultConversationTitle(
+            conversation.members.map((m: any) => ({
+              id: m.userId,
+              displayName: m.user?.displayName,
+              username: m.user?.username,
+              firstName: m.user?.firstName,
+              lastName: m.user?.lastName
+            })),
+            userId
+          );
 
       // Ajouter les statistiques de conversation dans les métadonnées (via cache 1h)
       const stats = await conversationStatsService.getOrCompute(
@@ -634,60 +603,34 @@ export async function conversationRoutes(fastify: FastifyInstance) {
     preValidation: [optionalAuth]
   }, async (request, reply) => {
     try {
-      const { type, title, description, participantIds = [], communityId, identifier } = request.body;
+      // Valider les données avec Zod
+      const validatedData = validateSchema(
+        ConversationSchemas.create,
+        request.body,
+        'create-conversation'
+      );
+      
+      const { type, title, description, participantIds = [], communityId, identifier } = validatedData;
       
       // Utiliser le nouveau système d'authentification unifié
       const authContext = (request as any).authContext;
       if (!authContext || !authContext.isAuthenticated || !authContext.registeredUser) {
-        return reply.status(401).send({
-          success: false,
-          error: 'Authentication required to create conversation'
-        });
+        throw createError(ErrorCode.UNAUTHORIZED, 'Authentication required to create conversation');
       }
       
       const userId = authContext.userId;
 
-      // Validation des données
-      if (!['direct', 'group', 'public', 'global'].includes(type)) {
-        return reply.status(400).send({
-          success: false,
-          error: 'Type de conversation invalide'
-        });
-      }
-
-      if (type !== 'direct' && !title) {
-        return reply.status(400).send({
-          success: false,
-          error: 'Le titre est requis pour les conversations non directes'
-        });
-      }
-
       // Prevent creating conversation with oneself
       if (type === 'direct' && participantIds.length === 1 && participantIds[0] === userId) {
-        return reply.status(400).send({
-          success: false,
-          error: 'Vous ne pouvez pas créer une conversation avec vous-même'
-        });
+        throw createError(ErrorCode.INVALID_OPERATION, 'Vous ne pouvez pas créer une conversation avec vous-même');
       }
 
       // Also check if userId is in participantIds (in case of manipulation)
       if (participantIds.includes(userId)) {
-        return reply.status(400).send({
-          success: false,
-          error: 'Vous ne devez pas vous inclure dans la liste des participants'
-        });
+        throw createError(ErrorCode.INVALID_OPERATION, 'Vous ne devez pas vous inclure dans la liste des participants');
       }
 
-      // Validate custom identifier if provided
-      if (identifier) {
-        const identifierRegex = /^[a-zA-Z0-9\-_@]*$/;
-        if (!identifierRegex.test(identifier)) {
-          return reply.status(400).send({
-            success: false,
-            error: 'L\'identifiant ne peut contenir que des lettres, chiffres, tirets, underscores et @'
-          });
-        }
-      }
+      // Note: La validation de l'identifier est maintenant gérée par CommonSchemas.conversationIdentifier dans Zod
 
       // Validate community access if communityId is provided
       if (communityId) {
@@ -732,7 +675,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       // S'assurer que participantIds ne contient pas de doublons, n'inclut pas le créateur,
       // et ne contient pas de valeurs null/undefined/empty
       const uniqueParticipantIds = [...new Set(participantIds)]
-        .filter(id => id && id !== userId && id.trim().length > 0);
+        .filter((id: any) => id && id !== userId && typeof id === 'string' && id.trim().length > 0);
 
       const conversation = await prisma.conversation.create({
         data: {
@@ -801,24 +744,18 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       }
 
       // S'assurer qu'un titre existe toujours
-      let displayTitle = conversation.title;
-      if (!displayTitle || displayTitle.trim() === '') {
-        if (conversation.type === 'direct' && conversation.members && conversation.members.length > 0) {
-          // Pour les conversations directes, utiliser le nom de l'autre participant
-          const otherMember = conversation.members.find((m: any) => m.userId !== userId);
-          if (otherMember?.user) {
-            displayTitle = otherMember.user.displayName ||
-                          `${otherMember.user.firstName || ''} ${otherMember.user.lastName || ''}`.trim() ||
-                          otherMember.user.username ||
-                          'Conversation';
-          } else {
-            displayTitle = 'Conversation directe';
-          }
-        } else {
-          // Pour les groupes et autres types
-          displayTitle = conversation.identifier || 'Conversation';
-        }
-      }
+      const displayTitle = conversation.title && conversation.title.trim() !== ''
+        ? conversation.title
+        : generateDefaultConversationTitle(
+            conversation.members.map((m: any) => ({
+              id: m.userId,
+              displayName: m.user?.displayName,
+              username: m.user?.username,
+              firstName: m.user?.firstName,
+              lastName: m.user?.lastName
+            })),
+            userId
+          );
 
       reply.status(201).send({
         success: true,
@@ -829,11 +766,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      console.error('[GATEWAY] Error creating conversation:', error);
-      reply.status(500).send({
-        success: false,
-        error: 'Erreur lors de la création de la conversation'
-      });
+      sendErrorResponse(reply, error as Error, 'create-conversation');
     }
   });
 
@@ -1028,25 +961,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       });
 
       // Déterminer la langue préférée de l'utilisateur (pour information au frontend)
-      function resolveUserLanguage(user: any): string {
-        if (!user) return 'fr';
-        
-        if (user.useCustomDestination && user.customDestinationLanguage) {
-          return user.customDestinationLanguage;
-        }
-        
-        if (user.translateToSystemLanguage) {
-          return user.systemLanguage;
-        }
-        
-        if (user.translateToRegionalLanguage) {
-          return user.regionalLanguage;
-        }
-        
-        return user.systemLanguage; // fallback
-      }
-
-      const userPreferredLanguage = resolveUserLanguage(user);
+      const userPreferredLanguage = resolveUserLanguage(user || { systemLanguage: 'en' });
 
       // Retourner les messages avec toutes leurs traductions
       // Le frontend se chargera d'afficher la bonne traduction
@@ -1109,30 +1024,10 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         }
       }
 
-      // Debug: Logger les données de traduction avant envoi
-      // NE PAS INVERSER: La DB retourne déjà en DESC (récent→ancien), c'est l'ordre voulu!
-      const finalMessages = messagesWithAllTranslations;
-      console.log(`📤 [BACKEND] Envoi de ${finalMessages.length} messages avec traductions (ordre DESC - récent en premier):`);
-      
-      finalMessages.slice(0, 3).forEach((msg, index) => {
-        console.log(`  [${index}] Message ${msg.id}:`);
-        console.log(`    - Content: ${msg.content?.substring(0, 50)}...`);
-        console.log(`    - Original Language: ${msg.originalLanguage}`);
-        console.log(`    - Translations Count: ${msg.translations?.length || 0}`);
-        
-        if (msg.translations && msg.translations.length > 0) {
-          msg.translations.forEach((t: any, tIndex: number) => {
-            console.log(`      [${tIndex}] ${t.targetLanguage}: ${t.translatedContent?.substring(0, 40)}...`);
-          });
-        } else {
-          console.log(`      ⚠️ Aucune traduction trouvée`);
-        }
-      });
-
       reply.send({
         success: true,
         data: {
-          messages: finalMessages,
+          messages: messagesWithAllTranslations,
           hasMore: messages.length === parseInt(limit),
           userLanguage: userPreferredLanguage
         }
@@ -1299,13 +1194,11 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       }
 
       // ÉTAPE 1: Traiter les liens dans le message AVANT la sauvegarde
-      console.log('[CONVERSATION] Processing links in message before saving...');
       const { processedContent, trackingLinks } = await trackingLinkService.processMessageLinks({
         content: content.trim(),
         conversationId,
         createdBy: userId
       });
-      console.log(`[CONVERSATION] Processed content: ${trackingLinks.length} tracking link(s) created`);
 
       // ÉTAPE 2: Créer le message avec le contenu transformé
       const message = await prisma.message.create({
@@ -1520,24 +1413,18 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
       // Transformer les conversations pour garantir qu'un titre existe toujours
       const conversationsWithTitle = conversations.map((conversation) => {
-        let displayTitle = conversation.title;
-        if (!displayTitle || displayTitle.trim() === '') {
-          if (conversation.type === 'direct' && conversation.members && conversation.members.length > 0) {
-            // Pour les conversations directes, utiliser le nom de l'autre participant
-            const otherMember = conversation.members.find((m: any) => m.userId !== userId);
-            if (otherMember?.user) {
-              displayTitle = otherMember.user.displayName ||
-                            `${otherMember.user.firstName || ''} ${otherMember.user.lastName || ''}`.trim() ||
-                            otherMember.user.username ||
-                            'Conversation';
-            } else {
-              displayTitle = 'Conversation directe';
-            }
-          } else {
-            // Pour les groupes et autres types
-            displayTitle = conversation.identifier || 'Conversation';
-          }
-        }
+        const displayTitle = conversation.title && conversation.title.trim() !== ''
+          ? conversation.title
+          : generateDefaultConversationTitle(
+              conversation.members.map((m: any) => ({
+                id: m.userId,
+                displayName: m.user?.displayName,
+                username: m.user?.username,
+                firstName: m.user?.firstName,
+                lastName: m.user?.lastName
+              })),
+              userId
+            );
 
         return {
           ...conversation,
@@ -1865,9 +1752,6 @@ export async function conversationRoutes(fastify: FastifyInstance) {
           messageId: messageId
         }
       });
-      if (deletedTranslations.count > 0) {
-        console.log(`🗑️ [CONVERSATIONS] ${deletedTranslations.count} traductions supprimées pour le message ${messageId}`);
-      }
 
       // Soft delete du message
       await prisma.message.update({

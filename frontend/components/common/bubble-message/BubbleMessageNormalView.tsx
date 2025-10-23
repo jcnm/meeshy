@@ -160,18 +160,18 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
     return messageDate.toLocaleDateString();
   };
 
-  // Contenu traduit (logique copiée)
+  // Contenu traduit (utilise les bons noms de champs du backend)
   const displayContent = useMemo(() => {
     if (currentDisplayLanguage === (message.originalLanguage || 'fr')) {
       return message.originalContent || message.content;
     }
 
-    const translation = message.translations?.find((t) =>
-      t.language === currentDisplayLanguage
+    const translation = message.translations?.find((t: any) =>
+      (t.language || t.targetLanguage) === currentDisplayLanguage
     );
 
     if (translation) {
-      return translation.content || message.content;
+      return (translation as any).content || (translation as any).translatedContent || message.content;
     }
 
     return message.content;

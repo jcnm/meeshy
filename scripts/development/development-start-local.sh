@@ -47,6 +47,7 @@ done
 # Obtenir le répertoire du projet
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+PROJECT_DIR="$PROJECT_ROOT"  # Alias pour compatibilité
 
 echo -e "${CYAN}════════════════════════════════════════════════════════════════${NC}"
 echo -e "${CYAN}🚀 MEESHY - DÉMARRAGE ENVIRONNEMENT DE DÉVELOPPEMENT LOCAL${NC}"
@@ -227,8 +228,8 @@ echo ""
 # Créer les fichiers .env.local
 echo -e "${BLUE}📝 Configuration des variables d'environnement...${NC}"
 
-# .env.local racine
-cat > .env.local << 'EOF'
+# .env racine
+cat > .env << 'EOF'
 # Configuration locale de développement
 NODE_ENV=development
 LOG_LEVEL=debug
@@ -250,10 +251,10 @@ FRONTEND_URL=http://localhost:3100
 # CORS
 CORS_ORIGINS=http://localhost:3100,http://localhost:3000
 EOF
-echo -e "${GREEN}✅ .env.local créé${NC}"
+echo -e "${GREEN}✅ .env créé${NC}"
 
-# .env.local Frontend
-cat > frontend/.env.local << 'EOF'
+# .env Frontend
+cat > frontend/.env << 'EOF'
 NODE_ENV=development
 
 # Public URLs (accessibles côté client)
@@ -271,10 +272,10 @@ TRANSLATION_URL=http://localhost:8000
 # Base de données MongoDB (sans authentification pour développement local)
 DATABASE_URL=mongodb://localhost:27017/meeshy?replicaSet=rs0&directConnection=true
 EOF
-echo -e "${GREEN}✅ frontend/.env.local créé${NC}"
+echo -e "${GREEN}✅ frontend/.env créé${NC}"
 
-# .env.local Gateway
-cat > gateway/.env.local << 'EOF'
+# .env Gateway
+cat > gateway/.env << 'EOF'
 NODE_ENV=development
 LOG_LEVEL=debug
 
@@ -302,20 +303,21 @@ HOST=0.0.0.0
 
 # CORS
 CORS_ORIGINS=http://localhost:3100,http://localhost:3000
-
-# Prisma Engine (fix for development with tsx/ts-node)
-PRISMA_QUERY_ENGINE_LIBRARY=./shared/prisma/client/libquery_engine-darwin-arm64.dylib.node
 EOF
-echo -e "${GREEN}✅ gateway/.env.local créé${NC}"
+echo -e "${GREEN}✅ gateway/.env créé${NC}"
 
-# .env.local Translator
-cat > translator/.env.local << 'EOF'
+# .env.local Translator (avec chemins absolus injectés)
+TRANSLATOR_ABS_DIR="${PROJECT_DIR}/translator"
+cat > translator/.env.local << EOF
 # FastAPI Configuration
 ENVIRONMENT=development
 LOG_LEVEL=DEBUG
 
 # Base de données (sans authentification pour développement local)
-DATABASE_URL=mongodb://localhost:27017/meeshy?replicaSet=rs0&directConnection=true
+DATABASE_URL=mongodb://localhost:27017/meeshy
+
+# Prisma Configuration
+PRISMA_CLIENT_ENGINE_TYPE="binary"
 
 # Redis
 REDIS_URL=redis://localhost:6379
@@ -329,14 +331,17 @@ TRANSLATOR_ZMQ_PULL_PORT=5555
 TRANSLATOR_ZMQ_PUB_PORT=5558
 ZMQ_PORT=5555
 
-# ML Models
-TRANSLATION_MODEL_PATH=./models
+# ML Models (chemins absolus injectés)
+MODELS_PATH=${TRANSLATOR_ABS_DIR}/models
+TRANSLATION_MODEL_PATH=${TRANSLATOR_ABS_DIR}/models
+HF_HOME=${TRANSLATOR_ABS_DIR}/models
+TRANSFORMERS_CACHE=${TRANSLATOR_ABS_DIR}/models
 WORKER_COUNT=2
 
 # CORS
 CORS_ORIGINS=http://localhost:3100,http://localhost:3000,http://localhost:8000
 EOF
-echo -e "${GREEN}✅ translator/.env.local créé${NC}"
+echo -e "${GREEN}✅ translator/.env.local créé (avec chemins absolus: ${TRANSLATOR_ABS_DIR}/models)${NC}"
 
 echo ""
 
@@ -427,8 +432,8 @@ echo -e "${CYAN}═════════════════════�
 echo -e "${CYAN}🔤 Démarrage du Translator (Port 8000)${NC}"
 echo -e "${CYAN}═══════════════════════════════════════${NC}"
 cd translator
-source venv/bin/activate
-python3 src/main.py > translator.log 2>&1 &
+# Le fichier .env contient déjà les chemins absolus, Python/FastAPI le lit automatiquement
+.venv/bin/python src/main.py > translator.log 2>&1 &
 TRANSLATOR_PID=$!
 cd ..
 echo -e "${GREEN}✅ Translator démarré (PID: $TRANSLATOR_PID)${NC}"

@@ -36,6 +36,12 @@ export * from './community';
 // Export des types réactions
 export * from './reaction';
 
+// Export des types d'erreurs
+export * from './errors';
+
+// ===== UTILITAIRES PARTAGÉS =====
+export * from '../utils';
+
 // ===== ÉVÉNEMENTS SOCKET.IO =====
 export * from './socketio-events';
 

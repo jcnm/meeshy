@@ -158,8 +158,8 @@ Affichage des images + Galerie interactive
             "originalName": "photo.jpg",
             "mimeType": "image/jpeg",
             "fileSize": 245678,
-            "fileUrl": "https://cdn.meeshy.com/attachments/2025/10/user123/image_2025_10_16.jpg",
-            "thumbnailUrl": "https://cdn.meeshy.com/thumbnails/2025/10/user123/image_2025_10_16_thumb.jpg",
+            "fileUrl": "https://cdn.meeshy.me/attachments/2025/10/user123/image_2025_10_16.jpg",
+            "thumbnailUrl": "https://cdn.meeshy.me/thumbnails/2025/10/user123/image_2025_10_16_thumb.jpg",
             "width": 1920,
             "height": 1080,
             "createdAt": "2025-10-16T10:30:00.000Z"

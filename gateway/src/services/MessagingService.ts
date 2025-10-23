@@ -209,10 +209,10 @@ export class MessagingService {
       });
     }
 
-    if (request.content && request.content.length > 4000) {
+    if (request.content && request.content.length > 2000) {
       errors.push({
         field: 'content',
-        message: 'Message content cannot exceed 4000 characters',
+        message: 'Message content cannot exceed 2000 characters',
         code: 'CONTENT_TOO_LONG'
       });
     }
@@ -458,7 +458,7 @@ export class MessagingService {
           canMentionUsers: true,
           canUseHighPriority: conversation.type !== 'public',
           restrictions: {
-            maxContentLength: 4000,
+            maxContentLength: 2000,
             maxAttachments: 100,
             allowedAttachmentTypes: ['image', 'file', 'audio', 'video'],
             rateLimitRemaining: 100

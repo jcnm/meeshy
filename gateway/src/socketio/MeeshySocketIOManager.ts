@@ -9,6 +9,7 @@ import { PrismaClient } from '../../shared/prisma/client';
 import { TranslationService, MessageData } from '../services/TranslationService';
 import { MaintenanceService } from '../services/maintenance.service';
 import { MessagingService } from '../services/MessagingService';
+import { validateMessageLength } from '../config/message-limits';
 import jwt from 'jsonwebtoken';
 import type { 
   ServerToClientEvents, 
@@ -193,6 +194,20 @@ export class MeeshySocketIOManager {
             
             if (callback) callback(errorResponse);
             socket.emit('error', { message: 'User not authenticated' });
+            return;
+          }
+
+          // Validation de la longueur du message
+          const validation = validateMessageLength(data.content);
+          if (!validation.isValid) {
+            const errorResponse: SocketIOResponse<{ messageId: string }> = {
+              success: false,
+              error: validation.error || 'Message invalide'
+            };
+            
+            if (callback) callback(errorResponse);
+            socket.emit('error', { message: validation.error || 'Message invalide' });
+            console.warn(`⚠️ [WEBSOCKET] Message rejeté pour ${userId}: ${validation.error}`);
             return;
           }
 
@@ -399,6 +414,22 @@ export class MeeshySocketIOManager {
             if (callback) callback(errorResponse);
             socket.emit('error', { message: 'User not authenticated' });
             return;
+          }
+
+          // Validation de la longueur du message (si du contenu texte est présent)
+          if (data.content && data.content.trim()) {
+            const validation = validateMessageLength(data.content);
+            if (!validation.isValid) {
+              const errorResponse: SocketIOResponse<{ messageId: string }> = {
+                success: false,
+                error: validation.error || 'Message invalide'
+              };
+              
+              if (callback) callback(errorResponse);
+              socket.emit('error', { message: validation.error || 'Message invalide' });
+              console.warn(`⚠️ [WEBSOCKET] Message avec attachments rejeté pour ${userId}: ${validation.error}`);
+              return;
+            }
           }
 
           // Vérifier que les attachments existent et appartiennent à l'utilisateur

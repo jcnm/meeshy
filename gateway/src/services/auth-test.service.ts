@@ -19,7 +19,7 @@ export const TEST_USERS: TestUser[] = [
   {
     id: 'alice_fr_id',
     username: 'alice_fr',
-    email: 'alice@meeshy.com',
+    email: 'alice@meeshy.me',
     firstName: 'Alice',
     lastName: 'Dubois',
     systemLanguage: 'fr',
@@ -30,7 +30,7 @@ export const TEST_USERS: TestUser[] = [
   {
     id: 'bob_en_id',
     username: 'bob_en',
-    email: 'bob@meeshy.com',
+    email: 'bob@meeshy.me',
     firstName: 'Bob',
     lastName: 'Johnson',
     systemLanguage: 'en',
@@ -42,7 +42,7 @@ export const TEST_USERS: TestUser[] = [
   {
     id: 'carlos_es_id',
     username: 'carlos_es',
-    email: 'carlos@meeshy.com',
+    email: 'carlos@meeshy.me',
     firstName: 'Carlos',
     lastName: 'García',
     systemLanguage: 'es',
@@ -53,7 +53,7 @@ export const TEST_USERS: TestUser[] = [
   {
     id: 'dieter_de_id',
     username: 'dieter_de',
-    email: 'dieter@meeshy.com',
+    email: 'dieter@meeshy.me',
     firstName: 'Dieter',
     lastName: 'Schmidt',
     systemLanguage: 'de',
@@ -64,7 +64,7 @@ export const TEST_USERS: TestUser[] = [
   {
     id: 'li_zh_id',
     username: 'li_zh',
-    email: 'li@meeshy.com',
+    email: 'li@meeshy.me',
     firstName: 'Li',
     lastName: 'Wei',
     systemLanguage: 'zh',
@@ -76,7 +76,7 @@ export const TEST_USERS: TestUser[] = [
   {
     id: 'yuki_ja_id',
     username: 'yuki_ja',
-    email: 'yuki@meeshy.com',
+    email: 'yuki@meeshy.me',
     firstName: 'Yuki',
     lastName: 'Tanaka',
     systemLanguage: 'ja',
@@ -88,7 +88,7 @@ export const TEST_USERS: TestUser[] = [
   {
     id: 'maria_pt_id',
     username: 'maria_pt',
-    email: 'maria@meeshy.com',
+    email: 'maria@meeshy.me',
     firstName: 'Maria',
     lastName: 'Silva',
     systemLanguage: 'pt',
