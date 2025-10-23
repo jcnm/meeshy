@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 class TranslationRequest(BaseModel):
     """Requête de traduction"""
-    text: str = Field(..., min_length=1, max_length=5000)
+    text: str = Field(..., min_length=1, max_length=100000)  # Limite très élevée, découpage par paragraphes
     source_language: str = Field(default="auto", description="Langue source (auto pour détection)")
     target_language: str = Field(..., description="Langue cible")
     model_type: str = Field(default="basic", description="Type de modèle: basic, medium, premium")
