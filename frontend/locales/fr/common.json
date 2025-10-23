@@ -86,6 +86,17 @@
       "created": "Créé avec succès",
       "welcome": "Bienvenue"
     },
+    "sidebar": {
+      "activeUsers": "Utilisateurs Actifs",
+      "trends": "Tendances",
+      "globalCommunication": "Communication Globale",
+      "messagesIn": "messages en",
+      "activeLanguages": "langues actives"
+    },
+    "languageSelector": {
+      "selectLanguage": "Sélectionner une langue...",
+      "noLanguageFound": "Aucune langue trouvée."
+    },
     "toasts": {
       "error": "Une erreur s'est produite",
       "success": "Opération réussie",

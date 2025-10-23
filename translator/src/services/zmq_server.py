@@ -47,7 +47,38 @@ class TranslationTask:
             self.created_at = time.time()
 
 class TranslationPoolManager:
-    """Gestionnaire des pools FIFO de traduction avec gestion dynamique des workers"""
+    """
+    Gestionnaire des pools FIFO de traduction avec gestion dynamique des workers
+    
+    XXX: PARALLÉLISATION OPPORTUNITÉ #4 - Architecture worker optimale
+    TODO: Configuration actuelle:
+          - normal_workers: 20 (threads séquentiels)
+          - any_workers: 10 (threads séquentiels)
+          - Chaque worker traite UNE tâche à la fois
+    TODO: Optimisations possibles:
+          A) Worker hybride: asyncio + multiprocessing
+             - Utiliser ProcessPoolExecutor au lieu de ThreadPoolExecutor
+             - Chaque process peut traiter N tâches en parallèle (asyncio)
+             - Contourner le GIL Python pour vrai parallélisme
+             
+          B) Worker avec batch processing interne
+             - Au lieu de prendre 1 tâche, prendre batch de 5-10 tâches
+             - Traduire toutes en batch (voir OPPORTUNITÉ #2)
+             - Gains: moins de setup, meilleur throughput
+             
+          C) Priority queue avec smart scheduling
+             - Petits segments (< 50 chars): queue haute priorité
+             - Grands paragraphes (> 200 chars): queue normale
+             - Équilibrage charge automatique
+    TODO: Configuration suggérée:
+          NORMAL_WORKERS_DEFAULT=8  # Processus au lieu de threads
+          WORKER_BATCH_SIZE=10       # Tâches par batch
+          ENABLE_MULTIPROCESSING=true
+    TODO: Gains attendus:
+          - 3-5x throughput avec multiprocessing (contourne GIL)
+          - 2-3x avec batch processing (moins d'overhead)
+          - 10-15x avec les deux combinés
+    """
     
     def __init__(self, 
                  normal_pool_size: int = 10000,
@@ -607,7 +638,36 @@ class ZMQTranslationServer:
             await self.stop()
     
     async def _handle_translation_request(self, message: bytes):
-        """Traite une requête de traduction reçue via SUB"""
+        """
+        Traite une requête de traduction reçue via SUB
+        
+        XXX: PARALLÉLISATION OPPORTUNITÉ #3 - Traduction multi-langues simultanée
+        TODO: Actuellement, si targetLanguages = ['en', 'es', 'de', 'it', 'pt']
+              chaque langue est traduite SÉQUENTIELLEMENT par le worker
+        TODO: Optimisation possible:
+              - Créer UNE tâche par langue cible (5 tâches au lieu d'1)
+              - Les workers traitent en parallèle (si plusieurs workers disponibles)
+              - OU: Batch translation dans le worker (traduire toutes les langues en 1 passe)
+        TODO: Implémentation suggérée:
+              # Option A: Multiple tasks (simple, utilise workers existants)
+              for target_lang in target_languages:
+                  task = TranslationTask(
+                      target_languages=[target_lang],  # UNE langue par tâche
+                      ...
+                  )
+                  await self.pool_manager.enqueue_task(task)
+              
+              # Option B: Batch API dans ML service (plus efficace)
+              results = await ml_service.translate_batch_multilingual(
+                  text=text,
+                  source_lang=source_lang,
+                  target_langs=['en', 'es', 'de', 'it', 'pt'],  # Toutes ensemble
+                  model_type=model_type
+              )
+        TODO: Gains attendus:
+              - Option A: N workers × vitesse (si N workers disponibles)
+              - Option B: 2-3x plus rapide (overhead réduit, batch processing)
+        """
         try:
             request_data = json.loads(message.decode('utf-8'))
             

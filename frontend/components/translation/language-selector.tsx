@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 import { SUPPORTED_LANGUAGES, formatLanguageName } from '@/utils/language-detection';
 import { INTERFACE_LANGUAGES } from '@/types/frontend';
 import { type LanguageChoice } from '@/lib/bubble-stream-modules';
+import { useI18n } from '@/hooks/useI18n';
 
 interface LanguageSelectorProps {
   value: string;
@@ -35,11 +36,12 @@ export function LanguageSelector({
   value,
   onValueChange,
   disabled = false,
-  placeholder = "Sélectionner une langue...",
+  placeholder,
   className,
   choices,
   interfaceOnly = false,
 }: LanguageSelectorProps) {
+  const { t } = useI18n('common');
   const [open, setOpen] = useState(false);
 
   // Utiliser les choix fournis, les langues d'interface limitées, ou les langues supportées par défaut
@@ -52,6 +54,8 @@ export function LanguageSelector({
   const selectedLanguage = availableLanguages.find(
     (language) => language?.code === value
   );
+  
+  const displayPlaceholder = placeholder || t('languageSelector.selectLanguage');
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -73,7 +77,7 @@ export function LanguageSelector({
                 {formatLanguageName(selectedLanguage.code)}
               </span>
             ) : (
-              <span className="text-muted-foreground">{placeholder}</span>
+              <span className="text-muted-foreground">{displayPlaceholder}</span>
             )}
           </div>
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -82,12 +86,12 @@ export function LanguageSelector({
       <PopoverContent className="w-[300px] p-0">
         <Command>
           <CommandList>
-            <CommandEmpty>Aucune langue trouvée.</CommandEmpty>
+            <CommandEmpty>{t('languageSelector.noLanguageFound')}</CommandEmpty>
             <CommandGroup>
               {availableLanguages.map((language) => (
                 <CommandItem
                   key={language?.code}
-                  value={`${language?.name} ${language?.nativeName} ${language?.code}`}
+                  value={`${language?.name} ${language?.code}`}
                   onSelect={() => {
                     if (language?.code) {
                       onValueChange(language.code);

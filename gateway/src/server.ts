@@ -29,6 +29,7 @@ import { trackingLinksRoutes } from './routes/tracking-links';
 import { anonymousRoutes } from './routes/anonymous';
 import { communityRoutes } from './routes/communities';
 import { adminRoutes } from './routes/admin';
+import { userAdminRoutes } from './routes/admin/users';
 import { userRoutes } from './routes/users';
 import userPreferencesRoutes from './routes/user-preferences';
 import { translationRoutes } from './routes/translation-non-blocking';
@@ -534,7 +535,9 @@ class MeeshyServer {
     // Register admin routes with /api/admin prefix
     await this.server.register(adminRoutes, { prefix: '/api/admin' });
 
-    
+    // Register admin user management routes
+    await this.server.register(userAdminRoutes, { prefix: '/api' });
+
     // Register user routes
     await this.server.register(userRoutes, { prefix: '/api' });
     
