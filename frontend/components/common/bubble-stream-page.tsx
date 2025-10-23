@@ -1579,7 +1579,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
             {/* Section Utilisateurs Actifs - Foldable - Remontée en 2e position */}
             <FoldableSection
-              title={`Utilisateurs Actifs (${activeUsers.length})`}
+              title={`${tCommon('sidebar.activeUsers')} (${activeUsers.length})`}
               icon={<Users className="h-4 w-4 mr-2" />}
               defaultExpanded={true}
             >
@@ -1648,7 +1648,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                   <div className="flex items-center justify-between p-4 bg-gray-50/80 dark:bg-gray-700/50">
                     <h3 className="font-semibold text-gray-500 dark:text-gray-400 flex items-center">
                       <TrendingUp className="h-4 w-4 mr-2 text-gray-400 dark:text-gray-500" />
-                      Tendances
+                      {tCommon('sidebar.trends')}
                     </h3>
                     <ChevronDown className="h-4 w-4 text-gray-300 dark:text-gray-600" />
                   </div>
