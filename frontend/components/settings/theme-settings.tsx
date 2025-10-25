@@ -31,6 +31,12 @@ export function ThemeSettings() {
   const { setInterfaceLanguage } = useLanguageActions();
   const { getSupportedLanguages } = useLanguage();
   
+  // Debug: afficher la langue actuelle
+  useEffect(() => {
+    console.log('🔍 [ThemeSettings] Current interface language:', currentInterfaceLanguage);
+    console.log('🔍 [ThemeSettings] Available languages:', getSupportedLanguages());
+  }, [currentInterfaceLanguage, getSupportedLanguages]);
+  
   const [config, setConfig] = useState<ThemeConfig>({
     accentColor: 'blue',
     fontSize: 'medium',
@@ -63,8 +69,15 @@ export function ThemeSettings() {
   };
 
   const handleInterfaceLanguageChange = (languageCode: string) => {
+    console.log('🔄 [ThemeSettings] Changing language to:', languageCode);
     setInterfaceLanguage(languageCode);
     toast.success(t('theme.interfaceLanguageUpdated'));
+    
+    // Recharger la page pour appliquer les changements de langue
+    setTimeout(() => {
+      console.log('🔄 [ThemeSettings] Reloading page...');
+      window.location.reload();
+    }, 500);
   };
 
   const accentColors = [

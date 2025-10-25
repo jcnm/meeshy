@@ -46,19 +46,19 @@ class ApiService {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     const url = buildApiUrl(endpoint);
-    
+
     // Get token from localStorage
     const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-    
+
     // Pour les requêtes DELETE sans body, ne pas inclure Content-Type
     const shouldExcludeContentType = options.method === 'DELETE' && !options.body;
     let defaultHeaders = { ...this.config.headers };
-    
+
     // Supprimer complètement le Content-Type pour les DELETE sans body
     if (shouldExcludeContentType) {
       delete defaultHeaders['Content-Type'];
     }
-    
+
     const headers = {
       ...defaultHeaders,
       ...(token && { Authorization: `Bearer ${token}` }),

@@ -2,7 +2,6 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import {
   UserRoleEnum,
-  AuthContext,
   PaginatedUsersResponse,
   UserFilters,
   PaginationParams,
@@ -13,63 +12,33 @@ import {
   UpdateStatusDTO,
   ResetPasswordDTO
 } from '../../../shared/types';
+import {
+  createUserValidationSchema,
+  updateUserProfileValidationSchema,
+  updateEmailValidationSchema,
+  updateRoleValidationSchema,
+  updateStatusValidationSchema,
+  resetPasswordValidationSchema,
+  formatZodErrors
+} from '../../../shared/types/validation';
 import { UserManagementService } from '../../services/admin/user-management.service';
 import { UserAuditService } from '../../services/admin/user-audit.service';
 import { sanitizationService } from '../../services/admin/user-sanitization.service';
 import { permissionsService } from '../../services/admin/permissions.service';
+import { UnifiedAuthContext } from '../../middleware/auth';
 import {
   requireUserViewAccess,
   requireUserModifyAccess,
   requireUserDeleteAccess
 } from '../../middleware/admin-user-auth.middleware';
 
-// Schémas de validation Zod
-const createUserSchema = z.object({
-  username: z.string().min(3).max(50),
-  firstName: z.string().min(1).max(100),
-  lastName: z.string().min(1).max(100),
-  email: z.string().email(),
-  password: z.string().min(8),
-  displayName: z.string().max(100).optional().nullable(),
-  bio: z.string().max(500).optional(),
-  phoneNumber: z.string().optional().nullable(),
-  role: z.string().optional(),
-  systemLanguage: z.string().optional(),
-  regionalLanguage: z.string().optional()
-});
-
-const updateUserProfileSchema = z.object({
-  username: z.string().min(3).max(50).optional(),
-  firstName: z.string().min(1).max(100).optional(),
-  lastName: z.string().min(1).max(100).optional(),
-  displayName: z.string().max(100).optional().nullable(),
-  bio: z.string().max(500).optional(),
-  phoneNumber: z.string().optional().nullable(),
-  avatar: z.string().optional().nullable(),
-  systemLanguage: z.string().optional(),
-  regionalLanguage: z.string().optional(),
-  customDestinationLanguage: z.string().optional().nullable()
-});
-
-const updateEmailSchema = z.object({
-  newEmail: z.string().email(),
-  password: z.string()
-});
-
-const updateRoleSchema = z.object({
-  role: z.string(),
-  reason: z.string().optional()
-});
-
-const updateStatusSchema = z.object({
-  isActive: z.boolean(),
-  reason: z.string().optional()
-});
-
-const resetPasswordSchema = z.object({
-  newPassword: z.string().min(8),
-  sendEmail: z.boolean()
-});
+// Utilisation des schémas de validation renforcés
+const createUserSchema = createUserValidationSchema;
+const updateUserProfileSchema = updateUserProfileValidationSchema;
+const updateEmailSchema = updateEmailValidationSchema;
+const updateRoleSchema = updateRoleValidationSchema;
+const updateStatusSchema = updateStatusValidationSchema;
+const resetPasswordSchema = resetPasswordValidationSchema;
 
 export async function userAdminRoutes(fastify: FastifyInstance): Promise<void> {
   // Initialiser les services
@@ -77,16 +46,16 @@ export async function userAdminRoutes(fastify: FastifyInstance): Promise<void> {
   const userAuditService = new UserAuditService(fastify.prisma);
 
   /**
-   * GET /admin/users - Liste tous les utilisateurs (avec sanitization)
+   * GET /admin/user-management - Liste tous les utilisateurs (avec sanitization)
    */
   fastify.get<{
     Querystring: UserFilters & PaginationParams;
-  }>('/admin/users', {
+  }>('/admin/user-management', {
     preHandler: [fastify.authenticate, requireUserViewAccess]
   }, async (request, reply) => {
     try {
-      const authContext = request.authContext;
-      const viewerRole = authContext.registeredUser.role as UserRoleEnum;
+      const authContext = (request as any).authContext as UnifiedAuthContext;
+      const viewerRole = authContext.registeredUser!.role as UserRoleEnum;
 
       const filters: UserFilters = {
         search: request.query.search,
@@ -137,7 +106,7 @@ export async function userAdminRoutes(fastify: FastifyInstance): Promise<void> {
         data: response
       });
     } catch (error) {
-      fastify.log.error('Error fetching users:', error);
+      fastify.log.error({ err: error }, 'Error fetching users');
       reply.status(500).send({
         success: false,
         error: 'Internal server error'
@@ -150,12 +119,12 @@ export async function userAdminRoutes(fastify: FastifyInstance): Promise<void> {
    */
   fastify.get<{
     Params: { userId: string };
-  }>('/admin/users/:userId', {
+  }>('/admin/user-management/:userId', {
     preHandler: [fastify.authenticate, requireUserViewAccess]
   }, async (request, reply) => {
     try {
-      const authContext = request.authContext;
-      const viewerRole = authContext.registeredUser.role as UserRoleEnum;
+      const authContext = (request as any).authContext as UnifiedAuthContext;
+      const viewerRole = authContext.registeredUser!.role as UserRoleEnum;
 
       const user = await userManagementService.getUserById(request.params.userId);
 
@@ -172,7 +141,7 @@ export async function userAdminRoutes(fastify: FastifyInstance): Promise<void> {
 
       // Log d'audit
       await userAuditService.logViewUser(
-        authContext.registeredUser.id,
+        authContext.registeredUser!.id,
         request.params.userId,
         request.ip,
         request.headers['user-agent']
@@ -183,7 +152,7 @@ export async function userAdminRoutes(fastify: FastifyInstance): Promise<void> {
         data: sanitizedUser
       });
     } catch (error) {
-      fastify.log.error('Error fetching user:', error);
+      fastify.log.error({ err: error }, 'Error fetching user');
       reply.status(500).send({
         success: false,
         error: 'Internal server error'
@@ -197,12 +166,12 @@ export async function userAdminRoutes(fastify: FastifyInstance): Promise<void> {
    */
   fastify.post<{
     Body: CreateUserDTO;
-  }>('/admin/users', {
+  }>('/admin/user-management', {
     preHandler: [fastify.authenticate, requireUserModifyAccess]
   }, async (request, reply) => {
     try {
-      const authContext = request.authContext;
-      const adminRole = authContext.registeredUser.role as UserRoleEnum;
+      const authContext = (request as any).authContext as UnifiedAuthContext;
+      const adminRole = authContext.registeredUser!.role as UserRoleEnum;
 
       // Valider les données
       const validatedData = createUserSchema.parse(request.body);
@@ -220,13 +189,13 @@ export async function userAdminRoutes(fastify: FastifyInstance): Promise<void> {
 
       // Créer l'utilisateur
       const newUser = await userManagementService.createUser(
-        validatedData,
-        authContext.registeredUser.id
+        validatedData as CreateUserDTO,
+        authContext.registeredUser!.id
       );
 
       // Log d'audit
       await userAuditService.logCreateUser(
-        authContext.registeredUser.id,
+        authContext.registeredUser!.id,
         newUser.id,
         validatedData as unknown as Record<string, unknown>,
         request.ip,
@@ -251,7 +220,7 @@ export async function userAdminRoutes(fastify: FastifyInstance): Promise<void> {
         return;
       }
 
-      fastify.log.error('Error creating user:', error);
+      fastify.log.error({ err: error }, 'Error creating user');
       reply.status(500).send({
         success: false,
         error: 'Internal server error'
@@ -266,12 +235,12 @@ export async function userAdminRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.patch<{
     Params: { userId: string };
     Body: UpdateUserProfileDTO;
-  }>('/admin/users/:userId', {
+  }>('/admin/user-management/:userId', {
     preHandler: [fastify.authenticate, requireUserModifyAccess]
   }, async (request, reply) => {
     try {
-      const authContext = request.authContext;
-      const adminRole = authContext.registeredUser.role as UserRoleEnum;
+      const authContext = (request as any).authContext as UnifiedAuthContext;
+      const adminRole = authContext.registeredUser!.role as UserRoleEnum;
 
       // Valider les données
       const validatedData = updateUserProfileSchema.parse(request.body);
@@ -317,7 +286,7 @@ export async function userAdminRoutes(fastify: FastifyInstance): Promise<void> {
 
       // Log d'audit
       await userAuditService.logUpdateUser(
-        authContext.registeredUser.id,
+        authContext.registeredUser!.id,
         request.params.userId,
         changes,
         undefined,
@@ -343,7 +312,7 @@ export async function userAdminRoutes(fastify: FastifyInstance): Promise<void> {
         return;
       }
 
-      fastify.log.error('Error updating user:', error);
+      fastify.log.error({ err: error }, 'Error updating user');
       reply.status(500).send({
         success: false,
         error: 'Internal server error'
@@ -358,12 +327,12 @@ export async function userAdminRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.patch<{
     Params: { userId: string };
     Body: UpdateRoleDTO;
-  }>('/admin/users/:userId/role', {
+  }>('/admin/user-management/:userId/role', {
     preHandler: [fastify.authenticate, requireUserModifyAccess]
   }, async (request, reply) => {
     try {
-      const authContext = request.authContext;
-      const adminRole = authContext.registeredUser.role as UserRoleEnum;
+      const authContext = (request as any).authContext as UnifiedAuthContext;
+      const adminRole = authContext.registeredUser!.role as UserRoleEnum;
 
       // Valider les données
       const validatedData = updateRoleSchema.parse(request.body);
@@ -397,13 +366,13 @@ export async function userAdminRoutes(fastify: FastifyInstance): Promise<void> {
       // Mettre à jour le rôle
       const updatedUser = await userManagementService.updateRole(
         request.params.userId,
-        validatedData,
-        authContext.registeredUser.id
+        validatedData as UpdateRoleDTO,
+        authContext.registeredUser!.id
       );
 
       // Log d'audit
       await userAuditService.logUpdateRole(
-        authContext.registeredUser.id,
+        authContext.registeredUser!.id,
         request.params.userId,
         oldRole,
         validatedData.role,
@@ -430,7 +399,7 @@ export async function userAdminRoutes(fastify: FastifyInstance): Promise<void> {
         return;
       }
 
-      fastify.log.error('Error updating user role:', error);
+      fastify.log.error({ err: error }, 'Error updating user role');
       reply.status(500).send({
         success: false,
         error: 'Internal server error'
@@ -445,12 +414,12 @@ export async function userAdminRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.patch<{
     Params: { userId: string };
     Body: UpdateStatusDTO;
-  }>('/admin/users/:userId/status', {
+  }>('/admin/user-management/:userId/status', {
     preHandler: [fastify.authenticate, requireUserModifyAccess]
   }, async (request, reply) => {
     try {
-      const authContext = request.authContext;
-      const adminRole = authContext.registeredUser.role as UserRoleEnum;
+      const authContext = (request as any).authContext as UnifiedAuthContext;
+      const adminRole = authContext.registeredUser!.role as UserRoleEnum;
 
       // Valider les données
       const validatedData = updateStatusSchema.parse(request.body);
@@ -480,13 +449,13 @@ export async function userAdminRoutes(fastify: FastifyInstance): Promise<void> {
       // Mettre à jour le statut
       const updatedUser = await userManagementService.updateStatus(
         request.params.userId,
-        validatedData,
-        authContext.registeredUser.id
+        validatedData as UpdateStatusDTO,
+        authContext.registeredUser!.id
       );
 
       // Log d'audit
       await userAuditService.logUpdateStatus(
-        authContext.registeredUser.id,
+        authContext.registeredUser!.id,
         request.params.userId,
         oldStatus,
         validatedData.isActive,
@@ -513,7 +482,7 @@ export async function userAdminRoutes(fastify: FastifyInstance): Promise<void> {
         return;
       }
 
-      fastify.log.error('Error updating user status:', error);
+      fastify.log.error({ err: error }, 'Error updating user status');
       reply.status(500).send({
         success: false,
         error: 'Internal server error'
@@ -528,12 +497,12 @@ export async function userAdminRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.post<{
     Params: { userId: string };
     Body: ResetPasswordDTO;
-  }>('/admin/users/:userId/reset-password', {
+  }>('/admin/user-management/:userId/reset-password', {
     preHandler: [fastify.authenticate, requireUserModifyAccess]
   }, async (request, reply) => {
     try {
-      const authContext = request.authContext;
-      const adminRole = authContext.registeredUser.role as UserRoleEnum;
+      const authContext = (request as any).authContext as UnifiedAuthContext;
+      const adminRole = authContext.registeredUser!.role as UserRoleEnum;
 
       // Valider les données
       const validatedData = resetPasswordSchema.parse(request.body);
@@ -561,13 +530,13 @@ export async function userAdminRoutes(fastify: FastifyInstance): Promise<void> {
       // Réinitialiser le mot de passe
       const updatedUser = await userManagementService.resetPassword(
         request.params.userId,
-        validatedData,
-        authContext.registeredUser.id
+        validatedData as ResetPasswordDTO,
+        authContext.registeredUser!.id
       );
 
       // Log d'audit
       await userAuditService.logResetPassword(
-        authContext.registeredUser.id,
+        authContext.registeredUser!.id,
         request.params.userId,
         request.ip,
         request.headers['user-agent']
@@ -587,7 +556,7 @@ export async function userAdminRoutes(fastify: FastifyInstance): Promise<void> {
         return;
       }
 
-      fastify.log.error('Error resetting password:', error);
+      fastify.log.error({ err: error }, 'Error resetting password');
       reply.status(500).send({
         success: false,
         error: 'Internal server error'
@@ -601,12 +570,12 @@ export async function userAdminRoutes(fastify: FastifyInstance): Promise<void> {
    */
   fastify.delete<{
     Params: { userId: string };
-  }>('/admin/users/:userId', {
+  }>('/admin/user-management/:userId', {
     preHandler: [fastify.authenticate, requireUserDeleteAccess]
   }, async (request, reply) => {
     try {
-      const authContext = request.authContext;
-      const adminRole = authContext.registeredUser.role as UserRoleEnum;
+      const authContext = (request as any).authContext as UnifiedAuthContext;
+      const adminRole = authContext.registeredUser!.role as UserRoleEnum;
 
       // Récupérer l'utilisateur cible
       const targetUser = await userManagementService.getUserById(request.params.userId);
@@ -636,7 +605,7 @@ export async function userAdminRoutes(fastify: FastifyInstance): Promise<void> {
 
       // Log d'audit
       await userAuditService.logDeleteUser(
-        authContext.registeredUser.id,
+        authContext.registeredUser!.id,
         request.params.userId,
         undefined,
         request.ip,
@@ -648,7 +617,7 @@ export async function userAdminRoutes(fastify: FastifyInstance): Promise<void> {
         message: 'User deleted successfully'
       });
     } catch (error) {
-      fastify.log.error('Error deleting user:', error);
+      fastify.log.error({ err: error }, 'Error deleting user');
       reply.status(500).send({
         success: false,
         error: 'Internal server error'

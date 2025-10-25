@@ -56,7 +56,7 @@ class Settings:
         
         # Configuration des performances
         self.translation_timeout = int(os.getenv("TRANSLATION_TIMEOUT", "20"))  # 20 secondes pour multicore AMD
-        self.max_text_length = int(os.getenv("MAX_TEXT_LENGTH", "1000"))
+        self.max_text_length = int(os.getenv("MAX_TEXT_LENGTH", "100000"))
         self.concurrent_translations = int(os.getenv("CONCURRENT_TRANSLATIONS", "4"))  # Optimisé pour 4 cores
 
         # Configuration des timeouts pour le chargement des modèles

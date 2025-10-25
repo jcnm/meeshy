@@ -106,11 +106,11 @@ export interface FullUser {
   role: string;
   isActive: boolean;
   isOnline: boolean;
-  emailVerified: boolean;
+  emailVerified: boolean | null;
   emailVerifiedAt: Date | null;
-  phoneVerified: boolean;
+  phoneVerified: boolean | null;
   phoneVerifiedAt: Date | null;
-  twoFactorEnabled: boolean;
+  twoFactorEnabled: boolean | null;
   lastSeen: Date;
   lastActiveAt: Date;
   systemLanguage: string;
@@ -125,10 +125,14 @@ export interface FullUser {
   deactivatedAt: Date | null;
   deletedAt: Date | null;
   deletedBy: string | null;
-  profileCompletionRate: number;
-  lastPasswordChange: Date;
-  failedLoginAttempts: number;
+  profileCompletionRate: number | null;
+  lastPasswordChange: Date | null;
+  failedLoginAttempts: number | null;
   lockedUntil: Date | null;
+  _count?: {
+    sentMessages?: number;
+    conversations?: number;
+  };
 }
 
 /**
@@ -146,14 +150,18 @@ export interface PublicUser {
   role: string;
   isActive: boolean;
   isOnline: boolean;
-  emailVerified: boolean;
-  phoneVerified: boolean;
+  emailVerified: boolean | null;
+  phoneVerified: boolean | null;
   lastSeen: Date;
   lastActiveAt: Date;
   createdAt: Date;
   updatedAt: Date;
   deactivatedAt: Date | null;
-  profileCompletionRate: number;
+  profileCompletionRate: number | null;
+  _count?: {
+    sentMessages?: number;
+    conversations?: number;
+  };
 }
 
 /**
@@ -163,7 +171,7 @@ export interface PublicUser {
 export interface AdminUser extends PublicUser {
   email: string;
   phoneNumber: string | null;
-  twoFactorEnabled: boolean;
+  twoFactorEnabled: boolean | null;
   systemLanguage: string;
   regionalLanguage: string;
   customDestinationLanguage: string | null;
@@ -173,10 +181,15 @@ export interface AdminUser extends PublicUser {
   useCustomDestination: boolean;
   emailVerifiedAt: Date | null;
   phoneVerifiedAt: Date | null;
-  lastPasswordChange: Date;
-  failedLoginAttempts: number;
+  lastPasswordChange: Date | null;
+  failedLoginAttempts: number | null;
   lockedUntil: Date | null;
+  deletedAt: Date | null;
   deletedBy: string | null;
+  _count?: {
+    sentMessages?: number;
+    conversations?: number;
+  };
 }
 
 /**
@@ -285,9 +298,9 @@ export interface PaginationParams {
 }
 
 /**
- * Métadonnées de pagination
+ * Métadonnées de pagination pour utilisateurs
  */
-export interface PaginationMeta {
+export interface UserPaginationMeta {
   page: number;
   pageSize: number;
   totalUsers: number;
@@ -301,7 +314,7 @@ export interface PaginationMeta {
  */
 export interface PaginatedUsersResponse<T = UserResponse> {
   users: T[];
-  pagination: PaginationMeta;
+  pagination: UserPaginationMeta;
 }
 
 /**
@@ -375,22 +388,4 @@ export interface AuditMetadata {
   reason?: string;
   requestId?: string;
   [key: string]: unknown;
-}
-
-/**
- * Contexte d'authentification (depuis middleware)
- */
-export interface AuthContext {
-  isAuthenticated: boolean;
-  registeredUser: {
-    id: string;
-    username: string;
-    email: string;
-    role: string;
-    isActive: boolean;
-  };
-  anonymousParticipant: null | {
-    id: string;
-    nickname: string;
-  };
 }

@@ -991,7 +991,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                           onClick={handleReportMessage}
                           className={cn(
                             "h-7 w-7 p-0 rounded-full transition-colors",
-                            "text-amber-500 hover:text-amber-700 hover:bg-amber-50 dark:text-amber-400 dark:hover:text-amber-300 dark:hover:bg-amber-900/30"
+                            "text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-800"
                           )}
                           aria-label={t('reportMessage')}
                         >
@@ -1135,7 +1135,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                       variant="ghost"
                       size="sm"
                       onClick={handleReportMessage}
-                      className="h-7 w-7 p-0 rounded-full transition-colors text-amber-500 hover:text-amber-700 hover:bg-amber-50"
+                      className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-800"
                       aria-label={t('reportMessage')}
                     >
                       <Flag className="h-3.5 w-3.5" />

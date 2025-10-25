@@ -39,6 +39,9 @@ export * from './reaction';
 // Export des types d'erreurs
 export * from './errors';
 
+// Export des types signalement
+export * from './report';
+
 // ===== UTILITAIRES PARTAGÉS =====
 export * from '../utils';
 

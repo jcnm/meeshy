@@ -33,10 +33,21 @@ export function StoreInitializer({ children }: StoreInitializerProps) {
         ]);
         
         // Initialize language after auth (user preferences might affect language)
+        // IMPORTANT: Ne PAS écraser la langue si elle est déjà persistée dans localStorage
+        const languageStore = useLanguageStore.getState();
+        const hasPersistedLanguage = typeof window !== 'undefined' && localStorage.getItem('meeshy-language');
+        
         if (user?.systemLanguage) {
-          useLanguageStore.getState().setInterfaceLanguage(user.systemLanguage);
-        } else {
+          // Utilisateur connecté : utiliser sa préférence backend
+          console.log('[STORE_INITIALIZER] Using user language preference:', user.systemLanguage);
+          languageStore.setInterfaceLanguage(user.systemLanguage);
+        } else if (!hasPersistedLanguage) {
+          // Aucune préférence sauvegardée : détecter la langue du navigateur
+          console.log('[STORE_INITIALIZER] No saved preference, detecting browser language');
           detectBrowserLanguage();
+        } else {
+          // Préférence déjà sauvegardée dans localStorage : ne rien faire
+          console.log('[STORE_INITIALIZER] Using persisted language preference:', languageStore.currentInterfaceLanguage);
         }
         
         if (process.env.NODE_ENV === 'development') {

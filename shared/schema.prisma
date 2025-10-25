@@ -35,6 +35,24 @@ model User {
   role                        String                   @default("USER")
   isActive                    Boolean                  @default(true)
   deactivatedAt               DateTime?
+
+  // Security & verification fields
+  emailVerified               Boolean?                 @default(false)
+  emailVerifiedAt             DateTime?
+  phoneVerified               Boolean?                 @default(false)
+  phoneVerifiedAt             DateTime?
+  twoFactorEnabled            Boolean?                 @default(false)
+  failedLoginAttempts         Int?                     @default(0)
+  lockedUntil                 DateTime?
+  lastPasswordChange          DateTime?                @default(now())
+
+  // Soft delete fields
+  deletedAt                   DateTime?
+  deletedBy                   String?                  @db.ObjectId
+
+  // Profile completion
+  profileCompletionRate       Int?                     @default(0)
+
   createdAt                   DateTime                 @default(now())
   updatedAt                   DateTime                 @updatedAt
   
@@ -506,4 +524,73 @@ model TrackingLinkClick {
   trackingLink    TrackingLink @relation(fields: [trackingLinkId], references: [id])
   user            User?        @relation("TrackingLinkClickUser", fields: [userId], references: [id])
   anonymousUser   AnonymousParticipant? @relation("TrackingLinkClickAnonymous", fields: [anonymousId], references: [id])
+}
+
+/// Journal d'audit des actions administratives
+model AdminAuditLog {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  /// ID de l'utilisateur affecté par l'action
+  userId      String    @db.ObjectId
+  /// ID de l'administrateur qui a effectué l'action
+  adminId     String    @db.ObjectId
+  /// Type d'action (VIEW_USER, CREATE_USER, UPDATE_PROFILE, etc.)
+  action      String
+  /// Type d'entité affectée (User, Community, etc.)
+  entity      String    @default("User")
+  /// ID de l'entité affectée
+  entityId    String
+  /// Changements effectués (JSON stringifié)
+  changes     String?
+  /// Métadonnées supplémentaires (JSON stringifié)
+  metadata    String?
+  /// Adresse IP de l'admin
+  ipAddress   String?
+  /// User agent du navigateur
+  userAgent   String?
+  /// Date de création du log
+  createdAt   DateTime  @default(now())
+
+  @@index([adminId])
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+/// Signalement de contenu inapproprié
+model Report {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  /// Type de contenu signalé: message, user, conversation, community
+  reportedType      String
+  /// ID de l'entité signalée
+  reportedEntityId  String    @db.ObjectId
+  /// ID de l'utilisateur qui signale (null si anonyme)
+  reporterId        String?   @db.ObjectId
+  /// Nom de l'utilisateur anonyme qui signale
+  reporterName      String?
+  /// Type de signalement: spam, inappropriate, harassment, violence, hate_speech, other
+  reportType        String
+  /// Raison détaillée du signalement
+  reason            String?
+  /// Statut: pending, under_review, resolved, rejected, dismissed
+  status            String    @default("pending")
+  /// ID du modérateur qui traite le signalement
+  moderatorId       String?   @db.ObjectId
+  /// Notes du modérateur
+  moderatorNotes    String?
+  /// Action prise: none, warning_sent, content_removed, user_suspended, user_banned
+  actionTaken       String?
+  /// Date de création du signalement
+  createdAt         DateTime  @default(now())
+  /// Date de mise à jour
+  updatedAt         DateTime  @updatedAt
+  /// Date de résolution
+  resolvedAt        DateTime?
+
+  @@index([reportedType])
+  @@index([reportedEntityId])
+  @@index([reporterId])
+  @@index([status])
+  @@index([reportType])
+  @@index([createdAt])
+  @@index([resolvedAt])
 }

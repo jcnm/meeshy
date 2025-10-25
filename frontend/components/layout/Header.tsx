@@ -61,6 +61,17 @@ export function Header({
   const currentInterfaceLanguage = useLanguageStore(state => state.currentInterfaceLanguage);
   const setInterfaceLanguage = useLanguageStore(state => state.setInterfaceLanguage);
 
+  const handleLanguageChange = (languageCode: string) => {
+    console.log('🔄 [Header] Changing language to:', languageCode);
+    setInterfaceLanguage(languageCode);
+    
+    // Recharger la page pour appliquer les changements de langue
+    setTimeout(() => {
+      console.log('🔄 [Header] Reloading page...');
+      window.location.reload();
+    }, 500);
+  };
+
   const handleAuthClick = (newMode: AuthMode) => {
     if (onAuthModeChange) {
       onAuthModeChange(newMode);
@@ -193,7 +204,7 @@ export function Header({
                           <div className="px-2 py-1.5">
                             <LanguageFlagSelector
                               value={currentInterfaceLanguage}
-                              onValueChange={setInterfaceLanguage}
+                              onValueChange={handleLanguageChange}
                               interfaceOnly={true}
                               className="w-full"
                             />
@@ -221,7 +232,7 @@ export function Header({
                 {/* Sélecteur de langue pour la page d'accueil */}
                 <LanguageFlagSelector
                   value={currentInterfaceLanguage}
-                  onValueChange={setInterfaceLanguage}
+                  onValueChange={handleLanguageChange}
                   interfaceOnly={true}
                 />
                 
@@ -246,7 +257,7 @@ export function Header({
                 {/* Sélecteur de langue pour les utilisateurs non connectés */}
                 <LanguageFlagSelector
                   value={currentInterfaceLanguage}
-                  onValueChange={setInterfaceLanguage}
+                  onValueChange={handleLanguageChange}
                   interfaceOnly={true}
                 />
                 
@@ -395,7 +406,7 @@ export function Header({
                           <div className="px-2">
                             <LanguageFlagSelector
                               value={currentInterfaceLanguage}
-                              onValueChange={setInterfaceLanguage}
+                              onValueChange={handleLanguageChange}
                               interfaceOnly={true}
                               className="w-full"
                             />
@@ -428,7 +439,7 @@ export function Header({
                     <div className="px-2">
                       <LanguageFlagSelector
                         value={currentInterfaceLanguage}
-                        onValueChange={setInterfaceLanguage}
+                        onValueChange={handleLanguageChange}
                         interfaceOnly={true}
                         className="w-full"
                       />
@@ -474,7 +485,7 @@ export function Header({
                     <div className="px-2">
                       <LanguageFlagSelector
                         value={currentInterfaceLanguage}
-                        onValueChange={setInterfaceLanguage}
+                        onValueChange={handleLanguageChange}
                         interfaceOnly={true}
                         className="w-full"
                       />

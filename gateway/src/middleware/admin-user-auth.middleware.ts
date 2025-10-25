@@ -1,15 +1,7 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { UserRoleEnum, AuthContext } from '../../shared/types';
+import { UserRoleEnum } from '../../shared/types';
 import { permissionsService } from '../services/admin/permissions.service';
-
-/**
- * Extension de FastifyRequest avec authContext typé
- */
-declare module 'fastify' {
-  interface FastifyRequest {
-    authContext: AuthContext;
-  }
-}
+import { UnifiedAuthContext } from './auth';
 
 /**
  * Middleware: Requiert accès admin à l'espace utilisateurs
@@ -18,9 +10,9 @@ export async function requireUserViewAccess(
   request: FastifyRequest,
   reply: FastifyReply
 ): Promise<void> {
-  const authContext = request.authContext;
+  const authContext = (request as any).authContext as UnifiedAuthContext;
 
-  if (!authContext?.isAuthenticated || !authContext.registeredUser) {
+  if (!authContext?.isAuthenticated || !authContext.registeredUser || authContext.isAnonymous) {
     reply.status(401).send({
       success: false,
       error: 'Authentication required'
@@ -46,9 +38,9 @@ export async function requireUserModifyAccess(
   request: FastifyRequest,
   reply: FastifyReply
 ): Promise<void> {
-  const authContext = request.authContext;
+  const authContext = (request as any).authContext as UnifiedAuthContext;
 
-  if (!authContext?.isAuthenticated || !authContext.registeredUser) {
+  if (!authContext?.isAuthenticated || !authContext.registeredUser || authContext.isAnonymous) {
     reply.status(401).send({
       success: false,
       error: 'Authentication required'
@@ -74,9 +66,9 @@ export async function requireUserDeleteAccess(
   request: FastifyRequest,
   reply: FastifyReply
 ): Promise<void> {
-  const authContext = request.authContext;
+  const authContext = (request as any).authContext as UnifiedAuthContext;
 
-  if (!authContext?.isAuthenticated || !authContext.registeredUser) {
+  if (!authContext?.isAuthenticated || !authContext.registeredUser || authContext.isAnonymous) {
     reply.status(401).send({
       success: false,
       error: 'Authentication required'

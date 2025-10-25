@@ -14,8 +14,8 @@ export const SUPPORTED_LANGUAGES = [
   { code: 'ar', name: 'العربية', flag: '🇸🇦', color: 'bg-green-600' },
 ] as const;
 
-export const MAX_MESSAGE_LENGTH = 1500;
-export const MAX_MESSAGE_LENGTH_MODERATOR = 2000; // Limite pour modérateurs et au-dessus
+export const MAX_MESSAGE_LENGTH = 2000;
+export const MAX_MESSAGE_LENGTH_MODERATOR = 4000; // Limite pour modérateurs et au-dessus
 export const TOAST_SHORT_DURATION = 2000;
 export const TOAST_LONG_DURATION = 3000;
 export const TOAST_ERROR_DURATION = 5000;
@@ -23,8 +23,8 @@ export const TYPING_CANCELATION_DELAY = 2000; // Délai avant d'annuler l'indica
 
 /**
  * Obtient la limite de caractères pour un utilisateur en fonction de son rôle
- * MODERATOR et au-dessus (ADMIN, BIGBOSS, AUDIT, ANALYST) ont 500 caractères
- * USER a 300 caractères
+ * MODERATOR et au-dessus (ADMIN, BIGBOSS, AUDIT, ANALYST) ont 4000 caractères
+ * USER a 2000 caractères
  */
 export function getMaxMessageLength(userRole?: string): number {
   const moderatorRoles = ['MODERATOR', 'MODO', 'ADMIN', 'BIGBOSS', 'AUDIT', 'ANALYST'];

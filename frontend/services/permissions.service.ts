@@ -85,54 +85,57 @@ export class PermissionsService {
    * Obtient le nom d'affichage d'un rôle
    */
   static getRoleDisplayName(role: UserRole | string): string {
-    const roleNames: Record<UserRole, string> = {
+    const roleNames: Record<string, string> = {
       BIGBOSS: 'Super Administrateur',
       ADMIN: 'Administrateur',
       CREATOR: 'Créateur',
       MODERATOR: 'Modérateur',
+      MODO: 'Modérateur',
       AUDIT: 'Auditeur',
       ANALYST: 'Analyste',
       USER: 'Utilisateur',
       MEMBER: 'Membre',
     };
 
-    return roleNames[role as UserRole] || role;
+    return roleNames[role as string] || role;
   }
 
   /**
    * Obtient la couleur associée à un rôle
    */
   static getRoleColor(role: UserRole): string {
-    const roleColors: Record<UserRole, string> = {
+    const roleColors: Record<string, string> = {
       BIGBOSS: 'bg-purple-600 text-white',
       ADMIN: 'bg-red-600 text-white',
       CREATOR: 'bg-indigo-600 text-white',
       MODERATOR: 'bg-orange-600 text-white',
+      MODO: 'bg-orange-600 text-white',
       AUDIT: 'bg-blue-600 text-white',
       ANALYST: 'bg-green-600 text-white',
       USER: 'bg-gray-600 text-white',
       MEMBER: 'bg-gray-500 text-white',
     };
 
-    return roleColors[role];
+    return roleColors[role as string];
   }
 
   /**
    * Obtient l'icône associée à un rôle
    */
   static getRoleIcon(role: UserRole): string {
-    const roleIcons: Record<UserRole, string> = {
+    const roleIcons: Record<string, string> = {
       BIGBOSS: '👑',
       ADMIN: '⚡',
       CREATOR: '🎨',
       MODERATOR: '🛡️',
+      MODO: '🛡️',
       AUDIT: '📊',
       ANALYST: '📈',
       USER: '👤',
       MEMBER: '👥',
     };
 
-    return roleIcons[role];
+    return roleIcons[role as string];
   }
 
   /**
@@ -155,18 +158,19 @@ export class PermissionsService {
    * Obtient une description des permissions d'un rôle
    */
   static getRoleDescription(role: UserRole): string {
-    const descriptions: Record<UserRole, string> = {
+    const descriptions: Record<string, string> = {
       BIGBOSS: 'Accès complet à toutes les fonctionnalités, y compris la gestion des traductions et configuration système.',
       ADMIN: 'Gestion des utilisateurs, groupes, conversations et accès aux analyses. Peut modérer le contenu.',
       CREATOR: 'Créateur de contenus et communautés avec permissions étendues de gestion.',
       MODERATOR: 'Modération du contenu, gestion des groupes et conversations. Accès limité à l\'administration.',
+      MODO: 'Modération du contenu, gestion des groupes et conversations. Accès limité à l\'administration.',
       AUDIT: 'Accès en lecture aux logs d\'audit et analyses. Peut surveiller l\'activité système.',
       ANALYST: 'Accès aux analyses et statistiques pour le reporting et l\'optimisation.',
       USER: 'Utilisateur standard avec accès aux fonctionnalités de messagerie et traduction.',
       MEMBER: 'Membre standard d\'une communauté ou conversation.',
     };
 
-    return descriptions[role];
+    return descriptions[role as string];
   }
 
   /**
