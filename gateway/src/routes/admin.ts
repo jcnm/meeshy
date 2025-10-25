@@ -184,8 +184,8 @@ export async function adminRoutes(fastify: FastifyInstance) {
         fastify.prisma.conversationShareLink.count(),
         fastify.prisma.conversationShareLink.count({ where: { isActive: true } }),
         fastify.prisma.messageTranslation.count(),
-        // Pour les signalements, on utilise les messages supprimés comme proxy
-        fastify.prisma.message.count({ where: { isDeleted: true } }),
+        // Signalements réels depuis la table Report
+        fastify.prisma.report.count(),
         // Pour les invitations, on utilise les demandes d'amitié comme proxy
         fastify.prisma.friendRequest.count({ where: { status: 'pending' } }),
         // Statistiques des langues les plus utilisées
@@ -358,6 +358,20 @@ export async function adminRoutes(fastify: FastifyInstance) {
             lastSeen: true,
             lastActiveAt: true,
             createdAt: true,
+            updatedAt: true,
+            // Champs de sécurité et vérification
+            emailVerified: true,
+            emailVerifiedAt: true,
+            phoneVerified: true,
+            phoneVerifiedAt: true,
+            twoFactorEnabled: true,
+            failedLoginAttempts: true,
+            lockedUntil: true,
+            lastPasswordChange: true,
+            deactivatedAt: true,
+            deletedAt: true,
+            deletedBy: true,
+            profileCompletionRate: true,
             _count: {
               select: {
                 sentMessages: true,

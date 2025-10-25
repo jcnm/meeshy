@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, memo, useMemo, useCallback } from 'react';
 import Link from 'next/link';
-import { 
+import {
   Smile,
   Copy,
   AlertTriangle,
@@ -17,7 +17,8 @@ import {
   Ghost,
   Edit,
   Trash2,
-  MessageCircle
+  MessageCircle,
+  Flag
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -93,6 +94,7 @@ interface BubbleMessageNormalViewProps {
   onEnterLanguageMode?: () => void;
   onEnterEditMode?: () => void;
   onEnterDeleteMode?: () => void;
+  onEnterReportMode?: () => void;
   
   // Actions originales
   onForceTranslation?: (messageId: string, targetLanguage: string, model?: 'basic' | 'medium' | 'premium') => void;
@@ -121,6 +123,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
   onEnterLanguageMode,
   onEnterEditMode,
   onEnterDeleteMode,
+  onEnterReportMode,
   onForceTranslation,
   onEditMessage,
   onDeleteMessage,
@@ -247,6 +250,12 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
     }
   };
 
+  const handleReportMessage = () => {
+    if (onEnterReportMode) {
+      onEnterReportMode();
+    }
+  };
+
   const handleReactionClick = () => {
     if (onEnterReactionMode) {
       // Nouveau système - entrer en mode réaction
@@ -340,15 +349,24 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
   const canDeleteMessage = () => {
     // Si le parent a fourni onEnterDeleteMode, c'est qu'on peut supprimer
     if (onEnterDeleteMode) return true;
-    
+
     // Sinon, fallback sur la logique originale
     if (['BIGBOSS', 'ADMIN', 'MODERATOR', 'MODO'].includes(userRole)) return true;
-    
+
     const messageAge = Date.now() - new Date(message.createdAt).getTime();
     const twelveHours = 12 * 60 * 60 * 1000;
     
     if (messageAge > twelveHours) return false;
     return canModifyMessage();
+  };
+
+  const canReportMessage = () => {
+    // On ne peut pas signaler si on est anonyme
+    if (isAnonymous) return false;
+    // On ne peut pas signaler son propre message
+    if (isOwnMessage) return false;
+    // On doit avoir onEnterReportMode pour pouvoir signaler
+    return !!onEnterReportMode;
   };
 
   // Données pour les traductions (copiées)
@@ -949,8 +967,8 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                         onClick={handleCopyMessage}
                         className={cn(
                           "h-7 w-7 p-0 rounded-full transition-colors",
-                          isOwnMessage 
-                            ? "text-white/70 hover:text-white hover:bg-white/20" 
+                          isOwnMessage
+                            ? "text-white/70 hover:text-white hover:bg-white/20"
                             : "text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
                         )}
                         aria-label={t('copyMessage')}
@@ -962,6 +980,29 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                       <p>{t('copyMessage')}</p>
                     </TooltipContent>
                   </Tooltip>
+
+                  {/* Bouton signaler */}
+                  {canReportMessage() && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleReportMessage}
+                          className={cn(
+                            "h-7 w-7 p-0 rounded-full transition-colors",
+                            "text-amber-500 hover:text-amber-700 hover:bg-amber-50 dark:text-amber-400 dark:hover:text-amber-300 dark:hover:bg-amber-900/30"
+                          )}
+                          aria-label={t('reportMessage')}
+                        >
+                          <Flag className="h-3.5 w-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{t('reportMessage')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
                 </div>
 
                 {/* Right: Options Menu - Appears on hover/touch */}
@@ -988,7 +1029,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                           <span>{t('edit')}</span>
                         </DropdownMenuItem>
                         {canDeleteMessage() && (
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             onClick={handleDeleteMessage}
                             className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/30"
                           >
@@ -1085,6 +1126,26 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                   <p>{t('copyLink') || 'Copier le lien'}</p>
                 </TooltipContent>
               </Tooltip>
+
+              {/* Bouton signaler */}
+              {canReportMessage() && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleReportMessage}
+                      className="h-7 w-7 p-0 rounded-full transition-colors text-amber-500 hover:text-amber-700 hover:bg-amber-50"
+                      aria-label={t('reportMessage')}
+                    >
+                      <Flag className="h-3.5 w-3.5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t('reportMessage')}</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
 
               {/* Bouton supprimer (seulement si permissions) */}
               {canDeleteMessage() && (
