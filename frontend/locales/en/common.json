@@ -157,7 +157,13 @@
       "messageFound": "Message found!",
       "messageNotVisible": "Message not visible. Loading...",
       "allMessagesLoaded": "All messages have been loaded",
-      "requestTranslationError": "Error requesting translation"
+      "requestTranslationError": "Error requesting translation",
+      "reportMessage": "Report this message",
+      "messageCopied": "Message copied to clipboard",
+      "copyMessage": "Copy message",
+      "addReaction": "Add reaction",
+      "reportSuccess": "Report submitted successfully",
+      "reportError": "Error submitting report"
     }
   }
 }
