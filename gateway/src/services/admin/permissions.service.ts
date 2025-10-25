@@ -20,20 +20,20 @@ export interface AdminPermissions {
 }
 
 export class PermissionsService {
-  private readonly ROLE_HIERARCHY: Record<UserRoleEnum, number> = {
-    [UserRoleEnum.BIGBOSS]: 7,
-    [UserRoleEnum.ADMIN]: 5,
-    [UserRoleEnum.MODO]: 4,
-    [UserRoleEnum.AUDIT]: 3,
-    [UserRoleEnum.ANALYST]: 2,
-    [UserRoleEnum.USER]: 1,
-    [UserRoleEnum.MODERATOR]: 4,  // Alias
-    [UserRoleEnum.CREATOR]: 5,    // Alias
-    [UserRoleEnum.MEMBER]: 1      // Alias
+  private readonly ROLE_HIERARCHY: Record<string, number> = {
+    'BIGBOSS': 7,
+    'ADMIN': 5,
+    'MODO': 4,
+    'AUDIT': 3,
+    'ANALYST': 2,
+    'USER': 1,
+    'MODERATOR': 4,  // Alias
+    'CREATOR': 5,    // Alias
+    'MEMBER': 1      // Alias
   };
 
-  private readonly PERMISSIONS_MATRIX: Record<UserRoleEnum, AdminPermissions> = {
-    [UserRoleEnum.BIGBOSS]: {
+  private readonly PERMISSIONS_MATRIX: Record<string, AdminPermissions> = {
+    'BIGBOSS': {
       canAccessAdmin: true,
       canViewUsers: true,
       canViewUserDetails: true,
@@ -51,7 +51,7 @@ export class PermissionsService {
       canManageNotifications: true,
       canManageTranslations: true
     },
-    [UserRoleEnum.ADMIN]: {
+    'ADMIN': {
       canAccessAdmin: true,
       canViewUsers: true,
       canViewUserDetails: true,
@@ -69,7 +69,7 @@ export class PermissionsService {
       canManageNotifications: true,
       canManageTranslations: false
     },
-    [UserRoleEnum.MODO]: {
+    'MODO': {
       canAccessAdmin: true,
       canViewUsers: true,
       canViewUserDetails: true,
@@ -87,7 +87,7 @@ export class PermissionsService {
       canManageNotifications: false,
       canManageTranslations: false
     },
-    [UserRoleEnum.AUDIT]: {
+    'AUDIT': {
       canAccessAdmin: true,
       canViewUsers: true,
       canViewUserDetails: true,
@@ -105,7 +105,7 @@ export class PermissionsService {
       canManageNotifications: false,
       canManageTranslations: false
     },
-    [UserRoleEnum.ANALYST]: {
+    'ANALYST': {
       canAccessAdmin: false,
       canViewUsers: false,  // ❌ Pas d'accès à la gestion users
       canViewUserDetails: false,
@@ -123,7 +123,7 @@ export class PermissionsService {
       canManageNotifications: false,
       canManageTranslations: false
     },
-    [UserRoleEnum.USER]: {
+    'USER': {
       canAccessAdmin: false,
       canViewUsers: false,
       canViewUserDetails: false,
@@ -141,61 +141,7 @@ export class PermissionsService {
       canManageNotifications: false,
       canManageTranslations: false
     },
-    // Aliases
-    [UserRoleEnum.MODERATOR]: {
-      canAccessAdmin: true,
-      canViewUsers: true,
-      canViewUserDetails: true,
-      canViewSensitiveData: false,
-      canCreateUsers: false,
-      canUpdateUsers: false,
-      canUpdateUserRoles: false,
-      canDeleteUsers: false,
-      canResetPasswords: false,
-      canViewAuditLogs: false,
-      canManageCommunities: true,
-      canManageConversations: true,
-      canViewAnalytics: false,
-      canModerateContent: true,
-      canManageNotifications: false,
-      canManageTranslations: false
-    },
-    [UserRoleEnum.CREATOR]: {
-      canAccessAdmin: true,
-      canViewUsers: true,
-      canViewUserDetails: true,
-      canViewSensitiveData: true,
-      canCreateUsers: true,
-      canUpdateUsers: true,
-      canUpdateUserRoles: true,
-      canDeleteUsers: true,
-      canResetPasswords: true,
-      canViewAuditLogs: false,
-      canManageCommunities: true,
-      canManageConversations: true,
-      canViewAnalytics: true,
-      canModerateContent: true,
-      canManageNotifications: true,
-      canManageTranslations: false
-    },
-    [UserRoleEnum.MEMBER]: {
-      canAccessAdmin: false,
-      canViewUsers: false,
-      canViewUserDetails: false,
-      canViewSensitiveData: false,
-      canCreateUsers: false,
-      canUpdateUsers: false,
-      canUpdateUserRoles: false,
-      canDeleteUsers: false,
-      canResetPasswords: false,
-      canViewAuditLogs: false,
-      canManageCommunities: false,
-      canManageConversations: false,
-      canViewAnalytics: false,
-      canModerateContent: false,
-      canManageNotifications: false,
-      canManageTranslations: false
-    }
+    // Aliases are handled by resolveRole method
   };
 
   /**
@@ -215,7 +161,7 @@ export class PermissionsService {
    */
   getPermissions(role: UserRoleEnum): AdminPermissions {
     const resolvedRole = this.resolveRole(role);
-    return this.PERMISSIONS_MATRIX[resolvedRole] || this.PERMISSIONS_MATRIX[UserRoleEnum.USER];
+    return this.PERMISSIONS_MATRIX[resolvedRole] || this.PERMISSIONS_MATRIX['USER'];
   }
 
   /**

@@ -413,7 +413,6 @@
       },
       "errors": {
         "selectConversation": "Veuillez sélectionner une conversation",
-        "searchError": "Erreur lors de la recherche",
         "enterTitle": "Veuillez entrer un titre",
         "titleRequired": "Le titre est requis",
         "creationFailed": "Échec de la création du lien",

@@ -204,7 +204,7 @@ export interface LanguageStats {
 }
 
 // Constants pour compatibilité avec les versions précédentes
-export const MAX_MESSAGE_LENGTH = 300;
+export const MAX_MESSAGE_LENGTH = 2000;
 export const TOAST_SHORT_DURATION = 2000;
 export const TOAST_LONG_DURATION = 3000;
 export const TOAST_ERROR_DURATION = 5000;

@@ -34,6 +34,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage }) => {
   const { logout } = useAuth();
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Vérifier l'accès admin avec useEffect pour éviter setState pendant render
   useEffect(() => {
@@ -126,10 +127,21 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage }) => {
   return (
     <AuthGuard>
       <div className="flex h-screen bg-gray-50">
-        {/* Sidebar */}
-        <div className={`bg-white shadow-lg transition-all duration-300 ${
-          isSidebarOpen ? 'w-64' : 'w-16'
-        } flex flex-col`}>
+        {/* Mobile Overlay */}
+        {isMobileMenuOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-40 md:hidden" 
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+        )}
+
+        {/* Sidebar - Hidden on mobile, visible on desktop */}
+        <div className={`
+          bg-white shadow-lg transition-all duration-300 flex flex-col
+          fixed md:static inset-y-0 left-0 z-50
+          ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+          ${isSidebarOpen ? 'w-64' : 'w-16'}
+        `}>
           {/* Header */}
           <div className="p-4 border-b">
             <div className="flex items-center justify-between">
@@ -142,13 +154,23 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage }) => {
                   </div>
                 )}
               </div>
+              {/* Desktop Toggle Button */}
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="p-2"
+                className="p-2 hidden md:flex"
               >
                 {isSidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+              </Button>
+              {/* Mobile Close Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-2 md:hidden"
+              >
+                <X className="w-4 h-4" />
               </Button>
             </div>
           </div>
@@ -222,29 +244,40 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage }) => {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col min-h-0">
           {/* Top Bar */}
-          <header className="bg-white shadow-sm border-b px-6 py-4">
+          <header className="bg-white shadow-sm border-b px-4 sm:px-6 py-4 flex-shrink-0">
             <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">
-                  {currentPage === '/admin' && 'Tableau de bord'}
-                  {currentPage === '/admin/users' && 'Gestion des utilisateurs'}
-                  {currentPage === '/admin/moderation' && 'Modération'}
-                  {currentPage === '/admin/audit' && 'Logs d\'audit'}
-                  {currentPage === '/admin/analytics' && 'Analyses'}
-                  {currentPage === '/admin/settings' && 'Paramètres système'}
-                </h2>
-                <p className="text-sm text-gray-500 mt-1">
-                  Administration Meeshy - Niveau d&apos;accès: {PermissionsService.getRoleDisplayName(user.role)}
-                </p>
+              {/* Mobile Menu Button + Title */}
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsMobileMenuOpen(true)}
+                  className="p-2 md:hidden"
+                >
+                  <Menu className="w-5 h-5" />
+                </Button>
+                <div>
+                  <h2 className="text-lg sm:text-2xl font-bold text-gray-900">
+                    {currentPage === '/admin' && 'Tableau de bord'}
+                    {currentPage === '/admin/users' && 'Gestion des utilisateurs'}
+                    {currentPage === '/admin/moderation' && 'Modération'}
+                    {currentPage === '/admin/audit' && 'Logs d\'audit'}
+                    {currentPage === '/admin/analytics' && 'Analyses'}
+                    {currentPage === '/admin/settings' && 'Paramètres système'}
+                  </h2>
+                  <p className="text-xs sm:text-sm text-gray-500 mt-1 hidden sm:block">
+                    Administration Meeshy - Niveau d&apos;accès: {PermissionsService.getRoleDisplayName(user.role)}
+                  </p>
+                </div>
               </div>
-              
-              <div className="flex items-center space-x-4">
-                <Badge variant="outline" className="text-green-600 border-green-200">
+
+              <div className="flex items-center space-x-2 sm:space-x-4">
+                <Badge variant="outline" className="text-green-600 border-green-200 hidden sm:flex">
                   En ligne
                 </Badge>
-                <span className="text-sm text-gray-500">
+                <span className="text-xs sm:text-sm text-gray-500 hidden md:block">
                   {new Date().toLocaleDateString('fr-FR', {
                     weekday: 'long',
                     year: 'numeric',
@@ -257,7 +290,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage }) => {
           </header>
 
           {/* Content Area */}
-          <main className="flex-1 overflow-auto p-6">
+          <main className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">
             {children}
           </main>
         </div>

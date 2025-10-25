@@ -1,0 +1,56 @@
+{
+  "affiliate": {
+    "copy": "Copier",
+    "copyLink": "Copier le lien",
+    "linkCopied": "Lien copié !",
+    "errorCopying": "Erreur lors de la copie",
+    "share": "Partager",
+    "shareApp": "Partager l'application",
+    "shareLink": "Partager le lien",
+    "shareTitle": "Partager Meeshy",
+    "shareMessage": "Rejoignez-moi sur Meeshy !",
+    "shareMessagePlaceholder": "Message personnalisé (optionnel)",
+    "errorSharing": "Erreur lors du partage",
+    "newToken": "Nouveau jeton",
+    "createNewToken": "Créer un nouveau jeton",
+    "tokenName": "Nom du jeton",
+    "tokenNamePlaceholder": "Ex: Campagne d'été 2024",
+    "enterTokenName": "Entrez un nom pour votre jeton",
+    "tokenCreated": "Jeton créé avec succès !",
+    "errorCreatingToken": "Erreur lors de la création du jeton",
+    "existingTokens": "Jetons existants",
+    "selectToken": "Sélectionner un jeton",
+    "errorLoadingTokens": "Erreur lors du chargement des jetons",
+    "uses": "utilisations",
+    "modalTitle": "Partager Meeshy",
+    "modalDescription": "Partagez Meeshy avec vos amis et collègues",
+    "shareVia": {
+      "title": "Partager via",
+      "whatsapp": "WhatsApp",
+      "telegram": "Telegram",
+      "twitter": "Twitter",
+      "facebook": "Facebook",
+      "email": "Email",
+      "sms": "SMS"
+    },
+    "actions": {
+      "create": "Créer",
+      "creating": "Création...",
+      "cancel": "Annuler",
+      "close": "Fermer"
+    },
+    "tokenStatus": {
+      "active": "Actif",
+      "inactive": "Inactif",
+      "expired": "Expiré",
+      "limitReached": "Limite atteinte"
+    },
+    "tokenDetails": {
+      "created": "Créé le",
+      "expires": "Expire le",
+      "currentUses": "Utilisations actuelles",
+      "maxUses": "Utilisations max",
+      "unlimited": "Illimité"
+    }
+  }
+}
