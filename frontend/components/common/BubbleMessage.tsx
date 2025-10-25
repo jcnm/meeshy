@@ -7,11 +7,13 @@ import type { User, BubbleTranslation } from '@shared/types';
 import type { Message } from '@shared/types/conversation';
 import { useI18n } from '@/hooks/useI18n';
 import { useMessageView } from '@/hooks/use-message-view-state';
+import { reportService } from '@/services/report.service';
 import { BubbleMessageNormalView } from './bubble-message/BubbleMessageNormalView';
 import { ReactionSelectionMessageView } from './bubble-message/ReactionSelectionMessageView';
 import { LanguageSelectionMessageView } from './bubble-message/LanguageSelectionMessageView';
 import { EditMessageView } from './bubble-message/EditMessageView';
 import { DeleteConfirmationView } from './bubble-message/DeleteConfirmationView';
+import { ReportMessageView } from './bubble-message/ReportMessageView';
 
 interface BubbleMessageProps {
   message: Message & {
@@ -90,6 +92,7 @@ const BubbleMessageInner = memo(function BubbleMessageInner({
     enterLanguageMode,
     enterEditMode,
     enterDeleteMode,
+    enterReportMode,
     exitMode
   } = useMessageView(message.id);
 
@@ -204,10 +207,16 @@ const BubbleMessageInner = memo(function BubbleMessageInner({
     toast.success(t('messageCopied'));
   }, [currentContent, t]);
 
-  const handleReportMessage = useCallback(() => {
-    // TODO: Implémenter le système de signalement
-    toast.info(t('reportSubmitted'));
-  }, [t]);
+  const handleReportMessage = useCallback(async (messageId: string, reportType: string, reason: string) => {
+    try {
+      await reportService.reportMessage(messageId, reportType, reason);
+      toast.success(t('reportSuccess'));
+      exitMode();
+    } catch (error) {
+      console.error('Erreur lors du signalement:', error);
+      toast.error(t('reportError'));
+    }
+  }, [exitMode, t]);
 
   // Emojis récents (dummy data pour l'instant)
   const recentEmojis = ['❤️', '😀', '👍', '😂', '🔥', '🎉', '💯', '✨'];
@@ -238,6 +247,7 @@ const BubbleMessageInner = memo(function BubbleMessageInner({
           onEnterLanguageMode={enterLanguageMode}
           onEnterEditMode={canEdit ? enterEditMode : undefined}
           onEnterDeleteMode={canDelete ? enterDeleteMode : undefined}
+          onEnterReportMode={!isOwnMessage && !isAnonymous ? enterReportMode : undefined}
           onEditMessage={canEdit ? onEditMessage : undefined}
           onDeleteMessage={canDelete ? onDeleteMessage : undefined}
         />
@@ -286,6 +296,16 @@ const BubbleMessageInner = memo(function BubbleMessageInner({
           message={message}
           isOwnMessage={isOwnMessage}
           onConfirm={handleConfirmDelete}
+          onCancel={exitMode}
+        />
+      )}
+
+      {currentMode === 'report' && (
+        <ReportMessageView
+          key={`report-${message.id}`}
+          message={message}
+          isOwnMessage={isOwnMessage}
+          onReport={handleReportMessage}
           onCancel={exitMode}
         />
       )}

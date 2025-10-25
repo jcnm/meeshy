@@ -157,7 +157,13 @@
       "messageFound": "Message trouvé !",
       "messageNotVisible": "Message non visible. Chargement...",
       "allMessagesLoaded": "Tous les messages ont été chargés",
-      "requestTranslationError": "Erreur lors de la demande de traduction"
+      "requestTranslationError": "Erreur lors de la demande de traduction",
+      "reportMessage": "Signaler ce message",
+      "messageCopied": "Message copié dans le presse-papiers",
+      "copyMessage": "Copier le message",
+      "addReaction": "Ajouter une réaction",
+      "reportSuccess": "Signalement envoyé avec succès",
+      "reportError": "Erreur lors du signalement"
     }
   }
 }
