@@ -24,33 +24,40 @@ export class UserAuditService {
    * Crée un log d'audit
    */
   async createAuditLog(params: CreateAuditLogParams): Promise<UserAuditLog> {
-    // Note: This assumes an AdminAuditLog table exists in Prisma
-    // If not, you'll need to add it to your schema.prisma
+    // Prepare data for database (stringify JSON fields)
+    const result = await this.prisma.adminAuditLog.create({
+      data: {
+        userId: params.userId,
+        adminId: params.adminId,
+        action: params.action,
+        entity: 'User',
+        entityId: params.entityId,
+        changes: params.changes ? JSON.stringify(params.changes) : null,
+        metadata: params.metadata ? JSON.stringify(params.metadata) : null,
+        ipAddress: params.ipAddress || null,
+        userAgent: params.userAgent || null
+      }
+    });
 
-    // For now, we'll create a simpler version that logs to console
-    // In production, this should write to a database table
-
+    // Convert database record back to UserAuditLog type
     const auditLog: UserAuditLog = {
-      id: this.generateId(),
-      userId: params.userId,
-      adminId: params.adminId,
-      action: params.action,
-      entity: 'User',
-      entityId: params.entityId,
-      changes: params.changes || null,
-      metadata: params.metadata || null,
-      ipAddress: params.ipAddress || null,
-      userAgent: params.userAgent || null,
-      createdAt: new Date()
+      id: result.id,
+      userId: result.userId,
+      adminId: result.adminId,
+      action: result.action as UserAuditAction,
+      entity: result.entity as "User",
+      entityId: result.entityId,
+      changes: result.changes ? JSON.parse(result.changes) : null,
+      metadata: result.metadata ? JSON.parse(result.metadata) : null,
+      ipAddress: result.ipAddress,
+      userAgent: result.userAgent,
+      createdAt: result.createdAt
     };
 
-    // TODO: Replace with actual database insert when AdminAuditLog table exists
-    // const result = await this.prisma.adminAuditLog.create({
-    //   data: auditLog
-    // });
-
-    // For now, log to console (development only)
-    console.log('[AUDIT LOG]', JSON.stringify(auditLog, null, 2));
+    // Also log to console in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[AUDIT LOG]', JSON.stringify(auditLog, null, 2));
+    }
 
     return auditLog;
   }
@@ -62,15 +69,25 @@ export class UserAuditService {
     userId: string,
     limit: number = 50
   ): Promise<UserAuditLog[]> {
-    // TODO: Replace with actual database query when AdminAuditLog table exists
-    // const logs = await this.prisma.adminAuditLog.findMany({
-    //   where: { entityId: userId, entity: 'User' },
-    //   orderBy: { createdAt: 'desc' },
-    //   take: limit
-    // });
+    const logs = await this.prisma.adminAuditLog.findMany({
+      where: { entityId: userId, entity: 'User' },
+      orderBy: { createdAt: 'desc' },
+      take: limit
+    });
 
-    // For now, return empty array
-    return [];
+    return logs.map(log => ({
+      id: log.id,
+      userId: log.userId,
+      adminId: log.adminId,
+      action: log.action as UserAuditAction,
+      entity: log.entity as "User",
+      entityId: log.entityId,
+      changes: log.changes ? JSON.parse(log.changes) : null,
+      metadata: log.metadata ? JSON.parse(log.metadata) : null,
+      ipAddress: log.ipAddress,
+      userAgent: log.userAgent,
+      createdAt: log.createdAt
+    }));
   }
 
   /**
@@ -80,15 +97,25 @@ export class UserAuditService {
     adminId: string,
     limit: number = 50
   ): Promise<UserAuditLog[]> {
-    // TODO: Replace with actual database query when AdminAuditLog table exists
-    // const logs = await this.prisma.adminAuditLog.findMany({
-    //   where: { adminId },
-    //   orderBy: { createdAt: 'desc' },
-    //   take: limit
-    // });
+    const logs = await this.prisma.adminAuditLog.findMany({
+      where: { adminId },
+      orderBy: { createdAt: 'desc' },
+      take: limit
+    });
 
-    // For now, return empty array
-    return [];
+    return logs.map(log => ({
+      id: log.id,
+      userId: log.userId,
+      adminId: log.adminId,
+      action: log.action as UserAuditAction,
+      entity: log.entity as "User",
+      entityId: log.entityId,
+      changes: log.changes ? JSON.parse(log.changes) : null,
+      metadata: log.metadata ? JSON.parse(log.metadata) : null,
+      ipAddress: log.ipAddress,
+      userAgent: log.userAgent,
+      createdAt: log.createdAt
+    }));
   }
 
   /**
@@ -255,10 +282,4 @@ export class UserAuditService {
     });
   }
 
-  /**
-   * Génère un ID unique pour un log d'audit
-   */
-  private generateId(): string {
-    return `audit_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-  }
 }

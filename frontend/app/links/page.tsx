@@ -625,14 +625,11 @@ export default function LinksPage() {
                               </CardTitle>
                             </div>
                           </div>
-                          <div className="flex flex-col gap-1">
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <MessageSquare className="h-4 w-4 flex-shrink-0" />
-                              <span className="font-medium">{t('conversation')}</span>
-                            </div>
+                          <CardDescription className="flex items-start gap-2 text-sm">
+                            <MessageSquare className="h-4 w-4 flex-shrink-0 mt-0.5" />
                             <a 
                               href={`/conversations/${link.conversationId}`}
-                              className="text-primary hover:underline font-semibold truncate ml-6"
+                              className="text-primary hover:underline font-medium break-all"
                               onClick={(e) => {
                                 e.preventDefault();
                                 router.push(`/conversations/${link.conversationId}`);
@@ -640,7 +637,7 @@ export default function LinksPage() {
                             >
                               {link.conversation.title}
                             </a>
-                          </div>
+                          </CardDescription>
                         </div>
                         
                         <div className="flex flex-col sm:flex-row items-end sm:items-start gap-2 flex-shrink-0">

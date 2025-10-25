@@ -137,6 +137,17 @@ exports.Prisma.UserScalarFieldEnum = {
   role: 'role',
   isActive: 'isActive',
   deactivatedAt: 'deactivatedAt',
+  emailVerified: 'emailVerified',
+  emailVerifiedAt: 'emailVerifiedAt',
+  phoneVerified: 'phoneVerified',
+  phoneVerifiedAt: 'phoneVerifiedAt',
+  twoFactorEnabled: 'twoFactorEnabled',
+  failedLoginAttempts: 'failedLoginAttempts',
+  lockedUntil: 'lockedUntil',
+  lastPasswordChange: 'lastPasswordChange',
+  deletedAt: 'deletedAt',
+  deletedBy: 'deletedBy',
+  profileCompletionRate: 'profileCompletionRate',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -453,6 +464,37 @@ exports.Prisma.TrackingLinkClickScalarFieldEnum = {
   clickedAt: 'clickedAt'
 };
 
+exports.Prisma.AdminAuditLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  adminId: 'adminId',
+  action: 'action',
+  entity: 'entity',
+  entityId: 'entityId',
+  changes: 'changes',
+  metadata: 'metadata',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.ReportScalarFieldEnum = {
+  id: 'id',
+  reportedType: 'reportedType',
+  reportedEntityId: 'reportedEntityId',
+  reporterId: 'reporterId',
+  reporterName: 'reporterName',
+  reportType: 'reportType',
+  reason: 'reason',
+  status: 'status',
+  moderatorId: 'moderatorId',
+  moderatorNotes: 'moderatorNotes',
+  actionTaken: 'actionTaken',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  resolvedAt: 'resolvedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -486,7 +528,9 @@ exports.Prisma.ModelName = {
   AffiliateToken: 'AffiliateToken',
   AffiliateRelation: 'AffiliateRelation',
   TrackingLink: 'TrackingLink',
-  TrackingLinkClick: 'TrackingLinkClick'
+  TrackingLinkClick: 'TrackingLinkClick',
+  AdminAuditLog: 'AdminAuditLog',
+  Report: 'Report'
 };
 
 /**

@@ -3,7 +3,7 @@ import {
   FullUser,
   UserFilters,
   PaginationParams,
-  PaginationMeta,
+  UserPaginationMeta,
   PaginatedUsersResponse,
   CreateUserDTO,
   UpdateUserProfileDTO,
@@ -100,7 +100,7 @@ export class UserManagementService {
 
     const totalPages = Math.ceil(totalUsers / pageSize);
 
-    const paginationMeta: PaginationMeta = {
+    const paginationMeta: UserPaginationMeta = {
       page,
       pageSize,
       totalUsers,
@@ -120,7 +120,15 @@ export class UserManagementService {
    */
   async getUserById(userId: string): Promise<FullUser | null> {
     const user = await this.prisma.user.findUnique({
-      where: { id: userId }
+      where: { id: userId },
+      include: {
+        _count: {
+          select: {
+            sentMessages: true,
+            conversations: true
+          }
+        }
+      }
     });
 
     return user as FullUser | null;
@@ -147,16 +155,10 @@ export class UserManagementService {
         systemLanguage: data.systemLanguage || 'en',
         regionalLanguage: data.regionalLanguage || 'en',
         isActive: true,
-        emailVerified: false,
-        phoneVerified: false,
-        twoFactorEnabled: false,
         autoTranslateEnabled: false,
         translateToSystemLanguage: true,
         translateToRegionalLanguage: false,
         useCustomDestination: false,
-        profileCompletionRate: 50,
-        failedLoginAttempts: 0,
-        lastPasswordChange: new Date(),
         lastSeen: new Date(),
         lastActiveAt: new Date()
       }
@@ -211,8 +213,6 @@ export class UserManagementService {
       where: { id: userId },
       data: {
         email: data.newEmail,
-        emailVerified: false,
-        emailVerifiedAt: null,
         updatedAt: new Date()
       }
     });
@@ -273,9 +273,6 @@ export class UserManagementService {
       where: { id: userId },
       data: {
         password: hashedPassword,
-        lastPasswordChange: new Date(),
-        failedLoginAttempts: 0,
-        lockedUntil: null,
         updatedAt: new Date()
       }
     });
@@ -291,8 +288,6 @@ export class UserManagementService {
       where: { id: userId },
       data: {
         isActive: false,
-        deletedAt: new Date(),
-        deletedBy: deletedById,
         updatedAt: new Date()
       }
     });
@@ -308,8 +303,6 @@ export class UserManagementService {
       where: { id: userId },
       data: {
         isActive: true,
-        deletedAt: null,
-        deletedBy: null,
         updatedAt: new Date()
       }
     });

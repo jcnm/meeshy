@@ -1,0 +1,45 @@
+{
+  "notifications": {
+    "pageTitle": "Notifications",
+    "markAllRead": "Tout marquer comme lu",
+    "unread": "Non lues",
+    "totalNotifications": "notifications au total",
+    "preferences": "Préférences",
+    "quickActions": "Actions rapides",
+    "service": "Service",
+    "systemStatus": "État du système",
+    "empty": {
+      "title": "Aucune notification",
+      "description": "Vous n'avez aucune nouvelle notification pour le moment"
+    },
+    "types": {
+      "message": "Message",
+      "mention": "Mention",
+      "invitation": "Invitation",
+      "system": "Système"
+    },
+    "unreadCount": {
+      "empty": "Aucune notification non lue",
+      "allRead": "Toutes les notifications ont été lues"
+    },
+    "timeAgo": {
+      "now": "À l'instant",
+      "minute": "minute",
+      "hour": "heure",
+      "day": "jour"
+    },
+    "actions": {
+      "markAsRead": "Marquer comme lu",
+      "markAsUnread": "Marquer comme non lu",
+      "delete": "Supprimer",
+      "viewConversation": "Voir la conversation"
+    },
+    "settings": {
+      "title": "Paramètres de notification",
+      "emailNotifications": "Notifications par email",
+      "pushNotifications": "Notifications push",
+      "desktopNotifications": "Notifications de bureau",
+      "soundEnabled": "Son activé"
+    }
+  }
+}

@@ -123,6 +123,16 @@ export type TrackingLink = $Result.DefaultSelection<Prisma.$TrackingLinkPayload>
  * Clic sur un lien de tracking
  */
 export type TrackingLinkClick = $Result.DefaultSelection<Prisma.$TrackingLinkClickPayload>
+/**
+ * Model AdminAuditLog
+ * Journal d'audit des actions administratives
+ */
+export type AdminAuditLog = $Result.DefaultSelection<Prisma.$AdminAuditLogPayload>
+/**
+ * Model Report
+ * Signalement de contenu inapproprié
+ */
+export type Report = $Result.DefaultSelection<Prisma.$ReportPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -435,6 +445,26 @@ export class PrismaClient<
     * ```
     */
   get trackingLinkClick(): Prisma.TrackingLinkClickDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.adminAuditLog`: Exposes CRUD operations for the **AdminAuditLog** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AdminAuditLogs
+    * const adminAuditLogs = await prisma.adminAuditLog.findMany()
+    * ```
+    */
+  get adminAuditLog(): Prisma.AdminAuditLogDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.report`: Exposes CRUD operations for the **Report** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Reports
+    * const reports = await prisma.report.findMany()
+    * ```
+    */
+  get report(): Prisma.ReportDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -896,7 +926,9 @@ export namespace Prisma {
     AffiliateToken: 'AffiliateToken',
     AffiliateRelation: 'AffiliateRelation',
     TrackingLink: 'TrackingLink',
-    TrackingLinkClick: 'TrackingLinkClick'
+    TrackingLinkClick: 'TrackingLinkClick',
+    AdminAuditLog: 'AdminAuditLog',
+    Report: 'Report'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -915,7 +947,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "conversation" | "conversationMember" | "conversationShareLink" | "anonymousParticipant" | "message" | "messageTranslation" | "messageAttachment" | "messageStatus" | "reaction" | "friendRequest" | "typingIndicator" | "notification" | "community" | "communityMember" | "userStats" | "userPreference" | "conversationPreference" | "affiliateToken" | "affiliateRelation" | "trackingLink" | "trackingLinkClick"
+      modelProps: "user" | "conversation" | "conversationMember" | "conversationShareLink" | "anonymousParticipant" | "message" | "messageTranslation" | "messageAttachment" | "messageStatus" | "reaction" | "friendRequest" | "typingIndicator" | "notification" | "community" | "communityMember" | "userStats" | "userPreference" | "conversationPreference" | "affiliateToken" | "affiliateRelation" | "trackingLink" | "trackingLinkClick" | "adminAuditLog" | "report"
       txIsolationLevel: never
     }
     model: {
@@ -2547,6 +2579,154 @@ export namespace Prisma {
           }
         }
       }
+      AdminAuditLog: {
+        payload: Prisma.$AdminAuditLogPayload<ExtArgs>
+        fields: Prisma.AdminAuditLogFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AdminAuditLogFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdminAuditLogPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AdminAuditLogFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdminAuditLogPayload>
+          }
+          findFirst: {
+            args: Prisma.AdminAuditLogFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdminAuditLogPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AdminAuditLogFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdminAuditLogPayload>
+          }
+          findMany: {
+            args: Prisma.AdminAuditLogFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdminAuditLogPayload>[]
+          }
+          create: {
+            args: Prisma.AdminAuditLogCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdminAuditLogPayload>
+          }
+          createMany: {
+            args: Prisma.AdminAuditLogCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.AdminAuditLogDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdminAuditLogPayload>
+          }
+          update: {
+            args: Prisma.AdminAuditLogUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdminAuditLogPayload>
+          }
+          deleteMany: {
+            args: Prisma.AdminAuditLogDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AdminAuditLogUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.AdminAuditLogUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdminAuditLogPayload>
+          }
+          aggregate: {
+            args: Prisma.AdminAuditLogAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAdminAuditLog>
+          }
+          groupBy: {
+            args: Prisma.AdminAuditLogGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AdminAuditLogGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.AdminAuditLogFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.AdminAuditLogAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.AdminAuditLogCountArgs<ExtArgs>
+            result: $Utils.Optional<AdminAuditLogCountAggregateOutputType> | number
+          }
+        }
+      }
+      Report: {
+        payload: Prisma.$ReportPayload<ExtArgs>
+        fields: Prisma.ReportFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ReportFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ReportFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload>
+          }
+          findFirst: {
+            args: Prisma.ReportFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ReportFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload>
+          }
+          findMany: {
+            args: Prisma.ReportFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload>[]
+          }
+          create: {
+            args: Prisma.ReportCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload>
+          }
+          createMany: {
+            args: Prisma.ReportCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.ReportDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload>
+          }
+          update: {
+            args: Prisma.ReportUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload>
+          }
+          deleteMany: {
+            args: Prisma.ReportDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ReportUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ReportUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload>
+          }
+          aggregate: {
+            args: Prisma.ReportAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateReport>
+          }
+          groupBy: {
+            args: Prisma.ReportGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ReportGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.ReportFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.ReportAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.ReportCountArgs<ExtArgs>
+            result: $Utils.Optional<ReportCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2648,6 +2828,8 @@ export namespace Prisma {
     affiliateRelation?: AffiliateRelationOmit
     trackingLink?: TrackingLinkOmit
     trackingLinkClick?: TrackingLinkClickOmit
+    adminAuditLog?: AdminAuditLogOmit
+    report?: ReportOmit
   }
 
   /* Types for Logging */
@@ -3270,8 +3452,20 @@ export namespace Prisma {
 
   export type AggregateUser = {
     _count: UserCountAggregateOutputType | null
+    _avg: UserAvgAggregateOutputType | null
+    _sum: UserSumAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
+  }
+
+  export type UserAvgAggregateOutputType = {
+    failedLoginAttempts: number | null
+    profileCompletionRate: number | null
+  }
+
+  export type UserSumAggregateOutputType = {
+    failedLoginAttempts: number | null
+    profileCompletionRate: number | null
   }
 
   export type UserMinAggregateOutputType = {
@@ -3298,6 +3492,17 @@ export namespace Prisma {
     role: string | null
     isActive: boolean | null
     deactivatedAt: Date | null
+    emailVerified: boolean | null
+    emailVerifiedAt: Date | null
+    phoneVerified: boolean | null
+    phoneVerifiedAt: Date | null
+    twoFactorEnabled: boolean | null
+    failedLoginAttempts: number | null
+    lockedUntil: Date | null
+    lastPasswordChange: Date | null
+    deletedAt: Date | null
+    deletedBy: string | null
+    profileCompletionRate: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -3326,6 +3531,17 @@ export namespace Prisma {
     role: string | null
     isActive: boolean | null
     deactivatedAt: Date | null
+    emailVerified: boolean | null
+    emailVerifiedAt: Date | null
+    phoneVerified: boolean | null
+    phoneVerifiedAt: Date | null
+    twoFactorEnabled: boolean | null
+    failedLoginAttempts: number | null
+    lockedUntil: Date | null
+    lastPasswordChange: Date | null
+    deletedAt: Date | null
+    deletedBy: string | null
+    profileCompletionRate: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -3354,11 +3570,32 @@ export namespace Prisma {
     role: number
     isActive: number
     deactivatedAt: number
+    emailVerified: number
+    emailVerifiedAt: number
+    phoneVerified: number
+    phoneVerifiedAt: number
+    twoFactorEnabled: number
+    failedLoginAttempts: number
+    lockedUntil: number
+    lastPasswordChange: number
+    deletedAt: number
+    deletedBy: number
+    profileCompletionRate: number
     createdAt: number
     updatedAt: number
     _all: number
   }
 
+
+  export type UserAvgAggregateInputType = {
+    failedLoginAttempts?: true
+    profileCompletionRate?: true
+  }
+
+  export type UserSumAggregateInputType = {
+    failedLoginAttempts?: true
+    profileCompletionRate?: true
+  }
 
   export type UserMinAggregateInputType = {
     id?: true
@@ -3384,6 +3621,17 @@ export namespace Prisma {
     role?: true
     isActive?: true
     deactivatedAt?: true
+    emailVerified?: true
+    emailVerifiedAt?: true
+    phoneVerified?: true
+    phoneVerifiedAt?: true
+    twoFactorEnabled?: true
+    failedLoginAttempts?: true
+    lockedUntil?: true
+    lastPasswordChange?: true
+    deletedAt?: true
+    deletedBy?: true
+    profileCompletionRate?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -3412,6 +3660,17 @@ export namespace Prisma {
     role?: true
     isActive?: true
     deactivatedAt?: true
+    emailVerified?: true
+    emailVerifiedAt?: true
+    phoneVerified?: true
+    phoneVerifiedAt?: true
+    twoFactorEnabled?: true
+    failedLoginAttempts?: true
+    lockedUntil?: true
+    lastPasswordChange?: true
+    deletedAt?: true
+    deletedBy?: true
+    profileCompletionRate?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -3440,6 +3699,17 @@ export namespace Prisma {
     role?: true
     isActive?: true
     deactivatedAt?: true
+    emailVerified?: true
+    emailVerifiedAt?: true
+    phoneVerified?: true
+    phoneVerifiedAt?: true
+    twoFactorEnabled?: true
+    failedLoginAttempts?: true
+    lockedUntil?: true
+    lastPasswordChange?: true
+    deletedAt?: true
+    deletedBy?: true
+    profileCompletionRate?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -3483,6 +3753,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: UserAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: UserSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: UserMinAggregateInputType
@@ -3513,6 +3795,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: UserCountAggregateInputType | true
+    _avg?: UserAvgAggregateInputType
+    _sum?: UserSumAggregateInputType
     _min?: UserMinAggregateInputType
     _max?: UserMaxAggregateInputType
   }
@@ -3541,9 +3825,22 @@ export namespace Prisma {
     role: string
     isActive: boolean
     deactivatedAt: Date | null
+    emailVerified: boolean | null
+    emailVerifiedAt: Date | null
+    phoneVerified: boolean | null
+    phoneVerifiedAt: Date | null
+    twoFactorEnabled: boolean | null
+    failedLoginAttempts: number | null
+    lockedUntil: Date | null
+    lastPasswordChange: Date | null
+    deletedAt: Date | null
+    deletedBy: string | null
+    profileCompletionRate: number | null
     createdAt: Date
     updatedAt: Date
     _count: UserCountAggregateOutputType | null
+    _avg: UserAvgAggregateOutputType | null
+    _sum: UserSumAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
   }
@@ -3586,6 +3883,17 @@ export namespace Prisma {
     role?: boolean
     isActive?: boolean
     deactivatedAt?: boolean
+    emailVerified?: boolean
+    emailVerifiedAt?: boolean
+    phoneVerified?: boolean
+    phoneVerifiedAt?: boolean
+    twoFactorEnabled?: boolean
+    failedLoginAttempts?: boolean
+    lockedUntil?: boolean
+    lastPasswordChange?: boolean
+    deletedAt?: boolean
+    deletedBy?: boolean
+    profileCompletionRate?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     createdCommunities?: boolean | User$createdCommunitiesArgs<ExtArgs>
@@ -3636,11 +3944,22 @@ export namespace Prisma {
     role?: boolean
     isActive?: boolean
     deactivatedAt?: boolean
+    emailVerified?: boolean
+    emailVerifiedAt?: boolean
+    phoneVerified?: boolean
+    phoneVerifiedAt?: boolean
+    twoFactorEnabled?: boolean
+    failedLoginAttempts?: boolean
+    lockedUntil?: boolean
+    lastPasswordChange?: boolean
+    deletedAt?: boolean
+    deletedBy?: boolean
+    profileCompletionRate?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "firstName" | "lastName" | "bio" | "email" | "phoneNumber" | "password" | "displayName" | "avatar" | "isOnline" | "lastSeen" | "lastActiveAt" | "systemLanguage" | "regionalLanguage" | "customDestinationLanguage" | "autoTranslateEnabled" | "translateToSystemLanguage" | "translateToRegionalLanguage" | "useCustomDestination" | "role" | "isActive" | "deactivatedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "firstName" | "lastName" | "bio" | "email" | "phoneNumber" | "password" | "displayName" | "avatar" | "isOnline" | "lastSeen" | "lastActiveAt" | "systemLanguage" | "regionalLanguage" | "customDestinationLanguage" | "autoTranslateEnabled" | "translateToSystemLanguage" | "translateToRegionalLanguage" | "useCustomDestination" | "role" | "isActive" | "deactivatedAt" | "emailVerified" | "emailVerifiedAt" | "phoneVerified" | "phoneVerifiedAt" | "twoFactorEnabled" | "failedLoginAttempts" | "lockedUntil" | "lastPasswordChange" | "deletedAt" | "deletedBy" | "profileCompletionRate" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     createdCommunities?: boolean | User$createdCommunitiesArgs<ExtArgs>
     communityMemberships?: boolean | User$communityMembershipsArgs<ExtArgs>
@@ -3714,6 +4033,17 @@ export namespace Prisma {
       role: string
       isActive: boolean
       deactivatedAt: Date | null
+      emailVerified: boolean | null
+      emailVerifiedAt: Date | null
+      phoneVerified: boolean | null
+      phoneVerifiedAt: Date | null
+      twoFactorEnabled: boolean | null
+      failedLoginAttempts: number | null
+      lockedUntil: Date | null
+      lastPasswordChange: Date | null
+      deletedAt: Date | null
+      deletedBy: string | null
+      profileCompletionRate: number | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["user"]>
@@ -4150,6 +4480,17 @@ export namespace Prisma {
     readonly role: FieldRef<"User", 'String'>
     readonly isActive: FieldRef<"User", 'Boolean'>
     readonly deactivatedAt: FieldRef<"User", 'DateTime'>
+    readonly emailVerified: FieldRef<"User", 'Boolean'>
+    readonly emailVerifiedAt: FieldRef<"User", 'DateTime'>
+    readonly phoneVerified: FieldRef<"User", 'Boolean'>
+    readonly phoneVerifiedAt: FieldRef<"User", 'DateTime'>
+    readonly twoFactorEnabled: FieldRef<"User", 'Boolean'>
+    readonly failedLoginAttempts: FieldRef<"User", 'Int'>
+    readonly lockedUntil: FieldRef<"User", 'DateTime'>
+    readonly lastPasswordChange: FieldRef<"User", 'DateTime'>
+    readonly deletedAt: FieldRef<"User", 'DateTime'>
+    readonly deletedBy: FieldRef<"User", 'String'>
+    readonly profileCompletionRate: FieldRef<"User", 'Int'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
   }
@@ -28291,6 +28632,2104 @@ export namespace Prisma {
 
 
   /**
+   * Model AdminAuditLog
+   */
+
+  export type AggregateAdminAuditLog = {
+    _count: AdminAuditLogCountAggregateOutputType | null
+    _min: AdminAuditLogMinAggregateOutputType | null
+    _max: AdminAuditLogMaxAggregateOutputType | null
+  }
+
+  export type AdminAuditLogMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    adminId: string | null
+    action: string | null
+    entity: string | null
+    entityId: string | null
+    changes: string | null
+    metadata: string | null
+    ipAddress: string | null
+    userAgent: string | null
+    createdAt: Date | null
+  }
+
+  export type AdminAuditLogMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    adminId: string | null
+    action: string | null
+    entity: string | null
+    entityId: string | null
+    changes: string | null
+    metadata: string | null
+    ipAddress: string | null
+    userAgent: string | null
+    createdAt: Date | null
+  }
+
+  export type AdminAuditLogCountAggregateOutputType = {
+    id: number
+    userId: number
+    adminId: number
+    action: number
+    entity: number
+    entityId: number
+    changes: number
+    metadata: number
+    ipAddress: number
+    userAgent: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type AdminAuditLogMinAggregateInputType = {
+    id?: true
+    userId?: true
+    adminId?: true
+    action?: true
+    entity?: true
+    entityId?: true
+    changes?: true
+    metadata?: true
+    ipAddress?: true
+    userAgent?: true
+    createdAt?: true
+  }
+
+  export type AdminAuditLogMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    adminId?: true
+    action?: true
+    entity?: true
+    entityId?: true
+    changes?: true
+    metadata?: true
+    ipAddress?: true
+    userAgent?: true
+    createdAt?: true
+  }
+
+  export type AdminAuditLogCountAggregateInputType = {
+    id?: true
+    userId?: true
+    adminId?: true
+    action?: true
+    entity?: true
+    entityId?: true
+    changes?: true
+    metadata?: true
+    ipAddress?: true
+    userAgent?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type AdminAuditLogAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AdminAuditLog to aggregate.
+     */
+    where?: AdminAuditLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AdminAuditLogs to fetch.
+     */
+    orderBy?: AdminAuditLogOrderByWithRelationInput | AdminAuditLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AdminAuditLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AdminAuditLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AdminAuditLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AdminAuditLogs
+    **/
+    _count?: true | AdminAuditLogCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AdminAuditLogMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AdminAuditLogMaxAggregateInputType
+  }
+
+  export type GetAdminAuditLogAggregateType<T extends AdminAuditLogAggregateArgs> = {
+        [P in keyof T & keyof AggregateAdminAuditLog]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAdminAuditLog[P]>
+      : GetScalarType<T[P], AggregateAdminAuditLog[P]>
+  }
+
+
+
+
+  export type AdminAuditLogGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AdminAuditLogWhereInput
+    orderBy?: AdminAuditLogOrderByWithAggregationInput | AdminAuditLogOrderByWithAggregationInput[]
+    by: AdminAuditLogScalarFieldEnum[] | AdminAuditLogScalarFieldEnum
+    having?: AdminAuditLogScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AdminAuditLogCountAggregateInputType | true
+    _min?: AdminAuditLogMinAggregateInputType
+    _max?: AdminAuditLogMaxAggregateInputType
+  }
+
+  export type AdminAuditLogGroupByOutputType = {
+    id: string
+    userId: string
+    adminId: string
+    action: string
+    entity: string
+    entityId: string
+    changes: string | null
+    metadata: string | null
+    ipAddress: string | null
+    userAgent: string | null
+    createdAt: Date
+    _count: AdminAuditLogCountAggregateOutputType | null
+    _min: AdminAuditLogMinAggregateOutputType | null
+    _max: AdminAuditLogMaxAggregateOutputType | null
+  }
+
+  type GetAdminAuditLogGroupByPayload<T extends AdminAuditLogGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AdminAuditLogGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AdminAuditLogGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AdminAuditLogGroupByOutputType[P]>
+            : GetScalarType<T[P], AdminAuditLogGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AdminAuditLogSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    adminId?: boolean
+    action?: boolean
+    entity?: boolean
+    entityId?: boolean
+    changes?: boolean
+    metadata?: boolean
+    ipAddress?: boolean
+    userAgent?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["adminAuditLog"]>
+
+
+
+  export type AdminAuditLogSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    adminId?: boolean
+    action?: boolean
+    entity?: boolean
+    entityId?: boolean
+    changes?: boolean
+    metadata?: boolean
+    ipAddress?: boolean
+    userAgent?: boolean
+    createdAt?: boolean
+  }
+
+  export type AdminAuditLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "adminId" | "action" | "entity" | "entityId" | "changes" | "metadata" | "ipAddress" | "userAgent" | "createdAt", ExtArgs["result"]["adminAuditLog"]>
+
+  export type $AdminAuditLogPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AdminAuditLog"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      /**
+       * ID de l'utilisateur affecté par l'action
+       */
+      userId: string
+      /**
+       * ID de l'administrateur qui a effectué l'action
+       */
+      adminId: string
+      /**
+       * Type d'action (VIEW_USER, CREATE_USER, UPDATE_PROFILE, etc.)
+       */
+      action: string
+      /**
+       * Type d'entité affectée (User, Community, etc.)
+       */
+      entity: string
+      /**
+       * ID de l'entité affectée
+       */
+      entityId: string
+      /**
+       * Changements effectués (JSON stringifié)
+       */
+      changes: string | null
+      /**
+       * Métadonnées supplémentaires (JSON stringifié)
+       */
+      metadata: string | null
+      /**
+       * Adresse IP de l'admin
+       */
+      ipAddress: string | null
+      /**
+       * User agent du navigateur
+       */
+      userAgent: string | null
+      /**
+       * Date de création du log
+       */
+      createdAt: Date
+    }, ExtArgs["result"]["adminAuditLog"]>
+    composites: {}
+  }
+
+  type AdminAuditLogGetPayload<S extends boolean | null | undefined | AdminAuditLogDefaultArgs> = $Result.GetResult<Prisma.$AdminAuditLogPayload, S>
+
+  type AdminAuditLogCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AdminAuditLogFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AdminAuditLogCountAggregateInputType | true
+    }
+
+  export interface AdminAuditLogDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AdminAuditLog'], meta: { name: 'AdminAuditLog' } }
+    /**
+     * Find zero or one AdminAuditLog that matches the filter.
+     * @param {AdminAuditLogFindUniqueArgs} args - Arguments to find a AdminAuditLog
+     * @example
+     * // Get one AdminAuditLog
+     * const adminAuditLog = await prisma.adminAuditLog.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AdminAuditLogFindUniqueArgs>(args: SelectSubset<T, AdminAuditLogFindUniqueArgs<ExtArgs>>): Prisma__AdminAuditLogClient<$Result.GetResult<Prisma.$AdminAuditLogPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AdminAuditLog that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AdminAuditLogFindUniqueOrThrowArgs} args - Arguments to find a AdminAuditLog
+     * @example
+     * // Get one AdminAuditLog
+     * const adminAuditLog = await prisma.adminAuditLog.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AdminAuditLogFindUniqueOrThrowArgs>(args: SelectSubset<T, AdminAuditLogFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AdminAuditLogClient<$Result.GetResult<Prisma.$AdminAuditLogPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AdminAuditLog that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminAuditLogFindFirstArgs} args - Arguments to find a AdminAuditLog
+     * @example
+     * // Get one AdminAuditLog
+     * const adminAuditLog = await prisma.adminAuditLog.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AdminAuditLogFindFirstArgs>(args?: SelectSubset<T, AdminAuditLogFindFirstArgs<ExtArgs>>): Prisma__AdminAuditLogClient<$Result.GetResult<Prisma.$AdminAuditLogPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AdminAuditLog that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminAuditLogFindFirstOrThrowArgs} args - Arguments to find a AdminAuditLog
+     * @example
+     * // Get one AdminAuditLog
+     * const adminAuditLog = await prisma.adminAuditLog.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AdminAuditLogFindFirstOrThrowArgs>(args?: SelectSubset<T, AdminAuditLogFindFirstOrThrowArgs<ExtArgs>>): Prisma__AdminAuditLogClient<$Result.GetResult<Prisma.$AdminAuditLogPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AdminAuditLogs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminAuditLogFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AdminAuditLogs
+     * const adminAuditLogs = await prisma.adminAuditLog.findMany()
+     * 
+     * // Get first 10 AdminAuditLogs
+     * const adminAuditLogs = await prisma.adminAuditLog.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const adminAuditLogWithIdOnly = await prisma.adminAuditLog.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AdminAuditLogFindManyArgs>(args?: SelectSubset<T, AdminAuditLogFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AdminAuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AdminAuditLog.
+     * @param {AdminAuditLogCreateArgs} args - Arguments to create a AdminAuditLog.
+     * @example
+     * // Create one AdminAuditLog
+     * const AdminAuditLog = await prisma.adminAuditLog.create({
+     *   data: {
+     *     // ... data to create a AdminAuditLog
+     *   }
+     * })
+     * 
+     */
+    create<T extends AdminAuditLogCreateArgs>(args: SelectSubset<T, AdminAuditLogCreateArgs<ExtArgs>>): Prisma__AdminAuditLogClient<$Result.GetResult<Prisma.$AdminAuditLogPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AdminAuditLogs.
+     * @param {AdminAuditLogCreateManyArgs} args - Arguments to create many AdminAuditLogs.
+     * @example
+     * // Create many AdminAuditLogs
+     * const adminAuditLog = await prisma.adminAuditLog.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AdminAuditLogCreateManyArgs>(args?: SelectSubset<T, AdminAuditLogCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a AdminAuditLog.
+     * @param {AdminAuditLogDeleteArgs} args - Arguments to delete one AdminAuditLog.
+     * @example
+     * // Delete one AdminAuditLog
+     * const AdminAuditLog = await prisma.adminAuditLog.delete({
+     *   where: {
+     *     // ... filter to delete one AdminAuditLog
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AdminAuditLogDeleteArgs>(args: SelectSubset<T, AdminAuditLogDeleteArgs<ExtArgs>>): Prisma__AdminAuditLogClient<$Result.GetResult<Prisma.$AdminAuditLogPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AdminAuditLog.
+     * @param {AdminAuditLogUpdateArgs} args - Arguments to update one AdminAuditLog.
+     * @example
+     * // Update one AdminAuditLog
+     * const adminAuditLog = await prisma.adminAuditLog.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AdminAuditLogUpdateArgs>(args: SelectSubset<T, AdminAuditLogUpdateArgs<ExtArgs>>): Prisma__AdminAuditLogClient<$Result.GetResult<Prisma.$AdminAuditLogPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AdminAuditLogs.
+     * @param {AdminAuditLogDeleteManyArgs} args - Arguments to filter AdminAuditLogs to delete.
+     * @example
+     * // Delete a few AdminAuditLogs
+     * const { count } = await prisma.adminAuditLog.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AdminAuditLogDeleteManyArgs>(args?: SelectSubset<T, AdminAuditLogDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AdminAuditLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminAuditLogUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AdminAuditLogs
+     * const adminAuditLog = await prisma.adminAuditLog.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AdminAuditLogUpdateManyArgs>(args: SelectSubset<T, AdminAuditLogUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one AdminAuditLog.
+     * @param {AdminAuditLogUpsertArgs} args - Arguments to update or create a AdminAuditLog.
+     * @example
+     * // Update or create a AdminAuditLog
+     * const adminAuditLog = await prisma.adminAuditLog.upsert({
+     *   create: {
+     *     // ... data to create a AdminAuditLog
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AdminAuditLog we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AdminAuditLogUpsertArgs>(args: SelectSubset<T, AdminAuditLogUpsertArgs<ExtArgs>>): Prisma__AdminAuditLogClient<$Result.GetResult<Prisma.$AdminAuditLogPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AdminAuditLogs that matches the filter.
+     * @param {AdminAuditLogFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const adminAuditLog = await prisma.adminAuditLog.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: AdminAuditLogFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a AdminAuditLog.
+     * @param {AdminAuditLogAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const adminAuditLog = await prisma.adminAuditLog.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: AdminAuditLogAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of AdminAuditLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminAuditLogCountArgs} args - Arguments to filter AdminAuditLogs to count.
+     * @example
+     * // Count the number of AdminAuditLogs
+     * const count = await prisma.adminAuditLog.count({
+     *   where: {
+     *     // ... the filter for the AdminAuditLogs we want to count
+     *   }
+     * })
+    **/
+    count<T extends AdminAuditLogCountArgs>(
+      args?: Subset<T, AdminAuditLogCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AdminAuditLogCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AdminAuditLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminAuditLogAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AdminAuditLogAggregateArgs>(args: Subset<T, AdminAuditLogAggregateArgs>): Prisma.PrismaPromise<GetAdminAuditLogAggregateType<T>>
+
+    /**
+     * Group by AdminAuditLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminAuditLogGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AdminAuditLogGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AdminAuditLogGroupByArgs['orderBy'] }
+        : { orderBy?: AdminAuditLogGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AdminAuditLogGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAdminAuditLogGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AdminAuditLog model
+   */
+  readonly fields: AdminAuditLogFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AdminAuditLog.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AdminAuditLogClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AdminAuditLog model
+   */
+  interface AdminAuditLogFieldRefs {
+    readonly id: FieldRef<"AdminAuditLog", 'String'>
+    readonly userId: FieldRef<"AdminAuditLog", 'String'>
+    readonly adminId: FieldRef<"AdminAuditLog", 'String'>
+    readonly action: FieldRef<"AdminAuditLog", 'String'>
+    readonly entity: FieldRef<"AdminAuditLog", 'String'>
+    readonly entityId: FieldRef<"AdminAuditLog", 'String'>
+    readonly changes: FieldRef<"AdminAuditLog", 'String'>
+    readonly metadata: FieldRef<"AdminAuditLog", 'String'>
+    readonly ipAddress: FieldRef<"AdminAuditLog", 'String'>
+    readonly userAgent: FieldRef<"AdminAuditLog", 'String'>
+    readonly createdAt: FieldRef<"AdminAuditLog", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AdminAuditLog findUnique
+   */
+  export type AdminAuditLogFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminAuditLog
+     */
+    select?: AdminAuditLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdminAuditLog
+     */
+    omit?: AdminAuditLogOmit<ExtArgs> | null
+    /**
+     * Filter, which AdminAuditLog to fetch.
+     */
+    where: AdminAuditLogWhereUniqueInput
+  }
+
+  /**
+   * AdminAuditLog findUniqueOrThrow
+   */
+  export type AdminAuditLogFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminAuditLog
+     */
+    select?: AdminAuditLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdminAuditLog
+     */
+    omit?: AdminAuditLogOmit<ExtArgs> | null
+    /**
+     * Filter, which AdminAuditLog to fetch.
+     */
+    where: AdminAuditLogWhereUniqueInput
+  }
+
+  /**
+   * AdminAuditLog findFirst
+   */
+  export type AdminAuditLogFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminAuditLog
+     */
+    select?: AdminAuditLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdminAuditLog
+     */
+    omit?: AdminAuditLogOmit<ExtArgs> | null
+    /**
+     * Filter, which AdminAuditLog to fetch.
+     */
+    where?: AdminAuditLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AdminAuditLogs to fetch.
+     */
+    orderBy?: AdminAuditLogOrderByWithRelationInput | AdminAuditLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AdminAuditLogs.
+     */
+    cursor?: AdminAuditLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AdminAuditLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AdminAuditLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AdminAuditLogs.
+     */
+    distinct?: AdminAuditLogScalarFieldEnum | AdminAuditLogScalarFieldEnum[]
+  }
+
+  /**
+   * AdminAuditLog findFirstOrThrow
+   */
+  export type AdminAuditLogFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminAuditLog
+     */
+    select?: AdminAuditLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdminAuditLog
+     */
+    omit?: AdminAuditLogOmit<ExtArgs> | null
+    /**
+     * Filter, which AdminAuditLog to fetch.
+     */
+    where?: AdminAuditLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AdminAuditLogs to fetch.
+     */
+    orderBy?: AdminAuditLogOrderByWithRelationInput | AdminAuditLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AdminAuditLogs.
+     */
+    cursor?: AdminAuditLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AdminAuditLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AdminAuditLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AdminAuditLogs.
+     */
+    distinct?: AdminAuditLogScalarFieldEnum | AdminAuditLogScalarFieldEnum[]
+  }
+
+  /**
+   * AdminAuditLog findMany
+   */
+  export type AdminAuditLogFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminAuditLog
+     */
+    select?: AdminAuditLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdminAuditLog
+     */
+    omit?: AdminAuditLogOmit<ExtArgs> | null
+    /**
+     * Filter, which AdminAuditLogs to fetch.
+     */
+    where?: AdminAuditLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AdminAuditLogs to fetch.
+     */
+    orderBy?: AdminAuditLogOrderByWithRelationInput | AdminAuditLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AdminAuditLogs.
+     */
+    cursor?: AdminAuditLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AdminAuditLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AdminAuditLogs.
+     */
+    skip?: number
+    distinct?: AdminAuditLogScalarFieldEnum | AdminAuditLogScalarFieldEnum[]
+  }
+
+  /**
+   * AdminAuditLog create
+   */
+  export type AdminAuditLogCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminAuditLog
+     */
+    select?: AdminAuditLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdminAuditLog
+     */
+    omit?: AdminAuditLogOmit<ExtArgs> | null
+    /**
+     * The data needed to create a AdminAuditLog.
+     */
+    data: XOR<AdminAuditLogCreateInput, AdminAuditLogUncheckedCreateInput>
+  }
+
+  /**
+   * AdminAuditLog createMany
+   */
+  export type AdminAuditLogCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AdminAuditLogs.
+     */
+    data: AdminAuditLogCreateManyInput | AdminAuditLogCreateManyInput[]
+  }
+
+  /**
+   * AdminAuditLog update
+   */
+  export type AdminAuditLogUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminAuditLog
+     */
+    select?: AdminAuditLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdminAuditLog
+     */
+    omit?: AdminAuditLogOmit<ExtArgs> | null
+    /**
+     * The data needed to update a AdminAuditLog.
+     */
+    data: XOR<AdminAuditLogUpdateInput, AdminAuditLogUncheckedUpdateInput>
+    /**
+     * Choose, which AdminAuditLog to update.
+     */
+    where: AdminAuditLogWhereUniqueInput
+  }
+
+  /**
+   * AdminAuditLog updateMany
+   */
+  export type AdminAuditLogUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AdminAuditLogs.
+     */
+    data: XOR<AdminAuditLogUpdateManyMutationInput, AdminAuditLogUncheckedUpdateManyInput>
+    /**
+     * Filter which AdminAuditLogs to update
+     */
+    where?: AdminAuditLogWhereInput
+    /**
+     * Limit how many AdminAuditLogs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AdminAuditLog upsert
+   */
+  export type AdminAuditLogUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminAuditLog
+     */
+    select?: AdminAuditLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdminAuditLog
+     */
+    omit?: AdminAuditLogOmit<ExtArgs> | null
+    /**
+     * The filter to search for the AdminAuditLog to update in case it exists.
+     */
+    where: AdminAuditLogWhereUniqueInput
+    /**
+     * In case the AdminAuditLog found by the `where` argument doesn't exist, create a new AdminAuditLog with this data.
+     */
+    create: XOR<AdminAuditLogCreateInput, AdminAuditLogUncheckedCreateInput>
+    /**
+     * In case the AdminAuditLog was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AdminAuditLogUpdateInput, AdminAuditLogUncheckedUpdateInput>
+  }
+
+  /**
+   * AdminAuditLog delete
+   */
+  export type AdminAuditLogDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminAuditLog
+     */
+    select?: AdminAuditLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdminAuditLog
+     */
+    omit?: AdminAuditLogOmit<ExtArgs> | null
+    /**
+     * Filter which AdminAuditLog to delete.
+     */
+    where: AdminAuditLogWhereUniqueInput
+  }
+
+  /**
+   * AdminAuditLog deleteMany
+   */
+  export type AdminAuditLogDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AdminAuditLogs to delete
+     */
+    where?: AdminAuditLogWhereInput
+    /**
+     * Limit how many AdminAuditLogs to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AdminAuditLog findRaw
+   */
+  export type AdminAuditLogFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * AdminAuditLog aggregateRaw
+   */
+  export type AdminAuditLogAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * AdminAuditLog without action
+   */
+  export type AdminAuditLogDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminAuditLog
+     */
+    select?: AdminAuditLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdminAuditLog
+     */
+    omit?: AdminAuditLogOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Report
+   */
+
+  export type AggregateReport = {
+    _count: ReportCountAggregateOutputType | null
+    _min: ReportMinAggregateOutputType | null
+    _max: ReportMaxAggregateOutputType | null
+  }
+
+  export type ReportMinAggregateOutputType = {
+    id: string | null
+    reportedType: string | null
+    reportedEntityId: string | null
+    reporterId: string | null
+    reporterName: string | null
+    reportType: string | null
+    reason: string | null
+    status: string | null
+    moderatorId: string | null
+    moderatorNotes: string | null
+    actionTaken: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    resolvedAt: Date | null
+  }
+
+  export type ReportMaxAggregateOutputType = {
+    id: string | null
+    reportedType: string | null
+    reportedEntityId: string | null
+    reporterId: string | null
+    reporterName: string | null
+    reportType: string | null
+    reason: string | null
+    status: string | null
+    moderatorId: string | null
+    moderatorNotes: string | null
+    actionTaken: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    resolvedAt: Date | null
+  }
+
+  export type ReportCountAggregateOutputType = {
+    id: number
+    reportedType: number
+    reportedEntityId: number
+    reporterId: number
+    reporterName: number
+    reportType: number
+    reason: number
+    status: number
+    moderatorId: number
+    moderatorNotes: number
+    actionTaken: number
+    createdAt: number
+    updatedAt: number
+    resolvedAt: number
+    _all: number
+  }
+
+
+  export type ReportMinAggregateInputType = {
+    id?: true
+    reportedType?: true
+    reportedEntityId?: true
+    reporterId?: true
+    reporterName?: true
+    reportType?: true
+    reason?: true
+    status?: true
+    moderatorId?: true
+    moderatorNotes?: true
+    actionTaken?: true
+    createdAt?: true
+    updatedAt?: true
+    resolvedAt?: true
+  }
+
+  export type ReportMaxAggregateInputType = {
+    id?: true
+    reportedType?: true
+    reportedEntityId?: true
+    reporterId?: true
+    reporterName?: true
+    reportType?: true
+    reason?: true
+    status?: true
+    moderatorId?: true
+    moderatorNotes?: true
+    actionTaken?: true
+    createdAt?: true
+    updatedAt?: true
+    resolvedAt?: true
+  }
+
+  export type ReportCountAggregateInputType = {
+    id?: true
+    reportedType?: true
+    reportedEntityId?: true
+    reporterId?: true
+    reporterName?: true
+    reportType?: true
+    reason?: true
+    status?: true
+    moderatorId?: true
+    moderatorNotes?: true
+    actionTaken?: true
+    createdAt?: true
+    updatedAt?: true
+    resolvedAt?: true
+    _all?: true
+  }
+
+  export type ReportAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Report to aggregate.
+     */
+    where?: ReportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Reports to fetch.
+     */
+    orderBy?: ReportOrderByWithRelationInput | ReportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ReportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Reports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Reports.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Reports
+    **/
+    _count?: true | ReportCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ReportMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ReportMaxAggregateInputType
+  }
+
+  export type GetReportAggregateType<T extends ReportAggregateArgs> = {
+        [P in keyof T & keyof AggregateReport]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateReport[P]>
+      : GetScalarType<T[P], AggregateReport[P]>
+  }
+
+
+
+
+  export type ReportGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReportWhereInput
+    orderBy?: ReportOrderByWithAggregationInput | ReportOrderByWithAggregationInput[]
+    by: ReportScalarFieldEnum[] | ReportScalarFieldEnum
+    having?: ReportScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ReportCountAggregateInputType | true
+    _min?: ReportMinAggregateInputType
+    _max?: ReportMaxAggregateInputType
+  }
+
+  export type ReportGroupByOutputType = {
+    id: string
+    reportedType: string
+    reportedEntityId: string
+    reporterId: string | null
+    reporterName: string | null
+    reportType: string
+    reason: string | null
+    status: string
+    moderatorId: string | null
+    moderatorNotes: string | null
+    actionTaken: string | null
+    createdAt: Date
+    updatedAt: Date
+    resolvedAt: Date | null
+    _count: ReportCountAggregateOutputType | null
+    _min: ReportMinAggregateOutputType | null
+    _max: ReportMaxAggregateOutputType | null
+  }
+
+  type GetReportGroupByPayload<T extends ReportGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ReportGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ReportGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ReportGroupByOutputType[P]>
+            : GetScalarType<T[P], ReportGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ReportSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    reportedType?: boolean
+    reportedEntityId?: boolean
+    reporterId?: boolean
+    reporterName?: boolean
+    reportType?: boolean
+    reason?: boolean
+    status?: boolean
+    moderatorId?: boolean
+    moderatorNotes?: boolean
+    actionTaken?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    resolvedAt?: boolean
+  }, ExtArgs["result"]["report"]>
+
+
+
+  export type ReportSelectScalar = {
+    id?: boolean
+    reportedType?: boolean
+    reportedEntityId?: boolean
+    reporterId?: boolean
+    reporterName?: boolean
+    reportType?: boolean
+    reason?: boolean
+    status?: boolean
+    moderatorId?: boolean
+    moderatorNotes?: boolean
+    actionTaken?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    resolvedAt?: boolean
+  }
+
+  export type ReportOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "reportedType" | "reportedEntityId" | "reporterId" | "reporterName" | "reportType" | "reason" | "status" | "moderatorId" | "moderatorNotes" | "actionTaken" | "createdAt" | "updatedAt" | "resolvedAt", ExtArgs["result"]["report"]>
+
+  export type $ReportPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Report"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      /**
+       * Type de contenu signalé: message, user, conversation, community
+       */
+      reportedType: string
+      /**
+       * ID de l'entité signalée
+       */
+      reportedEntityId: string
+      /**
+       * ID de l'utilisateur qui signale (null si anonyme)
+       */
+      reporterId: string | null
+      /**
+       * Nom de l'utilisateur anonyme qui signale
+       */
+      reporterName: string | null
+      /**
+       * Type de signalement: spam, inappropriate, harassment, violence, hate_speech, other
+       */
+      reportType: string
+      /**
+       * Raison détaillée du signalement
+       */
+      reason: string | null
+      /**
+       * Statut: pending, under_review, resolved, rejected, dismissed
+       */
+      status: string
+      /**
+       * ID du modérateur qui traite le signalement
+       */
+      moderatorId: string | null
+      /**
+       * Notes du modérateur
+       */
+      moderatorNotes: string | null
+      /**
+       * Action prise: none, warning_sent, content_removed, user_suspended, user_banned
+       */
+      actionTaken: string | null
+      /**
+       * Date de création du signalement
+       */
+      createdAt: Date
+      /**
+       * Date de mise à jour
+       */
+      updatedAt: Date
+      /**
+       * Date de résolution
+       */
+      resolvedAt: Date | null
+    }, ExtArgs["result"]["report"]>
+    composites: {}
+  }
+
+  type ReportGetPayload<S extends boolean | null | undefined | ReportDefaultArgs> = $Result.GetResult<Prisma.$ReportPayload, S>
+
+  type ReportCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ReportFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ReportCountAggregateInputType | true
+    }
+
+  export interface ReportDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Report'], meta: { name: 'Report' } }
+    /**
+     * Find zero or one Report that matches the filter.
+     * @param {ReportFindUniqueArgs} args - Arguments to find a Report
+     * @example
+     * // Get one Report
+     * const report = await prisma.report.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ReportFindUniqueArgs>(args: SelectSubset<T, ReportFindUniqueArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Report that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ReportFindUniqueOrThrowArgs} args - Arguments to find a Report
+     * @example
+     * // Get one Report
+     * const report = await prisma.report.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ReportFindUniqueOrThrowArgs>(args: SelectSubset<T, ReportFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Report that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportFindFirstArgs} args - Arguments to find a Report
+     * @example
+     * // Get one Report
+     * const report = await prisma.report.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ReportFindFirstArgs>(args?: SelectSubset<T, ReportFindFirstArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Report that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportFindFirstOrThrowArgs} args - Arguments to find a Report
+     * @example
+     * // Get one Report
+     * const report = await prisma.report.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ReportFindFirstOrThrowArgs>(args?: SelectSubset<T, ReportFindFirstOrThrowArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Reports that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Reports
+     * const reports = await prisma.report.findMany()
+     * 
+     * // Get first 10 Reports
+     * const reports = await prisma.report.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const reportWithIdOnly = await prisma.report.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ReportFindManyArgs>(args?: SelectSubset<T, ReportFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Report.
+     * @param {ReportCreateArgs} args - Arguments to create a Report.
+     * @example
+     * // Create one Report
+     * const Report = await prisma.report.create({
+     *   data: {
+     *     // ... data to create a Report
+     *   }
+     * })
+     * 
+     */
+    create<T extends ReportCreateArgs>(args: SelectSubset<T, ReportCreateArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Reports.
+     * @param {ReportCreateManyArgs} args - Arguments to create many Reports.
+     * @example
+     * // Create many Reports
+     * const report = await prisma.report.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ReportCreateManyArgs>(args?: SelectSubset<T, ReportCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a Report.
+     * @param {ReportDeleteArgs} args - Arguments to delete one Report.
+     * @example
+     * // Delete one Report
+     * const Report = await prisma.report.delete({
+     *   where: {
+     *     // ... filter to delete one Report
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ReportDeleteArgs>(args: SelectSubset<T, ReportDeleteArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Report.
+     * @param {ReportUpdateArgs} args - Arguments to update one Report.
+     * @example
+     * // Update one Report
+     * const report = await prisma.report.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ReportUpdateArgs>(args: SelectSubset<T, ReportUpdateArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Reports.
+     * @param {ReportDeleteManyArgs} args - Arguments to filter Reports to delete.
+     * @example
+     * // Delete a few Reports
+     * const { count } = await prisma.report.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ReportDeleteManyArgs>(args?: SelectSubset<T, ReportDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Reports.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Reports
+     * const report = await prisma.report.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ReportUpdateManyArgs>(args: SelectSubset<T, ReportUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Report.
+     * @param {ReportUpsertArgs} args - Arguments to update or create a Report.
+     * @example
+     * // Update or create a Report
+     * const report = await prisma.report.upsert({
+     *   create: {
+     *     // ... data to create a Report
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Report we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ReportUpsertArgs>(args: SelectSubset<T, ReportUpsertArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Reports that matches the filter.
+     * @param {ReportFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const report = await prisma.report.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: ReportFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a Report.
+     * @param {ReportAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const report = await prisma.report.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: ReportAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of Reports.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportCountArgs} args - Arguments to filter Reports to count.
+     * @example
+     * // Count the number of Reports
+     * const count = await prisma.report.count({
+     *   where: {
+     *     // ... the filter for the Reports we want to count
+     *   }
+     * })
+    **/
+    count<T extends ReportCountArgs>(
+      args?: Subset<T, ReportCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ReportCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Report.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ReportAggregateArgs>(args: Subset<T, ReportAggregateArgs>): Prisma.PrismaPromise<GetReportAggregateType<T>>
+
+    /**
+     * Group by Report.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ReportGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ReportGroupByArgs['orderBy'] }
+        : { orderBy?: ReportGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ReportGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetReportGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Report model
+   */
+  readonly fields: ReportFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Report.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ReportClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Report model
+   */
+  interface ReportFieldRefs {
+    readonly id: FieldRef<"Report", 'String'>
+    readonly reportedType: FieldRef<"Report", 'String'>
+    readonly reportedEntityId: FieldRef<"Report", 'String'>
+    readonly reporterId: FieldRef<"Report", 'String'>
+    readonly reporterName: FieldRef<"Report", 'String'>
+    readonly reportType: FieldRef<"Report", 'String'>
+    readonly reason: FieldRef<"Report", 'String'>
+    readonly status: FieldRef<"Report", 'String'>
+    readonly moderatorId: FieldRef<"Report", 'String'>
+    readonly moderatorNotes: FieldRef<"Report", 'String'>
+    readonly actionTaken: FieldRef<"Report", 'String'>
+    readonly createdAt: FieldRef<"Report", 'DateTime'>
+    readonly updatedAt: FieldRef<"Report", 'DateTime'>
+    readonly resolvedAt: FieldRef<"Report", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Report findUnique
+   */
+  export type ReportFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Report
+     */
+    omit?: ReportOmit<ExtArgs> | null
+    /**
+     * Filter, which Report to fetch.
+     */
+    where: ReportWhereUniqueInput
+  }
+
+  /**
+   * Report findUniqueOrThrow
+   */
+  export type ReportFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Report
+     */
+    omit?: ReportOmit<ExtArgs> | null
+    /**
+     * Filter, which Report to fetch.
+     */
+    where: ReportWhereUniqueInput
+  }
+
+  /**
+   * Report findFirst
+   */
+  export type ReportFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Report
+     */
+    omit?: ReportOmit<ExtArgs> | null
+    /**
+     * Filter, which Report to fetch.
+     */
+    where?: ReportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Reports to fetch.
+     */
+    orderBy?: ReportOrderByWithRelationInput | ReportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Reports.
+     */
+    cursor?: ReportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Reports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Reports.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Reports.
+     */
+    distinct?: ReportScalarFieldEnum | ReportScalarFieldEnum[]
+  }
+
+  /**
+   * Report findFirstOrThrow
+   */
+  export type ReportFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Report
+     */
+    omit?: ReportOmit<ExtArgs> | null
+    /**
+     * Filter, which Report to fetch.
+     */
+    where?: ReportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Reports to fetch.
+     */
+    orderBy?: ReportOrderByWithRelationInput | ReportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Reports.
+     */
+    cursor?: ReportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Reports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Reports.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Reports.
+     */
+    distinct?: ReportScalarFieldEnum | ReportScalarFieldEnum[]
+  }
+
+  /**
+   * Report findMany
+   */
+  export type ReportFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Report
+     */
+    omit?: ReportOmit<ExtArgs> | null
+    /**
+     * Filter, which Reports to fetch.
+     */
+    where?: ReportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Reports to fetch.
+     */
+    orderBy?: ReportOrderByWithRelationInput | ReportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Reports.
+     */
+    cursor?: ReportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Reports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Reports.
+     */
+    skip?: number
+    distinct?: ReportScalarFieldEnum | ReportScalarFieldEnum[]
+  }
+
+  /**
+   * Report create
+   */
+  export type ReportCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Report
+     */
+    omit?: ReportOmit<ExtArgs> | null
+    /**
+     * The data needed to create a Report.
+     */
+    data: XOR<ReportCreateInput, ReportUncheckedCreateInput>
+  }
+
+  /**
+   * Report createMany
+   */
+  export type ReportCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Reports.
+     */
+    data: ReportCreateManyInput | ReportCreateManyInput[]
+  }
+
+  /**
+   * Report update
+   */
+  export type ReportUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Report
+     */
+    omit?: ReportOmit<ExtArgs> | null
+    /**
+     * The data needed to update a Report.
+     */
+    data: XOR<ReportUpdateInput, ReportUncheckedUpdateInput>
+    /**
+     * Choose, which Report to update.
+     */
+    where: ReportWhereUniqueInput
+  }
+
+  /**
+   * Report updateMany
+   */
+  export type ReportUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Reports.
+     */
+    data: XOR<ReportUpdateManyMutationInput, ReportUncheckedUpdateManyInput>
+    /**
+     * Filter which Reports to update
+     */
+    where?: ReportWhereInput
+    /**
+     * Limit how many Reports to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Report upsert
+   */
+  export type ReportUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Report
+     */
+    omit?: ReportOmit<ExtArgs> | null
+    /**
+     * The filter to search for the Report to update in case it exists.
+     */
+    where: ReportWhereUniqueInput
+    /**
+     * In case the Report found by the `where` argument doesn't exist, create a new Report with this data.
+     */
+    create: XOR<ReportCreateInput, ReportUncheckedCreateInput>
+    /**
+     * In case the Report was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ReportUpdateInput, ReportUncheckedUpdateInput>
+  }
+
+  /**
+   * Report delete
+   */
+  export type ReportDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Report
+     */
+    omit?: ReportOmit<ExtArgs> | null
+    /**
+     * Filter which Report to delete.
+     */
+    where: ReportWhereUniqueInput
+  }
+
+  /**
+   * Report deleteMany
+   */
+  export type ReportDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Reports to delete
+     */
+    where?: ReportWhereInput
+    /**
+     * Limit how many Reports to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Report findRaw
+   */
+  export type ReportFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * Report aggregateRaw
+   */
+  export type ReportAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * Report without action
+   */
+  export type ReportDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Report
+     */
+    omit?: ReportOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -28318,6 +30757,17 @@ export namespace Prisma {
     role: 'role',
     isActive: 'isActive',
     deactivatedAt: 'deactivatedAt',
+    emailVerified: 'emailVerified',
+    emailVerifiedAt: 'emailVerifiedAt',
+    phoneVerified: 'phoneVerified',
+    phoneVerifiedAt: 'phoneVerifiedAt',
+    twoFactorEnabled: 'twoFactorEnabled',
+    failedLoginAttempts: 'failedLoginAttempts',
+    lockedUntil: 'lockedUntil',
+    lastPasswordChange: 'lastPasswordChange',
+    deletedAt: 'deletedAt',
+    deletedBy: 'deletedBy',
+    profileCompletionRate: 'profileCompletionRate',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -28700,6 +31150,43 @@ export namespace Prisma {
   export type TrackingLinkClickScalarFieldEnum = (typeof TrackingLinkClickScalarFieldEnum)[keyof typeof TrackingLinkClickScalarFieldEnum]
 
 
+  export const AdminAuditLogScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    adminId: 'adminId',
+    action: 'action',
+    entity: 'entity',
+    entityId: 'entityId',
+    changes: 'changes',
+    metadata: 'metadata',
+    ipAddress: 'ipAddress',
+    userAgent: 'userAgent',
+    createdAt: 'createdAt'
+  };
+
+  export type AdminAuditLogScalarFieldEnum = (typeof AdminAuditLogScalarFieldEnum)[keyof typeof AdminAuditLogScalarFieldEnum]
+
+
+  export const ReportScalarFieldEnum: {
+    id: 'id',
+    reportedType: 'reportedType',
+    reportedEntityId: 'reportedEntityId',
+    reporterId: 'reporterId',
+    reporterName: 'reporterName',
+    reportType: 'reportType',
+    reason: 'reason',
+    status: 'status',
+    moderatorId: 'moderatorId',
+    moderatorNotes: 'moderatorNotes',
+    actionTaken: 'actionTaken',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    resolvedAt: 'resolvedAt'
+  };
+
+  export type ReportScalarFieldEnum = (typeof ReportScalarFieldEnum)[keyof typeof ReportScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -28814,6 +31301,17 @@ export namespace Prisma {
     role?: StringFilter<"User"> | string
     isActive?: BoolFilter<"User"> | boolean
     deactivatedAt?: DateTimeNullableFilter<"User"> | Date | string | null
+    emailVerified?: BoolNullableFilter<"User"> | boolean | null
+    emailVerifiedAt?: DateTimeNullableFilter<"User"> | Date | string | null
+    phoneVerified?: BoolNullableFilter<"User"> | boolean | null
+    phoneVerifiedAt?: DateTimeNullableFilter<"User"> | Date | string | null
+    twoFactorEnabled?: BoolNullableFilter<"User"> | boolean | null
+    failedLoginAttempts?: IntNullableFilter<"User"> | number | null
+    lockedUntil?: DateTimeNullableFilter<"User"> | Date | string | null
+    lastPasswordChange?: DateTimeNullableFilter<"User"> | Date | string | null
+    deletedAt?: DateTimeNullableFilter<"User"> | Date | string | null
+    deletedBy?: StringNullableFilter<"User"> | string | null
+    profileCompletionRate?: IntNullableFilter<"User"> | number | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     createdCommunities?: CommunityListRelationFilter
@@ -28861,6 +31359,17 @@ export namespace Prisma {
     role?: SortOrder
     isActive?: SortOrder
     deactivatedAt?: SortOrder
+    emailVerified?: SortOrder
+    emailVerifiedAt?: SortOrder
+    phoneVerified?: SortOrder
+    phoneVerifiedAt?: SortOrder
+    twoFactorEnabled?: SortOrder
+    failedLoginAttempts?: SortOrder
+    lockedUntil?: SortOrder
+    lastPasswordChange?: SortOrder
+    deletedAt?: SortOrder
+    deletedBy?: SortOrder
+    profileCompletionRate?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     createdCommunities?: CommunityOrderByRelationAggregateInput
@@ -28911,6 +31420,17 @@ export namespace Prisma {
     role?: StringFilter<"User"> | string
     isActive?: BoolFilter<"User"> | boolean
     deactivatedAt?: DateTimeNullableFilter<"User"> | Date | string | null
+    emailVerified?: BoolNullableFilter<"User"> | boolean | null
+    emailVerifiedAt?: DateTimeNullableFilter<"User"> | Date | string | null
+    phoneVerified?: BoolNullableFilter<"User"> | boolean | null
+    phoneVerifiedAt?: DateTimeNullableFilter<"User"> | Date | string | null
+    twoFactorEnabled?: BoolNullableFilter<"User"> | boolean | null
+    failedLoginAttempts?: IntNullableFilter<"User"> | number | null
+    lockedUntil?: DateTimeNullableFilter<"User"> | Date | string | null
+    lastPasswordChange?: DateTimeNullableFilter<"User"> | Date | string | null
+    deletedAt?: DateTimeNullableFilter<"User"> | Date | string | null
+    deletedBy?: StringNullableFilter<"User"> | string | null
+    profileCompletionRate?: IntNullableFilter<"User"> | number | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     createdCommunities?: CommunityListRelationFilter
@@ -28958,11 +31478,24 @@ export namespace Prisma {
     role?: SortOrder
     isActive?: SortOrder
     deactivatedAt?: SortOrder
+    emailVerified?: SortOrder
+    emailVerifiedAt?: SortOrder
+    phoneVerified?: SortOrder
+    phoneVerifiedAt?: SortOrder
+    twoFactorEnabled?: SortOrder
+    failedLoginAttempts?: SortOrder
+    lockedUntil?: SortOrder
+    lastPasswordChange?: SortOrder
+    deletedAt?: SortOrder
+    deletedBy?: SortOrder
+    profileCompletionRate?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: UserCountOrderByAggregateInput
+    _avg?: UserAvgOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
     _min?: UserMinOrderByAggregateInput
+    _sum?: UserSumOrderByAggregateInput
   }
 
   export type UserScalarWhereWithAggregatesInput = {
@@ -28992,6 +31525,17 @@ export namespace Prisma {
     role?: StringWithAggregatesFilter<"User"> | string
     isActive?: BoolWithAggregatesFilter<"User"> | boolean
     deactivatedAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+    emailVerified?: BoolNullableWithAggregatesFilter<"User"> | boolean | null
+    emailVerifiedAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+    phoneVerified?: BoolNullableWithAggregatesFilter<"User"> | boolean | null
+    phoneVerifiedAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+    twoFactorEnabled?: BoolNullableWithAggregatesFilter<"User"> | boolean | null
+    failedLoginAttempts?: IntNullableWithAggregatesFilter<"User"> | number | null
+    lockedUntil?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+    lastPasswordChange?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+    deletedBy?: StringNullableWithAggregatesFilter<"User"> | string | null
+    profileCompletionRate?: IntNullableWithAggregatesFilter<"User"> | number | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
   }
@@ -31001,6 +33545,185 @@ export namespace Prisma {
     clickedAt?: DateTimeWithAggregatesFilter<"TrackingLinkClick"> | Date | string
   }
 
+  export type AdminAuditLogWhereInput = {
+    AND?: AdminAuditLogWhereInput | AdminAuditLogWhereInput[]
+    OR?: AdminAuditLogWhereInput[]
+    NOT?: AdminAuditLogWhereInput | AdminAuditLogWhereInput[]
+    id?: StringFilter<"AdminAuditLog"> | string
+    userId?: StringFilter<"AdminAuditLog"> | string
+    adminId?: StringFilter<"AdminAuditLog"> | string
+    action?: StringFilter<"AdminAuditLog"> | string
+    entity?: StringFilter<"AdminAuditLog"> | string
+    entityId?: StringFilter<"AdminAuditLog"> | string
+    changes?: StringNullableFilter<"AdminAuditLog"> | string | null
+    metadata?: StringNullableFilter<"AdminAuditLog"> | string | null
+    ipAddress?: StringNullableFilter<"AdminAuditLog"> | string | null
+    userAgent?: StringNullableFilter<"AdminAuditLog"> | string | null
+    createdAt?: DateTimeFilter<"AdminAuditLog"> | Date | string
+  }
+
+  export type AdminAuditLogOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    adminId?: SortOrder
+    action?: SortOrder
+    entity?: SortOrder
+    entityId?: SortOrder
+    changes?: SortOrder
+    metadata?: SortOrder
+    ipAddress?: SortOrder
+    userAgent?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AdminAuditLogWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: AdminAuditLogWhereInput | AdminAuditLogWhereInput[]
+    OR?: AdminAuditLogWhereInput[]
+    NOT?: AdminAuditLogWhereInput | AdminAuditLogWhereInput[]
+    userId?: StringFilter<"AdminAuditLog"> | string
+    adminId?: StringFilter<"AdminAuditLog"> | string
+    action?: StringFilter<"AdminAuditLog"> | string
+    entity?: StringFilter<"AdminAuditLog"> | string
+    entityId?: StringFilter<"AdminAuditLog"> | string
+    changes?: StringNullableFilter<"AdminAuditLog"> | string | null
+    metadata?: StringNullableFilter<"AdminAuditLog"> | string | null
+    ipAddress?: StringNullableFilter<"AdminAuditLog"> | string | null
+    userAgent?: StringNullableFilter<"AdminAuditLog"> | string | null
+    createdAt?: DateTimeFilter<"AdminAuditLog"> | Date | string
+  }, "id">
+
+  export type AdminAuditLogOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    adminId?: SortOrder
+    action?: SortOrder
+    entity?: SortOrder
+    entityId?: SortOrder
+    changes?: SortOrder
+    metadata?: SortOrder
+    ipAddress?: SortOrder
+    userAgent?: SortOrder
+    createdAt?: SortOrder
+    _count?: AdminAuditLogCountOrderByAggregateInput
+    _max?: AdminAuditLogMaxOrderByAggregateInput
+    _min?: AdminAuditLogMinOrderByAggregateInput
+  }
+
+  export type AdminAuditLogScalarWhereWithAggregatesInput = {
+    AND?: AdminAuditLogScalarWhereWithAggregatesInput | AdminAuditLogScalarWhereWithAggregatesInput[]
+    OR?: AdminAuditLogScalarWhereWithAggregatesInput[]
+    NOT?: AdminAuditLogScalarWhereWithAggregatesInput | AdminAuditLogScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AdminAuditLog"> | string
+    userId?: StringWithAggregatesFilter<"AdminAuditLog"> | string
+    adminId?: StringWithAggregatesFilter<"AdminAuditLog"> | string
+    action?: StringWithAggregatesFilter<"AdminAuditLog"> | string
+    entity?: StringWithAggregatesFilter<"AdminAuditLog"> | string
+    entityId?: StringWithAggregatesFilter<"AdminAuditLog"> | string
+    changes?: StringNullableWithAggregatesFilter<"AdminAuditLog"> | string | null
+    metadata?: StringNullableWithAggregatesFilter<"AdminAuditLog"> | string | null
+    ipAddress?: StringNullableWithAggregatesFilter<"AdminAuditLog"> | string | null
+    userAgent?: StringNullableWithAggregatesFilter<"AdminAuditLog"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"AdminAuditLog"> | Date | string
+  }
+
+  export type ReportWhereInput = {
+    AND?: ReportWhereInput | ReportWhereInput[]
+    OR?: ReportWhereInput[]
+    NOT?: ReportWhereInput | ReportWhereInput[]
+    id?: StringFilter<"Report"> | string
+    reportedType?: StringFilter<"Report"> | string
+    reportedEntityId?: StringFilter<"Report"> | string
+    reporterId?: StringNullableFilter<"Report"> | string | null
+    reporterName?: StringNullableFilter<"Report"> | string | null
+    reportType?: StringFilter<"Report"> | string
+    reason?: StringNullableFilter<"Report"> | string | null
+    status?: StringFilter<"Report"> | string
+    moderatorId?: StringNullableFilter<"Report"> | string | null
+    moderatorNotes?: StringNullableFilter<"Report"> | string | null
+    actionTaken?: StringNullableFilter<"Report"> | string | null
+    createdAt?: DateTimeFilter<"Report"> | Date | string
+    updatedAt?: DateTimeFilter<"Report"> | Date | string
+    resolvedAt?: DateTimeNullableFilter<"Report"> | Date | string | null
+  }
+
+  export type ReportOrderByWithRelationInput = {
+    id?: SortOrder
+    reportedType?: SortOrder
+    reportedEntityId?: SortOrder
+    reporterId?: SortOrder
+    reporterName?: SortOrder
+    reportType?: SortOrder
+    reason?: SortOrder
+    status?: SortOrder
+    moderatorId?: SortOrder
+    moderatorNotes?: SortOrder
+    actionTaken?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    resolvedAt?: SortOrder
+  }
+
+  export type ReportWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: ReportWhereInput | ReportWhereInput[]
+    OR?: ReportWhereInput[]
+    NOT?: ReportWhereInput | ReportWhereInput[]
+    reportedType?: StringFilter<"Report"> | string
+    reportedEntityId?: StringFilter<"Report"> | string
+    reporterId?: StringNullableFilter<"Report"> | string | null
+    reporterName?: StringNullableFilter<"Report"> | string | null
+    reportType?: StringFilter<"Report"> | string
+    reason?: StringNullableFilter<"Report"> | string | null
+    status?: StringFilter<"Report"> | string
+    moderatorId?: StringNullableFilter<"Report"> | string | null
+    moderatorNotes?: StringNullableFilter<"Report"> | string | null
+    actionTaken?: StringNullableFilter<"Report"> | string | null
+    createdAt?: DateTimeFilter<"Report"> | Date | string
+    updatedAt?: DateTimeFilter<"Report"> | Date | string
+    resolvedAt?: DateTimeNullableFilter<"Report"> | Date | string | null
+  }, "id">
+
+  export type ReportOrderByWithAggregationInput = {
+    id?: SortOrder
+    reportedType?: SortOrder
+    reportedEntityId?: SortOrder
+    reporterId?: SortOrder
+    reporterName?: SortOrder
+    reportType?: SortOrder
+    reason?: SortOrder
+    status?: SortOrder
+    moderatorId?: SortOrder
+    moderatorNotes?: SortOrder
+    actionTaken?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    resolvedAt?: SortOrder
+    _count?: ReportCountOrderByAggregateInput
+    _max?: ReportMaxOrderByAggregateInput
+    _min?: ReportMinOrderByAggregateInput
+  }
+
+  export type ReportScalarWhereWithAggregatesInput = {
+    AND?: ReportScalarWhereWithAggregatesInput | ReportScalarWhereWithAggregatesInput[]
+    OR?: ReportScalarWhereWithAggregatesInput[]
+    NOT?: ReportScalarWhereWithAggregatesInput | ReportScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Report"> | string
+    reportedType?: StringWithAggregatesFilter<"Report"> | string
+    reportedEntityId?: StringWithAggregatesFilter<"Report"> | string
+    reporterId?: StringNullableWithAggregatesFilter<"Report"> | string | null
+    reporterName?: StringNullableWithAggregatesFilter<"Report"> | string | null
+    reportType?: StringWithAggregatesFilter<"Report"> | string
+    reason?: StringNullableWithAggregatesFilter<"Report"> | string | null
+    status?: StringWithAggregatesFilter<"Report"> | string
+    moderatorId?: StringNullableWithAggregatesFilter<"Report"> | string | null
+    moderatorNotes?: StringNullableWithAggregatesFilter<"Report"> | string | null
+    actionTaken?: StringNullableWithAggregatesFilter<"Report"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"Report"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Report"> | Date | string
+    resolvedAt?: DateTimeNullableWithAggregatesFilter<"Report"> | Date | string | null
+  }
+
   export type UserCreateInput = {
     id?: string
     username: string
@@ -31025,6 +33748,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -31072,6 +33806,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -31118,6 +33863,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -31164,6 +33920,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -31211,6 +33978,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -31238,6 +34016,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -31265,6 +34054,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -33410,6 +36210,215 @@ export namespace Prisma {
     clickedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type AdminAuditLogCreateInput = {
+    id?: string
+    userId: string
+    adminId: string
+    action: string
+    entity?: string
+    entityId: string
+    changes?: string | null
+    metadata?: string | null
+    ipAddress?: string | null
+    userAgent?: string | null
+    createdAt?: Date | string
+  }
+
+  export type AdminAuditLogUncheckedCreateInput = {
+    id?: string
+    userId: string
+    adminId: string
+    action: string
+    entity?: string
+    entityId: string
+    changes?: string | null
+    metadata?: string | null
+    ipAddress?: string | null
+    userAgent?: string | null
+    createdAt?: Date | string
+  }
+
+  export type AdminAuditLogUpdateInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    adminId?: StringFieldUpdateOperationsInput | string
+    action?: StringFieldUpdateOperationsInput | string
+    entity?: StringFieldUpdateOperationsInput | string
+    entityId?: StringFieldUpdateOperationsInput | string
+    changes?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdminAuditLogUncheckedUpdateInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    adminId?: StringFieldUpdateOperationsInput | string
+    action?: StringFieldUpdateOperationsInput | string
+    entity?: StringFieldUpdateOperationsInput | string
+    entityId?: StringFieldUpdateOperationsInput | string
+    changes?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdminAuditLogCreateManyInput = {
+    id?: string
+    userId: string
+    adminId: string
+    action: string
+    entity?: string
+    entityId: string
+    changes?: string | null
+    metadata?: string | null
+    ipAddress?: string | null
+    userAgent?: string | null
+    createdAt?: Date | string
+  }
+
+  export type AdminAuditLogUpdateManyMutationInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    adminId?: StringFieldUpdateOperationsInput | string
+    action?: StringFieldUpdateOperationsInput | string
+    entity?: StringFieldUpdateOperationsInput | string
+    entityId?: StringFieldUpdateOperationsInput | string
+    changes?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdminAuditLogUncheckedUpdateManyInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    adminId?: StringFieldUpdateOperationsInput | string
+    action?: StringFieldUpdateOperationsInput | string
+    entity?: StringFieldUpdateOperationsInput | string
+    entityId?: StringFieldUpdateOperationsInput | string
+    changes?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReportCreateInput = {
+    id?: string
+    reportedType: string
+    reportedEntityId: string
+    reporterId?: string | null
+    reporterName?: string | null
+    reportType: string
+    reason?: string | null
+    status?: string
+    moderatorId?: string | null
+    moderatorNotes?: string | null
+    actionTaken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    resolvedAt?: Date | string | null
+  }
+
+  export type ReportUncheckedCreateInput = {
+    id?: string
+    reportedType: string
+    reportedEntityId: string
+    reporterId?: string | null
+    reporterName?: string | null
+    reportType: string
+    reason?: string | null
+    status?: string
+    moderatorId?: string | null
+    moderatorNotes?: string | null
+    actionTaken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    resolvedAt?: Date | string | null
+  }
+
+  export type ReportUpdateInput = {
+    reportedType?: StringFieldUpdateOperationsInput | string
+    reportedEntityId?: StringFieldUpdateOperationsInput | string
+    reporterId?: NullableStringFieldUpdateOperationsInput | string | null
+    reporterName?: NullableStringFieldUpdateOperationsInput | string | null
+    reportType?: StringFieldUpdateOperationsInput | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    moderatorId?: NullableStringFieldUpdateOperationsInput | string | null
+    moderatorNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    actionTaken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type ReportUncheckedUpdateInput = {
+    reportedType?: StringFieldUpdateOperationsInput | string
+    reportedEntityId?: StringFieldUpdateOperationsInput | string
+    reporterId?: NullableStringFieldUpdateOperationsInput | string | null
+    reporterName?: NullableStringFieldUpdateOperationsInput | string | null
+    reportType?: StringFieldUpdateOperationsInput | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    moderatorId?: NullableStringFieldUpdateOperationsInput | string | null
+    moderatorNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    actionTaken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type ReportCreateManyInput = {
+    id?: string
+    reportedType: string
+    reportedEntityId: string
+    reporterId?: string | null
+    reporterName?: string | null
+    reportType: string
+    reason?: string | null
+    status?: string
+    moderatorId?: string | null
+    moderatorNotes?: string | null
+    actionTaken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    resolvedAt?: Date | string | null
+  }
+
+  export type ReportUpdateManyMutationInput = {
+    reportedType?: StringFieldUpdateOperationsInput | string
+    reportedEntityId?: StringFieldUpdateOperationsInput | string
+    reporterId?: NullableStringFieldUpdateOperationsInput | string | null
+    reporterName?: NullableStringFieldUpdateOperationsInput | string | null
+    reportType?: StringFieldUpdateOperationsInput | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    moderatorId?: NullableStringFieldUpdateOperationsInput | string | null
+    moderatorNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    actionTaken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type ReportUncheckedUpdateManyInput = {
+    reportedType?: StringFieldUpdateOperationsInput | string
+    reportedEntityId?: StringFieldUpdateOperationsInput | string
+    reporterId?: NullableStringFieldUpdateOperationsInput | string | null
+    reporterName?: NullableStringFieldUpdateOperationsInput | string | null
+    reportType?: StringFieldUpdateOperationsInput | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    moderatorId?: NullableStringFieldUpdateOperationsInput | string | null
+    moderatorNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    actionTaken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -33466,6 +36475,24 @@ export namespace Prisma {
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+    isSet?: boolean
+  }
+
+  export type BoolNullableFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel> | null
+    not?: NestedBoolNullableFilter<$PrismaModel> | boolean | null
+    isSet?: boolean
+  }
+
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
     isSet?: boolean
   }
 
@@ -33658,8 +36685,24 @@ export namespace Prisma {
     role?: SortOrder
     isActive?: SortOrder
     deactivatedAt?: SortOrder
+    emailVerified?: SortOrder
+    emailVerifiedAt?: SortOrder
+    phoneVerified?: SortOrder
+    phoneVerifiedAt?: SortOrder
+    twoFactorEnabled?: SortOrder
+    failedLoginAttempts?: SortOrder
+    lockedUntil?: SortOrder
+    lastPasswordChange?: SortOrder
+    deletedAt?: SortOrder
+    deletedBy?: SortOrder
+    profileCompletionRate?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type UserAvgOrderByAggregateInput = {
+    failedLoginAttempts?: SortOrder
+    profileCompletionRate?: SortOrder
   }
 
   export type UserMaxOrderByAggregateInput = {
@@ -33686,6 +36729,17 @@ export namespace Prisma {
     role?: SortOrder
     isActive?: SortOrder
     deactivatedAt?: SortOrder
+    emailVerified?: SortOrder
+    emailVerifiedAt?: SortOrder
+    phoneVerified?: SortOrder
+    phoneVerifiedAt?: SortOrder
+    twoFactorEnabled?: SortOrder
+    failedLoginAttempts?: SortOrder
+    lockedUntil?: SortOrder
+    lastPasswordChange?: SortOrder
+    deletedAt?: SortOrder
+    deletedBy?: SortOrder
+    profileCompletionRate?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -33714,8 +36768,24 @@ export namespace Prisma {
     role?: SortOrder
     isActive?: SortOrder
     deactivatedAt?: SortOrder
+    emailVerified?: SortOrder
+    emailVerifiedAt?: SortOrder
+    phoneVerified?: SortOrder
+    phoneVerifiedAt?: SortOrder
+    twoFactorEnabled?: SortOrder
+    failedLoginAttempts?: SortOrder
+    lockedUntil?: SortOrder
+    lastPasswordChange?: SortOrder
+    deletedAt?: SortOrder
+    deletedBy?: SortOrder
+    profileCompletionRate?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type UserSumOrderByAggregateInput = {
+    failedLoginAttempts?: SortOrder
+    profileCompletionRate?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -33789,6 +36859,32 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedDateTimeNullableFilter<$PrismaModel>
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
+    isSet?: boolean
+  }
+
+  export type BoolNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel> | null
+    not?: NestedBoolNullableWithAggregatesFilter<$PrismaModel> | boolean | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedBoolNullableFilter<$PrismaModel>
+    _max?: NestedBoolNullableFilter<$PrismaModel>
+    isSet?: boolean
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
     isSet?: boolean
   }
 
@@ -33916,18 +37012,6 @@ export namespace Prisma {
     isActive?: SortOrder
   }
 
-  export type IntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
-    isSet?: boolean
-  }
-
   export type IntFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -34044,23 +37128,6 @@ export namespace Prisma {
     currentConcurrentUsers?: SortOrder
     maxUniqueSessions?: SortOrder
     currentUniqueSessions?: SortOrder
-  }
-
-  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
-    isSet?: boolean
   }
 
   export type IntWithAggregatesFilter<$PrismaModel = never> = {
@@ -35026,6 +38093,99 @@ export namespace Prisma {
     clickedAt?: SortOrder
   }
 
+  export type AdminAuditLogCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    adminId?: SortOrder
+    action?: SortOrder
+    entity?: SortOrder
+    entityId?: SortOrder
+    changes?: SortOrder
+    metadata?: SortOrder
+    ipAddress?: SortOrder
+    userAgent?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AdminAuditLogMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    adminId?: SortOrder
+    action?: SortOrder
+    entity?: SortOrder
+    entityId?: SortOrder
+    changes?: SortOrder
+    metadata?: SortOrder
+    ipAddress?: SortOrder
+    userAgent?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AdminAuditLogMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    adminId?: SortOrder
+    action?: SortOrder
+    entity?: SortOrder
+    entityId?: SortOrder
+    changes?: SortOrder
+    metadata?: SortOrder
+    ipAddress?: SortOrder
+    userAgent?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ReportCountOrderByAggregateInput = {
+    id?: SortOrder
+    reportedType?: SortOrder
+    reportedEntityId?: SortOrder
+    reporterId?: SortOrder
+    reporterName?: SortOrder
+    reportType?: SortOrder
+    reason?: SortOrder
+    status?: SortOrder
+    moderatorId?: SortOrder
+    moderatorNotes?: SortOrder
+    actionTaken?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    resolvedAt?: SortOrder
+  }
+
+  export type ReportMaxOrderByAggregateInput = {
+    id?: SortOrder
+    reportedType?: SortOrder
+    reportedEntityId?: SortOrder
+    reporterId?: SortOrder
+    reporterName?: SortOrder
+    reportType?: SortOrder
+    reason?: SortOrder
+    status?: SortOrder
+    moderatorId?: SortOrder
+    moderatorNotes?: SortOrder
+    actionTaken?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    resolvedAt?: SortOrder
+  }
+
+  export type ReportMinOrderByAggregateInput = {
+    id?: SortOrder
+    reportedType?: SortOrder
+    reportedEntityId?: SortOrder
+    reporterId?: SortOrder
+    reporterName?: SortOrder
+    reportType?: SortOrder
+    reason?: SortOrder
+    status?: SortOrder
+    moderatorId?: SortOrder
+    moderatorNotes?: SortOrder
+    actionTaken?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    resolvedAt?: SortOrder
+  }
+
   export type CommunityCreateNestedManyWithoutCreatorInput = {
     create?: XOR<CommunityCreateWithoutCreatorInput, CommunityUncheckedCreateWithoutCreatorInput> | CommunityCreateWithoutCreatorInput[] | CommunityUncheckedCreateWithoutCreatorInput[]
     connectOrCreate?: CommunityCreateOrConnectWithoutCreatorInput | CommunityCreateOrConnectWithoutCreatorInput[]
@@ -35309,6 +38469,20 @@ export namespace Prisma {
 
   export type NullableDateTimeFieldUpdateOperationsInput = {
     set?: Date | string | null
+    unset?: boolean
+  }
+
+  export type NullableBoolFieldUpdateOperationsInput = {
+    set?: boolean | null
+    unset?: boolean
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
     unset?: boolean
   }
 
@@ -36168,15 +39342,6 @@ export namespace Prisma {
     connectOrCreate?: AnonymousParticipantCreateOrConnectWithoutShareLinkInput | AnonymousParticipantCreateOrConnectWithoutShareLinkInput[]
     createMany?: AnonymousParticipantCreateManyShareLinkInputEnvelope
     connect?: AnonymousParticipantWhereUniqueInput | AnonymousParticipantWhereUniqueInput[]
-  }
-
-  export type NullableIntFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-    unset?: boolean
   }
 
   export type IntFieldUpdateOperationsInput = {
@@ -37352,6 +40517,24 @@ export namespace Prisma {
     isSet?: boolean
   }
 
+  export type NestedBoolNullableFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel> | null
+    not?: NestedBoolNullableFilter<$PrismaModel> | boolean | null
+    isSet?: boolean
+  }
+
+  export type NestedIntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+    isSet?: boolean
+  }
+
   export type NestedStringWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -37398,18 +40581,6 @@ export namespace Prisma {
     isSet?: boolean
   }
 
-  export type NestedIntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
-    isSet?: boolean
-  }
-
   export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>
     not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
@@ -37444,6 +40615,15 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedDateTimeNullableFilter<$PrismaModel>
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
+    isSet?: boolean
+  }
+
+  export type NestedBoolNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel> | null
+    not?: NestedBoolNullableWithAggregatesFilter<$PrismaModel> | boolean | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedBoolNullableFilter<$PrismaModel>
+    _max?: NestedBoolNullableFilter<$PrismaModel>
     isSet?: boolean
   }
 
@@ -39285,6 +42465,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -39331,6 +42522,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -39439,6 +42641,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -39484,6 +42697,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -39642,6 +42866,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -39688,6 +42923,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -39812,6 +43058,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -39857,6 +43114,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -40669,6 +43937,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -40715,6 +43994,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -41071,6 +44361,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -41116,6 +44417,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -41417,6 +44729,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -41463,6 +44786,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -41622,6 +44956,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -41667,6 +45012,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -41868,6 +45224,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -41914,6 +45281,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -42085,6 +45463,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -42130,6 +45519,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -42237,6 +45637,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -42283,6 +45694,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -42334,6 +45756,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -42380,6 +45813,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -42441,6 +45885,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -42486,6 +45941,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -42542,6 +46008,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -42587,6 +46064,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -42633,6 +46121,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -42679,6 +46178,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -42787,6 +46297,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -42832,6 +46353,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -42929,6 +46461,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -42975,6 +46518,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -43036,6 +46590,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -43081,6 +46646,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -43150,6 +46726,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
@@ -43196,6 +46783,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
@@ -43324,6 +46922,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
@@ -43369,6 +46978,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
@@ -43450,6 +47070,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -43496,6 +47127,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -43588,6 +47230,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -43633,6 +47286,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -43714,6 +47378,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -43760,6 +47435,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -43821,6 +47507,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -43866,6 +47563,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -43912,6 +47620,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -43958,6 +47677,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -44019,6 +47749,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -44064,6 +47805,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -44110,6 +47862,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -44156,6 +47919,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -44264,6 +48038,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -44309,6 +48094,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -44406,6 +48202,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -44452,6 +48259,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -44540,6 +48358,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -44585,6 +48414,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -44678,6 +48518,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -44724,6 +48575,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -44775,6 +48637,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -44821,6 +48694,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -44917,6 +48801,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -44962,6 +48857,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -45018,6 +48924,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -45063,6 +48980,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -45154,6 +49082,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -45200,6 +49139,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -45277,6 +49227,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -45322,6 +49283,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -45409,6 +49381,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -45455,6 +49438,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -45618,6 +49612,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -45663,6 +49668,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput

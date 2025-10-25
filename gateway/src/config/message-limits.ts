@@ -20,8 +20,9 @@ export const MESSAGE_LIMITS = {
   /**
    * Limite maximale de caractères pour la traduction
    * Les messages dépassant cette limite ne seront pas envoyés au service de traduction
+   * Aligné avec MAX_MESSAGE_LENGTH pour permettre la traduction de tous les messages valides
    */
-  MAX_TRANSLATION_LENGTH: parseInt(process.env.MAX_TRANSLATION_LENGTH || '500', 10),
+  MAX_TRANSLATION_LENGTH: parseInt(process.env.MAX_TRANSLATION_LENGTH || '10000', 10),
 } as const;
 
 /**

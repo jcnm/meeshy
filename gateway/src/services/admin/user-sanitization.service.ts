@@ -35,8 +35,8 @@ export class UserSanitizationService {
   private maskIP(ip: string | null): string | null {
     if (!ip) return null;
     const parts = ip.split('.');
-    if (parts.length !== 4) return '***.***.***.***.';
-    return `${parts[0]}.${parts[1]}.***.$***`;
+    if (parts.length !== 4) return '***.***.***.***';
+    return `${parts[0]}.${parts[1]}.***.***.`;
   }
 
   /**
@@ -64,7 +64,8 @@ export class UserSanitizationService {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       deactivatedAt: user.deactivatedAt,
-      profileCompletionRate: user.profileCompletionRate
+      profileCompletionRate: user.profileCompletionRate,
+      _count: user._count
     };
 
     // Si peut voir les données sensibles → AdminUser
@@ -86,7 +87,9 @@ export class UserSanitizationService {
         lastPasswordChange: user.lastPasswordChange,
         failedLoginAttempts: user.failedLoginAttempts,
         lockedUntil: user.lockedUntil,
-        deletedBy: user.deletedBy
+        deletedAt: user.deletedAt,
+        deletedBy: user.deletedBy,
+        _count: user._count
       };
       return adminData;
     }

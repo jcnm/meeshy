@@ -1,0 +1,39 @@
+🎉 Meeshy Updates - October 25, 2025
+
+Hey everyone! We've been busy shipping some amazing improvements over the past 2 days. Here's what's new:
+
+🌍 Language Interface Improvements
+✅ Language selector now properly persists your choice across sessions
+✅ Switching interface language (EN/FR) now works consistently from both Header and Settings
+✅ Fixed: Language no longer reverts to French after page reload
+✅ Mobile-friendly language selector with flag + name display
+✅ Better visual feedback when changing languages
+
+🎨 UI/UX Enhancements
+✅ Report icon styling improved (removed yellow highlight for better consistency)
+✅ Message action icons now have neutral colors in both light and dark modes
+✅ Improved language flag selector for mobile devices
+✅ Better responsive design across all screen sizes
+
+🔧 Technical Improvements
+✅ Fixed localStorage persistence for language preferences
+✅ Synchronized language changes between Header and Settings components
+✅ Enhanced browser language detection on first visit
+✅ Improved page reload behavior after language changes
+✅ Better separation between interface language and message translation language
+
+🐛 Bug Fixes
+✅ Fixed: Interface language selector not activating when changed
+✅ Fixed: EN language reverting to FR automatically
+✅ Fixed: Language settings not being applied after page reload
+✅ Fixed: Inconsistent language behavior between different UI components
+
+📱 Default Settings
+✅ French is now the default interface language
+✅ Better fallback mechanisms for language preferences
+
+All these improvements are live now! Try switching your interface language and see how smooth it is 😊
+
+Breaking language barriers, one update at a time 🚀
+
+#Meeshy #ProductUpdate #LanguageInterface #UXImprovement #BugFixes

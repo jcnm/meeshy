@@ -42,13 +42,13 @@ export function LanguageFlagSelector({
 
   // Utiliser les choix fournis, les langues d'interface limitées, ou les langues supportées par défaut
   const availableLanguages = choices 
-    ? choices.map(choice => SUPPORTED_LANGUAGES.find(lang => lang.code === choice.code)).filter(Boolean)
+    ? choices.map(choice => SUPPORTED_LANGUAGES.find(lang => lang.code === choice.code)).filter((lang): lang is typeof SUPPORTED_LANGUAGES[0] => lang !== undefined)
     : interfaceOnly 
       ? INTERFACE_LANGUAGES
       : SUPPORTED_LANGUAGES;
 
   const selectedLanguage = availableLanguages.find(
-    (language) => language?.code === value
+    (language) => language.code === value
   );
 
   return (
@@ -60,46 +60,60 @@ export function LanguageFlagSelector({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "justify-center w-6 h-6 sm:w-7 sm:h-7 p-0 border-gray-200 hover:border-blue-300",
+            "justify-center gap-2 h-8 sm:h-9 px-3 border-gray-200 hover:border-blue-300",
             className
           )}
         >
-          <span className="text-xs sm:text-sm">
+          <span className="text-sm sm:text-base">
             {selectedLanguage?.flag || '🌐'}
+          </span>
+          <span className="text-xs sm:text-sm font-medium">
+            {selectedLanguage?.name || 'Language'}
           </span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent 
+      <PopoverContent
         className={cn(
-          "p-2",
-          isMobile ? "w-auto max-h-[60vh] overflow-y-auto" : "w-10"
+          isMobile
+            ? "p-0 bg-transparent border-0 shadow-none flex items-center justify-center"
+            : "p-2 w-auto"
         )}
-        side="top" 
-        align="center"
-        sideOffset={4}
+        side={isMobile ? undefined : "top"}
+        align={isMobile ? undefined : "center"}
+        sideOffset={isMobile ? undefined : 4}
       >
-        <div className={cn(
-          "gap-1 items-center",
-          isMobile ? "grid grid-cols-3" : "flex flex-col"
-        )}>
+        <div
+          className={cn(
+            isMobile
+              ? "bg-white dark:bg-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg p-2 flex flex-col gap-2 max-w-[160px] w-[160px] max-h-[40vh] mx-auto overflow-y-auto items-center justify-center"
+              : "gap-2 items-center flex flex-col"
+          )}
+          style={isMobile ? {margin: '0 auto'} : {}}
+        >
           {availableLanguages.map((language) => (
             <Button
-              key={language?.code}
+              key={language.code}
               variant="ghost"
               size="sm"
               onClick={() => {
-                if (language?.code) {
-                  onValueChange(language.code);
-                  setOpen(false);
-                }
+                onValueChange(language.code);
+                setOpen(false);
               }}
               className={cn(
-                "p-0 flex items-center justify-center hover:bg-blue-100",
-                isMobile ? "h-10 w-10" : "h-8 w-8"
+                isMobile
+                  ? "flex flex-row items-center justify-start h-10 w-full px-2 gap-2 border border-gray-100 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900"
+                  : "flex flex-row items-center justify-start h-10 w-full px-3 gap-2 hover:bg-blue-100",
+                value === language.code && "bg-blue-50 dark:bg-blue-900/30"
               )}
-              title={language?.code && formatLanguageName(language.code)}
+              title={formatLanguageName(language.code)}
             >
-              <span className={isMobile ? "text-lg" : "text-sm"}>{language?.flag}</span>
+              <span className={isMobile ? "text-xl" : "text-base"}>{language.flag}</span>
+              <span className={cn(
+                "font-medium",
+                isMobile ? "text-sm" : "text-sm"
+              )}>
+                {language.name}
+              </span>
             </Button>
           ))}
         </div>

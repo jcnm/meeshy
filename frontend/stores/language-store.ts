@@ -39,14 +39,14 @@ const detectBrowserLanguage = (): string => {
   if (typeof window === 'undefined') return 'en';
   
   const browserLang = navigator.language.split('-')[0];
-  const supportedLanguages = ['en'];
+  const supportedLanguages = ['en', 'fr']; // Langues avec traductions complètes
   
   return supportedLanguages.includes(browserLang) ? browserLang : 'en';
 };
 
 const DEFAULT_LANGUAGE_CONFIG: UserLanguageConfig = {
-  systemLanguage: 'en',
-  regionalLanguage: 'en',
+  systemLanguage: 'fr',
+  regionalLanguage: 'fr',
   customDestinationLanguage: undefined,
   autoTranslateEnabled: true,
   translateToSystemLanguage: true,
@@ -55,9 +55,9 @@ const DEFAULT_LANGUAGE_CONFIG: UserLanguageConfig = {
 };
 
 const initialState: LanguageState = {
-  currentInterfaceLanguage: detectBrowserLanguage(),
-  currentMessageLanguage: detectBrowserLanguage(),
-  availableLanguages: ['en'],
+  currentInterfaceLanguage: 'fr', // Will be overridden by persisted state or browser detection
+  currentMessageLanguage: 'fr', // Will be overridden by persisted state or browser detection
+  availableLanguages: ['en', 'fr'], // Seules les langues avec traductions complètes
   userLanguageConfig: DEFAULT_LANGUAGE_CONFIG,
 };
 
@@ -137,6 +137,7 @@ export const useLanguageStore = create<LanguageStore>()(
       }),
       {
         name: 'meeshy-language',
+        version: 1, // Increment this to force re-initialization if needed
         partialize: (state) => ({
           currentInterfaceLanguage: state.currentInterfaceLanguage,
           currentMessageLanguage: state.currentMessageLanguage,
