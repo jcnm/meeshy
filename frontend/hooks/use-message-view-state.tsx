@@ -3,7 +3,7 @@
 import { useState, useCallback, useContext, createContext, ReactNode } from 'react';
 
 // Types pour les vues de message
-export type MessageViewMode = 'normal' | 'reaction' | 'language' | 'edit' | 'delete';
+export type MessageViewMode = 'normal' | 'reaction' | 'language' | 'edit' | 'delete' | 'report';
 
 export interface MessageViewState {
   messageId: string;
@@ -29,11 +29,12 @@ export function MessageViewProvider({ children }: { children: ReactNode }) {
 
   // Transitions autorisées - State Machine Pattern
   const allowedTransitions: Record<MessageViewMode, MessageViewMode[]> = {
-    normal: ['reaction', 'language', 'edit', 'delete'],
+    normal: ['reaction', 'language', 'edit', 'delete', 'report'],
     reaction: ['normal'],
     language: ['normal'],
     edit: ['normal'],
-    delete: ['normal']
+    delete: ['normal'],
+    report: ['normal']
   };
 
   const canTransition = useCallback((fromMode: MessageViewMode, toMode: MessageViewMode): boolean => {
@@ -127,6 +128,10 @@ export function useMessageView(messageId: string) {
     activateView(messageId, 'delete');
   }, [messageId, activateView]);
 
+  const enterReportMode = useCallback(() => {
+    activateView(messageId, 'report');
+  }, [messageId, activateView]);
+
   const exitMode = useCallback(() => {
     if (isActive()) {
       deactivateView();
@@ -143,17 +148,18 @@ export function useMessageView(messageId: string) {
     currentMode,
     currentData,
     isActive,
-    
+
     // Actions
     enterReactionMode,
     enterLanguageMode,
     enterEditMode,
     enterDeleteMode,
+    enterReportMode,
     exitMode,
-    
+
     // Vérifications
     canEnterMode,
-    
+
     // État global (pour debug/dev)
     globalState: activeView
   };
