@@ -37,12 +37,10 @@ export function useLanguage() {
     setInterfaceLanguage,
     isLanguageSupported,
     getSupportedLanguages: () => [
-      { code: 'fr', name: 'Français', nativeName: 'Français' },
       { code: 'en', name: 'English', nativeName: 'English' },
-      { code: 'es', name: 'Español', nativeName: 'Español' },
-      { code: 'de', name: 'Deutsch', nativeName: 'Deutsch' },
-      { code: 'pt', name: 'Português', nativeName: 'Português' },
-      { code: 'it', name: 'Italiano', nativeName: 'Italiano' },
+      { code: 'fr', name: 'Français', nativeName: 'Français' },
+      // Note: Seuls EN et FR ont des fichiers de traduction complets
+      // TODO: Ajouter es, de, pt, it quand les traductions seront prêtes
     ],
   };
 }

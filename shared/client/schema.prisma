@@ -35,8 +35,26 @@ model User {
   role                        String    @default("USER")
   isActive                    Boolean   @default(true)
   deactivatedAt               DateTime?
-  createdAt                   DateTime  @default(now())
-  updatedAt                   DateTime  @updatedAt
+
+  // Security & verification fields
+  emailVerified       Boolean   @default(false)
+  emailVerifiedAt     DateTime?
+  phoneVerified       Boolean   @default(false)
+  phoneVerifiedAt     DateTime?
+  twoFactorEnabled    Boolean   @default(false)
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+  lastPasswordChange  DateTime  @default(now())
+
+  // Soft delete fields
+  deletedAt DateTime?
+  deletedBy String?   @db.ObjectId
+
+  // Profile completion
+  profileCompletionRate Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   createdCommunities      Community[]              @relation("CommunityCreator")
   communityMemberships    CommunityMember[]
@@ -47,6 +65,7 @@ model User {
   sentFriendRequests      FriendRequest[]          @relation("FriendRequestSender")
   messageStatus           MessageStatus[]
   sentMessages            Message[]                @relation("MessageSender")
+  reactions               Reaction[]               @relation("UserReactions")
   notifications           Notification[]
   typingIndicators        TypingIndicator[]
   preferences             UserPreference[]
@@ -169,6 +188,7 @@ model AnonymousParticipant {
   shareLink          ConversationShareLink @relation("ShareLinkParticipants", fields: [shareLinkId], references: [id])
   conversation       Conversation          @relation(fields: [conversationId], references: [id])
   sentMessages       Message[]             @relation("AnonymousMessageSender")
+  reactions          Reaction[]            @relation("AnonymousReactions")
   trackingLinkClicks TrackingLinkClick[]   @relation("TrackingLinkClickAnonymous")
 }
 
@@ -194,6 +214,7 @@ model Message {
   statusResponses MessageStatus[]       @relation("MessageStatusResponse")
   translations    MessageTranslation[]
   attachments     MessageAttachment[]
+  reactions       Reaction[]            @relation("MessageReactions")
   replyTo         Message?              @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   replies         Message[]             @relation("MessageReplies")
   anonymousSender AnonymousParticipant? @relation("AnonymousMessageSender", fields: [anonymousSenderId], references: [id])
@@ -208,12 +229,20 @@ model MessageTranslation {
   sourceLanguage    String
   targetLanguage    String
   translatedContent String
-  translationModel  String
+  translationModel  String // "basic", "medium", "premium"
   cacheKey          String   @unique
   confidenceScore   Float?
   createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   message Message @relation(fields: [messageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  // Contrainte d'unicité: une seule traduction par message et langue cible
+  // Permet de mettre à jour la traduction existante vers un niveau supérieur
+  @@unique([messageId, targetLanguage], name: "messageId_targetLanguage")
+  @@index([messageId])
+  @@index([targetLanguage])
+  @@index([translationModel])
 }
 
 /// Attachement de fichier pour un message
@@ -261,7 +290,30 @@ model MessageStatus {
   response   Message?  @relation("MessageStatusResponse", fields: [answer], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([messageId, userId], name: "messageId_userId")
-  @@map("message_status")
+}
+
+/// Réaction emoji sur un message par un utilisateur
+model Reaction {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  messageId       String   @db.ObjectId
+  userId          String?  @db.ObjectId // null pour utilisateurs anonymes
+  anonymousUserId String?  @db.ObjectId // ID de l'utilisateur anonyme
+  emoji           String // Emoji libre (ex: 🎉, ❤️, 🔥, ⭐)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  message       Message               @relation("MessageReactions", fields: [messageId], references: [id], onDelete: Cascade)
+  user          User?                 @relation("UserReactions", fields: [userId], references: [id], onDelete: Cascade)
+  anonymousUser AnonymousParticipant? @relation("AnonymousReactions", fields: [anonymousUserId], references: [id], onDelete: Cascade)
+
+  // Contrainte: un utilisateur ne peut ajouter le même emoji qu'une seule fois par message
+  @@unique([messageId, userId, emoji], name: "user_reaction_unique")
+  // Contrainte: un utilisateur anonyme ne peut ajouter le même emoji qu'une seule fois par message
+  @@unique([messageId, anonymousUserId, emoji], name: "anonymous_reaction_unique")
+  @@index([messageId])
+  @@index([userId])
+  @@index([anonymousUserId])
+  @@index([emoji])
 }
 
 /// Demande d'amitié entre utilisateurs
@@ -472,4 +524,34 @@ model TrackingLinkClick {
   trackingLink  TrackingLink          @relation(fields: [trackingLinkId], references: [id])
   user          User?                 @relation("TrackingLinkClickUser", fields: [userId], references: [id])
   anonymousUser AnonymousParticipant? @relation("TrackingLinkClickAnonymous", fields: [anonymousId], references: [id])
+}
+
+/// Journal d'audit des actions administratives
+model AdminAuditLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  /// ID de l'utilisateur affecté par l'action
+  userId    String   @db.ObjectId
+  /// ID de l'administrateur qui a effectué l'action
+  adminId   String   @db.ObjectId
+  /// Type d'action (VIEW_USER, CREATE_USER, UPDATE_PROFILE, etc.)
+  action    String
+  /// Type d'entité affectée (User, Community, etc.)
+  entity    String   @default("User")
+  /// ID de l'entité affectée
+  entityId  String
+  /// Changements effectués (JSON stringifié)
+  changes   String?
+  /// Métadonnées supplémentaires (JSON stringifié)
+  metadata  String?
+  /// Adresse IP de l'admin
+  ipAddress String?
+  /// User agent du navigateur
+  userAgent String?
+  /// Date de création du log
+  createdAt DateTime @default(now())
+
+  @@index([adminId])
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
 }

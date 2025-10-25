@@ -72,13 +72,22 @@ interface DashboardData {
 const AdminDashboard: React.FC = () => {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-  const [dashboardData, setDashboardData] = useState<AdminDashboardData | null>(null);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
   const loadAdminStats = async () => {
     try {
       const response = await adminService.getDashboardStats();
-      if (response.data) {
+      console.log('[ADMIN] Réponse API reçue:', response);
+      // Le backend retourne { data: { success: true, data: DashboardData } }
+      // Donc response.data contient { success: true, data: DashboardData }
+      if (response.data && (response.data as any).success && (response.data as any).data) {
+        const dashData = (response.data as any).data;
+        console.log('[ADMIN] Données dashboard extraites:', dashData);
+        setDashboardData(dashData);
+      } else if (response.data) {
+        // Cas où les données sont directement dans response.data (pas de wrapping)
+        console.log('[ADMIN] Données dashboard directes:', response.data);
         setDashboardData(response.data);
       }
     } catch (error) {
@@ -349,48 +358,6 @@ const AdminDashboard: React.FC = () => {
           </Card>
         </div>
 
-        {/* Statistiques supplémentaires */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Communautés</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-600">{stats?.totalCommunities || 0}</div>
-              <p className="text-xs text-muted-foreground">
-                Communautés créées
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Messages</CardTitle>
-              <Activity className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-indigo-600">{stats?.totalMessages || 0}</div>
-              <p className="text-xs text-muted-foreground">
-                Messages envoyés
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Utilisateurs inactifs</CardTitle>
-              <AlertCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-600">{stats?.inactiveUsers || 0}</div>
-              <p className="text-xs text-muted-foreground">
-                Utilisateurs inactifs
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Langues les plus utilisées */}
         {stats?.topLanguages && stats.topLanguages.length > 0 && (
           <div className="space-y-4">
@@ -597,66 +564,36 @@ const AdminDashboard: React.FC = () => {
         </Card>
 
         {/* Informations système */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Server className="w-5 h-5" />
-                <span>État du système</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Serveur</span>
-                  <Badge variant="outline" className="text-green-600 border-green-200">
-                    En ligne
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Base de données</span>
-                  <Badge variant="outline" className="text-green-600 border-green-200">
-                    Connectée
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">WebSocket</span>
-                  <Badge variant="outline" className="text-green-600 border-green-200">
-                    Actif
-                  </Badge>
-                </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Server className="w-5 h-5" />
+              <span>État du système</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Serveur</span>
+                <Badge variant="outline" className="text-green-600 border-green-200">
+                  En ligne
+                </Badge>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Clock className="w-5 h-5" />
-                <span>Dernière mise à jour</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-sm text-gray-600">
-                {dashboardData?.timestamp && (
-                  <div>
-                    Données mises à jour le {' '}
-                    {new Date(dashboardData.timestamp).toLocaleString('fr-FR')}
-                  </div>
-                )}
-                <div className="mt-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => router.refresh()}
-                  >
-                    Actualiser les données
-                  </Button>
-                </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Base de données</span>
+                <Badge variant="outline" className="text-green-600 border-green-200">
+                  Connectée
+                </Badge>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">WebSocket</span>
+                <Badge variant="outline" className="text-green-600 border-green-200">
+                  Actif
+                </Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </AdminLayout>
   );

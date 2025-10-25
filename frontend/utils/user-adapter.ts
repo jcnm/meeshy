@@ -67,6 +67,17 @@ export function getDefaultPermissions(role: string): UserPermissions {
       canManageNotifications: false,
       canManageTranslations: false,
     },
+    MODO: {
+      canAccessAdmin: true,
+      canManageUsers: false,
+      canManageGroups: true,
+      canManageConversations: true,
+      canViewAnalytics: false,
+      canModerateContent: true,
+      canViewAuditLogs: false,
+      canManageNotifications: false,
+      canManageTranslations: false,
+    },
     AUDIT: {
       canAccessAdmin: true,
       canManageUsers: false,

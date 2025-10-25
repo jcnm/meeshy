@@ -396,7 +396,7 @@ export default function ContactsPage() {
                 <h1 className="text-4xl md:text-5xl font-bold">{t('title')}</h1>
               </div>
               <p className="text-lg md:text-xl text-blue-100 max-w-2xl">
-                Gérez vos contacts, connectez-vous avec des amis et développez votre réseau professionnel
+                {t('subtitle')}
               </p>
             </div>
             {/* Decorative elements */}
@@ -410,7 +410,7 @@ export default function ContactsPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Total contacts</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">{t('stats.totalContacts')}</p>
                     <p className="text-3xl font-bold text-foreground">{stats.total}</p>
                   </div>
                   <div className="p-4 bg-blue-100 dark:bg-blue-900/30 rounded-2xl">
@@ -424,7 +424,7 @@ export default function ContactsPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">En ligne</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">{t('stats.online')}</p>
                     <p className="text-3xl font-bold text-green-600 dark:text-green-400">{stats.online}</p>
                   </div>
                   <div className="p-4 bg-green-100 dark:bg-green-900/30 rounded-2xl">
@@ -438,7 +438,7 @@ export default function ContactsPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Connectés</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">{t('stats.connected')}</p>
                     <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{stats.connected}</p>
                   </div>
                   <div className="p-4 bg-purple-100 dark:bg-purple-900/30 rounded-2xl">
@@ -452,7 +452,7 @@ export default function ContactsPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">En attente</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">{t('stats.pending')}</p>
                     <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{stats.pending}</p>
                   </div>
                   <div className="p-4 bg-orange-100 dark:bg-orange-900/30 rounded-2xl">
@@ -466,7 +466,7 @@ export default function ContactsPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Affiliés</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">{t('stats.affiliates')}</p>
                     <p className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">{stats.affiliates}</p>
                   </div>
                   <div className="p-4 bg-cyan-100 dark:bg-cyan-900/30 rounded-2xl">
@@ -884,7 +884,7 @@ export default function ContactsPage() {
                                           </AvatarFallback>
                                         </Avatar>
                                         
-                                        <div className="flex-1">
+                                        <div className="flex-1 min-w-0">
                                           <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
                                             {getUserDisplayName(otherUser!)}
                                           </h3>

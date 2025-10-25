@@ -1,5 +1,6 @@
 import { apiService } from './api.service';
 import type { ApiResponse } from '@shared/types';
+import type { AdminUser } from '@shared/types';
 
 export interface AdminStats {
   // 1. Utilisateurs
@@ -48,21 +49,8 @@ export interface AdminDashboardData {
   timestamp: string;
 }
 
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-  displayName?: string;
-  firstName?: string;
-  lastName?: string;
-  role: string;
-  isActive: boolean;
-  isOnline: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  lastLoginAt?: Date;
-  avatar?: string;
-}
+// Réexportation du type AdminUser depuis @shared pour usage dans ce module
+export type User = AdminUser;
 
 export interface AdminUsersResponse {
   users: User[];

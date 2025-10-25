@@ -1,69 +1,77 @@
 {
-  "contacts": {
-    "title": "Contacts",
-    "searchPlaceholder": "Search contacts...",
-    "inviteContact": "Invite contact",
-    "contactsFound": "{count} contact found",
-    "contactsFound_plural": "{count} contacts found",
-    "tabs": {
-      "all": "All",
-      "connected": "Connected",
-      "pending": "Pending",
-      "refused": "Refused",
-      "affiliates": "Affiliates"
-    },
-    "status": {
-      "online": "Online",
-      "offline": "Offline",
-      "pending": "Pending",
-      "rejected": "Rejected"
-    },
-    "actions": {
-      "message": "Message",
-      "sendMessage": "Send message",
-      "call": "Call",
-      "viewProfile": "View profile",
-      "accept": "Accept",
-      "reject": "Reject",
-      "remove": "Remove",
-      "resend": "Resend",
-      "connection": "Connection"
-    },
-    "messages": {
-      "noContacts": "No contacts",
-      "noContactsDescription": "Start by adding contacts to your list",
-      "noConnectedContacts": "No connected contacts",
-      "noConnectedContactsDescription": "Accept friend requests to connect with people",
-      "noPendingRequests": "No pending requests",
-      "noPendingRequestsDescription": "All friend requests have been processed",
-      "noRefusedRequests": "No refused requests",
-      "noRefusedRequestsDescription": "You haven't refused any friend requests",
-      "noAffiliateContacts": "No affiliate contacts",
-      "noAffiliateContactsDescription": "Invite people using your affiliate link",
-      "noContactsFound": "No contacts found",
-      "noContactsFoundDescription": "Try a different search",
-      "searchUsers": "Search users...",
-      "emailAddress": "Email address",
-      "registeredAt": "Registered on",
-      "joinedOn": "Joined on",
-      "linkUsed": "Link used",
-      "requestSent": "Request sent on {date}",
-      "requestReceived": "Request received on {date}"
-    },
-    "success": {
-      "friendRequestSent": "Friend request sent",
-      "friendRequestAccepted": "Friend request accepted",
-      "friendRequestRejected": "Friend request rejected",
-      "conversationCreated": "Conversation created"
-    },
-    "errors": {
-      "loadContactsError": "Error loading contacts",
-      "searchError": "Error during search",
-      "sendError": "Error sending request",
-      "updateError": "Error updating contact",
-      "connectionError": "Connection error",
-      "conversationCreationError": "Error creating conversation",
-      "sessionExpired": "Session expired"
-    }
+  "title": "Contacts",
+  "subtitle": "Manage your contacts, connect with friends and grow your professional network",
+  "searchPlaceholder": "Search contacts...",
+  "inviteContact": "Invite contact",
+  "contactsFound": "{count} contact found",
+  "contactsFound_plural": "{count} contacts found",
+  "stats": {
+    "totalContacts": "Total contacts",
+    "online": "Online",
+    "connected": "Connected",
+    "pending": "Pending",
+    "affiliates": "Affiliates"
+  },
+  "tabs": {
+    "all": "All",
+    "connected": "Connected",
+    "pending": "Pending",
+    "refused": "Refused",
+    "affiliates": "Affiliates"
+  },
+  "status": {
+    "online": "Online",
+    "offline": "Offline",
+    "pending": "Pending",
+    "rejected": "Rejected"
+  },
+  "actions": {
+    "message": "Message",
+    "sendMessage": "Send message",
+    "call": "Call",
+    "viewProfile": "View profile",
+    "accept": "Accept",
+    "reject": "Reject",
+    "remove": "Remove",
+    "resend": "Resend",
+    "connection": "Connection"
+  },
+  "messages": {
+    "noContacts": "No contacts",
+    "noContactsDescription": "Start by adding contacts to your list",
+    "noConnectedContacts": "No connected contacts",
+    "noConnectedContactsDescription": "Accept friend requests to connect with people",
+    "noPendingRequests": "No pending requests",
+    "noPendingRequestsDescription": "All friend requests have been processed",
+    "noRefusedRequests": "No refused requests",
+    "noRefusedRequestsDescription": "You haven't refused any friend requests",
+    "noAffiliateContacts": "No affiliate contacts",
+    "noAffiliateContactsDescription": "Invite people using your affiliate link",
+    "noContactsFound": "No contacts found",
+    "noContactsFoundDescription": "Try a different search",
+    "searchUsers": "Search users...",
+    "emailAddress": "Email address",
+    "registeredAt": "Registered on",
+    "joinedOn": "Joined on",
+    "linkUsed": "Link used",
+    "requestSent": "Request sent on {date}",
+    "requestReceived": "Request received on {date}",
+    "requestRejected": "Request rejected on {date}",
+    "invalidUser": "Invalid user"
+  },
+  "success": {
+    "friendRequestSent": "Friend request sent",
+    "friendRequestAccepted": "Friend request accepted",
+    "friendRequestRejected": "Friend request rejected",
+    "conversationCreated": "Conversation created"
+  },
+  "errors": {
+    "loadContactsError": "Error loading contacts",
+    "searchError": "Error during search",
+    "sendError": "Error sending request",
+    "updateError": "Error updating contact",
+    "connectionError": "Connection error",
+    "conversationCreationError": "Error creating conversation",
+    "sessionExpired": "Session expired"
   }
 }
