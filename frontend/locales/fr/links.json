@@ -1,9 +1,18 @@
 {
   "links": {
     "title": "Liens de partage",
+    "subtitle": "Créez et gérez vos liens de partage pour inviter facilement des participants à vos conversations",
     "createLink": "Créer un lien",
     "unnamedLink": "Lien sans nom",
     "conversation": "Conversation",
+    "linksFound": "{count} lien trouvé",
+    "linksFound_plural": "{count} liens trouvés",
+    "loadingLinks": "Chargement de vos liens...",
+    "loadingTrackingLinks": "Chargement de vos liens de suivi...",
+    "noLinksFound": "Aucun lien trouvé",
+    "noLinksFoundTryAnother": "Essayez de modifier votre recherche ou créez un nouveau lien",
+    "noLinksFoundCreateFirst": "Créez votre premier lien pour commencer à inviter des participants à vos conversations",
+    "activationNotImplemented": "Activation non encore implémentée",
     "linkNameTemplate": {
       "default": "{participantLimit} lien pour la conversation '{conversationTitle}' valable {duration}",
       "openToAll": "ouvert à tous",
@@ -33,9 +42,11 @@
       "expires": "Expire",
       "uses": "Utilisations",
       "active": "Actif",
+      "totalLinks": "Total des liens",
       "totalClicks": "Clics totaux",
       "uniqueClicks": "Clics uniques",
-      "lastClicked": "Dernier clic"
+      "lastClicked": "Dernier clic",
+      "never": "Jamais"
     },
     "actions": {
       "menu": "Menu",
@@ -205,19 +216,50 @@
     "tracking": {
       "title": "Liens suivis",
       "createLink": "Créer un lien suivi",
+      "createLinkDescription": "Créer un lien court de suivi pour surveiller les clics et l'engagement",
       "originalUrl": "URL originale",
       "shortUrl": "URL courte",
       "trackingUrl": "URL de suivi",
       "noLinks": "Aucun lien suivi",
       "noLinksDescription": "Créez votre premier lien suivi pour surveiller les clics et l'engagement",
+      "shareThisLink": "Partagez ce lien court pour suivre les clics",
+      "enterUrlToShorten": "Entrez l'URL que vous souhaitez raccourcir et suivre",
+      "urlLabel": "URL à suivre",
+      "advancedOptions": "Options avancées",
+      "optionalSettings": "Paramètres optionnels pour votre lien de suivi",
+      "expirationLabel": "Expiration du lien",
+      "associateConversation": "Associer à une conversation",
+      "associateConversationDescription": "Associez ce lien à une conversation pour un meilleur suivi",
+      "creating": "Création...",
+      "createButton": "Créer le lien de suivi",
+      "expirationOptions": {
+        "never": "N'expire jamais",
+        "1day": "1 jour",
+        "7days": "7 jours",
+        "30days": "30 jours",
+        "90days": "90 jours",
+        "1year": "1 an"
+      },
       "stats": {
         "totalLinks": "Liens totaux",
         "totalClicks": "Clics totaux",
         "uniqueClicks": "Visiteurs uniques",
-        "activeLinks": "Liens actifs"
+        "activeLinks": "Liens actifs",
+        "conversionRate": "Taux de conversion",
+        "lastClick": "Dernier clic",
+        "never": "Jamais"
       },
       "details": {
         "title": "Statistiques du lien de suivi",
+        "linkNotFound": "Lien introuvable",
+        "linkNotFoundDescription": "Ce lien de suivi n'existe pas ou a été supprimé",
+        "backToLinks": "Retour aux liens",
+        "linkInformation": "Informations du lien",
+        "token": "Token",
+        "createdOn": "Créé le",
+        "shortUrl": "URL courte",
+        "originalUrl": "URL originale",
+        "evolutionOverTime": "Évolution au fil du temps",
         "overview": "Aperçu",
         "performance": "Performance",
         "geography": "Géographie",
@@ -230,7 +272,12 @@
         "clicksByDate": "Clics dans le temps",
         "topReferrers": "Principaux référents",
         "referrer": "Référent",
-        "clicks": "Clics"
+        "clicks": "Clics",
+        "clicksCount": "{count} clics",
+        "uniqueCount": "{count} uniques",
+        "unknown": "Inconnu",
+        "direct": "Direct",
+        "copy": "Copier"
       },
       "actions": {
         "viewStats": "Voir les statistiques",
@@ -239,7 +286,10 @@
         "activate": "Activer"
       },
       "success": {
-        "created": "Lien de suivi créé avec succès",
+        "created": "Lien de suivi créé avec succès et copié dans le presse-papiers",
+        "createdNoCopy": "Lien de suivi créé avec succès",
+        "linkCreated": "Lien créé avec succès !",
+        "linkCreatedDescription": "Votre lien de suivi est prêt à être utilisé",
         "copied": "Lien copié dans le presse-papiers",
         "deactivated": "Lien désactivé avec succès",
         "activated": "Lien activé avec succès",
@@ -250,7 +300,9 @@
         "createFailed": "Erreur lors de la création du lien de suivi",
         "statsFailed": "Erreur lors du chargement des statistiques",
         "deactivateFailed": "Erreur lors de la désactivation du lien",
-        "deleteFailed": "Erreur lors de la suppression du lien"
+        "deleteFailed": "Erreur lors de la suppression du lien",
+        "urlRequired": "Veuillez entrer une URL",
+        "invalidUrl": "Veuillez entrer une URL valide"
       }
     }
   }

@@ -47,6 +47,8 @@ import { LinkDetailsModal } from '@/components/links/link-details-modal';
 import { LinkEditModal } from '@/components/links/link-edit-modal';
 import { TrackingLinkDetailsModal } from '@/components/links/tracking-link-details-modal';
 import { CreateLinkButton } from '@/components/links/create-link-button';
+import { CreateLinkModalV2 } from '@/components/conversations/create-link-modal';
+import { CreateTrackingLinkModal } from '@/components/links/create-tracking-link-modal';
 import { CreateConversationModal } from '@/components/conversations/create-conversation-modal';
 import { copyToClipboard } from '@/lib/clipboard';
 import { useUser } from '@/stores';
@@ -71,6 +73,25 @@ export default function LinksPage() {
   const [showTrackingDetailsModal, setShowTrackingDetailsModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCreateConversationModal, setShowCreateConversationModal] = useState(false);
+  const [showCreateLinkModal, setShowCreateLinkModal] = useState(false);
+  const [showCreateTrackingLinkModal, setShowCreateTrackingLinkModal] = useState(false);
+
+  // Synchroniser l'onglet avec le hash de l'URL
+  useEffect(() => {
+    const hash = window.location.hash.replace('#', '');
+    if (hash === 'tracked') {
+      setMainTab('trackingLinks');
+    } else if (hash === 'shared') {
+      setMainTab('shareLinks');
+    }
+  }, []);
+
+  // Mettre à jour le hash quand l'onglet change
+  const handleTabChange = (value: 'shareLinks' | 'trackingLinks') => {
+    setMainTab(value);
+    const hash = value === 'trackingLinks' ? 'tracked' : 'shared';
+    window.history.pushState(null, '', `#${hash}`);
+  };
 
   /**
    * Tronque le nom du lien à 32 caractères pour l'affichage dans la liste
@@ -83,12 +104,12 @@ export default function LinksPage() {
     return name.substring(0, maxLength - 3) + '...';
   };
 
-  // Charger les liens
+  // Charger les liens de partage
   const loadLinks = async () => {
     try {
       setIsLoading(true);
       const token = authManager.getAuthToken();
-      
+
       // Charger les liens de partage
       const shareLinksResponse = await fetch(buildApiUrl('/api/links/my-links'), {
         headers: { Authorization: `Bearer ${token}` }
@@ -101,19 +122,26 @@ export default function LinksPage() {
         toast.error(t('errors.loadFailed'));
       }
 
-      // Charger les liens trackés
-      try {
-        const trackingLinksData = await getUserTrackingLinks();
-        setTrackingLinks(trackingLinksData);
-      } catch (error) {
-        console.error('Erreur lors du chargement des liens trackés:', error);
-        // Ne pas afficher d'erreur si c'est juste les liens trackés qui échouent
-      }
+      // Charger aussi les liens trackés
+      await loadTrackingLinks();
     } catch (error) {
       console.error('Erreur lors du chargement des liens:', error);
       toast.error(t('errors.loadFailed'));
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Charger uniquement les liens trackés
+  const loadTrackingLinks = async () => {
+    try {
+      const trackingLinksData = await getUserTrackingLinks();
+      console.log('[Links Page] Tracking links chargés:', trackingLinksData.length, trackingLinksData);
+      setTrackingLinks(trackingLinksData);
+    } catch (error) {
+      console.error('[Links Page] Erreur lors du chargement des liens trackés:', error);
+      // Ne pas afficher d'erreur si c'est juste les liens trackés qui échouent
+      setTrackingLinks([]); // S'assurer que trackingLinks est un tableau vide en cas d'erreur
     }
   };
 
@@ -286,7 +314,7 @@ export default function LinksPage() {
         toast.success(t('tracking.success.deactivated'));
       } else {
         // Pour réactiver, on devrait avoir une route activate, pour l'instant on peut juste désactiver
-        toast.info('Activation not yet implemented');
+        toast.info(t('activationNotImplemented'));
       }
       loadLinks();
     } catch (error) {
@@ -339,7 +367,8 @@ export default function LinksPage() {
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Main content area - scrollable */}
       <DashboardLayout title={t('title')} className="!bg-none !bg-transparent !h-auto">
-        <div className="relative z-10 space-y-8 pb-8">
+        <div className="relative z-10 space-y-8 pb-8 py-8">
+
         {/* Hero Section */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 p-8 md:p-12 text-white shadow-2xl">
           <div className="absolute inset-0 bg-black/10"></div>
@@ -351,7 +380,7 @@ export default function LinksPage() {
               <h1 className="text-4xl md:text-5xl font-bold">{t('title')}</h1>
             </div>
             <p className="text-lg md:text-xl text-blue-100 max-w-2xl">
-              Créez et gérez vos liens de partage pour inviter facilement des participants à vos conversations
+              {t('subtitle')}
             </p>
           </div>
           {/* Decorative elements */}
@@ -359,117 +388,23 @@ export default function LinksPage() {
           <div className="absolute -left-12 -top-12 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl"></div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="border-2 hover:border-primary/50 transition-all hover:shadow-lg bg-white dark:bg-gray-950">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">
-                    {mainTab === 'shareLinks' ? 'Total des liens' : t('tracking.stats.totalLinks')}
-                  </p>
-                  <p className="text-3xl font-bold text-foreground">{stats.total}</p>
-                </div>
-                <div className="p-4 bg-blue-100 dark:bg-blue-900/30 rounded-2xl">
-                  <Link2 className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 hover:border-green-500/50 transition-all hover:shadow-lg bg-white dark:bg-gray-950">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">
-                    {t('tracking.stats.activeLinks')}
-                  </p>
-                  <p className="text-3xl font-bold text-green-600 dark:text-green-400">{stats.active}</p>
-                </div>
-                <div className="p-4 bg-green-100 dark:bg-green-900/30 rounded-2xl">
-                  <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {mainTab === 'shareLinks' ? (
-            <>
-              <Card className="border-2 hover:border-orange-500/50 transition-all hover:shadow-lg bg-white dark:bg-gray-950">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground mb-1">{t('stats.uses')}</p>
-                      <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{stats.totalUses}</p>
-                    </div>
-                    <div className="p-4 bg-orange-100 dark:bg-orange-900/30 rounded-2xl">
-                      <TrendingUp className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-2 hover:border-purple-500/50 transition-all hover:shadow-lg bg-white dark:bg-gray-950">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground mb-1">{t('details.activeUsers')}</p>
-                      <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{stats.totalActiveUsers}</p>
-                    </div>
-                    <div className="p-4 bg-purple-100 dark:bg-purple-900/30 rounded-2xl">
-                      <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </>
-          ) : (
-            <>
-              <Card className="border-2 hover:border-orange-500/50 transition-all hover:shadow-lg bg-white dark:bg-gray-950">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground mb-1">{t('tracking.stats.totalClicks')}</p>
-                      <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{stats.totalClicks}</p>
-                    </div>
-                    <div className="p-4 bg-orange-100 dark:bg-orange-900/30 rounded-2xl">
-                      <MousePointerClick className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-2 hover:border-purple-500/50 transition-all hover:shadow-lg bg-white dark:bg-gray-950">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground mb-1">{t('tracking.stats.uniqueClicks')}</p>
-                      <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{stats.uniqueClicks}</p>
-                    </div>
-                    <div className="p-4 bg-purple-100 dark:bg-purple-900/30 rounded-2xl">
-                      <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </>
-          )}
-        </div>
-
-        {/* Main Tab Selector */}
+        {/* Section 1: Main Tab Selector + Stats + Search */}
         <Card className="border-2 shadow-lg bg-white dark:bg-gray-950">
-          <CardContent className="p-6">
-            <Tabs value={mainTab} onValueChange={(value) => setMainTab(value as 'shareLinks' | 'trackingLinks')}>
+          <CardContent className="p-6 space-y-6">
+            {/* Tabs */}
+            <Tabs value={mainTab} onValueChange={(value) => handleTabChange(value as 'shareLinks' | 'trackingLinks')}>
               <TabsList className="w-full grid grid-cols-2 h-auto p-1.5 bg-gray-100 dark:bg-gray-800">
-                <TabsTrigger 
-                  value="shareLinks" 
+                <TabsTrigger
+                  value="shareLinks"
+                  id="shared"
                   className="data-[state=active]:bg-blue-500 data-[state=active]:text-white py-3 px-6 rounded-lg font-medium transition-all"
                 >
                   <MessageSquare className="h-4 w-4 mr-2" />
                   {t('tabs.shareLinks')}
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="trackingLinks" 
+                <TabsTrigger
+                  value="trackingLinks"
+                  id="tracked"
                   className="data-[state=active]:bg-purple-500 data-[state=active]:text-white py-3 px-6 rounded-lg font-medium transition-all"
                 >
                   <BarChart className="h-4 w-4 mr-2" />
@@ -477,15 +412,43 @@ export default function LinksPage() {
                 </TabsTrigger>
               </TabsList>
             </Tabs>
-          </CardContent>
-        </Card>
 
-        {/* Content based on selected main tab */}
-        {mainTab === 'shareLinks' ? (
-          <>
-        {/* Search and Actions */}
-        <Card className="border-2 shadow-lg bg-white dark:bg-gray-950">
-          <CardContent className="p-6">
+            {/* Stats in 2x2 grid */}
+            <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">{t('stats.totalLinks')}</p>
+                <p className="text-2xl font-bold text-foreground">{stats.total}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">{t('tracking.stats.activeLinks')}</p>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.active}</p>
+              </div>
+              {mainTab === 'shareLinks' ? (
+                <>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground">{t('stats.uses')}</p>
+                    <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{stats.totalUses}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground">{t('details.activeUsers')}</p>
+                    <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.totalActiveUsers}</p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground">{t('tracking.stats.totalClicks')}</p>
+                    <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{stats.totalClicks}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground">{t('tracking.stats.uniqueClicks')}</p>
+                    <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.uniqueClicks}</p>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Search and Actions */}
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -497,55 +460,22 @@ export default function LinksPage() {
                   className="pl-10 h-12 text-base border-2 focus:border-primary"
                 />
               </div>
-              
-              <CreateLinkButton
-                onLinkCreated={handleLinkCreated}
+
+              <Button
+                onClick={() => mainTab === 'shareLinks' ? setShowCreateLinkModal(true) : setShowCreateTrackingLinkModal(true)}
                 variant="default"
                 className="h-12 rounded-xl px-6 font-semibold shadow-md hover:shadow-lg transition-all bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
               >
                 <Plus className="h-5 w-5 mr-2" />
                 <span>{t('createLink')}</span>
-              </CreateLinkButton>
+              </Button>
             </div>
-
-            {filteredLinks.length > 0 && (
-              <div className="mt-4 flex items-center gap-2">
-                <BarChart className="h-4 w-4 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground font-medium">
-                  {filteredLinks.length} lien{filteredLinks.length !== 1 ? 's' : ''} trouvé{filteredLinks.length !== 1 ? 's' : ''}
-                </p>
-              </div>
-            )}
           </CardContent>
         </Card>
 
-        {/* Onglets */}
-        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
-          <TabsList className="w-full md:w-auto grid grid-cols-3 md:inline-grid h-auto p-1.5 bg-gray-100 dark:bg-gray-800">
-            <TabsTrigger 
-              value="active" 
-              className="data-[state=active]:bg-green-500 data-[state=active]:text-white py-3 px-6 rounded-lg font-medium transition-all"
-            >
-              <CheckCircle className="h-4 w-4 mr-2" />
-              {t('tabs.active')}
-            </TabsTrigger>
-            <TabsTrigger 
-              value="expired" 
-              className="data-[state=active]:bg-orange-500 data-[state=active]:text-white py-3 px-6 rounded-lg font-medium transition-all"
-            >
-              <AlertCircle className="h-4 w-4 mr-2" />
-              {t('tabs.expired')}
-            </TabsTrigger>
-            <TabsTrigger 
-              value="disabled" 
-              className="data-[state=active]:bg-gray-500 data-[state=active]:text-white py-3 px-6 rounded-lg font-medium transition-all"
-            >
-              <XCircle className="h-4 w-4 mr-2" />
-              {t('tabs.disabled')}
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value={selectedTab} className="space-y-6 mt-0">
+        {/* Section 2: List of links */}
+        {mainTab === 'shareLinks' ? (
+          <div className="space-y-6">
             {isLoading ? (
               <Card className="border-2 bg-white dark:bg-gray-950">
                 <CardContent className="flex flex-col items-center justify-center py-16">
@@ -553,7 +483,7 @@ export default function LinksPage() {
                     <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-primary"></div>
                     <Zap className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-6 w-6 text-primary" />
                   </div>
-                  <p className="mt-4 text-muted-foreground font-medium">Chargement de vos liens...</p>
+                  <p className="mt-4 text-muted-foreground font-medium">{t('loadingLinks')}</p>
                 </CardContent>
               </Card>
             ) : filteredLinks.length === 0 ? (
@@ -567,35 +497,14 @@ export default function LinksPage() {
                   </div>
                   
                   <h3 className="text-2xl font-bold text-foreground mb-3 text-center">
-                    {searchQuery ? 'Aucun lien trouvé' : 'Aucun lien de partage'}
+                    {searchQuery ? t('noLinksFound') : t('tracking.noLinks')}
                   </h3>
-                  <p className="text-muted-foreground text-base mb-8 text-center max-w-md">
-                    {searchQuery 
-                      ? 'Essayez de modifier votre recherche ou créez un nouveau lien'
-                      : 'Créez votre premier lien pour commencer à inviter des participants à vos conversations'
+                  <p className="text-muted-foreground text-base text-center max-w-md">
+                    {searchQuery
+                      ? t('noLinksFoundTryAnother')
+                      : t('noLinksFoundCreateFirst')
                     }
                   </p>
-                  
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    {!searchQuery && (
-                      <Button
-                        onClick={() => setShowCreateConversationModal(true)}
-                        variant="outline"
-                        className="h-12 rounded-xl px-6 font-semibold shadow-md hover:shadow-lg transition-all border-2"
-                      >
-                        <MessageSquare className="h-5 w-5 mr-2" />
-                        {tConversations('createConversation')}
-                      </Button>
-                    )}
-                    <CreateLinkButton
-                      onLinkCreated={handleLinkCreated}
-                      variant="default"
-                      className="h-12 rounded-xl px-6 font-semibold shadow-md hover:shadow-lg transition-all bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-                    >
-                      <Plus className="h-5 w-5 mr-2" />
-                      {t('createLink')}
-                    </CreateLinkButton>
-                  </div>
                 </CardContent>
               </Card>
             ) : (
@@ -761,31 +670,14 @@ export default function LinksPage() {
                 ))}
               </div>
             )}
-          </TabsContent>
-        </Tabs>
-          </>
+          </div>
         ) : (
           /* Tracking Links Content */
-          <>
-            {/* Search Bar for Tracking Links */}
-            <Card className="border-2 shadow-lg bg-white dark:bg-gray-950">
-              <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <Input
-                      type="text"
-                      placeholder="Search tracking links..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 h-12 text-base border-2 focus:border-primary"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Tracking Links List */}
+          <div className="space-y-6">
+            {(() => {
+              console.log('[Links Page] Render tracking links:', { isLoading, trackingLinksCount: trackingLinks.length });
+              return null;
+            })()}
             {isLoading ? (
               <Card className="border-2 bg-white dark:bg-gray-950">
                 <CardContent className="flex flex-col items-center justify-center py-16">
@@ -793,7 +685,7 @@ export default function LinksPage() {
                     <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-primary"></div>
                     <Zap className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-6 w-6 text-primary" />
                   </div>
-                  <p className="mt-4 text-muted-foreground font-medium">Loading your tracking links...</p>
+                  <p className="mt-4 text-muted-foreground font-medium">{t('loadingTrackingLinks')}</p>
                 </CardContent>
               </Card>
             ) : trackingLinks.length === 0 ? (
@@ -809,7 +701,7 @@ export default function LinksPage() {
                   <h3 className="text-2xl font-bold text-foreground mb-3 text-center">
                     {t('tracking.noLinks')}
                   </h3>
-                  <p className="text-muted-foreground text-base mb-8 text-center max-w-md">
+                  <p className="text-muted-foreground text-base text-center max-w-md">
                     {t('tracking.noLinksDescription')}
                   </p>
                 </CardContent>
@@ -834,7 +726,12 @@ export default function LinksPage() {
                               </div>
                               <div className="flex-1 min-w-0">
                                 <CardTitle className="text-lg md:text-xl font-bold break-words">
-                                  {link.shortUrl}
+                                  <button
+                                    onClick={() => router.push(`/links/tracked/${link.token}`)}
+                                    className="text-foreground hover:text-primary transition-colors cursor-pointer text-left"
+                                  >
+                                    {link.shortUrl}
+                                  </button>
                                 </CardTitle>
                               </div>
                             </div>
@@ -940,7 +837,7 @@ export default function LinksPage() {
                               <span className="text-sm font-medium">{t('stats.lastClicked')}</span>
                             </div>
                             <p className="text-sm font-semibold text-foreground pl-8">
-                              {link.lastClickedAt ? formatDate(link.lastClickedAt) : 'Never'}
+                              {link.lastClickedAt ? formatDate(link.lastClickedAt) : t('stats.never')}
                             </p>
                           </div>
                         </div>
@@ -949,7 +846,7 @@ export default function LinksPage() {
                   ))}
               </div>
             )}
-          </>
+          </div>
         )}
 
         {/* Modales */}
@@ -1000,6 +897,20 @@ export default function LinksPage() {
             onConversationCreated={handleConversationCreated}
           />
         )}
+
+        {/* Modal de création de share link */}
+        <CreateLinkModalV2
+          isOpen={showCreateLinkModal}
+          onClose={() => setShowCreateLinkModal(false)}
+          onLinkCreated={loadLinks}
+        />
+
+        {/* Modal de création de tracking link */}
+        <CreateTrackingLinkModal
+          isOpen={showCreateTrackingLinkModal}
+          onClose={() => setShowCreateTrackingLinkModal(false)}
+          onLinkCreated={loadTrackingLinks}
+        />
         </div>
       </DashboardLayout>
 

@@ -202,6 +202,7 @@ export function Header({
                               onValueChange={handleLanguageChange}
                               interfaceOnly={true}
                               className="w-full"
+                              showLanguageName={true}
                             />
                           </div>
                         </>
@@ -229,6 +230,7 @@ export function Header({
                   value={currentInterfaceLanguage}
                   onValueChange={handleLanguageChange}
                   interfaceOnly={true}
+                  showLanguageName={true}
                 />
                 
                 <Link href="/login">
@@ -254,6 +256,7 @@ export function Header({
                   value={currentInterfaceLanguage}
                   onValueChange={handleLanguageChange}
                   interfaceOnly={true}
+                  showLanguageName={true}
                 />
                 
                 <Link href="/login">
@@ -437,6 +440,7 @@ export function Header({
                         onValueChange={handleLanguageChange}
                         interfaceOnly={true}
                         className="w-full"
+                        showLanguageName={true}
                       />
                     </div>
                   </div>
@@ -483,6 +487,7 @@ export function Header({
                         onValueChange={handleLanguageChange}
                         interfaceOnly={true}
                         className="w-full"
+                        showLanguageName={true}
                       />
                     </div>
                   </div>

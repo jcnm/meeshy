@@ -145,7 +145,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     linkId: isAnonymousMode ? linkId : undefined, // Passer le linkId pour les utilisateurs anonymes
     containerRef: messagesContainerRef,
     scrollDirection: 'down', // Scroll vers le bas pour charger plus (page publique)
-    disableAutoFill: true // Désactiver le chargement automatique pour remplir l'écran (feed public)
+    disableAutoFill: false // Activer le chargement automatique pour remplir l'écran
   });
 
   // Hook pour la gestion des traductions
@@ -224,22 +224,28 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   // État pour la galerie d'images
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [selectedAttachmentId, setSelectedAttachmentId] = useState<string | null>(null);
+  const [deletedAttachmentIds, setDeletedAttachmentIds] = useState<string[]>([]);
+
+  // Handler appelé quand un attachment est supprimé
+  const handleAttachmentDeleted = useCallback((attachmentId: string) => {
+    setDeletedAttachmentIds(prev => [...prev, attachmentId]);
+  }, []);
 
   // Extraire tous les attachments images des messages pour la galerie
   const imageAttachments = useMemo(() => {
     const allAttachments: Attachment[] = [];
-    
+
     messages.forEach((message: any) => {
       if (message.attachments && Array.isArray(message.attachments)) {
-        const imageAtts = message.attachments.filter((att: Attachment) => 
-          att.mimeType?.startsWith('image/')
+        const imageAtts = message.attachments.filter((att: Attachment) =>
+          att.mimeType?.startsWith('image/') && !deletedAttachmentIds.includes(att.id)
         );
         allAttachments.push(...imageAtts);
       }
     });
-    
+
     return allAttachments;
-  }, [messages]);
+  }, [messages, deletedAttachmentIds]);
 
   // Handler pour ouvrir la galerie d'images
   const handleImageClick = useCallback((attachmentId: string) => {
@@ -1681,6 +1687,8 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         onNavigateToMessage={handleNavigateToMessageFromGallery}
         token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
         attachments={imageAttachments}
+        currentUserId={user?.id}
+        onAttachmentDeleted={handleAttachmentDeleted}
       />
     </>
   );
