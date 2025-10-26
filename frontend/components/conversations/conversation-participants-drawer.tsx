@@ -18,7 +18,8 @@ import {
   Crown,
   UserX,
   UserPlus,
-  X
+  X,
+  Ghost
 } from 'lucide-react';
 import { ThreadMember } from '@shared/types';
 import { conversationsService } from '@/services/conversations.service';
@@ -27,6 +28,12 @@ import { useI18n } from '@/hooks/useI18n';
 import { UserRoleEnum } from '@shared/types';
 import { InviteUserModal } from './invite-user-modal';
 import { getUserInitials } from '@/lib/avatar-utils';
+import type { AnonymousParticipant } from '@shared/types/anonymous';
+
+// Helper pour détecter si un utilisateur est anonyme
+function isAnonymousUser(user: any): user is AnonymousParticipant {
+  return user && ('sessionToken' in user || 'shareLinkId' in user);
+}
 
 interface ConversationParticipantsDrawerProps {
   conversationId: string;
@@ -80,9 +87,12 @@ export function ConversationParticipantsDrawer({
   const offlineParticipants = filteredParticipants.filter(p => !p.user.isOnline);
 
   const getDisplayName = (user: any): string => {
-    return user.displayName ||
+    const name = user.displayName ||
            `${user.firstName || ''} ${user.lastName || ''}`.trim() ||
            user.username;
+
+    // Ne pas ajouter d'émoji, l'icône Ghost est affichée séparément
+    return name;
   };
 
   const getAvatarFallback = (user: any): string => {
@@ -192,22 +202,31 @@ export function ConversationParticipantsDrawer({
                         const user = participant.user;
                         const isCurrentUser = user.id === currentUser.id;
                         return (
-                          <div 
-                            key={participant.id} 
+                          <div
+                            key={participant.id}
                             className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors"
                           >
                             <div className="relative">
-                              <Avatar className="h-10 w-10">
-                                <AvatarImage src={user.avatar} />
-                                <AvatarFallback className="bg-primary/10 text-primary">
-                                  {getAvatarFallback(user)}
-                                </AvatarFallback>
-                              </Avatar>
+                              {isAnonymousUser(user) ? (
+                                <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                                  <Ghost className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                                </div>
+                              ) : (
+                                <Avatar className="h-10 w-10">
+                                  <AvatarImage src={user.avatar} />
+                                  <AvatarFallback className="bg-primary/10 text-primary">
+                                    {getAvatarFallback(user)}
+                                  </AvatarFallback>
+                                </Avatar>
+                              )}
                               <div className="absolute -bottom-0 -right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-card" />
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium truncate">
+                                <span className="text-sm font-medium truncate flex items-center gap-1.5">
+                                  {isAnonymousUser(user) && (
+                                    <Ghost className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                                  )}
                                   {getDisplayName(user)}
                                   {isCurrentUser && ` (${t('conversationDetails.you')})`}
                                 </span>
@@ -258,22 +277,31 @@ export function ConversationParticipantsDrawer({
                         const user = participant.user;
                         const isCurrentUser = user.id === currentUser.id;
                         return (
-                          <div 
-                            key={participant.id} 
+                          <div
+                            key={participant.id}
                             className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors"
                           >
                             <div className="relative">
-                              <Avatar className="h-10 w-10">
-                                <AvatarImage src={user.avatar} />
-                                <AvatarFallback className="bg-muted text-muted-foreground">
-                                  {getAvatarFallback(user)}
-                                </AvatarFallback>
-                              </Avatar>
+                              {isAnonymousUser(user) ? (
+                                <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center opacity-50">
+                                  <Ghost className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                                </div>
+                              ) : (
+                                <Avatar className="h-10 w-10">
+                                  <AvatarImage src={user.avatar} />
+                                  <AvatarFallback className="bg-muted text-muted-foreground">
+                                    {getAvatarFallback(user)}
+                                  </AvatarFallback>
+                                </Avatar>
+                              )}
                               <div className="absolute -bottom-0 -right-0 h-3 w-3 bg-muted-foreground/50 rounded-full border-2 border-card" />
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium truncate">
+                                <span className="text-sm font-medium truncate flex items-center gap-1.5">
+                                  {isAnonymousUser(user) && (
+                                    <Ghost className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                                  )}
                                   {getDisplayName(user)}
                                   {isCurrentUser && ` (${t('conversationDetails.you')})`}
                                 </span>

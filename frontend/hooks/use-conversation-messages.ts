@@ -64,6 +64,7 @@ export function useConversationMessages(
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastScrollTopRef = useRef<number>(0);
   const offsetRef = useRef<number>(0); // Ref pour l'offset pour éviter les problèmes de timing
+  const initialScrollDoneRef = useRef<boolean>(false); // Ref pour éviter de charger avant le scroll initial
 
   // Fonction pour charger les messages
   const loadMessagesInternal = useCallback(async (isLoadMore = false) => {
@@ -272,6 +273,7 @@ export function useConversationMessages(
     setHasMore(true);
     setIsInitialized(false);
     setError(null);
+    initialScrollDoneRef.current = false; // Reset scroll initial
   }, []);
 
   // Fonction pour ajouter un message (nouveaux messages en temps réel)
@@ -344,6 +346,13 @@ export function useConversationMessages(
     
     const handleScroll = () => {
       if (isLoadingMore || !hasMore) {
+        return;
+      }
+
+      // CORRECTION: Ne pas charger avant que le scroll initial ne soit effectué
+      // Cela évite de charger des messages anciens avant que l'utilisateur ne soit scrollé au bon endroit
+      if (!initialScrollDoneRef.current && scrollDirection === 'up') {
+        console.log('[useConversationMessages] ⏸️ Scroll initial pas encore effectué, ignoré');
         return;
       }
 
@@ -434,12 +443,33 @@ export function useConversationMessages(
     };
   }, [enabled, isLoadingMore, hasMore, threshold, loadMore, scrollDirection]);
 
+  // Réinitialiser le flag de scroll initial quand la conversation change
+  useEffect(() => {
+    initialScrollDoneRef.current = false;
+    console.log('[useConversationMessages] 🔄 Changement de conversation - réinitialisation du flag scroll initial');
+  }, [conversationId]);
+
   // Chargement initial
   useEffect(() => {
     if (conversationId && currentUser && enabled && !isInitialized) {
       loadMessages(false);
     }
   }, [conversationId, currentUser, enabled, isInitialized]);
+
+  // Marquer le scroll initial comme effectué après l'initialisation
+  useEffect(() => {
+    if (isInitialized && scrollDirection === 'up') {
+      // Attendre un peu que ConversationMessages effectue le scroll vers le bas
+      const timer = setTimeout(() => {
+        initialScrollDoneRef.current = true;
+        console.log('[useConversationMessages] ✅ Scroll initial marqué comme effectué');
+      }, 500); // Délai pour laisser le temps au scrollToBottom() de s'exécuter
+      return () => clearTimeout(timer);
+    } else if (scrollDirection === 'down') {
+      // Pour BubbleStream, pas besoin d'attendre
+      initialScrollDoneRef.current = true;
+    }
+  }, [isInitialized, scrollDirection]);
 
   // Vérification du contenu après initialisation (peut être désactivé)
   useEffect(() => {

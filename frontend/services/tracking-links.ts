@@ -3,8 +3,9 @@
  */
 
 import { buildApiUrl } from '@/lib/config';
-import type { 
-  TrackingLink, 
+import { authManager } from '@/services/auth-manager.service';
+import type {
+  TrackingLink,
   TrackingLinkStatsResponse,
   CreateTrackingLinkRequest,
   CreateTrackingLinkResponse,
