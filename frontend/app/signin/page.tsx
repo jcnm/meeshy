@@ -15,6 +15,7 @@ import { useI18n } from '@/hooks/useI18n';
 import { SUPPORTED_LANGUAGES } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { LargeLogo } from '@/components/branding';
+import { authManager } from '@/services/auth-manager.service';
 
 function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateToken?: string } = {}) {
   const [currentStep, setCurrentStep] = useState(1);
@@ -162,10 +163,9 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
       console.log('[SIGNIN_PAGE] Réponse inscription:', data);
 
       if (data.success && data.data?.user && data.data?.token) {
-        // Stocker les données d'authentification manuellement
-        localStorage.setItem('auth_token', data.data.token);
-        localStorage.setItem('user_data', JSON.stringify(data.data.user));
-        
+        // Stocker les données d'authentification via authManager (source unique)
+        authManager.setCredentials(data.data.user, data.data.token);
+
         // Gérer l'affiliation si un token est présent
         if (affiliateToken) {
           try {

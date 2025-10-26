@@ -2,6 +2,8 @@
  * Utilitaires pour la gestion des tokens d'authentification
  */
 
+import { authManager } from '@/services/auth-manager.service';
+
 export interface TokenInfo {
   value: string;
   type: 'auth' | 'anonymous';
@@ -20,7 +22,7 @@ export function getAuthToken(): TokenInfo | null {
   }
 
   // Priorité 1: Token d'authentification normale
-  const authToken = localStorage.getItem('auth_token');
+  const authToken = authManager.getAuthToken();
   if (authToken) {
     return {
       value: authToken,
@@ -32,8 +34,9 @@ export function getAuthToken(): TokenInfo | null {
     };
   }
 
-  // Priorité 2: Token de session anonyme
-  const sessionToken = localStorage.getItem('anonymous_session_token');
+  // Priorité 2: Token de session anonyme via authManager (source unique)
+  const anonymousSession = authManager.getAnonymousSession();
+  const sessionToken = anonymousSession?.token;
   if (sessionToken) {
     return {
       value: sessionToken,
@@ -54,9 +57,9 @@ export function getAuthToken(): TokenInfo | null {
 export function getTokenType(token: string): 'auth' | 'anonymous' | null {
   if (!token) return null;
 
-  // Vérifier si c'est un token anonyme en cherchant dans le localStorage
-  const sessionToken = typeof window !== 'undefined' 
-    ? localStorage.getItem('anonymous_session_token') 
+  // Vérifier si c'est un token anonyme via authManager (source unique)
+  const sessionToken = typeof window !== 'undefined'
+    ? authManager.getAnonymousSession()?.token
     : null;
   
   if (sessionToken === token) {
@@ -65,7 +68,7 @@ export function getTokenType(token: string): 'auth' | 'anonymous' | null {
 
   // Vérifier si c'est un token d'authentification
   const authToken = typeof window !== 'undefined' 
-    ? localStorage.getItem('auth_token') 
+    ? authManager.getAuthToken() 
     : null;
   
   if (authToken === token) {

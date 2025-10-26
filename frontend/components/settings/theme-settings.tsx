@@ -72,12 +72,7 @@ export function ThemeSettings() {
     console.log('🔄 [ThemeSettings] Changing language to:', languageCode);
     setInterfaceLanguage(languageCode);
     toast.success(t('theme.interfaceLanguageUpdated'));
-    
-    // Recharger la page pour appliquer les changements de langue
-    setTimeout(() => {
-      console.log('🔄 [ThemeSettings] Reloading page...');
-      window.location.reload();
-    }, 500);
+    // La langue de l'interface change automatiquement sans reload
   };
 
   const accentColors = [

@@ -29,6 +29,9 @@ import { SERVER_EVENTS, CLIENT_EVENTS } from '@shared/types/socketio-events';
 import enTranslations from '@/locales/en';
 import frTranslations from '@/locales/fr';
 
+// Auth Manager
+import { authManager } from './auth-manager.service';
+
 class MeeshySocketIOService {
   private static instance: MeeshySocketIOService | null = null;
   
@@ -142,8 +145,8 @@ class MeeshySocketIOService {
     }
     
     // Vérifier si tokens disponibles
-    const hasAuthToken = typeof window !== 'undefined' && !!localStorage.getItem('auth_token');
-    const hasSessionToken = typeof window !== 'undefined' && !!localStorage.getItem('anonymous_session_token');
+    const hasAuthToken = typeof window !== 'undefined' && !!authManager.getAuthToken();
+    const hasSessionToken = typeof window !== 'undefined' && !!authManager.getAnonymousSession()?.token;
     
     if (hasAuthToken || hasSessionToken) {
       this.initializeConnection();
@@ -196,8 +199,8 @@ class MeeshySocketIOService {
     }
 
     // CORRECTION: Vérifier que soit un utilisateur soit un token est disponible
-    const hasAuthToken = !!localStorage.getItem('auth_token');
-    const hasSessionToken = !!localStorage.getItem('anonymous_session_token');
+    const hasAuthToken = !!authManager.getAuthToken();
+    const hasSessionToken = !!authManager.getAnonymousSession()?.token;
     
     if (!hasAuthToken && !hasSessionToken) {
       this.isConnecting = false;
@@ -232,8 +235,8 @@ class MeeshySocketIOService {
     this.isConnecting = true;
 
     // Récupérer les tokens d'authentification
-    const authToken = localStorage.getItem('auth_token');
-    const sessionToken = localStorage.getItem('anonymous_session_token');
+    const authToken = authManager.getAuthToken();
+    const sessionToken = authManager.getAnonymousSession()?.token;
     
     // Vérifier qu'on a au moins un token
     if (!authToken && !sessionToken) {
@@ -326,7 +329,7 @@ class MeeshySocketIOService {
       // 2. Page chat anonyme "/chat" → Récupérer conversation du share link
       if (path === '/chat' || path.startsWith('/chat?')) {
         // Récupérer le sessionToken anonyme
-        const sessionToken = localStorage.getItem('anonymous_session_token');
+        const sessionToken = authManager.getAnonymousSession()?.token;
         if (sessionToken) {
           // Le conversationId est stocké dans le localStorage par le chat anonyme
           const chatData = localStorage.getItem('anonymous_chat_data');
@@ -953,8 +956,8 @@ class MeeshySocketIOService {
     this.currentUser = user;
 
     // Vérifier que le token est disponible
-    const authToken = localStorage.getItem('auth_token');
-    const anonymousToken = localStorage.getItem('anonymous_session_token');
+    const authToken = authManager.getAuthToken();
+    const anonymousToken = authManager.getAnonymousSession()?.token;
     const token = authToken || anonymousToken;
     
     if (!token) {
@@ -963,8 +966,8 @@ class MeeshySocketIOService {
       const maxAttempts = 3; // Réduit à 3 tentatives
       const retryInterval = setInterval(() => {
         attempts++;
-        const retryAuthToken = localStorage.getItem('auth_token');
-        const retryAnonymousToken = localStorage.getItem('anonymous_session_token');
+        const retryAuthToken = authManager.getAuthToken();
+        const retryAnonymousToken = authManager.getAnonymousSession()?.token;
         const retryToken = retryAuthToken || retryAnonymousToken;
         
         if (retryToken && this.currentUser) {
@@ -1117,8 +1120,8 @@ class MeeshySocketIOService {
       
       if (!this.socket) {
         // Dernière tentative: forcer l'initialisation
-        const hasAuthToken = !!localStorage.getItem('auth_token');
-        const hasSessionToken = !!localStorage.getItem('anonymous_session_token');
+        const hasAuthToken = !!authManager.getAuthToken();
+        const hasSessionToken = !!authManager.getAnonymousSession()?.token;
         
         if (hasAuthToken || hasSessionToken) {
           this.initializeConnection();
@@ -1401,8 +1404,8 @@ class MeeshySocketIOService {
     this.reconnectAttempts = 0;
     
     // CORRECTION: Vérifier tokens même si currentUser est null
-    const hasAuthToken = typeof window !== 'undefined' && !!localStorage.getItem('auth_token');
-    const hasSessionToken = typeof window !== 'undefined' && !!localStorage.getItem('anonymous_session_token');
+    const hasAuthToken = typeof window !== 'undefined' && !!authManager.getAuthToken();
+    const hasSessionToken = typeof window !== 'undefined' && !!authManager.getAnonymousSession()?.token;
     
     if (this.currentUser || hasAuthToken || hasSessionToken) {
       this.initializeConnection();
@@ -1525,7 +1528,7 @@ class MeeshySocketIOService {
    * Obtient des diagnostics de connexion
    */
   public getConnectionDiagnostics(): any {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+    const token = typeof window !== 'undefined' ? authManager.getAuthToken() : null;
     const url = typeof window !== 'undefined' ? getWebSocketUrl() : 'N/A (server-side)';
     
     return {

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useUser, useIsAuthChecking } from '@/stores';
 import { useAuth } from '@/hooks/use-auth';
 import { LoadingState } from '@/components/ui/loading-state';
+import { authManager } from '@/services/auth-manager.service';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -37,9 +38,9 @@ export function ProtectedRoute({
     if (isAuthChecking && !timeoutReached) {
       return;
     }
-    
-    const token = localStorage.getItem('auth_token');
-    
+
+    const token = authManager.getAuthToken();
+
     if (requireAuth && !user && !token) {
       router.push(redirectTo);
       return;
@@ -66,7 +67,7 @@ export function ProtectedRoute({
 
   // Afficher un état de chargement si l'auth est requise mais l'utilisateur n'est pas encore chargé
   // ET qu'il n'y a pas de token (sinon l'utilisateur devrait être chargé depuis l'API)
-  const token = localStorage.getItem('auth_token');
+  const token = authManager.getAuthToken();
   if (requireAuth && !user && !token) {
     return <LoadingState message="Redirection vers la page de connexion..." fullScreen />;
   }

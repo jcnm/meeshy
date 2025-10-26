@@ -105,8 +105,10 @@ import { messageService } from '@/services/message.service';
 import { TypingIndicator } from '@/components/conversations/typing-indicator';
 import { useConversationMessages } from '@/hooks/use-conversation-messages';
 import { ConversationMessages } from '@/components/conversations/ConversationMessages';
+import { authManager } from '@/services/auth-manager.service';
 
 export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousMode = false, linkId, initialParticipants }: BubbleStreamPageProps) {
+
   const { t, isLoading: isLoadingTranslations } = useI18n('conversations');
   const { t: tCommon } = useI18n('common');
   const router = useRouter();
@@ -833,7 +835,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         console.log('Diagnostic de connexion:', {
           hasSocket: connectionStatus.hasSocket,
           isConnected: connectionStatus.isConnected,
-          hasToken: !!localStorage.getItem('auth_token'),
+          hasToken: !!authManager.getAuthToken(),
           wsUrl: (typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_WS_URL || 'ws://meeshy.me/api') : 'ws://gateway:3000') + '/ws'
         });
         // Toast de connexion supprimé pour éviter les notifications intrusives

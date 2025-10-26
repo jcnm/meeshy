@@ -60,24 +60,22 @@ export function LanguageFlagSelector({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "justify-center gap-2 h-8 sm:h-9 px-3 border-gray-200 hover:border-blue-300",
+            "justify-center h-6 sm:h-7 px-1 min-w-6 sm:min-w-7 w-6 sm:w-7 border-gray-200 hover:border-blue-300 rounded-md",
             className
           )}
         >
-          <span className="text-sm sm:text-base">
+          <span className="text-base sm:text-base" style={{lineHeight: 1}}>
             {selectedLanguage?.flag || '🌐'}
-          </span>
-          <span className="text-xs sm:text-sm font-medium">
-            {selectedLanguage?.name || 'Language'}
           </span>
         </Button>
       </PopoverTrigger>
       <PopoverContent
         className={cn(
           isMobile
-            ? "p-0 bg-transparent border-0 shadow-none flex items-center justify-center"
-            : "p-2 w-auto"
+            ? "p-0 bg-transparent border-0 shadow-none flex items-center justify-center z-[99999]"
+            : "p-1 w-auto z-[99999]"
         )}
+        style={isMobile ? { zIndex: 99999 } : { zIndex: 99999, position: 'fixed' }}
         side={isMobile ? undefined : "top"}
         align={isMobile ? undefined : "center"}
         sideOffset={isMobile ? undefined : 4}
@@ -85,8 +83,8 @@ export function LanguageFlagSelector({
         <div
           className={cn(
             isMobile
-              ? "bg-white dark:bg-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg p-2 flex flex-col gap-2 max-w-[160px] w-[160px] max-h-[40vh] mx-auto overflow-y-auto items-center justify-center"
-              : "gap-2 items-center flex flex-col"
+              ? "bg-white dark:bg-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg p-1 flex flex-col gap-1 max-w-[120px] w-[120px] max-h-[30vh] mx-auto overflow-y-auto items-center justify-center"
+              : "gap-1 items-center flex flex-col"
           )}
           style={isMobile ? {margin: '0 auto'} : {}}
         >
@@ -94,26 +92,20 @@ export function LanguageFlagSelector({
             <Button
               key={language.code}
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={() => {
                 onValueChange(language.code);
                 setOpen(false);
               }}
               className={cn(
                 isMobile
-                  ? "flex flex-row items-center justify-start h-10 w-full px-2 gap-2 border border-gray-100 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900"
-                  : "flex flex-row items-center justify-start h-10 w-full px-3 gap-2 hover:bg-blue-100",
+                  ? "flex flex-row items-center justify-center h-7 w-7 px-0 border border-gray-100 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900"
+                  : "flex flex-row items-center justify-center h-7 w-7 px-0 hover:bg-blue-100",
                 value === language.code && "bg-blue-50 dark:bg-blue-900/30"
               )}
               title={formatLanguageName(language.code)}
             >
-              <span className={isMobile ? "text-xl" : "text-base"}>{language.flag}</span>
-              <span className={cn(
-                "font-medium",
-                isMobile ? "text-sm" : "text-sm"
-              )}>
-                {language.name}
-              </span>
+              <span className="text-base" style={{lineHeight: 1}}>{language.flag}</span>
             </Button>
           ))}
         </div>

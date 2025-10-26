@@ -1,12 +1,17 @@
 /**
  * Auth Store - Pure Zustand implementation with automatic persistence
+ *
+ * RÈGLE: Ce store ne doit JAMAIS accéder directement à localStorage
+ * pour des clés legacy. Il utilise uniquement le persist Zustand.
+ *
+ * Pour accéder aux credentials: utiliser AuthManager (auth-manager.service.ts)
  */
 
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
 import type { User } from '@shared/types';
-
+import { AUTH_STORAGE_KEYS, authManager } from '@/services/auth-manager.service';
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
@@ -68,6 +73,7 @@ export const useAuthStore = create<AuthStore>()(
         },
 
         clearAuth: () => {
+          // 1. Reset state Zustand
           set({
             user: null,
             isAuthenticated: false,
@@ -76,15 +82,37 @@ export const useAuthStore = create<AuthStore>()(
             sessionExpiry: null,
             isAuthChecking: false,
           });
+
+          // 2. CRITIQUE: Supprimer explicitement localStorage persist
+          // Support: SSR, iframes, WAP browsers
+          if (typeof window !== 'undefined' && window.localStorage) {
+            try {
+              localStorage.removeItem(AUTH_STORAGE_KEYS.ZUSTAND_AUTH);
+            } catch (error) {
+              // Silently fail in case localStorage is disabled (private mode, iframe restrictions)
+              console.warn('[AUTH_STORE] Could not clear localStorage:', error);
+            }
+          }
+
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[AUTH_STORE] Auth state cleared');
+          }
         },
 
-        logout: () => {
+        logout: async () => {
           console.log('[AUTH_STORE] Logging out user');
-          get().clearAuth();
-          
+
+          // NOUVEAU: Utiliser AuthManager pour nettoyage centralisé
+          // Import dynamique pour éviter circular deps
+          const { authManager } = await import('../services/auth-manager.service');
+          authManager.clearAllSessions();
+
           // Redirect to home page
           if (typeof window !== 'undefined') {
-            window.location.href = '/';
+            // Petit délai pour s'assurer que tout est nettoyé
+            setTimeout(() => {
+              window.location.href = '/';
+            }, 100);
           }
         },
 

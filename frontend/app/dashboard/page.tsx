@@ -42,6 +42,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from '@/components/ui/input';
 import { buildApiUrl } from '@/lib/config';
 import { AuthGuard } from '@/components/auth/AuthGuard';
+import { authManager } from '@/services/auth-manager.service';
 
 function DashboardPageContent() {
   const router = useRouter();
@@ -125,7 +126,7 @@ function DashboardPageContent() {
   const loadUsers = useCallback(async (searchQuery: string = '') => {
     setIsLoadingUsers(true);
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       if (!token) return;
       
       const url = searchQuery.trim() 
@@ -174,7 +175,7 @@ function DashboardPageContent() {
 
     setIsCreatingGroup(true);
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
 
       const response = await fetch(buildApiUrl('/groups'), {
         method: 'POST',

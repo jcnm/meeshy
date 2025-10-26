@@ -1,5 +1,6 @@
 import { User } from '@/types';
 import { buildApiUrl } from '@/lib/config';
+import { authManager } from '@/services/auth-manager.service';
 
 export interface AuthState {
   isAuthenticated: boolean;
@@ -45,13 +46,13 @@ export function isUserAnonymous(user: User | null): boolean {
   if (!user) return false;
   
   // Vérifier les propriétés spécifiques aux utilisateurs anonymes
-  const hasAnonymousProperties = user.hasOwnProperty('sessionToken') || 
+  const hasAnonymousProperties = user.hasOwnProperty('sessionToken') ||
                                 user.hasOwnProperty('shareLinkId') ||
                                 user.hasOwnProperty('isAnonymous');
-  
-  // Vérifier si c'est un utilisateur anonyme via le localStorage
-  const anonymousToken = localStorage.getItem('anonymous_session_token');
-  const hasAnonymousToken = !!anonymousToken;
+
+  // NOUVEAU: Vérifier via authManager au lieu de localStorage
+  const anonymousSession = authManager.getAnonymousSession();
+  const hasAnonymousToken = !!anonymousSession?.token;
   
   // Vérifier si l'utilisateur a un ID qui commence par des patterns anonymes
   const hasAnonymousId = !!(user.id && (
@@ -67,18 +68,14 @@ export function isUserAnonymous(user: User | null): boolean {
  * Vérifie si l'utilisateur actuel est anonyme
  */
 export function isCurrentUserAnonymous(): boolean {
-  const user = localStorage.getItem('user');
-  const anonymousToken = localStorage.getItem('anonymous_session_token');
-  
-  if (anonymousToken) return true;
-  
+  const user = authManager.getCurrentUser();
+  const anonymousSession = authManager.getAnonymousSession();
+
+  if (anonymousSession?.token) return true;
+
+  // getCurrentUser() retourne déjà un objet User, pas une chaîne JSON
   if (user) {
-    try {
-      const userData = JSON.parse(user);
-      return isUserAnonymous(userData);
-    } catch {
-      return false;
-    }
+    return isUserAnonymous(user);
   }
   
   return false;
@@ -88,10 +85,12 @@ export function isCurrentUserAnonymous(): boolean {
  * Vérifie si l'utilisateur est authentifié avec un token valide
  */
 export async function checkAuthStatus(): Promise<AuthState> {
-  const token = localStorage.getItem('auth_token');
-  const anonymousToken = localStorage.getItem('anonymous_session_token');
-  const anonymousParticipant = localStorage.getItem('anonymous_participant');
-  
+  // NOUVEAU: Utiliser authManager au lieu de localStorage
+  const token = authManager.getAuthToken();
+  const anonymousSession = authManager.getAnonymousSession();
+  const anonymousToken = anonymousSession?.token;
+  const anonymousParticipant = typeof window !== 'undefined' ? localStorage.getItem('anonymous_participant') : null;
+
   if (process.env.NODE_ENV === 'development') {
     console.log('[AUTH_UTILS] Vérification auth - Token normal:', !!token, 'Token anonyme:', !!anonymousToken);
     console.log('[AUTH_UTILS] Participant anonyme stocké:', anonymousParticipant);
@@ -237,27 +236,26 @@ export async function checkAuthStatus(): Promise<AuthState> {
 
 /**
  * Nettoie toutes les données d'authentification
+ * @deprecated Utiliser authManager.clearAllSessions() à la place
  */
 export function clearAuthData(): void {
-  localStorage.removeItem('auth_token');
-  localStorage.removeItem('user');
-  localStorage.removeItem('token');
+  authManager.clearAllSessions();
 }
 
 /**
  * Nettoie les données de session anonyme
+ * @deprecated Utiliser authManager.clearAnonymousSessions() à la place
  */
 export function clearAnonymousData(): void {
-  localStorage.removeItem('anonymous_session_token');
-  localStorage.removeItem('anonymous_participant');
+  authManager.clearAnonymousSessions();
 }
 
 /**
  * Nettoie toutes les données d'authentification (normale + anonyme)
+ * NOUVEAU: Délègue à authManager (source unique)
  */
 export function clearAllAuthData(): void {
-  clearAuthData();
-  clearAnonymousData();
+  authManager.clearAllSessions();
 }
 
 /**

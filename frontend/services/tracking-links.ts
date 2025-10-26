@@ -27,7 +27,7 @@ interface GetUserTrackingLinksResponse {
  * Récupérer tous les liens trackés de l'utilisateur connecté
  */
 export async function getUserTrackingLinks(): Promise<TrackingLink[]> {
-  const token = localStorage.getItem('auth_token');
+  const token = authManager.getAuthToken();
   
   if (!token) {
     throw new Error('Non authentifié');
@@ -61,7 +61,7 @@ export async function getTrackingLinkStats(
   token: string,
   options?: { startDate?: Date; endDate?: Date }
 ): Promise<TrackingLinkStatsResponse['data']> {
-  const authToken = localStorage.getItem('auth_token');
+  const authToken = authManager.getAuthToken();
   
   if (!authToken) {
     throw new Error('Non authentifié');
@@ -104,7 +104,7 @@ export async function getTrackingLinkStats(
 export async function createTrackingLink(
   request: CreateTrackingLinkRequest
 ): Promise<TrackingLink> {
-  const token = localStorage.getItem('auth_token');
+  const token = authManager.getAuthToken();
   
   // Pas besoin d'être authentifié pour créer un lien tracké (peut être anonyme)
 
@@ -136,7 +136,7 @@ export async function createTrackingLink(
 export async function recordTrackingLinkClick(
   request: RecordClickRequest
 ): Promise<string> {
-  const token = localStorage.getItem('auth_token');
+  const token = authManager.getAuthToken();
 
   const response = await fetch(buildApiUrl(`/api/tracking-links/${request.token}/click`), {
     method: 'POST',
@@ -164,7 +164,7 @@ export async function recordTrackingLinkClick(
  * Désactiver un lien tracké
  */
 export async function deactivateTrackingLink(token: string): Promise<TrackingLink> {
-  const authToken = localStorage.getItem('auth_token');
+  const authToken = authManager.getAuthToken();
   
   if (!authToken) {
     throw new Error('Non authentifié');
@@ -195,7 +195,7 @@ export async function deactivateTrackingLink(token: string): Promise<TrackingLin
  * Supprimer un lien tracké
  */
 export async function deleteTrackingLink(token: string): Promise<void> {
-  const authToken = localStorage.getItem('auth_token');
+  const authToken = authManager.getAuthToken();
   
   if (!authToken) {
     throw new Error('Non authentifié');

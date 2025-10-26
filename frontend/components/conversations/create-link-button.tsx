@@ -13,6 +13,7 @@ import { useUser } from '@/stores';
 import { useLanguage } from '@/hooks/use-language';
 import { generateLinkName } from '@/utils/link-name-generator';
 import { conversationsService } from '@/services/conversations.service';
+import { authManager } from '@/services/auth-manager.service';
 
 interface CreateLinkButtonProps {
   conversationId?: string; // ID de la conversation (optionnel, détecté depuis l'URL sinon)
@@ -27,6 +28,7 @@ interface CreateLinkButtonProps {
 }
 
 export function CreateLinkButton({
+
   conversationId: propConversationId,
   currentUser: propCurrentUser,
   onLinkCreated,
@@ -167,7 +169,7 @@ export function CreateLinkButton({
         allowedLanguages: ['fr', 'en', 'es', 'de', 'it', 'pt', 'zh', 'ja', 'ar'] // Toutes les langues supportées
       };
 
-      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      const token = typeof window !== 'undefined' ? authManager.getAuthToken() : null;
       
       const response = await fetch(buildApiUrl(API_ENDPOINTS.CONVERSATION.CREATE_LINK), {
         method: 'POST',
