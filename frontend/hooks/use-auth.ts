@@ -9,7 +9,8 @@ import {
   canAccessProtectedRoute,
   canAccessSharedConversation,
   redirectToAuth,
-  redirectToHome
+  redirectToHome,
+  clearAllAuthData
 } from '@/utils/auth';
 import { useUser, useAuthActions, useIsAuthChecking } from '@/stores';
 import { authManager } from '@/services/auth-manager.service';
