@@ -66,6 +66,7 @@ import { EmojiPicker } from '@/components/common/emoji-picker';
 import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
 import { CLIENT_EVENTS } from '@shared/types/socketio-events';
 import { useMessageReactions } from '@/hooks/use-message-reactions';
+import { useAuth } from '@/hooks/use-auth';
 import type { BubbleMessage, MessageTranslation, MessageVersion, MessageSender, AnonymousSender } from './types';
 
 interface BubbleMessageNormalViewProps {
@@ -132,12 +133,14 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
   onNavigateToMessage,
   onImageClick
 }: BubbleMessageNormalViewProps) {
-  const { t } = useI18n('bubbleStream');
-  
+  const { t: tBubble } = useI18n('bubbleStream');
+  const { t: tReport } = useI18n('reportMessage');
+
   // États locaux (copiés de l'original)
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [translationFilter, setTranslationFilter] = useState('');
   const [hoveredEmoji, setHoveredEmoji] = useState<string | null>(null);
+  const [deletedAttachmentIds, setDeletedAttachmentIds] = useState<string[]>([]);
   const messageRef = useRef<HTMLDivElement>(null);
   
   // Hook pour gérer les réactions (comme dans l'original)
@@ -150,16 +153,29 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
   
   // Hook pour fixer les z-index des popovers
   useFixTranslationPopoverZIndex();
-  
+
+  // Obtenir le token d'authentification pour la suppression d'attachments
+  const { token } = useAuth();
+
+  // Callback appelé quand un attachment est supprimé
+  const handleAttachmentDeleted = useCallback((attachmentId: string) => {
+    setDeletedAttachmentIds(prev => [...prev, attachmentId]);
+  }, []);
+
+  // Filtrer les attachments pour masquer ceux qui ont été supprimés
+  const visibleAttachments = useMemo(() => {
+    return message.attachments?.filter(att => !deletedAttachmentIds.includes(att.id)) || [];
+  }, [message.attachments, deletedAttachmentIds]);
+
   // Logique copiée de l'original
   const formatReplyDate = (date: Date | string) => {
     const messageDate = new Date(date);
     const now = new Date();
     const diffHours = Math.abs(now.getTime() - messageDate.getTime()) / (1000 * 60 * 60);
     
-    if (diffHours < 1) return t('justNow');
-    if (diffHours < 24) return t('hoursAgo', { hours: Math.floor(diffHours) });
-    if (diffHours < 168) return t('daysAgo', { days: Math.floor(diffHours / 24) });
+    if (diffHours < 1) return tBubble('justNow');
+    if (diffHours < 24) return tBubble('hoursAgo', { hours: Math.floor(diffHours) });
+    if (diffHours < 168) return tBubble('daysAgo', { days: Math.floor(diffHours / 24) });
     return messageDate.toLocaleDateString();
   };
 
@@ -193,7 +209,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
     );
     
     if (translation) {
-      const content = ((translation as MessageTranslation)?.content || (translation as MessageTranslation)?.translatedContent);
+      const content = (translation as MessageTranslation)?.translatedContent;
       return content || message.replyTo.content;
     }
     
@@ -230,7 +246,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
       onEnterEditMode();
     } else {
       // Ancien système
-      const newContent = prompt(t('editMessagePrompt'), message.content);
+      const newContent = prompt(tBubble('editMessagePrompt'), message.content);
       if (newContent && newContent.trim() !== message.content) {
         await onEditMessage?.(message.id, newContent.trim());
       }
@@ -243,7 +259,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
       onEnterDeleteMode();
     } else {
       // Ancien système
-      const confirmed = confirm(t('deleteMessageConfirm'));
+      const confirmed = confirm(tBubble('deleteMessageConfirm'));
       if (confirmed) {
         await onDeleteMessage?.(message.id);
       }
@@ -290,12 +306,12 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
       await navigator.clipboard.writeText(contentToCopy);
       
       // Afficher une notification de succès
-      toast.success(t('messageCopied'));
+      toast.success(tBubble('messageCopied'));
     } catch (error) {
       console.error('Failed to copy message:', error);
-      toast.error(t('copyFailed'));
+      toast.error(tBubble('copyFailed'));
     }
-  }, [displayContent, conversationId, message.id, t]);
+  }, [displayContent, conversationId, message.id, tBubble]);
 
   // Copier uniquement le lien du message (pour attachments seuls)
   const handleCopyMessageLink = useCallback(async () => {
@@ -321,12 +337,12 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
       await navigator.clipboard.writeText(messageUrl);
       
       // Afficher une notification de succès
-      toast.success(t('linkCopied') || 'Lien copié !');
+      toast.success(tBubble('linkCopied') || 'Lien copié !');
     } catch (error) {
       console.error('Failed to copy message link:', error);
-      toast.error(t('copyFailed'));
+      toast.error(tBubble('copyFailed'));
     }
-  }, [conversationId, message.id, t]);
+  }, [conversationId, message.id, tBubble]);
 
   // Logique de permissions (copiée)
   const isOwnMessage = currentUser && (
@@ -465,8 +481,8 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
               const displayName = message.anonymousSender 
                 ? (message.anonymousSender.username || 
                    `${message.anonymousSender.firstName || ''} ${message.anonymousSender.lastName || ''}`.trim() || 
-                   t('anonymous'))
-                : (message.sender?.username || t('anonymous'));
+                   tBubble('anonymous'))
+                : (message.sender?.username || tBubble('anonymous'));
               
               return username ? (
                 <Link 
@@ -498,8 +514,11 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                   isOwnMessage ? "ml-auto" : "mr-auto"
                 )}>
                   <MessageAttachments
-                    attachments={message.attachments}
+                    attachments={visibleAttachments}
                     onImageClick={onImageClick}
+                    currentUserId={isAnonymous ? currentAnonymousUserId : currentUser?.id}
+                    token={token || undefined}
+                    onAttachmentDeleted={handleAttachmentDeleted}
                   />
                   
                   {/* Réactions par-dessus les attachments */}
@@ -527,8 +546,11 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                   isOwnMessage ? "ml-auto" : "mr-auto"
                 )}>
                   <MessageAttachments
-                    attachments={message.attachments}
+                    attachments={visibleAttachments}
                     onImageClick={onImageClick}
+                    currentUserId={isAnonymous ? currentAnonymousUserId : currentUser?.id}
+                    token={token || undefined}
+                    onAttachmentDeleted={handleAttachmentDeleted}
                   />
                 </div>
               )}
@@ -575,8 +597,8 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                           {(() => {
                             const replyUsername = message.replyTo.anonymousSender?.username || message.replyTo.sender?.username;
                             const replyDisplayName = message.replyTo.anonymousSender 
-                              ? (message.replyTo.anonymousSender.username || t('anonymous'))
-                              : (message.replyTo.sender?.username || t('unknownUser'));
+                              ? (message.replyTo.anonymousSender.username || tBubble('anonymous'))
+                              : (message.replyTo.sender?.username || tBubble('unknownUser'));
                             
                             return replyUsername ? (
                               <Link 
@@ -701,13 +723,13 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                             onLanguageSwitch(message.id, targetLang);
                           }
                         }}
-                        aria-label={currentDisplayLanguage === (message.originalLanguage || 'fr') ? t('showInUserLanguage') : t('showOriginal')}
+                        aria-label={currentDisplayLanguage === (message.originalLanguage || 'fr') ? tBubble('showInUserLanguage') : tBubble('showOriginal')}
                       >
                         <span className="text-sm">{getLanguageInfo(message.originalLanguage || 'fr').flag}</span>
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{currentDisplayLanguage === (message.originalLanguage || 'fr') ? t('showInUserLanguage') : t('showOriginal')}</p>
+                      <p>{currentDisplayLanguage === (message.originalLanguage || 'fr') ? tBubble('showInUserLanguage') : tBubble('showOriginal')}</p>
                     </TooltipContent>
                   </Tooltip>
 
@@ -731,7 +753,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                               handlePopoverOpenChange(true);
                             }
                           }}
-                          aria-label={t('translate')}
+                          aria-label={tBubble('translate')}
                         >
                           <Languages className="h-3.5 w-3.5" />
                         </Button>
@@ -755,7 +777,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{t('translate')} ({message.translations?.length || 0})</p>
+                      <p>{tBubble('translate')} ({message.translations?.length || 0})</p>
                     </TooltipContent>
                   </Tooltip>
 
@@ -779,7 +801,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                           <div className="p-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
                             <div className="flex items-center gap-2 mb-2">
                               <Languages className="h-4 w-4 text-blue-600" />
-                              <span className="font-medium text-sm">{t('selectLanguage')}</span>
+                              <span className="font-medium text-sm">{tBubble('selectLanguage')}</span>
                               {isTranslating && <Loader2 className="h-3 w-3 animate-spin text-blue-600" />}
                             </div>
                             
@@ -787,7 +809,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                               <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
                               <Input
                                 type="text"
-                                placeholder={t('searchLanguage')}
+                                placeholder={tBubble('searchLanguage')}
                                 value={translationFilter}
                                 onChange={(e) => setTranslationFilter(e.target.value)}
                                 className="pl-7 h-8 text-xs"
@@ -800,10 +822,10 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                             <Tabs defaultValue="available" className="w-full">
                               <TabsList className="w-full justify-start rounded-none border-b h-9">
                                 <TabsTrigger value="available" className="text-xs">
-                                  {t('available')} ({filteredVersions.length})
+                                  {tBubble('available')} ({filteredVersions.length})
                                 </TabsTrigger>
                                 <TabsTrigger value="generate" className="text-xs">
-                                  {t('generate')} ({filteredMissingLanguages.length})
+                                  {tBubble('generate')} ({filteredMissingLanguages.length})
                                 </TabsTrigger>
                               </TabsList>
                               
@@ -833,7 +855,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                                             </Badge>
                                             {version.isOriginal && (
                                               <Badge variant="secondary" className="text-xs h-4 px-1">
-                                                {t('original')}
+                                                {tBubble('original')}
                                               </Badge>
                                             )}
                                             {isCurrentlyDisplayed && (
@@ -846,10 +868,10 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                                           {!version.isOriginal && (
                                             <div className="flex items-center gap-2 mt-1">
                                               <span className="text-[10px] text-gray-500">
-                                                {t('modelUsed')}: {version.model}
+                                                {tBubble('modelUsed')}: {version.model}
                                               </span>
                                               <div className="flex items-center text-[10px] text-gray-500">
-                                                <span className="mr-1">{t('confidence')}:</span>
+                                                <span className="mr-1">{tBubble('confidence')}:</span>
                                                 <div className="flex">
                                                   {[...Array(5)].map((_, i) => (
                                                     <span key={i} className={cn(
@@ -868,7 +890,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                                   
                                   {filteredVersions.length === 0 && (
                                     <div className="text-center py-4 text-gray-500 text-sm">
-                                      {t('noLanguagesFound')}
+                                      {tBubble('noLanguagesFound')}
                                     </div>
                                   )}
                                 </div>
@@ -890,7 +912,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                                             {lang.code.toUpperCase()}
                                           </Badge>
                                         </div>
-                                        <span className="text-xs text-gray-500">{t('clickToTranslate')}</span>
+                                        <span className="text-xs text-gray-500">{tBubble('clickToTranslate')}</span>
                                       </div>
                                       <ArrowUp className="h-3 w-3 text-gray-400 group-hover:text-blue-600 transition-colors" />
                                     </div>
@@ -898,7 +920,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                                   
                                   {filteredMissingLanguages.length === 0 && (
                                     <div className="text-center py-4 text-gray-500 text-sm">
-                                      {t('allLanguagesTranslated')}
+                                      {tBubble('allLanguagesTranslated')}
                                     </div>
                                   )}
                                 </div>
@@ -918,7 +940,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                           variant="ghost"
                           size="sm"
                           onClick={() => onReplyMessage(message)}
-                          aria-label={t('replyToMessage')}
+                          aria-label={tBubble('replyToMessage')}
                           className={cn(
                             "h-7 w-7 p-0 rounded-full transition-colors",
                             isOwnMessage 
@@ -930,7 +952,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>{t('replyToMessage')}</p>
+                        <p>{tBubble('replyToMessage')}</p>
                       </TooltipContent>
                     </Tooltip>
                   )}
@@ -948,13 +970,13 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                             ? "text-white/70 hover:text-white hover:bg-white/20" 
                             : "text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
                         )}
-                        aria-label={t('addReaction')}
+                        aria-label={tBubble('addReaction')}
                       >
                         <Smile className="h-3.5 w-3.5" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{t('addReaction')}</p>
+                      <p>{tBubble('addReaction')}</p>
                     </TooltipContent>
                   </Tooltip>
 
@@ -971,13 +993,13 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                             ? "text-white/70 hover:text-white hover:bg-white/20"
                             : "text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
                         )}
-                        aria-label={t('copyMessage')}
+                        aria-label={tBubble('copyMessage')}
                       >
                         <Copy className="h-3.5 w-3.5" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{t('copyMessage')}</p>
+                      <p>{tBubble('copyMessage')}</p>
                     </TooltipContent>
                   </Tooltip>
 
@@ -993,13 +1015,13 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                             "h-7 w-7 p-0 rounded-full transition-colors",
                             "text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-800"
                           )}
-                          aria-label={t('reportMessage')}
+                          aria-label={tReport('reportMessage')}
                         >
                           <Flag className="h-3.5 w-3.5" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>{t('reportMessage')}</p>
+                        <p>{tReport('reportMessage')}</p>
                       </TooltipContent>
                     </Tooltip>
                   )}
@@ -1026,7 +1048,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                       <DropdownMenuContent align="end" className="w-48">
                         <DropdownMenuItem onClick={handleEditMessage}>
                           <Edit className="h-4 w-4 mr-2" />
-                          <span>{t('edit')}</span>
+                          <span>{tBubble('edit')}</span>
                         </DropdownMenuItem>
                         {canDeleteMessage() && (
                           <DropdownMenuItem
@@ -1034,7 +1056,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                             className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/30"
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
-                            <span>{t('delete')}</span>
+                            <span>{tBubble('delete')}</span>
                           </DropdownMenuItem>
                         )}
                       </DropdownMenuContent>
@@ -1079,14 +1101,14 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                       variant="ghost"
                       size="sm"
                       onClick={() => onReplyMessage(message)}
-                      aria-label={t('replyToMessage')}
+                      aria-label={tBubble('replyToMessage')}
                       className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-blue-600 hover:bg-blue-50"
                     >
                       <MessageCircle className="h-3.5 w-3.5" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{t('replyToMessage')}</p>
+                    <p>{tBubble('replyToMessage')}</p>
                   </TooltipContent>
                 </Tooltip>
               )}
@@ -1099,13 +1121,13 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                     size="sm"
                     onClick={handleReactionClick}
                     className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                    aria-label={t('addReaction')}
+                    aria-label={tBubble('addReaction')}
                   >
                     <Smile className="h-3.5 w-3.5" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{t('addReaction')}</p>
+                  <p>{tBubble('addReaction')}</p>
                 </TooltipContent>
               </Tooltip>
 
@@ -1117,13 +1139,13 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                     size="sm"
                     onClick={handleCopyMessageLink}
                     className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                    aria-label={t('copyLink') || 'Copier le lien'}
+                    aria-label={tBubble('copyLink') || 'Copier le lien'}
                   >
                     <Copy className="h-3.5 w-3.5" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{t('copyLink') || 'Copier le lien'}</p>
+                  <p>{tBubble('copyLink') || 'Copier le lien'}</p>
                 </TooltipContent>
               </Tooltip>
 
@@ -1136,13 +1158,13 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                       size="sm"
                       onClick={handleReportMessage}
                       className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-800"
-                      aria-label={t('reportMessage')}
+                      aria-label={tReport('reportMessage')}
                     >
                       <Flag className="h-3.5 w-3.5" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{t('reportMessage')}</p>
+                    <p>{tReport('reportMessage')}</p>
                   </TooltipContent>
                 </Tooltip>
               )}
@@ -1156,13 +1178,13 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                       size="sm"
                       onClick={handleDeleteMessage}
                       className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-red-600 hover:bg-red-50"
-                      aria-label={t('delete')}
+                      aria-label={tBubble('delete')}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{t('delete')}</p>
+                    <p>{tBubble('delete')}</p>
                   </TooltipContent>
                 </Tooltip>
               )}
