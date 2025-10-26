@@ -6,6 +6,7 @@
  */
 
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { authManager } from '@/services/auth-manager.service';
 import { apiService } from '@/services/api.service';
 import { debounce } from '@/utils/debounce';
 import type { User, Message } from '@shared/types';
@@ -88,9 +89,9 @@ export function useConversationMessages(
 
       setError(null);
 
-      // Chercher le token d'authentification (auth_token ou sessionToken pour les anonymes)
-      const authToken = localStorage.getItem('auth_token');
-      const sessionToken = localStorage.getItem('anonymous_session_token');
+      // Chercher le token d'authentification via authManager (source unique)
+      const authToken = authManager.getAuthToken();
+      const sessionToken = authManager.getAnonymousSession()?.token;
       
       if (!authToken && !sessionToken) {
         throw new Error('Token d\'authentification manquant');

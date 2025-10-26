@@ -54,6 +54,7 @@ import { User } from '@shared/types';
 import { useI18n } from '@/hooks/useI18n';
 import { useUser } from '@/stores';
 import { generateLinkName } from '@/utils/link-name-generator';
+import { authManager } from '@/services/auth-manager.service';
 
 // Langues supportées
 const SUPPORTED_LANGUAGES = [
@@ -277,7 +278,7 @@ export function CreateLinkModalV2({
 
     setIsLoadingUsers(true);
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       const response = await fetch(buildApiUrl(`${API_ENDPOINTS.USER.SEARCH}?q=${encodeURIComponent(searchQuery)}`), {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -353,7 +354,7 @@ export function CreateLinkModalV2({
 
     setIsCreating(true);
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + expirationDays);
 

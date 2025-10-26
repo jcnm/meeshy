@@ -47,6 +47,7 @@ import { toast } from 'sonner';
 import { isCurrentUserAnonymous } from '@/utils/auth';
 import { useI18n } from '@/hooks/useI18n';
 import Link from 'next/link';
+import { authManager } from '@/services/auth-manager.service';
 function LandingPageContent() {
   const user = useUser();
   const isAuthChecking = useIsAuthChecking();
@@ -106,7 +107,7 @@ function LandingPageContent() {
 
   // Si l'utilisateur est authentifié ET n'est pas anonyme, afficher le dashboard
   const isAnonymous = isCurrentUserAnonymous();
-  const hasAuthToken = !!localStorage.getItem('auth_token');
+  const hasAuthToken = !!authManager.getAuthToken();
   
   if (process.env.NODE_ENV === 'development') {
     console.log('[LANDING] État utilisateur:', {

@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { getDefaultPermissions } from '@/utils/user-adapter';
 
+import { authManager } from '@/services/auth-manager.service';
+
 interface DebugInfo {
   token: string | null;
   userFromLocalStorage: any;
@@ -26,8 +28,8 @@ const AdminDebug: React.FC = () => {
     const loadDebugInfo = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem('auth_token');
-        const userFromLocalStorage = localStorage.getItem('user');
+        const token = authManager.getAuthToken();
+        const userFromLocalStorage = JSON.stringify(authManager.getCurrentUser() || {});
         
         let userFromAPI = null;
         let permissionsFromAPI = null;

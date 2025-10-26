@@ -1,6 +1,7 @@
 import { SocketIOUser } from '@/types';
 import { UserRoleEnum } from '../shared/types';
 import { buildApiUrl } from '@/lib/config';
+import { authManager } from './auth-manager.service';
 
 
 // Interface pour la réponse d'authentification
@@ -54,6 +55,7 @@ class AuthService {
 
   /**
    * Authentifie un utilisateur avec username/password
+   * Utilise AuthManager pour gestion centralisée des credentials
    */
   async login(username: string, password: string): Promise<AuthResponse> {
     try {
@@ -68,16 +70,26 @@ class AuthService {
       const data = await response.json();
 
       if (data.success && data.data?.token) {
-        // Stocker le token et les informations utilisateur
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('auth_token', data.data.token);
-          localStorage.setItem('user', JSON.stringify(data.data.user));
-        }
+        // NOUVEAU: Utiliser AuthManager (source unique de vérité)
+        // Nettoie automatiquement les sessions précédentes
+        authManager.setCredentials(
+          data.data.user,
+          data.data.token,
+          data.data.refreshToken,
+          data.data.expiresIn
+        );
+      } else {
+        // Si erreur de connexion, nettoyer par précaution
+        authManager.clearAllSessions();
       }
 
       return data;
     } catch (error) {
       console.error('Erreur lors de la connexion:', error);
+
+      // Si erreur, nettoyer par précaution
+      authManager.clearAllSessions();
+
       return {
         success: false,
         error: 'Erreur de connexion au serveur'
@@ -87,6 +99,7 @@ class AuthService {
 
   /**
    * Déconnecte l'utilisateur
+   * Utilise AuthManager pour nettoyage centralisé
    */
   async logout(): Promise<void> {
     try {
@@ -103,20 +116,17 @@ class AuthService {
     } catch (error) {
       console.error('Erreur lors de la déconnexion:', error);
     } finally {
-      // Nettoyer le localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('user');
-      }
+      // NOUVEAU: Utiliser AuthManager pour nettoyage complet
+      authManager.clearAllSessions();
     }
   }
 
   /**
-   * Récupère les informations de l'utilisateur connecté
+   * Récupère les informations de l'utilisateur connecté (API call)
    */
   async getCurrentUser(): Promise<UserProfileResponse> {
     try {
-      const token = this.getToken();
+      const token = authManager.getAuthToken();
       if (!token) {
         return {
           success: false,
@@ -135,10 +145,8 @@ class AuthService {
       const data = await response.json();
 
       if (data.success && data.data?.user) {
-        // Mettre à jour les informations utilisateur en cache
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('user', JSON.stringify(data.data.user));
-        }
+        // Mettre à jour via AuthManager
+        authManager.updateUser(data.data.user);
       }
 
       return data;
@@ -152,12 +160,14 @@ class AuthService {
   }
 
   /**
-   * Rafraîchit le token d'authentification
+   * Rafraîchit le token d'authentification (API call)
    */
   async refreshToken(): Promise<AuthResponse> {
     try {
-      const token = this.getToken();
-      if (!token) {
+      const token = authManager.getAuthToken();
+      const refreshToken = authManager.getRefreshToken();
+
+      if (!token && !refreshToken) {
         return {
           success: false,
           error: 'Aucun token à rafraîchir'
@@ -169,16 +179,18 @@ class AuthService {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify({ token, refreshToken }),
       });
 
       const data = await response.json();
 
       if (data.success && data.data?.token) {
-        // Mettre à jour le token
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('auth_token', data.data.token);
-        }
+        // Mettre à jour via AuthManager
+        authManager.updateTokens(
+          data.data.token,
+          data.data.refreshToken,
+          data.data.expiresIn
+        );
       }
 
       return data;
@@ -188,59 +200,6 @@ class AuthService {
         success: false,
         error: 'Erreur de connexion au serveur'
       };
-    }
-  }
-
-
-  /**
-   * Récupère le token d'authentification depuis le localStorage
-   */
-  getToken(): string | null {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('auth_token');
-    }
-    return null;
-  }
-
-  /**
-   * Récupère l'utilisateur connecté depuis le localStorage
-   */
-  getStoredUser(): SocketIOUser | null {
-    if (typeof window !== 'undefined') {
-      const userStr = localStorage.getItem('user');
-      if (userStr) {
-        try {
-          return JSON.parse(userStr);
-        } catch (error) {
-          console.error('Erreur lors du parsing de l\'utilisateur:', error);
-        }
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Vérifie si l'utilisateur est connecté
-   */
-  isAuthenticated(): boolean {
-    return this.getToken() !== null;
-  }
-
-  /**
-   * Vérifie si le token est expiré (approximatif)
-   */
-  isTokenExpired(): boolean {
-    const token = this.getToken();
-    if (!token) return true;
-
-    try {
-      // Décoder le token (base64)
-      const payload = JSON.parse(atob(token));
-      const now = Math.floor(Date.now() / 1000);
-      return payload.exp && payload.exp < now;
-    } catch (error) {
-      console.error('Erreur lors de la vérification du token:', error);
-      return true;
     }
   }
 }

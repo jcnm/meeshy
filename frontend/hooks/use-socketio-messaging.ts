@@ -8,6 +8,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { authManager } from '@/services/auth-manager.service';
 import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
 import type { Message, User, TypingEvent, UserStatusEvent, TranslationEvent } from '@/types';
 
@@ -54,8 +55,8 @@ export function useSocketIOMessaging(options: UseSocketIOMessagingOptions = {}) 
   // ÉTAPE 1: Initialiser la connexion au montage du hook
   useEffect(() => {
     // Force la connexion initiale si des tokens sont disponibles
-    const hasAuthToken = typeof window !== 'undefined' && !!localStorage.getItem('auth_token');
-    const hasSessionToken = typeof window !== 'undefined' && !!localStorage.getItem('anonymous_session_token');
+    const hasAuthToken = typeof window !== 'undefined' && !!authManager.getAuthToken();
+    const hasSessionToken = typeof window !== 'undefined' && !!authManager.getAnonymousSession()?.token;
 
     if (hasAuthToken || hasSessionToken) {
       // Forcer la connexion initiale

@@ -34,6 +34,7 @@ import { cn } from '@/lib/utils';
 import { copyToClipboard } from '@/lib/clipboard';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { toast } from 'sonner';
+import { authManager } from '@/services/auth-manager.service';
 
 interface ShareLink {
   id: string;
@@ -86,7 +87,7 @@ export function ConversationLinksSection({ conversationId }: ConversationLinksSe
   const loadLinks = async () => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       if (!token) {
         console.log('[ConversationLinksSection] Aucun token d\'authentification trouvé, impossible de charger les liens');
         setLinks([]);

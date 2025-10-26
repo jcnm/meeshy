@@ -9,8 +9,10 @@ import { toast } from 'sonner';
 import { Eye, EyeOff, Lock } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { buildApiUrl } from '@/lib/config';
+import { authManager } from '@/services/auth-manager.service';
 
 export function PasswordSettings() {
+
   const { t } = useI18n('settings');
   const [formData, setFormData] = useState({
     currentPassword: '',
@@ -78,7 +80,7 @@ export function PasswordSettings() {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          'Authorization': `Bearer ${authManager.getAuthToken()}`
         },
         body: JSON.stringify({
           currentPassword: formData.currentPassword,

@@ -1,4 +1,5 @@
 import { buildApiUrl } from '@/lib/config';
+import { authManager } from './auth-manager.service';
 
 interface ApiConfig {
   timeout: number;
@@ -47,8 +48,8 @@ class ApiService {
   ): Promise<ApiResponse<T>> {
     const url = buildApiUrl(endpoint);
 
-    // Get token from localStorage
-    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+    // Get token from AuthManager (source unique de vérité)
+    const token = authManager.getAuthToken();
 
     // Pour les requêtes DELETE sans body, ne pas inclure Content-Type
     const shouldExcludeContentType = options.method === 'DELETE' && !options.body;
@@ -178,8 +179,8 @@ class ApiService {
       });
     }
 
-    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-    
+    const token = authManager.getAuthToken();
+
     return this.request<T>(endpoint, {
       method: 'POST',
       body: formData,
@@ -190,22 +191,21 @@ class ApiService {
     });
   }
 
-  // Méthode pour gérer l'authentification
+  /**
+   * @deprecated Utiliser authManager.setCredentials() à la place
+   * Conservé pour compatibilité legacy
+   */
   setAuthToken(token: string | null) {
-    if (typeof window !== 'undefined') {
-      if (token) {
-        localStorage.setItem('auth_token', token);
-      } else {
-        localStorage.removeItem('auth_token');
-      }
-    }
+    console.warn('[API_SERVICE] setAuthToken is deprecated. Use authManager.setCredentials() instead');
+    // Legacy: Ne rien faire, authManager gère maintenant
   }
 
+  /**
+   * @deprecated Utiliser authManager.getAuthToken() à la place
+   * Conservé pour compatibilité legacy
+   */
   getAuthToken(): string | null {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('auth_token');
-    }
-    return null;
+    return authManager.getAuthToken();
   }
 }
 

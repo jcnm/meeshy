@@ -42,8 +42,8 @@ class MessageTranslationService {
   async requestTranslation(request: ForceTranslationRequest): Promise<ForceTranslationResponse> {
     try {
       // Gérer l'authentification selon le mode (authentifié ou anonyme)
-      const authToken = localStorage.getItem('auth_token');
-      const sessionToken = localStorage.getItem('anonymous_session_token');
+      const authToken = authManager.getAuthToken();
+      const sessionToken = authManager.getAnonymousSession()?.token;
       
       if (!authToken && !sessionToken) {
         throw new Error('Aucun token d\'authentification disponible (ni auth_token ni session_token)');

@@ -64,12 +64,7 @@ export function Header({
   const handleLanguageChange = (languageCode: string) => {
     console.log('🔄 [Header] Changing language to:', languageCode);
     setInterfaceLanguage(languageCode);
-    
-    // Recharger la page pour appliquer les changements de langue
-    setTimeout(() => {
-      console.log('🔄 [Header] Reloading page...');
-      window.location.reload();
-    }, 500);
+    // La langue de l'interface change automatiquement sans reload
   };
 
   const handleAuthClick = (newMode: AuthMode) => {

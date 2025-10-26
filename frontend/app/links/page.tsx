@@ -52,6 +52,7 @@ import { copyToClipboard } from '@/lib/clipboard';
 import { useUser } from '@/stores';
 import { useRouter } from 'next/navigation';
 import { getUserTrackingLinks, deleteTrackingLink, deactivateTrackingLink } from '@/services/tracking-links';
+import { authManager } from '@/services/auth-manager.service';
 
 export default function LinksPage() {
   const { t } = useI18n('links');
@@ -86,7 +87,7 @@ export default function LinksPage() {
   const loadLinks = async () => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       
       // Charger les liens de partage
       const shareLinksResponse = await fetch(buildApiUrl('/api/links/my-links'), {
@@ -194,7 +195,7 @@ export default function LinksPage() {
   // Basculer l'état actif/inactif
   const handleToggleActive = async (link: ConversationLink) => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       const response = await fetch(buildApiUrl(`/api/links/${link.linkId}/toggle`), {
         method: 'PATCH',
         headers: { 
@@ -219,7 +220,7 @@ export default function LinksPage() {
   // Prolonger la durée
   const handleExtendDuration = async (link: ConversationLink, days: number) => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       const newExpiresAt = new Date(link.expiresAt || new Date());
       newExpiresAt.setDate(newExpiresAt.getDate() + days);
 
@@ -249,7 +250,7 @@ export default function LinksPage() {
     if (!confirm(t('confirm.delete'))) return;
 
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       const response = await fetch(buildApiUrl(`/api/links/${link.linkId}`), {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }

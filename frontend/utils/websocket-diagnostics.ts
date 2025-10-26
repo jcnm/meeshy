@@ -97,9 +97,9 @@ export function getWebSocketDiagnostics(): WebSocketDiagnostics {
     diagnostics.recommendations.push('⚠️ Erreur lors de la récupération de l\'utilisateur');
   }
 
-  // 2. Tokens d'authentification
-  const authToken = localStorage.getItem('auth_token');
-  const sessionToken = localStorage.getItem('anonymous_session_token');
+  // 2. Tokens d'authentification via authManager (source unique)
+  const authToken = authManager.getAuthToken();
+  const sessionToken = authManager.getAnonymousSession()?.token;
 
   if (authToken) {
     diagnostics.tokens.hasAuthToken = true;

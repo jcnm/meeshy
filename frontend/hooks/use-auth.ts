@@ -3,16 +3,16 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { User } from '@/types';
-import { 
-  AuthState, 
-  checkAuthStatus, 
-  clearAllAuthData, 
+import {
+  AuthState,
+  checkAuthStatus,
   canAccessProtectedRoute,
   canAccessSharedConversation,
   redirectToAuth,
   redirectToHome
 } from '@/utils/auth';
 import { useUser, useAuthActions, useIsAuthChecking } from '@/stores';
+import { authManager } from '@/services/auth-manager.service';
 
 // Fonction helper pour les logs de développement
 const devLog = (message: string, ...args: any[]) => {
@@ -170,9 +170,10 @@ export function useAuth() {
       
       // Validation améliorée pour les sessions anonymes
       if (authState.isAnonymous) {
-        const sessionToken = localStorage.getItem('anonymous_session_token');
+        const anonymousSession = authManager.getAnonymousSession();
+        const sessionToken = anonymousSession?.token;
         const participant = localStorage.getItem('anonymous_participant');
-        
+
         if (!sessionToken || !participant) {
           devLog('[USE_AUTH] Session anonyme incomplète, redirection vers join');
           const storedLinkId = localStorage.getItem('anonymous_current_link_id');
@@ -268,10 +269,10 @@ export function useAuth() {
   // Se connecter
   const login = useCallback((user: User, token: string) => {
     devLog('[USE_AUTH] Connexion utilisateur:', user.username);
-    
-    // Stocker immédiatement dans localStorage
-    localStorage.setItem('auth_token', token);
-    localStorage.setItem('user', JSON.stringify(user));
+
+    // NOUVEAU: Utiliser AuthManager (source unique)
+    // Nettoie automatiquement les sessions précédentes
+    authManager.setCredentials(user, token);
     
     // Mettre à jour l'état immédiatement de manière synchrone
     const newAuthState = {
@@ -315,20 +316,24 @@ export function useAuth() {
       conversationShareLinkId,
       sessionTokenLength: sessionToken.length
     });
-    
-    localStorage.setItem('anonymous_session_token', sessionToken);
-    localStorage.setItem('anonymous_participant', JSON.stringify(participant));
-    
-    // Stocker conversationShareLinkId si fourni (correspond au champ 'id' de la réponse)
-    if (conversationShareLinkId) {
-      localStorage.setItem('anonymous_current_share_link', conversationShareLinkId);
+
+    // NOUVEAU: Utiliser AuthManager pour les sessions anonymes
+    authManager.setAnonymousSession(sessionToken, participant.id, 24); // 24h d'expiration
+
+    // Stocker les données du participant et du lien dans localStorage temporairement
+    // (en attendant une migration complète vers authManager)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('anonymous_participant', JSON.stringify(participant));
+      if (conversationShareLinkId) {
+        localStorage.setItem('anonymous_current_share_link', conversationShareLinkId);
+      }
+
+      // Marquer une connexion anonyme récente
+      localStorage.setItem('anonymous_just_joined', 'true');
+      setTimeout(() => {
+        localStorage.removeItem('anonymous_just_joined');
+      }, 3000);
     }
-    
-    // Marquer une connexion anonyme récente pour éviter les redirections intempestives
-    localStorage.setItem('anonymous_just_joined', 'true');
-    setTimeout(() => {
-      localStorage.removeItem('anonymous_just_joined');
-    }, 3000); // Augmenter à 3 secondes pour plus de stabilité
     
     const newAuthState = {
       isAuthenticated: true,

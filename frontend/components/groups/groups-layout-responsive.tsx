@@ -30,12 +30,14 @@ import type { Group } from '@/types/frontend';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { cn } from '@/lib/utils';
 import { generateCommunityIdentifier, validateCommunityIdentifier, sanitizeCommunityIdentifier } from '@/utils/community-identifier';
+import { authManager } from '@/services/auth-manager.service';
 
 interface GroupsLayoutResponsiveProps {
   selectedGroupIdentifier?: string;
 }
 
 export function GroupsLayoutResponsive({ selectedGroupIdentifier }: GroupsLayoutResponsiveProps) {
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const user = useUser(); const isAuthChecking = useIsAuthChecking();
@@ -111,7 +113,7 @@ export function GroupsLayoutResponsive({ selectedGroupIdentifier }: GroupsLayout
   // Charger les groupes
   const loadGroups = useCallback(async () => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       if (!token) {
         console.log('No auth token found');
         return;
@@ -133,7 +135,7 @@ export function GroupsLayoutResponsive({ selectedGroupIdentifier }: GroupsLayout
         setGroups(Array.isArray(data) ? data : []);
       } else if (response.status === 401) {
         console.log('Unauthorized, removing token');
-        localStorage.removeItem('auth_token');
+        authManager.clearAllSessions();
         router.push('/');
       } else {
         console.error('Groups API error:', response.status, response.statusText);
@@ -149,7 +151,7 @@ export function GroupsLayoutResponsive({ selectedGroupIdentifier }: GroupsLayout
   // Charger les détails d'un groupe
   const loadGroupDetails = useCallback(async (identifier: string) => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       if (!token) return;
 
       const response = await fetch(buildApiUrl(`/communities/${identifier}`), {
@@ -204,7 +206,7 @@ export function GroupsLayoutResponsive({ selectedGroupIdentifier }: GroupsLayout
 
     setIsCheckingIdentifier(true);
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       if (!token) {
         setIsCheckingIdentifier(false);
         return;
@@ -252,7 +254,7 @@ export function GroupsLayoutResponsive({ selectedGroupIdentifier }: GroupsLayout
     }
 
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       if (!token) return;
 
       // Ajouter le préfixe mshy_ pour l'envoi au serveur
