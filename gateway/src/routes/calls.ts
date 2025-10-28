@@ -13,6 +13,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { createUnifiedAuthMiddleware, UnifiedAuthRequest } from '../middleware/auth.js';
 import { createValidationMiddleware } from '../middleware/validation.js';
+import { ROUTE_RATE_LIMITS } from '../middleware/rate-limit.js';
 import { CallService } from '../services/CallService.js';
 import { logger } from '../utils/logger.js';
 import {
@@ -71,11 +72,13 @@ export default async function callRoutes(fastify: FastifyInstance) {
    * POST /api/calls
    * Initiate a new call
    * CVE-006: Added input validation
+   * CVE-002: Added rate limiting (5 req/min)
    */
   fastify.post<{
     Body: InitiateCallBody;
   }>('/calls', {
-    preValidation: [requiredAuth, createValidationMiddleware(initiateCallSchema)]
+    preValidation: [requiredAuth, createValidationMiddleware(initiateCallSchema)],
+    ...ROUTE_RATE_LIMITS.initiateCall
   }, async (request, reply) => {
     try {
       const { conversationId, type, settings } = request.body;
@@ -120,12 +123,14 @@ export default async function callRoutes(fastify: FastifyInstance) {
    * GET /api/calls/:callId
    * Get call details
    * CVE-006: Added input validation
+   * CVE-002: Added rate limiting (20 req/min)
    * CVE-003: Authorization check moved to CallService
    */
   fastify.get<{
     Params: CallParams;
   }>('/calls/:callId', {
-    preValidation: [requiredAuth, createValidationMiddleware(getCallSchema)]
+    preValidation: [requiredAuth, createValidationMiddleware(getCallSchema)],
+    ...ROUTE_RATE_LIMITS.joinCall
   }, async (request, reply) => {
     try {
       const { callId } = request.params;
@@ -184,11 +189,13 @@ export default async function callRoutes(fastify: FastifyInstance) {
    * DELETE /api/calls/:callId
    * End call (force end)
    * CVE-006: Added input validation
+   * CVE-002: Added rate limiting (10 req/min)
    */
   fastify.delete<{
     Params: CallParams;
   }>('/calls/:callId', {
-    preValidation: [requiredAuth, createValidationMiddleware(endCallSchema)]
+    preValidation: [requiredAuth, createValidationMiddleware(endCallSchema)],
+    ...ROUTE_RATE_LIMITS.callOperations
   }, async (request, reply) => {
     try {
       const { callId } = request.params;
@@ -266,12 +273,14 @@ export default async function callRoutes(fastify: FastifyInstance) {
    * POST /api/calls/:callId/participants
    * Join call
    * CVE-006: Added input validation
+   * CVE-002: Added rate limiting (20 req/min)
    */
   fastify.post<{
     Params: CallParams;
     Body: JoinCallBody;
   }>('/calls/:callId/participants', {
-    preValidation: [requiredAuth, createValidationMiddleware(joinCallSchema)]
+    preValidation: [requiredAuth, createValidationMiddleware(joinCallSchema)],
+    ...ROUTE_RATE_LIMITS.joinCall
   }, async (request, reply) => {
     try {
       const { callId } = request.params;
@@ -316,11 +325,13 @@ export default async function callRoutes(fastify: FastifyInstance) {
    * DELETE /api/calls/:callId/participants/:participantId
    * Leave call
    * CVE-006: Added input validation
+   * CVE-002: Added rate limiting (10 req/min)
    */
   fastify.delete<{
     Params: ParticipantParams;
   }>('/calls/:callId/participants/:participantId', {
-    preValidation: [requiredAuth, createValidationMiddleware(leaveCallSchema)]
+    preValidation: [requiredAuth, createValidationMiddleware(leaveCallSchema)],
+    ...ROUTE_RATE_LIMITS.callOperations
   }, async (request, reply) => {
     try {
       const { callId, participantId } = request.params;
@@ -389,11 +400,13 @@ export default async function callRoutes(fastify: FastifyInstance) {
    * GET /api/conversations/:conversationId/active-call
    * Get active call for conversation
    * CVE-006: Added input validation
+   * CVE-002: Added rate limiting (10 req/min)
    */
   fastify.get<{
     Params: ConversationParams;
   }>('/conversations/:conversationId/active-call', {
-    preValidation: [requiredAuth, createValidationMiddleware(getActiveCallSchema)]
+    preValidation: [requiredAuth, createValidationMiddleware(getActiveCallSchema)],
+    ...ROUTE_RATE_LIMITS.callOperations
   }, async (request, reply) => {
     try {
       const { conversationId } = request.params;
