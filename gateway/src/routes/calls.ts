@@ -12,8 +12,17 @@
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { createUnifiedAuthMiddleware, UnifiedAuthRequest } from '../middleware/auth.js';
+import { createValidationMiddleware } from '../middleware/validation.js';
 import { CallService } from '../services/CallService.js';
 import { logger } from '../utils/logger.js';
+import {
+  initiateCallSchema,
+  getCallSchema,
+  endCallSchema,
+  joinCallSchema,
+  leaveCallSchema,
+  getActiveCallSchema
+} from '../validation/call-schemas.js';
 
 interface CallParams {
   callId: string;
@@ -61,38 +70,17 @@ export default async function callRoutes(fastify: FastifyInstance) {
   /**
    * POST /api/calls
    * Initiate a new call
+   * CVE-006: Added input validation
    */
   fastify.post<{
     Body: InitiateCallBody;
   }>('/calls', {
-    preValidation: [requiredAuth]
+    preValidation: [requiredAuth, createValidationMiddleware(initiateCallSchema)]
   }, async (request, reply) => {
     try {
       const { conversationId, type, settings } = request.body;
       const authRequest = request as UnifiedAuthRequest;
       const userId = authRequest.authContext.userId;
-
-      // Validate required fields
-      if (!conversationId || !type) {
-        return reply.status(400).send({
-          success: false,
-          error: {
-            code: 'INVALID_REQUEST',
-            message: 'conversationId and type are required'
-          }
-        });
-      }
-
-      // Validate call type
-      if (type !== 'video' && type !== 'audio') {
-        return reply.status(400).send({
-          success: false,
-          error: {
-            code: 'INVALID_REQUEST',
-            message: 'type must be "video" or "audio"'
-          }
-        });
-      }
 
       logger.info('📞 REST: Initiating call', { conversationId, userId, type });
 
@@ -131,11 +119,13 @@ export default async function callRoutes(fastify: FastifyInstance) {
   /**
    * GET /api/calls/:callId
    * Get call details
+   * CVE-006: Added input validation
+   * CVE-003: Authorization check moved to CallService
    */
   fastify.get<{
     Params: CallParams;
   }>('/calls/:callId', {
-    preValidation: [requiredAuth]
+    preValidation: [requiredAuth, createValidationMiddleware(getCallSchema)]
   }, async (request, reply) => {
     try {
       const { callId } = request.params;
@@ -193,11 +183,12 @@ export default async function callRoutes(fastify: FastifyInstance) {
   /**
    * DELETE /api/calls/:callId
    * End call (force end)
+   * CVE-006: Added input validation
    */
   fastify.delete<{
     Params: CallParams;
   }>('/calls/:callId', {
-    preValidation: [requiredAuth]
+    preValidation: [requiredAuth, createValidationMiddleware(endCallSchema)]
   }, async (request, reply) => {
     try {
       const { callId } = request.params;
@@ -274,12 +265,13 @@ export default async function callRoutes(fastify: FastifyInstance) {
   /**
    * POST /api/calls/:callId/participants
    * Join call
+   * CVE-006: Added input validation
    */
   fastify.post<{
     Params: CallParams;
     Body: JoinCallBody;
   }>('/calls/:callId/participants', {
-    preValidation: [requiredAuth]
+    preValidation: [requiredAuth, createValidationMiddleware(joinCallSchema)]
   }, async (request, reply) => {
     try {
       const { callId } = request.params;
@@ -323,11 +315,12 @@ export default async function callRoutes(fastify: FastifyInstance) {
   /**
    * DELETE /api/calls/:callId/participants/:participantId
    * Leave call
+   * CVE-006: Added input validation
    */
   fastify.delete<{
     Params: ParticipantParams;
   }>('/calls/:callId/participants/:participantId', {
-    preValidation: [requiredAuth]
+    preValidation: [requiredAuth, createValidationMiddleware(leaveCallSchema)]
   }, async (request, reply) => {
     try {
       const { callId, participantId } = request.params;
@@ -395,11 +388,12 @@ export default async function callRoutes(fastify: FastifyInstance) {
   /**
    * GET /api/conversations/:conversationId/active-call
    * Get active call for conversation
+   * CVE-006: Added input validation
    */
   fastify.get<{
     Params: ConversationParams;
   }>('/conversations/:conversationId/active-call', {
-    preValidation: [requiredAuth]
+    preValidation: [requiredAuth, createValidationMiddleware(getActiveCallSchema)]
   }, async (request, reply) => {
     try {
       const { conversationId } = request.params;
