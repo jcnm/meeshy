@@ -9,6 +9,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
 import { useCallStore } from '@/stores/call-store';
+import { useAuth } from '@/hooks/use-auth';
 import { useWebRTCP2P } from '@/hooks/use-webrtc-p2p';
 import { CallNotification } from './CallNotification';
 import { CallInterface } from './CallInterface';
@@ -25,10 +26,12 @@ import type {
 
 export function CallManager() {
   const router = useRouter();
+  const { user } = useAuth();
   const {
     currentCall,
     isInCall,
     setCurrentCall,
+    setInCall,
     addParticipant,
     removeParticipant,
     updateParticipant,
@@ -50,15 +53,45 @@ export function CallManager() {
   /**
    * Handle incoming call
    */
-  const handleIncomingCall = useCallback((event: CallInitiatedEvent) => {
+  const handleIncomingCall = useCallback(async (event: CallInitiatedEvent) => {
     logger.info('[CallManager] Incoming call - callId: ' + event.callId);
 
-    // Show notification
-    setIncomingCall(event);
+    // Check if current user is the initiator
+    const isInitiator = user?.id === event.initiator.userId;
 
-    // Play ringtone (optional - can be added later)
-    // playRingtone();
-  }, []);
+    if (isInitiator) {
+      // I am the initiator - automatically start the call
+      logger.info('[CallManager] I am the initiator - auto-starting call');
+
+      try {
+        // Initialize local stream
+        await webrtcHook.initializeLocalStream();
+
+        // Set call as current
+        setCurrentCall({
+          id: event.callId,
+          conversationId: event.conversationId,
+          mode: event.mode,
+          status: 'initiated',
+          initiatorId: event.initiator.userId,
+          startedAt: new Date(),
+          participants: event.participants,
+        });
+
+        // Set call as active
+        setInCall(true);
+
+        toast.success('Call started - waiting for participants...');
+      } catch (error: any) {
+        logger.error('[CallManager] Failed to start call:', error);
+        toast.error('Failed to access camera/microphone');
+      }
+    } else {
+      // I am being called - show notification
+      logger.info('[CallManager] Incoming call from ' + event.initiator.username);
+      setIncomingCall(event);
+    }
+  }, [user, webrtcHook, setCurrentCall, setInCall]);
 
   /**
    * Handle participant joined
@@ -191,6 +224,9 @@ export function CallManager() {
         startedAt: new Date(),
         participants: incomingCall.participants,
       });
+
+      // Set call as active
+      setInCall(true);
 
       // Clear incoming call notification
       setIncomingCall(null);
