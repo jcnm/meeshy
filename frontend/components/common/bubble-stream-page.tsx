@@ -1212,14 +1212,20 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           console.log(`🔤 Langue source du message: ${selectedInputLanguage} (détectée: ${detectedLanguage})`);
           
           // Scroll automatique vers le HAUT pour voir le message envoyé (scrollDirection='down')
-          setTimeout(() => {
+          // Utiliser plusieurs tentatives pour s'assurer que le scroll fonctionne
+          const scrollToTop = () => {
             if (messagesContainerRef.current) {
               messagesContainerRef.current.scrollTo({
                 top: 0,
                 behavior: 'smooth'
               });
             }
-          }, 300); // Délai pour laisser le message s'ajouter au DOM
+          };
+
+          // Premier scroll rapide
+          setTimeout(scrollToTop, 100);
+          // Deuxième scroll pour assurer que le message est dans le DOM
+          setTimeout(scrollToTop, 500);
         } else {
           console.error('❌ Envoi échoué: sendResult est false');
           throw new Error('L\'envoi du message a échoué - le serveur a retourné false');
