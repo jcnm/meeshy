@@ -46,7 +46,9 @@
       "totalClicks": "Total clicks",
       "uniqueClicks": "Unique clicks",
       "lastClicked": "Last clicked",
-      "never": "Never"
+      "never": "Never",
+      "avgTotal": "Avg. total clicks",
+      "avgUnique": "Avg. unique clicks"
     },
     "actions": {
       "menu": "Menu",
