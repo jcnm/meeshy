@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Footer } from '@/components/layout/Footer';
@@ -29,6 +29,17 @@ import { useI18n } from '@/hooks/useI18n';
 import { getTrackingLinkStats } from '@/services/tracking-links';
 import { copyToClipboard } from '@/lib/clipboard';
 import type { TrackingLink } from '@shared/types/tracking-link';
+import {
+  ComposedChart,
+  Bar,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from 'recharts';
 
 interface TrackingLinkStats {
   trackingLink: TrackingLink;
@@ -425,100 +436,102 @@ export default function TrackingLinkDetailsPage() {
             )}
           </div>
 
-          {/* Histogramme des clics */}
-          {stats.clicksByDate && stats.clicksByDate.length > 0 && (
-            <Card className="border-2 bg-white dark:bg-gray-950">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5" />
-                  {t('tracking.details.clicksByDate')}
-                </CardTitle>
-                <CardDescription>{t('tracking.details.evolutionOverTime')}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {/* Histogramme */}
-                <div className="space-y-6">
-                  {/* Légende */}
-                  <div className="flex items-center gap-6 justify-center">
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-blue-600 rounded"></div>
-                      <span className="text-sm font-medium">{t('tracking.stats.totalClicks')}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-green-600 rounded"></div>
-                      <span className="text-sm font-medium">{t('tracking.stats.uniqueClicks')}</span>
-                    </div>
-                  </div>
+          {/* Graphique des clics avec moyenne */}
+          {stats.clicksByDate && stats.clicksByDate.length > 0 && (() => {
+            // Calculer la moyenne des clics totaux et uniques
+            const avgClicks = stats.clicksByDate.reduce((sum, item) => sum + item.clicks, 0) / stats.clicksByDate.length;
+            const avgUniqueClicks = stats.clicksByDate.reduce((sum, item) => sum + item.uniqueClicks, 0) / stats.clicksByDate.length;
 
-                  {/* Graphe */}
-                  <div className="relative">
-                    {/* Grille horizontale */}
-                    <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
-                      {[...Array(5)].map((_, i) => (
-                        <div key={i} className="border-t border-gray-200 dark:border-gray-700"></div>
-                      ))}
-                    </div>
+            // Préparer les données pour le graphique
+            const chartData = stats.clicksByDate.slice(-14).map(item => ({
+              date: new Date(item.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }),
+              fullDate: item.date,
+              [t('stats.totalClicks')]: item.clicks,
+              [t('stats.uniqueClicks')]: item.uniqueClicks,
+              [t('stats.avgTotal')]: Math.round(avgClicks * 10) / 10,
+              [t('stats.avgUnique')]: Math.round(avgUniqueClicks * 10) / 10,
+            }));
 
-                    {/* Barres */}
-                    <div className="relative flex items-end justify-between gap-2 h-64 pt-4">
-                      {stats.clicksByDate.slice(-14).map((item, index) => {
-                        const maxClicks = Math.max(...stats.clicksByDate.slice(-14).map(d => d.clicks));
-                        const totalHeight = (item.clicks / (maxClicks || 1)) * 100;
-                        const uniqueHeight = (item.uniqueClicks / (maxClicks || 1)) * 100;
+            return (
+              <Card className="border-2 bg-white dark:bg-gray-950">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    {t('tracking.details.clicksByDate')}
+                  </CardTitle>
+                  <CardDescription>{t('tracking.details.evolutionOverTime')}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    {/* Graphique Recharts */}
+                    <ResponsiveContainer width="100%" height={400}>
+                      <ComposedChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
+                        <XAxis
+                          dataKey="date"
+                          angle={-45}
+                          textAnchor="end"
+                          height={80}
+                          className="text-xs"
+                        />
+                        <YAxis className="text-xs" />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            border: 'none',
+                            borderRadius: '8px',
+                            color: 'white'
+                          }}
+                        />
+                        <Legend />
+                        <Bar
+                          dataKey={t('stats.totalClicks')}
+                          fill="#3b82f6"
+                          radius={[8, 8, 0, 0]}
+                        />
+                        <Bar
+                          dataKey={t('stats.uniqueClicks')}
+                          fill="#10b981"
+                          radius={[8, 8, 0, 0]}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey={t('stats.avgTotal')}
+                          stroke="#ef4444"
+                          strokeWidth={2}
+                          strokeDasharray="5 5"
+                          dot={false}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey={t('stats.avgUnique')}
+                          stroke="#f59e0b"
+                          strokeWidth={2}
+                          strokeDasharray="5 5"
+                          dot={false}
+                        />
+                      </ComposedChart>
+                    </ResponsiveContainer>
 
-                        return (
-                          <div key={index} className="flex-1 flex flex-col items-center gap-2">
-                            {/* Barres empilées */}
-                            <div className="w-full flex flex-col items-center justify-end h-full gap-1 group relative">
-                              <div
-                                className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t-md transition-all hover:from-blue-700 hover:to-blue-500 cursor-pointer"
-                                style={{ height: `${totalHeight}%`, minHeight: item.clicks > 0 ? '4px' : '0' }}
-                              >
-                                {/* Tooltip au survol */}
-                                <div className="hidden group-hover:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-10">
-                                  <div className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-3 py-2 rounded-lg shadow-lg text-xs whitespace-nowrap">
-                                    <div className="font-bold">{formatDate(item.date)}</div>
-                                    <div className="text-blue-400 dark:text-blue-600">{item.clicks} clics</div>
-                                    <div className="text-green-400 dark:text-green-600">{item.uniqueClicks} uniques</div>
-                                  </div>
-                                </div>
-                              </div>
-                              {item.uniqueClicks > 0 && (
-                                <div
-                                  className="w-3/4 bg-gradient-to-t from-green-600 to-green-400 rounded-t-md transition-all hover:from-green-700 hover:to-green-500"
-                                  style={{ height: `${uniqueHeight}%`, minHeight: '4px', position: 'absolute', bottom: 0 }}
-                                ></div>
-                              )}
+                    {/* Tableau récapitulatif */}
+                    <div className="mt-6 pt-6 border-t">
+                      <div className="grid grid-cols-1 gap-2">
+                        {stats.clicksByDate.slice(-5).reverse().map((item, index) => (
+                          <div key={index} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-900 rounded">
+                            <span className="text-sm font-medium">{formatDate(item.date)}</span>
+                            <div className="flex items-center gap-4">
+                              <span className="text-sm text-blue-600 font-bold">{item.clicks} clics</span>
+                              <span className="text-sm text-green-600 font-bold">{item.uniqueClicks} uniques</span>
                             </div>
-
-                            {/* Date */}
-                            <span className="text-xs font-medium text-muted-foreground rotate-45 origin-top-left mt-2 whitespace-nowrap">
-                              {new Date(item.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
-                            </span>
                           </div>
-                        );
-                      })}
+                        ))}
+                      </div>
                     </div>
                   </div>
-
-                  {/* Tableau récapitulatif */}
-                  <div className="mt-6 pt-6 border-t">
-                    <div className="grid grid-cols-1 gap-2">
-                      {stats.clicksByDate.slice(-5).reverse().map((item, index) => (
-                        <div key={index} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-900 rounded">
-                          <span className="text-sm font-medium">{formatDate(item.date)}</span>
-                          <div className="flex items-center gap-4">
-                            <span className="text-sm text-blue-600 font-bold">{item.clicks} clics</span>
-                            <span className="text-sm text-green-600 font-bold">{item.uniqueClicks} uniques</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                </CardContent>
+              </Card>
+            );
+          })()}
 
           {/* Informations du lien */}
           <Card className="border-2 bg-white dark:bg-gray-950">
