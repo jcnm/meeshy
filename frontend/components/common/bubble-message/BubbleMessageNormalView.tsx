@@ -439,7 +439,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
         id={`message-${message.id}`}
         ref={messageRef}
         className={cn(
-          "bubble-message flex gap-2 sm:gap-3 mb-8 px-2 sm:px-4",
+          "bubble-message flex gap-1 sm:gap-1.5 mb-4 px-2 sm:px-4",
           isOwnMessage ? "flex-row-reverse" : "flex-row"
         )}
       >
@@ -473,7 +473,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
         <div className="flex-1 min-w-0 flex flex-col">
           {/* Header: Nom + Date en horizontal au-dessus */}
           <div className={cn(
-            "flex items-center gap-2 mb-1 px-1",
+            "flex items-center gap-1 mb-0.5 px-1",
             isOwnMessage && "flex-row-reverse"
           )}>
             {(() => {
