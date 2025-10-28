@@ -157,6 +157,7 @@
       "messageFound": "Message found!",
       "messageNotVisible": "Message not visible. Loading...",
       "allMessagesLoaded": "All messages have been loaded",
+      "loadingOlderMessages": "Loading older messages...",
       "requestTranslationError": "Error requesting translation",
       "reportMessage": "Report this message",
       "messageCopied": "Message copied to clipboard",
