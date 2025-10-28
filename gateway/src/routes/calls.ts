@@ -139,26 +139,8 @@ export default async function callRoutes(fastify: FastifyInstance) {
 
       logger.info('📞 REST: Getting call details', { callId, userId });
 
-      const callSession = await callService.getCallSession(callId);
-
-      // Verify user has access to this call (is member of conversation)
-      const membership = await prisma.conversationMember.findFirst({
-        where: {
-          conversationId: callSession.conversationId,
-          userId,
-          isActive: true
-        }
-      });
-
-      if (!membership) {
-        return reply.status(403).send({
-          success: false,
-          error: {
-            code: 'NOT_A_PARTICIPANT',
-            message: 'You do not have access to this call'
-          }
-        });
-      }
+      // CVE-003: Pass requesting user ID for authorization check
+      const callSession = await callService.getCallSession(callId, userId);
 
       return reply.send({
         success: true,
