@@ -30,6 +30,7 @@ import { FailedMessageBanner } from '@/components/messages/failed-message-banner
 import { useFailedMessagesStore, type FailedMessage } from '@/stores/failed-messages-store';
 import { ConnectionStatusIndicator } from './connection-status-indicator';
 import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
+import { logger } from '@/utils/logger';
 
 interface ConversationLayoutProps {
   selectedConversationId?: string;
@@ -580,6 +581,41 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     }
   }, [isMobile, selectedConversationId, localSelectedConversationId, router, instanceId]);
 
+  // Start video call
+  const handleStartCall = useCallback(() => {
+    if (!selectedConversation) {
+      logger.warn('[ConversationLayout] Cannot start call: no conversation selected');
+      return;
+    }
+
+    if (selectedConversation.type !== 'direct') {
+      toast.error('Video calls are only available for direct conversations');
+      logger.warn('[ConversationLayout] Cannot start call: not a direct conversation');
+      return;
+    }
+
+    logger.info('[ConversationLayout] Starting video call - conversationId: ' + selectedConversation.id);
+
+    const socket = meeshySocketIOService.getSocket();
+    if (!socket) {
+      toast.error('Connection error. Please try again.');
+      logger.error('[ConversationLayout] Cannot start call: no socket connection');
+      return;
+    }
+
+    // Emit call:initiate event
+    (socket as any).emit('call:initiate', {
+      conversationId: selectedConversation.id,
+      type: 'video',
+      settings: {
+        audioEnabled: true,
+        videoEnabled: true,
+      },
+    });
+
+    toast.success('Starting call...');
+  }, [selectedConversation]);
+
   // Gérer la réponse à un message
   const handleReplyMessage = useCallback((message: any) => {
     const { setReplyingTo } = useReplyStore.getState();
@@ -1028,6 +1064,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               onParticipantRemoved={() => {}}
               onParticipantAdded={() => {}}
               onLinkCreated={() => {}}
+              onStartCall={handleStartCall}
               t={t}
               showBackButton={!!selectedConversationId}
             />
@@ -1190,6 +1227,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                   onParticipantRemoved={() => {}}
                   onParticipantAdded={() => {}}
                   onLinkCreated={() => {}}
+                  onStartCall={handleStartCall}
                   t={t}
                   showBackButton={!!selectedConversationId}
                 />
