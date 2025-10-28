@@ -353,8 +353,12 @@ export class CallService {
 
   /**
    * Get call session details with participants
+   * CVE-003: Added authorization check - requestingUserId parameter
+   *
+   * @param callId - Call session ID
+   * @param requestingUserId - Optional user ID requesting access (for authorization check)
    */
-  async getCallSession(callId: string): Promise<CallSessionWithParticipants> {
+  async getCallSession(callId: string, requestingUserId?: string): Promise<CallSessionWithParticipants> {
     const call = await this.prisma.callSession.findUnique({
       where: { id: callId },
       include: {
@@ -391,6 +395,32 @@ export class CallService {
     if (!call) {
       logger.error('❌ Call not found', { callId });
       throw new Error(`${CALL_ERROR_CODES.CALL_NOT_FOUND}: Call session not found`);
+    }
+
+    // CVE-003: Authorization check if requestingUserId provided
+    if (requestingUserId) {
+      // Check if user is a participant in the call
+      const isParticipant = call.participants.some((p) => p.userId === requestingUserId);
+
+      // If not a participant, check if they're a member of the conversation
+      if (!isParticipant) {
+        const isMember = await this.prisma.conversationMember.findFirst({
+          where: {
+            conversationId: call.conversationId,
+            userId: requestingUserId,
+            isActive: true
+          }
+        });
+
+        if (!isMember) {
+          logger.warn('❌ Unauthorized call access attempt', {
+            callId,
+            userId: requestingUserId,
+            conversationId: call.conversationId
+          });
+          throw new Error(`${CALL_ERROR_CODES.NOT_A_PARTICIPANT}: You do not have access to this call`);
+        }
+      }
     }
 
     return call;
