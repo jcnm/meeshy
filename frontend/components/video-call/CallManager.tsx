@@ -159,6 +159,11 @@ export function CallManager() {
     logger.debug('[CallManager] Accepting call - callId: ' + incomingCall.callId);
 
     try {
+      // Stop ringtone immediately
+      import('@/utils/ringtone').then(({ stopRingtone }) => {
+        stopRingtone();
+      });
+
       // Initialize local stream first
       await webrtcHook.initializeLocalStream();
 
@@ -206,6 +211,11 @@ export function CallManager() {
 
     logger.debug('[CallManager] Rejecting call - callId: ' + incomingCall.callId);
 
+    // Stop ringtone immediately
+    import('@/utils/ringtone').then(({ stopRingtone }) => {
+      stopRingtone();
+    });
+
     // Emit leave event
     const socket = meeshySocketIOService.getSocket();
     if (socket) {
@@ -217,7 +227,7 @@ export function CallManager() {
     // Clear notification
     setIncomingCall(null);
 
-    toast.info('Call rejected');
+    toast.info('Call declined');
   }, [incomingCall]);
 
   /**
