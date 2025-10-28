@@ -80,8 +80,11 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       foundTitle: found?.title
     });
     return found || null;
-  }, [effectiveSelectedId, conversations, instanceId, selectedConversationId, localSelectedConversationId]);
+  }, [effectiveSelectedId, conversations]);
   const [participants, setParticipants] = useState<ThreadMember[]>([]);
+
+  // Ref pour les participants (évite les re-créations de callbacks)
+  const participantsRef = useRef<ThreadMember[]>([]);
   // Utiliser l'état de chargement du hook de pagination
   const isLoading = isLoadingConversations;
   const [selectedLanguage, setSelectedLanguage] = useState('fr');
@@ -98,10 +101,25 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
   // Référence pour le textarea du MessageComposer
   const messageComposerRef = useRef<{ focus: () => void; blur: () => void; clearAttachments?: () => void }>(null);
-  
+
   // Référence pour le timeout de frappe
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
+
+  // Référence pour la zone de scroll des messages
+  const messagesScrollRef = useRef<HTMLDivElement | null>(null);
+
+  // Référence pour l'ID de conversation (évite les re-créations de callbacks)
+  const selectedConversationIdRef = useRef<string | null>(null);
+
+  // Mettre à jour les refs quand les valeurs changent
+  useEffect(() => {
+    selectedConversationIdRef.current = selectedConversation?.id || null;
+  }, [selectedConversation?.id]);
+
+  useEffect(() => {
+    participantsRef.current = participants;
+  }, [participants]);
+
   // Constante pour le délai d'arrêt de frappe (3 secondes après la dernière frappe)
   const TYPING_STOP_DELAY = 3000;
   
@@ -177,19 +195,19 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
     // Callback pour gérer les événements de frappe
   const handleUserTyping = useCallback((userId: string, username: string, isTyping: boolean, typingConversationId: string) => {
-    console.log('[ConversationLayout] 👤 Événement de frappe REÇU:', { 
-      userId, 
-      username, 
-      isTyping, 
+    console.log('[ConversationLayout] 👤 Événement de frappe REÇU:', {
+      userId,
+      username,
+      isTyping,
       typingConversationId,
       currentUserId: user?.id,
       willIgnore: !user || userId === user.id
     });
-    
+
     if (!user || userId === user.id) return; // Ignorer nos propres événements
-    
+
     console.log('[ConversationLayout] ✅ Traitement événement de frappe (pas ignoré)');
-    
+
     setTypingUsers(prev => {
       if (isTyping) {
         // Ajouter l'utilisateur s'il n'est pas déjà dans la liste
@@ -197,11 +215,12 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
           console.log('[ConversationLayout] 📝 Utilisateur déjà dans la liste, pas d\'ajout');
           return prev;
         }
-        
-        // Rechercher l'utilisateur dans les participants pour obtenir son vrai nom
-        const participant = participants.find(p => p.userId === userId);
+
+        // Utiliser la ref pour éviter la re-création du callback
+        const currentParticipants = participantsRef.current;
+        const participant = currentParticipants.find(p => p.userId === userId);
         let displayName: string;
-        
+
         if (participant?.user) {
           const u = participant.user;
           if (u.displayName) {
@@ -216,7 +235,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         } else {
           displayName = `Utilisateur ${userId.slice(-6)}`;
         }
-        
+
         console.log('[ConversationLayout] ➕ Ajout utilisateur tapant:', { userId, displayName });
         return [...prev, { id: userId, displayName }];
       } else {
@@ -225,7 +244,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         return prev.filter(u => u.id !== userId);
       }
     });
-  }, [user, participants]);
+  }, [user]);
 
   // Hook Socket.IO messaging pour la communication temps réel
   const {
@@ -240,34 +259,37 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     onUserTyping: handleUserTyping,
     onMessageEdited: useCallback((message: any) => {
       console.log('✏️ [ConversationLayout] Message édité reçu via Socket.IO:', message.id);
-      if (message.conversationId === selectedConversation?.id) {
+      // Utiliser la ref au lieu de selectedConversation?.id
+      if (message.conversationId === selectedConversationIdRef.current) {
         updateMessage(message.id, message);
         toast.info(tCommon('messages.messageEditedByOther'));
       }
-    }, [updateMessage, selectedConversation?.id, tCommon]),
+    }, [updateMessage, tCommon]),
     onMessageDeleted: useCallback((messageId: string) => {
       console.log('🗑️ [ConversationLayout] Message supprimé reçu via Socket.IO:', messageId);
       removeMessage(messageId);
       toast.info(tCommon('messages.messageDeletedByOther'));
     }, [removeMessage, tCommon]),
     onNewMessage: useCallback((message: any) => {
+      // Utiliser la ref au lieu de selectedConversation?.id
+      const currentConvId = selectedConversationIdRef.current;
       console.log(`[ConversationLayout-${instanceId}] 🔥 NOUVEAU MESSAGE VIA WEBSOCKET:`, {
         messageId: message.id,
         content: message.content?.substring(0, 50),
         senderId: message.senderId,
         conversationId: message.conversationId,
-        selectedConversationId: selectedConversation?.id,
-        shouldAdd: message.conversationId === selectedConversation?.id
+        selectedConversationId: currentConvId,
+        shouldAdd: message.conversationId === currentConvId
       });
-      
+
       // Ajouter seulement si c'est pour la conversation actuelle
-      if (message.conversationId === selectedConversation?.id) {
+      if (message.conversationId === currentConvId) {
         const wasAdded = addMessage(message);
         console.log(`[ConversationLayout-${instanceId}] Message ajouté:`, wasAdded);
       } else {
         console.log(`[ConversationLayout-${instanceId}] Message ignoré (autre conversation)`);
       }
-    }, [addMessage, selectedConversation?.id, instanceId]),
+    }, [addMessage, instanceId]),
     onTranslation: useCallback((messageId: string, translations: any[]) => {
       console.log('🌐 [ConversationLayoutV2] Traductions reçues pour message:', messageId, translations);
       
@@ -379,7 +401,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   // Gestion de l'affichage mobile selon la conversation sélectionnée
   useEffect(() => {
     if (isMobile) {
-      if (selectedConversation) {
+      if (selectedConversation?.id) {
         // Il y a une conversation sélectionnée → masquer la liste
         console.log(`[ConversationLayout-${instanceId}] Mobile: conversation sélectionnée, masquer liste`);
         setShowConversationList(false);
@@ -392,7 +414,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       // Desktop → toujours afficher la liste
       setShowConversationList(true);
     }
-  }, [isMobile, selectedConversation, instanceId]);
+  }, [isMobile, selectedConversation?.id, instanceId]);
   
   // Si on arrive avec une URL /conversations/:id, initialiser la sélection locale
   useEffect(() => {
@@ -409,7 +431,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     if (!user) return;
     console.log('[ConversationLayout] Rafraîchissement des conversations via hook de pagination');
     refreshConversations();
-  }, [user, refreshConversations]);
+  }, [refreshConversations]); // Retirer user des dépendances
 
   // Chargement des participants
   const loadParticipants = useCallback(async (conversationId: string) => {
@@ -762,16 +784,26 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       console.log('[ConversationLayout] Message envoyé avec succès - en attente du retour serveur');
       setNewMessage('');
       setAttachmentIds([]); // Réinitialiser les attachments
-      
+
       // Clear les attachments du composer
       if (messageComposerRef.current && messageComposerRef.current.clearAttachments) {
         messageComposerRef.current.clearAttachments();
       }
-      
+
       // Effacer l'état de réponse
       if (replyToId) {
         useReplyStore.getState().clearReply();
       }
+
+      // Scroller vers le bas immédiatement après l'envoi
+      setTimeout(() => {
+        if (messagesScrollRef.current) {
+          messagesScrollRef.current.scrollTo({
+            top: messagesScrollRef.current.scrollHeight,
+            behavior: 'smooth'
+          });
+        }
+      }, 100);
     } catch (error) {
       console.error('[ConversationLayout] Erreur envoi message:', error);
       // Restaurer les attachments en cas d'erreur
@@ -968,30 +1000,53 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     }
   }, [connectionStatus.isConnected, connectionStatus.hasSocket, user]);
 
-  // Effets
+  // Effets - Charger les conversations seulement au montage initial
+  const hasLoadedInitialConversations = useRef(false);
+
   useEffect(() => {
-    if (user) {
-      loadConversations();
+    if (user && !hasLoadedInitialConversations.current) {
+      hasLoadedInitialConversations.current = true;
+      refreshConversations();
+      setSelectedLanguage(user.systemLanguage || 'fr');
+    } else if (user && hasLoadedInitialConversations.current) {
+      // Juste mettre à jour la langue si user change
       setSelectedLanguage(user.systemLanguage || 'fr');
     }
-  }, [user, loadConversations]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]); // Dépendre SEULEMENT de l'ID du user, pas de l'objet complet
 
 
   // Charger une conversation directement si elle n'est pas dans la liste
   useEffect(() => {
-    if (selectedConversationId && user && conversations.length > 0 && !selectedConversation) {
+    if (selectedConversationId && user && conversations.length > 0 && !selectedConversation?.id) {
       console.log(`[ConversationLayout-${instanceId}] Conversation non trouvée dans la liste, chargement direct:`, selectedConversationId);
       loadDirectConversation(selectedConversationId);
     }
-  }, [selectedConversationId, user, conversations.length, selectedConversation, loadDirectConversation, instanceId]);
+  }, [selectedConversationId, user, conversations.length, selectedConversation?.id, loadDirectConversation, instanceId]);
 
   // Charger les participants quand la conversation change via URL
+  // Utiliser une ref pour tracker l'ID précédent et éviter de clear les messages
+  // quand c'est juste une mise à jour de l'objet conversation
+  const previousConversationIdRef = useRef<string | null>(null);
+
   useEffect(() => {
-    if (selectedConversation?.id) {
-      console.log(`[ConversationLayout-${instanceId}] Chargement participants pour conversation:`, selectedConversation.id);
-      loadParticipants(selectedConversation.id);
-      // Vider les anciens messages quand on change de conversation
+    const currentId = selectedConversation?.id;
+    const previousId = previousConversationIdRef.current;
+
+    // Charger les participants seulement si l'ID a vraiment changé
+    if (currentId && currentId !== previousId) {
+      console.log(`[ConversationLayout-${instanceId}] Changement de conversation: ${previousId} → ${currentId}`);
+      loadParticipants(currentId);
+      // Vider les anciens messages SEULEMENT quand on change réellement de conversation
       clearMessages();
+      previousConversationIdRef.current = currentId;
+    } else if (currentId === previousId && currentId) {
+      // Même conversation, pas de rechargement
+      console.log(`[ConversationLayout-${instanceId}] Même conversation, pas de rechargement: ${currentId}`);
+    } else if (!currentId && previousId) {
+      // Pas de conversation sélectionnée (retour à la liste)
+      console.log(`[ConversationLayout-${instanceId}] Retour à la liste, reset previousId`);
+      previousConversationIdRef.current = null;
     }
   }, [selectedConversation?.id, loadParticipants, clearMessages, instanceId]);
 
@@ -1040,7 +1095,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
           </header>
 
           {/* Zone des messages scrollable */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden bg-transparent pb-24">
+          <div ref={messagesScrollRef} className="flex-1 overflow-y-auto overflow-x-hidden bg-transparent pb-24">
             <ConversationMessages
               messages={messages}
               translatedMessages={messages as any}
@@ -1202,7 +1257,8 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               </header>
 
               {/* Zone des messages */}
-              <div 
+              <div
+                ref={messagesScrollRef}
                 className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-900/50 dark:to-gray-950"
                 role="region"
                 aria-live="polite"
