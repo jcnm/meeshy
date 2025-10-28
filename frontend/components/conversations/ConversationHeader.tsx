@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import { ArrowLeft, UserPlus, Info, MoreVertical, Link2 } from 'lucide-react';
+import { ArrowLeft, UserPlus, Info, MoreVertical, Link2, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -33,6 +33,7 @@ interface ConversationHeaderProps {
   onParticipantRemoved: (userId: string) => void;
   onParticipantAdded: (userId: string) => void;
   onLinkCreated: (link: any) => void;
+  onStartCall?: () => void;
   t: (key: string) => string;
   showBackButton?: boolean;
 }
@@ -48,6 +49,7 @@ export function ConversationHeader({
   onParticipantRemoved,
   onParticipantAdded,
   onLinkCreated,
+  onStartCall,
   t,
   showBackButton = false
 }: ConversationHeaderProps) {
@@ -142,6 +144,20 @@ export function ConversationHeader({
 
       {/* Actions */}
       <div className="flex items-center gap-1 flex-shrink-0">
+        {/* Video Call Button - Only for direct conversations */}
+        {conversation.type === 'direct' && onStartCall && (
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={onStartCall}
+            className="h-9 w-9"
+            aria-label="Start video call"
+            title="Start video call"
+          >
+            <Video className="h-5 w-5" />
+          </Button>
+        )}
+
         {/* Participants drawer - S'ouvre depuis la gauche */}
         <ConversationParticipantsDrawer
           conversationId={conversation.id}
