@@ -10,6 +10,7 @@ import { ClientOnly } from "@/components/common/client-only";
 import { MessageViewProvider } from "@/hooks/use-message-view-state";
 import { defaultFont, getAllFontVariables } from "@/lib/fonts";
 import { preloadCriticalComponents } from "@/lib/lazy-components";
+import { CallManager } from "@/components/video-call";
 import "@/utils/console-override"; // 🔇 Désactive console.log en production
 
 export const metadata: Metadata = {
@@ -41,6 +42,7 @@ export default function RootLayout({
               <ErrorBoundary>
                 <ClientOnly>
                   {children}
+                  <CallManager />
                 </ClientOnly>
               </ErrorBoundary>
             </MessageViewProvider>

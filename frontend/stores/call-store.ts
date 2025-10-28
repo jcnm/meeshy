@@ -1,74 +1,70 @@
 /**
- * VIDEO CALLS FEATURE - Zustand Store
+ * CALL STORE - Zustand State Management
  * Phase 1A: P2P Video Calls MVP
  *
- * Manages call state, WebRTC connections, and media streams
+ * Manages call state, streams, peer connections, and controls
  */
+
+'use client';
 
 import { create } from 'zustand';
 import type {
   CallSession,
-  CallState,
-  CallControls,
   CallParticipant,
-  CallMode,
-  Transcription,
-  Translation,
+  CallControls,
+  CallState,
 } from '@shared/types/video-call';
 
-interface CallStore extends CallState {
-  // ===== ACTIONS =====
-
-  // Call lifecycle
+interface CallStoreState extends CallState {
+  // Actions: Call management
   setCurrentCall: (call: CallSession | null) => void;
-  updateCallMode: (mode: CallMode) => void;
+  updateCallStatus: (status: CallSession['status']) => void;
   addParticipant: (participant: CallParticipant) => void;
   removeParticipant: (participantId: string) => void;
+  updateParticipant: (participantId: string, updates: Partial<CallParticipant>) => void;
 
-  // Media streams
+  // Actions: WebRTC streams
   setLocalStream: (stream: MediaStream | null) => void;
   addRemoteStream: (participantId: string, stream: MediaStream) => void;
   removeRemoteStream: (participantId: string) => void;
   clearRemoteStreams: () => void;
 
-  // Peer connections (P2P)
-  addPeerConnection: (participantId: string, pc: RTCPeerConnection) => void;
+  // Actions: Peer connections
+  addPeerConnection: (participantId: string, connection: RTCPeerConnection) => void;
   removePeerConnection: (participantId: string) => void;
   clearPeerConnections: () => void;
 
-  // SFU state (Phase 1B)
-  setSfuDevice: (device: any) => void;
-  setSfuTransport: (transport: any) => void;
-
-  // Controls
+  // Actions: Controls
   toggleAudio: () => void;
   toggleVideo: () => void;
   toggleScreenShare: () => void;
   setControls: (controls: Partial<CallControls>) => void;
 
-  // UI state
+  // Actions: UI state
   setConnecting: (isConnecting: boolean) => void;
   setInCall: (isInCall: boolean) => void;
   setError: (error: string | null) => void;
 
-  // Transcription (Phase 2A/2B)
-  addTranscription: (transcription: Transcription) => void;
-  setTranscribing: (isTranscribing: boolean) => void;
-
-  // Translation (Phase 3)
-  addTranslation: (transcriptionId: string, translation: Translation) => void;
-
-  // Reset
+  // Actions: Cleanup
   reset: () => void;
 }
 
 const initialState: CallState = {
+  // Current call
   currentCall: null,
+
+  // WebRTC connections
   localStream: null,
-  remoteStreams: new Map(),
-  peerConnections: new Map(),
+  remoteStreams: new Map<string, MediaStream>(),
+
+  // Peer connections (P2P mode)
+  peerConnections: new Map<string, RTCPeerConnection>(),
+
+  // SFU state (Phase 1B)
   sfuDevice: null,
   sfuTransport: null,
+
+  // UI state
   controls: {
     audioEnabled: true,
     videoEnabled: true,
@@ -77,166 +73,225 @@ const initialState: CallState = {
   isConnecting: false,
   isInCall: false,
   error: null,
+
+  // Transcription state (Phase 2A/2B)
   transcriptions: [],
   isTranscribing: false,
-  translations: new Map(),
+
+  // Translation state (Phase 3)
+  translations: new Map<string, any[]>(),
 };
 
-export const useCallStore = create<CallStore>((set, get) => ({
+export const useCallStore = create<CallStoreState>((set, get) => ({
   ...initialState,
 
-  // ===== CALL LIFECYCLE =====
+  // ===== CALL MANAGEMENT =====
 
-  setCurrentCall: (call) => set({ currentCall: call }),
+  setCurrentCall: (call) => {
+    set({ currentCall: call });
+    if (call) {
+      set({ isInCall: true, error: null });
+    }
+  },
 
-  updateCallMode: (mode) =>
-    set((state) => ({
-      currentCall: state.currentCall
-        ? { ...state.currentCall, mode }
-        : null,
-    })),
+  updateCallStatus: (status) => {
+    const { currentCall } = get();
+    if (currentCall) {
+      set({
+        currentCall: {
+          ...currentCall,
+          status,
+        },
+      });
+    }
+  },
 
-  addParticipant: (participant) =>
-    set((state) => ({
-      currentCall: state.currentCall
-        ? {
-            ...state.currentCall,
-            participants: [...state.currentCall.participants, participant],
-          }
-        : null,
-    })),
+  addParticipant: (participant) => {
+    const { currentCall } = get();
+    if (currentCall) {
+      const participants = [...currentCall.participants];
+      const existingIndex = participants.findIndex((p) => p.id === participant.id);
 
-  removeParticipant: (participantId) =>
-    set((state) => ({
-      currentCall: state.currentCall
-        ? {
-            ...state.currentCall,
-            participants: state.currentCall.participants.filter(
-              (p) => p.id !== participantId
-            ),
-          }
-        : null,
-    })),
+      if (existingIndex >= 0) {
+        participants[existingIndex] = participant;
+      } else {
+        participants.push(participant);
+      }
 
-  // ===== MEDIA STREAMS =====
+      set({
+        currentCall: {
+          ...currentCall,
+          participants,
+        },
+      });
+    }
+  },
+
+  removeParticipant: (participantId) => {
+    const { currentCall } = get();
+    if (currentCall) {
+      set({
+        currentCall: {
+          ...currentCall,
+          participants: currentCall.participants.filter((p) => p.id !== participantId),
+        },
+      });
+    }
+  },
+
+  updateParticipant: (participantId, updates) => {
+    const { currentCall } = get();
+    if (currentCall) {
+      const participants = currentCall.participants.map((p) =>
+        p.id === participantId ? { ...p, ...updates } : p
+      );
+
+      set({
+        currentCall: {
+          ...currentCall,
+          participants,
+        },
+      });
+    }
+  },
+
+  // ===== WEBRTC STREAMS =====
 
   setLocalStream: (stream) => {
-    const currentStream = get().localStream;
-    if (currentStream && currentStream !== stream) {
-      // Stop all tracks of the old stream
-      currentStream.getTracks().forEach((track) => track.stop());
+    // Stop existing tracks if replacing stream
+    const { localStream } = get();
+    if (localStream && stream !== localStream) {
+      localStream.getTracks().forEach((track) => track.stop());
     }
+
     set({ localStream: stream });
   },
 
-  addRemoteStream: (participantId, stream) =>
-    set((state) => {
-      const newRemoteStreams = new Map(state.remoteStreams);
-      newRemoteStreams.set(participantId, stream);
-      return { remoteStreams: newRemoteStreams };
-    }),
+  addRemoteStream: (participantId, stream) => {
+    const { remoteStreams } = get();
+    const newStreams = new Map(remoteStreams);
+    newStreams.set(participantId, stream);
+    set({ remoteStreams: newStreams });
+  },
 
-  removeRemoteStream: (participantId) =>
-    set((state) => {
-      const newRemoteStreams = new Map(state.remoteStreams);
-      const stream = newRemoteStreams.get(participantId);
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
-      }
-      newRemoteStreams.delete(participantId);
-      return { remoteStreams: newRemoteStreams };
-    }),
+  removeRemoteStream: (participantId) => {
+    const { remoteStreams } = get();
+    const stream = remoteStreams.get(participantId);
 
-  clearRemoteStreams: () =>
-    set((state) => {
-      state.remoteStreams.forEach((stream) => {
-        stream.getTracks().forEach((track) => track.stop());
-      });
-      return { remoteStreams: new Map() };
-    }),
+    // Stop all tracks
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+    }
+
+    const newStreams = new Map(remoteStreams);
+    newStreams.delete(participantId);
+    set({ remoteStreams: newStreams });
+  },
+
+  clearRemoteStreams: () => {
+    const { remoteStreams } = get();
+
+    // Stop all tracks in all streams
+    remoteStreams.forEach((stream) => {
+      stream.getTracks().forEach((track) => track.stop());
+    });
+
+    set({ remoteStreams: new Map() });
+  },
 
   // ===== PEER CONNECTIONS =====
 
-  addPeerConnection: (participantId, pc) =>
-    set((state) => {
-      const newPeerConnections = new Map(state.peerConnections);
-      newPeerConnections.set(participantId, pc);
-      return { peerConnections: newPeerConnections };
-    }),
+  addPeerConnection: (participantId, connection) => {
+    const { peerConnections } = get();
+    const newConnections = new Map(peerConnections);
+    newConnections.set(participantId, connection);
+    set({ peerConnections: newConnections });
+  },
 
-  removePeerConnection: (participantId) =>
-    set((state) => {
-      const newPeerConnections = new Map(state.peerConnections);
-      const pc = newPeerConnections.get(participantId);
-      if (pc) {
-        pc.close();
-      }
-      newPeerConnections.delete(participantId);
-      return { peerConnections: newPeerConnections };
-    }),
+  removePeerConnection: (participantId) => {
+    const { peerConnections } = get();
+    const connection = peerConnections.get(participantId);
 
-  clearPeerConnections: () =>
-    set((state) => {
-      state.peerConnections.forEach((pc) => {
-        pc.close();
-      });
-      return { peerConnections: new Map() };
-    }),
+    // Close connection
+    if (connection) {
+      connection.close();
+    }
 
-  // ===== SFU STATE =====
+    const newConnections = new Map(peerConnections);
+    newConnections.delete(participantId);
+    set({ peerConnections: newConnections });
+  },
 
-  setSfuDevice: (device) => set({ sfuDevice: device }),
+  clearPeerConnections: () => {
+    const { peerConnections } = get();
 
-  setSfuTransport: (transport) => set({ sfuTransport: transport }),
+    // Close all connections
+    peerConnections.forEach((connection) => {
+      connection.close();
+    });
+
+    set({ peerConnections: new Map() });
+  },
 
   // ===== CONTROLS =====
 
-  toggleAudio: () =>
-    set((state) => {
-      const newControls = {
-        ...state.controls,
-        audioEnabled: !state.controls.audioEnabled,
-      };
+  toggleAudio: () => {
+    const { controls, localStream } = get();
+    const newEnabled = !controls.audioEnabled;
 
-      // Update local stream audio track
-      if (state.localStream) {
-        state.localStream.getAudioTracks().forEach((track) => {
-          track.enabled = newControls.audioEnabled;
-        });
-      }
+    // Toggle audio tracks
+    if (localStream) {
+      localStream.getAudioTracks().forEach((track) => {
+        track.enabled = newEnabled;
+      });
+    }
 
-      return { controls: newControls };
-    }),
-
-  toggleVideo: () =>
-    set((state) => {
-      const newControls = {
-        ...state.controls,
-        videoEnabled: !state.controls.videoEnabled,
-      };
-
-      // Update local stream video track
-      if (state.localStream) {
-        state.localStream.getVideoTracks().forEach((track) => {
-          track.enabled = newControls.videoEnabled;
-        });
-      }
-
-      return { controls: newControls };
-    }),
-
-  toggleScreenShare: () =>
-    set((state) => ({
+    set({
       controls: {
-        ...state.controls,
-        screenShareEnabled: !state.controls.screenShareEnabled,
+        ...controls,
+        audioEnabled: newEnabled,
       },
-    })),
+    });
+  },
 
-  setControls: (controls) =>
-    set((state) => ({
-      controls: { ...state.controls, ...controls },
-    })),
+  toggleVideo: () => {
+    const { controls, localStream } = get();
+    const newEnabled = !controls.videoEnabled;
+
+    // Toggle video tracks
+    if (localStream) {
+      localStream.getVideoTracks().forEach((track) => {
+        track.enabled = newEnabled;
+      });
+    }
+
+    set({
+      controls: {
+        ...controls,
+        videoEnabled: newEnabled,
+      },
+    });
+  },
+
+  toggleScreenShare: () => {
+    const { controls } = get();
+    set({
+      controls: {
+        ...controls,
+        screenShareEnabled: !controls.screenShareEnabled,
+      },
+    });
+  },
+
+  setControls: (newControls) => {
+    const { controls } = get();
+    set({
+      controls: {
+        ...controls,
+        ...newControls,
+      },
+    });
+  },
 
   // ===== UI STATE =====
 
@@ -246,26 +301,7 @@ export const useCallStore = create<CallStore>((set, get) => ({
 
   setError: (error) => set({ error }),
 
-  // ===== TRANSCRIPTION =====
-
-  addTranscription: (transcription) =>
-    set((state) => ({
-      transcriptions: [...state.transcriptions, transcription],
-    })),
-
-  setTranscribing: (isTranscribing) => set({ isTranscribing }),
-
-  // ===== TRANSLATION =====
-
-  addTranslation: (transcriptionId, translation) =>
-    set((state) => {
-      const newTranslations = new Map(state.translations);
-      const existing = newTranslations.get(transcriptionId) || [];
-      newTranslations.set(transcriptionId, [...existing, translation]);
-      return { translations: newTranslations };
-    }),
-
-  // ===== RESET =====
+  // ===== CLEANUP =====
 
   reset: () => {
     const state = get();
@@ -281,36 +317,16 @@ export const useCallStore = create<CallStore>((set, get) => ({
     });
 
     // Close peer connections
-    state.peerConnections.forEach((pc) => {
-      pc.close();
+    state.peerConnections.forEach((connection) => {
+      connection.close();
     });
 
     // Reset to initial state
-    set(initialState);
+    set({
+      ...initialState,
+      remoteStreams: new Map(),
+      peerConnections: new Map(),
+      translations: new Map(),
+    });
   },
 }));
-
-// ===== SELECTORS =====
-
-// Get active participants count
-export const selectActiveParticipantsCount = (state: CallStore) =>
-  state.currentCall?.participants.length || 0;
-
-// Get current call mode
-export const selectCallMode = (state: CallStore) =>
-  state.currentCall?.mode || 'p2p';
-
-// Check if user is in call
-export const selectIsInCall = (state: CallStore) =>
-  state.isInCall && state.currentCall !== null;
-
-// Get remote streams as array
-export const selectRemoteStreamsArray = (state: CallStore) =>
-  Array.from(state.remoteStreams.entries()).map(([participantId, stream]) => ({
-    participantId,
-    stream,
-  }));
-
-// Get current participant (by userId)
-export const selectCurrentParticipant = (state: CallStore, userId: string) =>
-  state.currentCall?.participants.find((p) => p.userId === userId);
