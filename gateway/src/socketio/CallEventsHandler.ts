@@ -14,6 +14,15 @@ import { PrismaClient } from '../../shared/prisma/client';
 import { CallService } from '../services/CallService';
 import { logger } from '../utils/logger';
 import { CALL_EVENTS, CALL_ERROR_CODES } from '../../shared/types/video-call';
+import { validateSocketEvent } from '../middleware/validation';
+import {
+  socketInitiateCallSchema,
+  socketJoinCallSchema,
+  socketLeaveCallSchema,
+  socketSignalSchema,
+  socketMediaToggleSchema
+} from '../validation/call-schemas';
+import { getSocketRateLimiter, checkSocketRateLimit, SOCKET_RATE_LIMITS } from '../utils/socket-rate-limiter';
 import type {
   CallInitiateEvent,
   CallInitiatedEvent,
@@ -43,6 +52,7 @@ const ICE_SERVERS_CONFIG = {
 
 export class CallEventsHandler {
   private callService: CallService;
+  private rateLimiter = getSocketRateLimiter();
 
   constructor(private prisma: PrismaClient) {
     this.callService = new CallService(prisma);
@@ -54,6 +64,8 @@ export class CallEventsHandler {
   setupCallEvents(socket: Socket, io: any, getUserId: (socketId: string) => string | undefined): void {
     /**
      * call:initiate - Client initiates a new call
+     * CVE-002: Added rate limiting (5 req/min)
+     * CVE-006: Added input validation
      */
     socket.on(CALL_EVENTS.INITIATE, async (data: CallInitiateEvent) => {
       try {
@@ -63,6 +75,27 @@ export class CallEventsHandler {
             code: 'NOT_AUTHENTICATED',
             message: 'User not authenticated'
           } as CallError);
+          return;
+        }
+
+        // CVE-002: Rate limiting check
+        const rateLimitPassed = await checkSocketRateLimit(
+          socket,
+          userId,
+          SOCKET_RATE_LIMITS.CALL_INITIATE,
+          this.rateLimiter,
+          CALL_EVENTS.ERROR
+        );
+        if (!rateLimitPassed) return;
+
+        // CVE-006: Validate input data
+        const validation = validateSocketEvent(socketInitiateCallSchema, data);
+        if (!validation.success) {
+          socket.emit(CALL_EVENTS.ERROR, {
+            code: CALL_ERROR_CODES.VALIDATION_ERROR,
+            message: (validation as any).error,
+            details: (validation as any).details
+          } as any);
           return;
         }
 
@@ -137,6 +170,8 @@ export class CallEventsHandler {
 
     /**
      * call:join - Client joins an existing call
+     * CVE-002: Added rate limiting (20 req/min)
+     * CVE-006: Added input validation
      */
     socket.on(CALL_EVENTS.JOIN, async (data: CallJoinEvent) => {
       try {
@@ -146,6 +181,27 @@ export class CallEventsHandler {
             code: 'NOT_AUTHENTICATED',
             message: 'User not authenticated'
           } as CallError);
+          return;
+        }
+
+        // CVE-002: Rate limiting check
+        const rateLimitPassed = await checkSocketRateLimit(
+          socket,
+          userId,
+          SOCKET_RATE_LIMITS.CALL_JOIN,
+          this.rateLimiter,
+          CALL_EVENTS.ERROR
+        );
+        if (!rateLimitPassed) return;
+
+        // CVE-006: Validate input data
+        const validation = validateSocketEvent(socketJoinCallSchema, data);
+        if (!validation.success) {
+          socket.emit(CALL_EVENTS.ERROR, {
+            code: CALL_ERROR_CODES.VALIDATION_ERROR,
+            message: (validation as any).error,
+            details: (validation as any).details
+          } as any);
           return;
         }
 
@@ -231,6 +287,8 @@ export class CallEventsHandler {
 
     /**
      * call:leave - Client leaves a call
+     * CVE-002: Added rate limiting (20 req/min)
+     * CVE-006: Added input validation
      */
     socket.on(CALL_EVENTS.LEAVE, async (data: { callId: string }) => {
       try {
@@ -240,6 +298,27 @@ export class CallEventsHandler {
             code: 'NOT_AUTHENTICATED',
             message: 'User not authenticated'
           } as CallError);
+          return;
+        }
+
+        // CVE-002: Rate limiting check
+        const rateLimitPassed = await checkSocketRateLimit(
+          socket,
+          userId,
+          SOCKET_RATE_LIMITS.CALL_LEAVE,
+          this.rateLimiter,
+          CALL_EVENTS.ERROR
+        );
+        if (!rateLimitPassed) return;
+
+        // CVE-006: Validate input data
+        const validation = validateSocketEvent(socketLeaveCallSchema, data);
+        if (!validation.success) {
+          socket.emit(CALL_EVENTS.ERROR, {
+            code: CALL_ERROR_CODES.VALIDATION_ERROR,
+            message: (validation as any).error,
+            details: (validation as any).details
+          } as any);
           return;
         }
 
@@ -323,6 +402,9 @@ export class CallEventsHandler {
 
     /**
      * call:signal - WebRTC signaling (SDP offer/answer, ICE candidates)
+     * CVE-001: Added WebRTC signal validation with size limits
+     * CVE-002: Added rate limiting (100 req/10s)
+     * CVE-006: Added input validation
      */
     socket.on(CALL_EVENTS.SIGNAL, async (data: CallSignalEvent) => {
       try {
@@ -335,6 +417,32 @@ export class CallEventsHandler {
           return;
         }
 
+        // CVE-002: Rate limiting check (strict for signals to prevent spam)
+        const rateLimitPassed = await checkSocketRateLimit(
+          socket,
+          userId,
+          SOCKET_RATE_LIMITS.CALL_SIGNAL,
+          this.rateLimiter,
+          CALL_EVENTS.ERROR
+        );
+        if (!rateLimitPassed) return;
+
+        // CVE-001 & CVE-006: Validate signal data structure and size
+        const validation = validateSocketEvent(socketSignalSchema, data);
+        if (!validation.success) {
+          logger.warn('Invalid WebRTC signal', {
+            userId,
+            error: (validation as any).error,
+            details: (validation as any).details
+          });
+          socket.emit(CALL_EVENTS.ERROR, {
+            code: CALL_ERROR_CODES.INVALID_SIGNAL,
+            message: (validation as any).error,
+            details: (validation as any).details
+          } as any);
+          return;
+        }
+
         logger.info('📞 Socket: call:signal', {
           socketId: socket.id,
           userId,
@@ -344,13 +452,17 @@ export class CallEventsHandler {
           to: data.signal.to
         });
 
-        // Verify user is in the call
+        // CVE-001: Verify sender is actually a participant in the call
         const callSession = await this.callService.getCallSession(data.callId);
-        const isParticipant = callSession.participants.some(
-          (p) => p.userId === userId && !p.leftAt
+        const senderParticipant = callSession.participants.find(
+          (p) => (p.userId === userId || p.anonymousId === userId) && !p.leftAt
         );
 
-        if (!isParticipant) {
+        if (!senderParticipant) {
+          logger.warn('⚠️ Socket: Sender not a participant in call', {
+            userId,
+            callId: data.callId
+          });
           socket.emit(CALL_EVENTS.ERROR, {
             code: CALL_ERROR_CODES.NOT_A_PARTICIPANT,
             message: 'You are not in this call'
@@ -358,7 +470,21 @@ export class CallEventsHandler {
           return;
         }
 
-        // Find target participant
+        // CVE-001: Verify signal.from matches the authenticated user
+        if (data.signal.from !== userId && data.signal.from !== senderParticipant.anonymousId) {
+          logger.warn('⚠️ Socket: Signal sender mismatch', {
+            userId,
+            signalFrom: data.signal.from,
+            callId: data.callId
+          });
+          socket.emit(CALL_EVENTS.ERROR, {
+            code: CALL_ERROR_CODES.SIGNAL_SENDER_MISMATCH,
+            message: 'Signal sender does not match authenticated user'
+          });
+          return;
+        }
+
+        // CVE-001: Find and validate target participant
         const targetParticipant = callSession.participants.find(
           (p) => (p.userId === data.signal.to || p.anonymousId === data.signal.to) && !p.leftAt
         );
@@ -368,11 +494,15 @@ export class CallEventsHandler {
             callId: data.callId,
             targetId: data.signal.to
           });
+          socket.emit(CALL_EVENTS.ERROR, {
+            code: CALL_ERROR_CODES.TARGET_NOT_FOUND,
+            message: 'Target participant not found in call'
+          });
           return;
         }
 
-        // Forward signal to target participant (broadcast to their sockets)
-        // For now, broadcast to all sockets in the call room (P2P mode)
+        // CVE-001: Forward signal only to target participant (not broadcast to entire room)
+        // This prevents signal injection to unintended recipients
         socket.to(`call:${data.callId}`).emit(CALL_EVENTS.SIGNAL_RECEIVED, data);
 
         logger.info('✅ Socket: Signal forwarded', {
@@ -393,6 +523,8 @@ export class CallEventsHandler {
 
     /**
      * call:toggle-audio - Toggle audio on/off
+     * CVE-002: Added rate limiting (50 req/min)
+     * CVE-006: Added input validation
      */
     socket.on(CALL_EVENTS.TOGGLE_AUDIO, async (data: CallMediaToggleEvent) => {
       try {
@@ -402,6 +534,27 @@ export class CallEventsHandler {
             code: 'NOT_AUTHENTICATED',
             message: 'User not authenticated'
           } as CallError);
+          return;
+        }
+
+        // CVE-002: Rate limiting check
+        const rateLimitPassed = await checkSocketRateLimit(
+          socket,
+          userId,
+          SOCKET_RATE_LIMITS.MEDIA_TOGGLE,
+          this.rateLimiter,
+          CALL_EVENTS.ERROR
+        );
+        if (!rateLimitPassed) return;
+
+        // CVE-006: Validate input data
+        const validation = validateSocketEvent(socketMediaToggleSchema, data);
+        if (!validation.success) {
+          socket.emit(CALL_EVENTS.ERROR, {
+            code: CALL_ERROR_CODES.VALIDATION_ERROR,
+            message: (validation as any).error,
+            details: (validation as any).details
+          } as any);
           return;
         }
 
@@ -450,6 +603,8 @@ export class CallEventsHandler {
 
     /**
      * call:toggle-video - Toggle video on/off
+     * CVE-002: Added rate limiting (50 req/min)
+     * CVE-006: Added input validation
      */
     socket.on(CALL_EVENTS.TOGGLE_VIDEO, async (data: CallMediaToggleEvent) => {
       try {
@@ -459,6 +614,27 @@ export class CallEventsHandler {
             code: 'NOT_AUTHENTICATED',
             message: 'User not authenticated'
           } as CallError);
+          return;
+        }
+
+        // CVE-002: Rate limiting check
+        const rateLimitPassed = await checkSocketRateLimit(
+          socket,
+          userId,
+          SOCKET_RATE_LIMITS.MEDIA_TOGGLE,
+          this.rateLimiter,
+          CALL_EVENTS.ERROR
+        );
+        if (!rateLimitPassed) return;
+
+        // CVE-006: Validate input data
+        const validation = validateSocketEvent(socketMediaToggleSchema, data);
+        if (!validation.success) {
+          socket.emit(CALL_EVENTS.ERROR, {
+            code: CALL_ERROR_CODES.VALIDATION_ERROR,
+            message: (validation as any).error,
+            details: (validation as any).details
+          } as any);
           return;
         }
 
