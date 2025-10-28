@@ -182,13 +182,22 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const target = e.currentTarget;
     const { scrollTop, scrollHeight, clientHeight } = target;
-    
+
     // Mettre à jour le flag de consultation de l'historique
     const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
     isUserScrollingHistoryRef.current = distanceFromBottom > 150;
-    
-    // AMÉLIORATION 2: Afficher/masquer le bouton "Scroll to bottom" selon la position
-    const shouldShowButton = distanceFromBottom > 200; // Afficher si plus de 200px du bas
+
+    // AMÉLIORATION 2: Afficher/masquer le bouton selon la position et le mode
+    let shouldShowButton = false;
+    if (scrollDirection === 'down') {
+      // Mode BubbleStream: messages récents EN HAUT, afficher le bouton si l'utilisateur scrolle vers le bas
+      shouldShowButton = scrollTop > 200; // Afficher si scrollé de plus de 200px vers le bas
+      console.log('[ConversationMessages] 🔼 BubbleStream scroll check:', { scrollTop, shouldShowButton, scrollDirection });
+    } else {
+      // Mode classique: messages récents EN BAS, afficher le bouton si l'utilisateur scrolle vers le haut
+      shouldShowButton = distanceFromBottom > 200; // Afficher si plus de 200px du bas
+      console.log('[ConversationMessages] 🔽 Classic scroll check:', { distanceFromBottom, shouldShowButton, scrollDirection });
+    }
     setShowScrollButton(shouldShowButton);
     
     // Vérifier si l'utilisateur est proche du bas (auto-scroll)
@@ -224,18 +233,42 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
   useEffect(() => {
     if (scrollContainerRef?.current) {
       const container = scrollContainerRef.current;
-      // Wrapper pour convertir Event natif en React UIEvent
+      console.log('[ConversationMessages] 📦 Conteneur de scroll détecté:', {
+        hasContainer: !!container,
+        scrollDirection,
+        className: container.className,
+        scrollHeight: container.scrollHeight,
+        clientHeight: container.clientHeight
+      });
+
+      // Wrapper pour convertir Event natif en React UIEvent avec currentTarget correct
       const handleNativeScroll = () => {
-        handleScroll({} as React.UIEvent<HTMLDivElement>);
+        // Créer un objet UIEvent avec le currentTarget correct
+        const syntheticEvent = {
+          currentTarget: container
+        } as React.UIEvent<HTMLDivElement>;
+        handleScroll(syntheticEvent);
       };
       container.addEventListener('scroll', handleNativeScroll);
       console.log('[ConversationMessages] 📌 handleScroll attaché au conteneur externe');
+
+      // Test initial pour vérifier l'état
+      setTimeout(() => {
+        console.log('[ConversationMessages] 🔍 État initial du scroll:', {
+          scrollTop: container.scrollTop,
+          scrollHeight: container.scrollHeight,
+          clientHeight: container.clientHeight
+        });
+      }, 1000);
+
       return () => {
         container.removeEventListener('scroll', handleNativeScroll);
         console.log('[ConversationMessages] 🔓 handleScroll détaché du conteneur externe');
       };
+    } else {
+      console.log('[ConversationMessages] ⚠️ Aucun conteneur de scroll externe fourni');
     }
-  }, [scrollContainerRef, handleScroll]);
+  }, [scrollContainerRef, handleScroll, scrollDirection]);
 
   // Réinitialiser le flag de premier chargement quand la conversation change
   useEffect(() => {
@@ -425,27 +458,40 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
       )}
       
       {/* Bouton flottant pour scroller - Direction adaptée au contexte */}
-      {showScrollButton && !isLoadingMessages && messages.length > 0 && (
-        <Button
-          onClick={handleScrollButtonClick}
-          className={cn(
-            "fixed bottom-32 right-6 z-50",
-            "rounded-full w-12 h-12 p-0",
-            "shadow-2xl hover:shadow-3xl",
-            "bg-primary hover:bg-primary/90",
-            "transition-all duration-300 ease-in-out",
-            "animate-in slide-in-from-bottom-5"
-          )}
-          aria-label={scrollButtonDirection === 'up' ? 'Scroll to top' : 'Scroll to bottom'}
-          title={scrollButtonDirection === 'up' ? 'Remonter vers les messages récents' : 'Aller au bas de la conversation'}
-        >
-          {scrollButtonDirection === 'up' ? (
-            <ArrowUp className="h-5 w-5 text-primary-foreground" />
-          ) : (
-            <ArrowDown className="h-5 w-5 text-primary-foreground" />
-          )}
-        </Button>
-      )}
+      {(() => {
+        const shouldRender = showScrollButton && !isLoadingMessages && messages.length > 0;
+        console.log('[ConversationMessages] 🎯 Bouton scroll render check:', {
+          showScrollButton,
+          isLoadingMessages,
+          messagesCount: messages.length,
+          shouldRender,
+          scrollDirection,
+          scrollButtonDirection
+        });
+        return shouldRender ? (
+          <Button
+            onClick={handleScrollButtonClick}
+            className={cn(
+              "fixed bottom-32 z-50",
+              // Positionnement adapté: pour BubbleStream avec sidebar, ajuster la position
+              scrollDirection === 'down' ? "right-6 xl:right-[360px]" : "right-6",
+              "rounded-full w-12 h-12 p-0",
+              "shadow-2xl hover:shadow-3xl",
+              "bg-primary hover:bg-primary/90",
+              "transition-all duration-300 ease-in-out",
+              "animate-in slide-in-from-bottom-5"
+            )}
+            aria-label={scrollButtonDirection === 'up' ? 'Scroll to top' : 'Scroll to bottom'}
+            title={scrollButtonDirection === 'up' ? 'Remonter vers les messages récents' : 'Aller au bas de la conversation'}
+          >
+            {scrollButtonDirection === 'up' ? (
+              <ArrowUp className="h-5 w-5 text-primary-foreground" />
+            ) : (
+              <ArrowDown className="h-5 w-5 text-primary-foreground" />
+            )}
+          </Button>
+        ) : null;
+      })()}
     </div>
   );
 });
