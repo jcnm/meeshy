@@ -43,6 +43,7 @@ import { notificationRoutes } from './routes/notifications';
 import { friendRequestRoutes } from './routes/friends';
 import { attachmentRoutes } from './routes/attachments';
 import reactionRoutes from './routes/reactions';
+import callRoutes from './routes/calls';
 import { InitService } from './services/init.service';
 import { MeeshySocketIOHandler } from './socketio/MeeshySocketIOHandler';
 
@@ -569,7 +570,10 @@ class MeeshyServer {
     
     // Register friend request routes with /api prefix
     await this.server.register(friendRequestRoutes, { prefix: '/api' });
-    
+
+    // Register call routes with /api prefix (Phase 1A: P2P Video Calls MVP)
+    await this.server.register(callRoutes, { prefix: '/api' });
+
     logger.info('✓ REST API routes configured successfully');
   }
 

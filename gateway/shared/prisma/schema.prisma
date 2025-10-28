@@ -75,6 +75,8 @@ model User {
   referredRelations           AffiliateRelation[]      @relation("ReferredUser")
   createdTrackingLinks        TrackingLink[]           @relation("TrackingLinkCreator")
   trackingLinkClicks          TrackingLinkClick[]      @relation("TrackingLinkClickUser")
+  initiatedCalls              CallSession[]            @relation("CallInitiator")
+  callParticipations          CallParticipant[]        @relation("CallParticipants")
 }
 
 /// Conversation entre utilisateurs (direct, group, public, global)
@@ -102,6 +104,7 @@ model Conversation {
   community             Community?               @relation(fields: [communityId], references: [id])
   messages              Message[]
   typingIndicators      TypingIndicator[]
+  callSessions          CallSession[]
 }
 
 /// Appartenance d'un utilisateur à une conversation
@@ -593,4 +596,172 @@ model Report {
   @@index([reportType])
   @@index([createdAt])
   @@index([resolvedAt])
+}
+
+// ============================================
+// VIDEO CALLS FEATURE - PHASE 1A: P2P MVP
+// ============================================
+
+/// Call Session - Represents an active or completed video call
+model CallSession {
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId  String           @db.ObjectId
+  conversation    Conversation     @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  /// Call mode: 'p2p' for 2 participants, 'sfu' for 3+
+  mode            CallMode         @default(p2p)
+
+  /// Call status: 'initiated', 'ringing', 'active', 'ended'
+  status          CallStatus       @default(initiated)
+
+  /// User who initiated the call
+  initiatorId     String           @db.ObjectId
+  initiator       User             @relation("CallInitiator", fields: [initiatorId], references: [id])
+
+  /// Timestamps
+  startedAt       DateTime         @default(now())
+  answeredAt      DateTime?        // When first participant answered
+  endedAt         DateTime?
+  duration        Int?             // Duration in seconds
+
+  /// Participants in this call
+  participants    CallParticipant[]
+
+  /// Transcriptions (Phase 2A/2B)
+  transcriptions  Transcription[]
+
+  /// Call metadata
+  metadata        Json?            // { maxParticipants, recordingEnabled, etc. }
+
+  /// Indexes
+  @@index([conversationId])
+  @@index([status])
+  @@index([startedAt])
+
+  @@map("call_sessions")
+}
+
+/// Call Participant - Represents a user participating in a call
+model CallParticipant {
+  id              String       @id @default(auto()) @map("_id") @db.ObjectId
+  callSessionId   String       @db.ObjectId
+  callSession     CallSession  @relation(fields: [callSessionId], references: [id], onDelete: Cascade)
+
+  /// Authenticated user (null for anonymous)
+  userId          String?      @db.ObjectId
+  user            User?        @relation("CallParticipants", fields: [userId], references: [id])
+
+  /// Anonymous participant ID (from AnonymousParticipant model)
+  anonymousId     String?
+
+  /// Participant role: 'initiator', 'participant'
+  role            ParticipantRole @default(participant)
+
+  /// Timestamps
+  joinedAt        DateTime     @default(now())
+  leftAt          DateTime?
+
+  /// Media state
+  isAudioEnabled  Boolean      @default(true)
+  isVideoEnabled  Boolean      @default(true)
+
+  /// Connection quality metadata
+  connectionQuality Json?      // { latency, packetLoss, bandwidth }
+
+  /// Indexes
+  @@index([callSessionId])
+  @@index([userId])
+
+  @@map("call_participants")
+}
+
+/// Transcription - Phase 2A/2B (prepared for future)
+/// Stores transcriptions from client or server
+model Transcription {
+  id              String       @id @default(auto()) @map("_id") @db.ObjectId
+  callSessionId   String       @db.ObjectId
+  callSession     CallSession  @relation(fields: [callSessionId], references: [id], onDelete: Cascade)
+
+  /// Participant who spoke
+  participantId   String       @db.ObjectId
+
+  /// Transcription source: 'client' (Web Speech API/Whisper.js) or 'server' (faster-whisper)
+  source          TranscriptionSource
+
+  /// Transcribed text
+  text            String
+
+  /// Original language detected/specified
+  language        String
+
+  /// Confidence score (0-1)
+  confidence      Float?
+
+  /// Timestamp in call (milliseconds from call start)
+  timestamp       DateTime     @default(now())
+  offsetMs        Int?         // Offset from call start in milliseconds
+
+  /// Translations of this transcription (Phase 3)
+  translations    TranslationCall[]
+
+  /// Indexes
+  @@index([callSessionId])
+  @@index([timestamp])
+
+  @@map("transcriptions")
+}
+
+/// Translation - Phase 3 (prepared for future)
+/// Stores translations of transcriptions
+model TranslationCall {
+  id                String        @id @default(auto()) @map("_id") @db.ObjectId
+  transcriptionId   String        @db.ObjectId
+  transcription     Transcription @relation(fields: [transcriptionId], references: [id], onDelete: Cascade)
+
+  /// Target language code
+  targetLanguage    String
+
+  /// Translated text
+  translatedText    String
+
+  /// Translation confidence (0-1)
+  confidence        Float?
+
+  /// Translation model used
+  model             String?      // e.g., "gpt-4", "google-translate", etc.
+
+  /// Cached translation
+  cached            Boolean      @default(false)
+
+  /// Timestamp
+  createdAt         DateTime     @default(now())
+
+  /// Indexes
+  @@index([transcriptionId])
+
+  @@map("translation_calls")
+}
+
+/// Enums for video calls
+
+enum CallMode {
+  p2p    // Peer-to-peer (2 participants)
+  sfu    // Selective Forwarding Unit (3+ participants)
+}
+
+enum CallStatus {
+  initiated  // Call created, waiting for participants
+  ringing    // Ringing on remote participants
+  active     // Call is active with participants
+  ended      // Call has ended
+}
+
+enum ParticipantRole {
+  initiator    // User who started the call
+  participant  // Regular participant
+}
+
+enum TranscriptionSource {
+  client  // Client-side (Web Speech API or Whisper.js)
+  server  // Server-side (faster-whisper)
 }
