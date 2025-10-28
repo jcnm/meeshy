@@ -9,10 +9,11 @@ import { PrismaClient } from '../../shared/prisma/client';
 import { TranslationService, MessageData } from '../services/TranslationService';
 import { MaintenanceService } from '../services/maintenance.service';
 import { MessagingService } from '../services/MessagingService';
+import { CallEventsHandler } from './CallEventsHandler';
 import { validateMessageLength } from '../config/message-limits';
 import jwt from 'jsonwebtoken';
-import type { 
-  ServerToClientEvents, 
+import type {
+  ServerToClientEvents,
   ClientToServerEvents,
   SocketIOMessage,
   SocketIOUser,
@@ -46,11 +47,12 @@ export class MeeshySocketIOManager {
   private translationService: TranslationService;
   private maintenanceService: MaintenanceService;
   private messagingService: MessagingService;
-  
+  private callEventsHandler: CallEventsHandler;
+
   // Mapping des utilisateurs connectés
   private connectedUsers: Map<string, SocketUser> = new Map();
   private socketToUser: Map<string, string> = new Map();
-  
+
   // Statistiques
   private stats = {
     total_connections: 0,
@@ -65,14 +67,15 @@ export class MeeshySocketIOManager {
     this.translationService = new TranslationService(prisma);
     this.maintenanceService = new MaintenanceService(prisma);
     this.messagingService = new MessagingService(prisma, this.translationService);
-    
+    this.callEventsHandler = new CallEventsHandler(prisma);
+
     // CORRECTION: Configurer le callback de broadcast pour le MaintenanceService
     this.maintenanceService.setStatusBroadcastCallback(
       (userId: string, isOnline: boolean, isAnonymous: boolean) => {
         this._broadcastUserStatus(userId, isOnline, isAnonymous);
       }
     );
-    
+
     // Initialiser Socket.IO avec les types shared
     this.io = new SocketIOServer<ClientToServerEvents, ServerToClientEvents>(httpServer, {
       path: "/socket.io/",
@@ -90,8 +93,8 @@ export class MeeshySocketIOManager {
       // Autoriser reconnexion rapide
       allowEIO3: true
     });
-    
-    console.log('[GATEWAY] 🚀 MeeshySocketIOManager initialisé avec MessagingService');
+
+    console.log('[GATEWAY] 🚀 MeeshySocketIOManager initialisé avec MessagingService et CallEventsHandler');
   }
 
   /**
@@ -651,7 +654,14 @@ export class MeeshySocketIOManager {
         }
         console.log(`👥 Socket ${socket.id} quitte ${room} (original: ${data.conversationId})`);
       });
-      
+
+      // Setup video/audio call events (Phase 1A: P2P MVP)
+      this.callEventsHandler.setupCallEvents(
+        socket,
+        this.io,
+        (socketId: string) => this.socketToUser.get(socketId)
+      );
+
       // Déconnexion
       socket.on('disconnect', () => {
         this._handleDisconnection(socket);
