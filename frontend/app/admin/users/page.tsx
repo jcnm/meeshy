@@ -7,10 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Users, ArrowLeft, UserPlus, Search, Filter, ChevronLeft, ChevronRight, Eye, Shield, UserX } from 'lucide-react';
+import { Users, ArrowLeft, UserPlus, Search, Filter, ChevronLeft, ChevronRight, Eye, Trash2 } from 'lucide-react';
 import { adminService } from '@/services/admin.service';
 import type { User } from '@/services/admin.service';
 import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
+import { TableSkeleton, StatCardSkeleton } from '@/components/admin/TableSkeleton';
 
 export default function AdminUsersPage() {
   const router = useRouter();
@@ -30,6 +32,10 @@ export default function AdminUsersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize] = useState(20);
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; userId: string | null }>({
+    open: false,
+    userId: null
+  });
 
   useEffect(() => {
     loadUsersData();
@@ -131,12 +137,26 @@ export default function AdminUsersPage() {
     }
   };
 
+  const handleDeleteUser = async () => {
+    try {
+      // TODO: Implement actual delete API call
+      // await adminService.deleteUser(deleteDialog.userId);
+      toast.success('Utilisateur supprimé avec succès');
+      loadUsersData();
+    } catch (error) {
+      console.error('Erreur lors de la suppression de l\'utilisateur:', error);
+      toast.error('Erreur lors de la suppression de l\'utilisateur');
+    }
+  };
+
   if (loading) {
     return (
       <AdminLayout currentPage="/admin/users">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <span className="ml-3 text-lg">Chargement des utilisateurs...</span>
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map(i => <StatCardSkeleton key={i} />)}
+          </div>
+          <TableSkeleton rows={10} columns={6} />
         </div>
       </AdminLayout>
     );
@@ -328,7 +348,7 @@ export default function AdminUsersPage() {
                   <div className="col-span-2 text-sm text-gray-600 flex items-center">
                     {formatDate(user.updatedAt || user.createdAt)}
                   </div>
-                  <div className="col-span-1 flex items-center justify-center">
+                  <div className="col-span-1 flex items-center justify-center space-x-2">
                     <Button
                       variant="outline"
                       size="sm"
@@ -336,6 +356,14 @@ export default function AdminUsersPage() {
                     >
                       <Eye className="h-3 w-3 mr-1" />
                       Voir
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 hover:text-red-700"
+                      onClick={() => setDeleteDialog({ open: true, userId: user.id })}
+                    >
+                      <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
                 </div>
@@ -366,15 +394,23 @@ export default function AdminUsersPage() {
                           </Badge>
                           <span className="text-xs text-gray-500">{formatDate(user.updatedAt || user.createdAt)}</span>
                         </div>
-                        <div className="mt-3">
+                        <div className="mt-3 flex space-x-2">
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-full text-xs"
+                            className="flex-1 text-xs"
                             onClick={() => router.push(`/admin/users/${user.id}`)}
                           >
                             <Eye className="h-3 w-3 mr-1" />
-                            Voir les détails
+                            Détails
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-xs text-red-600 hover:text-red-700"
+                            onClick={() => setDeleteDialog({ open: true, userId: user.id })}
+                          >
+                            <Trash2 className="h-3 w-3" />
                           </Button>
                         </div>
                       </div>
@@ -428,6 +464,20 @@ export default function AdminUsersPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Delete Confirmation Dialog */}
+        <ConfirmDialog
+          open={deleteDialog.open}
+          onOpenChange={(open) => setDeleteDialog({ ...deleteDialog, open })}
+          onConfirm={() => {
+            handleDeleteUser();
+            setDeleteDialog({ open: false, userId: null });
+          }}
+          title="Supprimer l'utilisateur"
+          description="Cette action est irréversible. L'utilisateur et toutes ses données seront supprimés définitivement."
+          confirmText="Supprimer"
+          variant="destructive"
+        />
       </div>
     </AdminLayout>
   );

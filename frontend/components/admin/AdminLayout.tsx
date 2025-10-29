@@ -9,20 +9,30 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { 
-  Shield, 
-  Users, 
-  BarChart3, 
-  Settings, 
-  FileText, 
+import {
+  Shield,
+  Users,
+  BarChart3,
+  Settings,
+  FileText,
   Crown,
   LogOut,
   Home,
   Menu,
-  X
+  X,
+  Sun,
+  Moon,
+  Laptop
 } from 'lucide-react';
 import { PermissionsService } from '@/services/permissions.service';
 import { toast } from 'sonner';
+import { useAppStore } from '@/stores/app-store';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -35,6 +45,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage }) => {
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const theme = useAppStore((state) => state.theme);
+  const setTheme = useAppStore((state) => state.setTheme);
 
   // Vérifier l'accès admin avec useEffect pour éviter setState pendant render
   useEffect(() => {
@@ -126,7 +138,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage }) => {
 
   return (
     <AuthGuard>
-      <div className="flex h-screen bg-gray-50">
+      <a href="#main-content" className="skip-link">
+        Aller au contenu principal
+      </a>
+      <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
         {/* Mobile Overlay */}
         {isMobileMenuOpen && (
           <div 
@@ -137,7 +152,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage }) => {
 
         {/* Sidebar - Hidden on mobile, visible on desktop */}
         <div className={`
-          bg-white shadow-lg transition-all duration-300 flex flex-col
+          bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 flex flex-col
           fixed md:static inset-y-0 left-0 z-50
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
           ${isSidebarOpen ? 'w-64' : 'w-16'}
@@ -274,10 +289,35 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage }) => {
               </div>
 
               <div className="flex items-center space-x-2 sm:space-x-4">
-                <Badge variant="outline" className="text-green-600 border-green-200 hidden sm:flex">
+                {/* Dark Mode Toggle */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-9 w-9">
+                      <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                      <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                      <span className="sr-only">Changer de thème</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setTheme('light')}>
+                      <Sun className="mr-2 h-4 w-4" />
+                      Clair
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setTheme('dark')}>
+                      <Moon className="mr-2 h-4 w-4" />
+                      Sombre
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setTheme('auto')}>
+                      <Laptop className="mr-2 h-4 w-4" />
+                      Système
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <Badge variant="outline" className="text-green-600 border-green-200 dark:text-green-400 dark:border-green-800 hidden sm:flex">
                   En ligne
                 </Badge>
-                <span className="text-xs sm:text-sm text-gray-500 hidden md:block">
+                <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 hidden md:block">
                   {new Date().toLocaleDateString('fr-FR', {
                     weekday: 'long',
                     year: 'numeric',
@@ -290,7 +330,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage }) => {
           </header>
 
           {/* Content Area */}
-          <main className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">
+          <main id="main-content" className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">
             {children}
           </main>
         </div>
