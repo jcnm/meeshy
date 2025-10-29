@@ -21,10 +21,11 @@ import type {
 
 export interface UseWebRTCP2POptions {
   callId: string;
+  userId?: string;
   onError?: (error: Error) => void;
 }
 
-export function useWebRTCP2P({ callId, onError }: UseWebRTCP2POptions) {
+export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
   const {
     localStream,
     setLocalStream,
@@ -63,7 +64,7 @@ export function useWebRTCP2P({ callId, onError }: UseWebRTCP2POptions) {
 
             const signal: WebRTCSignal = {
               type: 'ice-candidate',
-              from: socket.id || '',
+              from: userId || '',
               to: participantId,
               signal: candidate.toJSON(),
             };
@@ -200,7 +201,7 @@ export function useWebRTCP2P({ callId, onError }: UseWebRTCP2POptions) {
 
         const signal: WebRTCSignal = {
           type: 'offer',
-          from: socket.id || '',
+          from: userId || '',
           to: targetUserId,
           signal: offer,
         };
@@ -257,7 +258,7 @@ export function useWebRTCP2P({ callId, onError }: UseWebRTCP2POptions) {
 
         const signal: WebRTCSignal = {
           type: 'answer',
-          from: socket.id || '',
+          from: userId || '',
           to: fromUserId,
           signal: answer,
         };

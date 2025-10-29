@@ -45,6 +45,7 @@ export function CallManager() {
   // Get WebRTC hook for current call
   const webrtcHook = useWebRTCP2P({
     callId: currentCall?.id || '',
+    userId: user?.id,
     onError: (error) => {
       logger.error('[CallManager] WebRTC error: ' + error.message);
     },
@@ -103,8 +104,8 @@ export function CallManager() {
       // Add participant to call
       addParticipant(event.participant);
 
-      // If this is the first remote participant and we're the initiator, create offer
-      if (currentCall?.initiatorId === event.participant.userId) {
+      // If I am the initiator and someone joined, create offer for them
+      if (currentCall?.initiatorId === user?.id) {
         // Wait a bit for the other side to be ready
         setTimeout(() => {
           webrtcHook.createOffer(event.participant.id);
