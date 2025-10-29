@@ -60,8 +60,14 @@ export class CallEventsHandler {
 
   /**
    * Setup call-related event listeners on socket
+   * CVE-004: Added getUserInfo callback to check if user is anonymous
    */
-  setupCallEvents(socket: Socket, io: any, getUserId: (socketId: string) => string | undefined): void {
+  setupCallEvents(
+    socket: Socket,
+    io: any,
+    getUserId: (socketId: string) => string | undefined,
+    getUserInfo?: (socketId: string) => { id: string; isAnonymous: boolean } | undefined
+  ): void {
     /**
      * call:initiate - Client initiates a new call
      * CVE-002: Added rate limiting (5 req/min)
@@ -211,12 +217,14 @@ export class CallEventsHandler {
           callId: data.callId
         });
 
-        // Join call via service
-        const callSession = await this.callService.joinCall({
+        // CVE-005: Join call via service (returns dynamic ICE servers)
+        const joinResult = await this.callService.joinCall({
           callId: data.callId,
           userId,
           settings: data.settings
         });
+
+        const { callSession, iceServers } = joinResult;
 
         // Join call room
         socket.join(`call:${data.callId}`);
@@ -251,11 +259,11 @@ export class CallEventsHandler {
           mode: callSession.mode
         };
 
-        // Send ICE servers config to joining participant
+        // CVE-005: Send dynamic ICE servers (with time-limited TURN credentials) to joining participant
         socket.emit(CALL_EVENTS.JOIN, {
           success: true,
           callSession,
-          iceServers: ICE_SERVERS_CONFIG.iceServers
+          iceServers // Dynamic credentials from TURNCredentialService
         });
 
         // Broadcast to all call participants
@@ -677,6 +685,73 @@ export class CallEventsHandler {
         socket.emit(CALL_EVENTS.ERROR, {
           code: 'MEDIA_TOGGLE_FAILED',
           message: 'Failed to toggle video'
+        } as CallError);
+      }
+    });
+
+    /**
+     * call:end - Force end a call (privileged operation)
+     * CVE-004: Only initiators can end calls, anonymous users are blocked
+     */
+    socket.on('call:end', async (data: { callId: string }) => {
+      try {
+        const userId = getUserId(socket.id);
+        if (!userId) {
+          socket.emit(CALL_EVENTS.ERROR, {
+            code: 'NOT_AUTHENTICATED',
+            message: 'User not authenticated'
+          } as CallError);
+          return;
+        }
+
+        // CVE-004: Get user info to check if anonymous
+        const userInfo = getUserInfo?.(socket.id);
+        const isAnonymous = userInfo?.isAnonymous || false;
+
+        logger.info('📞 Socket: call:end', {
+          socketId: socket.id,
+          userId,
+          callId: data.callId,
+          isAnonymous
+        });
+
+        // CVE-004: End call via service (with anonymous check)
+        const callSession = await this.callService.endCall(
+          data.callId,
+          userId,
+          isAnonymous
+        );
+
+        // Broadcast call ended event to all participants
+        const endedEvent: CallEndedEvent = {
+          callId: callSession.id,
+          duration: callSession.duration || 0,
+          endedBy: userId
+        };
+
+        // Broadcast to conversation room
+        io.to(`conversation:${callSession.conversationId}`).emit(
+          CALL_EVENTS.ENDED,
+          endedEvent
+        );
+
+        logger.info('✅ Socket: Call ended by user', {
+          callId: data.callId,
+          endedBy: userId,
+          duration: callSession.duration
+        });
+      } catch (error: any) {
+        logger.error('❌ Socket: Error ending call', error);
+
+        const errorMessage = error.message || 'Failed to end call';
+        const errorCode = errorMessage.split(':')[0];
+        const message = errorMessage.includes(':')
+          ? errorMessage.split(':').slice(1).join(':').trim()
+          : errorMessage;
+
+        socket.emit(CALL_EVENTS.ERROR, {
+          code: errorCode,
+          message
         } as CallError);
       }
     });

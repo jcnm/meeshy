@@ -11,6 +11,7 @@
 import { PrismaClient, CallMode, CallStatus, ParticipantRole, Prisma } from '../../shared/prisma/client';
 import { logger } from '../utils/logger';
 import { CALL_ERROR_CODES } from '../../shared/types/video-call';
+import { TURNCredentialService } from './TURNCredentialService';
 
 // Type for CallSession with populated participants
 type CallSessionWithParticipants = Prisma.CallSessionGetPayload<{
@@ -59,6 +60,7 @@ interface InitiateCallData {
 interface JoinCallData {
   callId: string;
   userId: string;
+  isAnonymous?: boolean;
   settings?: {
     audioEnabled?: boolean;
     videoEnabled?: boolean;
@@ -71,7 +73,11 @@ interface LeaveCallData {
 }
 
 export class CallService {
-  constructor(private prisma: PrismaClient) {}
+  private turnCredentialService: TURNCredentialService;
+
+  constructor(private prisma: PrismaClient) {
+    this.turnCredentialService = new TURNCredentialService();
+  }
 
   /**
    * Initiate a new video call
@@ -183,9 +189,13 @@ export class CallService {
    * - Validates user is participant of conversation
    * - Creates CallParticipant for joiner
    * - Updates call status to 'active' if was 'initiated'
-   * - Returns updated CallSession
+   * - CVE-005: Returns dynamic TURN credentials via TURNCredentialService
+   * - Returns updated CallSession with ICE servers
    */
-  async joinCall(data: JoinCallData): Promise<CallSessionWithParticipants> {
+  async joinCall(data: JoinCallData): Promise<{
+    callSession: CallSessionWithParticipants;
+    iceServers: RTCIceServer[]
+  }> {
     const { callId, userId, settings } = data;
 
     logger.info('📞 User joining call', { callId, userId });
@@ -231,8 +241,13 @@ export class CallService {
 
     if (existingParticipant) {
       logger.warn('⚠️ User already in call', { callId, userId });
-      // Return current state
-      return this.getCallSession(callId);
+      // CVE-005: Return current state with dynamic ICE servers
+      const iceServers = this.turnCredentialService.generateCredentials(userId);
+      const callSession = await this.getCallSession(callId);
+      return {
+        callSession,
+        iceServers
+      };
     }
 
     // Phase 1A: Enforce P2P mode (max 2 participants)
@@ -274,7 +289,15 @@ export class CallService {
 
     logger.info('✅ User joined call successfully', { callId, userId });
 
-    return this.getCallSession(callId);
+    // CVE-005: Generate dynamic TURN credentials for this user
+    const iceServers = this.turnCredentialService.generateCredentials(userId);
+
+    const callSession = await this.getCallSession(callId);
+
+    return {
+      callSession,
+      iceServers
+    };
   }
 
   /**
@@ -428,12 +451,26 @@ export class CallService {
 
   /**
    * End call (force end by moderator or system)
+   * CVE-004: Added authorization check - only initiator or moderators can end calls
+   *
+   * @param callId - Call session ID
+   * @param endedBy - User ID attempting to end the call
+   * @param isAnonymous - Whether the user is anonymous (anonymous users CANNOT end calls)
    */
-  async endCall(callId: string, endedBy: string): Promise<CallSessionWithParticipants> {
-    logger.info('📞 Ending call', { callId, endedBy });
+  async endCall(callId: string, endedBy: string, isAnonymous?: boolean): Promise<CallSessionWithParticipants> {
+    logger.info('📞 Ending call', { callId, endedBy, isAnonymous });
+
+    // CVE-004: Anonymous users cannot end calls for everyone
+    if (isAnonymous) {
+      logger.warn('⚠️ Anonymous user attempted to end call', { callId, userId: endedBy });
+      throw new Error(`${CALL_ERROR_CODES.PERMISSION_DENIED}: Anonymous users cannot end calls. Use leave instead.`);
+    }
 
     const call = await this.prisma.callSession.findUnique({
-      where: { id: callId }
+      where: { id: callId },
+      include: {
+        participants: true
+      }
     });
 
     if (!call) {
@@ -444,6 +481,25 @@ export class CallService {
     if (call.status === CallStatus.ended) {
       logger.warn('⚠️ Call already ended', { callId });
       return this.getCallSession(callId);
+    }
+
+    // CVE-004: Verify user has permission to end the call (initiator or moderator role)
+    const userParticipant = call.participants.find(p => p.userId === endedBy && !p.leftAt);
+
+    if (!userParticipant) {
+      logger.error('❌ User not in call', { callId, endedBy });
+      throw new Error(`${CALL_ERROR_CODES.NOT_A_PARTICIPANT}: You are not in this call`);
+    }
+
+    // Only initiator can end the call (in P2P mode)
+    // In future SFU mode, add moderator role check
+    if (userParticipant.role !== ParticipantRole.initiator) {
+      logger.warn('⚠️ Non-initiator attempted to end call', {
+        callId,
+        userId: endedBy,
+        role: userParticipant.role
+      });
+      throw new Error(`${CALL_ERROR_CODES.PERMISSION_DENIED}: Only the call initiator can end the call`);
     }
 
     const endedAt = new Date();
