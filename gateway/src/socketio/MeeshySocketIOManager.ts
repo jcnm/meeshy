@@ -656,10 +656,18 @@ export class MeeshySocketIOManager {
       });
 
       // Setup video/audio call events (Phase 1A: P2P MVP)
+      // CVE-004: Pass getUserInfo to provide isAnonymous flag
       this.callEventsHandler.setupCallEvents(
         socket,
         this.io,
-        (socketId: string) => this.socketToUser.get(socketId)
+        (socketId: string) => this.socketToUser.get(socketId),
+        (socketId: string) => {
+          const userId = this.socketToUser.get(socketId);
+          if (!userId) return undefined;
+          const user = this.connectedUsers.get(userId);
+          if (!user) return undefined;
+          return { id: user.id, isAnonymous: user.isAnonymous };
+        }
       );
 
       // Déconnexion
