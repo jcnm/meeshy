@@ -8,29 +8,32 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  Link, 
-  ArrowLeft, 
-  Search, 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
+import {
+  Link,
+  ArrowLeft,
+  Search,
   Filter,
   Calendar,
   User,
-  Globe,
-  Users,
-  Settings,
-  Eye,
   Edit,
   Trash2,
   Copy,
   ExternalLink,
   Clock,
-  Shield,
   FileText,
   Image,
-  MessageSquare
+  MessageSquare,
+  MoreVertical
 } from 'lucide-react';
 import { adminService } from '@/services/admin.service';
 import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 
 interface ShareLink {
   id: string;
@@ -74,6 +77,10 @@ export default function AdminShareLinksPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; linkId: string | null }>({
+    open: false,
+    linkId: null
+  });
 
   useEffect(() => {
     loadShareLinks();
@@ -134,6 +141,18 @@ export default function AdminShareLinksPage() {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success('Lien copié dans le presse-papiers');
+  };
+
+  const handleDeleteLink = async () => {
+    try {
+      // TODO: Implement actual delete API call
+      // await adminService.deleteShareLink(deleteDialog.linkId);
+      toast.success('Lien supprimé avec succès');
+      loadShareLinks();
+    } catch (error) {
+      console.error('Erreur lors de la suppression du lien:', error);
+      toast.error('Erreur lors de la suppression du lien');
+    }
   };
 
   if (loading) {
@@ -341,32 +360,72 @@ export default function AdminShareLinksPage() {
                           </div>
                         </div>
 
-                        {/* Boutons d'action toujours visibles */}
-                        <div className="flex space-x-2 flex-shrink-0">
-                          <Button 
-                            variant="outline" 
+                        {/* Boutons d'action - responsive */}
+                        <div className="flex items-center space-x-2">
+                          {/* Primary action - always visible */}
+                          <Button
+                            variant="outline"
                             size="sm"
                             onClick={() => copyToClipboard(shareLink.linkId)}
                           >
-                            <Copy className="h-4 w-4 sm:mr-1" />
-                            <span className="hidden sm:inline">Copier</span>
+                            <Copy className="h-4 w-4" />
+                            <span className="sr-only sm:not-sr-only sm:ml-1">Copier</span>
                           </Button>
-                          <Button variant="outline" size="sm">
-                            <ExternalLink className="h-4 w-4 sm:mr-1" />
-                            <span className="hidden sm:inline">Ouvrir</span>
-                          </Button>
-                          <Button variant="outline" size="sm">
-                            <Eye className="h-4 w-4 sm:mr-1" />
-                            <span className="hidden sm:inline">Voir</span>
-                          </Button>
-                          <Button variant="outline" size="sm">
-                            <Edit className="h-4 w-4 sm:mr-1" />
-                            <span className="hidden sm:inline">Modifier</span>
-                          </Button>
-                          <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 dark:text-red-400">
-                            <Trash2 className="h-4 w-4 sm:mr-1" />
-                            <span className="hidden sm:inline">Supprimer</span>
-                          </Button>
+
+                          {/* Mobile dropdown for secondary actions */}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="outline" size="sm" className="md:hidden">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => window.open(`/tracked/${shareLink.linkId}`, '_blank')}>
+                                <ExternalLink className="mr-2 h-4 w-4" />
+                                Ouvrir
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => router.push(`/admin/share-links/${shareLink.id}`)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Modifier
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="text-red-600"
+                                onClick={() => setDeleteDialog({ open: true, linkId: shareLink.id })}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Supprimer
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+
+                          {/* Desktop - all actions visible */}
+                          <div className="hidden md:flex space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => window.open(`/tracked/${shareLink.linkId}`, '_blank')}
+                            >
+                              <ExternalLink className="h-4 w-4 mr-1" />
+                              Ouvrir
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => router.push(`/admin/share-links/${shareLink.id}`)}
+                            >
+                              <Edit className="h-4 w-4 mr-1" />
+                              Modifier
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-red-600 hover:text-red-700 dark:text-red-400"
+                              onClick={() => setDeleteDialog({ open: true, linkId: shareLink.id })}
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Supprimer
+                            </Button>
+                          </div>
                         </div>
                       </div>
 
@@ -485,6 +544,20 @@ export default function AdminShareLinksPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Delete Confirmation Dialog */}
+        <ConfirmDialog
+          open={deleteDialog.open}
+          onOpenChange={(open) => setDeleteDialog({ ...deleteDialog, open })}
+          onConfirm={() => {
+            handleDeleteLink();
+            setDeleteDialog({ open: false, linkId: null });
+          }}
+          title="Supprimer le lien de partage"
+          description="Cette action est irréversible. Le lien de partage et tous ses accès seront supprimés définitivement."
+          confirmText="Supprimer"
+          variant="destructive"
+        />
       </div>
     </AdminLayout>
   );

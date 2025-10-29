@@ -211,7 +211,7 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         {/* Statistiques principales - Les 10 métriques demandées */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
           {/* 1. Utilisateurs */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -284,7 +284,7 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         {/* Deuxième ligne de statistiques */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
           {/* 6. Liens de conversation */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
