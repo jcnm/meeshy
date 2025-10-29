@@ -7,6 +7,7 @@
 
 import React, { useEffect } from 'react';
 import { useCallStore } from '@/stores/call-store';
+import { useAuth } from '@/hooks/use-auth';
 import { useWebRTCP2P } from '@/hooks/use-webrtc-p2p';
 import { VideoGrid } from './VideoGrid';
 import { CallControls } from './CallControls';
@@ -19,6 +20,7 @@ interface CallInterfaceProps {
 }
 
 export function CallInterface({ callId }: CallInterfaceProps) {
+  const { user } = useAuth();
   const {
     localStream,
     remoteStreams,
@@ -31,6 +33,7 @@ export function CallInterface({ callId }: CallInterfaceProps) {
 
   const { initializeLocalStream, connectionState } = useWebRTCP2P({
     callId,
+    userId: user?.id,
     onError: (error) => {
       logger.error('[CallInterface] WebRTC error: ' + error.message);
       toast.error('Call connection error: ' + error.message);

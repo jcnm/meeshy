@@ -5,6 +5,12 @@ import { ArrowLeft, UserPlus, Info, MoreVertical, Link2, Video } from 'lucide-re
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -146,16 +152,24 @@ export function ConversationHeader({
       <div className="flex items-center gap-1 flex-shrink-0">
         {/* Video Call Button - Only for direct conversations */}
         {conversation.type === 'direct' && onStartCall && (
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={onStartCall}
-            className="h-9 w-9"
-            aria-label="Start video call"
-            title="Start video call"
-          >
-            <Video className="h-5 w-5" />
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={onStartCall}
+                  className="h-9 w-9 hover:bg-blue-500 hover:text-white transition-colors"
+                  aria-label="Start video call"
+                >
+                  <Video className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Start Video Call</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         )}
 
         {/* Participants drawer - S'ouvre depuis la gauche */}
