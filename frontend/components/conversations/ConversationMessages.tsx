@@ -308,18 +308,18 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
     if (messages.length > 0 && !isFirstLoadRef.current) {
       const currentCount = messages.length;
       const previousCount = previousMessageCountRef.current;
-      
+
       // Scénario 2 : NE PAS scroller si on est en train de charger des messages anciens
       if (isLoadingMore) {
         console.log('[ConversationMessages] ⏸️ Chargement infini - pas de scroll automatique');
         previousMessageCountRef.current = currentCount;
         return;
       }
-      
+
       // Détecter si c'est un nouveau message (ajouté à la fin)
       if (currentCount > previousCount) {
         const lastMessage = messages[messages.length - 1];
-        
+
         // AMÉLIORATION: Toujours scroller sur NOTRE propre message (envoi)
         if (lastMessage && lastMessage.senderId === currentUser?.id) {
           console.log('[ConversationMessages] 📤 Message envoyé - scroll automatique vers le bas');
@@ -343,21 +343,36 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
             }
           } else {
             // Mode classique : vérifier si l'utilisateur est en bas
-            const userIsAtBottom = isUserAtBottom();
-            if (userIsAtBottom) {
-              console.log('[ConversationMessages] ✅ Utilisateur en bas - scroll automatique');
-              scrollToBottom(true); // Animation fluide pour les messages reçus
-            } else {
-              console.log('[ConversationMessages] ⏸️ Utilisateur dans l\'historique - pas de scroll (afficher bouton)');
+            // CORRECTION: Vérifier directement le container au lieu d'utiliser la fonction callback
+            const container = scrollAreaRef.current;
+            if (container) {
+              const { scrollTop, scrollHeight, clientHeight } = container;
+              const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+              const userIsAtBottom = distanceFromBottom < 150;
+
+              console.log('[ConversationMessages] 📊 Position utilisateur:', {
+                scrollTop,
+                scrollHeight,
+                clientHeight,
+                distanceFromBottom,
+                userIsAtBottom
+              });
+
+              if (userIsAtBottom) {
+                console.log('[ConversationMessages] ✅ Utilisateur en bas - scroll automatique');
+                scrollToBottom(true); // Animation fluide pour les messages reçus
+              } else {
+                console.log('[ConversationMessages] ⏸️ Utilisateur dans l\'historique - pas de scroll (afficher bouton)');
+              }
             }
           }
         }
       }
-      
+
       // Mettre à jour le compteur
       previousMessageCountRef.current = currentCount;
     }
-  }, [messages, currentUser?.id, scrollDirection, scrollToBottom, scrollToTop, isLoadingMore, isUserAtBottom]);
+  }, [messages, currentUser?.id, scrollDirection, scrollToBottom, scrollToTop, isLoadingMore, scrollAreaRef]);
 
 
   // Choisir l'action du bouton selon la direction

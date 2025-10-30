@@ -78,7 +78,10 @@
     "translationOptions": "Options de traduction",
     "copyShowingContent": "Copier le contenu affiché",
     "conversationHeader": {
-      "backToList": "Retour aux conversations"
+      "backToList": "Retour aux conversations",
+      "share": "Partager",
+      "linkCopied": "Lien copié !",
+      "linkCopyError": "Erreur lors de la copie du lien"
     },
     "conversationUI": {
       "participants": "Participants",
@@ -127,7 +130,14 @@
       "offline": "hors ligne",
       "noOfflineParticipants": "Aucun participant hors ligne",
       "close": "Fermer",
-      "createLink": "Créer un lien"
+      "createLink": "Créer un lien",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "descriptionPlaceholder": "Ajoutez une description...",
+      "descriptionUpdated": "Description mise à jour avec succès",
+      "addDescription": "Cliquez pour ajouter une description...",
+      "noDescription": "Aucune description",
+      "editDescription": "Modifier la description"
     },
     "typingIndicator": {
       "typing": "Écriture...",

@@ -43,6 +43,7 @@ import { Input } from '@/components/ui/input';
 import { buildApiUrl } from '@/lib/config';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { authManager } from '@/services/auth-manager.service';
+import { Footer } from '@/components/layout/Footer';
 
 function DashboardPageContent() {
   const router = useRouter();
@@ -480,16 +481,43 @@ function DashboardPageContent() {
                         </p>
                         <div className="flex items-center space-x-2">
                           <p className="text-xs text-gray-500 dark:text-gray-400">
-                            {conversation.lastMessage && new Date(conversation.lastMessage.createdAt).toLocaleTimeString(currentLanguage, { 
-                              hour: '2-digit', 
-                              minute: '2-digit' 
+                            {conversation.lastMessage && new Date(conversation.lastMessage.createdAt).toLocaleTimeString(currentLanguage, {
+                              hour: '2-digit',
+                              minute: '2-digit'
                             })}
                           </p>
                         </div>
                       </div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                        {conversation.lastMessage?.content}
-                      </p>
+                      {conversation.lastMessage && (
+                        <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                          {(() => {
+                            // Gérer les utilisateurs anonymes ET membres
+                            const sender = conversation.lastMessage.anonymousSender || conversation.lastMessage.sender;
+                            const isAnonymous = !!conversation.lastMessage.anonymousSender;
+
+                            if (sender) {
+                              const senderName = sender.displayName ||
+                                               sender.username ||
+                                               (sender.firstName && sender.lastName
+                                                 ? `${sender.firstName} ${sender.lastName}`.trim()
+                                                 : isAnonymous ? t('anonymous') || 'Anonyme' : 'Utilisateur');
+
+                              return (
+                                <>
+                                  <span className="font-medium">
+                                    {senderName}
+                                    {isAnonymous && ' (anonyme)'}
+                                    :{' '}
+                                  </span>
+                                  {conversation.lastMessage.content}
+                                </>
+                              );
+                            }
+
+                            return conversation.lastMessage.content;
+                          })()}
+                        </p>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -849,6 +877,9 @@ function DashboardPageContent() {
           userLanguage={user?.systemLanguage || 'fr'}
         />
       </DashboardLayout>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }

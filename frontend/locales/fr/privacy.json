@@ -33,6 +33,10 @@
         "title": "Chiffrement",
         "content": "Toutes les communications sont chiffrées en transit et au repos utilisant les standards industriels."
       },
+      "anonymous": {
+        "title": "Utilisateurs Anonymes et Chiffrement",
+        "content": "Les utilisateurs anonymes n'ont pas de clé de chiffrement personnelle. Par conséquent, leurs données ne peuvent pas être chiffrées au repos. Si vous souhaitez bénéficier d'une protection complète de vos données, veuillez créer un compte utilisateur."
+      },
       "storage": {
         "title": "Stockage",
         "content": "Vos données sont stockées sur des serveurs sécurisés avec des sauvegardes régulières."

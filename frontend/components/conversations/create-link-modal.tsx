@@ -167,6 +167,24 @@ interface NewConversationData {
   memberIds: string[];
 }
 
+// Helper function to format conversation type labels
+const getConversationTypeLabel = (type: string): string => {
+  switch (type) {
+    case 'global':
+      return 'Global Group';
+    case 'group':
+      return 'Private Group';
+    case 'public':
+      return 'Public Group';
+    case 'broadcast':
+      return 'Broadcast';
+    case 'direct':
+      return 'Direct';
+    default:
+      return type;
+  }
+};
+
 export function CreateLinkModalV2({
   isOpen,
   onClose,
@@ -686,7 +704,7 @@ export function CreateLinkModalV2({
                       )}
                       <div className="flex items-center space-x-2 mt-0.5">
                         <Badge variant="secondary" className="text-xs px-1 py-0">
-                          {conversation.type}
+                          {getConversationTypeLabel(conversation.type)}
                         </Badge>
                         <span className="text-xs text-muted-foreground">
                           {new Date(conversation.createdAt).toLocaleDateString()}
