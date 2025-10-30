@@ -139,7 +139,7 @@ export const adminService = {
       if (status) {
         params.status = status;
       }
-      const response = await apiService.get<AdminUsersResponse>('/admin/users', { params });
+      const response = await apiService.get<AdminUsersResponse>('/admin/users', params);
       return response;
     } catch (error) {
       console.error('Erreur lors de la récupération des utilisateurs:', error);
@@ -198,7 +198,7 @@ export const adminService = {
       if (status) {
         params.status = status;
       }
-      const response = await apiService.get<AdminAnonymousUsersResponse>('/admin/anonymous-users', { params });
+      const response = await apiService.get<AdminAnonymousUsersResponse>('/admin/anonymous-users', params);
       return response;
     } catch (error) {
       console.error('Erreur lors de la récupération des utilisateurs anonymes:', error);
@@ -221,7 +221,7 @@ export const adminService = {
       if (period) {
         params.period = period;
       }
-      const response = await apiService.get<any>('/admin/messages', { params });
+      const response = await apiService.get<any>('/admin/messages', params);
       return response;
     } catch (error) {
       console.error('Erreur lors de la récupération des messages:', error);
@@ -241,7 +241,7 @@ export const adminService = {
       if (isPrivate !== undefined) {
         params.isPrivate = isPrivate.toString();
       }
-      const response = await apiService.get<any>('/admin/communities', { params });
+      const response = await apiService.get<any>('/admin/communities', params);
       return response;
     } catch (error) {
       console.error('Erreur lors de la récupération des communautés:', error);
@@ -264,7 +264,7 @@ export const adminService = {
       if (period) {
         params.period = period;
       }
-      const response = await apiService.get<any>('/admin/translations', { params });
+      const response = await apiService.get<any>('/admin/translations', params);
       return response;
     } catch (error) {
       console.error('Erreur lors de la récupération des traductions:', error);
@@ -284,7 +284,7 @@ export const adminService = {
       if (isActive !== undefined) {
         params.isActive = isActive.toString();
       }
-      const response = await apiService.get<any>('/admin/share-links', { params });
+      const response = await apiService.get<any>('/admin/share-links', params);
       return response;
     } catch (error) {
       console.error('Erreur lors de la récupération des liens de partage:', error);

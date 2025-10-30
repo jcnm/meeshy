@@ -118,7 +118,8 @@ export default function AdminUsersPage() {
     });
     // Utiliser le loader seulement pour le premier chargement
     loadUsersData(isInitialLoad);
-  }, [currentPage, pageSize, debouncedSearch, roleFilter, statusFilter, loadUsersData, isInitialLoad]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, pageSize, debouncedSearch, roleFilter, statusFilter, isInitialLoad]);
 
   const handleFilter = () => {
     setCurrentPage(1);
@@ -127,8 +128,6 @@ export default function AdminUsersPage() {
 
   const handlePageSizeChange = (newSize: number) => {
     console.log('[Admin Users] Changement de pageSize:', { ancien: pageSize, nouveau: newSize });
-    // Afficher le loader pendant le changement
-    setLoading(true);
     setCurrentPage(1);
     setPageSize(newSize);
     // Le useEffect avec les dépendances correctes se chargera du rechargement
