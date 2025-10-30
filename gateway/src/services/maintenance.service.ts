@@ -5,15 +5,21 @@
 
 import { PrismaClient } from '../../shared/prisma/client';
 import { logger } from '../utils/logger';
+import { AttachmentService } from './AttachmentService';
 
 export class MaintenanceService {
   private prisma: PrismaClient;
+  private attachmentService: AttachmentService;
   private maintenanceInterval: NodeJS.Timeout | null = null;
+  private dailyCleanupInterval: NodeJS.Timeout | null = null;
   private readonly OFFLINE_THRESHOLD_MINUTES = 5; // 5 minutes d'inactivité = hors ligne
+  private readonly ORPHANED_ATTACHMENT_THRESHOLD_HOURS = 24; // 24 heures avant suppression des attachments orphelins
   private statusBroadcastCallback: ((userId: string, isOnline: boolean, isAnonymous: boolean) => void) | null = null;
+  private lastDailyCleanup: Date | null = null;
 
-  constructor(prisma: PrismaClient) {
+  constructor(prisma: PrismaClient, attachmentService: AttachmentService) {
     this.prisma = prisma;
+    this.attachmentService = attachmentService;
   }
 
   /**
@@ -29,13 +35,21 @@ export class MaintenanceService {
   async startMaintenanceTasks(): Promise<void> {
     logger.info('🚀 Démarrage des tâches de maintenance...');
 
-    // Tâche de maintenance pour l'état en ligne/hors ligne
+    // Tâche de maintenance pour l'état en ligne/hors ligne (toutes les minutes)
     this.maintenanceInterval = setInterval(async () => {
       logger.info('🔄 Exécution de la tâche de maintenance automatique...');
       await this.updateOfflineUsers();
     }, 60000); // Vérifier toutes les minutes
 
-    logger.info('✅ Tâches de maintenance démarrées avec intervalle de 60 secondes');
+    // Tâche de nettoyage journalier (toutes les heures, mais ne s'exécute qu'une fois par jour)
+    this.dailyCleanupInterval = setInterval(async () => {
+      await this.runDailyCleanup();
+    }, 60 * 60 * 1000); // Vérifier toutes les heures
+
+    // Exécuter immédiatement le nettoyage journalier au démarrage
+    await this.runDailyCleanup();
+
+    logger.info('✅ Tâches de maintenance démarrées (intervalle: 60s pour statuts, 1h pour nettoyage journalier)');
   }
 
   /**
@@ -45,8 +59,12 @@ export class MaintenanceService {
     if (this.maintenanceInterval) {
       clearInterval(this.maintenanceInterval);
       this.maintenanceInterval = null;
-      logger.info('🛑 Tâches de maintenance arrêtées');
     }
+    if (this.dailyCleanupInterval) {
+      clearInterval(this.dailyCleanupInterval);
+      this.dailyCleanupInterval = null;
+    }
+    logger.info('🛑 Tâches de maintenance arrêtées');
   }
 
   /**
@@ -192,6 +210,104 @@ export class MaintenanceService {
       }
     } catch (error) {
       logger.error(`❌ Erreur lors de la mise à jour du statut du participant anonyme ${participantId}:`, error);
+    }
+  }
+
+  /**
+   * Exécuter les tâches de nettoyage journalier
+   * Ne s'exécute qu'une fois par jour (entre 2h et 3h du matin)
+   */
+  private async runDailyCleanup(): Promise<void> {
+    const now = new Date();
+    const currentHour = now.getHours();
+
+    // Vérifier si on est dans la fenêtre de nettoyage (2h-3h du matin)
+    const isInCleanupWindow = currentHour >= 2 && currentHour < 3;
+
+    // Vérifier si le nettoyage a déjà été fait aujourd'hui
+    const lastCleanupDate = this.lastDailyCleanup?.toDateString();
+    const todayDate = now.toDateString();
+    const alreadyRunToday = lastCleanupDate === todayDate;
+
+    if (isInCleanupWindow && !alreadyRunToday) {
+      logger.info('🧹 [DAILY CLEANUP] Démarrage du nettoyage journalier...');
+
+      try {
+        // Nettoyer les attachments orphelins
+        await this.cleanupOrphanedAttachments();
+
+        // Nettoyer les sessions et données expirées
+        await this.cleanupExpiredData();
+
+        this.lastDailyCleanup = now;
+        logger.info('✅ [DAILY CLEANUP] Nettoyage journalier terminé avec succès');
+      } catch (error) {
+        logger.error('❌ [DAILY CLEANUP] Erreur lors du nettoyage journalier:', error);
+      }
+    } else if (!isInCleanupWindow && !alreadyRunToday) {
+      logger.debug(`⏰ [DAILY CLEANUP] En attente de la fenêtre de nettoyage (2h-3h), heure actuelle: ${currentHour}h`);
+    }
+  }
+
+  /**
+   * Nettoyer les attachments orphelins
+   * Supprime les attachments qui ne sont pas liés à un message et qui ont plus de 24h
+   */
+  private async cleanupOrphanedAttachments(): Promise<void> {
+    try {
+      logger.info('🧹 [CLEANUP] Démarrage du nettoyage des attachments orphelins...');
+
+      const orphanedThreshold = new Date();
+      orphanedThreshold.setHours(orphanedThreshold.getHours() - this.ORPHANED_ATTACHMENT_THRESHOLD_HOURS);
+
+      // Trouver tous les attachments qui :
+      // 1. Ne sont pas liés à un message (messageId null)
+      // 2. Ont été créés il y a plus de 24 heures
+      const orphanedAttachments = await this.prisma.messageAttachment.findMany({
+        where: {
+          messageId: null,
+          createdAt: {
+            lt: orphanedThreshold
+          }
+        },
+        select: {
+          id: true,
+          originalName: true,
+          fileSize: true,
+          createdAt: true,
+          uploadedBy: true
+        }
+      });
+
+      if (orphanedAttachments.length === 0) {
+        logger.info('✅ [CLEANUP] Aucun attachment orphelin trouvé');
+        return;
+      }
+
+      logger.info(`🗑️  [CLEANUP] ${orphanedAttachments.length} attachments orphelins trouvés, suppression en cours...`);
+
+      let successCount = 0;
+      let failCount = 0;
+      let totalSize = 0;
+
+      for (const attachment of orphanedAttachments) {
+        try {
+          await this.attachmentService.deleteAttachment(attachment.id);
+          successCount++;
+          totalSize += attachment.fileSize;
+
+          logger.debug(`🗑️  [CLEANUP] Attachment supprimé: ${attachment.originalName} (${attachment.fileSize} bytes, créé le ${attachment.createdAt.toISOString()})`);
+        } catch (error) {
+          failCount++;
+          logger.error(`❌ [CLEANUP] Erreur suppression attachment ${attachment.id}:`, error);
+        }
+      }
+
+      const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+      logger.info(`✅ [CLEANUP] Nettoyage terminé: ${successCount} attachments supprimés (${totalSizeMB} MB libérés), ${failCount} échecs`);
+
+    } catch (error) {
+      logger.error('❌ [CLEANUP] Erreur lors du nettoyage des attachments orphelins:', error);
     }
   }
 

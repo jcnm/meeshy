@@ -6,6 +6,7 @@
  */
 
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { authManager } from '@/services/auth-manager.service';
 import { apiService } from '@/services/api.service';
 import { debounce } from '@/utils/debounce';
 import type { User, Message } from '@shared/types';
@@ -63,6 +64,7 @@ export function useConversationMessages(
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastScrollTopRef = useRef<number>(0);
   const offsetRef = useRef<number>(0); // Ref pour l'offset pour éviter les problèmes de timing
+  const initialScrollDoneRef = useRef<boolean>(false); // Ref pour éviter de charger avant le scroll initial
 
   // Fonction pour charger les messages
   const loadMessagesInternal = useCallback(async (isLoadMore = false) => {
@@ -88,9 +90,9 @@ export function useConversationMessages(
 
       setError(null);
 
-      // Chercher le token d'authentification (auth_token ou sessionToken pour les anonymes)
-      const authToken = localStorage.getItem('auth_token');
-      const sessionToken = localStorage.getItem('anonymous_session_token');
+      // Chercher le token d'authentification via authManager (source unique)
+      const authToken = authManager.getAuthToken();
+      const sessionToken = authManager.getAnonymousSession()?.token;
       
       if (!authToken && !sessionToken) {
         throw new Error('Token d\'authentification manquant');
@@ -271,6 +273,7 @@ export function useConversationMessages(
     setHasMore(true);
     setIsInitialized(false);
     setError(null);
+    initialScrollDoneRef.current = false; // Reset scroll initial
   }, []);
 
   // Fonction pour ajouter un message (nouveaux messages en temps réel)
@@ -343,6 +346,13 @@ export function useConversationMessages(
     
     const handleScroll = () => {
       if (isLoadingMore || !hasMore) {
+        return;
+      }
+
+      // CORRECTION: Ne pas charger avant que le scroll initial ne soit effectué
+      // Cela évite de charger des messages anciens avant que l'utilisateur ne soit scrollé au bon endroit
+      if (!initialScrollDoneRef.current && scrollDirection === 'up') {
+        console.log('[useConversationMessages] ⏸️ Scroll initial pas encore effectué, ignoré');
         return;
       }
 
@@ -433,6 +443,12 @@ export function useConversationMessages(
     };
   }, [enabled, isLoadingMore, hasMore, threshold, loadMore, scrollDirection]);
 
+  // Réinitialiser le flag de scroll initial quand la conversation change
+  useEffect(() => {
+    initialScrollDoneRef.current = false;
+    console.log('[useConversationMessages] 🔄 Changement de conversation - réinitialisation du flag scroll initial');
+  }, [conversationId]);
+
   // Chargement initial
   useEffect(() => {
     if (conversationId && currentUser && enabled && !isInitialized) {
@@ -440,36 +456,35 @@ export function useConversationMessages(
     }
   }, [conversationId, currentUser, enabled, isInitialized]);
 
-  // Vérification du contenu après initialisation (peut être désactivé)
+  // Marquer le scroll initial comme effectué après l'initialisation
   useEffect(() => {
-    if (disableAutoFill || !isInitialized || !actualContainerRef.current || isLoadingMore) return;
-
-    const checkContentHeight = () => {
-      if (!actualContainerRef.current || isLoadingMore || !hasMore) return;
-      
-      const container = actualContainerRef.current;
-      const { scrollHeight, clientHeight } = container;
-      
-      if (scrollHeight <= clientHeight + 100) {
-        loadMore();
-      }
-    };
-
-    const timeoutId = setTimeout(checkContentHeight, 300);
-    return () => clearTimeout(timeoutId);
-  }, [isInitialized, hasMore]); // Retirer loadMore des dépendances
+    if (isInitialized && scrollDirection === 'up') {
+      // Attendre un peu que ConversationMessages effectue le scroll vers le bas
+      const timer = setTimeout(() => {
+        initialScrollDoneRef.current = true;
+        console.log('[useConversationMessages] ✅ Scroll initial marqué comme effectué');
+      }, 500); // Délai pour laisser le temps au scrollToBottom() de s'exécuter
+      return () => clearTimeout(timer);
+    } else if (scrollDirection === 'down') {
+      // Pour BubbleStream, pas besoin d'attendre
+      initialScrollDoneRef.current = true;
+    }
+  }, [isInitialized, scrollDirection]);
 
   // Chargement automatique si le conteneur n'est pas assez rempli (peut être désactivé)
   useEffect(() => {
-    if (disableAutoFill || !isInitialized || isLoadingMore || !hasMore || !actualContainerRef.current) return;
+    if (disableAutoFill || !isInitialized || isLoadingMore || !hasMore || !actualContainerRef.current) {
+      return;
+    }
 
     // Utiliser un timeout pour éviter les appels en boucle
     const checkAndLoadMore = () => {
       if (!actualContainerRef.current || isLoadingMore || !hasMore) return;
-      
+
       const container = actualContainerRef.current;
       const { scrollHeight, clientHeight } = container;
-      
+
+      // Vérifier si le conteneur n'est pas assez rempli
       if (scrollHeight <= clientHeight + 50 && hasMore) {
         loadMore();
       }
@@ -477,7 +492,7 @@ export function useConversationMessages(
 
     const timeoutId = setTimeout(checkAndLoadMore, 500);
     return () => clearTimeout(timeoutId);
-  }, [disableAutoFill, isInitialized, messages.length]); // Retirer loadMore et hasMore des dépendances
+  }, [disableAutoFill, isInitialized, messages.length, isLoadingMore, hasMore, loadMore]);
 
   // Nettoyage à la destruction
   useEffect(() => {

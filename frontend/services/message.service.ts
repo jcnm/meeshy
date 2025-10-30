@@ -4,6 +4,7 @@
  */
 
 import { buildApiUrl } from '@/lib/config';
+import { authManager } from './auth-manager.service';
 
 export interface EditMessageRequest {
   content: string;
@@ -26,7 +27,7 @@ export class MessageService {
     request: EditMessageRequest
   ): Promise<MessageResponse> {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       if (!token) {
         throw new Error('Token d\'authentification manquant');
       }
@@ -64,7 +65,7 @@ export class MessageService {
     messageId: string
   ): Promise<void> {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       if (!token) {
         throw new Error('Token d\'authentification manquant');
       }

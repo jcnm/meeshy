@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { authManager } from '@/services/auth-manager.service';
 import { toast } from 'sonner';
 import { notificationService, type Notification, type NotificationCounts } from '@/services/notification.service';
 import { useAuth } from './use-auth';
@@ -51,7 +52,7 @@ export const useNotifications = (): UseNotificationsReturn => {
   // Initialiser le service de notifications
   useEffect(() => {
     if (isAuthenticated && user) {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       if (token) {
         console.log('Initialisation du service de notifications pour:', user.username);
         

@@ -31,6 +31,10 @@ import { communityRoutes } from './routes/communities';
 import { adminRoutes } from './routes/admin';
 import { userAdminRoutes } from './routes/admin/users';
 import { reportRoutes } from './routes/admin/reports';
+// import { communityAdminRoutes } from './routes/admin/communities';
+// import { analyticsAdminRoutes } from './routes/admin/analytics';
+// import { linksAdminRoutes } from './routes/admin/links';
+// import { messagesAdminRoutes } from './routes/admin/messages';
 import { userRoutes } from './routes/users';
 import userPreferencesRoutes from './routes/user-preferences';
 import { translationRoutes } from './routes/translation-non-blocking';
@@ -43,8 +47,10 @@ import { notificationRoutes } from './routes/notifications';
 import { friendRequestRoutes } from './routes/friends';
 import { attachmentRoutes } from './routes/attachments';
 import reactionRoutes from './routes/reactions';
+import callRoutes from './routes/calls';
 import { InitService } from './services/init.service';
 import { MeeshySocketIOHandler } from './socketio/MeeshySocketIOHandler';
+import { CallCleanupService } from './services/CallCleanupService';
 
 // ============================================================================
 // CONFIGURATION & ENVIRONMENT
@@ -226,6 +232,7 @@ class MeeshyServer {
   private messagingService: MessagingService;
   private authMiddleware: AuthMiddleware;
   private socketIOHandler: MeeshySocketIOHandler;
+  private callCleanupService: CallCleanupService;
 
   constructor() {
     this.server = fastify({
@@ -245,8 +252,11 @@ class MeeshyServer {
     
     // Initialiser le service de messaging
     this.messagingService = new MessagingService(this.prisma, this.translationService);
-    
+
     this.socketIOHandler = new MeeshySocketIOHandler(this.prisma, config.jwtSecret);
+
+    // Initialiser le service de nettoyage automatique des appels
+    this.callCleanupService = new CallCleanupService(this.prisma);
   }
 
   // --------------------------------------------------------------------------
@@ -541,6 +551,17 @@ class MeeshyServer {
 
     // Register admin report routes (at /api/admin/reports)
     await this.server.register(reportRoutes, { prefix: '/api/admin/reports' });
+    // Register admin communities routes (at /api/admin/communities)
+    //     await this.server.register(communityAdminRoutes, { prefix: '/api/admin/communities' });
+
+    // Register admin analytics routes (at /api/admin/analytics)
+    //     await this.server.register(analyticsAdminRoutes, { prefix: '/api/admin/analytics' });
+    // 
+    //     // Register admin links routes (at /api/admin/links)
+    //     await this.server.register(linksAdminRoutes, { prefix: '/api/admin/links' });
+    // 
+    //     // Register admin messages routes (at /api/admin/messages)
+    //     await this.server.register(messagesAdminRoutes, { prefix: '/api/admin/messages' });
 
     // Register user routes
     await this.server.register(userRoutes, { prefix: '/api' });
@@ -569,7 +590,10 @@ class MeeshyServer {
     
     // Register friend request routes with /api prefix
     await this.server.register(friendRequestRoutes, { prefix: '/api' });
-    
+
+    // Register call routes with /api prefix (Phase 1A: P2P Video Calls MVP)
+    await this.server.register(callRoutes, { prefix: '/api' });
+
     logger.info('✓ REST API routes configured successfully');
   }
 
@@ -689,6 +713,10 @@ class MeeshyServer {
       this.displayStartupBanner();
       logger.info('🎉 Server started successfully and ready to accept connections');
 
+      // Start automatic call cleanup service
+      this.callCleanupService.start();
+      logger.info('✓ Call cleanup service started');
+
     } catch (error) {
       logger.error('❌ Failed to start server: ', error);
       process.exit(1);
@@ -699,6 +727,12 @@ class MeeshyServer {
     logger.info('🛑 Shutting down server...');
 
     try {
+      // Stop call cleanup service
+      if (this.callCleanupService) {
+        this.callCleanupService.stop();
+        logger.info('✓ Call cleanup service stopped');
+      }
+
       if (this.translationService) {
         await this.translationService.close();
         logger.info('✓ Translation service connection closed');

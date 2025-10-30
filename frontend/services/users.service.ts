@@ -174,9 +174,51 @@ export const usersService = {
 
   /**
    * Vérifie si un utilisateur est en ligne
+   * Basé sur lastActiveAt pour refléter l'activité réelle
+   * Un utilisateur est considéré en ligne s'il a été actif dans les 5 dernières minutes
    */
   isUserOnline(user: User): boolean {
-    return user.isOnline;
+    // Si le flag isOnline est false, l'utilisateur est définitivement hors ligne
+    if (!user.isOnline) {
+      return false;
+    }
+
+    // Vérifier l'activité récente via lastActiveAt
+    const lastActive = new Date(user.lastActiveAt || user.lastSeen);
+    const now = new Date();
+    const diffMs = now.getTime() - lastActive.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+
+    // Considérer en ligne si activité dans les 5 dernières minutes
+    return diffMinutes < 5;
+  },
+
+  /**
+   * Calcule le statut détaillé de l'utilisateur
+   * @returns 'online' | 'away' | 'offline'
+   */
+  getUserStatus(user: User): 'online' | 'away' | 'offline' {
+    if (!user.isOnline) {
+      return 'offline';
+    }
+
+    const lastActive = new Date(user.lastActiveAt || user.lastSeen);
+    const now = new Date();
+    const diffMs = now.getTime() - lastActive.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+
+    // En ligne : activité < 5 minutes
+    if (diffMinutes < 5) {
+      return 'online';
+    }
+
+    // Absent/Inactif : 5 min < activité < 30 min
+    if (diffMinutes < 30) {
+      return 'away';
+    }
+
+    // Hors ligne : activité > 30 minutes
+    return 'offline';
   },
 
   /**

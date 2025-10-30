@@ -143,6 +143,29 @@ export const useLanguageStore = create<LanguageStore>()(
           currentMessageLanguage: state.currentMessageLanguage,
           userLanguageConfig: state.userLanguageConfig,
         }),
+        migrate: (persistedState: any, version: number) => {
+          // Si l'état persisté est invalide ou incomplet, retourner l'état initial
+          if (!persistedState || typeof persistedState !== 'object') {
+            console.log('[LANGUAGE_STORE] Invalid persisted state, using initial state');
+            return initialState;
+          }
+
+          // Si la version est différente, fusionner avec l'état par défaut
+          if (version !== 1) {
+            console.log('[LANGUAGE_STORE] Migrating from version', version, 'to 1');
+            return {
+              ...initialState,
+              ...persistedState,
+              userLanguageConfig: {
+                ...DEFAULT_LANGUAGE_CONFIG,
+                ...(persistedState.userLanguageConfig || {}),
+              },
+            };
+          }
+
+          // Version compatible, retourner tel quel
+          return persistedState;
+        },
       }
     ),
     { name: 'LanguageStore' }

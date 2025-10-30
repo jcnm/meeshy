@@ -182,13 +182,22 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const target = e.currentTarget;
     const { scrollTop, scrollHeight, clientHeight } = target;
-    
+
     // Mettre à jour le flag de consultation de l'historique
     const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
     isUserScrollingHistoryRef.current = distanceFromBottom > 150;
-    
-    // AMÉLIORATION 2: Afficher/masquer le bouton "Scroll to bottom" selon la position
-    const shouldShowButton = distanceFromBottom > 200; // Afficher si plus de 200px du bas
+
+    // AMÉLIORATION 2: Afficher/masquer le bouton selon la position et le mode
+    let shouldShowButton = false;
+    if (scrollDirection === 'down') {
+      // Mode BubbleStream: messages récents EN HAUT, afficher le bouton si l'utilisateur scrolle vers le bas
+      shouldShowButton = scrollTop > 200; // Afficher si scrollé de plus de 200px vers le bas
+      console.log('[ConversationMessages] 🔼 BubbleStream scroll check:', { scrollTop, shouldShowButton, scrollDirection });
+    } else {
+      // Mode classique: messages récents EN BAS, afficher le bouton si l'utilisateur scrolle vers le haut
+      shouldShowButton = distanceFromBottom > 200; // Afficher si plus de 200px du bas
+      console.log('[ConversationMessages] 🔽 Classic scroll check:', { distanceFromBottom, shouldShowButton, scrollDirection });
+    }
     setShowScrollButton(shouldShowButton);
     
     // Vérifier si l'utilisateur est proche du bas (auto-scroll)
@@ -224,18 +233,42 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
   useEffect(() => {
     if (scrollContainerRef?.current) {
       const container = scrollContainerRef.current;
-      // Wrapper pour convertir Event natif en React UIEvent
+      console.log('[ConversationMessages] 📦 Conteneur de scroll détecté:', {
+        hasContainer: !!container,
+        scrollDirection,
+        className: container.className,
+        scrollHeight: container.scrollHeight,
+        clientHeight: container.clientHeight
+      });
+
+      // Wrapper pour convertir Event natif en React UIEvent avec currentTarget correct
       const handleNativeScroll = () => {
-        handleScroll({} as React.UIEvent<HTMLDivElement>);
+        // Créer un objet UIEvent avec le currentTarget correct
+        const syntheticEvent = {
+          currentTarget: container
+        } as React.UIEvent<HTMLDivElement>;
+        handleScroll(syntheticEvent);
       };
       container.addEventListener('scroll', handleNativeScroll);
       console.log('[ConversationMessages] 📌 handleScroll attaché au conteneur externe');
+
+      // Test initial pour vérifier l'état
+      setTimeout(() => {
+        console.log('[ConversationMessages] 🔍 État initial du scroll:', {
+          scrollTop: container.scrollTop,
+          scrollHeight: container.scrollHeight,
+          clientHeight: container.clientHeight
+        });
+      }, 1000);
+
       return () => {
         container.removeEventListener('scroll', handleNativeScroll);
         console.log('[ConversationMessages] 🔓 handleScroll détaché du conteneur externe');
       };
+    } else {
+      console.log('[ConversationMessages] ⚠️ Aucun conteneur de scroll externe fourni');
     }
-  }, [scrollContainerRef, handleScroll]);
+  }, [scrollContainerRef, handleScroll, scrollDirection]);
 
   // Réinitialiser le flag de premier chargement quand la conversation change
   useEffect(() => {
@@ -275,18 +308,18 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
     if (messages.length > 0 && !isFirstLoadRef.current) {
       const currentCount = messages.length;
       const previousCount = previousMessageCountRef.current;
-      
+
       // Scénario 2 : NE PAS scroller si on est en train de charger des messages anciens
       if (isLoadingMore) {
         console.log('[ConversationMessages] ⏸️ Chargement infini - pas de scroll automatique');
         previousMessageCountRef.current = currentCount;
         return;
       }
-      
+
       // Détecter si c'est un nouveau message (ajouté à la fin)
       if (currentCount > previousCount) {
         const lastMessage = messages[messages.length - 1];
-        
+
         // AMÉLIORATION: Toujours scroller sur NOTRE propre message (envoi)
         if (lastMessage && lastMessage.senderId === currentUser?.id) {
           console.log('[ConversationMessages] 📤 Message envoyé - scroll automatique vers le bas');
@@ -310,21 +343,36 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
             }
           } else {
             // Mode classique : vérifier si l'utilisateur est en bas
-            const userIsAtBottom = isUserAtBottom();
-            if (userIsAtBottom) {
-              console.log('[ConversationMessages] ✅ Utilisateur en bas - scroll automatique');
-              scrollToBottom(true); // Animation fluide pour les messages reçus
-            } else {
-              console.log('[ConversationMessages] ⏸️ Utilisateur dans l\'historique - pas de scroll (afficher bouton)');
+            // CORRECTION: Vérifier directement le container au lieu d'utiliser la fonction callback
+            const container = scrollAreaRef.current;
+            if (container) {
+              const { scrollTop, scrollHeight, clientHeight } = container;
+              const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+              const userIsAtBottom = distanceFromBottom < 150;
+
+              console.log('[ConversationMessages] 📊 Position utilisateur:', {
+                scrollTop,
+                scrollHeight,
+                clientHeight,
+                distanceFromBottom,
+                userIsAtBottom
+              });
+
+              if (userIsAtBottom) {
+                console.log('[ConversationMessages] ✅ Utilisateur en bas - scroll automatique');
+                scrollToBottom(true); // Animation fluide pour les messages reçus
+              } else {
+                console.log('[ConversationMessages] ⏸️ Utilisateur dans l\'historique - pas de scroll (afficher bouton)');
+              }
             }
           }
         }
       }
-      
+
       // Mettre à jour le compteur
       previousMessageCountRef.current = currentCount;
     }
-  }, [messages, currentUser?.id, scrollDirection, scrollToBottom, scrollToTop, isLoadingMore, isUserAtBottom]);
+  }, [messages, currentUser?.id, scrollDirection, scrollToBottom, scrollToTop, isLoadingMore, scrollAreaRef]);
 
 
   // Choisir l'action du bouton selon la direction
@@ -425,27 +473,40 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
       )}
       
       {/* Bouton flottant pour scroller - Direction adaptée au contexte */}
-      {showScrollButton && !isLoadingMessages && messages.length > 0 && (
-        <Button
-          onClick={handleScrollButtonClick}
-          className={cn(
-            "fixed bottom-32 right-6 z-50",
-            "rounded-full w-12 h-12 p-0",
-            "shadow-2xl hover:shadow-3xl",
-            "bg-primary hover:bg-primary/90",
-            "transition-all duration-300 ease-in-out",
-            "animate-in slide-in-from-bottom-5"
-          )}
-          aria-label={scrollButtonDirection === 'up' ? 'Scroll to top' : 'Scroll to bottom'}
-          title={scrollButtonDirection === 'up' ? 'Remonter vers les messages récents' : 'Aller au bas de la conversation'}
-        >
-          {scrollButtonDirection === 'up' ? (
-            <ArrowUp className="h-5 w-5 text-primary-foreground" />
-          ) : (
-            <ArrowDown className="h-5 w-5 text-primary-foreground" />
-          )}
-        </Button>
-      )}
+      {(() => {
+        const shouldRender = showScrollButton && !isLoadingMessages && messages.length > 0;
+        console.log('[ConversationMessages] 🎯 Bouton scroll render check:', {
+          showScrollButton,
+          isLoadingMessages,
+          messagesCount: messages.length,
+          shouldRender,
+          scrollDirection,
+          scrollButtonDirection
+        });
+        return shouldRender ? (
+          <Button
+            onClick={handleScrollButtonClick}
+            className={cn(
+              "fixed bottom-32 z-50",
+              // Positionnement adapté: pour BubbleStream avec sidebar, ajuster la position
+              scrollDirection === 'down' ? "right-6 xl:right-[360px]" : "right-6",
+              "rounded-full w-12 h-12 p-0",
+              "shadow-2xl hover:shadow-3xl",
+              "bg-primary hover:bg-primary/90",
+              "transition-all duration-300 ease-in-out",
+              "animate-in slide-in-from-bottom-5"
+            )}
+            aria-label={scrollButtonDirection === 'up' ? 'Scroll to top' : 'Scroll to bottom'}
+            title={scrollButtonDirection === 'up' ? 'Remonter vers les messages récents' : 'Aller au bas de la conversation'}
+          >
+            {scrollButtonDirection === 'up' ? (
+              <ArrowUp className="h-5 w-5 text-primary-foreground" />
+            ) : (
+              <ArrowDown className="h-5 w-5 text-primary-foreground" />
+            )}
+          </Button>
+        ) : null;
+      })()}
     </div>
   );
 });

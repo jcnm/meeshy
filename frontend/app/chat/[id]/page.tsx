@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { Header } from '@/components/layout/Header';
 import { AccessDenied } from '@/components/ui/access-denied';
 import { useI18n } from '@/hooks/useI18n';
+import { authManager } from '@/services/auth-manager.service';
 
 // Utiliser directement le type importé
 type ConversationData = LinkConversationData;
@@ -28,9 +29,10 @@ export default function ChatLinkPage() {
       try {
         setIsLoading(true);
         
-        // Récupérer les tokens d'authentification
-        const sessionToken = localStorage.getItem('anonymous_session_token');
-        const authToken = localStorage.getItem('auth_token');
+        // Récupérer les tokens d'authentification via authManager (source unique)
+        const anonymousSession = authManager.getAnonymousSession();
+        const sessionToken = anonymousSession?.token;
+        const authToken = authManager.getAuthToken();
         
         console.log('[ChatLinkPage] Chargement avec:', { 
           id, 

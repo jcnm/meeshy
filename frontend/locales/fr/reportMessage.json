@@ -30,27 +30,25 @@
         "description": "Comportement harcelant ou intimidant"
       },
       "violence": {
-        "label": "Violence ou menace",
+        "label": "Violence",
         "description": "Contenu violent ou menaçant"
       },
       "hate_speech": {
         "label": "Discours haineux",
-        "description": "Propos discriminatoires ou haineux"
+        "description": "Langage discriminatoire ou haineux"
       },
       "fake_profile": {
         "label": "Faux profil",
-        "description": "Usurpation d'identité"
+        "description": "Usurpation ou fausse identité"
       },
       "impersonation": {
         "label": "Usurpation d'identité",
-        "description": "Se fait passer pour quelqu'un d'autre"
+        "description": "Prétendre être quelqu'un d'autre"
       },
       "other": {
         "label": "Autre",
         "description": "Autre raison"
       }
-    },
-    "success": "Signalement envoyé avec succès",
-    "error": "Erreur lors du signalement"
+    }
   }
 }

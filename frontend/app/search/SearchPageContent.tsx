@@ -25,6 +25,7 @@ import {
 import { buildApiUrl } from '@/lib/config';
 import { User, Message } from '@shared/types';
 import { Group } from '@/types/frontend';
+import { authManager } from '@/services/auth-manager.service';
 
 interface SearchResults {
   users: User[];
@@ -96,7 +97,7 @@ export function SearchPageContent() {
 
     setLoading(true);
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       if (!token) {
         toast.error('Vous devez être connecté pour effectuer une recherche');
         return;
@@ -200,7 +201,7 @@ export function SearchPageContent() {
   // Rejoindre un groupe
   const handleJoinGroup = async (groupId: string) => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       const response = await fetch(buildApiUrl(`/groups/${groupId}/join`), {
         method: 'POST',
         headers: {
@@ -225,7 +226,7 @@ export function SearchPageContent() {
   // Démarrer une conversation
   const handleStartConversation = async (userId: string) => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       const response = await fetch(buildApiUrl('/api/conversations'), {
         method: 'POST',
         headers: {

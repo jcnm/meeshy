@@ -36,12 +36,14 @@ import { communitiesService } from '@/services/communities.service';
 import { conversationsService } from '@/services/conversations.service';
 import type { Conversation } from '@shared/types';
 import { generateCommunityIdentifier, validateCommunityIdentifier, sanitizeCommunityIdentifier } from '@/utils/community-identifier';
+import { authManager } from '@/services/auth-manager.service';
 
 interface GroupsLayoutProps {
   selectedGroupIdentifier?: string;
 }
 
 export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const user = useUser(); const isAuthChecking = useIsAuthChecking();
@@ -163,7 +165,7 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
   // Charger les groupes
   const loadGroups = useCallback(async () => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       if (!token) {
         console.log('No auth token found');
         return;
@@ -185,7 +187,7 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
         setGroups(Array.isArray(data) ? data : []);
       } else if (response.status === 401) {
         console.log('Unauthorized, removing token');
-        localStorage.removeItem('auth_token');
+        authManager.clearAllSessions();
         router.push('/');
       } else {
         console.error('Groups API error:', response.status, response.statusText);
@@ -203,7 +205,7 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
     console.log('[DEBUG] loadGroupDetails called with identifier:', identifier);
     
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       if (!token) {
         console.log('[DEBUG] No auth token found');
         toast.error('Token d\'authentification manquant. Veuillez vous reconnecter.');
@@ -214,8 +216,7 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
       if (!isValidJWTFormat(token)) {
         console.error('[DEBUG] Invalid JWT token format:', token);
         toast.error('Token d\'authentification invalide. Veuillez vous reconnecter.');
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('user');
+        authManager.clearAllSessions();
         return;
       }
 
@@ -242,8 +243,7 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
         // Gérer les erreurs d'authentification spécifiquement
         if (response.status === 401 || response.status === 403) {
           console.log('[DEBUG] Authentication error, clearing auth data');
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('user');
+          authManager.clearAllSessions();
           toast.error('Session expirée. Veuillez vous reconnecter.');
           // Rediriger vers la page de connexion
           window.location.href = '/login';
@@ -273,7 +273,7 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
 
     setIsCheckingIdentifier(true);
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       if (!token) {
         setIsCheckingIdentifier(false);
         return;
@@ -352,7 +352,7 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
     }
 
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       if (!token) return;
 
       // Ajouter le préfixe mshy_ pour l'envoi au serveur

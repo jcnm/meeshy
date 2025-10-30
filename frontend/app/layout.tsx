@@ -10,15 +10,50 @@ import { ClientOnly } from "@/components/common/client-only";
 import { MessageViewProvider } from "@/hooks/use-message-view-state";
 import { defaultFont, getAllFontVariables } from "@/lib/fonts";
 import { preloadCriticalComponents } from "@/lib/lazy-components";
+import { CallManager } from "@/components/video-call";
 import "@/utils/console-override"; // 🔇 Désactive console.log en production
 
 export const metadata: Metadata = {
-  title: 'Meeshy',
-  description: 'Messagerie multilingue en temps réel',
+  title: 'Meeshy - Messagerie multilingue en temps réel',
+  description: 'Discutez avec le monde entier dans votre langue. Traduction automatique en temps réel pour plus de 100 langues. Rejoignez des conversations mondiales sans barrière linguistique.',
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
+  },
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'fr_FR',
+    url: 'https://meeshy.me',
+    siteName: 'Meeshy',
+    title: 'Meeshy - Messagerie multilingue en temps réel',
+    description: 'Discutez avec le monde entier dans votre langue. Traduction automatique en temps réel pour plus de 100 langues. Rejoignez des conversations mondiales sans barrière linguistique.',
+    images: [
+      {
+        url: 'https://meeshy.me/images/meeshy-og-welcome.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Meeshy - Bienvenue dans la messagerie multilingue',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Meeshy - Messagerie multilingue en temps réel',
+    description: 'Discutez avec le monde entier dans votre langue. Traduction automatique en temps réel pour plus de 100 langues.',
+    images: ['https://meeshy.me/images/meeshy-og-welcome.jpg'],
+    creator: '@meeshy_app',
   },
 };
 
@@ -41,6 +76,7 @@ export default function RootLayout({
               <ErrorBoundary>
                 <ClientOnly>
                   {children}
+                  <CallManager />
                 </ClientOnly>
               </ErrorBoundary>
             </MessageViewProvider>

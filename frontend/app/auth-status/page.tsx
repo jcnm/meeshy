@@ -4,6 +4,7 @@ import { useUser, useIsAuthChecking } from '@/stores';
 import { useAuth } from '@/hooks/use-auth';
 import { useAuthGuard } from '@/hooks/use-auth-guard';
 import { useState, useEffect } from 'react';
+import { authManager } from '@/services/auth-manager.service';
 
 export default function AuthStatusPage() {
   const user = useUser(); const isAuthChecking = useIsAuthChecking();
@@ -13,8 +14,8 @@ export default function AuthStatusPage() {
 
   useEffect(() => {
     // Récupérer les données localStorage
-    const token = localStorage.getItem('auth_token');
-    const userData = localStorage.getItem('user');
+    const token = authManager.getAuthToken();
+    const userData = JSON.stringify(authManager.getCurrentUser() || {});
     
     setLocalStorageData({
       auth_token: token ? `${token.substring(0, 20)}...` : null,

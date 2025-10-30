@@ -1,9 +1,18 @@
 {
   "links": {
     "title": "Sharing links",
+    "subtitle": "Create and manage your sharing links to easily invite participants to your conversations",
     "createLink": "Create a link",
     "unnamedLink": "Unnamed link",
     "conversation": "Conversation",
+    "linksFound": "{count} link found",
+    "linksFound_plural": "{count} links found",
+    "loadingLinks": "Loading your links...",
+    "loadingTrackingLinks": "Loading your tracking links...",
+    "noLinksFound": "No links found",
+    "noLinksFoundTryAnother": "Try modifying your search or create a new link",
+    "noLinksFoundCreateFirst": "Create your first link to start inviting participants to your conversations",
+    "activationNotImplemented": "Activation not yet implemented",
     "linkNameTemplate": {
       "default": "{participantLimit} link for conversation '{conversationTitle}' valid for {duration}",
       "openToAll": "open to all",
@@ -33,9 +42,13 @@
       "expires": "Expires",
       "uses": "Uses",
       "active": "Active",
+      "totalLinks": "Total links",
       "totalClicks": "Total clicks",
       "uniqueClicks": "Unique clicks",
-      "lastClicked": "Last clicked"
+      "lastClicked": "Last clicked",
+      "never": "Never",
+      "avgTotal": "Avg. total clicks",
+      "avgUnique": "Avg. unique clicks"
     },
     "actions": {
       "menu": "Menu",
@@ -205,19 +218,50 @@
     "tracking": {
       "title": "Tracked Links",
       "createLink": "Create tracked link",
+      "createLinkDescription": "Create a short tracking link to monitor clicks and engagement",
       "originalUrl": "Original URL",
       "shortUrl": "Short URL",
       "trackingUrl": "Tracking URL",
       "noLinks": "No tracked links",
       "noLinksDescription": "Create your first tracked link to monitor clicks and engagement",
+      "shareThisLink": "Share this short link to track clicks",
+      "enterUrlToShorten": "Enter the URL you want to shorten and track",
+      "urlLabel": "URL to track",
+      "advancedOptions": "Advanced Options",
+      "optionalSettings": "Optional settings for your tracking link",
+      "expirationLabel": "Link expiration",
+      "associateConversation": "Associate with conversation",
+      "associateConversationDescription": "Optionally link this to a conversation for better tracking",
+      "creating": "Creating...",
+      "createButton": "Create tracking link",
+      "expirationOptions": {
+        "never": "Never expires",
+        "1day": "1 day",
+        "7days": "7 days",
+        "30days": "30 days",
+        "90days": "90 days",
+        "1year": "1 year"
+      },
       "stats": {
         "totalLinks": "Total links",
         "totalClicks": "Total clicks",
         "uniqueClicks": "Unique visitors",
-        "activeLinks": "Active links"
+        "activeLinks": "Active links",
+        "conversionRate": "Conversion rate",
+        "lastClick": "Last click",
+        "never": "Never"
       },
       "details": {
         "title": "Tracking Link Statistics",
+        "linkNotFound": "Link not found",
+        "linkNotFoundDescription": "This tracking link does not exist or has been deleted",
+        "backToLinks": "Back to links",
+        "linkInformation": "Link Information",
+        "token": "Token",
+        "createdOn": "Created on",
+        "shortUrl": "Short URL",
+        "originalUrl": "Original URL",
+        "evolutionOverTime": "Evolution over time",
         "overview": "Overview",
         "performance": "Performance",
         "geography": "Geography",
@@ -230,7 +274,12 @@
         "clicksByDate": "Clicks over time",
         "topReferrers": "Top referrers",
         "referrer": "Referrer",
-        "clicks": "Clicks"
+        "clicks": "Clicks",
+        "clicksCount": "{count} clicks",
+        "uniqueCount": "{count} unique",
+        "unknown": "Unknown",
+        "direct": "Direct",
+        "copy": "Copy"
       },
       "actions": {
         "viewStats": "View statistics",
@@ -239,7 +288,10 @@
         "activate": "Activate"
       },
       "success": {
-        "created": "Tracking link created successfully",
+        "created": "Tracking link created successfully and copied to clipboard",
+        "createdNoCopy": "Tracking link created successfully",
+        "linkCreated": "Link created successfully!",
+        "linkCreatedDescription": "Your tracking link is ready to use",
         "copied": "Link copied to clipboard",
         "deactivated": "Link deactivated successfully",
         "activated": "Link activated successfully",
@@ -250,7 +302,9 @@
         "createFailed": "Error creating tracking link",
         "statsFailed": "Error loading statistics",
         "deactivateFailed": "Error deactivating link",
-        "deleteFailed": "Error deleting link"
+        "deleteFailed": "Error deleting link",
+        "urlRequired": "Please enter a URL",
+        "invalidUrl": "Please enter a valid URL"
       }
     }
   }
