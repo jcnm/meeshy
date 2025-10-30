@@ -153,3 +153,8 @@ translator/.venv/
 logs/
 translator/scripts/jinu_the_wisdom_one_year_young_lion.zip
 translator/scripts/images
+# Version files (auto-generated)
+**/shared/version.txt
+frontend/shared/version.txt
+gateway/shared/version.txt
+translator/shared/version.txt
