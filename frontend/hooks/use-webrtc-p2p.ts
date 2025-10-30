@@ -51,20 +51,26 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
       let service = webrtcServicesRef.current.get(participantId);
 
       if (!service) {
-        logger.debug('[useWebRTCP2P] Creating new WebRTC service', { participantId, callId });
+        logger.debug('[useWebRTCP2P]', 'Creating new WebRTC service', { participantId, callId });
 
         service = new WebRTCService({
           onIceCandidate: (candidate) => {
             // Send ICE candidate via Socket.IO
             const socket = meeshySocketIOService.getSocket();
             if (!socket) {
-              logger.error('[useWebRTCP2P] No socket available for ICE candidate');
+              logger.error('[useWebRTCP2P]', 'No socket available for ICE candidate');
+              return;
+            }
+
+            // Skip if userId not available yet
+            if (!userId) {
+              logger.error('[useWebRTCP2P]', 'Cannot send ICE candidate: userId not available');
               return;
             }
 
             const signal: WebRTCSignal = {
               type: 'ice-candidate',
-              from: userId || '',
+              from: userId,
               to: participantId,
               signal: candidate.toJSON(),
             };
@@ -74,11 +80,11 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
               signal,
             } as CallSignalEvent);
 
-            logger.debug('[useWebRTCP2P] ICE candidate sent', { participantId, callId });
+            logger.debug('[useWebRTCP2P]', 'ICE candidate sent', { participantId, callId });
           },
 
           onTrack: (event) => {
-            logger.info('[useWebRTCP2P] Remote track received', {
+            logger.info('[useWebRTCP2P]', 'Remote track received', {
               participantId,
               trackKind: event.track.kind,
             });
@@ -90,7 +96,7 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
           },
 
           onConnectionStateChange: (state) => {
-            logger.debug('[useWebRTCP2P] Connection state changed', {
+            logger.debug('[useWebRTCP2P]', 'Connection state changed', {
               participantId,
               state,
             });
@@ -107,7 +113,7 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
           },
 
           onIceConnectionStateChange: (state) => {
-            logger.debug('[useWebRTCP2P] ICE connection state changed', {
+            logger.debug('[useWebRTCP2P]', 'ICE connection state changed', {
               participantId,
               state,
             });
@@ -121,7 +127,7 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
           },
 
           onError: (error) => {
-            logger.error('[useWebRTCP2P] WebRTC error', { error });
+            logger.error('[useWebRTCP2P]', 'WebRTC error', { error });
             setError(error.message);
             toast.error(error.message);
             onError?.(error);
@@ -141,7 +147,7 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
    */
   const initializeLocalStream = useCallback(async () => {
     try {
-      logger.debug('[useWebRTCP2P] Initializing local stream', { callId });
+      logger.debug('[useWebRTCP2P]', 'Initializing local stream', { callId });
       setConnecting(true);
       setError(null);
 
@@ -152,10 +158,10 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
       // Add to store
       setLocalStream(stream);
 
-      logger.info('[useWebRTCP2P] Local stream initialized', { callId });
+      logger.info('[useWebRTCP2P]', 'Local stream initialized', { callId });
       return stream;
     } catch (error) {
-      logger.error('[useWebRTCP2P] Failed to initialize local stream', { error });
+      logger.error('[useWebRTCP2P]', 'Failed to initialize local stream', { error });
       setConnecting(false);
 
       const message =
@@ -169,13 +175,52 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
   }, [callId, setLocalStream, setConnecting, setError, onError]);
 
   /**
+   * Ensure local stream is ready (wait if not initialized yet)
+   */
+  const ensureLocalStream = useCallback(async (): Promise<MediaStream> => {
+    // If we already have a local stream, return it
+    if (localStream) {
+      logger.debug('[useWebRTCP2P]', '✅ Local stream already exists, returning it', { callId });
+      return localStream;
+    }
+
+    // Otherwise, initialize it
+    logger.debug('[useWebRTCP2P]', 'Local stream not ready, initializing...', { callId });
+    const stream = await initializeLocalStream();
+    logger.debug('[useWebRTCP2P]', '🔍 Stream returned from initializeLocalStream:', {
+      callId,
+      streamExists: !!stream,
+      streamId: stream?.id,
+      trackCount: stream?.getTracks().length
+    });
+    return stream;
+  }, [localStream, initializeLocalStream, callId]);
+
+  /**
    * Create and send offer
    */
   const createOffer = useCallback(
     async (targetUserId: string) => {
       try {
-        logger.debug('[useWebRTCP2P] Creating offer', { targetUserId, callId });
+        logger.debug('[useWebRTCP2P]', 'Creating offer', { targetUserId, callId });
         setConnecting(true);
+
+        // Ensure local stream is ready before creating offer
+        const stream = await ensureLocalStream();
+
+        logger.debug('[useWebRTCP2P]', '🔍 Stream received in createOffer:', {
+          callId,
+          targetUserId,
+          streamExists: !!stream,
+          streamId: stream?.id,
+          trackCount: stream?.getTracks().length
+        });
+
+        // Use the stream returned directly from ensureLocalStream instead of reading from store
+        // This avoids race conditions with Zustand state updates
+        if (!stream) {
+          throw new Error('Local stream not available after initialization');
+        }
 
         const service = getWebRTCService(targetUserId);
 
@@ -184,11 +229,9 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
         addPeerConnection(targetUserId, peerConnection);
 
         // Add local stream tracks
-        if (localStream) {
-          localStream.getTracks().forEach((track) => {
-            service.addTrack(track, localStream);
-          });
-        }
+        stream.getTracks().forEach((track) => {
+          service.addTrack(track, stream);
+        });
 
         // Create offer
         const offer = await service.createOffer();
@@ -199,9 +242,14 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
           throw new Error('No socket connection');
         }
 
+        // Ensure userId is available
+        if (!userId) {
+          throw new Error('Cannot create offer: User ID not available');
+        }
+
         const signal: WebRTCSignal = {
           type: 'offer',
-          from: userId || '',
+          from: userId,
           to: targetUserId,
           signal: offer,
         };
@@ -211,9 +259,9 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
           signal,
         } as CallSignalEvent);
 
-        logger.info('[useWebRTCP2P] Offer created and sent', { targetUserId, callId });
+        logger.info('[useWebRTCP2P]', 'Offer created and sent', { targetUserId, callId });
       } catch (error) {
-        logger.error('[useWebRTCP2P] Failed to create offer', { error });
+        logger.error('[useWebRTCP2P]', 'Failed to create offer', { error });
         setConnecting(false);
 
         const message = error instanceof Error ? error.message : 'Failed to create offer';
@@ -222,7 +270,7 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
         onError?.(error instanceof Error ? error : new Error(message));
       }
     },
-    [callId, localStream, getWebRTCService, addPeerConnection, setConnecting, setError, onError]
+    [callId, ensureLocalStream, getWebRTCService, addPeerConnection, setConnecting, setError, onError, userId]
   );
 
   /**
@@ -231,8 +279,17 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
   const handleOffer = useCallback(
     async (offer: RTCSessionDescriptionInit, fromUserId: string) => {
       try {
-        logger.debug('[useWebRTCP2P] Handling offer', { fromUserId, callId });
+        logger.debug('[useWebRTCP2P]', 'Handling offer', { fromUserId, callId });
         setConnecting(true);
+
+        // Ensure local stream is ready before handling offer
+        const stream = await ensureLocalStream();
+
+        // CRITICAL: Use stream returned directly instead of reading from store
+        // This avoids race conditions with Zustand state updates
+        if (!stream) {
+          throw new Error('Local stream not available after initialization');
+        }
 
         const service = getWebRTCService(fromUserId);
 
@@ -241,11 +298,9 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
         addPeerConnection(fromUserId, peerConnection);
 
         // Add local stream tracks
-        if (localStream) {
-          localStream.getTracks().forEach((track) => {
-            service.addTrack(track, localStream);
-          });
-        }
+        stream.getTracks().forEach((track) => {
+          service.addTrack(track, stream);
+        });
 
         // Create answer
         const answer = await service.createAnswer(offer);
@@ -256,9 +311,14 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
           throw new Error('No socket connection');
         }
 
+        // Ensure userId is available
+        if (!userId) {
+          throw new Error('Cannot send answer: User ID not available');
+        }
+
         const signal: WebRTCSignal = {
           type: 'answer',
-          from: userId || '',
+          from: userId,
           to: fromUserId,
           signal: answer,
         };
@@ -275,9 +335,9 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
         }
         iceCandidateQueueRef.current.delete(fromUserId);
 
-        logger.info('[useWebRTCP2P] Answer created and sent', { fromUserId, callId });
+        logger.info('[useWebRTCP2P]', 'Answer created and sent', { fromUserId, callId });
       } catch (error) {
-        logger.error('[useWebRTCP2P] Failed to handle offer', { error });
+        logger.error('[useWebRTCP2P]', 'Failed to handle offer', { error });
         setConnecting(false);
 
         const message = error instanceof Error ? error.message : 'Failed to handle offer';
@@ -286,7 +346,7 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
         onError?.(error instanceof Error ? error : new Error(message));
       }
     },
-    [callId, localStream, getWebRTCService, addPeerConnection, setConnecting, setError, onError]
+    [callId, ensureLocalStream, getWebRTCService, addPeerConnection, setConnecting, setError, onError, userId]
   );
 
   /**
@@ -295,7 +355,7 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
   const handleAnswer = useCallback(
     async (answer: RTCSessionDescriptionInit, fromUserId: string) => {
       try {
-        logger.debug('[useWebRTCP2P] Handling answer', { fromUserId, callId });
+        logger.debug('[useWebRTCP2P]', 'Handling answer', { fromUserId, callId });
 
         const service = webrtcServicesRef.current.get(fromUserId);
         if (!service) {
@@ -312,9 +372,9 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
         }
         iceCandidateQueueRef.current.delete(fromUserId);
 
-        logger.info('[useWebRTCP2P] Answer handled successfully', { fromUserId, callId });
+        logger.info('[useWebRTCP2P]', 'Answer handled successfully', { fromUserId, callId });
       } catch (error) {
-        logger.error('[useWebRTCP2P] Failed to handle answer', { error });
+        logger.error('[useWebRTCP2P]', 'Failed to handle answer', { error });
 
         const message = error instanceof Error ? error.message : 'Failed to handle answer';
         setError(message);
@@ -331,7 +391,7 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
   const handleIceCandidate = useCallback(
     async (candidate: RTCIceCandidateInit, fromUserId: string) => {
       try {
-        logger.debug('[useWebRTCP2P] Handling ICE candidate', { fromUserId, callId });
+        logger.debug('[useWebRTCP2P]', 'Handling ICE candidate', { fromUserId, callId });
 
         const service = webrtcServicesRef.current.get(fromUserId);
         if (!service) {
@@ -339,16 +399,16 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
           const queue = iceCandidateQueueRef.current.get(fromUserId) || [];
           queue.push(candidate);
           iceCandidateQueueRef.current.set(fromUserId, queue);
-          logger.debug('[useWebRTCP2P] ICE candidate queued', { fromUserId });
+          logger.debug('[useWebRTCP2P]', 'ICE candidate queued', { fromUserId });
           return;
         }
 
         // Add ICE candidate to peer connection
         await service.addIceCandidate(candidate);
 
-        logger.debug('[useWebRTCP2P] ICE candidate added', { fromUserId, callId });
+        logger.debug('[useWebRTCP2P]', 'ICE candidate added', { fromUserId, callId });
       } catch (error) {
-        logger.error('[useWebRTCP2P] Failed to handle ICE candidate', { error });
+        logger.error('[useWebRTCP2P]', 'Failed to handle ICE candidate', { error });
         // Don't show error to user - ICE candidates can fail individually
       }
     },
@@ -359,7 +419,7 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
    * Cleanup on unmount or call end
    */
   const cleanup = useCallback(() => {
-    logger.debug('[useWebRTCP2P] Cleaning up WebRTC connections', { callId });
+    logger.debug('[useWebRTCP2P]', 'Cleaning up WebRTC connections', { callId });
 
     // Close all WebRTC services
     webrtcServicesRef.current.forEach((service, participantId) => {
@@ -370,7 +430,7 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
     webrtcServicesRef.current.clear();
     iceCandidateQueueRef.current.clear();
 
-    logger.info('[useWebRTCP2P] Cleanup completed', { callId });
+    logger.info('[useWebRTCP2P]', 'Cleanup completed', { callId });
   }, [callId, removePeerConnection]);
 
   /**
@@ -388,7 +448,7 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
   useEffect(() => {
     const socket = meeshySocketIOService.getSocket();
     if (!socket) {
-      logger.warn('[useWebRTCP2P] No socket available for signaling');
+      logger.warn('[useWebRTCP2P]', 'No socket available for signaling');
       return;
     }
 
@@ -396,7 +456,7 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
       if (event.callId !== callId) return;
 
       const { signal } = event;
-      logger.debug('[useWebRTCP2P] Received signal', {
+      logger.debug('[useWebRTCP2P]', 'Received signal', {
         type: signal.type,
         from: signal.from,
         callId,
@@ -416,7 +476,7 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
           break;
 
         default:
-          logger.warn('[useWebRTCP2P] Unknown signal type', { type: signal.type });
+          logger.warn('[useWebRTCP2P]', 'Unknown signal type', { type: signal.type });
       }
     };
 
@@ -431,6 +491,7 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
     connectionState,
     iceConnectionState,
     initializeLocalStream,
+    ensureLocalStream,
     createOffer,
     cleanup,
   };

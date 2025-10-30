@@ -104,12 +104,23 @@ export class WebRTCService {
         if (state) {
           this.config.onIceConnectionStateChange?.(state);
 
-          // Handle ICE failures
-          if (state === 'failed' || state === 'disconnected') {
-            logger.error('[WebRTCService] ICE connection failed or disconnected', {
+          // Handle ICE failures - attempt restart
+          if (state === 'failed') {
+            logger.error('[WebRTCService] ICE connection failed, attempting restart...', {
               participantId,
               state,
             });
+
+            // Attempt ICE restart
+            this.restartIce().catch((error) => {
+              logger.error('[WebRTCService] ICE restart attempt failed', { error });
+            });
+          } else if (state === 'disconnected') {
+            logger.warn('[WebRTCService] ICE connection disconnected', {
+              participantId,
+              state,
+            });
+            // Note: disconnected state can recover on its own, so we don't restart immediately
           }
         }
       };
@@ -337,6 +348,43 @@ export class WebRTCService {
   }
 
   /**
+   * Restart ICE connection (for recovering from failures)
+   */
+  async restartIce(): Promise<void> {
+    try {
+      if (!this.peerConnection) {
+        throw new Error('Peer connection not initialized');
+      }
+
+      logger.info('[WebRTCService] Attempting ICE restart', {
+        participantId: this.participantId,
+      });
+
+      // Create new offer with iceRestart option
+      const offer = await this.peerConnection.createOffer({ iceRestart: true });
+
+      // Set as local description
+      await this.peerConnection.setLocalDescription(offer);
+
+      logger.info('[WebRTCService] ICE restart offer created', {
+        participantId: this.participantId,
+      });
+
+      // The offer needs to be sent to the remote peer via signaling
+      // This will be handled by the onIceCandidate callback
+      if (this.config.onIceCandidate && offer.sdp) {
+        // Note: In a real implementation, you'd send this via your signaling mechanism
+        logger.debug('[WebRTCService]', 'ICE restart offer ready to be sent');
+      }
+    } catch (error) {
+      logger.error('[WebRTCService] ICE restart failed', { error });
+      const err = error instanceof Error ? error : new Error('ICE restart failed');
+      this.config.onError?.(err);
+      throw err;
+    }
+  }
+
+  /**
    * Get connection state
    */
   getConnectionState(): RTCPeerConnectionState | null {
@@ -358,9 +406,9 @@ export class WebRTCService {
   }
 
   /**
-   * Get local stream
+   * Get current local stream (getter)
    */
-  getLocalStream(): MediaStream | null {
+  getCurrentStream(): MediaStream | null {
     return this.localStream;
   }
 

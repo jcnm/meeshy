@@ -10,6 +10,7 @@ import { TranslationService, MessageData } from '../services/TranslationService'
 import { MaintenanceService } from '../services/maintenance.service';
 import { MessagingService } from '../services/MessagingService';
 import { CallEventsHandler } from './CallEventsHandler';
+import { CallService } from '../services/CallService';
 import { validateMessageLength } from '../config/message-limits';
 import jwt from 'jsonwebtoken';
 import type {
@@ -48,6 +49,7 @@ export class MeeshySocketIOManager {
   private maintenanceService: MaintenanceService;
   private messagingService: MessagingService;
   private callEventsHandler: CallEventsHandler;
+  private callService: CallService;
 
   // Mapping des utilisateurs connectés
   private connectedUsers: Map<string, SocketUser> = new Map();
@@ -68,6 +70,7 @@ export class MeeshySocketIOManager {
     this.maintenanceService = new MaintenanceService(prisma);
     this.messagingService = new MessagingService(prisma, this.translationService);
     this.callEventsHandler = new CallEventsHandler(prisma);
+    this.callService = new CallService(prisma);
 
     // CORRECTION: Configurer le callback de broadcast pour le MaintenanceService
     this.maintenanceService.setStatusBroadcastCallback(
@@ -1489,18 +1492,50 @@ export class MeeshySocketIOManager {
 
   private async _handleDisconnection(socket: any) {
     const userId = this.socketToUser.get(socket.id);
-    
+
     if (userId) {
       const user = this.connectedUsers.get(userId);
       const isAnonymous = user?.isAnonymous || false;
-      
+
       // CORRECTION CRITIQUE: Ne supprimer que si c'est bien la socket active actuelle
       // (en cas de reconnexion rapide, une nouvelle socket peut avoir été créée)
       const currentUser = this.connectedUsers.get(userId);
       if (currentUser && currentUser.socketId === socket.id) {
+        // IMPORTANT: Automatically leave any active video/audio calls
+        try {
+          const activeParticipations = await this.prisma.callParticipant.findMany({
+            where: {
+              userId,
+              leftAt: null // Still in call
+            },
+            include: {
+              callSession: true
+            }
+          });
+
+          if (activeParticipations.length > 0) {
+            console.log(`📞 User ${userId} disconnected while in ${activeParticipations.length} active call(s). Auto-leaving...`);
+
+            for (const participation of activeParticipations) {
+              try {
+                // Use CallService to properly leave the call
+                await this.callService.leaveCall({
+                  callId: participation.callSessionId,
+                  userId
+                });
+                console.log(`✅ User ${userId} auto-left call ${participation.callSessionId}`);
+              } catch (error) {
+                console.error(`❌ Error auto-leaving call ${participation.callSessionId}:`, error);
+              }
+            }
+          }
+        } catch (error) {
+          console.error(`❌ Error checking/leaving active calls for user ${userId}:`, error);
+        }
+
         this.connectedUsers.delete(userId);
         this.socketToUser.delete(socket.id);
-        
+
         // CORRECTION: Mettre à jour l'état en ligne/hors ligne selon le type d'utilisateur et broadcaster
         if (isAnonymous) {
           await this.maintenanceService.updateAnonymousOnlineStatus(userId, false, true);
@@ -1515,7 +1550,7 @@ export class MeeshySocketIOManager {
         console.log(`🔌 Déconnexion socket obsolète ignorée: ${socket.id} pour utilisateur ${userId}`);
       }
     }
-    
+
     this.stats.active_connections--;
   }
 

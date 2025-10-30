@@ -212,10 +212,12 @@ export interface CallInitiateEvent {
  */
 export interface CallInitiatedEvent {
   readonly callId: string;
+  readonly conversationId: string;
   readonly mode: CallMode;
   readonly initiator: {
     userId: string;
     username: string;
+    avatar?: string;
   };
   readonly participants: CallParticipant[];
 }

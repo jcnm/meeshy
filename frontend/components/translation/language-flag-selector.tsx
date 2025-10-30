@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { SUPPORTED_LANGUAGES, formatLanguageName } from '@/utils/language-detection';
 import { INTERFACE_LANGUAGES } from '@/types/frontend';
@@ -52,36 +52,24 @@ export function LanguageFlagSelector({
   );
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
           role="combobox"
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "justify-center gap-2 h-8 sm:h-9 px-3 border-gray-200 hover:border-blue-300",
+            "justify-center h-7 w-7 sm:h-8 sm:w-8 px-0 border-gray-200 hover:border-blue-300",
             className
           )}
         >
-          <span className="text-sm sm:text-base">
+          <span className="text-lg sm:text-xl">
             {selectedLanguage?.flag || '🌐'}
           </span>
-          <span className="text-xs sm:text-sm font-medium">
-            {selectedLanguage?.name || 'Language'}
-          </span>
         </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        className={cn(
-          isMobile
-            ? "p-0 bg-transparent border-0 shadow-none flex items-center justify-center"
-            : "p-2 w-auto"
-        )}
-        side={isMobile ? undefined : "top"}
-        align={isMobile ? undefined : "center"}
-        sideOffset={isMobile ? undefined : 4}
-      >
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="center" side="top" sideOffset={8} className="p-2 w-[180px] max-w-[96vw] sm:max-w-[320px] min-w-[140px]">
         <div
           className={cn(
             isMobile
@@ -117,7 +105,7 @@ export function LanguageFlagSelector({
             </Button>
           ))}
         </div>
-      </PopoverContent>
-    </Popover>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

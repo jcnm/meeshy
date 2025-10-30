@@ -120,13 +120,24 @@ export class CallEventsHandler {
           settings: data.settings as any
         });
 
+        // CRITICAL: Initiator must join the call room to receive participant-joined events
+        socket.join(`call:${callSession.id}`);
+
+        logger.info('✅ Socket: Initiator joined call room', {
+          callId: callSession.id,
+          userId,
+          room: `call:${callSession.id}`
+        });
+
         // Prepare event data
         const initiatedEvent: CallInitiatedEvent = {
           callId: callSession.id,
+          conversationId: data.conversationId,
           mode: callSession.mode,
           initiator: {
             userId: callSession.initiator.id,
-            username: callSession.initiator.username
+            username: callSession.initiator.username,
+            avatar: callSession.initiator.avatar
           },
           participants: callSession.participants.map((p) => ({
             id: p.id,
@@ -149,7 +160,16 @@ export class CallEventsHandler {
         socket.emit(CALL_EVENTS.INITIATED, initiatedEvent);
 
         // Broadcast to all conversation members
-        io.to(`conversation:${data.conversationId}`).emit(
+        const roomName = `conversation_${data.conversationId}`;
+        const socketsInRoom = await io.in(roomName).fetchSockets();
+
+        logger.info('📡 Broadcasting call:initiated', {
+          roomName,
+          socketsCount: socketsInRoom.length,
+          socketIds: socketsInRoom.map(s => s.id)
+        });
+
+        io.to(roomName).emit(
           CALL_EVENTS.INITIATED,
           initiatedEvent
         );
@@ -266,8 +286,9 @@ export class CallEventsHandler {
           iceServers // Dynamic credentials from TURNCredentialService
         });
 
-        // Broadcast to all call participants
-        io.to(`call:${data.callId}`).emit(
+        // Broadcast to all OTHER call participants (exclude the participant who just joined)
+        // They already received their confirmation via call:join
+        socket.to(`call:${data.callId}`).emit(
           CALL_EVENTS.PARTICIPANT_JOINED,
           joinedEvent
         );
@@ -369,7 +390,7 @@ export class CallEventsHandler {
           leftEvent
         );
 
-        // If call ended, broadcast to conversation
+        // If call ended, broadcast to BOTH call room AND conversation room
         if (callSession.status === 'ended') {
           const endedEvent: CallEndedEvent = {
             callId: callSession.id,
@@ -377,7 +398,14 @@ export class CallEventsHandler {
             endedBy: userId
           };
 
-          io.to(`conversation:${callSession.conversationId}`).emit(
+          // Broadcast to call room (for active participants)
+          io.to(`call:${data.callId}`).emit(
+            CALL_EVENTS.ENDED,
+            endedEvent
+          );
+
+          // Also broadcast to conversation room (for users who declined/weren't in call yet)
+          io.to(`conversation_${callSession.conversationId}`).emit(
             CALL_EVENTS.ENDED,
             endedEvent
           );
@@ -511,7 +539,7 @@ export class CallEventsHandler {
 
         // CVE-001: Forward signal only to target participant (not broadcast to entire room)
         // This prevents signal injection to unintended recipients
-        socket.to(`call:${data.callId}`).emit(CALL_EVENTS.SIGNAL_RECEIVED, data);
+        socket.to(`call:${data.callId}`).emit(CALL_EVENTS.SIGNAL, data);
 
         logger.info('✅ Socket: Signal forwarded', {
           callId: data.callId,
@@ -730,7 +758,7 @@ export class CallEventsHandler {
         };
 
         // Broadcast to conversation room
-        io.to(`conversation:${callSession.conversationId}`).emit(
+        io.to(`conversation_${callSession.conversationId}`).emit(
           CALL_EVENTS.ENDED,
           endedEvent
         );
