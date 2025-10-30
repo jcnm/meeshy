@@ -22,6 +22,7 @@ import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { toast } from 'sonner';
 import { adminService } from '@/services/admin.service';
 import { getDefaultPermissions } from '@/utils/user-adapter';
+import { authManager } from '@/services/auth-manager.service';
 
 interface AdminStats {
   totalUsers: number;
@@ -100,7 +101,7 @@ const AdminDashboard: React.FC = () => {
     const loadUserAndData = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem('auth_token');
+        const token = authManager.getAuthToken();
         if (!token) {
           router.push('/login');
           return;
@@ -112,7 +113,7 @@ const AdminDashboard: React.FC = () => {
         });
 
         if (!userResponse.ok) {
-          localStorage.removeItem('auth_token');
+          authManager.clearAllSessions();
           router.push('/login');
           return;
         }

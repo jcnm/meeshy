@@ -5,8 +5,8 @@
 
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { Download, File, Image as ImageIcon, FileText, Video, Music, ChevronRight, Grid3X3 } from 'lucide-react';
+import React, { useState, useMemo, useCallback } from 'react';
+import { Download, File, Image as ImageIcon, FileText, Video, Music, ChevronRight, Grid3X3, X } from 'lucide-react';
 import { Attachment, formatFileSize, getAttachmentType } from '../../shared/types/attachment';
 import {
   Tooltip,
@@ -15,17 +15,79 @@ import {
   TooltipTrigger,
 } from '../ui/tooltip';
 import { Button } from '../ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../ui/dialog';
 import { useI18n } from '@/hooks/useI18n';
+import { AttachmentService } from '@/services/attachmentService';
+import { toast } from 'sonner';
 
 interface MessageAttachmentsProps {
   attachments: Attachment[];
   onImageClick?: (attachmentId: string) => void;
+  /**
+   * ID de l'utilisateur courant (pour vérifier les permissions)
+   */
+  currentUserId?: string;
+  /**
+   * Token d'authentification
+   */
+  token?: string;
+  /**
+   * Callback appelé après suppression d'un attachment
+   */
+  onAttachmentDeleted?: (attachmentId: string) => void;
 }
 
-export function MessageAttachments({ attachments, onImageClick }: MessageAttachmentsProps) {
+export function MessageAttachments({
+  attachments,
+  onImageClick,
+  currentUserId,
+  token,
+  onAttachmentDeleted
+}: MessageAttachmentsProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [attachmentToDelete, setAttachmentToDelete] = useState<Attachment | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { t } = useI18n('common');
+
+  // Handler pour ouvrir la confirmation de suppression
+  const handleOpenDeleteConfirm = useCallback((attachment: Attachment, event: React.MouseEvent) => {
+    // Empêcher le clic normal
+    event.preventDefault();
+    event.stopPropagation();
+
+    setAttachmentToDelete(attachment);
+  }, []);
+
+  // Handler pour confirmer la suppression
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!attachmentToDelete || !token) return;
+
+    setIsDeleting(true);
+    try {
+      await AttachmentService.deleteAttachment(attachmentToDelete.id, token);
+      onAttachmentDeleted?.(attachmentToDelete.id);
+      toast.success('Fichier supprimé avec succès');
+      setAttachmentToDelete(null);
+    } catch (error) {
+      console.error('Erreur suppression attachment:', error);
+      toast.error('Impossible de supprimer le fichier');
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [attachmentToDelete, token, onAttachmentDeleted]);
+
+  // Handler pour annuler la suppression
+  const handleDeleteCancel = useCallback(() => {
+    setAttachmentToDelete(null);
+  }, []);
 
   // Détecter si on est sur mobile
   React.useEffect(() => {
@@ -76,21 +138,29 @@ export function MessageAttachments({ attachments, onImageClick }: MessageAttachm
     const type = getAttachmentType(attachment.mimeType);
     const extension = getExtension(attachment.originalName);
 
+    // Vérifier si l'utilisateur peut supprimer cet attachment
+    const canDelete = currentUserId === attachment.uploadedBy;
+
     // Image attachment - miniature cliquable
     if (type === 'image') {
       // Déterminer si on doit afficher en grand (moins de 5 images)
       const shouldDisplayLarge = imageAttachments.length < 5 && imageAttachments.length > 0;
-      
+
+      // Handler pour ouvrir la confirmation de suppression
+      const handleDeleteClick = (event: React.MouseEvent) => {
+        handleOpenDeleteConfirm(attachment, event);
+      };
+
       return (
         <TooltipProvider key={attachment.id}>
           <Tooltip delayDuration={300}>
             <TooltipTrigger asChild>
-              <div 
+              <div
                 className="relative group cursor-pointer flex-shrink-0 snap-start"
                 onClick={() => onImageClick?.(attachment.id)}
               >
                 <div className={`relative bg-gray-100 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden hover:border-blue-400 dark:hover:border-blue-500 transition-all hover:shadow-md dark:hover:shadow-blue-500/20 flex-shrink-0 ${
-                  shouldDisplayLarge 
+                  shouldDisplayLarge
                     ? isMobile ? 'w-24 h-24' : 'w-32 h-32'  // Taille plus grande pour moins de 5 images
                     : isMobile ? 'w-14 h-14' : 'w-16 h-16'   // Taille normale pour 5+ images
                 }`}>
@@ -101,6 +171,18 @@ export function MessageAttachments({ attachments, onImageClick }: MessageAttachm
                     loading="lazy"
                     decoding="async"
                   />
+
+                  {/* Bouton de suppression (visible si l'utilisateur a les droits) */}
+                  {canDelete && (
+                    <button
+                      onClick={handleDeleteClick}
+                      className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10"
+                      title="Supprimer"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+
                   {/* Extension badge */}
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-1 py-0.5">
                     <div className="text-white text-[9px] font-medium truncate">
@@ -154,15 +236,23 @@ export function MessageAttachments({ attachments, onImageClick }: MessageAttachm
     }
 
     // Autres types (document, video, text) - icône simple
+    // Handler pour ouvrir la confirmation de suppression
+    const handleDeleteClick = (event: React.MouseEvent) => {
+      handleOpenDeleteConfirm(attachment, event);
+    };
+
+    // Handler pour ouvrir le fichier
+    const handleOpenFile = () => {
+      window.open(attachment.fileUrl, '_blank');
+    };
+
     return (
       <TooltipProvider key={attachment.id}>
         <Tooltip delayDuration={300}>
           <TooltipTrigger asChild>
-            <a
-              href={attachment.fileUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="relative group flex-shrink-0 snap-start"
+            <div
+              className="relative group flex-shrink-0 snap-start cursor-pointer"
+              onClick={handleOpenFile}
             >
               <div className={`relative flex flex-col items-center justify-center bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-400 dark:hover:border-blue-500 transition-all hover:shadow-md dark:hover:shadow-blue-500/20 flex-shrink-0 ${
                 isMobile ? 'w-14 h-14' : 'w-16 h-16'
@@ -173,16 +263,28 @@ export function MessageAttachments({ attachments, onImageClick }: MessageAttachm
                     {extension.toUpperCase()}
                   </div>
                 </div>
-                {/* Download indicator */}
-                <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Download className="w-3 h-3 text-gray-600 dark:text-gray-400" />
-                </div>
+
+                {/* Bouton de suppression (visible si l'utilisateur a les droits) */}
+                {canDelete ? (
+                  <button
+                    onClick={handleDeleteClick}
+                    className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10"
+                    title="Supprimer"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                ) : (
+                  /* Download indicator si pas de droits de suppression */
+                  <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Download className="w-3 h-3 text-gray-600 dark:text-gray-400" />
+                  </div>
+                )}
               </div>
               {/* Size badge */}
               <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-gray-700 dark:bg-gray-600 text-white text-[8px] px-1 py-0.5 rounded-full whitespace-nowrap shadow-sm">
                 {formatFileSize(attachment.fileSize)}
               </div>
-            </a>
+            </div>
           </TooltipTrigger>
           <TooltipContent side="top">
             <div className="text-xs">
@@ -239,6 +341,44 @@ export function MessageAttachments({ attachments, onImageClick }: MessageAttachm
           </Button>
         </div>
       )}
+
+      {/* Dialog de confirmation de suppression */}
+      <Dialog open={!!attachmentToDelete} onOpenChange={(open) => !open && handleDeleteCancel()}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirmer la suppression</DialogTitle>
+            <DialogDescription>
+              Êtes-vous sûr de vouloir supprimer ce fichier ? Cette action est irréversible.
+            </DialogDescription>
+          </DialogHeader>
+          {attachmentToDelete && (
+            <div className="mt-2 p-2 bg-muted rounded-md">
+              <div className="text-sm font-medium text-foreground">
+                {attachmentToDelete.originalName}
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                Le fichier sera définitivement supprimé du serveur.
+              </div>
+            </div>
+          )}
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={handleDeleteCancel}
+              disabled={isDeleting}
+            >
+              Annuler
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Suppression...' : 'Supprimer'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

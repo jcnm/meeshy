@@ -551,7 +551,6 @@ class MeeshyServer {
 
     // Register admin report routes (at /api/admin/reports)
     await this.server.register(reportRoutes, { prefix: '/api/admin/reports' });
-
     // Register admin communities routes (at /api/admin/communities)
     //     await this.server.register(communityAdminRoutes, { prefix: '/api/admin/communities' });
 

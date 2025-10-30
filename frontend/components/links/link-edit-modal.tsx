@@ -25,6 +25,7 @@ import { useI18n } from '@/hooks/useI18n';
 import { toast } from 'sonner';
 import { buildApiUrl } from '@/lib/config';
 import { cn } from '@/lib/utils';
+import { authManager } from '@/services/auth-manager.service';
 
 interface LinkEditModalProps {
   link: ConversationLink;
@@ -34,6 +35,7 @@ interface LinkEditModalProps {
 }
 
 export function LinkEditModal({ link, isOpen, onClose, onUpdate }: LinkEditModalProps) {
+
   const { t } = useI18n('links');
   const [isLoading, setIsLoading] = useState(false);
   
@@ -54,7 +56,7 @@ export function LinkEditModal({ link, isOpen, onClose, onUpdate }: LinkEditModal
   const handleSubmit = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       const response = await fetch(buildApiUrl(`/api/links/${link.linkId}`), {
         method: 'PATCH',
         headers: {

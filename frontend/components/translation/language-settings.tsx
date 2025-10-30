@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { Globe, Languages, Target } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { buildApiUrl } from '@/lib/config';
+import { authManager } from '@/services/auth-manager.service';
 
 interface LanguageSettingsProps {
   user: UserType | null;
@@ -19,6 +20,7 @@ interface LanguageSettingsProps {
 }
 
 export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) {
+
   const { t } = useI18n('settings');
   const [settings, setSettings] = useState({
     systemLanguage: 'fr',
@@ -76,7 +78,7 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          'Authorization': `Bearer ${authManager.getAuthToken()}`
         },
         body: JSON.stringify(settings)
       });

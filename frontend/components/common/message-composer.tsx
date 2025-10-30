@@ -305,10 +305,27 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   }, [handleFilesSelected]);
 
   // Handler pour retirer un fichier - mémorisé
-  const handleRemoveFile = useCallback((index: number) => {
+  const handleRemoveFile = useCallback(async (index: number) => {
+    // Récupérer l'attachment uploadé correspondant à cet index
+    const attachmentToDelete = uploadedAttachments[index];
+
+    // Si l'attachment a un ID (déjà uploadé), le supprimer du backend
+    if (attachmentToDelete?.id) {
+      try {
+        console.log('[MessageComposer] Suppression attachment:', attachmentToDelete.id);
+        await AttachmentService.deleteAttachment(attachmentToDelete.id, token);
+        console.log('[MessageComposer] ✅ Attachment supprimé du backend');
+      } catch (error) {
+        console.error('[MessageComposer] ❌ Erreur suppression attachment:', error);
+        toast.error('Impossible de supprimer le fichier');
+        return; // Ne pas supprimer du state local si la suppression backend a échoué
+      }
+    }
+
+    // Supprimer du state local uniquement si la suppression backend a réussi
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
     setUploadedAttachments(prev => prev.filter((_, i) => i !== index));
-  }, []);
+  }, [uploadedAttachments, token]);
 
   // Clear attachments après envoi - mémorisé
   const clearAttachments = useCallback(() => {

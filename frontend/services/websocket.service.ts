@@ -58,8 +58,8 @@ class WebSocketService {
    * → Connexion globale pour toute la plateforme
    */
   private autoConnect(): void {
-    const authToken = localStorage.getItem('auth_token');
-    const sessionToken = localStorage.getItem('anonymous_session_token');
+    const authToken = authManager.getAuthToken();
+    const sessionToken = authManager.getAnonymousSession()?.token;
     
     if (!authToken && !sessionToken) {
       console.log('🔒 [WS] Pas de token, connexion différée');
@@ -77,8 +77,8 @@ class WebSocketService {
    * ÉTAPE 2: Créer et connecter le socket
    */
   private connect(): void {
-    const authToken = localStorage.getItem('auth_token');
-    const sessionToken = localStorage.getItem('anonymous_session_token');
+    const authToken = authManager.getAuthToken();
+    const sessionToken = authManager.getAnonymousSession()?.token;
     
     console.log('🔌 [WS] Connexion au WebSocket...');
     

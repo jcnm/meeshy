@@ -1,44 +1,45 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
-import { SUPPORTED_LANGUAGES, formatLanguageName } from '@/utils/language-detection';
-import { INTERFACE_LANGUAGES } from '@/types/frontend';
-import { type LanguageChoice } from '@/lib/bubble-stream-modules';
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
+import { SUPPORTED_LANGUAGES, formatLanguageName } from "@/utils/language-detection";
+import { INTERFACE_LANGUAGES } from "@/types/frontend";
+import { type LanguageChoice } from "@/lib/bubble-stream-modules";
 
 interface LanguageFlagSelectorProps {
-  value: string;
-  onValueChange: (value: string) => void;
-  disabled?: boolean;
-  className?: string;
-  choices?: LanguageChoice[]; // Choix de langues spécifiques ou utilise SUPPORTED_LANGUAGES par défaut
-  interfaceOnly?: boolean; // Si true, utilise seulement les langues d'interface (EN, FR, PT)
+	value: string;
+	onValueChange: (value: string) => void;
+	disabled?: boolean;
+	className?: string;
+	choices?: LanguageChoice[];
+	interfaceOnly?: boolean;
+	showLanguageName?: boolean;
 }
 
 export function LanguageFlagSelector({
-  value,
-  onValueChange,
-  disabled = false,
-  className,
-  choices,
-  interfaceOnly = false,
+	value,
+	onValueChange,
+	disabled = false,
+	className,
+	choices,
+	interfaceOnly = false,
+	showLanguageName = true,
 }: LanguageFlagSelectorProps) {
-  const [open, setOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+	const [open, setOpen] = useState(false);
+	const [isMobile, setIsMobile] = useState(false);
 
-  // Détection mobile
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+	useEffect(() => {
+		const checkMobile = () => setIsMobile(window.innerWidth < 768);
+		checkMobile();
+		window.addEventListener("resize", checkMobile);
+		return () => window.removeEventListener("resize", checkMobile);
+	}, []);
 
   // Utiliser les choix fournis, les langues d'interface limitées, ou les langues supportées par défaut
   const availableLanguages = choices 

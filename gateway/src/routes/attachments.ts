@@ -374,17 +374,24 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
 
   /**
    * DELETE /attachments/:attachmentId
-   * Supprime un attachment
+   * Supprime un attachment (support utilisateurs authentifiés ET anonymes)
+   *
+   * Droits d'accès:
+   * - L'auteur de l'attachment peut le supprimer
+   * - Les admins/modérateurs peuvent supprimer n'importe quel attachment
+   * - Les utilisateurs anonymes peuvent supprimer leurs propres attachments
    */
   fastify.delete(
     '/attachments/:attachmentId',
     {
-      onRequest: [fastify.authenticate],
+      onRequest: [authOptional], // Support auth normale ET anonyme
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const authContext = (request as any).authContext;
-        if (!authContext || !authContext.isAuthenticated) {
+
+        // Vérifier qu'il y a une authentification (normale ou anonyme)
+        if (!authContext || (!authContext.isAuthenticated && !authContext.isAnonymous)) {
           return reply.status(401).send({
             success: false,
             error: 'Authentication required',
@@ -392,8 +399,10 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
         }
 
         const { attachmentId } = request.params as { attachmentId: string };
+        const userId = authContext.userId;
+        const isAnonymous = authContext.isAnonymous;
 
-        // Vérifier que l'attachment existe et appartient à l'utilisateur
+        // Vérifier que l'attachment existe
         const attachment = await attachmentService.getAttachment(attachmentId);
         if (!attachment) {
           return reply.status(404).send({
@@ -402,20 +411,53 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
           });
         }
 
-        // Vérifier les permissions
-        const userId = authContext.userId;
-        const isAdmin = authContext.registeredUser?.role === 'ADMIN' ||
-                       authContext.registeredUser?.role === 'BIGBOSS';
+        // Vérifier les permissions selon le type d'utilisateur
+        let hasPermission = false;
 
-        if (attachment.uploadedBy !== userId && !isAdmin) {
+        if (isAnonymous) {
+          // Utilisateur anonyme: peut supprimer uniquement ses propres attachments
+          hasPermission = attachment.uploadedBy === userId && attachment.isAnonymous;
+
+          if (!hasPermission) {
+            console.log('[AttachmentRoutes] Permission denied for anonymous user:', {
+              userId,
+              attachmentOwner: attachment.uploadedBy,
+              attachmentIsAnonymous: attachment.isAnonymous
+            });
+          }
+        } else {
+          // Utilisateur authentifié:
+          // 1. Propriétaire peut supprimer
+          // 2. Admin/BigBoss peuvent tout supprimer
+          const isAdmin = authContext.registeredUser?.role === 'ADMIN' ||
+                         authContext.registeredUser?.role === 'BIGBOSS';
+
+          hasPermission = attachment.uploadedBy === userId || isAdmin;
+
+          if (!hasPermission) {
+            console.log('[AttachmentRoutes] Permission denied for authenticated user:', {
+              userId,
+              attachmentOwner: attachment.uploadedBy,
+              isAdmin
+            });
+          }
+        }
+
+        if (!hasPermission) {
           return reply.status(403).send({
             success: false,
-            error: 'Insufficient permissions',
+            error: 'Insufficient permissions - You can only delete your own attachments',
           });
         }
 
-        // Supprimer l'attachment
+        // Supprimer l'attachment (fichier physique + DB entry)
         await attachmentService.deleteAttachment(attachmentId);
+
+        console.log('[AttachmentRoutes] Attachment deleted successfully:', {
+          attachmentId,
+          userId,
+          isAnonymous
+        });
 
         return reply.send({
           success: true,

@@ -5,13 +5,21 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { X, ChevronLeft, ChevronRight, Download, MessageSquare, Maximize2 } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Download, MessageSquare, Maximize2, Trash2 } from 'lucide-react';
 import { Button } from '../ui/button';
-import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '../ui/dialog';
 import { Attachment } from '../../shared/types/attachment';
 import { AttachmentService } from '../../services/attachmentService';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useI18n } from '@/hooks/useI18n';
+import { toast } from 'sonner';
 
 interface AttachmentGalleryProps {
   conversationId: string;
@@ -22,6 +30,14 @@ interface AttachmentGalleryProps {
   token?: string;
   // Nouvelle prop pour passer les attachments directement (évite un appel API)
   attachments?: Attachment[];
+  /**
+   * ID de l'utilisateur courant (pour vérifier les permissions de suppression)
+   */
+  currentUserId?: string;
+  /**
+   * Callback appelé après suppression d'un attachment
+   */
+  onAttachmentDeleted?: (attachmentId: string) => void;
 }
 
 export function AttachmentGallery({
@@ -32,16 +48,66 @@ export function AttachmentGallery({
   onNavigateToMessage,
   token,
   attachments: providedAttachments,
+  currentUserId,
+  onAttachmentDeleted,
 }: AttachmentGalleryProps) {
   const { t } = useI18n('attachments');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
 
   const currentAttachment = attachments[currentIndex];
+
+  // Handler pour ouvrir la confirmation de suppression
+  const handleOpenDeleteConfirm = useCallback((event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setShowDeleteConfirm(true);
+  }, []);
+
+  // Handler pour confirmer la suppression
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!currentAttachment || !token) return;
+
+    setIsDeleting(true);
+    try {
+      await AttachmentService.deleteAttachment(currentAttachment.id, token);
+
+      // Notifier le parent
+      onAttachmentDeleted?.(currentAttachment.id);
+
+      // Retirer l'attachment de la liste locale
+      setAttachments(prev => prev.filter(att => att.id !== currentAttachment.id));
+
+      // Ajuster l'index si nécessaire
+      if (currentIndex >= attachments.length - 1) {
+        setCurrentIndex(Math.max(0, currentIndex - 1));
+      }
+
+      // Fermer la galerie si c'était le dernier attachment
+      if (attachments.length === 1) {
+        onClose();
+      }
+
+      toast.success('Fichier supprimé avec succès');
+      setShowDeleteConfirm(false);
+    } catch (error) {
+      console.error('Erreur suppression attachment:', error);
+      toast.error('Impossible de supprimer le fichier');
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [currentAttachment, token, onAttachmentDeleted, currentIndex, attachments.length, onClose]);
+
+  // Handler pour annuler la suppression
+  const handleDeleteCancel = useCallback(() => {
+    setShowDeleteConfirm(false);
+  }, []);
 
   const handlePrevious = useCallback(() => {
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : attachments.length - 1));
@@ -221,6 +287,18 @@ export function AttachmentGallery({
                 >
                   <Download className="w-4 h-4" />
                 </Button>
+                {/* Bouton de suppression (uniquement si l'utilisateur a les droits) */}
+                {currentAttachment && currentAttachment.uploadedBy === currentUserId && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleOpenDeleteConfirm}
+                    className="text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                    title="Supprimer"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -235,7 +313,7 @@ export function AttachmentGallery({
           </div>
 
           {/* Image principale avec support swipe mobile */}
-          <div 
+          <div
             ref={imageContainerRef}
             className="flex-1 flex items-center justify-center p-4 overflow-hidden"
             onTouchStart={handleTouchStart}
@@ -245,12 +323,14 @@ export function AttachmentGallery({
             {loading ? (
               <div className="text-white">{t('gallery.loading')}</div>
             ) : currentAttachment ? (
-              <img
-                src={currentAttachment.fileUrl}
-                alt={currentAttachment.originalName}
-                className="w-full h-full object-contain"
-                style={{ maxWidth: '100%', maxHeight: '100%' }}
-              />
+              <div className="w-full h-full flex items-center justify-center">
+                <img
+                  src={currentAttachment.fileUrl}
+                  alt={currentAttachment.originalName}
+                  className="w-full h-full object-contain"
+                  style={{ maxWidth: '100%', maxHeight: '100%' }}
+                />
+              </div>
             ) : (
               <div className="text-white">{t('gallery.noImage')}</div>
             )}
@@ -307,7 +387,46 @@ export function AttachmentGallery({
             </div>
           )}
         </div>
+
       </DialogContent>
+
+      {/* Dialog de confirmation de suppression */}
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirmer la suppression</DialogTitle>
+            <DialogDescription>
+              Êtes-vous sûr de vouloir supprimer ce fichier ? Cette action est irréversible.
+            </DialogDescription>
+          </DialogHeader>
+          {currentAttachment && (
+            <div className="mt-2 p-2 bg-muted rounded-md">
+              <div className="text-sm font-medium text-foreground">
+                {currentAttachment.originalName}
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                Le fichier sera définitivement supprimé du serveur.
+              </div>
+            </div>
+          )}
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={handleDeleteCancel}
+              disabled={isDeleting}
+            >
+              Annuler
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Suppression...' : 'Supprimer'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }

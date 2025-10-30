@@ -15,6 +15,7 @@ import { useI18n } from '@/hooks/useI18n';
 import { buildApiUrl } from '@/lib/config';
 import { validateAvatarFile } from '@/utils/avatar-upload';
 import { AvatarCropDialog } from './avatar-crop-dialog';
+import { authManager } from '@/services/auth-manager.service';
 
 interface UserSettingsProps {
   user: UserType | null;
@@ -22,6 +23,7 @@ interface UserSettingsProps {
 }
 
 export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
+
   const { t } = useI18n('settings');
   const [formData, setFormData] = useState({
     firstName: '',
@@ -107,7 +109,7 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          'Authorization': `Bearer ${authManager.getAuthToken()}`
         },
         body: JSON.stringify({ avatar: imageUrl })
       });
@@ -147,7 +149,7 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          'Authorization': `Bearer ${authManager.getAuthToken()}`
         },
         body: JSON.stringify(formData)
       });

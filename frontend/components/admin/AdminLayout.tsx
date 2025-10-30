@@ -141,7 +141,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage }) => {
       <a href="#main-content" className="skip-link">
         Aller au contenu principal
       </a>
-      <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
         {/* Mobile Overlay */}
         {isMobileMenuOpen && (
           <div 
@@ -259,9 +259,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage }) => {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 flex flex-col">
           {/* Top Bar */}
-          <header className="bg-white shadow-sm border-b px-4 sm:px-6 py-4 flex-shrink-0">
+          <header className="bg-white shadow-sm border-b px-4 sm:px-6 py-4">
             <div className="flex items-center justify-between">
               {/* Mobile Menu Button + Title */}
               <div className="flex items-center gap-3">
@@ -330,7 +330,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage }) => {
           </header>
 
           {/* Content Area */}
-          <main id="main-content" className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">
+          <main id="main-content" className="flex-1 p-3 sm:p-4 md:p-6">
             {children}
           </main>
         </div>

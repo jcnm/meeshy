@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import { ArrowLeft, UserPlus, Info, MoreVertical, Link2, Video } from 'lucide-react';
+import { ArrowLeft, UserPlus, Info, MoreVertical, Link2, Video, Ghost, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -23,10 +23,17 @@ import type {
   SocketIOUser as User,
   ThreadMember
 } from '@shared/types';
+import type { AnonymousParticipant } from '@shared/types/anonymous';
 import { ConversationParticipants } from './conversation-participants';
 import { ConversationParticipantsDrawer } from './conversation-participants-drawer';
 import { CreateLinkButton } from './create-link-button';
 import { UserRoleEnum } from '@shared/types';
+import { toast } from 'sonner';
+
+// Helper pour détecter si un utilisateur est anonyme
+function isAnonymousUser(user: any): user is AnonymousParticipant {
+  return user && ('sessionToken' in user || 'shareLinkId' in user);
+}
 
 interface ConversationHeaderProps {
   conversation: Conversation;
@@ -74,15 +81,18 @@ export function ConversationHeader({
     if (conversation.type !== 'direct') {
       return conversation.title || 'Groupe sans nom';
     }
-    
+
     // Pour les conversations directes, utiliser les participants chargés
     const otherParticipant = conversationParticipants.find(p => p.userId !== currentUser?.id);
     if (otherParticipant?.user) {
-      return otherParticipant.user.displayName ||
+      const name = otherParticipant.user.displayName ||
              `${otherParticipant.user.firstName || ''} ${otherParticipant.user.lastName || ''}`.trim() ||
              otherParticipant.user.username;
+
+      // Ne pas ajouter d'émoji, l'icône Ghost est affichée séparément
+      return name;
     }
-    
+
     // Fallback
     return conversation.title || 'Conversation privée';
   }, [conversation, currentUser, conversationParticipants]);
@@ -115,6 +125,27 @@ export function ConversationHeader({
     ].includes(role);
   }, [currentUser?.role]);
 
+  // Vérifier si l'autre participant est anonyme
+  const isOtherParticipantAnonymous = useCallback(() => {
+    if (conversation.type === 'direct') {
+      const otherParticipant = conversationParticipants.find(p => p.userId !== currentUser?.id);
+      return otherParticipant?.user ? isAnonymousUser(otherParticipant.user) : false;
+    }
+    return false;
+  }, [conversation, currentUser, conversationParticipants]);
+
+  // Fonction pour copier le lien de la conversation
+  const handleShareConversation = useCallback(async () => {
+    const url = `${window.location.origin}/conversations/${conversation.id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success(t('conversationHeader.linkCopied') || 'Lien copié !');
+    } catch (error) {
+      console.error('Erreur lors de la copie du lien:', error);
+      toast.error(t('conversationHeader.linkCopyError') || 'Erreur lors de la copie du lien');
+    }
+  }, [conversation.id, t]);
+
   return (
     <div className="flex items-center justify-between p-4 border-b border-border bg-card">
       <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -133,19 +164,28 @@ export function ConversationHeader({
 
         {/* Avatar */}
         <div className="relative flex-shrink-0">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={getConversationAvatarUrl()} />
-            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-              {getConversationAvatar()}
-            </AvatarFallback>
-          </Avatar>
+          {isOtherParticipantAnonymous() ? (
+            <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+              <Ghost className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+            </div>
+          ) : (
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={getConversationAvatarUrl()} />
+              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                {getConversationAvatar()}
+              </AvatarFallback>
+            </Avatar>
+          )}
           <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-500 rounded-full border-2 border-background" />
         </div>
 
         {/* Infos de la conversation */}
         <div className="flex-1 min-w-0">
-          <h2 className="font-semibold text-base truncate">
-            {getConversationName()}
+          <h2 className="font-semibold text-base truncate flex items-center gap-1.5">
+            {isOtherParticipantAnonymous() && (
+              <Ghost className="h-4 w-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+            )}
+            <span className="truncate">{getConversationName()}</span>
           </h2>
 
           <div className="text-sm text-muted-foreground">
@@ -233,7 +273,12 @@ export function ConversationHeader({
               <Info className="h-4 w-4 mr-2" />
               {t('conversationDetails.title')}
             </DropdownMenuItem>
-            
+
+            <DropdownMenuItem onClick={handleShareConversation}>
+              <Share2 className="h-4 w-4 mr-2" />
+              {t('conversationHeader.share') || 'Partager'}
+            </DropdownMenuItem>
+
             {conversation.type !== 'direct' && (
               <>
                 <DropdownMenuSeparator />

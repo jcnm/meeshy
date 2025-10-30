@@ -39,6 +39,7 @@ import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { useUser, useIsAuthChecking } from '@/stores';
 import { useAuth } from '@/hooks/use-auth';
 import { useAppStore } from '@/stores/app-store';
+import { authManager } from '@/services/auth-manager.service';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -84,7 +85,7 @@ export function DashboardLayout({
   const handleLogout = async () => {
     try {
       // Appeler l'API de déconnexion si possible
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       if (token) {
         try {
           await fetch(buildApiUrl(API_ENDPOINTS.AUTH.LOGOUT), {
@@ -313,3 +314,4 @@ export function DashboardLayout({
 }
 
 export default DashboardLayout;
+

@@ -3,6 +3,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { authManager } from '@/services/auth-manager.service';
 import { FontFamily, defaultFont, getFontConfig } from '@/lib/fonts';
 import { buildApiUrl } from '@/lib/config';
 
@@ -33,7 +34,7 @@ export function useFontPreference() {
         }
 
         // 2. Récupérer depuis le backend si connecté (seulement côté client)
-        const token = localStorage.getItem('auth_token');
+        const token = authManager.getAuthToken();
         if (token && typeof window !== 'undefined') {
           try {
             const response = await fetch(buildApiUrl('/users/preferences'), {
@@ -126,7 +127,7 @@ export function useFontPreference() {
 
       // Sauvegarder sur le backend si connecté (seulement côté client)
       if (typeof window !== 'undefined') {
-        const token = localStorage.getItem('auth_token');
+        const token = authManager.getAuthToken();
         if (token) {
           try {
             const response = await fetch(buildApiUrl('/users/preferences'), {
