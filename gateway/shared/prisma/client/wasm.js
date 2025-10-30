@@ -495,6 +495,55 @@ exports.Prisma.ReportScalarFieldEnum = {
   resolvedAt: 'resolvedAt'
 };
 
+exports.Prisma.CallSessionScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  mode: 'mode',
+  status: 'status',
+  initiatorId: 'initiatorId',
+  startedAt: 'startedAt',
+  answeredAt: 'answeredAt',
+  endedAt: 'endedAt',
+  duration: 'duration',
+  metadata: 'metadata'
+};
+
+exports.Prisma.CallParticipantScalarFieldEnum = {
+  id: 'id',
+  callSessionId: 'callSessionId',
+  userId: 'userId',
+  anonymousId: 'anonymousId',
+  role: 'role',
+  joinedAt: 'joinedAt',
+  leftAt: 'leftAt',
+  isAudioEnabled: 'isAudioEnabled',
+  isVideoEnabled: 'isVideoEnabled',
+  connectionQuality: 'connectionQuality'
+};
+
+exports.Prisma.TranscriptionScalarFieldEnum = {
+  id: 'id',
+  callSessionId: 'callSessionId',
+  participantId: 'participantId',
+  source: 'source',
+  text: 'text',
+  language: 'language',
+  confidence: 'confidence',
+  timestamp: 'timestamp',
+  offsetMs: 'offsetMs'
+};
+
+exports.Prisma.TranslationCallScalarFieldEnum = {
+  id: 'id',
+  transcriptionId: 'transcriptionId',
+  targetLanguage: 'targetLanguage',
+  translatedText: 'translatedText',
+  confidence: 'confidence',
+  model: 'model',
+  cached: 'cached',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -504,7 +553,27 @@ exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
 };
+exports.CallMode = exports.$Enums.CallMode = {
+  p2p: 'p2p',
+  sfu: 'sfu'
+};
 
+exports.CallStatus = exports.$Enums.CallStatus = {
+  initiated: 'initiated',
+  ringing: 'ringing',
+  active: 'active',
+  ended: 'ended'
+};
+
+exports.ParticipantRole = exports.$Enums.ParticipantRole = {
+  initiator: 'initiator',
+  participant: 'participant'
+};
+
+exports.TranscriptionSource = exports.$Enums.TranscriptionSource = {
+  client: 'client',
+  server: 'server'
+};
 
 exports.Prisma.ModelName = {
   User: 'User',
@@ -530,7 +599,11 @@ exports.Prisma.ModelName = {
   TrackingLink: 'TrackingLink',
   TrackingLinkClick: 'TrackingLinkClick',
   AdminAuditLog: 'AdminAuditLog',
-  Report: 'Report'
+  Report: 'Report',
+  CallSession: 'CallSession',
+  CallParticipant: 'CallParticipant',
+  Transcription: 'Transcription',
+  TranslationCall: 'TranslationCall'
 };
 
 /**
