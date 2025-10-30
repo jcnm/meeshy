@@ -551,7 +551,7 @@ export default function JoinConversationPage() {
                       <MessageSquare className="h-4 w-4 text-blue-600" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm text-blue-800 leading-relaxed">
+                      <p className="text-sm text-blue-800 leading-relaxed whitespace-pre-wrap">
                         {conversationLink.description}
                       </p>
                       {conversationLink.creator && (

@@ -24,7 +24,8 @@
         "Providing accurate and complete information",
         "Updating your information when necessary",
         "Notifying us immediately of any unauthorized access"
-      ]
+      ],
+      "anonymousEncryption": "Note: Anonymous users do not have a personal encryption key. Their data cannot be encrypted at rest. For maximum security, please create a user account."
     },
     "usage": {
       "title": "4. Acceptable Use",

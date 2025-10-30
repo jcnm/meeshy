@@ -88,6 +88,28 @@ const ConversationItem = memo(function ConversationItem({
     });
   }, []);
 
+  const getSenderName = useCallback((message: any) => {
+    // Gérer les utilisateurs anonymes ET membres
+    const sender = message?.anonymousSender || message?.sender;
+    const isAnonymous = !!message?.anonymousSender;
+
+    if (!sender) return null;
+
+    // Construire le nom
+    let senderName = sender.displayName ||
+                     sender.username ||
+                     (sender.firstName || sender.lastName
+                       ? `${sender.firstName || ''} ${sender.lastName || ''}`.trim()
+                       : null);
+
+    if (!senderName) {
+      senderName = isAnonymous ? 'Anonyme' : 'Utilisateur';
+    }
+
+    // Ajouter le suffixe (anonyme) si c'est un utilisateur anonyme
+    return isAnonymous ? `${senderName} (anonyme)` : senderName;
+  }, []);
+
   return (
     <div
       onClick={() => {
@@ -133,15 +155,18 @@ const ConversationItem = memo(function ConversationItem({
         
         {conversation.lastMessage && (
           <p className="text-sm text-muted-foreground truncate mt-0.5">
+            {getSenderName(conversation.lastMessage) && (
+              <span className="font-medium">{getSenderName(conversation.lastMessage)}: </span>
+            )}
             {conversation.lastMessage.content}
           </p>
         )}
       </div>
 
       {/* Badge de messages non lus */}
-      {conversation.unreadCount && conversation.unreadCount > 0 && (
-        <Badge 
-          variant="destructive" 
+      {conversation.unreadCount !== undefined && conversation.unreadCount > 0 && (
+        <Badge
+          variant="destructive"
           className="ml-2 flex-shrink-0 h-5 min-w-[20px] px-1.5"
         >
           {conversation.unreadCount > 99 ? '99+' : conversation.unreadCount}

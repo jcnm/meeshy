@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -32,14 +32,6 @@ export function LanguageFlagSelector({
 	showLanguageName = true,
 }: LanguageFlagSelectorProps) {
 	const [open, setOpen] = useState(false);
-	const [isMobile, setIsMobile] = useState(false);
-
-	useEffect(() => {
-		const checkMobile = () => setIsMobile(window.innerWidth < 768);
-		checkMobile();
-		window.addEventListener("resize", checkMobile);
-		return () => window.removeEventListener("resize", checkMobile);
-	}, []);
 
   // Utiliser les choix fournis, les langues d'interface limitées, ou les langues supportées par défaut
   const availableLanguages = choices 
@@ -70,42 +62,33 @@ export function LanguageFlagSelector({
           </span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="center" side="top" sideOffset={8} className="p-2 w-[180px] max-w-[96vw] sm:max-w-[320px] min-w-[140px]">
-        <div
-          className={cn(
-            isMobile
-              ? "bg-white dark:bg-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg p-2 flex flex-col gap-2 max-w-[160px] w-[160px] max-h-[40vh] mx-auto overflow-y-auto items-center justify-center"
-              : "gap-2 items-center flex flex-col"
-          )}
-          style={isMobile ? {margin: '0 auto'} : {}}
-        >
-          {availableLanguages.map((language) => (
-            <Button
-              key={language.code}
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                onValueChange(language.code);
-                setOpen(false);
-              }}
-              className={cn(
-                isMobile
-                  ? "flex flex-row items-center justify-start h-10 w-full px-2 gap-2 border border-gray-100 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900"
-                  : "flex flex-row items-center justify-start h-10 w-full px-3 gap-2 hover:bg-blue-100",
-                value === language.code && "bg-blue-50 dark:bg-blue-900/30"
-              )}
-              title={formatLanguageName(language.code)}
-            >
-              <span className={isMobile ? "text-xl" : "text-base"}>{language.flag}</span>
-              <span className={cn(
-                "font-medium",
-                isMobile ? "text-sm" : "text-sm"
-              )}>
-                {language.name}
-              </span>
-            </Button>
-          ))}
-        </div>
+      <DropdownMenuContent
+        align="center"
+        side="top"
+        sideOffset={8}
+        className="p-2 w-[180px] max-w-[96vw] sm:max-w-[320px] min-w-[140px] flex flex-col gap-2 items-center max-h-[40vh] overflow-y-auto"
+      >
+        {availableLanguages.map((language) => (
+          <Button
+            key={language.code}
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              onValueChange(language.code);
+              setOpen(false);
+            }}
+            className={cn(
+              "flex flex-row items-center justify-start h-10 w-full px-3 gap-2 hover:bg-blue-100",
+              value === language.code && "bg-blue-50 dark:bg-blue-900/30"
+            )}
+            title={formatLanguageName(language.code)}
+          >
+            <span className="text-base">{language.flag}</span>
+            <span className="font-medium text-sm">
+              {language.name}
+            </span>
+          </Button>
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );

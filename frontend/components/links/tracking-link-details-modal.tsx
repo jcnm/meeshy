@@ -87,12 +87,24 @@ export function TrackingLinkDetailsModal({
         ) : (
           <Tabs defaultValue="overview" className="space-y-6">
             <TabsList className="w-full grid grid-cols-3 md:grid-cols-6">
-              <TabsTrigger value="overview">{t('tracking.details.overview')}</TabsTrigger>
-              <TabsTrigger value="geography">{t('tracking.details.geography')}</TabsTrigger>
-              <TabsTrigger value="devices">{t('tracking.details.devices')}</TabsTrigger>
-              <TabsTrigger value="browsers">{t('tracking.details.browsers')}</TabsTrigger>
-              <TabsTrigger value="timeline">{t('tracking.details.timeline')}</TabsTrigger>
-              <TabsTrigger value="referrers">Referrers</TabsTrigger>
+              <TabsTrigger value="overview" title={t('tracking.details.overview')}>
+                <TrendingUp className="h-4 w-4" />
+              </TabsTrigger>
+              <TabsTrigger value="geography" title={t('tracking.details.geography')}>
+                <Globe className="h-4 w-4" />
+              </TabsTrigger>
+              <TabsTrigger value="devices" title={t('tracking.details.devices')}>
+                <Monitor className="h-4 w-4" />
+              </TabsTrigger>
+              <TabsTrigger value="browsers" title={t('tracking.details.browsers')}>
+                <Chrome className="h-4 w-4" />
+              </TabsTrigger>
+              <TabsTrigger value="timeline" title={t('tracking.details.timeline')}>
+                <Calendar className="h-4 w-4" />
+              </TabsTrigger>
+              <TabsTrigger value="referrers" title="Referrers">
+                <Eye className="h-4 w-4" />
+              </TabsTrigger>
             </TabsList>
 
             {/* Overview Tab */}
@@ -120,7 +132,11 @@ export function TrackingLinkDetailsModal({
                     </div>
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Short URL</p>
-                      <p className="text-sm font-mono bg-gray-100 dark:bg-gray-800 p-2 rounded">{link.shortUrl}</p>
+                      <p className="text-sm font-mono bg-gray-100 dark:bg-gray-800 p-2 rounded break-all">
+                        {typeof window !== 'undefined' && link.shortUrl.startsWith('/')
+                          ? `${window.location.origin}${link.shortUrl}`
+                          : link.shortUrl}
+                      </p>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Token</p>

@@ -331,7 +331,12 @@ export default function LinksPage() {
 
   // Copier un lien tracké
   const handleCopyTrackingLink = async (shortUrl: string) => {
-    const result = await copyToClipboard(shortUrl);
+    // Ajouter le domaine complet si shortUrl commence par /
+    const fullUrl = shortUrl.startsWith('/')
+      ? `${window.location.origin}${shortUrl}`
+      : shortUrl;
+
+    const result = await copyToClipboard(fullUrl);
     if (result.success) {
       toast.success(t('tracking.success.copied'));
     } else {
@@ -763,7 +768,9 @@ export default function LinksPage() {
                                     onClick={() => router.push(`/links/tracked/${link.token}`)}
                                     className="text-foreground hover:text-primary transition-colors cursor-pointer text-left"
                                   >
-                                    {link.shortUrl}
+                                    {link.shortUrl.startsWith('/')
+                                      ? `${typeof window !== 'undefined' ? window.location.origin : ''}${link.shortUrl}`
+                                      : link.shortUrl}
                                   </button>
                                 </CardTitle>
                               </div>

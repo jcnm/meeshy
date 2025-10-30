@@ -96,7 +96,7 @@ cleanup() {
         wait "$TRANSLATOR_PID" 2>/dev/null || true
         echo -e "${GREEN}✅ Translator arrêté${NC}"
     fi
-    
+    lsof -ti:3000 -ti:3100 -ti:8000 | xargs kill -9
     # Les conteneurs Docker ne sont jamais arrêtés lors du Ctrl+C
     echo -e "${CYAN}ℹ️  Les conteneurs Docker (MongoDB, Redis) restent actifs${NC}"
     if [ "$START_CONTAINERS" = true ]; then
@@ -247,7 +247,7 @@ JWT_SECRET=dev-secret-key-change-in-production-12345678
 TRANSLATOR_URL=http://localhost:8000
 GATEWAY_URL=http://localhost:3000
 FRONTEND_URL=http://localhost:3100
-
+DOMAINE=localhost
 # CORS
 CORS_ORIGINS=http://localhost:3100,http://localhost:3000
 EOF

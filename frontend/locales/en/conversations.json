@@ -78,7 +78,10 @@
     "translationOptions": "Translation options",
     "copyShowingContent": "Copy showing content",
     "conversationHeader": {
-      "backToList": "Back to conversations"
+      "backToList": "Back to conversations",
+      "share": "Share",
+      "linkCopied": "Link copied!",
+      "linkCopyError": "Error copying link"
     },
     "conversationUI": {
       "participants": "Participants",
@@ -127,7 +130,14 @@
       "offline": "offline",
       "noOfflineParticipants": "No offline participants",
       "close": "Close",
-      "createLink": "Create link"
+      "createLink": "Create link",
+      "save": "Save",
+      "cancel": "Cancel",
+      "descriptionPlaceholder": "Add a description...",
+      "descriptionUpdated": "Description updated successfully",
+      "addDescription": "Click to add a description...",
+      "noDescription": "No description",
+      "editDescription": "Edit description"
     },
     "typingIndicator": {
       "typing": "Typing...",

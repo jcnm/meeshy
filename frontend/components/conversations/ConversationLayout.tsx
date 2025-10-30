@@ -56,7 +56,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     refresh: refreshConversations,
     setConversations
   } = useConversationsPagination({
-    limit: 20,
+    limit: 50,
     enabled: !!user
   });
   
@@ -1098,6 +1098,11 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       // Vider les anciens messages SEULEMENT quand on change réellement de conversation
       clearMessages();
       previousConversationIdRef.current = currentId;
+
+      // Marquer la conversation comme lue
+      conversationsService.markAsRead(currentId).catch(error => {
+        console.error(`[ConversationLayout-${instanceId}] Erreur lors du marquage comme lu:`, error);
+      });
     } else if (currentId === previousId && currentId) {
       // Même conversation, pas de rechargement
       console.log(`[ConversationLayout-${instanceId}] Même conversation, pas de rechargement: ${currentId}`);

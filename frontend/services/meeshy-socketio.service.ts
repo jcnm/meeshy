@@ -1145,14 +1145,33 @@ class MeeshySocketIOService {
       // CORRECTION CRITIQUE: Vérifier l'état RÉEL du socket
       const socketConnected = this.socket.connected === true;
       const socketDisconnected = this.socket.disconnected === true;
-      
+
       if (!socketConnected || socketDisconnected) {
-        // Tenter une reconnexion immédiate
+        // Tenter une reconnexion immédiate et attendre
+        console.log('🔄 [sendMessage] Connexion perdue, tentative de reconnexion...');
+        toast.info('Connexion perdue. Reconnexion en cours...');
+
         this.reconnect();
-        
-        toast.error('Connexion WebSocket perdue. Reconnexion en cours...');
-        resolve(false);
-        return;
+
+        // Attendre jusqu'à 5 secondes pour la reconnexion
+        let reconnected = false;
+        for (let i = 0; i < 10; i++) {
+          await new Promise(wait => setTimeout(wait, 500));
+
+          if (this.socket && this.socket.connected) {
+            reconnected = true;
+            console.log('✅ [sendMessage] Reconnexion réussie, envoi du message...');
+            toast.success('Reconnecté ! Envoi du message...');
+            break;
+          }
+        }
+
+        if (!reconnected) {
+          console.error('❌ [sendMessage] Échec de la reconnexion après 5 secondes');
+          toast.error('Impossible de se reconnecter. Veuillez réessayer.');
+          resolve(false);
+          return;
+        }
       }
 
       try {
@@ -1214,32 +1233,69 @@ class MeeshySocketIOService {
    * Envoie un message avec des attachments
    */
   public async sendMessageWithAttachments(
-    conversationOrId: any, 
-    content: string, 
+    conversationOrId: any,
+    content: string,
     attachmentIds: string[],
-    originalLanguage?: string, 
+    originalLanguage?: string,
     replyToId?: string
   ): Promise<boolean> {
     return new Promise(async (resolve) => {
+      // S'assurer que la connexion est établie
+      this.ensureConnection();
+
       if (!this.socket) {
-        console.error('❌ MeeshySocketIOService: Socket non connecté');
-        toast.error('Connexion WebSocket non initialisée');
-        resolve(false);
-        return;
+        // Dernière tentative: forcer l'initialisation
+        const hasAuthToken = !!authManager.getAuthToken();
+        const hasSessionToken = !!authManager.getAnonymousSession()?.token;
+
+        if (hasAuthToken || hasSessionToken) {
+          this.initializeConnection();
+
+          // Attendre que le socket se crée
+          await new Promise(wait => setTimeout(wait, 500));
+
+          if (!this.socket) {
+            toast.error('Impossible d\'initialiser la connexion WebSocket');
+            resolve(false);
+            return;
+          }
+        } else {
+          toast.error('Veuillez vous connecter pour envoyer des messages');
+          resolve(false);
+          return;
+        }
       }
 
-      if (!this.isConnected && !this.socket.connected) {
-        console.error('❌ MeeshySocketIOService: Socket pas connecté');
-        toast.error('Connexion WebSocket non établie');
-        resolve(false);
-        return;
-      }
+      // Vérifier l'état RÉEL du socket
+      const socketConnected = this.socket.connected === true;
+      const socketDisconnected = this.socket.disconnected === true;
 
-      if (this.socket.disconnected) {
-        console.error('❌ MeeshySocketIOService: Socket déconnecté');
-        toast.error('Connexion WebSocket perdue');
-        resolve(false);
-        return;
+      if (!socketConnected || socketDisconnected) {
+        // Tenter une reconnexion immédiate et attendre
+        console.log('🔄 [sendMessageWithAttachments] Connexion perdue, tentative de reconnexion...');
+        toast.info('Connexion perdue. Reconnexion en cours...');
+
+        this.reconnect();
+
+        // Attendre jusqu'à 5 secondes pour la reconnexion
+        let reconnected = false;
+        for (let i = 0; i < 10; i++) {
+          await new Promise(wait => setTimeout(wait, 500));
+
+          if (this.socket && this.socket.connected) {
+            reconnected = true;
+            console.log('✅ [sendMessageWithAttachments] Reconnexion réussie, envoi du message...');
+            toast.success('Reconnecté ! Envoi du message...');
+            break;
+          }
+        }
+
+        if (!reconnected) {
+          console.error('❌ [sendMessageWithAttachments] Échec de la reconnexion après 5 secondes');
+          toast.error('Impossible de se reconnecter. Veuillez réessayer.');
+          resolve(false);
+          return;
+        }
       }
 
       try {

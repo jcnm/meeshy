@@ -14,9 +14,10 @@
       "content": "Meeshy est une plateforme de messagerie avec traduction en temps réel qui permet aux utilisateurs de communiquer dans différentes langues."
     },
     "account": {
-      "title": "Compte Utilisateur",
-      "intro": "Pour utiliser certaines fonctionnalités, vous devez créer un compte :",
-      "responsibilities": ["Maintenir la confidentialité de votre mot de passe", "Être responsable de toutes les activités sous votre compte", "Notifier immédiatement tout accès non autorisé", "Fournir des informations exactes et à jour"]
+  "title": "Compte Utilisateur",
+  "intro": "Pour utiliser certaines fonctionnalités, vous devez créer un compte :",
+  "responsibilities": ["Maintenir la confidentialité de votre mot de passe", "Être responsable de toutes les activités sous votre compte", "Notifier immédiatement tout accès non autorisé", "Fournir des informations exactes et à jour"],
+  "anonymousEncryption": "Note : Les utilisateurs anonymes n'ont pas de clé de chiffrement personnelle. Leurs données ne peuvent donc pas être chiffrées au repos. Pour une sécurité maximale, créez un compte utilisateur."
     },
     "usage": {
       "title": "Utilisation Acceptable",
