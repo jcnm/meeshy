@@ -33,30 +33,32 @@ interface ConversationItemProps {
   isSelected: boolean;
   currentUser: User;
   onClick: () => void;
+  t: (key: string) => string;
 }
 
 // Composant pour un élément de conversation
-const ConversationItem = memo(function ConversationItem({ 
-  conversation, 
-  isSelected, 
+const ConversationItem = memo(function ConversationItem({
+  conversation,
+  isSelected,
   currentUser,
-  onClick 
+  onClick,
+  t
 }: ConversationItemProps) {
   const getConversationName = useCallback(() => {
     if (conversation.type !== 'direct') {
       return conversation.title || 'Groupe sans nom';
     }
-    
-    // Pour l'instant, utiliser le titre car participants n'a pas de propriété user dans ce contexte
-    // TODO: Charger les détails des participants séparément
-    const otherParticipant = conversation.participants?.find(p => p.userId !== currentUser?.id);
-    if (otherParticipant) {
-      // Utiliser le titre de la conversation pour l'instant
-      return conversation.title || 'Conversation privée';
+
+    // Pour les conversations directes, afficher "{nom} et moi"
+    const conversationTitle = conversation.title || 'Conversation privée';
+
+    // Ajouter "et moi" traduit uniquement si le titre n'est pas vide
+    if (conversationTitle && conversationTitle !== 'Conversation privée') {
+      return `${conversationTitle} ${t('andMe')}`;
     }
-    
-    return conversation.title || 'Conversation privée';
-  }, [conversation, currentUser]);
+
+    return conversationTitle;
+  }, [conversation, currentUser, t]);
 
   const getConversationAvatar = useCallback(() => {
     const name = getConversationName();
@@ -320,6 +322,7 @@ export function ConversationList({
                 isSelected={selectedConversation?.id === conversation.id}
                 currentUser={currentUser}
                 onClick={() => onSelectConversation(conversation)}
+                t={t}
               />
             ))}
             

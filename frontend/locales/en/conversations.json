@@ -2,6 +2,7 @@
   "conversations": {
     "title": "Conversations",
     "conversations": "Conversations",
+    "andMe": "and me",
     "createConversation": "Create conversation",
     "createNewConversation": "Create new conversation",
     "loading": "Loading conversations...",
