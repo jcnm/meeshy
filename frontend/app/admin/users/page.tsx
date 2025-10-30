@@ -126,10 +126,12 @@ export default function AdminUsersPage() {
   };
 
   const handlePageSizeChange = (newSize: number) => {
-    console.log('[Admin Users] Changement de pageSize:', newSize);
-    setPageSize(newSize);
+    console.log('[Admin Users] Changement de pageSize:', { ancien: pageSize, nouveau: newSize });
+    // Afficher le loader pendant le changement
+    setLoading(true);
     setCurrentPage(1);
-    // Le useEffect se chargera du rechargement
+    setPageSize(newSize);
+    // Le useEffect avec les dépendances correctes se chargera du rechargement
   };
 
   const handlePreviousPage = () => {
