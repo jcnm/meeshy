@@ -49,10 +49,28 @@ const ConversationItem = memo(function ConversationItem({
       return conversation.title || 'Groupe sans nom';
     }
 
-    // Pour les conversations directes, toujours afficher "{nom} et moi"
-    const conversationTitle = conversation.title || 'Conversation privée';
+    // Pour les conversations directes, extraire le nom de l'autre utilisateur
+    const otherParticipant = conversation.participants?.find(p => p.userId !== currentUser?.id);
 
-    // Toujours ajouter "et moi" pour les conversations directes
+    if (otherParticipant) {
+      // Les participants ont un objet 'user' au runtime même si le type ne le reflète pas
+      const participantUser = (otherParticipant as any).user;
+
+      if (participantUser) {
+        // Utiliser displayName, puis username, puis firstName/lastName
+        const userName = participantUser.displayName ||
+                        participantUser.username ||
+                        (participantUser.firstName && participantUser.lastName
+                          ? `${participantUser.firstName} ${participantUser.lastName}`.trim()
+                          : participantUser.firstName || participantUser.lastName) ||
+                        'Utilisateur';
+
+        return `${userName} ${t('andMe')}`;
+      }
+    }
+
+    // Fallback sur le titre de la conversation
+    const conversationTitle = conversation.title || 'Conversation privée';
     return `${conversationTitle} ${t('andMe')}`;
   }, [conversation, currentUser, t]);
 
