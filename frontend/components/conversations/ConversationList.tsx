@@ -5,7 +5,6 @@ import { MessageSquare, Link2, Users, Globe, Search, Plus, Loader2 } from 'lucid
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import type { Conversation, SocketIOUser as User } from '@shared/types';
@@ -192,71 +191,31 @@ export function ConversationList({
   isLoadingMore = false,
   onLoadMore
 }: ConversationListProps) {
-  const [activeTab, setActiveTab] = useState<'public' | 'private'>('public');
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   // Référence pour le scroll container
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
 
-  // Filtrage des conversations
-  const { publicConversations, privateConversations } = useMemo(() => {
+  // Filtrage des conversations - toutes les conversations dans une seule liste
+  const filteredConversations = useMemo(() => {
     const filtered = conversations.filter(conv => {
       if (!searchQuery) return true;
       const title = conv.title || '';
       const lastMessage = conv.lastMessage?.content || '';
       const query = searchQuery.toLowerCase();
-      return title.toLowerCase().includes(query) || 
+      return title.toLowerCase().includes(query) ||
              lastMessage.toLowerCase().includes(query);
     });
 
-    const publicConvs = filtered.filter(conv => 
-      conv.visibility === 'public' || conv.type === 'broadcast'
-    );
-    const privateConvs = filtered.filter(conv => 
-      conv.visibility === 'private' || conv.type === 'direct' || conv.type === 'group' || conv.type === 'anonymous'
-    );
-
-    console.log('[ConversationList] Classification des conversations:', {
-      total: filtered.length,
-      public: publicConvs.length,
-      private: privateConvs.length,
-      publicDetails: publicConvs.map(c => ({ id: c.id, type: c.type, visibility: c.visibility, title: c.title })),
-      privateDetails: privateConvs.map(c => ({ id: c.id, type: c.type, visibility: c.visibility, title: c.title }))
+    console.log('[ConversationList] Filtrage des conversations:', {
+      total: conversations.length,
+      filtered: filtered.length,
+      searchQuery
     });
 
-    return {
-      publicConversations: publicConvs,
-      privateConversations: privateConvs
-    };
+    return filtered;
   }, [conversations, searchQuery]);
-
-  const currentConversations = activeTab === 'public' ? publicConversations : privateConversations;
-  
-  // Synchroniser l'onglet avec la conversation sélectionnée AU CHARGEMENT INITIAL seulement
-  useEffect(() => {
-    if (selectedConversation) {
-      const isPublicConversation = selectedConversation.visibility === 'public' || selectedConversation.type === 'broadcast';
-      const requiredTab = isPublicConversation ? 'public' : 'private';
-      
-      // Vérifier si la conversation est dans l'onglet actuel
-      const currentTabConversations = activeTab === 'public' ? publicConversations : privateConversations;
-      const isInCurrentTab = currentTabConversations.some(c => c.id === selectedConversation.id);
-      
-      // Changer d'onglet SEULEMENT si la conversation n'est pas visible dans l'onglet actuel
-      if (!isInCurrentTab) {
-        console.log('[ConversationList] Conversation pas visible dans onglet actuel, switch vers:', {
-          conversationId: selectedConversation.id,
-          conversationType: selectedConversation.type,
-          visibility: selectedConversation.visibility,
-          currentTab: activeTab,
-          requiredTab,
-          isInCurrentTab
-        });
-        setActiveTab(requiredTab);
-      }
-    }
-  }, [selectedConversation?.id, publicConversations, privateConversations]); // Inclure les listes pour la vérification
   
   // Détection du scroll infini avec Intersection Observer
   useEffect(() => {
@@ -333,23 +292,6 @@ export function ConversationList({
         </div>
       </div>
 
-      {/* Onglets fixes */}
-      <div className="flex-shrink-0 bg-card">
-        <Tabs value={activeTab} onValueChange={(v) => {
-          console.log('[ConversationList] Changement onglet:', { from: activeTab, to: v });
-          setActiveTab(v as 'public' | 'private');
-        }}>
-          <TabsList className="mx-4 mt-2 grid w-[calc(100%-2rem)] grid-cols-2">
-            <TabsTrigger value="public" className="text-xs">
-              {t('public')} ({publicConversations.length})
-            </TabsTrigger>
-            <TabsTrigger value="private" className="text-xs">
-              {t('private')} ({privateConversations.length})
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
-
       {/* Contenu scrollable */}
       <div className="flex-1 min-h-0 overflow-y-auto">
         {isLoading ? (
@@ -359,19 +301,19 @@ export function ConversationList({
               <p className="text-sm text-muted-foreground">{t('loadingConversations')}</p>
             </div>
           </div>
-        ) : currentConversations.length === 0 ? (
+        ) : filteredConversations.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
             <MessageSquare className="h-12 w-12 text-muted-foreground/50 mb-3" />
             <p className="text-sm text-muted-foreground">
-              {searchQuery 
-                ? t(`no${activeTab === 'public' ? 'Public' : 'Private'}ConversationsFound`)
-                : t(`no${activeTab === 'public' ? 'Public' : 'Private'}Conversations`)
+              {searchQuery
+                ? t('noConversationsFound')
+                : t('noConversations')
               }
             </p>
           </div>
         ) : (
           <div className="px-4 py-2 space-y-1">
-            {currentConversations.map((conversation) => (
+            {filteredConversations.map((conversation) => (
               <ConversationItem
                 key={conversation.id}
                 conversation={conversation}
