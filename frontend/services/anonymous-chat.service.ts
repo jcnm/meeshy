@@ -35,7 +35,7 @@ export class AnonymousChatService {
   constructor() {
     // Vérifier que le code s'exécute côté client
     if (typeof window !== 'undefined') {
-      this.sessionToken = localStorage.getItem('anonymous_session_token');
+      this.sessionToken = authManager.getAnonymousSession()?.token;
     }
   }
 
@@ -45,7 +45,7 @@ export class AnonymousChatService {
   public initialize(linkId: string): void {
     this.linkId = linkId;
     if (typeof window !== 'undefined') {
-      this.sessionToken = localStorage.getItem('anonymous_session_token');
+      this.sessionToken = authManager.getAnonymousSession()?.token;
     }
   }
 
@@ -181,7 +181,7 @@ export class AnonymousChatService {
     } finally {
       // Nettoyer le localStorage
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('anonymous_session_token');
+        authManager.clearAnonymousSessions();
         localStorage.removeItem('anonymous_participant');
       }
       this.sessionToken = null;

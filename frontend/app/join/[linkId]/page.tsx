@@ -38,6 +38,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuth } from '@/hooks/use-auth';
 import { useI18n } from '@/hooks/useI18n';
 import { LinkConversationService } from '@/services/link-conversation.service';
+import { authManager } from '@/services/auth-manager.service';
 
 // Langues supportées pour les participants anonymes
 const ANONYMOUS_LANGUAGES = [
@@ -271,8 +272,9 @@ export default function JoinConversationPage() {
       const linkId = params.linkId as string; // C'est le linkId (token d'invitation)
       
       // Déterminer le type d'authentification
-      const authToken = localStorage.getItem('auth_token');
-      const sessionToken = localStorage.getItem('anonymous_session_token');
+      const authToken = authManager.getAuthToken();
+      const anonymousSession = authManager.getAnonymousSession();
+      const sessionToken = anonymousSession?.token;
       
       console.log('[JOIN_CONVERSATION] Debug auth:', {
         linkId,
@@ -549,7 +551,7 @@ export default function JoinConversationPage() {
                       <MessageSquare className="h-4 w-4 text-blue-600" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm text-blue-800 leading-relaxed">
+                      <p className="text-sm text-blue-800 leading-relaxed whitespace-pre-wrap">
                         {conversationLink.description}
                       </p>
                       {conversationLink.creator && (

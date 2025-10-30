@@ -45,6 +45,7 @@ import { usersService, conversationsService, type ParticipantsFilters } from '@/
 import { ShareAffiliateModal } from '@/components/affiliate/share-affiliate-modal';
 import { useUser } from '@/stores';
 import { useI18n } from '@/hooks/useI18n';
+import { authManager } from '@/services/auth-manager.service';
 
 interface FriendRequest {
   id: string;
@@ -96,7 +97,7 @@ export default function ContactsPage() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const token = localStorage.getItem('auth_token');
+        const token = authManager.getAuthToken();
         if (!token) {
           router.push('/login');
           return;
@@ -107,7 +108,7 @@ export default function ContactsPage() {
         });
         
         if (!response.ok) {
-          localStorage.removeItem('auth_token');
+          authManager.clearAllSessions();
           toast.error(t('errors.sessionExpired'));
           router.push('/login');
           return;
@@ -192,7 +193,7 @@ export default function ContactsPage() {
 
   const loadFriendRequests = async () => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       if (!token) return;
 
       const response = await fetch(buildApiUrl('/users/friend-requests'), {
@@ -210,7 +211,7 @@ export default function ContactsPage() {
 
   const loadAffiliateRelations = async () => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       if (!token) return;
 
       const response = await fetch(buildApiUrl('/affiliate/stats'), {
@@ -260,14 +261,14 @@ export default function ContactsPage() {
       const contact = displayedUsers.find(u => u.id === userId);
       if (!contact) return;
 
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       if (!token) {
         router.push('/login');
         return;
       }
 
       // Créer le titre automatique "user1 & user2"
-      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      const currentUser = JSON.parse(JSON.stringify(authManager.getCurrentUser() || {}) || '{}');
       const currentUserName = currentUser.displayName || `${currentUser.firstName} ${currentUser.lastName}`.trim() || currentUser.username;
       const contactName = getUserDisplayName(contact);
       const conversationTitle = `${currentUserName} & ${contactName}`;
@@ -306,7 +307,7 @@ export default function ContactsPage() {
 
   const handleFriendRequest = async (requestId: string, action: 'accept' | 'reject') => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       if (!token) return;
 
       const response = await fetch(buildApiUrl(`/users/friend-requests/${requestId}`), {
@@ -334,7 +335,7 @@ export default function ContactsPage() {
 
   const sendFriendRequest = async (userId: string) => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       if (!token) return;
 
       const response = await fetch(buildApiUrl('/users/friend-requests'), {

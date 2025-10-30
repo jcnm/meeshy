@@ -383,94 +383,6 @@ export function ConversationDetailsSidebar({
                   {conversation.type !== 'direct' ? t('conversationDetails.conversationGroup') : t('conversationDetails.conversationPrivate')}
                 </p>
               </div>
-
-              {/* Section description - Seulement pour les conversations de groupe */}
-              {conversation.type !== 'direct' && (
-                <div className="space-y-2">
-                  {isEditingDescription ? (
-                    <div className="space-y-2">
-                      <Textarea
-                        value={conversationDescription}
-                        onChange={(e) => setConversationDescription(e.target.value)}
-                        className="min-h-[80px] text-sm resize-none"
-                        placeholder={t('conversationDetails.descriptionPlaceholder') || 'Ajoutez une description...'}
-                        autoFocus
-                        onKeyDown={(e) => {
-                          if (e.key === 'Escape') {
-                            setIsEditingDescription(false);
-                            setConversationDescription(conversation.description || '');
-                          }
-                          // Ctrl/Cmd + Enter pour sauvegarder
-                          if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                            handleSaveDescription();
-                          }
-                        }}
-                      />
-                      <div className="flex items-center gap-2 justify-end">
-                        <Button
-                          size="sm"
-                          onClick={handleSaveDescription}
-                          disabled={isLoading}
-                          className="h-8 px-3"
-                        >
-                          <Save className="h-3 w-3 mr-1" />
-                          {t('conversationDetails.save') || 'Enregistrer'}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => {
-                            setIsEditingDescription(false);
-                            setConversationDescription(conversation.description || '');
-                          }}
-                          className="h-8 px-3"
-                        >
-                          <X className="h-3 w-3 mr-1" />
-                          {t('conversationDetails.cancel') || 'Annuler'}
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div 
-                      className="group relative p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
-                      onClick={() => {
-                        if (isAdmin) {
-                          setIsEditingDescription(true);
-                          setConversationDescription(conversation.description || '');
-                        }
-                      }}
-                    >
-                      {conversation.description ? (
-                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                          {conversation.description}
-                        </p>
-                      ) : (
-                        <p className="text-sm text-muted-foreground/50 italic">
-                          {isAdmin 
-                            ? (t('conversationDetails.addDescription') || 'Cliquez pour ajouter une description...')
-                            : (t('conversationDetails.noDescription') || 'Aucune description')
-                          }
-                        </p>
-                      )}
-                      {isAdmin && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setIsEditingDescription(true);
-                            setConversationDescription(conversation.description || '');
-                          }}
-                          title={t('conversationDetails.editDescription') || 'Modifier la description'}
-                        >
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
 
             <Separator />
@@ -493,6 +405,98 @@ export function ConversationDetailsSidebar({
                 )}
               </Button>
             </div>
+
+            {/* Section description - Seulement pour les conversations de groupe */}
+            {conversation.type !== 'direct' && (
+              <>
+                <div className="space-y-2">
+                  {isEditingDescription ? (
+                    <div className="space-y-2">
+                      <Textarea
+                        value={conversationDescription}
+                        onChange={(e) => setConversationDescription(e.target.value)}
+                        className="min-h-[80px] text-sm resize-none"
+                        placeholder={t('conversationDetails.descriptionPlaceholder')}
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === 'Escape') {
+                            setIsEditingDescription(false);
+                            setConversationDescription(conversation.description || '');
+                          }
+                          // Ctrl/Cmd + Enter pour sauvegarder
+                          if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                            handleSaveDescription();
+                          }
+                        }}
+                      />
+                      <div className="flex items-center gap-2 justify-end">
+                        <Button
+                          size="sm"
+                          onClick={handleSaveDescription}
+                          disabled={isLoading}
+                          className="h-8 px-3"
+                        >
+                          <Save className="h-3 w-3 mr-1" />
+                          {t('conversationDetails.save')}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setIsEditingDescription(false);
+                            setConversationDescription(conversation.description || '');
+                          }}
+                          className="h-8 px-3"
+                        >
+                          <X className="h-3 w-3 mr-1" />
+                          {t('conversationDetails.cancel')}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className="group relative p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
+                      onClick={() => {
+                        if (isAdmin) {
+                          setIsEditingDescription(true);
+                          setConversationDescription(conversation.description || '');
+                        }
+                      }}
+                    >
+                      {conversation.description ? (
+                        <div className="max-h-32 overflow-y-auto">
+                          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                            {conversation.description}
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground/50 italic">
+                          {isAdmin
+                            ? t('conversationDetails.addDescription')
+                            : t('conversationDetails.noDescription')
+                          }
+                        </p>
+                      )}
+                      {isAdmin && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsEditingDescription(true);
+                            setConversationDescription(conversation.description || '');
+                          }}
+                          title={t('conversationDetails.editDescription')}
+                        >
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
 
             <Separator />
 

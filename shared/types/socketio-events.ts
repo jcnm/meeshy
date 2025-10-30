@@ -6,12 +6,25 @@
 // Import pour AnonymousParticipant
 import type { AnonymousParticipant } from './anonymous';
 
+// Import pour les événements d'appels vidéo
+import type {
+  CallInitiateEvent,
+  CallInitiatedEvent,
+  CallJoinEvent,
+  CallSignalEvent,
+  CallParticipantJoinedEvent,
+  CallParticipantLeftEvent,
+  CallEndedEvent,
+  CallMediaToggleEvent,
+  CallError
+} from './video-call';
+
 // ===== CONSTANTES D'ÉVÉNEMENTS =====
 
 // Événements du serveur vers le client
 export const SERVER_EVENTS = {
   MESSAGE_NEW: 'message:new',
-  MESSAGE_EDITED: 'message:edited', 
+  MESSAGE_EDITED: 'message:edited',
   MESSAGE_DELETED: 'message:deleted',
   MESSAGE_TRANSLATION: 'message:translation',
   MESSAGE_TRANSLATED: 'message_translated',
@@ -31,7 +44,14 @@ export const SERVER_EVENTS = {
   CONVERSATION_ONLINE_STATS: 'conversation:online_stats',
   REACTION_ADDED: 'reaction:added',
   REACTION_REMOVED: 'reaction:removed',
-  REACTION_SYNC: 'reaction:sync'
+  REACTION_SYNC: 'reaction:sync',
+  CALL_INITIATED: 'call:initiated',
+  CALL_PARTICIPANT_JOINED: 'call:participant-joined',
+  CALL_PARTICIPANT_LEFT: 'call:participant-left',
+  CALL_ENDED: 'call:ended',
+  CALL_SIGNAL: 'call:signal',
+  CALL_MEDIA_TOGGLED: 'call:media-toggled',
+  CALL_ERROR: 'call:error'
 } as const;
 
 // Événements du client vers le serveur
@@ -49,7 +69,14 @@ export const CLIENT_EVENTS = {
   REQUEST_TRANSLATION: 'request_translation',
   REACTION_ADD: 'reaction:add',
   REACTION_REMOVE: 'reaction:remove',
-  REACTION_REQUEST_SYNC: 'reaction:request_sync'
+  REACTION_REQUEST_SYNC: 'reaction:request_sync',
+  CALL_INITIATE: 'call:initiate',
+  CALL_JOIN: 'call:join',
+  CALL_LEAVE: 'call:leave',
+  CALL_SIGNAL: 'call:signal',
+  CALL_TOGGLE_AUDIO: 'call:toggle-audio',
+  CALL_TOGGLE_VIDEO: 'call:toggle-video',
+  CALL_END: 'call:end'
 } as const;
 
 // ===== ÉVÉNEMENTS SOCKET.IO =====
@@ -215,6 +242,13 @@ export interface ServerToClientEvents {
   [SERVER_EVENTS.REACTION_ADDED]: (data: ReactionUpdateEventData) => void;
   [SERVER_EVENTS.REACTION_REMOVED]: (data: ReactionUpdateEventData) => void;
   [SERVER_EVENTS.REACTION_SYNC]: (data: ReactionSyncEventData) => void;
+  [SERVER_EVENTS.CALL_INITIATED]: (data: CallInitiatedEvent) => void;
+  [SERVER_EVENTS.CALL_PARTICIPANT_JOINED]: (data: CallParticipantJoinedEvent) => void;
+  [SERVER_EVENTS.CALL_PARTICIPANT_LEFT]: (data: CallParticipantLeftEvent) => void;
+  [SERVER_EVENTS.CALL_ENDED]: (data: CallEndedEvent) => void;
+  [SERVER_EVENTS.CALL_SIGNAL]: (data: CallSignalEvent) => void;
+  [SERVER_EVENTS.CALL_MEDIA_TOGGLED]: (data: CallMediaToggleEvent) => void;
+  [SERVER_EVENTS.CALL_ERROR]: (data: CallError) => void;
 }
 
 /**
@@ -331,6 +365,13 @@ export interface ClientToServerEvents {
   [CLIENT_EVENTS.REACTION_ADD]: (data: ReactionAddData, callback?: (response: SocketIOResponse<ReactionUpdateEventData>) => void) => void;
   [CLIENT_EVENTS.REACTION_REMOVE]: (data: ReactionRemoveData, callback?: (response: SocketIOResponse<ReactionUpdateEventData>) => void) => void;
   [CLIENT_EVENTS.REACTION_REQUEST_SYNC]: (messageId: string, callback?: (response: SocketIOResponse<ReactionSyncEventData>) => void) => void;
+  [CLIENT_EVENTS.CALL_INITIATE]: (data: CallInitiateEvent) => void;
+  [CLIENT_EVENTS.CALL_JOIN]: (data: CallJoinEvent) => void;
+  [CLIENT_EVENTS.CALL_LEAVE]: (data: { callId: string }) => void;
+  [CLIENT_EVENTS.CALL_SIGNAL]: (data: CallSignalEvent) => void;
+  [CLIENT_EVENTS.CALL_TOGGLE_AUDIO]: (data: { callId: string; enabled: boolean }) => void;
+  [CLIENT_EVENTS.CALL_TOGGLE_VIDEO]: (data: { callId: string; enabled: boolean }) => void;
+  [CLIENT_EVENTS.CALL_END]: (data: { callId: string }) => void;
 }
 
 // ===== TYPES DE BASE =====

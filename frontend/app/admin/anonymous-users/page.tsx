@@ -7,19 +7,25 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { 
-  ArrowLeft, 
-  Search, 
-  Users, 
-  UserCheck, 
-  UserX, 
-  Globe, 
+import {
+  ArrowLeft,
+  Search,
+  Users,
+  UserCheck,
+  UserX,
+  Globe,
   MessageSquare,
   Calendar,
   MapPin,
   Eye,
-  EyeOff
+  EyeOff,
+  ExternalLink,
+  Shield,
+  Clock,
+  Link2
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { adminService, AnonymousUser } from '@/services/admin.service';
 
@@ -33,6 +39,8 @@ export default function AdminAnonymousUsersPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [hasMore, setHasMore] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<AnonymousUser | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   const loadAnonymousUsers = async (page: number = 1, search?: string, status?: string) => {
     try {
@@ -260,7 +268,7 @@ export default function AdminAnonymousUsersPage() {
                           </div>
                         </div>
                       </div>
-                      <div className="text-right">
+                      <div className="text-right flex flex-col items-end space-y-2">
                         <div className="text-sm text-gray-500">
                           <div className="flex items-center space-x-1">
                             <MessageSquare className="h-3 w-3" />
@@ -271,6 +279,18 @@ export default function AdminAnonymousUsersPage() {
                             <span>Rejoint le {formatDate(user.joinedAt)}</span>
                           </div>
                         </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setShowDetailsModal(true);
+                          }}
+                          className="flex items-center space-x-1"
+                        >
+                          <Eye className="h-3 w-3" />
+                          <span>Détails</span>
+                        </Button>
                       </div>
                     </div>
                     
@@ -330,6 +350,239 @@ export default function AdminAnonymousUsersPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Modal de détails */}
+        <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
+          <DialogContent className="max-w-3xl max-h-[90vh]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center space-x-2">
+                <Users className="h-5 w-5" />
+                <span>Détails de l'utilisateur anonyme</span>
+              </DialogTitle>
+            </DialogHeader>
+
+            {selectedUser && (
+              <ScrollArea className="max-h-[70vh] pr-4">
+                <div className="space-y-6">
+                  {/* Informations générales */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center space-x-2">
+                        <Shield className="h-4 w-4" />
+                        <span>Informations générales</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Nom complet</p>
+                          <p className="text-sm font-semibold">{selectedUser.firstName} {selectedUser.lastName}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Nom d'utilisateur</p>
+                          <p className="text-sm font-semibold">@{selectedUser.username}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Email</p>
+                          <p className="text-sm">{selectedUser.email || 'Non renseigné'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Statut</p>
+                          <div>{getStatusBadge(selectedUser.isActive, selectedUser.isOnline)}</div>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Pays</p>
+                          <p className="text-sm flex items-center space-x-1">
+                            <MapPin className="h-3 w-3" />
+                            <span>{selectedUser.country || 'Non renseigné'}</span>
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Langue</p>
+                          <p className="text-sm flex items-center space-x-1">
+                            <Globe className="h-3 w-3" />
+                            <span>{selectedUser.language}</span>
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Date d'inscription</p>
+                          <p className="text-sm flex items-center space-x-1">
+                            <Calendar className="h-3 w-3" />
+                            <span>{formatDate(selectedUser.joinedAt)}</span>
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Dernière activité</p>
+                          <p className="text-sm flex items-center space-x-1">
+                            <Clock className="h-3 w-3" />
+                            <span>{selectedUser.lastActivity ? formatDate(selectedUser.lastActivity) : 'Jamais'}</span>
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Permissions */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center space-x-2">
+                        <Shield className="h-4 w-4" />
+                        <span>Permissions et droits</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-sm font-medium">Envoi de messages</span>
+                          <Badge variant={selectedUser.canSendMessages ? "default" : "secondary"}>
+                            {selectedUser.canSendMessages ? 'Autorisé' : 'Refusé'}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-sm font-medium">Envoi de fichiers</span>
+                          <Badge variant={selectedUser.canSendFiles ? "default" : "secondary"}>
+                            {selectedUser.canSendFiles ? 'Autorisé' : 'Refusé'}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-sm font-medium">Envoi d'images</span>
+                          <Badge variant={selectedUser.canSendImages ? "default" : "secondary"}>
+                            {selectedUser.canSendImages ? 'Autorisé' : 'Refusé'}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-sm font-medium">Voir l'historique</span>
+                          <Badge variant={selectedUser.canViewHistory ? "default" : "secondary"}>
+                            {selectedUser.canViewHistory ? 'Autorisé' : 'Refusé'}
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Statistiques des messages */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center space-x-2">
+                        <MessageSquare className="h-4 w-4" />
+                        <span>Statistiques des messages</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="text-center p-4 bg-blue-50 rounded-lg">
+                          <p className="text-2xl font-bold text-blue-600">{selectedUser._count.sentMessages}</p>
+                          <p className="text-sm text-gray-600">Messages envoyés</p>
+                        </div>
+                        <div className="text-center p-4 bg-green-50 rounded-lg">
+                          <p className="text-2xl font-bold text-green-600">
+                            {selectedUser._count.reactions || 0}
+                          </p>
+                          <p className="text-sm text-gray-600">Réactions</p>
+                        </div>
+                        <div className="text-center p-4 bg-purple-50 rounded-lg">
+                          <p className="text-2xl font-bold text-purple-600">
+                            {Math.round((selectedUser._count.sentMessages / Math.max(1, Math.ceil((new Date().getTime() - new Date(selectedUser.joinedAt).getTime()) / (1000 * 60 * 60 * 24)))) * 10) / 10}
+                          </p>
+                          <p className="text-sm text-gray-600">Messages/jour</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Lien de partage et conversation */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center space-x-2">
+                        <Link2 className="h-4 w-4" />
+                        <span>Lien de partage et conversation</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <p className="text-sm font-medium text-gray-500 mb-2">Lien utilisé</p>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div>
+                            <p className="font-medium">{selectedUser.shareLink.name || 'Sans nom'}</p>
+                            <p className="text-sm text-gray-500">
+                              ID: {selectedUser.shareLink.identifier || selectedUser.shareLink.linkId}
+                            </p>
+                          </div>
+                          <Badge variant="outline">
+                            {selectedUser.shareLink.isActive ? 'Actif' : 'Inactif'}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="text-sm font-medium text-gray-500 mb-2">Conversation rejointe</p>
+                        <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                          <div className="flex-1">
+                            <p className="font-medium">
+                              {selectedUser.shareLink.conversation.title ||
+                               selectedUser.shareLink.conversation.identifier ||
+                               'Sans titre'}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              Type: {selectedUser.shareLink.conversation.type}
+                            </p>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              router.push(`/admin/conversations?id=${selectedUser.shareLink.conversationId}`);
+                              setShowDetailsModal(false);
+                            }}
+                            className="flex items-center space-x-1"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            <span>Voir conversation</span>
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Actions admin */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Actions administrateur</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            // TODO: Implémenter la visualisation des messages
+                            toast.info('Fonctionnalité à venir');
+                          }}
+                          className="flex items-center space-x-1"
+                        >
+                          <MessageSquare className="h-3 w-3" />
+                          <span>Voir les messages</span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            router.push(`/conversations/${selectedUser.shareLink.conversationId}`);
+                            setShowDetailsModal(false);
+                          }}
+                          className="flex items-center space-x-1"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          <span>Accéder à la conversation</span>
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </ScrollArea>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );

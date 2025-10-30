@@ -23,6 +23,7 @@ import { FontSelector } from '@/components/settings/font-selector';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { useI18n } from '@/hooks/useI18n';
+import { authManager } from '@/services/auth-manager.service';
 
 interface SettingsLayoutProps {
   currentUser: UserType;
@@ -37,6 +38,7 @@ interface SettingsSection {
 }
 
 export function SettingsLayout({ currentUser, initialTab = 'profile' }: SettingsLayoutProps) {
+
   const { t } = useI18n('settings');
   // États principaux
   const [selectedSection, setSelectedSection] = useState<string>(initialTab);
@@ -95,7 +97,7 @@ export function SettingsLayout({ currentUser, initialTab = 'profile' }: Settings
   const saveSettings = useCallback(async () => {
     setIsSaving(true);
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       const response = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.ME), {
         method: 'PATCH',
         headers: {

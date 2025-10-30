@@ -22,6 +22,7 @@ import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { toast } from 'sonner';
 import { adminService } from '@/services/admin.service';
 import { getDefaultPermissions } from '@/utils/user-adapter';
+import { authManager } from '@/services/auth-manager.service';
 
 interface AdminStats {
   totalUsers: number;
@@ -100,7 +101,7 @@ const AdminDashboard: React.FC = () => {
     const loadUserAndData = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem('auth_token');
+        const token = authManager.getAuthToken();
         if (!token) {
           router.push('/login');
           return;
@@ -112,7 +113,7 @@ const AdminDashboard: React.FC = () => {
         });
 
         if (!userResponse.ok) {
-          localStorage.removeItem('auth_token');
+          authManager.clearAllSessions();
           router.push('/login');
           return;
         }
@@ -211,7 +212,7 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         {/* Statistiques principales - Les 10 métriques demandées */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
           {/* 1. Utilisateurs */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -284,7 +285,7 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         {/* Deuxième ligne de statistiques */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
           {/* 6. Liens de conversation */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

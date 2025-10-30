@@ -30,6 +30,10 @@ export * from './tracking-link';
 // Export des types unifiés Phase 5 - Attachments
 export * from './attachment';
 
+// Export des types unifiés Phase 6 - Video Calls
+export * from './video-call';
+export * from './attachment';
+
 // Export des types communauté
 export * from './community';
 

@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { buildApiUrl } from '@/lib/config';
 import { useI18n } from '@/hooks/useI18n';
+import { authManager } from '@/services/auth-manager.service';
 
 interface AffiliateToken {
   id: string;
@@ -48,6 +49,7 @@ interface ShareAffiliateModalProps {
 }
 
 export function ShareAffiliateModal({ isOpen, onClose, userLanguage }: ShareAffiliateModalProps) {
+
   const [tokens, setTokens] = useState<AffiliateToken[]>([]);
   const [selectedToken, setSelectedToken] = useState<AffiliateToken | null>(null);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
@@ -94,7 +96,7 @@ export function ShareAffiliateModal({ isOpen, onClose, userLanguage }: ShareAffi
   const loadTokens = async () => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       if (!token) return;
 
       const response = await fetch(buildApiUrl('/affiliate/tokens'), {
@@ -121,7 +123,7 @@ export function ShareAffiliateModal({ isOpen, onClose, userLanguage }: ShareAffi
 
     try {
       setIsCreating(true);
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       if (!token) return false;
 
       const response = await fetch(buildApiUrl('/affiliate/tokens'), {

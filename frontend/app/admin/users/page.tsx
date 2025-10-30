@@ -1,21 +1,23 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Users, ArrowLeft, UserPlus, Search, Filter, ChevronLeft, ChevronRight, Eye, Shield, UserX } from 'lucide-react';
+import { Users, ArrowLeft, UserPlus, Search, Filter, ChevronLeft, ChevronRight, Eye, Ghost } from 'lucide-react';
 import { adminService } from '@/services/admin.service';
 import type { User } from '@/services/admin.service';
 import { toast } from 'sonner';
+import { TableSkeleton, StatCardSkeleton } from '@/components/admin/TableSkeleton';
 
 export default function AdminUsersPage() {
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [stats, setStats] = useState({
     totalUsers: 0,
     activeUsers: 0,
@@ -25,27 +27,52 @@ export default function AdminUsersPage() {
 
   // Filtres et pagination
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(20);
 
+  // Debounce pour la recherche - attend 800ms après la dernière frappe
   useEffect(() => {
-    loadUsersData();
-  }, [currentPage, roleFilter, statusFilter]);
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 800);
 
-  const loadUsersData = async () => {
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // Fonction de chargement des données - définie avant les useEffect qui l'utilisent
+  const loadUsersData = useCallback(async (showLoader = true) => {
     try {
-      setLoading(true);
+      console.log('[Admin Users] Appel API avec params:', {
+        page: currentPage,
+        size: pageSize,
+        search: debouncedSearch,
+        role: roleFilter,
+        status: statusFilter
+      });
+
+      // Ne montrer le loader que lors du chargement initial ou sur demande
+      if (showLoader) {
+        setLoading(true);
+      }
       const [dashboardResponse, usersResponse] = await Promise.all([
         adminService.getDashboardStats(),
-        adminService.getUsers(currentPage, pageSize, search)
+        adminService.getUsers(currentPage, pageSize, debouncedSearch, roleFilter, statusFilter)
       ]);
+
+      console.log('[Admin Users] Réponse API complète:', usersResponse);
+      console.log('[Admin Users] usersResponse.data:', usersResponse.data);
 
       // Le backend retourne {success: true, data: {...}}, donc il faut accéder à .data.data
       const dashboardData = dashboardResponse.data?.data || dashboardResponse.data;
       const usersData = usersResponse.data?.data || usersResponse.data;
+
+      console.log('[Admin Users] usersData extrait:', usersData);
+      console.log('[Admin Users] usersData.users:', usersData?.users);
+      console.log('[Admin Users] Nombre d\'utilisateurs:', usersData?.users?.length || 0);
 
       if (dashboardData) {
         setStats({
@@ -57,9 +84,11 @@ export default function AdminUsersPage() {
       }
 
       if (usersData) {
+        console.log('[Admin Users] Mise à jour de users avec:', usersData.users || []);
         setUsers(usersData.users || []);
         const total = usersData.pagination?.total || 0;
         setTotalPages(Math.max(1, Math.ceil(total / pageSize)));
+        console.log('[Admin Users] Total pages calculé:', Math.max(1, Math.ceil(total / pageSize)));
       }
     } catch (error) {
       console.error('Erreur lors du chargement des données utilisateurs:', error);
@@ -67,21 +96,55 @@ export default function AdminUsersPage() {
       setUsers([]); // Reset to empty array on error
     } finally {
       setLoading(false);
+      setIsInitialLoad(false);
     }
+  }, [currentPage, pageSize, debouncedSearch, roleFilter, statusFilter]);
+
+  // Charger les données uniquement quand nécessaire
+  useEffect(() => {
+    console.log('[Admin Users] Chargement avec filtres:', {
+      currentPage,
+      pageSize,
+      debouncedSearch,
+      roleFilter,
+      statusFilter
+    });
+    loadUsersData(false); // Ne pas montrer le loader lors des filtres
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, pageSize, debouncedSearch, roleFilter, statusFilter]);
+
+  // Réinitialiser la page à 1 quand les filtres changent
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch, roleFilter, statusFilter]);
+
+  // Chargement initial avec loader
+  useEffect(() => {
+    loadUsersData(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleFilter = () => {
+    setCurrentPage(1);
+    // Le useEffect se chargera du rechargement
   };
 
-  const handleSearch = () => {
+  const handlePageSizeChange = (newSize: number) => {
+    console.log('[Admin Users] Changement de pageSize:', newSize);
+    setPageSize(newSize);
     setCurrentPage(1);
-    loadUsersData();
+    // Le useEffect se chargera du rechargement
   };
 
   const handlePreviousPage = () => {
+    console.log('[Admin Users] Clic sur Précédent, page actuelle:', currentPage);
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
     }
   };
 
   const handleNextPage = () => {
+    console.log('[Admin Users] Clic sur Suivant, page actuelle:', currentPage, 'total:', totalPages);
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
     }
@@ -131,12 +194,14 @@ export default function AdminUsersPage() {
     }
   };
 
-  if (loading) {
+  if (isInitialLoad) {
     return (
       <AdminLayout currentPage="/admin/users">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <span className="ml-3 text-lg">Chargement des utilisateurs...</span>
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map(i => <StatCardSkeleton key={i} />)}
+          </div>
+          <TableSkeleton rows={10} columns={6} />
         </div>
       </AdminLayout>
     );
@@ -169,7 +234,7 @@ export default function AdminUsersPage() {
               className="flex items-center space-x-2 text-sm"
               size="sm"
             >
-              <Users className="h-4 w-4" />
+              <Ghost className="h-4 w-4" />
               <span className="hidden md:inline">Anonymes</span>
             </Button>
             <Button
@@ -239,7 +304,7 @@ export default function AdminUsersPage() {
             </CardTitle>
 
             {/* Filtres intégrés dans l'en-tête */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
                 <Input
@@ -247,7 +312,7 @@ export default function AdminUsersPage() {
                   className="pl-8 text-sm"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  onKeyPress={(e) => e.key === 'Enter' && handleFilter()}
                 />
               </div>
               <select
@@ -272,10 +337,24 @@ export default function AdminUsersPage() {
                 <option value="active">Actif</option>
                 <option value="inactive">Inactif</option>
               </select>
+              <select
+                className="w-full p-2 border rounded-md text-sm bg-white"
+                value={pageSize}
+                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                title="Nombre d'éléments par page"
+              >
+                <option value="20">20 par page</option>
+                <option value="50">50 par page</option>
+                <option value="100">100 par page</option>
+                <option value="200">200 par page</option>
+                <option value="400">400 par page</option>
+                <option value="500">500 par page</option>
+                <option value="1000">1000 par page</option>
+              </select>
               <Button
                 variant="outline"
                 className="w-full text-sm"
-                onClick={handleSearch}
+                onClick={handleFilter}
               >
                 <Filter className="h-4 w-4 mr-2" />
                 Filtrer
@@ -286,7 +365,7 @@ export default function AdminUsersPage() {
             {/* Vue Desktop (hidden on mobile) */}
             <div className="hidden lg:block space-y-4">
               {/* En-tête du tableau */}
-              <div className="grid grid-cols-12 gap-4 p-3 bg-gray-50 rounded-lg font-medium text-sm text-gray-700">
+              <div className="grid grid-cols-12 gap-4 p-3 bg-gray-50 rounded-lg font-medium text-sm text-gray-700 sticky top-0 z-10">
                 <div className="col-span-3">Utilisateur</div>
                 <div className="col-span-3">Email</div>
                 <div className="col-span-2">Rôle</div>
@@ -328,7 +407,7 @@ export default function AdminUsersPage() {
                   <div className="col-span-2 text-sm text-gray-600 flex items-center">
                     {formatDate(user.updatedAt || user.createdAt)}
                   </div>
-                  <div className="col-span-1 flex items-center justify-center">
+                  <div className="col-span-1 flex items-center justify-center space-x-2">
                     <Button
                       variant="outline"
                       size="sm"
@@ -428,6 +507,7 @@ export default function AdminUsersPage() {
             )}
           </CardContent>
         </Card>
+
       </div>
     </AdminLayout>
   );

@@ -10,6 +10,7 @@ import { Footer } from '@/components/layout/Footer';
 import { useI18n } from '@/hooks/useI18n';
 import { toast } from 'sonner';
 import { Settings as SettingsIcon } from 'lucide-react';
+import { authManager } from '@/services/auth-manager.service';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -20,7 +21,7 @@ export default function SettingsPage() {
   useEffect(() => {
     const loadUserSettings = async () => {
       try {
-        const token = localStorage.getItem('auth_token');
+        const token = authManager.getAuthToken();
         if (!token) {
           router.push('/login');
           return;
@@ -42,7 +43,7 @@ export default function SettingsPage() {
             throw new Error(result.error || 'Erreur lors du chargement du profil');
           }
         } else if (response.status === 401) {
-          localStorage.removeItem('auth_token');
+          authManager.clearAllSessions();
           router.push('/login');
           return;
         } else {
@@ -63,7 +64,7 @@ export default function SettingsPage() {
 
   const handleUserUpdate = async (updatedUser: Partial<User>) => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       if (!token) {
         router.push('/login');
         return;

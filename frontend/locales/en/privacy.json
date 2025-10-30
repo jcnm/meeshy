@@ -70,8 +70,12 @@
         "title": "4.2 Encryption",
         "content": "All communications between your browser and our servers are encrypted using TLS 1.3."
       },
+      "anonymous": {
+        "title": "4.3 Anonymous Users and Encryption",
+        "content": "Anonymous users do not have a personal encryption key. As a result, their data cannot be encrypted at rest. To benefit from full data protection, please create a user account."
+      },
       "storage": {
-        "title": "4.3 Secure Storage",
+        "title": "4.4 Secure Storage",
         "content": "Data stored on our servers is protected by enterprise-grade security measures, including encryption at rest."
       }
     },

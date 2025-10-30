@@ -64,12 +64,7 @@ export function Header({
   const handleLanguageChange = (languageCode: string) => {
     console.log('🔄 [Header] Changing language to:', languageCode);
     setInterfaceLanguage(languageCode);
-    
-    // Recharger la page pour appliquer les changements de langue
-    setTimeout(() => {
-      console.log('🔄 [Header] Reloading page...');
-      window.location.reload();
-    }, 500);
+    // La langue de l'interface change automatiquement sans reload
   };
 
   const handleAuthClick = (newMode: AuthMode) => {
@@ -207,6 +202,7 @@ export function Header({
                               onValueChange={handleLanguageChange}
                               interfaceOnly={true}
                               className="w-full"
+                              showLanguageName={true}
                             />
                           </div>
                         </>
@@ -234,6 +230,7 @@ export function Header({
                   value={currentInterfaceLanguage}
                   onValueChange={handleLanguageChange}
                   interfaceOnly={true}
+                  showLanguageName={true}
                 />
                 
                 <Link href="/login">
@@ -259,6 +256,7 @@ export function Header({
                   value={currentInterfaceLanguage}
                   onValueChange={handleLanguageChange}
                   interfaceOnly={true}
+                  showLanguageName={true}
                 />
                 
                 <Link href="/login">
@@ -442,6 +440,7 @@ export function Header({
                         onValueChange={handleLanguageChange}
                         interfaceOnly={true}
                         className="w-full"
+                        showLanguageName={true}
                       />
                     </div>
                   </div>
@@ -488,6 +487,7 @@ export function Header({
                         onValueChange={handleLanguageChange}
                         interfaceOnly={true}
                         className="w-full"
+                        showLanguageName={true}
                       />
                     </div>
                   </div>

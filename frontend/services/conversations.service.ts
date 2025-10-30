@@ -759,9 +759,8 @@ export class ConversationsService {
             durationDays = Math.ceil((expirationDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
           }
           
-          // Obtenir la langue de l'utilisateur courant (depuis localStorage si disponible)
-          const userDataStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
-          const userData = userDataStr ? JSON.parse(userDataStr) : null;
+          // Obtenir la langue de l'utilisateur courant via authManager (source unique)
+          const userData = typeof window !== 'undefined' ? authManager.getCurrentUser() : null;
           const userLanguage = userData?.systemLanguage || 'fr';
           
           // Générer le nom du lien automatiquement

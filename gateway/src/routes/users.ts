@@ -4,11 +4,23 @@ import { logError } from '../utils/logger';
 import bcrypt from 'bcryptjs';
 import { normalizeEmail, normalizeUsername, capitalizeName, normalizeDisplayName } from '../utils/normalize';
 
+// Regex pour détecter les émojis
+// Cette regex détecte la plupart des émojis Unicode
+const EMOJI_REGEX = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F1E6}-\u{1F1FF}]/u;
+
+function containsEmoji(text: string): boolean {
+  return EMOJI_REGEX.test(text);
+}
+
 // Schéma de validation pour la mise à jour utilisateur
 const updateUserSchema = z.object({
-  firstName: z.string().min(1).optional(),
-  lastName: z.string().min(1).optional(),
-  displayName: z.string().optional(),
+  firstName: z.string().min(1).optional().refine((val) => !val || !containsEmoji(val), {
+    message: 'Le prénom ne peut pas contenir d\'émojis'
+  }),
+  lastName: z.string().min(1).optional().refine((val) => !val || !containsEmoji(val), {
+    message: 'Le nom ne peut pas contenir d\'émojis'
+  }),
+  displayName: z.string().optional(), // Autorise les émojis dans displayName
   email: z.string().email().optional(),
   phoneNumber: z.union([z.string(), z.null()]).optional(),
   bio: z.string().max(500).optional(),

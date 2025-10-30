@@ -88,6 +88,42 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Enhanced focus indicators for WCAG 2.1 AA compliance */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-blue-500 ring-offset-2 ring-offset-background;
+  }
+
+  /* High contrast focus for interactive elements */
+  button:focus-visible,
+  a:focus-visible,
+  [role="button"]:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    @apply ring-2 ring-offset-2 ring-blue-600 dark:ring-blue-400 outline-none;
+  }
+
+  /* Skip link for keyboard navigation */
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded;
+  }
+}
+
+/* Touch target sizes for mobile */
+@media (max-width: 768px) {
+  button,
+  a[role="button"],
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 20px;
+    height: 20px;
+  }
 }
 
 /* Styles personnalisés pour les scrollbars */

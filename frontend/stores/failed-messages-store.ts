@@ -47,6 +47,7 @@ interface FailedMessagesState {
   getFailedMessagesForConversation: (conversationId: string) => FailedMessage[];
   incrementRetryCount: (id: string) => void;
   clearFailedMessages: (conversationId?: string) => void;
+  clearAllFailedMessages: () => void;
   updateFailedMessage: (id: string, updates: Partial<FailedMessage>) => void;
 }
 
@@ -122,6 +123,19 @@ export const useFailedMessagesStore = create<FailedMessagesState>()(
             msg.id === id ? { ...msg, ...updates } : msg
           ),
         }));
+      },
+
+      clearAllFailedMessages: () => {
+        // 1. Reset state
+        set({ failedMessages: [] });
+
+        // 2. CRITIQUE: Supprimer explicitement localStorage persist
+        // Sans ça, les données persistent et se rechargent au reload
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('meeshy-failed-messages');
+        }
+
+        console.log('[FAILED_MESSAGES] All failed messages cleared - clean slate');
       },
     }),
     {
