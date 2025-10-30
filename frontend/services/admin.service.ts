@@ -127,11 +127,17 @@ export const adminService = {
   /**
    * Récupère la liste des utilisateurs avec pagination
    */
-  async getUsers(page: number = 1, limit: number = 20, search?: string): Promise<ApiResponse<AdminUsersResponse>> {
+  async getUsers(page: number = 1, limit: number = 20, search?: string, role?: string, status?: string): Promise<ApiResponse<AdminUsersResponse>> {
     try {
       const params: any = { page, limit };
       if (search) {
         params.search = search;
+      }
+      if (role) {
+        params.role = role;
+      }
+      if (status) {
+        params.status = status;
       }
       const response = await apiService.get<AdminUsersResponse>('/admin/users', { params });
       return response;

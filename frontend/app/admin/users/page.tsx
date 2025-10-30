@@ -100,6 +100,13 @@ export default function AdminUsersPage() {
     }
   }, [currentPage, pageSize, debouncedSearch, roleFilter, statusFilter]);
 
+  // Réinitialiser la page à 1 quand les filtres changent (AVANT le chargement)
+  useEffect(() => {
+    if (!isInitialLoad) {
+      setCurrentPage(1);
+    }
+  }, [debouncedSearch, roleFilter, statusFilter, isInitialLoad]);
+
   // Charger les données uniquement quand nécessaire
   useEffect(() => {
     console.log('[Admin Users] Chargement avec filtres:', {
@@ -109,20 +116,9 @@ export default function AdminUsersPage() {
       roleFilter,
       statusFilter
     });
-    loadUsersData(false); // Ne pas montrer le loader lors des filtres
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, pageSize, debouncedSearch, roleFilter, statusFilter]);
-
-  // Réinitialiser la page à 1 quand les filtres changent
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [debouncedSearch, roleFilter, statusFilter]);
-
-  // Chargement initial avec loader
-  useEffect(() => {
-    loadUsersData(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    // Utiliser le loader seulement pour le premier chargement
+    loadUsersData(isInitialLoad);
+  }, [currentPage, pageSize, debouncedSearch, roleFilter, statusFilter, loadUsersData, isInitialLoad]);
 
   const handleFilter = () => {
     setCurrentPage(1);
