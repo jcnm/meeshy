@@ -89,40 +89,40 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Gestion du collage de texte trop long : créer un .txt UTF-8 et ne pas remplir le textarea
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    const handlePaste = async (e: ClipboardEvent) => {
+      const text = e.clipboardData?.getData('text');
+      if (text && text.length > maxMessageLength) {
+        e.preventDefault();
+        // Créer un fichier texte UTF-8
+        const encoder = new TextEncoder();
+        const utf8Text = encoder.encode(text);
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        const fileName = `presspaper-content-${year}${month}${day}-${hours}${minutes}${seconds}.txt`;
+        const textFile = new File([utf8Text], fileName, { type: 'text/plain;charset=utf-8' });
+        setSelectedFiles(prev => [...prev, textFile]);
+        toast.info(t('conversations.pasteTooLongTxtCreated'));
+      }
+    };
+    textarea.addEventListener('paste', handlePaste as any);
+    return () => textarea.removeEventListener('paste', handlePaste as any);
+  }, [maxMessageLength, t]);
+
   // Fonction pour formater la date en fonction du jour
   const formatReplyDate = (date: Date | string) => {
     const messageDate = new Date(date);
     const now = new Date();
-    
+
     // Réinitialiser l'heure pour comparer uniquement les dates
-    
-    // Gestion du collage de texte trop long : créer un .txt UTF-8 et ne pas remplir le textarea
-    useEffect(() => {
-      const textarea = textareaRef.current;
-      if (!textarea) return;
-      const handlePaste = async (e: ClipboardEvent) => {
-        const text = e.clipboardData?.getData('text');
-        if (text && text.length > maxMessageLength) {
-          e.preventDefault();
-          // Créer un fichier texte UTF-8
-          const encoder = new TextEncoder();
-          const utf8Text = encoder.encode(text);
-          const now = new Date();
-          const year = now.getFullYear();
-          const month = String(now.getMonth() + 1).padStart(2, '0');
-          const day = String(now.getDate()).padStart(2, '0');
-          const hours = String(now.getHours()).padStart(2, '0');
-          const minutes = String(now.getMinutes()).padStart(2, '0');
-          const seconds = String(now.getSeconds()).padStart(2, '0');
-          const fileName = `presspaper-content-${year}${month}${day}-${hours}${minutes}${seconds}.txt`;
-          const textFile = new File([utf8Text], fileName, { type: 'text/plain;charset=utf-8' });
-          setSelectedFiles(prev => [...prev, textFile]);
-          toast.info(t('conversations.pasteTooLongTxtCreated'));
-        }
-      };
-      textarea.addEventListener('paste', handlePaste as any);
-      return () => textarea.removeEventListener('paste', handlePaste as any);
-    }, [maxMessageLength, t]);
     const messageDateOnly = new Date(messageDate.getFullYear(), messageDate.getMonth(), messageDate.getDate());
     const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     

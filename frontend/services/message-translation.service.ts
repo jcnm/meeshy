@@ -5,6 +5,7 @@
 
 import axios from 'axios';
 import { buildApiUrl } from '@/lib/config';
+import { authManager } from './auth-manager.service';
 
 // === TYPES ET INTERFACES ===
 export interface ForceTranslationRequest {
