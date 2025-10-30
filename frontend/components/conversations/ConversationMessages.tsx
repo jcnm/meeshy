@@ -421,8 +421,8 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
           emptyStateDescription={t('noMessagesDescription')}
           reverseOrder={reverseOrder}
           className={cn(
-            "space-y-3",
-            isMobile && "space-y-'2"
+            "space-y-1.5",
+            isMobile && "space-y-1"
           )}
           onEditMessage={onEditMessage}
           onDeleteMessage={onDeleteMessage}
