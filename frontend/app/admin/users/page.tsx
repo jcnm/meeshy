@@ -1,23 +1,23 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Users, ArrowLeft, UserPlus, Search, Filter, ChevronLeft, ChevronRight, Eye, Trash2 } from 'lucide-react';
+import { Users, ArrowLeft, UserPlus, Search, Filter, ChevronLeft, ChevronRight, Eye, Ghost } from 'lucide-react';
 import { adminService } from '@/services/admin.service';
 import type { User } from '@/services/admin.service';
 import { toast } from 'sonner';
-import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { TableSkeleton, StatCardSkeleton } from '@/components/admin/TableSkeleton';
 
 export default function AdminUsersPage() {
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [stats, setStats] = useState({
     totalUsers: 0,
     activeUsers: 0,
@@ -27,31 +27,52 @@ export default function AdminUsersPage() {
 
   // Filtres et pagination
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize, setPageSize] = useState(20);
-  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; userId: string | null }>({
-    open: false,
-    userId: null
-  });
 
+  // Debounce pour la recherche - attend 800ms après la dernière frappe
   useEffect(() => {
-    loadUsersData();
-  }, [currentPage, pageSize]);
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 800);
 
-  const loadUsersData = async () => {
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // Fonction de chargement des données - définie avant les useEffect qui l'utilisent
+  const loadUsersData = useCallback(async (showLoader = true) => {
     try {
-      setLoading(true);
+      console.log('[Admin Users] Appel API avec params:', {
+        page: currentPage,
+        size: pageSize,
+        search: debouncedSearch,
+        role: roleFilter,
+        status: statusFilter
+      });
+
+      // Ne montrer le loader que lors du chargement initial ou sur demande
+      if (showLoader) {
+        setLoading(true);
+      }
       const [dashboardResponse, usersResponse] = await Promise.all([
         adminService.getDashboardStats(),
-        adminService.getUsers(currentPage, pageSize, search, roleFilter, statusFilter)
+        adminService.getUsers(currentPage, pageSize, debouncedSearch, roleFilter, statusFilter)
       ]);
+
+      console.log('[Admin Users] Réponse API complète:', usersResponse);
+      console.log('[Admin Users] usersResponse.data:', usersResponse.data);
 
       // Le backend retourne {success: true, data: {...}}, donc il faut accéder à .data.data
       const dashboardData = dashboardResponse.data?.data || dashboardResponse.data;
       const usersData = usersResponse.data?.data || usersResponse.data;
+
+      console.log('[Admin Users] usersData extrait:', usersData);
+      console.log('[Admin Users] usersData.users:', usersData?.users);
+      console.log('[Admin Users] Nombre d\'utilisateurs:', usersData?.users?.length || 0);
 
       if (dashboardData) {
         setStats({
@@ -63,9 +84,11 @@ export default function AdminUsersPage() {
       }
 
       if (usersData) {
+        console.log('[Admin Users] Mise à jour de users avec:', usersData.users || []);
         setUsers(usersData.users || []);
         const total = usersData.pagination?.total || 0;
         setTotalPages(Math.max(1, Math.ceil(total / pageSize)));
+        console.log('[Admin Users] Total pages calculé:', Math.max(1, Math.ceil(total / pageSize)));
       }
     } catch (error) {
       console.error('Erreur lors du chargement des données utilisateurs:', error);
@@ -73,26 +96,55 @@ export default function AdminUsersPage() {
       setUsers([]); // Reset to empty array on error
     } finally {
       setLoading(false);
+      setIsInitialLoad(false);
     }
-  };
+  }, [currentPage, pageSize, debouncedSearch, roleFilter, statusFilter]);
+
+  // Charger les données uniquement quand nécessaire
+  useEffect(() => {
+    console.log('[Admin Users] Chargement avec filtres:', {
+      currentPage,
+      pageSize,
+      debouncedSearch,
+      roleFilter,
+      statusFilter
+    });
+    loadUsersData(false); // Ne pas montrer le loader lors des filtres
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, pageSize, debouncedSearch, roleFilter, statusFilter]);
+
+  // Réinitialiser la page à 1 quand les filtres changent
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch, roleFilter, statusFilter]);
+
+  // Chargement initial avec loader
+  useEffect(() => {
+    loadUsersData(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleFilter = () => {
     setCurrentPage(1);
-    loadUsersData();
+    // Le useEffect se chargera du rechargement
   };
 
   const handlePageSizeChange = (newSize: number) => {
+    console.log('[Admin Users] Changement de pageSize:', newSize);
     setPageSize(newSize);
     setCurrentPage(1);
+    // Le useEffect se chargera du rechargement
   };
 
   const handlePreviousPage = () => {
+    console.log('[Admin Users] Clic sur Précédent, page actuelle:', currentPage);
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
     }
   };
 
   const handleNextPage = () => {
+    console.log('[Admin Users] Clic sur Suivant, page actuelle:', currentPage, 'total:', totalPages);
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
     }
@@ -142,19 +194,7 @@ export default function AdminUsersPage() {
     }
   };
 
-  const handleDeleteUser = async () => {
-    try {
-      // TODO: Implement actual delete API call
-      // await adminService.deleteUser(deleteDialog.userId);
-      toast.success('Utilisateur supprimé avec succès');
-      loadUsersData();
-    } catch (error) {
-      console.error('Erreur lors de la suppression de l\'utilisateur:', error);
-      toast.error('Erreur lors de la suppression de l\'utilisateur');
-    }
-  };
-
-  if (loading) {
+  if (isInitialLoad) {
     return (
       <AdminLayout currentPage="/admin/users">
         <div className="space-y-6">
@@ -194,7 +234,7 @@ export default function AdminUsersPage() {
               className="flex items-center space-x-2 text-sm"
               size="sm"
             >
-              <Users className="h-4 w-4" />
+              <Ghost className="h-4 w-4" />
               <span className="hidden md:inline">Anonymes</span>
             </Button>
             <Button
@@ -256,8 +296,8 @@ export default function AdminUsersPage() {
         </div>
 
         {/* Liste des utilisateurs */}
-        <Card className="flex flex-col max-h-[calc(100vh-28rem)]">
-          <CardHeader className="space-y-4 flex-shrink-0">
+        <Card>
+          <CardHeader className="space-y-4">
             <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
               <Users className="h-4 w-4 sm:h-5 sm:w-5" />
               <span>Utilisateurs ({users?.length || 0})</span>
@@ -321,7 +361,7 @@ export default function AdminUsersPage() {
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="flex-1 overflow-y-auto">
+          <CardContent>
             {/* Vue Desktop (hidden on mobile) */}
             <div className="hidden lg:block space-y-4">
               {/* En-tête du tableau */}
@@ -376,14 +416,6 @@ export default function AdminUsersPage() {
                       <Eye className="h-3 w-3 mr-1" />
                       Voir
                     </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-red-600 hover:text-red-700"
-                      onClick={() => setDeleteDialog({ open: true, userId: user.id })}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
                   </div>
                 </div>
               ))}
@@ -413,23 +445,15 @@ export default function AdminUsersPage() {
                           </Badge>
                           <span className="text-xs text-gray-500">{formatDate(user.updatedAt || user.createdAt)}</span>
                         </div>
-                        <div className="mt-3 flex space-x-2">
+                        <div className="mt-3">
                           <Button
                             variant="outline"
                             size="sm"
-                            className="flex-1 text-xs"
+                            className="w-full text-xs"
                             onClick={() => router.push(`/admin/users/${user.id}`)}
                           >
                             <Eye className="h-3 w-3 mr-1" />
-                            Détails
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-xs text-red-600 hover:text-red-700"
-                            onClick={() => setDeleteDialog({ open: true, userId: user.id })}
-                          >
-                            <Trash2 className="h-3 w-3" />
+                            Voir les détails
                           </Button>
                         </div>
                       </div>
@@ -484,19 +508,6 @@ export default function AdminUsersPage() {
           </CardContent>
         </Card>
 
-        {/* Delete Confirmation Dialog */}
-        <ConfirmDialog
-          open={deleteDialog.open}
-          onOpenChange={(open) => setDeleteDialog({ ...deleteDialog, open })}
-          onConfirm={() => {
-            handleDeleteUser();
-            setDeleteDialog({ open: false, userId: null });
-          }}
-          title="Supprimer l'utilisateur"
-          description="Cette action est irréversible. L'utilisateur et toutes ses données seront supprimés définitivement."
-          confirmText="Supprimer"
-          variant="destructive"
-        />
       </div>
     </AdminLayout>
   );

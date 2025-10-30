@@ -5,11 +5,13 @@
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { MaintenanceService } from '../services/maintenance.service';
+import { AttachmentService } from '../services/AttachmentService';
 import { PrismaClient } from '../../shared/prisma/client';
 
 export async function maintenanceRoutes(fastify: FastifyInstance) {
   const prisma = fastify.prisma as PrismaClient;
-  const maintenanceService = new MaintenanceService(prisma);
+  const attachmentService = new AttachmentService(prisma);
+  const maintenanceService = new MaintenanceService(prisma, attachmentService);
 
   // Route pour obtenir les statistiques de maintenance
   fastify.get('/stats', {

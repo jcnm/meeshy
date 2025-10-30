@@ -11,6 +11,7 @@ import { MaintenanceService } from '../services/maintenance.service';
 import { MessagingService } from '../services/MessagingService';
 import { CallEventsHandler } from './CallEventsHandler';
 import { CallService } from '../services/CallService';
+import { AttachmentService } from '../services/AttachmentService';
 import { validateMessageLength } from '../config/message-limits';
 import jwt from 'jsonwebtoken';
 import type {
@@ -67,7 +68,11 @@ export class MeeshySocketIOManager {
   constructor(httpServer: HTTPServer, prisma: PrismaClient) {
     this.prisma = prisma;
     this.translationService = new TranslationService(prisma);
-    this.maintenanceService = new MaintenanceService(prisma);
+
+    // Créer l'AttachmentService pour le cleanup automatique
+    const attachmentService = new AttachmentService(prisma);
+    this.maintenanceService = new MaintenanceService(prisma, attachmentService);
+
     this.messagingService = new MessagingService(prisma, this.translationService);
     this.callEventsHandler = new CallEventsHandler(prisma);
     this.callService = new CallService(prisma);

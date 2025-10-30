@@ -4,6 +4,8 @@
 
 import { buildApiUrl, API_ENDPOINTS } from '../config';
 
+import { authManager } from '@/services/auth-manager.service';
+
 // Regex pour détecter les liens
 const URL_REGEX = /(https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*))/gi;
 // Détecte les liens de tracking sur n'importe quel domaine: http(s)://exemple.com/l/<token>
@@ -167,7 +169,7 @@ export async function createTrackingLink(
   }
 
   try {
-    const token = localStorage.getItem('auth_token');
+    const token = authManager.getAuthToken();
     const sessionToken = localStorage.getItem('session_token');
 
     const headers: HeadersInit = {
@@ -228,7 +230,7 @@ export async function recordTrackingLinkClick(
   }
 
   try {
-    const authToken = localStorage.getItem('auth_token');
+    const authToken = authManager.getAuthToken();
     const sessionToken = localStorage.getItem('session_token');
 
     const headers: HeadersInit = {

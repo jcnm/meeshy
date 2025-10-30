@@ -105,8 +105,10 @@ import { messageService } from '@/services/message.service';
 import { TypingIndicator } from '@/components/conversations/typing-indicator';
 import { useConversationMessages } from '@/hooks/use-conversation-messages';
 import { ConversationMessages } from '@/components/conversations/ConversationMessages';
+import { authManager } from '@/services/auth-manager.service';
 
 export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousMode = false, linkId, initialParticipants }: BubbleStreamPageProps) {
+
   const { t, isLoading: isLoadingTranslations } = useI18n('conversations');
   const { t: tCommon } = useI18n('common');
   const router = useRouter();
@@ -143,7 +145,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     linkId: isAnonymousMode ? linkId : undefined, // Passer le linkId pour les utilisateurs anonymes
     containerRef: messagesContainerRef,
     scrollDirection: 'down', // Scroll vers le bas pour charger plus (page publique)
-    disableAutoFill: true // Désactiver le chargement automatique pour remplir l'écran (feed public)
+    disableAutoFill: false // Activer le chargement automatique pour remplir l'écran
   });
 
   // Hook pour la gestion des traductions
@@ -222,22 +224,28 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   // État pour la galerie d'images
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [selectedAttachmentId, setSelectedAttachmentId] = useState<string | null>(null);
+  const [deletedAttachmentIds, setDeletedAttachmentIds] = useState<string[]>([]);
+
+  // Handler appelé quand un attachment est supprimé
+  const handleAttachmentDeleted = useCallback((attachmentId: string) => {
+    setDeletedAttachmentIds(prev => [...prev, attachmentId]);
+  }, []);
 
   // Extraire tous les attachments images des messages pour la galerie
   const imageAttachments = useMemo(() => {
     const allAttachments: Attachment[] = [];
-    
+
     messages.forEach((message: any) => {
       if (message.attachments && Array.isArray(message.attachments)) {
-        const imageAtts = message.attachments.filter((att: Attachment) => 
-          att.mimeType?.startsWith('image/')
+        const imageAtts = message.attachments.filter((att: Attachment) =>
+          att.mimeType?.startsWith('image/') && !deletedAttachmentIds.includes(att.id)
         );
         allAttachments.push(...imageAtts);
       }
     });
-    
+
     return allAttachments;
-  }, [messages]);
+  }, [messages, deletedAttachmentIds]);
 
   // Handler pour ouvrir la galerie d'images
   const handleImageClick = useCallback((attachmentId: string) => {
@@ -833,7 +841,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         console.log('Diagnostic de connexion:', {
           hasSocket: connectionStatus.hasSocket,
           isConnected: connectionStatus.isConnected,
-          hasToken: !!localStorage.getItem('auth_token'),
+          hasToken: !!authManager.getAuthToken(),
           wsUrl: (typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_WS_URL || 'ws://meeshy.me/api') : 'ws://gateway:3000') + '/ws'
         });
         // Toast de connexion supprimé pour éviter les notifications intrusives
@@ -1204,14 +1212,20 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           console.log(`🔤 Langue source du message: ${selectedInputLanguage} (détectée: ${detectedLanguage})`);
           
           // Scroll automatique vers le HAUT pour voir le message envoyé (scrollDirection='down')
-          setTimeout(() => {
+          // Utiliser plusieurs tentatives pour s'assurer que le scroll fonctionne
+          const scrollToTop = () => {
             if (messagesContainerRef.current) {
               messagesContainerRef.current.scrollTo({
                 top: 0,
                 behavior: 'smooth'
               });
             }
-          }, 300); // Délai pour laisser le message s'ajouter au DOM
+          };
+
+          // Premier scroll rapide
+          setTimeout(scrollToTop, 100);
+          // Deuxième scroll pour assurer que le message est dans le DOM
+          setTimeout(scrollToTop, 500);
         } else {
           console.error('❌ Envoi échoué: sendResult est false');
           throw new Error('L\'envoi du message a échoué - le serveur a retourné false');
@@ -1679,6 +1693,8 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         onNavigateToMessage={handleNavigateToMessageFromGallery}
         token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
         attachments={imageAttachments}
+        currentUserId={user?.id}
+        onAttachmentDeleted={handleAttachmentDeleted}
       />
     </>
   );
