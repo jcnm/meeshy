@@ -49,15 +49,11 @@ const ConversationItem = memo(function ConversationItem({
       return conversation.title || 'Groupe sans nom';
     }
 
-    // Pour les conversations directes, afficher "{nom} et moi"
+    // Pour les conversations directes, toujours afficher "{nom} et moi"
     const conversationTitle = conversation.title || 'Conversation privée';
 
-    // Ajouter "et moi" traduit uniquement si le titre n'est pas vide
-    if (conversationTitle && conversationTitle !== 'Conversation privée') {
-      return `${conversationTitle} ${t('andMe')}`;
-    }
-
-    return conversationTitle;
+    // Toujours ajouter "et moi" pour les conversations directes
+    return `${conversationTitle} ${t('andMe')}`;
   }, [conversation, currentUser, t]);
 
   const getConversationAvatar = useCallback(() => {
