@@ -101,6 +101,20 @@ export function ConversationHeader({
     return undefined;
   }, [conversation, currentUser, conversationParticipants]);
 
+  // Helper pour vérifier si l'utilisateur peut utiliser les appels vidéo
+  const canUseVideoCalls = useCallback((): boolean => {
+    const role = currentUser?.role as UserRoleEnum;
+    // Seuls les utilisateurs de niveau modérateur et plus peuvent utiliser les appels vidéo
+    return [
+      UserRoleEnum.BIGBOSS,
+      UserRoleEnum.ADMIN,
+      UserRoleEnum.MODO,
+      UserRoleEnum.MODERATOR, // Alias
+      UserRoleEnum.AUDIT,
+      UserRoleEnum.ANALYST
+    ].includes(role);
+  }, [currentUser?.role]);
+
   return (
     <div className="flex items-center justify-between p-4 border-b border-border bg-card">
       <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -133,7 +147,7 @@ export function ConversationHeader({
           <h2 className="font-semibold text-base truncate">
             {getConversationName()}
           </h2>
-          
+
           <div className="text-sm text-muted-foreground">
             <ConversationParticipants
               conversationId={conversation.id}
@@ -150,8 +164,8 @@ export function ConversationHeader({
 
       {/* Actions */}
       <div className="flex items-center gap-1 flex-shrink-0">
-        {/* Video Call Button - Only for direct conversations */}
-        {conversation.type === 'direct' && onStartCall && (
+        {/* Video Call Button - Only for direct conversations and moderator+ users */}
+        {conversation.type === 'direct' && onStartCall && canUseVideoCalls() && (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>

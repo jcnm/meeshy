@@ -117,7 +117,7 @@ export class ZMQTranslationClient extends EventEmitter {
     this.pushPort = pushPort;
     this.subPort = subPort;
     
-    logger.info(`[ZMQ-Client] ZMQTranslationClient initialisé: PUSH connect ${host}:${pushPort} (envoi commandes), SUB connect ${host}:${subPort} (réception résultats)`);
+  // logger.info(`[ZMQ-Client] ZMQTranslationClient initialisé: PUSH connect ${host}:${pushPort} (envoi commandes), SUB connect ${host}:${subPort} (réception résultats)`); // Reduced log
   }
 
   async initialize(): Promise<void> {
@@ -131,13 +131,13 @@ export class ZMQTranslationClient extends EventEmitter {
       // Socket PUSH pour envoyer les commandes de traduction (remplace PUB)
       this.pushSocket = new zmq.Push();
       await this.pushSocket.connect(`tcp://${this.host}:${this.pushPort}`);
-      logger.info(`🔧 [ZMQ-Client] Socket PUSH connecté à ${this.host}:${this.pushPort}`);
+  // logger.info(`🔧 [ZMQ-Client] Socket PUSH connecté à ${this.host}:${this.pushPort}`); // Reduced log
       
       // Socket SUB pour recevoir les résultats (se connecte au port 5558 du Translator)
       this.subSocket = new zmq.Subscriber();
       await this.subSocket.connect(`tcp://${this.host}:${this.subPort}`);
       await this.subSocket.subscribe(''); // S'abonner à tous les messages
-      logger.info(`🔧 [ZMQ-Client] Socket SUB connecté à ${this.host}:${this.subPort}`);
+  // logger.info(`🔧 [ZMQ-Client] Socket SUB connecté à ${this.host}:${this.subPort}`); // Reduced log
       
       // Démarrer l'écoute des résultats
       logger.info(`🔧 [ZMQ-Client] Démarrage de l'écoute des résultats...`);
@@ -145,17 +145,14 @@ export class ZMQTranslationClient extends EventEmitter {
       
       // Vérification de connectivité après un délai
       setTimeout(() => {
-        logger.info(`🔍 [ZMQ-Client] Vérification de connectivité...`);
-        logger.info(`   📋 Socket PUSH: ${this.pushSocket ? 'Connecté' : 'Non connecté'}`);
-        logger.info(`   📋 Socket SUB: ${this.subSocket ? 'Connecté' : 'Non connecté'}`);
-        logger.info(`   📋 Running: ${this.running}`);
-        logger.info(`   📋 Context: ${this.context ? 'Actif' : 'Inactif'}`);
+  // logger.info(`🔍 [ZMQ-Client] Vérification de connectivité...`); // Reduced log
+  // ...logs supprimés...
       }, 2000);
       
       this.running = true;
       logger.info('✅ [ZMQ-Client] ZMQTranslationClient initialisé avec succès');
-      logger.info(`🔌 [ZMQ-Client] Socket PUSH connecté: ${this.host}:${this.pushPort} (envoi commandes)`);
-      logger.info(`🔌 [ZMQ-Client] Socket SUB connecté: ${this.host}:${this.subPort} (réception résultats)`);
+  // logger.info(`🔌 [ZMQ-Client] Socket PUSH connecté: ${this.host}:${this.pushPort} (envoi commandes)`); // Reduced log
+  // logger.info(`🔌 [ZMQ-Client] Socket SUB connecté: ${this.host}:${this.subPort} (réception résultats)`); // Reduced log
       
     } catch (error) {
       logger.error(`❌ Erreur initialisation ZMQTranslationClient: ${error}`);
@@ -186,13 +183,7 @@ export class ZMQTranslationClient extends EventEmitter {
           
           // LOG DÉTAILLÉ DES OBJETS PÉRIODIQUEMENT
           logger.info('🔍 [GATEWAY] VÉRIFICATION OBJETS ZMQ DANS BOUCLE ÉCOUTE:');
-          logger.info(`   📋 this.subSocket: ${this.subSocket} (port ${this.subPort})`);
-          logger.info(`   📋 this.pushSocket: ${this.pushSocket} (port ${this.pushPort})`);
-          logger.info(`   📋 this.subSocket type: ${typeof this.subSocket}`);
-          logger.info(`   📋 this.running: ${this.running}`);
-          logger.info(`   📋 Socket SUB fermé?: ${this.subSocket?.closed || 'N/A'}`);
-          logger.info(`   📋 Socket PUSH fermé?: ${this.pushSocket?.closed || 'N/A'}`);
-          logger.info(`   📋 this.context: ${this.context}`);
+          // ...logs supprimés...
         }
         heartbeatCount++;
 
@@ -206,7 +197,7 @@ export class ZMQTranslationClient extends EventEmitter {
             // LOG APRÈS RÉCEPTION
             logger.info('🔍 [GATEWAY] APRÈS RÉCEPTION SUB:');
             logger.info(`   📋 Message reçu (taille): ${message.length} bytes`);
-            logger.info(`   📋 Socket SUB state: ${this.subSocket}`);
+            // logger.info(`   📋 Socket SUB state: ${this.subSocket}`); // Reduced log
             logger.info(`📨 [ZMQ-Client] Message reçu dans la boucle (taille: ${message.length} bytes)`);
             
             await this._handleTranslationResult(message);

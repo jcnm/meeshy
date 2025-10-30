@@ -292,14 +292,14 @@ export default function AdminShareLinksPage() {
         </div>
 
         {/* Liste des liens de partage */}
-        <Card>
-          <CardHeader>
+        <Card className="flex flex-col max-h-[calc(100vh-32rem)]">
+          <CardHeader className="flex-shrink-0">
             <CardTitle className="flex items-center space-x-2">
               <Link className="h-5 w-5" />
               <span>Liens de partage ({totalCount})</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-1 overflow-y-auto">
             {!shareLinks || shareLinks.length === 0 ? (
               <div className="text-center py-12">
                 <Link className="h-16 w-16 text-gray-400 mx-auto mb-4" />

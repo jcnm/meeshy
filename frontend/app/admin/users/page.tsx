@@ -31,7 +31,7 @@ export default function AdminUsersPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(20);
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; userId: string | null }>({
     open: false,
     userId: null
@@ -39,14 +39,14 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     loadUsersData();
-  }, [currentPage, roleFilter, statusFilter]);
+  }, [currentPage, pageSize]);
 
   const loadUsersData = async () => {
     try {
       setLoading(true);
       const [dashboardResponse, usersResponse] = await Promise.all([
         adminService.getDashboardStats(),
-        adminService.getUsers(currentPage, pageSize, search)
+        adminService.getUsers(currentPage, pageSize, search, roleFilter, statusFilter)
       ]);
 
       // Le backend retourne {success: true, data: {...}}, donc il faut accéder à .data.data
@@ -76,9 +76,14 @@ export default function AdminUsersPage() {
     }
   };
 
-  const handleSearch = () => {
+  const handleFilter = () => {
     setCurrentPage(1);
     loadUsersData();
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize);
+    setCurrentPage(1);
   };
 
   const handlePreviousPage = () => {
@@ -251,15 +256,15 @@ export default function AdminUsersPage() {
         </div>
 
         {/* Liste des utilisateurs */}
-        <Card>
-          <CardHeader className="space-y-4">
+        <Card className="flex flex-col max-h-[calc(100vh-28rem)]">
+          <CardHeader className="space-y-4 flex-shrink-0">
             <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
               <Users className="h-4 w-4 sm:h-5 sm:w-5" />
               <span>Utilisateurs ({users?.length || 0})</span>
             </CardTitle>
 
             {/* Filtres intégrés dans l'en-tête */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
                 <Input
@@ -267,7 +272,7 @@ export default function AdminUsersPage() {
                   className="pl-8 text-sm"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  onKeyPress={(e) => e.key === 'Enter' && handleFilter()}
                 />
               </div>
               <select
@@ -292,21 +297,35 @@ export default function AdminUsersPage() {
                 <option value="active">Actif</option>
                 <option value="inactive">Inactif</option>
               </select>
+              <select
+                className="w-full p-2 border rounded-md text-sm bg-white"
+                value={pageSize}
+                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                title="Nombre d'éléments par page"
+              >
+                <option value="20">20 par page</option>
+                <option value="50">50 par page</option>
+                <option value="100">100 par page</option>
+                <option value="200">200 par page</option>
+                <option value="400">400 par page</option>
+                <option value="500">500 par page</option>
+                <option value="1000">1000 par page</option>
+              </select>
               <Button
                 variant="outline"
                 className="w-full text-sm"
-                onClick={handleSearch}
+                onClick={handleFilter}
               >
                 <Filter className="h-4 w-4 mr-2" />
                 Filtrer
               </Button>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-1 overflow-y-auto">
             {/* Vue Desktop (hidden on mobile) */}
             <div className="hidden lg:block space-y-4">
               {/* En-tête du tableau */}
-              <div className="grid grid-cols-12 gap-4 p-3 bg-gray-50 rounded-lg font-medium text-sm text-gray-700">
+              <div className="grid grid-cols-12 gap-4 p-3 bg-gray-50 rounded-lg font-medium text-sm text-gray-700 sticky top-0 z-10">
                 <div className="col-span-3">Utilisateur</div>
                 <div className="col-span-3">Email</div>
                 <div className="col-span-2">Rôle</div>

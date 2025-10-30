@@ -583,35 +583,57 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
   // Start video call
   const handleStartCall = useCallback(() => {
+    logger.debug('[ConversationLayout]', '🎥 handleStartCall called', {
+      hasConversation: !!selectedConversation,
+      conversationId: selectedConversation?.id,
+      conversationType: selectedConversation?.type
+    });
+
     if (!selectedConversation) {
-      logger.warn('[ConversationLayout] Cannot start call: no conversation selected');
+      logger.warn('[ConversationLayout]', 'Cannot start call: no conversation selected');
       return;
     }
 
     if (selectedConversation.type !== 'direct') {
       toast.error('Video calls are only available for direct conversations');
-      logger.warn('[ConversationLayout] Cannot start call: not a direct conversation');
+      logger.warn('[ConversationLayout]', 'Cannot start call: not a direct conversation');
       return;
     }
 
-    logger.info('[ConversationLayout] Starting video call - conversationId: ' + selectedConversation.id);
+    logger.info('[ConversationLayout]', 'Starting video call - conversationId: ' + selectedConversation.id);
 
     const socket = meeshySocketIOService.getSocket();
+    logger.debug('[ConversationLayout]', '🔌 Socket status', {
+      hasSocket: !!socket,
+      isConnected: socket?.connected,
+      socketId: socket?.id
+    });
+
     if (!socket) {
       toast.error('Connection error. Please try again.');
-      logger.error('[ConversationLayout] Cannot start call: no socket connection');
+      logger.error('[ConversationLayout]', 'Cannot start call: no socket connection');
       return;
     }
 
-    // Emit call:initiate event
-    (socket as any).emit('call:initiate', {
+    if (!socket.connected) {
+      toast.error('Socket not connected. Please wait...');
+      logger.error('[ConversationLayout]', 'Cannot start call: socket not connected');
+      return;
+    }
+
+    const callData = {
       conversationId: selectedConversation.id,
       type: 'video',
       settings: {
         audioEnabled: true,
         videoEnabled: true,
       },
-    });
+    };
+
+    logger.info('[ConversationLayout]', '📤 Emitting call:initiate', callData);
+
+    // Emit call:initiate event
+    (socket as any).emit('call:initiate', callData);
 
     toast.success('Starting call...');
   }, [selectedConversation]);

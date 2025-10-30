@@ -59,6 +59,8 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   token,
   userRole
 }, ref) => {
+
+  // ...hooks d'état et variables...
   const { t } = useI18n('conversations');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
@@ -77,6 +79,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   
   // Utiliser le placeholder fourni ou la traduction par défaut
   const finalPlaceholder = placeholder || t('conversationSearch.shareMessage');
+
   
   // Détection mobile
   useEffect(() => {
@@ -92,6 +95,34 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     const now = new Date();
     
     // Réinitialiser l'heure pour comparer uniquement les dates
+    
+    // Gestion du collage de texte trop long : créer un .txt UTF-8 et ne pas remplir le textarea
+    useEffect(() => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+      const handlePaste = async (e: ClipboardEvent) => {
+        const text = e.clipboardData?.getData('text');
+        if (text && text.length > maxMessageLength) {
+          e.preventDefault();
+          // Créer un fichier texte UTF-8
+          const encoder = new TextEncoder();
+          const utf8Text = encoder.encode(text);
+          const now = new Date();
+          const year = now.getFullYear();
+          const month = String(now.getMonth() + 1).padStart(2, '0');
+          const day = String(now.getDate()).padStart(2, '0');
+          const hours = String(now.getHours()).padStart(2, '0');
+          const minutes = String(now.getMinutes()).padStart(2, '0');
+          const seconds = String(now.getSeconds()).padStart(2, '0');
+          const fileName = `presspaper-content-${year}${month}${day}-${hours}${minutes}${seconds}.txt`;
+          const textFile = new File([utf8Text], fileName, { type: 'text/plain;charset=utf-8' });
+          setSelectedFiles(prev => [...prev, textFile]);
+          toast.info(t('conversations.pasteTooLongTxtCreated'));
+        }
+      };
+      textarea.addEventListener('paste', handlePaste as any);
+      return () => textarea.removeEventListener('paste', handlePaste as any);
+    }, [maxMessageLength, t]);
     const messageDateOnly = new Date(messageDate.getFullYear(), messageDate.getMonth(), messageDate.getDate());
     const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
@@ -166,7 +197,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
 
   // Hook pour la détection de texte collé - création automatique
   // Utilise maxMessageLength comme threshold (1500 pour USER, 2000 pour MODERATOR+)
-  useTextAttachmentDetection(textareaRef, {
+  useTextAttachmentDetection(textareaRef as React.RefObject<HTMLTextAreaElement>, {
     enabled: true,
     threshold: maxMessageLength,
     onTextDetected: async (text) => {
@@ -353,6 +384,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     }
   }, [onChange]);
 
+
   return (
     <div 
       className={`relative ${className} ${isDragOver ? 'ring-2 ring-blue-500 bg-blue-50/20' : ''}`}
@@ -431,6 +463,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
           fontSize: isMobile ? '16px' : undefined
         }}
       />
+
       
       {/* Indicateurs dans le textarea */}
       <div className="absolute bottom-2 sm:bottom-3 left-3 flex items-center space-x-2 sm:space-x-3 text-xs sm:text-sm text-gray-600 pointer-events-auto">
@@ -458,10 +491,12 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
 
       {/* Bouton d'envoi, compteur et sélecteur de langue */}
       <div className="absolute bottom-2 sm:bottom-3 right-3 sm:right-4 flex items-center space-x-1 sm:space-x-2 pointer-events-auto">
-        {/* Compteur de caractères - masqué sur mobile */}
-        <span className={`hidden sm:inline text-xs ${value.length > maxMessageLength * 0.8 ? 'text-orange-500' : 'text-gray-500'}`}>
-          {value.length}/{maxMessageLength}
-        </span>
+        {/* Compteur de caractères : affiché uniquement si > 90% du max */}
+        {value.length > maxMessageLength * 0.9 && (
+          <span className={`hidden sm:inline text-xs ${value.length > maxMessageLength ? 'text-red-500' : 'text-orange-500'}`}>
+            {value.length}/{maxMessageLength}
+          </span>
+        )}
         
         {/* Icône d'attachement */}
         <Button
@@ -483,18 +518,20 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
           )}
         </Button>
         
-        {/* Sélecteur de langue d'envoi - au-dessus du bouton */}
-        <div className="flex flex-col items-center space-y-1">
+        {/* Sélecteur de langue d'envoi et bouton d'envoi côte à côte */}
+        <div className="flex flex-row items-center space-x-1">
           <LanguageFlagSelector
             value={selectedLanguage}
             onValueChange={onLanguageChange}
             choices={choices}
+            className="mr-1"
+            popoverSide="top"
+            popoverAlign="center"
+            popoverSideOffset={8}
           />
-          
-          {/* Bouton d'envoi */}
           <Button
             onClick={onSend}
-            disabled={(!value.trim() && selectedFiles.length === 0) || !isComposingEnabled || isUploading}
+            disabled={(!value.trim() && selectedFiles.length === 0) || value.length > maxMessageLength || !isComposingEnabled || isUploading}
             size="sm"
             className="bg-blue-600 hover:bg-blue-700 text-white h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
           >

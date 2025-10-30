@@ -5,7 +5,7 @@
 
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { useCallStore } from '@/stores/call-store';
 import { useAuth } from '@/hooks/use-auth';
 import { useWebRTCP2P } from '@/hooks/use-webrtc-p2p';
@@ -31,49 +31,134 @@ export function CallInterface({ callId }: CallInterfaceProps) {
     reset,
   } = useCallStore();
 
-  const { initializeLocalStream, connectionState } = useWebRTCP2P({
+  // Stable error handler to prevent useWebRTCP2P from recreating on every render
+  const handleWebRTCError = useCallback((error: Error) => {
+    logger.error('[CallInterface]', 'WebRTC error: ' + error.message);
+    toast.error('Call connection error: ' + error.message);
+  }, []);
+
+  // Only call hook if user.id is available, otherwise pass undefined
+  const { initializeLocalStream, createOffer, connectionState } = useWebRTCP2P({
     callId,
     userId: user?.id,
-    onError: (error) => {
-      logger.error('[CallInterface] WebRTC error: ' + error.message);
-      toast.error('Call connection error: ' + error.message);
-    },
+    onError: handleWebRTCError,
   });
 
-  // Initialize local stream on mount
+  // Return loading state if user not loaded yet
+  if (!user || !user.id) {
+    logger.warn('[CallInterface]', 'User not loaded yet, waiting...');
+    return (
+      <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
+        <div className="text-white text-lg">Loading call...</div>
+      </div>
+    );
+  }
+
+  // Initialize local stream on mount (only once)
   useEffect(() => {
-    initializeLocalStream().catch((error) => {
-      logger.error('[CallInterface] Failed to initialize local stream: ' + (error?.message || 'Unknown error'));
+    let mounted = true;
+
+    const init = async () => {
+      try {
+        await initializeLocalStream();
+      } catch (error) {
+        if (mounted) {
+          logger.error('[CallInterface]', 'Failed to initialize local stream: ' + (error?.message || 'Unknown error'));
+        }
+      }
+    };
+
+    init();
+
+    return () => {
+      mounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
+
+  // Handle creating offer when a participant joins (if we're the initiator)
+  // Use a ref to track which participants we've already created offers for
+  const offersCreatedFor = React.useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!currentCall || !user) return;
+
+    // Only create offer if I'm the initiator
+    if (currentCall.initiatorId !== user.id) return;
+
+    // Find participants who don't have 'leftAt' (active participants)
+    const activeParticipants = currentCall.participants?.filter(p => !p.leftAt) || [];
+
+    // Create offers for all active participants except myself
+    activeParticipants.forEach((participant) => {
+      // Use userId or anonymousId for signaling (NOT participant.id which is the CallParticipant ID)
+      const participantId = participant.userId || participant.anonymousId;
+
+      if (!participantId) {
+        logger.error('[CallInterface]', 'Participant has no userId or anonymousId', { participant });
+        return;
+      }
+
+      // Skip if this is me
+      if (participantId === user.id) return;
+
+      // Skip if we've already created an offer for this participant
+      if (offersCreatedFor.current.has(participantId)) {
+        logger.debug('[CallInterface]', 'Offer already created for participant', { participantId });
+        return;
+      }
+
+      // Mark as created before actually creating to prevent duplicates
+      offersCreatedFor.current.add(participantId);
+
+      // Create offer for this participant
+      logger.info('[CallInterface]', 'Creating offer for new participant', { participantId });
+      createOffer(participantId).catch((error) => {
+        logger.error('[CallInterface]', 'Failed to create offer for participant', {
+          participantId: participant.id,
+          error,
+        });
+        // Remove from set if creation failed so we can retry
+        offersCreatedFor.current.delete(participantId);
+      });
     });
-  }, [initializeLocalStream]);
+    // Only depend on participants array length and initiatorId to avoid re-creating offers
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentCall?.participants?.length, currentCall?.initiatorId, user?.id]);
 
   // Handle media toggle events
   const handleToggleAudio = () => {
+    // Calculate new state BEFORE toggling
+    const newEnabled = !controls.audioEnabled;
+
     toggleAudio();
 
     const socket = meeshySocketIOService.getSocket();
     if (socket) {
       (socket as any).emit('call:toggle-audio', {
         callId,
-        enabled: !controls.audioEnabled,
+        enabled: newEnabled,
       });
     }
   };
 
   const handleToggleVideo = () => {
+    // Calculate new state BEFORE toggling
+    const newEnabled = !controls.videoEnabled;
+
     toggleVideo();
 
     const socket = meeshySocketIOService.getSocket();
     if (socket) {
       (socket as any).emit('call:toggle-video', {
         callId,
-        enabled: !controls.videoEnabled,
+        enabled: newEnabled,
       });
     }
   };
 
   const handleHangUp = () => {
-    logger.debug('[CallInterface] Hanging up - callId: ' + callId);
+    logger.debug('[CallInterface]', 'Hanging up - callId: ' + callId);
 
     const socket = meeshySocketIOService.getSocket();
     if (socket) {

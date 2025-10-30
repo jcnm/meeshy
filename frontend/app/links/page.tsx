@@ -40,9 +40,42 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
-import { ConversationLink } from '@/types';
 import type { TrackingLink } from '@shared/types/tracking-link';
 import { useI18n } from '@/hooks/useI18n';
+
+// Extended type for ConversationLink with all fields from Prisma
+interface ConversationLink {
+  id: string;
+  linkId: string;
+  identifier?: string;
+  conversationId: string;
+  name?: string;
+  description?: string;
+  maxUses?: number;
+  currentUses: number;
+  maxConcurrentUsers?: number;
+  currentConcurrentUsers: number;
+  expiresAt?: string;
+  isActive: boolean;
+  allowAnonymousMessages: boolean;
+  allowAnonymousFiles: boolean;
+  allowAnonymousImages: boolean;
+  createdAt: string;
+  conversation: {
+    id: string;
+    title?: string;
+    type: string;
+    description?: string;
+  };
+  creator?: {
+    id: string;
+    username: string;
+    firstName?: string;
+    lastName?: string;
+    displayName?: string;
+    avatar?: string;
+  };
+}
 import { LinkDetailsModal } from '@/components/links/link-details-modal';
 import { LinkEditModal } from '@/components/links/link-edit-modal';
 import { TrackingLinkDetailsModal } from '@/components/links/tracking-link-details-modal';

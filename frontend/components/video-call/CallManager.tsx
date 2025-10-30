@@ -42,79 +42,86 @@ export function CallManager() {
 
   const [incomingCall, setIncomingCall] = useState<CallInitiatedEvent | null>(null);
 
-  // Get WebRTC hook for current call
-  const webrtcHook = useWebRTCP2P({
-    callId: currentCall?.id || '',
-    userId: user?.id,
-    onError: (error) => {
-      logger.error('[CallManager] WebRTC error: ' + error.message);
-    },
-  });
-
   /**
    * Handle incoming call
    */
   const handleIncomingCall = useCallback(async (event: CallInitiatedEvent) => {
-    logger.info('[CallManager] Incoming call - callId: ' + event.callId);
+    console.log('🚨🚨🚨 [CallManager] INCOMING CALL RECEIVED 🚨🚨🚨', event);
+
+    // Wait for user to be loaded
+    if (!user) {
+      logger.warn('[CallManager]', 'User not loaded yet - ignoring call:initiated');
+      return;
+    }
+
+    logger.info('[CallManager]', 'Incoming call - callId: ' + event.callId, {
+      callId: event.callId,
+      initiatorId: event.initiator.userId,
+      currentUserId: user.id,
+      conversationId: event.conversationId
+    });
 
     // Check if current user is the initiator
-    const isInitiator = user?.id === event.initiator.userId;
+    const isInitiator = user.id === event.initiator.userId;
 
     if (isInitiator) {
-      // I am the initiator - automatically start the call
-      logger.info('[CallManager] I am the initiator - auto-starting call');
-
-      try {
-        // Initialize local stream
-        await webrtcHook.initializeLocalStream();
-
-        // Set call as current
-        setCurrentCall({
-          id: event.callId,
-          conversationId: event.conversationId,
-          mode: event.mode,
-          status: 'initiated',
-          initiatorId: event.initiator.userId,
-          startedAt: new Date(),
-          participants: event.participants,
-        });
-
-        // Set call as active
-        setInCall(true);
-
-        toast.success('Call started - waiting for participants...');
-      } catch (error: any) {
-        logger.error('[CallManager] Failed to start call:', error);
-        toast.error('Failed to access camera/microphone');
+      // I am the initiator - check if already in call to avoid duplicate
+      if (isInCall && currentCall?.id === event.callId) {
+        logger.debug('[CallManager]', 'Already in call - ignoring duplicate call:initiated');
+        return;
       }
+
+      // I am the initiator - automatically start the call
+      logger.info('[CallManager]', 'I am the initiator - auto-starting call');
+
+      // Set call as current
+      setCurrentCall({
+        id: event.callId,
+        conversationId: event.conversationId,
+        mode: event.mode,
+        status: 'initiated',
+        initiatorId: event.initiator.userId,
+        startedAt: new Date(),
+        participants: event.participants,
+      });
+
+      // Set call as active - CallInterface will initialize local stream
+      setInCall(true);
+
+      toast.success('Call started - waiting for participants...');
     } else {
       // I am being called - show notification
-      logger.info('[CallManager] Incoming call from ' + event.initiator.username);
+      logger.info('[CallManager]', 'Incoming call from ' + event.initiator.username);
       setIncomingCall(event);
     }
-  }, [user, webrtcHook, setCurrentCall, setInCall]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, setCurrentCall, setInCall, isInCall, currentCall]);
 
   /**
    * Handle participant joined
    */
   const handleParticipantJoined = useCallback(
     (event: CallParticipantJoinedEvent) => {
-      logger.info('[CallManager] Participant joined - callId: ' + event.callId + ', participantId: ' + event.participant.id);
+      logger.info('[CallManager]', 'Participant joined - callId: ' + event.callId + ', participantId: ' + event.participant.id);
 
       // Add participant to call
       addParticipant(event.participant);
 
-      // If I am the initiator and someone joined, create offer for them
-      if (currentCall?.initiatorId === user?.id) {
-        // Wait a bit for the other side to be ready
-        setTimeout(() => {
-          webrtcHook.createOffer(event.participant.id);
-        }, 500);
+      // Update call status to 'active' if it was 'initiated'
+      const { currentCall } = useCallStore.getState();
+      if (currentCall && currentCall.status === 'initiated') {
+        setCurrentCall({
+          ...currentCall,
+          status: 'active',
+        });
       }
+
+      // Note: CallInterface will handle creating the WebRTC offer
+      // based on currentCall.initiatorId check
 
       toast.success(`${event.participant.username || 'Someone'} joined the call`);
     },
-    [addParticipant, currentCall, webrtcHook]
+    [addParticipant, setCurrentCall]
   );
 
   /**
@@ -122,7 +129,7 @@ export function CallManager() {
    */
   const handleParticipantLeft = useCallback(
     (event: CallParticipantLeftEvent) => {
-      logger.info('[CallManager] Participant left - callId: ' + event.callId + ', participantId: ' + event.participantId);
+      logger.info('[CallManager]', 'Participant left - callId: ' + event.callId + ', participantId: ' + event.participantId);
 
       // Remove participant from call
       removeParticipant(event.participantId);
@@ -141,10 +148,9 @@ export function CallManager() {
    */
   const handleCallEnded = useCallback(
     (event: CallEndedEvent) => {
-      logger.info('[CallManager] Call ended - callId: ' + event.callId + ', duration: ' + event.duration);
+      logger.info('[CallManager]', 'Call ended - callId: ' + event.callId + ', duration: ' + event.duration);
 
-      // Cleanup
-      webrtcHook.cleanup();
+      // Reset call state - CallInterface will handle WebRTC cleanup
       reset();
 
       // Clear incoming call notification
@@ -152,7 +158,7 @@ export function CallManager() {
 
       toast.info('Call ended');
     },
-    [reset, webrtcHook]
+    [reset]
   );
 
   /**
@@ -160,7 +166,7 @@ export function CallManager() {
    */
   const handleMediaToggle = useCallback(
     (event: CallMediaToggleEvent) => {
-      logger.debug('[CallManager] Media toggle - participantId: ' + event.participantId + ', type: ' + event.mediaType + ', enabled: ' + event.enabled);
+      logger.debug('[CallManager]', 'Media toggle - participantId: ' + event.participantId + ', type: ' + event.mediaType + ', enabled: ' + event.enabled);
 
       // Update participant state
       if (event.mediaType === 'audio') {
@@ -180,7 +186,7 @@ export function CallManager() {
    * Handle call error
    */
   const handleCallError = useCallback((error: CallError) => {
-    logger.error('[CallManager] Call error: ' + error.message);
+    logger.error('[CallManager]', 'Call error: ' + error.message);
     toast.error(error.message || 'Call error occurred');
   }, []);
 
@@ -190,7 +196,7 @@ export function CallManager() {
   const handleAcceptCall = useCallback(async () => {
     if (!incomingCall) return;
 
-    logger.debug('[CallManager] Accepting call - callId: ' + incomingCall.callId);
+    logger.debug('[CallManager]', 'Accepting call - callId: ' + incomingCall.callId);
 
     try {
       // Stop ringtone immediately
@@ -198,10 +204,7 @@ export function CallManager() {
         stopRingtone();
       });
 
-      // Initialize local stream first
-      await webrtcHook.initializeLocalStream();
-
-      // Join call via Socket.IO
+      // Join call via Socket.IO - CallInterface will initialize local stream
       const socket = meeshySocketIOService.getSocket();
       if (!socket) {
         throw new Error('No socket connection');
@@ -218,7 +221,7 @@ export function CallManager() {
       // Create call session in store
       setCurrentCall({
         id: incomingCall.callId,
-        conversationId: '',
+        conversationId: incomingCall.conversationId,
         mode: incomingCall.mode,
         status: 'active',
         initiatorId: incomingCall.initiator.userId,
@@ -232,13 +235,13 @@ export function CallManager() {
       // Clear incoming call notification
       setIncomingCall(null);
 
-      logger.info('[CallManager] Call accepted - callId: ' + incomingCall.callId);
+      logger.info('[CallManager]', 'Call accepted - callId: ' + incomingCall.callId);
     } catch (error: any) {
-      logger.error('[CallManager] Failed to accept call: ' + (error?.message || 'Unknown error'));
+      logger.error('[CallManager]', 'Failed to accept call: ' + (error?.message || 'Unknown error'));
       toast.error('Failed to join call');
       setIncomingCall(null);
     }
-  }, [incomingCall, webrtcHook, setCurrentCall]);
+  }, [incomingCall, setCurrentCall, setInCall]);
 
   /**
    * Reject incoming call
@@ -246,7 +249,7 @@ export function CallManager() {
   const handleRejectCall = useCallback(() => {
     if (!incomingCall) return;
 
-    logger.debug('[CallManager] Rejecting call - callId: ' + incomingCall.callId);
+    logger.debug('[CallManager]', 'Rejecting call - callId: ' + incomingCall.callId);
 
     // Stop ringtone immediately
     import('@/utils/ringtone').then(({ stopRingtone }) => {
@@ -269,32 +272,84 @@ export function CallManager() {
 
   /**
    * Setup Socket.IO listeners
+   * Poll for socket availability and re-setup listeners when it becomes available
    */
   useEffect(() => {
-    const socket = meeshySocketIOService.getSocket();
-    if (!socket) {
-      logger.warn('[CallManager] No socket available');
-      return;
-    }
+    let isSubscribed = true;
+    let checkInterval: NodeJS.Timeout;
 
-    logger.debug('[CallManager] Setting up Socket.IO listeners');
+    const setupListeners = () => {
+      const socket = meeshySocketIOService.getSocket();
 
-    // Listen for call events
-    (socket as any).on('call:initiated', handleIncomingCall);
-    (socket as any).on('call:participant-joined', handleParticipantJoined);
-    (socket as any).on('call:participant-left', handleParticipantLeft);
-    (socket as any).on('call:ended', handleCallEnded);
-    (socket as any).on('call:media-toggled', handleMediaToggle);
-    (socket as any).on('call:error', handleCallError);
+      if (!socket) {
+        logger.warn('[CallManager]', 'No socket available, will retry...');
+        return false;
+      }
 
-    return () => {
-      logger.debug('[CallManager] Cleaning up Socket.IO listeners');
+      if (!socket.connected) {
+        logger.warn('[CallManager]', 'Socket not connected, will retry...');
+        return false;
+      }
+
+      console.log('🎧 [CallManager] Setting up Socket.IO call listeners', {
+        socketId: socket.id,
+        connected: socket.connected
+      });
+      logger.info('[CallManager]', 'Setting up Socket.IO listeners', {
+        socketId: socket.id
+      });
+
+      // Remove any existing listeners first to avoid duplicates
       (socket as any).off('call:initiated', handleIncomingCall);
       (socket as any).off('call:participant-joined', handleParticipantJoined);
       (socket as any).off('call:participant-left', handleParticipantLeft);
       (socket as any).off('call:ended', handleCallEnded);
       (socket as any).off('call:media-toggled', handleMediaToggle);
       (socket as any).off('call:error', handleCallError);
+
+      // Listen for call events
+      (socket as any).on('call:initiated', handleIncomingCall);
+      (socket as any).on('call:participant-joined', handleParticipantJoined);
+      (socket as any).on('call:participant-left', handleParticipantLeft);
+      (socket as any).on('call:ended', handleCallEnded);
+      (socket as any).on('call:media-toggled', handleMediaToggle);
+      (socket as any).on('call:error', handleCallError);
+
+      console.log('✅ [CallManager] All call listeners registered');
+      logger.info('[CallManager]', '✅ All call listeners registered');
+
+      return true;
+    };
+
+    // Try to setup listeners immediately
+    const success = setupListeners();
+
+    // If not successful, poll every second until socket is available
+    if (!success && isSubscribed) {
+      checkInterval = setInterval(() => {
+        if (isSubscribed && setupListeners()) {
+          clearInterval(checkInterval);
+        }
+      }, 1000);
+    }
+
+    return () => {
+      isSubscribed = false;
+      if (checkInterval) {
+        clearInterval(checkInterval);
+      }
+
+      // Cleanup listeners
+      const socket = meeshySocketIOService.getSocket();
+      if (socket) {
+        logger.debug('[CallManager]', 'Cleaning up Socket.IO listeners');
+        (socket as any).off('call:initiated', handleIncomingCall);
+        (socket as any).off('call:participant-joined', handleParticipantJoined);
+        (socket as any).off('call:participant-left', handleParticipantLeft);
+        (socket as any).off('call:ended', handleCallEnded);
+        (socket as any).off('call:media-toggled', handleMediaToggle);
+        (socket as any).off('call:error', handleCallError);
+      }
     };
   }, [
     handleIncomingCall,
@@ -311,12 +366,12 @@ export function CallManager() {
   useEffect(() => {
     return () => {
       if (isInCall) {
-        logger.debug('[CallManager] Cleaning up on unmount');
-        webrtcHook.cleanup();
+        logger.debug('[CallManager]', 'Cleaning up on unmount');
         reset();
+        // CallInterface will handle WebRTC cleanup
       }
     };
-  }, [isInCall, webrtcHook, reset]);
+  }, [isInCall, reset]);
 
   return (
     <>
