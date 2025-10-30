@@ -60,15 +60,12 @@ export function LanguageFlagSelector({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "justify-center gap-2 h-8 sm:h-9 px-3 border-gray-200 hover:border-blue-300",
+            "justify-center h-8 sm:h-9 px-2 border-gray-200 hover:border-blue-300",
             className
           )}
         >
-          <span className="text-sm sm:text-base">
+          <span className="text-lg sm:text-xl">
             {selectedLanguage?.flag || '🌐'}
-          </span>
-          <span className="text-xs sm:text-sm font-medium">
-            {selectedLanguage?.name || 'Language'}
           </span>
         </Button>
       </PopoverTrigger>
