@@ -76,10 +76,14 @@ export const MessageActionsBar = memo(function MessageActionsBar({
   const router = useRouter();
   const [isTranslationMenuOpen, setIsTranslationMenuOpen] = useState(false);
 
-  const handleLanguageSwitch = (langCode: string) => {
+  const handleLanguageSwitch = useCallback((langCode: string) => {
+    // Close menu IMMEDIATELY before switching to prevent flickering from re-renders
     setIsTranslationMenuOpen(false);
-    onLanguageSwitch(langCode);
-  };
+    // Switch language after menu starts closing
+    setTimeout(() => {
+      onLanguageSwitch(langCode);
+    }, 50);
+  }, [onLanguageSwitch]);
 
   // Composant de traduction (drapeau + menu languages)
   const TranslationControls = ({ showLanguagesMenu = true }: { showLanguagesMenu?: boolean }) => (
