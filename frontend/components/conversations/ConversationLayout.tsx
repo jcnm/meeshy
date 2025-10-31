@@ -1159,7 +1159,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
           </header>
 
           {/* Zone des messages scrollable */}
-          <div ref={messagesScrollRef} className="flex-1 overflow-y-auto overflow-x-hidden bg-transparent pb-24">
+          <div ref={messagesScrollRef} className="flex-1 overflow-y-auto overflow-x-hidden bg-transparent pb-32">
             <ConversationMessages
               messages={messages}
               translatedMessages={messages as any}
@@ -1233,10 +1233,10 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         /* Mode desktop ou mobile sans conversation */
         <div className={cn(
           "flex flex-col bg-gradient-to-br from-blue-50 to-indigo-100",
-          isMobile ? "min-h-screen" : "h-screen overflow-hidden"
+          isMobile ? "min-h-screen" : "h-screen"
         )}>
           <div className={cn(
-            isMobile ? "flex-shrink-0" : "flex-1 overflow-hidden"
+            isMobile ? "flex-shrink-0" : "flex-1"
           )}>
             <DashboardLayout 
               title={t('conversationLayout.conversations.title')} 
