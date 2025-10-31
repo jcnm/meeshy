@@ -47,13 +47,17 @@ export function CallManager() {
    */
   const handleIncomingCall = useCallback(async (event: CallInitiatedEvent) => {
     console.log('🚨🚨🚨 [CallManager] INCOMING CALL RECEIVED 🚨🚨🚨', event);
+    console.log('🚨 [CallManager] User state:', { hasUser: !!user, userId: user?.id });
 
     // Wait for user to be loaded
     if (!user) {
+      console.error('❌ [CallManager] User not loaded yet - ignoring call:initiated');
       logger.warn('[CallManager]', 'User not loaded yet - ignoring call:initiated');
+      toast.error('Cannot receive call: User not loaded');
       return;
     }
 
+    console.log('✅ [CallManager] User loaded, processing call');
     logger.info('[CallManager]', 'Incoming call - callId: ' + event.callId, {
       callId: event.callId,
       initiatorId: event.initiator.userId,

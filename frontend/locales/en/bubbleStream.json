@@ -64,7 +64,8 @@
       "translate": "Translate",
       "reply": "Reply",
       "edit": "Edit",
-      "delete": "Delete"
+      "delete": "Delete",
+      "more": "More options"
     },
     "replyToMessage": "Reply to message",
     "replyingTo": "Replying to",

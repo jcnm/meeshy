@@ -638,6 +638,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
   // Start video call
   const handleStartCall = useCallback(() => {
+    console.log('🎥🎥🎥 [ConversationLayout] handleStartCall CLICKED 🎥🎥🎥');
     logger.debug('[ConversationLayout]', '🎥 handleStartCall called', {
       hasConversation: !!selectedConversation,
       conversationId: selectedConversation?.id,
@@ -645,19 +646,28 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     });
 
     if (!selectedConversation) {
+      console.error('❌ [ConversationLayout] No conversation selected');
       logger.warn('[ConversationLayout]', 'Cannot start call: no conversation selected');
+      toast.error('Please select a conversation first');
       return;
     }
 
     if (selectedConversation.type !== 'direct') {
+      console.error('❌ [ConversationLayout] Not a direct conversation');
       toast.error('Video calls are only available for direct conversations');
       logger.warn('[ConversationLayout]', 'Cannot start call: not a direct conversation');
       return;
     }
 
+    console.log('✅ [ConversationLayout] Starting video call for conversation:', selectedConversation.id);
     logger.info('[ConversationLayout]', 'Starting video call - conversationId: ' + selectedConversation.id);
 
     const socket = meeshySocketIOService.getSocket();
+    console.log('🔌 [ConversationLayout] Socket status:', {
+      hasSocket: !!socket,
+      isConnected: socket?.connected,
+      socketId: socket?.id
+    });
     logger.debug('[ConversationLayout]', '🔌 Socket status', {
       hasSocket: !!socket,
       isConnected: socket?.connected,
@@ -665,12 +675,14 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     });
 
     if (!socket) {
+      console.error('❌ [ConversationLayout] No socket connection available');
       toast.error('Connection error. Please try again.');
       logger.error('[ConversationLayout]', 'Cannot start call: no socket connection');
       return;
     }
 
     if (!socket.connected) {
+      console.error('❌ [ConversationLayout] Socket not connected');
       toast.error('Socket not connected. Please wait...');
       logger.error('[ConversationLayout]', 'Cannot start call: socket not connected');
       return;
@@ -685,11 +697,13 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       },
     };
 
+    console.log('📤 [ConversationLayout] Emitting call:initiate event:', callData);
     logger.info('[ConversationLayout]', '📤 Emitting call:initiate', callData);
 
     // Emit call:initiate event
     (socket as any).emit('call:initiate', callData);
 
+    console.log('✅ [ConversationLayout] call:initiate event sent successfully');
     toast.success('Starting call...');
   }, [selectedConversation]);
 
