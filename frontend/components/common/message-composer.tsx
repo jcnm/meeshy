@@ -467,7 +467,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         onKeyPress={handleKeyPress}
         onBlur={handleBlur}
         placeholder={finalPlaceholder}
-        className={`expandable-textarea min-h-[60px] sm:min-h-[80px] max-h-40 resize-none pr-20 sm:pr-28 pb-8 sm:pb-10 pt-3 pl-3 border-blue-200/60 bg-white/90 backdrop-blur-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 focus:bg-white/95 placeholder:text-gray-600 scroll-hidden transition-all duration-200 ${
+        className={`expandable-textarea min-h-[60px] sm:min-h-[80px] max-h-40 resize-none pr-20 sm:pr-28 pb-6 sm:pb-10 pt-3 pl-3 border-blue-200/60 bg-white/90 backdrop-blur-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 focus:bg-white/95 placeholder:text-gray-600 scroll-hidden transition-all duration-200 ${
           replyingTo || selectedFiles.length > 0 
             ? 'rounded-b-2xl rounded-t-none border-t-0' 
             : 'rounded-2xl'

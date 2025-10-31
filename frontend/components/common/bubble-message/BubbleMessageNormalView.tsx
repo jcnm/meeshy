@@ -393,11 +393,11 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
   return (
     <TooltipProvider>
       {/* Container with avatar on side */}
-      <motion.div 
+      <motion.div
         id={`message-${message.id}`}
         ref={messageRef}
         className={cn(
-          "bubble-message flex gap-1 sm:gap-1.5 mb-4 px-2 sm:px-4",
+          "bubble-message flex gap-1 sm:gap-1.5 mb-5 px-2 sm:px-4",
           isOwnMessage ? "flex-row-reverse" : "flex-row"
         )}
       >
@@ -478,24 +478,26 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
           {message.attachments && message.attachments.length > 0 && (
             <>
               {(!message.content || !message.content.trim()) ? (
-                // Si attachments seuls : wrapper relative pour les réactions
-                <div className={cn(
-                  "relative mb-2 max-w-[85%] sm:max-w-[75%] md:max-w-[65%]",
-                  isOwnMessage ? "ml-auto" : "mr-auto"
-                )}>
-                  <MessageAttachments
-                    attachments={visibleAttachments}
-                    onImageClick={onImageClick}
-                    currentUserId={isAnonymous ? currentAnonymousUserId : currentUser?.id}
-                    token={token || undefined}
-                    onAttachmentDeleted={handleAttachmentDeleted}
-                  />
-                  
-                  {/* Réactions par-dessus les attachments */}
-                  <div 
+                // Si attachments seuls : dans le flux avec les réactions
+                <>
+                  <div className={cn(
+                    "mb-2 max-w-[85%] sm:max-w-[75%] md:max-w-[65%]",
+                    isOwnMessage ? "ml-auto" : "mr-auto"
+                  )}>
+                    <MessageAttachments
+                      attachments={visibleAttachments}
+                      onImageClick={onImageClick}
+                      currentUserId={isAnonymous ? currentAnonymousUserId : currentUser?.id}
+                      token={token || undefined}
+                      onAttachmentDeleted={handleAttachmentDeleted}
+                    />
+                  </div>
+
+                  {/* Réactions - Dans le flux avec 10% de chevauchement */}
+                  <div
                     className={cn(
-                      "absolute -bottom-5 z-[9999]",
-                      isOwnMessage ? "right-2" : "left-2"
+                      "-mt-[1.5px] z-[9999]",
+                      isOwnMessage ? "flex justify-end pr-2" : "flex justify-start pl-2"
                     )}
                     style={{ pointerEvents: 'auto' }}
                   >
@@ -508,7 +510,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                       showAddButton={false}
                     />
                   </div>
-                </div>
+                </>
               ) : (
                 // Si avec texte : pas de wrapper relative (les réactions sont sur la bulle)
                 <div className={cn(
@@ -530,11 +532,11 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
           {/* Message bubble wrapper with reactions - Seulement si contenu textuel */}
           {message.content && message.content.trim() && (
             <div className="relative group/message">
-              <Card 
+              <Card
                 className={cn(
-                  "relative transition-colors duration-200 border shadow-none max-w-[85%] sm:max-w-[75%] md:max-w-[65%] overflow-visible",
-                  isOwnMessage 
-                    ? 'bg-gradient-to-br from-blue-400 to-blue-500 dark:from-gray-700 dark:to-gray-800 border-blue-400 dark:border-gray-600 text-white ml-auto' 
+                  "relative transition-colors duration-200 border shadow-none max-w-[85%] sm:max-w-[75%] md:max-w-[65%] overflow-visible py-0",
+                  isOwnMessage
+                    ? 'bg-gradient-to-br from-blue-400 to-blue-500 dark:from-gray-700 dark:to-gray-800 border-blue-400 dark:border-gray-600 text-white ml-auto'
                     : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 mr-auto'
                 )}
               >
@@ -546,7 +548,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                   initial={{ opacity: 0, y: -3 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="mb-2"
+                  className="mb-1"
                 >
                   <div 
                     onClick={() => {
@@ -629,7 +631,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
               )}
 
               {/* Contenu principal */}
-              <div className="mb-2" style={{ position: 'relative', zIndex: 1 }}>
+              <div className="mb-0" style={{ position: 'relative', zIndex: 1 }}>
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
                     key={`content-${message.id}-${currentDisplayLanguage}-${displayContent.substring(0, 10)}`}
@@ -665,11 +667,11 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
             </CardContent>
           </Card>
 
-          {/* Réactions - Positionnées au-dessus de la bulle */}
+          {/* Réactions - Dans le flux avec 10% de chevauchement */}
           <div
             className={cn(
-              "absolute -bottom-3 z-[9999]",
-              isOwnMessage ? "right-2" : "left-2"
+              "-mt-[1.5px] z-[9999]",
+              isOwnMessage ? "flex justify-end pr-2" : "flex justify-start pl-2"
             )}
             style={{ pointerEvents: 'auto' }}
           >
