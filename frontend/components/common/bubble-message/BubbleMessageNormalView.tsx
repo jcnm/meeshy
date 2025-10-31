@@ -160,11 +160,15 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
   const formatReplyDate = (date: Date | string) => {
     const messageDate = new Date(date);
     const now = new Date();
-    const diffHours = Math.abs(now.getTime() - messageDate.getTime()) / (1000 * 60 * 60);
-    
-    if (diffHours < 1) return tBubble('justNow');
-    if (diffHours < 24) return tBubble('hoursAgo', { hours: Math.floor(diffHours) });
-    if (diffHours < 168) return tBubble('daysAgo', { days: Math.floor(diffHours / 24) });
+    const diffMs = Math.abs(now.getTime() - messageDate.getTime());
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffMinutes < 1) return tBubble('justNow');
+    if (diffMinutes < 60) return tBubble('minutesAgo', { minutes: diffMinutes });
+    if (diffHours < 24) return tBubble('hoursAgo', { hours: diffHours });
+    if (diffDays < 7) return tBubble('daysAgo', { days: diffDays });
     return messageDate.toLocaleDateString();
   };
 
@@ -490,7 +494,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                   {/* Réactions par-dessus les attachments */}
                   <div 
                     className={cn(
-                      "absolute -bottom-3 z-[9999]",
+                      "absolute -bottom-5 z-[9999]",
                       isOwnMessage ? "right-2" : "left-2"
                     )}
                     style={{ pointerEvents: 'auto' }}
@@ -534,7 +538,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                     : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 mr-auto'
                 )}
               >
-                <CardContent className="p-1 sm:p-2 max-w-full overflow-visible">
+                <CardContent className="p-1 max-w-full overflow-visible">
 
                 {/* Message parent si c'est une réponse */}
               {message.replyTo && (

@@ -420,10 +420,7 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
           emptyStateMessage={t('noMessages')}
           emptyStateDescription={t('noMessagesDescription')}
           reverseOrder={reverseOrder}
-          className={cn(
-            "space-y-1.5",
-            isMobile && "space-y-1"
-          )}
+          className="space-y-1"
           onEditMessage={onEditMessage}
           onDeleteMessage={onDeleteMessage}
           conversationId={conversationId}
