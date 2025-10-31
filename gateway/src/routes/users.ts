@@ -49,7 +49,7 @@ const updateAvatarSchema = z.object({
 // Schéma de validation pour le changement de mot de passe
 const updatePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password is required'),
-  newPassword: z.string().min(6, 'New password must be at least 6 characters'),
+  newPassword: z.string().min(1, 'New password is required'),
   confirmPassword: z.string().min(1, 'Password confirmation is required')
 }).refine((data) => data.newPassword === data.confirmPassword, {
   message: 'Passwords do not match',
