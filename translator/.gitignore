@@ -21,3 +21,4 @@ models
 src/services/database_service_simple.py
 src/services/database_service_postgresql.py
 src/services/database_service_prisma.py
+scripts/images 
