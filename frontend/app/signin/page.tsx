@@ -117,11 +117,6 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
         toast.error(t('register.validation.passwordMismatch'));
         return;
       }
-      
-      if (formData.password.length < 6) {
-        toast.error(t('register.validation.passwordTooShort'));
-        return;
-      }
     }
     
     setCurrentStep(2);

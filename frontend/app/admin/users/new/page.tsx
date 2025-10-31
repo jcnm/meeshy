@@ -53,24 +53,11 @@ export default function NewUserPage() {
     }
 
     // Password validation
-    if (!formData.password || formData.password.length < 12) {
-      newErrors.password = 'Le mot de passe doit contenir au moins 12 caractères';
+    if (!formData.password) {
+      newErrors.password = 'Le mot de passe est requis';
     }
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Les mots de passe ne correspondent pas';
-    }
-
-    // Password strength validation
-    if (formData.password) {
-      if (!/[A-Z]/.test(formData.password)) {
-        newErrors.password = 'Le mot de passe doit contenir au moins une majuscule';
-      } else if (!/[a-z]/.test(formData.password)) {
-        newErrors.password = 'Le mot de passe doit contenir au moins une minuscule';
-      } else if (!/[0-9]/.test(formData.password)) {
-        newErrors.password = 'Le mot de passe doit contenir au moins un chiffre';
-      } else if (!/[^A-Za-z0-9]/.test(formData.password)) {
-        newErrors.password = 'Le mot de passe doit contenir au moins un caractère spécial';
-      }
     }
 
     setErrors(newErrors);
@@ -263,7 +250,7 @@ export default function NewUserPage() {
                       {errors.password}
                     </p>
                   )}
-                  <p className="text-xs text-gray-500">Minimum 12 caractères, 1 majuscule, 1 minuscule, 1 chiffre, 1 caractère spécial</p>
+                  <p className="text-xs text-gray-500">Aucune contrainte de longueur ou de complexité</p>
                 </div>
 
                 <div className="space-y-2">

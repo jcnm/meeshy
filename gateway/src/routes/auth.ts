@@ -89,7 +89,7 @@ export async function authRoutes(fastify: FastifyInstance) {
         required: ['username', 'password', 'firstName', 'lastName', 'email'],
         properties: {
           username: { type: 'string', minLength: 1 },
-          password: { type: 'string', minLength: 6 },
+          password: { type: 'string', minLength: 1 },
           firstName: { type: 'string', minLength: 1 },
           lastName: { type: 'string', minLength: 1 },
           email: { type: 'string', format: 'email' },

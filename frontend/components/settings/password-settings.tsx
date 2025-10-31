@@ -51,11 +51,6 @@ export function PasswordSettings() {
       return false;
     }
 
-    if (formData.newPassword.length < 6) {
-      toast.error(t('security.password.errors.tooShort'));
-      return false;
-    }
-
     if (formData.newPassword !== formData.confirmPassword) {
       toast.error(t('security.password.errors.mismatch'));
       return false;
