@@ -143,7 +143,9 @@ export class AuthMiddleware {
           useCustomDestination: true,
           isOnline: true,
           lastActiveAt: true,
-          isActive: true
+          isActive: true,
+          createdAt: true,
+          updatedAt: true
         }
       });
 

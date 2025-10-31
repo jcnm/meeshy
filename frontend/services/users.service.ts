@@ -61,16 +61,18 @@ export const usersService = {
    */
   async getMyProfile(): Promise<ApiResponse<User>> {
     try {
-      const response = await apiService.get<{ user: User }>('/auth/me');
-      
-      // Extraire l'utilisateur de la réponse /auth/me
-      const userData = response.data?.user || response.data;
-      
+      const response = await apiService.get<any>('/auth/me');
+
+      // L'API retourne { success: true, data: { user: {...} } }
+      // apiService.request() met la réponse JSON dans response.data
+      // Donc response.data = { success: true, data: { user: {...} } }
+      const userData = (response.data?.data?.user as User) || (response.data?.user as User) || (response.data as User);
+
       // S'assurer que les permissions sont définies
       if (userData && !userData.permissions) {
         userData.permissions = getDefaultPermissions(userData.role);
       }
-      
+
       return {
         ...response,
         data: userData

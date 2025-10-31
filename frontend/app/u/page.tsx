@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,10 +8,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { toast } from 'sonner';
-import { 
-  User as UserIcon, 
-  Mail, 
-  Phone, 
+import {
+  User as UserIcon,
+  Mail,
+  Phone,
   Calendar,
   Edit,
   MessageSquare,
@@ -20,16 +20,17 @@ import {
   Activity
 } from 'lucide-react';
 import { User } from '@/types';
-import { useUser } from '@/stores';
+import { usersService } from '@/services';
 import { getUserInitials } from '@/utils/user';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
+import { authManager } from '@/services/auth-manager.service';
 
 function ProfilePageContent() {
   const router = useRouter();
-  const user = useUser();
-  const [isLoading, setIsLoading] = useState(false);
-  const [userOnlineStatus, setUserOnlineStatus] = useState(user?.isOnline);
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [userOnlineStatus, setUserOnlineStatus] = useState<boolean>(false);
 
   // Hook pour écouter les changements de statut en temps réel
   const { } = useSocketIOMessaging({
@@ -40,9 +41,41 @@ function ProfilePageContent() {
     }
   });
 
-  // Synchroniser le statut initial avec l'utilisateur du store
+  // Charger le profil de l'utilisateur connecté via API /auth/me
+  const loadUserProfile = useCallback(async () => {
+    try {
+      setIsLoading(true);
+
+      // Vérifier l'authentification
+      const authToken = authManager.getAuthToken();
+      if (!authToken) {
+        toast.error('Non authentifié');
+        router.push('/login');
+        return;
+      }
+
+      // Appeler l'API /auth/me pour récupérer le profil complet (avec createdAt et updatedAt corrects)
+      const response = await usersService.getMyProfile();
+      setUser(response.data);
+      setUserOnlineStatus(response.data.isOnline);
+    } catch (error) {
+      console.error('Error loading profile:', error);
+      toast.error('Erreur lors du chargement du profil');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [router]);
+
+  // Charger le profil au montage
   useEffect(() => {
-    setUserOnlineStatus(user?.isOnline);
+    loadUserProfile();
+  }, [loadUserProfile]);
+
+  // Synchroniser le statut en ligne
+  useEffect(() => {
+    if (user) {
+      setUserOnlineStatus(user.isOnline);
+    }
   }, [user?.isOnline]);
 
 
@@ -65,23 +98,6 @@ function ProfilePageContent() {
     };
     return languages[code] || code;
   };
-
-  if (isLoading) {
-    return (
-      <DashboardLayout title="Profil">
-        <div className="max-w-4xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-48 bg-gray-200 rounded-lg mb-6"></div>
-            <div className="space-y-4">
-              <div className="h-6 bg-gray-200 rounded w-1/3"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-              <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-            </div>
-          </div>
-        </div>
-      </DashboardLayout>
-    );
-  }
 
   if (isLoading) {
     return (
