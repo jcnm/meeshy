@@ -2,7 +2,6 @@
 
 import { memo, useCallback, useState } from 'react';
 import { Smile, Copy, MessageCircle, Flag, Trash2, MoreVertical, Edit, Languages, CheckCircle2, AlertTriangle, HelpCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +20,6 @@ import {
 import { cn } from '@/lib/utils';
 import { useSingleTap } from '@/hooks/use-single-tap';
 import type { Message } from '@shared/types/conversation';
-import { MessageReactions } from '../message-reactions';
 
 interface MessageActionsBarProps {
   message: Message;
@@ -50,11 +48,6 @@ interface MessageActionsBarProps {
   onLanguageSwitch: (language: string) => void;
   onEnterLanguageMode?: () => void;
   getLanguageInfo: (code: string) => { name: string; flag: string; code: string };
-  // Props pour les réactions
-  conversationId: string;
-  currentUser: any;
-  currentAnonymousUserId?: string;
-  isAnonymous: boolean;
 }
 
 export const MessageActionsBar = memo(function MessageActionsBar({
@@ -79,10 +72,6 @@ export const MessageActionsBar = memo(function MessageActionsBar({
   onLanguageSwitch,
   onEnterLanguageMode,
   getLanguageInfo,
-  conversationId,
-  currentUser,
-  currentAnonymousUserId,
-  isAnonymous,
 }: MessageActionsBarProps) {
   const router = useRouter();
   const [isTranslationMenuOpen, setIsTranslationMenuOpen] = useState(false);
@@ -153,16 +142,11 @@ export const MessageActionsBar = memo(function MessageActionsBar({
                   <Languages className="h-3.5 w-3.5" />
                 </Button>
 
-                {/* Badge animé du nombre de traductions */}
+                {/* Badge du nombre de traductions */}
                 {message.translations && message.translations.length > 0 && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                    className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm bg-blue-600 text-white"
-                  >
+                  <div className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm bg-blue-600 text-white">
                     {message.translations.length}
-                  </motion.div>
+                  </div>
                 )}
               </div>
             </DropdownMenuTrigger>
@@ -265,26 +249,12 @@ export const MessageActionsBar = memo(function MessageActionsBar({
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col gap-2 mt-2">
-        {/* Réactions */}
-        <div className={cn("px-1", isOwnMessage ? "flex justify-end" : "flex justify-start")}>
-          <MessageReactions
-            messageId={message.id}
-            conversationId={conversationId}
-            currentUserId={currentUser?.id || ''}
-            currentAnonymousUserId={currentAnonymousUserId}
-            isAnonymous={isAnonymous}
-            showAddButton={false}
-          />
-        </div>
-
-        {/* Actions */}
-        <div
-          className={cn(
-            'flex items-center gap-1.5 px-1',
-            isOwnMessage ? 'justify-end' : 'justify-start'
-          )}
-        >
+      <div
+        className={cn(
+          'flex items-center gap-1.5 px-1 mt-2',
+          isOwnMessage ? 'justify-end' : 'justify-start'
+        )}
+      >
         {/* Translation Controls - Always show flag first, then Languages menu inline for ALL messages */}
         <TranslationControls showLanguagesMenu={true} />
 
@@ -410,7 +380,6 @@ export const MessageActionsBar = memo(function MessageActionsBar({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-    </div>
     </TooltipProvider>
   );
 });

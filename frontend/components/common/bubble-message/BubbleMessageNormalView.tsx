@@ -661,34 +661,23 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
             </CardContent>
           </Card>
 
-          {/* Actions Bar - EN DEHORS de la bulle */}
-          <MessageActionsBar
-            message={message}
-            isOwnMessage={isOwnMessage}
-            canReportMessage={canReportMessage()}
-            canEditMessage={canModifyMessage()}
-            canDeleteMessage={canDeleteMessage()}
-            onReply={onReplyMessage ? () => onReplyMessage(message) : undefined}
-            onReaction={handleReactionClick}
-            onCopy={handleCopyMessage}
-            onReport={canReportMessage() ? handleReportMessage : undefined}
-            onEdit={canModifyMessage() ? handleEditMessage : undefined}
-            onDelete={canDeleteMessage() ? handleDeleteMessage : undefined}
-            t={tBubble}
-            tReport={tReport}
-            translationError={translationError}
-            currentDisplayLanguage={currentDisplayLanguage}
-            originalLanguage={message.originalLanguage || 'fr'}
-            userLanguage={userLanguage}
-            availableVersions={availableVersions}
-            onLanguageSwitch={onLanguageSwitch ? (lang: string) => onLanguageSwitch(message.id, lang) : () => {}}
-            onEnterLanguageMode={onEnterLanguageMode}
-            getLanguageInfo={getLanguageInfo}
-            conversationId={conversationId || message.conversationId}
-            currentUser={currentUser}
-            currentAnonymousUserId={currentAnonymousUserId}
-            isAnonymous={isAnonymous}
-          />
+          {/* Réactions - Positionnées au-dessus de la bulle */}
+          <div
+            className={cn(
+              "absolute -bottom-3 z-[9999]",
+              isOwnMessage ? "right-2" : "left-2"
+            )}
+            style={{ pointerEvents: 'auto' }}
+          >
+            <MessageReactions
+              messageId={message.id}
+              conversationId={conversationId || message.conversationId}
+              currentUserId={currentUser?.id || ''}
+              currentAnonymousUserId={currentAnonymousUserId}
+              isAnonymous={isAnonymous}
+              showAddButton={false}
+            />
+          </div>
         </div>
           )}
 
@@ -795,6 +784,31 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
               )}
             </div>
           )}
+
+          {/* Actions Bar - TOUJOURS afficher, peu importe le type de message */}
+          <MessageActionsBar
+            message={message}
+            isOwnMessage={isOwnMessage}
+            canReportMessage={canReportMessage()}
+            canEditMessage={canModifyMessage()}
+            canDeleteMessage={canDeleteMessage()}
+            onReply={onReplyMessage ? () => onReplyMessage(message) : undefined}
+            onReaction={handleReactionClick}
+            onCopy={handleCopyMessage}
+            onReport={canReportMessage() ? handleReportMessage : undefined}
+            onEdit={canModifyMessage() ? handleEditMessage : undefined}
+            onDelete={canDeleteMessage() ? handleDeleteMessage : undefined}
+            t={tBubble}
+            tReport={tReport}
+            translationError={translationError}
+            currentDisplayLanguage={currentDisplayLanguage}
+            originalLanguage={message.originalLanguage || 'fr'}
+            userLanguage={userLanguage}
+            availableVersions={availableVersions}
+            onLanguageSwitch={onLanguageSwitch ? (lang: string) => onLanguageSwitch(message.id, lang) : () => {}}
+            onEnterLanguageMode={onEnterLanguageMode}
+            getLanguageInfo={getLanguageInfo}
+          />
         </div>
       </motion.div>
     </TooltipProvider>
