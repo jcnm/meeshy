@@ -285,8 +285,8 @@ export const MessageActionsBar = memo(function MessageActionsBar({
             isOwnMessage ? 'justify-end' : 'justify-start'
           )}
         >
-        {/* Translation Controls - Always show flag first, Languages menu inline for own messages only */}
-        <TranslationControls showLanguagesMenu={isOwnMessage} />
+        {/* Translation Controls - Always show flag first, then Languages menu inline for ALL messages */}
+        <TranslationControls showLanguagesMenu={true} />
 
         {/* Bouton de réponse */}
         {onReply && (
@@ -367,25 +367,6 @@ export const MessageActionsBar = memo(function MessageActionsBar({
           </Tooltip>
 
           <DropdownMenuContent align={isOwnMessage ? 'end' : 'start'} className="w-48">
-            {/* Translation menu for non-own messages */}
-            {!isOwnMessage && (
-              <>
-                <DropdownMenuItem
-                  onClick={() => setIsTranslationMenuOpen(true)}
-                  className="flex items-center gap-2 cursor-pointer"
-                >
-                  <Languages className="h-4 w-4" />
-                  <span>{t('translate')}</span>
-                  {message.translations && message.translations.length > 0 && (
-                    <span className="ml-auto text-xs bg-blue-600 text-white rounded-full px-1.5 min-w-[18px] h-4 flex items-center justify-center">
-                      {message.translations.length}
-                    </span>
-                  )}
-                </DropdownMenuItem>
-                <div className="h-px bg-gray-200 dark:bg-gray-700 my-1" />
-              </>
-            )}
-
             {/* Copy option - Always visible */}
             <DropdownMenuItem
               onClick={onCopy}
