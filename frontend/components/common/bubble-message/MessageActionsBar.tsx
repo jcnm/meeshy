@@ -326,26 +326,6 @@ export const MessageActionsBar = memo(function MessageActionsBar({
           </TooltipContent>
         </Tooltip>
 
-        {/* Bouton signaler */}
-        {canReportMessage && onReport && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                {...useSingleTap(onReport)}
-                className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-800"
-                aria-label={tReport('reportMessage')}
-              >
-                <Flag className="h-3.5 w-3.5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{tReport('reportMessage')}</p>
-            </TooltipContent>
-          </Tooltip>
-        )}
-
         {/* Menu trois points - Toujours visible */}
         <DropdownMenu>
           <Tooltip>
@@ -400,6 +380,20 @@ export const MessageActionsBar = memo(function MessageActionsBar({
                 <Trash2 className="h-4 w-4" />
                 <span>{t('delete')}</span>
               </DropdownMenuItem>
+            )}
+
+            {/* Report option */}
+            {canReportMessage && onReport && (
+              <>
+                {(canEditMessage || canDeleteMessage) && <div className="h-px bg-gray-200 dark:bg-gray-700 my-1" />}
+                <DropdownMenuItem
+                  onClick={onReport}
+                  className="flex items-center gap-2 cursor-pointer"
+                >
+                  <Flag className="h-4 w-4" />
+                  <span>{tReport('reportMessage')}</span>
+                </DropdownMenuItem>
+              </>
             )}
 
             {/* Separator before Help */}

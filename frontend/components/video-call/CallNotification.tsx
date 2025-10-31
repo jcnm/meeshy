@@ -50,7 +50,7 @@ export function CallNotification({ call, onAccept, onReject }: CallNotificationP
 
   return (
     <div
-      className="fixed top-4 right-4 z-[9999] bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl border-2 border-green-500 dark:border-green-600 min-w-[360px] animate-in slide-in-from-top-5"
+      className="fixed top-4 left-4 right-4 md:left-auto md:right-4 md:max-w-[360px] z-[9999] bg-white dark:bg-gray-800 p-4 md:p-6 rounded-2xl shadow-2xl border-2 border-green-500 dark:border-green-600 animate-in slide-in-from-top-5"
       role="alertdialog"
       aria-labelledby="call-notification-title"
       aria-describedby="call-notification-description"

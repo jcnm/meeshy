@@ -36,29 +36,6 @@ services:
       retries: 3
       start_period: 40s
 
-  # NoSQLClient - Interface MongoDB
-  nosqlclient:
-    image: mongoclient/mongoclient:latest
-    container_name: meeshy-dev-nosqlclient
-    restart: unless-stopped
-    environment:
-      MONGOCLIENT_DEFAULT_CONNECTION_URL: "mongodb://database:27017/${MONGODB_DATABASE:-meeshy}?replicaSet=rs0&directConnection=true"
-      ROOT_URL: "http://localhost:3001"
-      PORT: 3000
-    ports:
-      - "3001:3000"
-    depends_on:
-      database:
-        condition: service_healthy
-    networks:
-      - meeshy-dev-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-
   # Cache Redis  
   redis:
     image: redis:8-alpine

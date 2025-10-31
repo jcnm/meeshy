@@ -64,7 +64,8 @@
       "translate": "Traduire",
       "reply": "Répondre",
       "edit": "Modifier",
-      "delete": "Supprimer"
+      "delete": "Supprimer",
+      "more": "Plus d'options"
     },
     "replyToMessage": "Répondre au message",
     "replyingTo": "Réponse à",
