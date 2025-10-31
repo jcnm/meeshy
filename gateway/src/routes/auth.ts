@@ -199,8 +199,8 @@ export async function authRoutes(fastify: FastifyInstance) {
               lastSeen: user.lastActiveAt,
               lastActiveAt: user.lastActiveAt,
               isActive: true,
-              createdAt: new Date(), // TODO: Récupérer depuis la DB si nécessaire
-              updatedAt: new Date(),
+              createdAt: user.createdAt,
+              updatedAt: user.updatedAt,
               permissions
             }
           }
