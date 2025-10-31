@@ -234,7 +234,7 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
                     disabled={isLoading}
                     className={cn(
                       'relative flex flex-col items-center justify-center',
-                      'w-7 h-7 rounded-full',
+                      'w-4 h-4 sm:w-7 sm:h-7 rounded-full',
                       'bg-white dark:bg-gray-800',
                       'border shadow-md',
                       'transition-all duration-200',
@@ -246,8 +246,8 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
                     )}
                   >
                     {/* Emoji */}
-                    <motion.span 
-                      className="text-sm leading-none"
+                    <motion.span
+                      className="text-[10px] sm:text-sm leading-none"
                       key={`emoji-${reaction.emoji}`}
                       animate={
                         animatingEmojis.has(reaction.emoji)
@@ -287,8 +287,8 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
                       className={cn(
                         'absolute -top-0.5 -right-0.5',
                         'flex items-center justify-center',
-                        'min-w-[14px] h-[14px] px-0.5',
-                        'rounded-full text-[8px] font-bold',
+                        'min-w-[10px] h-[10px] sm:min-w-[14px] sm:h-[14px] px-0.5',
+                        'rounded-full text-[6px] sm:text-[8px] font-bold',
                         'shadow-sm border',
                         animatingEmojis.has(reaction.emoji)
                           ? 'ring-2 ring-primary/50 ring-offset-1'
@@ -338,7 +338,7 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
               onClick={onAddReactionClick}
               className={cn(
                 'flex items-center justify-center',
-                'w-7 h-7 rounded-full',
+                'w-4 h-4 sm:w-7 sm:h-7 rounded-full',
                 'bg-secondary/50 border border-border',
                 'text-muted-foreground hover:text-foreground',
                 'hover:bg-secondary hover:border-primary/50',
@@ -349,14 +349,15 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
+                width="10"
+                height="10"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                className="sm:w-[14px] sm:h-[14px]"
               >
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />

@@ -115,7 +115,7 @@ export const MessageActionsBar = memo(function MessageActionsBar({
               onLanguageSwitch(targetLang);
             })}
             className={cn(
-              "h-7 w-7 p-0 rounded-full transition-colors",
+              "h-6 w-6 sm:h-7 sm:w-7 p-0 rounded-full transition-colors",
               currentDisplayLanguage === originalLanguage
                 ? "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
                 : "text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
@@ -140,7 +140,7 @@ export const MessageActionsBar = memo(function MessageActionsBar({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/30"
+                  className="h-6 w-6 sm:h-7 sm:w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/30"
                   aria-label={t('selectLanguage')}
                 >
                   <Languages className="h-3.5 w-3.5" />
@@ -271,7 +271,7 @@ export const MessageActionsBar = memo(function MessageActionsBar({
                 size="sm"
                 {...useSingleTap(onReply)}
                 aria-label={t('replyToMessage')}
-                className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/30"
+                className="h-6 w-6 sm:h-7 sm:w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/30"
               >
                 <MessageCircle className="h-3.5 w-3.5" />
               </Button>
@@ -289,7 +289,7 @@ export const MessageActionsBar = memo(function MessageActionsBar({
               variant="ghost"
               size="sm"
               {...useSingleTap(onReaction)}
-              className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
+              className="h-6 w-6 sm:h-7 sm:w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
               aria-label={t('addReaction')}
             >
               <Smile className="h-3.5 w-3.5" />
@@ -308,7 +308,7 @@ export const MessageActionsBar = memo(function MessageActionsBar({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
+                  className="h-6 w-6 sm:h-7 sm:w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
                   aria-label={t('messageActions.more') || 'Plus d\'options'}
                 >
                   <MoreVertical className="h-3.5 w-3.5" />
