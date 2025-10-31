@@ -297,9 +297,11 @@ export function DashboardLayout({
       } ${
         !(isMobile && hideHeaderOnMobile) ? 'pt-16' : 'pt-0'
       } ${
-        className.includes('!h-full') ? 'h-full' : 
-        className.includes('!h-auto') ? '' : 
-        'h-screen'
+        className.includes('!h-full') ? 'h-[calc(100%-4rem)]' :
+        className.includes('!h-auto') ? '' :
+        'h-[calc(100vh-4rem)]'
+      } ${
+        className.includes('!overflow-hidden') ? 'overflow-hidden' : ''
       }`}>
         {className.includes('!h-auto') || className.includes('!px-0') ? (
           children

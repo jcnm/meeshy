@@ -1179,7 +1179,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     <>
       {/* Mode mobile avec conversation ouverte - Layout plein écran */}
       {isMobile && selectedConversation ? (
-        <div className="fixed inset-0 z-50 flex flex-col bg-white dark:bg-gray-950">
+        <div className="fixed inset-0 z-50 flex flex-col bg-white dark:bg-gray-950 overflow-hidden">
           {/* Header de conversation */}
           <header className="flex-shrink-0 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 shadow-md border-b-2 border-gray-200 dark:border-gray-700">
             <ConversationHeader
@@ -1205,8 +1205,8 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
             )}
           </header>
 
-          {/* Zone des messages scrollable */}
-          <div ref={messagesScrollRef} className="flex-1 overflow-y-auto overflow-x-hidden bg-transparent pb-32">
+          {/* Zone des messages scrollable avec padding pour le composer */}
+          <div ref={messagesScrollRef} className="flex-1 overflow-y-auto overflow-x-hidden bg-transparent pb-4 min-h-0">
             <ConversationMessages
               messages={messages}
               translatedMessages={messages as any}
@@ -1233,9 +1233,9 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
             />
           </div>
 
-          {/* Zone de saisie fixe */}
-          <div 
-            className="fixed bottom-0 left-0 right-0 bg-white/98 dark:bg-gray-950/98 backdrop-blur-xl border-t-2 border-gray-200 dark:border-gray-700 shadow-2xl p-4 z-[100]"
+          {/* Zone de saisie dans le flux au lieu de fixed */}
+          <div
+            className="flex-shrink-0 bg-white/98 dark:bg-gray-950/98 backdrop-blur-xl border-t-2 border-gray-200 dark:border-gray-700 shadow-2xl p-4"
             style={{
               paddingBottom: 'max(1rem, env(safe-area-inset-bottom))',
             }}
@@ -1248,7 +1248,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                 onRestore={handleRestoreFailedMessage}
               />
             )}
-            
+
             <MessageComposer
               ref={messageComposerRef}
               value={newMessage}
@@ -1279,20 +1279,17 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       ) : (
         /* Mode desktop ou mobile sans conversation */
         <div className={cn(
-          "flex flex-col bg-gradient-to-br from-blue-50 to-indigo-100",
+          "flex flex-col bg-gradient-to-br from-blue-50 to-indigo-100 overflow-hidden",
           isMobile ? "min-h-screen" : "h-screen"
         )}>
-          <div className={cn(
-            isMobile ? "flex-shrink-0" : "flex-1"
-          )}>
-            <DashboardLayout 
-              title={t('conversationLayout.conversations.title')} 
-              hideHeaderOnMobile={false}
-              className="!bg-none !bg-transparent !h-full !min-h-0 !max-w-none !px-0"
-            >
-            <div 
+          <DashboardLayout
+            title={t('conversationLayout.conversations.title')}
+            hideHeaderOnMobile={false}
+            className="!bg-none !bg-transparent !h-full !min-h-0 !max-w-none !px-0 !overflow-hidden flex-1"
+          >
+            <div
               className={cn(
-                "flex bg-transparent conversation-layout relative z-10 w-full",
+                "flex bg-transparent conversation-layout relative z-10 w-full h-full overflow-hidden",
                 isMobile ? 'h-[calc(100vh-4rem)]' : 'h-full'
               )}
               role="application"
@@ -1342,7 +1339,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         >
           
           {selectedConversation ? (
-            <div className="flex flex-col w-full h-full bg-white dark:bg-gray-950 shadow-xl">
+            <div className="flex flex-col w-full h-full bg-white dark:bg-gray-950 shadow-xl overflow-hidden">
               {/* Header de conversation */}
               <header className="flex-shrink-0 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 shadow-md border-b-2 border-gray-200 dark:border-gray-700 relative z-10" role="banner">
                 <ConversationHeader
@@ -1368,7 +1365,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                 )}
               </header>
 
-              {/* Zone des messages */}
+              {/* Zone des messages avec min-h-0 pour éviter débordement */}
               <div
                 ref={messagesScrollRef}
                 className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-900/50 dark:to-gray-950"
@@ -1402,7 +1399,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                 />
               </div>
 
-              {/* Zone de composition - Desktop - Position relative dans le flux */}
+              {/* Zone de composition - Desktop - flex-shrink-0 pour hauteur fixe */}
               <div className="flex-shrink-0 bg-white/98 dark:bg-gray-950/98 backdrop-blur-xl border-t-2 border-gray-200 dark:border-gray-700 shadow-2xl p-6">
                 {/* Bannière des messages en échec */}
                 {selectedConversation?.id && (
@@ -1412,7 +1409,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                     onRestore={handleRestoreFailedMessage}
                   />
                 )}
-                  
+
                   <MessageComposer
                     ref={messageComposerRef}
                     value={newMessage}
@@ -1467,8 +1464,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               }}
             />
             </DashboardLayout>
-          </div>
-
         </div>
       )}
       
