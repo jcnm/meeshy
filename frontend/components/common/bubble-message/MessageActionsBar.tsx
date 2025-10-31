@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useState, useMemo } from 'react';
 import { Smile, Copy, MessageCircle, Flag, Trash2, MoreVertical, Edit, Languages, CheckCircle2, AlertTriangle, HelpCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -85,8 +85,8 @@ export const MessageActionsBar = memo(function MessageActionsBar({
     }, 50);
   }, [onLanguageSwitch]);
 
-  // Composant de traduction (drapeau + menu languages)
-  const TranslationControls = ({ showLanguagesMenu = true }: { showLanguagesMenu?: boolean }) => (
+  // Composant de traduction (drapeau + menu languages) - Memoïsé pour éviter les re-renders
+  const TranslationControls = useMemo(() => ({ showLanguagesMenu = true }: { showLanguagesMenu?: boolean }) => (
     <>
       {/* Erreur de traduction */}
       {translationError && (
@@ -249,7 +249,21 @@ export const MessageActionsBar = memo(function MessageActionsBar({
         </DropdownMenu>
       )}
     </>
-  );
+  ), [
+    translationError,
+    currentDisplayLanguage,
+    originalLanguage,
+    userLanguage,
+    t,
+    getLanguageInfo,
+    message.translations,
+    message.originalContent,
+    message.content,
+    availableVersions,
+    handleLanguageSwitch,
+    isTranslationMenuOpen,
+    onEnterLanguageMode
+  ]);
 
   return (
     <TooltipProvider>

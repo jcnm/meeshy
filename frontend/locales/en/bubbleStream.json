@@ -58,6 +58,7 @@
     "editMessagePrompt": "Edit message:",
     "deleteMessageConfirm": "Are you sure you want to delete this message?",
     "originalBadge": "Original",
+    "original": "Original",
     "improveQuality": "Improve quality (model {current} → {next})",
     "messageActions": {
       "copy": "Copy message",

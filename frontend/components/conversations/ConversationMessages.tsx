@@ -472,14 +472,6 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
       {/* Bouton flottant pour scroller - Direction adaptée au contexte */}
       {(() => {
         const shouldRender = showScrollButton && !isLoadingMessages && messages.length > 0;
-        console.log('[ConversationMessages] 🎯 Bouton scroll render check:', {
-          showScrollButton,
-          isLoadingMessages,
-          messagesCount: messages.length,
-          shouldRender,
-          scrollDirection,
-          scrollButtonDirection
-        });
         return shouldRender ? (
           <Button
             onClick={handleScrollButtonClick}

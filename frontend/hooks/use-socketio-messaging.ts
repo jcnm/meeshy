@@ -54,6 +54,11 @@ export function useSocketIOMessaging(options: UseSocketIOMessagingOptions = {}) 
 
   // ÉTAPE 1: Initialiser la connexion au montage du hook
   useEffect(() => {
+    // Définir l'utilisateur courant dans le service si disponible
+    if (currentUser) {
+      meeshySocketIOService.setCurrentUser(currentUser);
+    }
+
     // Force la connexion initiale si des tokens sont disponibles
     const hasAuthToken = typeof window !== 'undefined' && !!authManager.getAuthToken();
     const hasSessionToken = typeof window !== 'undefined' && !!authManager.getAnonymousSession()?.token;
@@ -62,7 +67,7 @@ export function useSocketIOMessaging(options: UseSocketIOMessagingOptions = {}) 
       // Forcer la connexion initiale
       meeshySocketIOService.reconnect();
     }
-  }, []); // Exécuter une seule fois au montage
+  }, [currentUser]); // Re-exécuter si currentUser change
 
   // ÉTAPE 2: Gérer le join/leave de conversation
   useEffect(() => {
