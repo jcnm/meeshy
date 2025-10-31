@@ -30,6 +30,8 @@
     "delete": "Delete",
     "viewing": "Viewing",
     "viewTranslations": "View translations",
+    "viewAllTranslations": "View all translations",
+    "moreTranslationOptions": "More translation options",
     "translations": "Translations",
     "translateTo": "Translate to",
     "filterLanguages": "Filter languages...",

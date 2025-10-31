@@ -290,7 +290,40 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       } else {
         console.log(`[ConversationLayout-${instanceId}] Message ignoré (autre conversation)`);
       }
-    }, [addMessage, instanceId]),
+
+      // Mettre à jour la liste des conversations pour refléter le nouveau message
+      setConversations(prevConversations => {
+        const conversationIndex = prevConversations.findIndex(c => c.id === message.conversationId);
+
+        if (conversationIndex === -1) {
+          // Conversation non trouvée dans la liste, ne rien faire
+          console.log(`[ConversationLayout-${instanceId}] Conversation ${message.conversationId} non trouvée dans la liste`);
+          return prevConversations;
+        }
+
+        // Créer une copie de la conversation avec les informations mises à jour
+        const updatedConversation = {
+          ...prevConversations[conversationIndex],
+          lastMessage: message,
+          lastActivityAt: message.createdAt || new Date()
+        };
+
+        // Retirer la conversation de sa position actuelle
+        const updatedConversations = prevConversations.filter((_, index) => index !== conversationIndex);
+
+        // Ajouter la conversation mise à jour en première position
+        const newConversations = [updatedConversation, ...updatedConversations];
+
+        console.log(`[ConversationLayout-${instanceId}] 📋 Liste des conversations mise à jour:`, {
+          conversationId: message.conversationId,
+          previousPosition: conversationIndex,
+          newPosition: 0,
+          lastMessagePreview: message.content?.substring(0, 30)
+        });
+
+        return newConversations;
+      });
+    }, [addMessage, instanceId, setConversations]),
     onTranslation: useCallback((messageId: string, translations: any[]) => {
       console.log('🌐 [ConversationLayoutV2] Traductions reçues pour message:', messageId, translations);
       

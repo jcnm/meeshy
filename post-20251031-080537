@@ -1,0 +1,43 @@
+🎉 Weekly Update - Fresh Improvements & Bug Fixes!
+
+Hey Meeshy community! We've been working hard this week to make your experience even better. Here's what's new:
+
+💬 **Conversations Improvements**
+• Unified conversation list - no more public/private tabs!
+• Direct conversations now show "Username and me" format
+• Reduced message bubble spacing by 50% for better readability
+• Added full dark mode support to empty states
+• Better username display instead of generic conversation titles
+
+✍️ **Message Enhancements**
+• Increased message length limit from 1,024 to 2,000 characters!
+• Moderators now get 4,000 characters (double the limit!)
+• Better visual feedback when approaching character limits
+
+🛠️ **Admin Panel Upgrades**
+• Fixed pagination issues in user management
+• Added full dark mode support
+• Improved filter functionality
+• Better handling of large user lists
+
+🔐 **Authentication & Security**
+• Enforced 4-character minimum for usernames
+• Fixed critical authentication bugs
+• Better error handling during registration
+
+🚀 **Performance & SEO**
+• Added dynamic Open Graph metadata for better social media sharing
+• Fixed React rendering issues for smoother interactions
+• Optimized component loading and error handling
+
+🐛 **Bug Fixes**
+• Resolved React Hooks violations causing crashes
+• Fixed reply button errors
+• Improved pagination reload behavior
+• Better error messages throughout the app
+
+As always, we're continuously working to improve Meeshy. More exciting features coming soon!
+
+Have feedback or found a bug? Let us know in the comments! 👇
+
+#Meeshy #Updates #ChatApp #Improvements

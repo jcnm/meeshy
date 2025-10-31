@@ -30,6 +30,8 @@
     "delete": "Supprimer",
     "viewing": "Affichage",
     "viewTranslations": "Voir les traductions",
+    "viewAllTranslations": "Voir toutes les traductions",
+    "moreTranslationOptions": "Plus d'options de traduction",
     "translations": "Traductions",
     "translateTo": "Traduire en",
     "filterLanguages": "Filtrer les langues...",
