@@ -158,3 +158,4 @@ translator/scripts/images
 frontend/shared/version.txt
 gateway/shared/version.txt
 translator/shared/version.txt
+post-*
