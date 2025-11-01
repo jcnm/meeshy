@@ -44,9 +44,8 @@ class MeeshySocketIOService {
   private reconnectTimeout: NodeJS.Timeout | null = null;
   
   // CORRECTION: Mémoriser la conversation active pour auto-join après reconnexion
+  // Stocke l'ObjectId normalisé reçu du backend via CONVERSATION_JOINED
   private currentConversationId: string | null = null;
-  // Stocker AUSSI l'identifier original (avant normalisation) pour comparaison
-  private currentConversationIdentifier: string | null = null;
 
   /**
    * Fonction utilitaire pour obtenir la traduction selon la langue de l'utilisateur
@@ -1062,10 +1061,8 @@ class MeeshySocketIOService {
       }
       
       // CORRECTION: Mémoriser la conversation active pour auto-join après reconnexion
+      // Sera mis à jour avec l'ObjectId normalisé lors de CONVERSATION_JOINED
       this.currentConversationId = conversationId;
-      // IMPORTANT: Stocker aussi l'identifier original pour comparaison avec les messages
-      // Le backend peut retourner soit l'identifier soit l'ObjectId dans message.conversationId
-      this.currentConversationIdentifier = conversationId;
 
       // Utiliser l'ID pour les communications WebSocket
       this.socket.emit(CLIENT_EVENTS.CONVERSATION_JOIN, { conversationId });
@@ -1598,14 +1595,6 @@ class MeeshySocketIOService {
     return this.currentConversationId;
   }
 
-  /**
-   * Obtient l'identifier original de la conversation (avant normalisation)
-   * Peut être soit un identifier ("meeshy") soit un ObjectId
-   * Utilisé pour comparer avec message.conversationId qui peut contenir l'un ou l'autre
-   */
-  public getCurrentConversationIdentifier(): string | null {
-    return this.currentConversationIdentifier;
-  }
 
   /**
    * Obtient l'instance Socket directe (pour usage avancé)

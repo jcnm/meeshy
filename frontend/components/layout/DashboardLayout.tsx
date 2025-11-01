@@ -135,8 +135,8 @@ export function DashboardLayout({
 
   return (
     <div className={`${
-      className.includes('!h-full') ? 'h-full' : 
-      className.includes('!h-auto') ? 'min-h-0' : 
+      className.includes('!h-full') ? 'h-screen' :
+      className.includes('!h-auto') ? 'min-h-0' :
       'min-h-screen'
     } bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-950 dark:to-gray-900 ${className}`}>
       {/* Header fixe - masqué sur mobile si demandé */}

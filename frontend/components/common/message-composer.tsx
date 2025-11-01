@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, KeyboardEvent, forwardRef, useImperativeHandle, useEffect, useCallback, memo } from 'react';
+import { useState, useRef, KeyboardEvent, forwardRef, useImperativeHandle, useEffect, useCallback, useMemo, memo } from 'react';
 import { Send, MapPin, X, MessageCircle, Languages, Paperclip, Loader2, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -211,16 +211,42 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     },
   });
 
-  // Notifier le parent quand les attachments changent
+  // FIX CRITIQUE: Mémoiser les IDs pour éviter les re-renders inutiles
+  const attachmentIdsString = useMemo(() => {
+    return JSON.stringify(uploadedAttachments.map(att => att.id));
+  }, [uploadedAttachments]);
+
+  // Ref pour stocker uploadedAttachments et éviter la closure stale
+  const uploadedAttachmentsRef = useRef<UploadedAttachmentResponse[]>([]);
   useEffect(() => {
+    uploadedAttachmentsRef.current = uploadedAttachments;
+  }, [uploadedAttachments]);
+
+  // Ref pour tracker la dernière valeur notifiée au parent
+  const lastNotifiedIdsStringRef = useRef<string>('');
+
+  // Notifier le parent quand les attachments changent (comparaison par valeur sérialisée)
+  useEffect(() => {
+    // PROTECTION ABSOLUE: Ne rien faire si les IDs n'ont pas changé
+    if (attachmentIdsString === lastNotifiedIdsStringRef.current) {
+      return;
+    }
+
+    // Les IDs ont changé, notifier le parent
+    const currentAttachments = uploadedAttachmentsRef.current;
+    const attachmentIds = currentAttachments.map(att => att.id);
+    const mimeTypes = currentAttachments.map(att => att.mimeType);
+
+    console.log('📎 Notification parent - IDs d\'attachments:', attachmentIds);
+    console.log('📎 MIME types:', mimeTypes);
+
     if (onAttachmentsChange) {
-      const attachmentIds = uploadedAttachments.map(att => att.id);
-      const mimeTypes = uploadedAttachments.map(att => att.mimeType);
-      console.log('📎 Notification parent - IDs d\'attachments:', attachmentIds);
-      console.log('📎 MIME types:', mimeTypes);
       onAttachmentsChange(attachmentIds, mimeTypes);
     }
-  }, [uploadedAttachments, onAttachmentsChange]);
+
+    // Sauvegarder la valeur notifiée
+    lastNotifiedIdsStringRef.current = attachmentIdsString;
+  }, [attachmentIdsString, onAttachmentsChange]);
 
   // Handler pour la sélection de fichiers - mémorisé
   const handleFilesSelected = useCallback(async (files: File[]) => {

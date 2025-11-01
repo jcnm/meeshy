@@ -384,7 +384,8 @@ export class MeeshySocketIOManager {
                 timestamp: message.createdAt
               } as any; // Cast temporaire pour éviter les conflits de types
               console.log(`🔍 [DEBUG] Appel _broadcastNewMessage pour message ${message.id}`);
-              await this._broadcastNewMessage(messageWithTimestamp, data.conversationId, socket);
+              // FIX: Utiliser message.conversationId (déjà normalisé en base) au lieu de data.conversationId (peut être un identifier)
+              await this._broadcastNewMessage(messageWithTimestamp, message.conversationId, socket);
             } else {
               console.log(`⚠️ [DEBUG] Message ${response.data.id} non trouvé en base de données`);
             }
@@ -604,13 +605,14 @@ export class MeeshySocketIOManager {
                 hasReplyTo: !!(message as any).replyTo,
                 replyToId: message.replyToId
               });
-              
+
               // Utiliser la méthode _broadcastNewMessage pour un formatting cohérent
               const messageWithTimestamp = {
                 ...message,
                 timestamp: message.createdAt
               } as any;
-              await this._broadcastNewMessage(messageWithTimestamp, data.conversationId, socket);
+              // FIX: Utiliser message.conversationId (déjà normalisé en base) au lieu de data.conversationId (peut être un identifier)
+              await this._broadcastNewMessage(messageWithTimestamp, message.conversationId, socket);
             }
           }
         } catch (error: any) {
