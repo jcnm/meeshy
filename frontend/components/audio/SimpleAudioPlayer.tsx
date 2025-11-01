@@ -172,12 +172,9 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
         `}</style>
 
         {/* Affichage du temps - Countdown et durée totale */}
-        <div className="flex justify-between items-center text-xs sm:text-sm font-mono text-gray-600 dark:text-gray-300">
+        <div className="flex justify-center items-center text-xs sm:text-sm font-mono text-gray-600 dark:text-gray-300">
           <span className="font-semibold text-blue-600 dark:text-blue-400">
             {isPlaying ? formatTime(duration - currentTime) : formatTime(duration)}
-          </span>
-          <span className="text-gray-400 dark:text-gray-500 text-xs">
-            {isPlaying ? 'restant' : 'durée'}
           </span>
         </div>
       </div>

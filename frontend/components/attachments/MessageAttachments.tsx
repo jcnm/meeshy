@@ -56,6 +56,7 @@ export function MessageAttachments({
   const [isMobile, setIsMobile] = useState(false);
   const [attachmentToDelete, setAttachmentToDelete] = useState<Attachment | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedAttachmentId, setSelectedAttachmentId] = useState<string | null>(null);
   const { t } = useI18n('common');
 
   // Handler pour ouvrir la confirmation de suppression
@@ -97,6 +98,25 @@ export function MessageAttachments({
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Désélectionner l'attachment quand on clique ailleurs (mobile)
+  React.useEffect(() => {
+    if (!selectedAttachmentId) return;
+
+    const handleClickOutside = () => {
+      setSelectedAttachmentId(null);
+    };
+
+    // Attendre un peu avant d'ajouter le listener pour éviter de détecter le clic qui a sélectionné
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('click', handleClickOutside);
+    }, 100);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [selectedAttachmentId]);
 
   if (!attachments || attachments.length === 0) return null;
 
@@ -149,6 +169,24 @@ export function MessageAttachments({
         handleOpenDeleteConfirm(attachment, event);
       };
 
+      // Handler pour le tap sur mobile (toggle actions visibility)
+      const handleImageClick = (event: React.MouseEvent) => {
+        if (isMobile && canDelete) {
+          // Sur mobile, premier tap = afficher les actions, second tap = ouvrir l'image
+          if (selectedAttachmentId === attachment.id) {
+            // Déjà sélectionné, ouvrir l'image
+            onImageClick?.(attachment.id);
+          } else {
+            // Pas encore sélectionné, afficher les actions
+            event.stopPropagation();
+            setSelectedAttachmentId(attachment.id);
+          }
+        } else {
+          // Desktop ou pas de droits de suppression: ouvrir directement
+          onImageClick?.(attachment.id);
+        }
+      };
+
       // Déterminer la taille d'affichage selon le nombre d'images
       // Augmentation de 40% sur toutes les tailles
       let sizeClasses = '';
@@ -174,13 +212,16 @@ export function MessageAttachments({
       const useOriginalImage = imageAttachments.length <= 2;
       const imageUrl = useOriginalImage ? attachment.fileUrl : (attachment.thumbnailUrl || attachment.fileUrl);
 
+      // Déterminer si les actions doivent être visibles
+      const isActionsVisible = selectedAttachmentId === attachment.id;
+
       return (
         <TooltipProvider key={attachment.id}>
           <Tooltip delayDuration={300}>
             <TooltipTrigger asChild>
               <div
                 className="relative group cursor-pointer flex-shrink-0 snap-start"
-                onClick={() => onImageClick?.(attachment.id)}
+                onClick={handleImageClick}
               >
                 <div className={`relative bg-gray-100 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden hover:border-blue-400 dark:hover:border-blue-500 transition-all hover:shadow-lg dark:hover:shadow-blue-500/30 flex-shrink-0 ${sizeClasses} ${aspectRatioClass}`}>
                   <img
@@ -195,7 +236,9 @@ export function MessageAttachments({
                   {canDelete && (
                     <button
                       onClick={handleDeleteClick}
-                      className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10"
+                      className={`absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-opacity shadow-md z-10 ${
+                        isActionsVisible ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                      }`}
                       title="Supprimer"
                     >
                       <X className="w-3.5 h-3.5" />
@@ -266,10 +309,26 @@ export function MessageAttachments({
       handleOpenDeleteConfirm(attachment, event);
     };
 
-    // Handler pour ouvrir le fichier
-    const handleOpenFile = () => {
-      window.open(attachment.fileUrl, '_blank');
+    // Handler pour le tap sur mobile (toggle actions visibility)
+    const handleFileClick = (event: React.MouseEvent) => {
+      if (isMobile && canDelete) {
+        // Sur mobile, premier tap = afficher les actions, second tap = ouvrir le fichier
+        if (selectedAttachmentId === attachment.id) {
+          // Déjà sélectionné, ouvrir le fichier
+          window.open(attachment.fileUrl, '_blank');
+        } else {
+          // Pas encore sélectionné, afficher les actions
+          event.stopPropagation();
+          setSelectedAttachmentId(attachment.id);
+        }
+      } else {
+        // Desktop ou pas de droits de suppression: ouvrir directement
+        window.open(attachment.fileUrl, '_blank');
+      }
     };
+
+    // Déterminer si les actions doivent être visibles
+    const isActionsVisible = selectedAttachmentId === attachment.id;
 
     return (
       <TooltipProvider key={attachment.id}>
@@ -277,7 +336,7 @@ export function MessageAttachments({
           <TooltipTrigger asChild>
             <div
               className="relative group flex-shrink-0 snap-start cursor-pointer"
-              onClick={handleOpenFile}
+              onClick={handleFileClick}
             >
               <div className={`relative flex flex-col items-center justify-center bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-400 dark:hover:border-blue-500 transition-all hover:shadow-md dark:hover:shadow-blue-500/20 flex-shrink-0 ${
                 isMobile ? 'w-14 h-14' : 'w-16 h-16'
@@ -293,14 +352,18 @@ export function MessageAttachments({
                 {canDelete ? (
                   <button
                     onClick={handleDeleteClick}
-                    className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10"
+                    className={`absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-opacity shadow-md z-10 ${
+                      isActionsVisible ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                    }`}
                     title="Supprimer"
                   >
                     <X className="w-3 h-3" />
                   </button>
                 ) : (
                   /* Download indicator si pas de droits de suppression */
-                  <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className={`absolute top-1 right-1 transition-opacity ${
+                    isActionsVisible ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                  }`}>
                     <Download className="w-3 h-3 text-gray-600 dark:text-gray-400" />
                   </div>
                 )}

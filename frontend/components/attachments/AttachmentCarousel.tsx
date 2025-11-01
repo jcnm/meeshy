@@ -170,16 +170,20 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
     const extension = getFileExtension(file.name);
     const fileKey = `${file.name}-${file.size}-${file.lastModified}`;
     const thumbnailUrl = thumbnails.get(fileKey);
-    
+
     // Afficher un placeholder si la miniature est en cours de génération
     const isLoadingThumbnail = type === 'image' && !thumbnailUrl && isGeneratingThumbnails;
-    
+
+    // Audio files get wider size (160x80) to match AudioRecorderCard
+    const isAudio = type === 'audio';
+    const cardSizeClass = isAudio ? 'w-40 h-20' : 'w-20 h-20';
+
     return (
       <TooltipProvider key={`${file.name}-${index}`}>
         <Tooltip delayDuration={300}>
           <TooltipTrigger asChild>
             <div className="relative group pt-3 pb-2">
-              <div className={`relative flex flex-col items-center justify-center w-20 h-20 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-200 hover:shadow-md dark:hover:shadow-blue-500/20 ${
+              <div className={`relative flex flex-col items-center justify-center ${cardSizeClass} bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-200 hover:shadow-md dark:hover:shadow-blue-500/20 ${
                 isUploading ? 'border-blue-400 dark:border-blue-500' : ''
               } ${isUploaded ? 'border-green-400 dark:border-green-500' : ''}`}>
                 {/* Image preview avec miniature optimisée */}
