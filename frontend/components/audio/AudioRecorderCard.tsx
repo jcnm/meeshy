@@ -180,7 +180,7 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
         setPermissionError('Recording error');
       }
     }
-  }, [effectiveDuration, onRecordingComplete, recordingTime]);
+  }, [effectiveDuration, onRecordingComplete]);
 
   // Arrêter l'enregistrement
   const stopRecording = useCallback(() => {
@@ -227,12 +227,13 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
     }
   }, [isPlaying]);
 
-  // Auto-start recording si demandé
+  // Auto-start recording si demandé (only on mount)
   useEffect(() => {
-    if (autoStart && !isRecording && !audioBlob && !permissionError) {
+    if (autoStart) {
       startRecording();
     }
-  }, [autoStart]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount when autoStart is true
 
   // Cleanup on unmount
   useEffect(() => {

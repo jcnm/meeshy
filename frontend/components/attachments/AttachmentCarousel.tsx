@@ -44,47 +44,40 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
     let isCancelled = false;
 
     const generateThumbnails = async () => {
-      setThumbnails((prevThumbnails) => {
-        // Identifier les nouveaux fichiers qui nécessitent des miniatures
-        const newFiles = files.filter((file) => {
-          const fileKey = `${file.name}-${file.size}-${file.lastModified}`;
-          return file.type.startsWith('image/') && !prevThumbnails.has(fileKey);
+      // Identifier les nouveaux fichiers qui nécessitent des miniatures
+      const newFiles = files.filter((file) => {
+        const fileKey = `${file.name}-${file.size}-${file.lastModified}`;
+        return file.type.startsWith('image/') && !thumbnails.has(fileKey);
+      });
+
+      if (newFiles.length === 0) return;
+
+      setIsGeneratingThumbnails(true);
+
+      try {
+        // Créer les miniatures par batch (non bloquant)
+        const newThumbnails = await createThumbnailsBatch(newFiles, {
+          maxWidth: isLowEnd ? 80 : 120,
+          maxHeight: isLowEnd ? 80 : 120,
+          quality: isLowEnd ? 0.6 : 0.7,
         });
 
-        if (newFiles.length === 0) return prevThumbnails;
-
-        // Lancer la génération en arrière-plan
-        (async () => {
-          setIsGeneratingThumbnails(true);
-
-          try {
-            // Créer les miniatures par batch (non bloquant)
-            const newThumbnails = await createThumbnailsBatch(newFiles, {
-              maxWidth: isLowEnd ? 80 : 120,
-              maxHeight: isLowEnd ? 80 : 120,
-              quality: isLowEnd ? 0.6 : 0.7,
+        if (!isCancelled) {
+          setThumbnails((prev) => {
+            const updated = new Map(prev);
+            newThumbnails.forEach((url, key) => {
+              updated.set(key, url);
             });
-
-            if (!isCancelled) {
-              setThumbnails((prev) => {
-                const updated = new Map(prev);
-                newThumbnails.forEach((url, key) => {
-                  updated.set(key, url);
-                });
-                return updated;
-              });
-            }
-          } catch (error) {
-            console.error('Erreur génération miniatures:', error);
-          } finally {
-            if (!isCancelled) {
-              setIsGeneratingThumbnails(false);
-            }
-          }
-        })();
-
-        return prevThumbnails;
-      });
+            return updated;
+          });
+        }
+      } catch (error) {
+        console.error('Erreur génération miniatures:', error);
+      } finally {
+        if (!isCancelled) {
+          setIsGeneratingThumbnails(false);
+        }
+      }
     };
 
     // Différer légèrement pour ne pas bloquer le rendu initial
@@ -96,7 +89,7 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
       isCancelled = true;
       clearTimeout(timeoutId);
     };
-  }, [files, isLowEnd]);
+  }, [files, isLowEnd, thumbnails]);
 
   // Nettoyer les miniatures qui ne sont plus utilisées
   useEffect(() => {

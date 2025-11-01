@@ -187,7 +187,7 @@ export const SimpleAudioRecorder: React.FC<SimpleAudioRecorderProps> = ({
         toast.error('Impossible d\'accéder au microphone.');
       }
     }
-  }, [effectiveDuration, onRecordingComplete, recordingTime]);
+  }, [effectiveDuration, onRecordingComplete]);
 
   // Arrêter l'enregistrement
   const stopRecording = useCallback(() => {
@@ -262,12 +262,13 @@ export const SimpleAudioRecorder: React.FC<SimpleAudioRecorderProps> = ({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Auto-start recording si demandé
+  // Auto-start recording si demandé (only on mount)
   useEffect(() => {
-    if (autoStart && !isRecording && !audioBlob) {
+    if (autoStart) {
       startRecording();
     }
-  }, [autoStart]); // Seulement au montage si autoStart est true
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount when autoStart is true
 
   // Cleanup on unmount
   useEffect(() => {
