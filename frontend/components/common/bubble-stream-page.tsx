@@ -606,13 +606,22 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
   // Handler pour les nouveaux messages reçus via WebSocket avec traductions optimisées
   const handleNewMessage = useCallback((message: Message) => {
+    // FILTRAGE CRITIQUE: N'accepter que les messages de la conversation actuelle
+    if (message.conversationId !== conversationId) {
+      console.log('[BubbleStreamPage] Message ignoré (autre conversation):', {
+        messageConvId: message.conversationId,
+        currentConvId: conversationId
+      });
+      return;
+    }
+
     // Message reçu via WebSocket
-    
+
     // Enrichir le message avec les informations du sender si nécessaire
     const enrichedMessage = { ...message };
-    
+
     // Si c'est notre propre message et que sender/anonymousSender manque, l'enrichir
-    if ((message.senderId === user.id || message.anonymousSenderId === user.id) && 
+    if ((message.senderId === user.id || message.anonymousSenderId === user.id) &&
         !message.sender && !message.anonymousSender) {
       if (isAnonymousMode) {
         enrichedMessage.anonymousSender = {
@@ -672,7 +681,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         }
       }, 300);
     }
-  }, [addMessage, user.id, user.username, user.firstName, user.lastName, user.displayName, user.avatar, user.systemLanguage, isAnonymousMode]);
+  }, [conversationId, addMessage, user.id, user.username, user.firstName, user.lastName, user.displayName, user.avatar, user.systemLanguage, isAnonymousMode]);
 
   // Hook pour les statistiques de traduction de messages
   const { stats: translationStats, incrementTranslationCount } = useMessageTranslation();
