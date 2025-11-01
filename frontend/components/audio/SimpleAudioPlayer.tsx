@@ -122,12 +122,28 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
       {/* Zone de progression et temps */}
       <div className="flex-1 min-w-0">
         {/* Barre de progression */}
-        <div className="relative w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-2">
-          {/* Barre de progression remplie */}
+        <div className="relative w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-2 group">
+          {/* Barre de progression remplie avec animation */}
           <div
-            className="absolute top-0 left-0 h-full bg-blue-600 dark:bg-blue-500 transition-all duration-150 rounded-full"
-            style={{ width: `${progress}%` }}
+            className={`absolute top-0 left-0 h-full rounded-full ${
+              isPlaying
+                ? 'bg-gradient-to-r from-blue-500 via-blue-600 to-blue-500 dark:from-blue-400 dark:via-blue-500 dark:to-blue-400 animate-shimmer'
+                : 'bg-blue-600 dark:bg-blue-500'
+            }`}
+            style={{
+              width: `${progress}%`,
+              transition: 'width 0.1s linear',
+              backgroundSize: isPlaying ? '200% 100%' : '100% 100%'
+            }}
           />
+
+          {/* Curseur de position */}
+          {progress > 0 && (
+            <div
+              className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white dark:bg-gray-200 rounded-full shadow-md border-2 border-blue-600 dark:border-blue-400 opacity-0 group-hover:opacity-100 transition-opacity"
+              style={{ left: `calc(${progress}% - 6px)` }}
+            />
+          )}
 
           {/* Input range invisible pour le contrôle */}
           <input
@@ -136,15 +152,32 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
             max={duration || 100}
             value={currentTime}
             onChange={handleSeek}
-            className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+            className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer z-10"
           />
         </div>
 
-        {/* Affichage du temps */}
+        <style jsx>{`
+          @keyframes shimmer {
+            0% {
+              background-position: -200% center;
+            }
+            100% {
+              background-position: 200% center;
+            }
+          }
+
+          .animate-shimmer {
+            animation: shimmer 3s linear infinite;
+          }
+        `}</style>
+
+        {/* Affichage du temps - Countdown et durée totale */}
         <div className="flex justify-between items-center text-xs sm:text-sm font-mono text-gray-600 dark:text-gray-300">
-          <span className="font-semibold">{formatTime(currentTime)}</span>
-          <span className="text-gray-400 dark:text-gray-500">
-            {formatTime(duration)}
+          <span className="font-semibold text-blue-600 dark:text-blue-400">
+            {isPlaying ? formatTime(duration - currentTime) : formatTime(duration)}
+          </span>
+          <span className="text-gray-400 dark:text-gray-500 text-xs">
+            {isPlaying ? 'restant' : 'durée'}
           </span>
         </div>
       </div>

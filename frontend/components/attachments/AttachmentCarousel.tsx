@@ -22,13 +22,15 @@ interface AttachmentCarouselProps {
   onRemove: (index: number) => void;
   uploadProgress?: { [key: number]: number };
   disabled?: boolean;
+  audioRecorderSlot?: React.ReactNode; // Slot pour la carte d'enregistrement audio
 }
 
-export const AttachmentCarousel = React.memo(function AttachmentCarousel({ 
-  files, 
-  onRemove, 
+export const AttachmentCarousel = React.memo(function AttachmentCarousel({
+  files,
+  onRemove,
   uploadProgress = {},
-  disabled = false 
+  disabled = false,
+  audioRecorderSlot
 }: AttachmentCarouselProps) {
   // Mémoriser les miniatures d'images (beaucoup plus léger que les images complètes)
   const [thumbnails, setThumbnails] = useState<Map<string, string>>(new Map());
@@ -125,7 +127,7 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
     };
   }, []);
 
-  if (files.length === 0) return null;
+  if (files.length === 0 && !audioRecorderSlot) return null;
 
   const getFileIcon = (file: File) => {
     const type = getAttachmentType(file.type);
@@ -282,19 +284,21 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
   return (
     <div className="px-3 py-3 bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-800 dark:to-gray-700/50 border-t border-gray-200 dark:border-gray-600">
       <div className="flex items-center gap-3 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent pb-1">
+        {audioRecorderSlot}
         {files.map((file, index) => getFilePreview(file, index))}
       </div>
     </div>
   );
 }, (prevProps, nextProps) => {
-  // Optimisation : ne re-rendre que si les fichiers, la progression ou le statut disabled changent
+  // Optimisation : ne re-rendre que si les fichiers, la progression, le statut disabled ou le slot audio changent
   return (
     prevProps.files.length === nextProps.files.length &&
-    prevProps.files.every((file, i) => 
+    prevProps.files.every((file, i) =>
       file === nextProps.files[i] &&
       prevProps.uploadProgress?.[i] === nextProps.uploadProgress?.[i]
     ) &&
-    prevProps.disabled === nextProps.disabled
+    prevProps.disabled === nextProps.disabled &&
+    prevProps.audioRecorderSlot === nextProps.audioRecorderSlot
   );
 });
 
