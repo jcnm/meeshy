@@ -105,6 +105,7 @@ class MeeshySocketIOService {
   private onlineStatsListeners: Set<(data: { conversationId: string; onlineUsers: any[]; updatedAt: Date }) => void> = new Set();
   private reactionAddedListeners: Set<(data: any) => void> = new Set();
   private reactionRemovedListeners: Set<(data: any) => void> = new Set();
+  private conversationJoinedListeners: Set<(data: { conversationId: string; userId: string }) => void> = new Set();
 
   // Amélioration: Gestion des traductions en batch et mise en cache
   private translationCache: Map<string, any> = new Map(); // Cache pour éviter les traductions redondantes
@@ -614,6 +615,9 @@ class MeeshySocketIOService {
       if (data.conversationId) {
         this.currentConversationId = data.conversationId;
       }
+
+      // Notify all listeners
+      this.conversationJoinedListeners.forEach(listener => listener(data));
     });
 
     // Événements de frappe - réception immédiate sans timeout automatique
@@ -1557,6 +1561,11 @@ class MeeshySocketIOService {
     return () => this.reactionRemovedListeners.delete(listener);
   }
 
+  public onConversationJoined(listener: (data: { conversationId: string; userId: string }) => void): () => void {
+    this.conversationJoinedListeners.add(listener);
+    return () => this.conversationJoinedListeners.delete(listener);
+  }
+
   /**
    * Obtient le statut de connexion
    * CORRECTION: Vérifier l'état réel du socket, pas seulement le flag interne
@@ -1655,6 +1664,7 @@ class MeeshySocketIOService {
     this.translationListeners.clear();
     this.typingListeners.clear();
     this.statusListeners.clear();
+    this.conversationJoinedListeners.clear();
 
     this.isConnected = false;
     this.currentUser = null;
