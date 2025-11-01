@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, KeyboardEvent, forwardRef, useImperativeHandle, useEffect, useCallback, memo } from 'react';
-import { Send, MapPin, X, MessageCircle, Languages, Paperclip, Loader2 } from 'lucide-react';
+import { Send, MapPin, X, MessageCircle, Languages, Paperclip, Loader2, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { LanguageFlagSelector } from '@/components/translation';
@@ -14,6 +14,7 @@ import { useTextAttachmentDetection } from '@/hooks/useTextAttachmentDetection';
 import { AttachmentService } from '@/services/attachmentService';
 import { UploadedAttachmentResponse } from '@/shared/types/attachment';
 import { toast } from 'sonner';
+import { SimpleAudioRecorder } from '@/components/audio/SimpleAudioRecorder';
 
 interface MessageComposerProps {
   value: string;
@@ -76,6 +77,10 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   const [isUploading, setIsUploading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{ [key: number]: number }>({});
+
+  // États pour l'enregistrement audio
+  const [showAudioRecorder, setShowAudioRecorder] = useState(false);
+  const [isUploadingAudio, setIsUploadingAudio] = useState(false);
   
   // Utiliser le placeholder fourni ou la traduction par défaut
   const finalPlaceholder = placeholder || t('conversationSearch.shareMessage');
@@ -334,6 +339,45 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     setUploadProgress({});
   }, []);
 
+  // Handler pour l'enregistrement audio terminé - mémorisé
+  const handleAudioRecordingComplete = useCallback(async (audioBlob: Blob, duration: number) => {
+    try {
+      setIsUploadingAudio(true);
+
+      // Créer un FormData pour l'upload
+      const formData = new FormData();
+      const filename = `audio_${Date.now()}.webm`;
+      formData.append('file', audioBlob, filename);
+
+      // Upload du fichier audio
+      const response = await AttachmentService.uploadFiles([audioBlob as File], token);
+
+      if (response.success && response.attachments && response.attachments.length > 0) {
+        const uploadedAttachment = response.attachments[0];
+
+        // Ajouter à la liste des attachments
+        setUploadedAttachments(prev => [...prev, uploadedAttachment]);
+
+        // Créer un File pour l'affichage dans le carrousel
+        const audioFile = new File([audioBlob], filename, { type: audioBlob.type });
+        setSelectedFiles(prev => [...prev, audioFile]);
+
+        // Fermer le recorder
+        setShowAudioRecorder(false);
+
+        console.log('✅ Audio message uploaded:', uploadedAttachment);
+        toast.success('Message audio enregistré');
+      } else {
+        throw new Error('Upload failed');
+      }
+    } catch (error) {
+      console.error('Failed to send audio message:', error);
+      toast.error('Erreur lors de l\'envoi du message audio');
+    } finally {
+      setIsUploadingAudio(false);
+    }
+  }, [token]);
+
   useImperativeHandle(ref, () => ({
     focus: () => textareaRef.current?.focus(),
     blur: () => textareaRef.current?.blur(),
@@ -459,6 +503,17 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
           disabled={isUploading}
         />
       )}
+
+      {/* Recorder audio - affiché quand activé */}
+      {showAudioRecorder && (
+        <div className="p-2 border-t border-gray-200 dark:border-gray-700">
+          <SimpleAudioRecorder
+            onRecordingComplete={handleAudioRecordingComplete}
+            onCancel={() => setShowAudioRecorder(false)}
+            maxDuration={600}
+          />
+        </div>
+      )}
       
       <Textarea
         ref={textareaRef}
@@ -532,6 +587,22 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
             <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
               {selectedFiles.length}
             </span>
+          )}
+        </Button>
+
+        {/* Bouton Microphone (Audio) */}
+        <Button
+          onClick={() => setShowAudioRecorder(!showAudioRecorder)}
+          disabled={!isComposingEnabled || isUploadingAudio}
+          size="sm"
+          variant="ghost"
+          className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full hover:bg-gray-100 relative"
+          title="Enregistrer un message vocal"
+        >
+          {isUploadingAudio ? (
+            <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600 animate-spin" />
+          ) : (
+            <Mic className={`h-3 w-3 sm:h-4 sm:w-4 ${showAudioRecorder ? 'text-blue-600' : 'text-gray-600'}`} />
           )}
         </Button>
         

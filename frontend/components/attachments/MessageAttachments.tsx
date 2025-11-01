@@ -8,6 +8,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Download, File, Image as ImageIcon, FileText, Video, Music, ChevronRight, Grid3X3, X } from 'lucide-react';
 import { Attachment, formatFileSize, getAttachmentType } from '../../shared/types/attachment';
+import { SimpleAudioPlayer } from '@/components/audio/SimpleAudioPlayer';
 import {
   Tooltip,
   TooltipContent,
@@ -232,27 +233,11 @@ export function MessageAttachments({
       );
     }
 
-    // Audio attachment
+    // Audio attachment - Utiliser SimpleAudioPlayer
     if (type === 'audio') {
       return (
         <div key={attachment.id} className="col-span-full">
-          <div className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg">
-            <Music className="w-4 h-4 text-green-500 flex-shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">
-                {attachment.originalName}
-              </div>
-              <div className="text-[10px] text-gray-500 dark:text-gray-400">
-                {formatFileSize(attachment.fileSize)}
-              </div>
-            </div>
-            <audio 
-              controls 
-              className="h-8" 
-              src={attachment.fileUrl}
-              preload="metadata"
-            />
-          </div>
+          <SimpleAudioPlayer attachment={attachment as any} />
         </div>
       );
     }
