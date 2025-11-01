@@ -607,6 +607,12 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
   // Handler pour les nouveaux messages reçus via WebSocket avec traductions optimisées
   const handleNewMessage = useCallback((message: Message) => {
+    console.log('[BubbleStreamPage] 🔥 NOUVEAU MESSAGE REÇU:', {
+      messageId: message.id,
+      content: message.content?.substring(0, 50),
+      conversationId: message.conversationId
+    });
+
     // FILTRAGE CRITIQUE: N'accepter que les messages de la conversation actuelle
     // Le backend retourne l'ObjectId normalisé, mais le composant peut utiliser un identifier ("meeshy")
     // On doit comparer avec l'ID normalisé reçu du backend via CONVERSATION_JOINED
@@ -614,15 +620,21 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     const shouldAccept = message.conversationId === conversationId ||
                         message.conversationId === normalizedConvId;
 
+    console.log('[BubbleStreamPage] Filtrage:', {
+      messageConvId: message.conversationId,
+      propConvId: conversationId,
+      normalizedConvId,
+      match1: message.conversationId === conversationId,
+      match2: message.conversationId === normalizedConvId,
+      shouldAccept
+    });
+
     if (!shouldAccept) {
-      console.log('[BubbleStreamPage] Message ignoré (autre conversation):', {
-        messageConvId: message.conversationId,
-        currentConvId: conversationId,
-        normalizedConvId,
-        shouldAccept
-      });
+      console.log('[BubbleStreamPage] ❌ Message IGNORÉ (autre conversation)');
       return;
     }
+
+    console.log('[BubbleStreamPage] ✅ Message ACCEPTÉ');
 
     // Message reçu via WebSocket
 
