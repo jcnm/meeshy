@@ -29,7 +29,7 @@ interface MessageComposerProps {
   className?: string;
   choices?: LanguageChoice[]; // Choix de langues disponibles pour l'utilisateur
   // Nouveaux props pour les attachments
-  onAttachmentsChange?: (attachmentIds: string[]) => void;
+  onAttachmentsChange?: (attachmentIds: string[], mimeTypes: string[]) => void;
   token?: string;
   userRole?: string; // Rôle de l'utilisateur pour déterminer la limite de caractères
 }
@@ -215,8 +215,10 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   useEffect(() => {
     if (onAttachmentsChange) {
       const attachmentIds = uploadedAttachments.map(att => att.id);
+      const mimeTypes = uploadedAttachments.map(att => att.mimeType);
       console.log('📎 Notification parent - IDs d\'attachments:', attachmentIds);
-      onAttachmentsChange(attachmentIds);
+      console.log('📎 MIME types:', mimeTypes);
+      onAttachmentsChange(attachmentIds, mimeTypes);
     }
   }, [uploadedAttachments, onAttachmentsChange]);
 

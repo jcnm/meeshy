@@ -235,9 +235,27 @@ export function MessageAttachments({
 
     // Audio attachment - Utiliser SimpleAudioPlayer
     if (type === 'audio') {
+      // Proper type conversion
+      const audioAttachment = {
+        id: attachment.id,
+        messageId: attachment.messageId,
+        fileName: attachment.fileName,
+        originalName: attachment.originalName,
+        mimeType: attachment.mimeType,
+        fileSize: attachment.fileSize,
+        fileUrl: attachment.fileUrl,
+        thumbnailUrl: attachment.thumbnailUrl,
+        width: attachment.width,
+        height: attachment.height,
+        duration: attachment.duration,
+        uploadedBy: attachment.uploadedBy,
+        isAnonymous: attachment.isAnonymous,
+        createdAt: attachment.createdAt
+      };
+
       return (
         <div key={attachment.id} className="col-span-full">
-          <SimpleAudioPlayer attachment={attachment as any} />
+          <SimpleAudioPlayer attachment={audioAttachment as any} />
         </div>
       );
     }

@@ -68,6 +68,17 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     setCurrentTime(0);
   };
 
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+        audioRef.current.load();
+      }
+    };
+  }, []);
+
   // Handler pour changer la position dans l'audio
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     const time = parseFloat(e.target.value);

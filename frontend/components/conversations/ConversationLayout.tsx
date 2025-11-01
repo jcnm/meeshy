@@ -99,6 +99,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   
   // État pour les attachments
   const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
+  const [attachmentMimeTypes, setAttachmentMimeTypes] = useState<string[]>([]);
 
   // Référence pour le textarea du MessageComposer
   const messageComposerRef = useRef<{ focus: () => void; blur: () => void; clearAttachments?: () => void }>(null);
@@ -864,31 +865,33 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     
     // Sauvegarder les attachments avant de les effacer
     const currentAttachmentIds = [...attachmentIds];
-    
+    const currentAttachmentMimeTypes = [...attachmentMimeTypes];
+
     try {
       // Arrêter immédiatement l'indicateur de frappe lors de l'envoi
       if (isTyping) {
         stopTyping();
         setIsTyping(false);
       }
-      
+
       // Nettoyer le timeout de frappe
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
         typingTimeoutRef.current = null;
       }
-      
+
       // Envoyer avec ou sans attachments
       if (hasAttachments && sendMessageWithAttachmentsViaSocket) {
         console.log('[ConversationLayout] 📎 Envoi avec attachments:', currentAttachmentIds);
-        await sendMessageWithAttachmentsViaSocket(content, currentAttachmentIds, selectedLanguage, replyToId);
+        await sendMessageWithAttachmentsViaSocket(content, currentAttachmentIds, currentAttachmentMimeTypes, selectedLanguage, replyToId);
       } else {
         await sendMessageViaSocket(content, selectedLanguage, replyToId);
       }
-      
+
       console.log('[ConversationLayout] Message envoyé avec succès - en attente du retour serveur');
       setNewMessage('');
       setAttachmentIds([]); // Réinitialiser les attachments
+      setAttachmentMimeTypes([]); // Réinitialiser les MIME types
 
       // Clear les attachments du composer
       if (messageComposerRef.current && messageComposerRef.current.clearAttachments) {
@@ -914,7 +917,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       // Restaurer les attachments en cas d'erreur
       setAttachmentIds(currentAttachmentIds);
     }
-  }, [newMessage, selectedConversation?.id, sendMessageViaSocket, sendMessageWithAttachmentsViaSocket, selectedLanguage, user, attachmentIds, isTyping, stopTyping]);
+  }, [newMessage, selectedConversation?.id, sendMessageViaSocket, sendMessageWithAttachmentsViaSocket, selectedLanguage, user, attachmentIds, attachmentMimeTypes, isTyping, stopTyping]);
 
   // Gestion de la saisie avec indicateurs de frappe
   const handleTyping = useCallback((value: string) => {
@@ -1026,9 +1029,12 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       
       // Envoyer avec ou sans attachments
       if (failedMsg.attachmentIds.length > 0 && sendMessageWithAttachmentsViaSocket) {
+        // TODO: Ajouter mimeTypes dans FailedMessage store
+        const mimeTypes: string[] = []; // Pour l'instant, tableau vide (sera déterminé côté serveur)
         success = await sendMessageWithAttachmentsViaSocket(
           failedMsg.content,
           failedMsg.attachmentIds,
+          mimeTypes,
           failedMsg.originalLanguage,
           failedMsg.replyToId
         );
@@ -1259,7 +1265,10 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               placeholder={t('conversationLayout.writeMessage')}
               onKeyPress={handleKeyPress}
               choices={getUserLanguageChoices(user)}
-              onAttachmentsChange={setAttachmentIds}
+              onAttachmentsChange={(ids, mimeTypes) => {
+                setAttachmentIds(ids);
+                setAttachmentMimeTypes(mimeTypes);
+              }}
               token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
               userRole={user.role}
             />
@@ -1420,7 +1429,10 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                     placeholder={t('conversationLayout.writeMessage')}
                     onKeyPress={handleKeyPress}
                     choices={getUserLanguageChoices(user)}
-                    onAttachmentsChange={setAttachmentIds}
+                    onAttachmentsChange={(ids, mimeTypes) => {
+                setAttachmentIds(ids);
+                setAttachmentMimeTypes(mimeTypes);
+              }}
                     token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
                     userRole={user.role}
                   />
