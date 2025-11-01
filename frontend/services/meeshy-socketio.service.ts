@@ -1230,6 +1230,42 @@ class MeeshySocketIOService {
   }
 
   /**
+   * Détermine le type de message basé sur le type d'attachement
+   */
+  private async determineMessageType(attachmentIds: string[]): Promise<string> {
+    if (!attachmentIds || attachmentIds.length === 0) {
+      return 'text';
+    }
+
+    try {
+      // Récupérer le premier attachment pour déterminer le type
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/attachments/${attachmentIds[0]}`, {
+        headers: {
+          'Authorization': `Bearer ${authManager.getAuthToken() || authManager.getAnonymousSession()?.token}`
+        }
+      });
+
+      if (response.ok) {
+        const attachment = await response.json();
+        const mimeType = attachment.mimeType;
+
+        if (mimeType.startsWith('image/')) return 'image';
+        if (mimeType.startsWith('audio/')) return 'audio';
+        if (mimeType.startsWith('video/')) return 'video';
+        if (mimeType === 'application/pdf') return 'file';
+        if (mimeType.startsWith('text/')) return 'text';
+
+        return 'file';
+      }
+    } catch (error) {
+      console.error('Error determining message type:', error);
+    }
+
+    // Par défaut, utiliser 'file' si on ne peut pas déterminer
+    return 'file';
+  }
+
+  /**
    * Envoie un message avec des attachments
    */
   public async sendMessageWithAttachments(
@@ -1315,11 +1351,15 @@ class MeeshySocketIOService {
           conversationId = getConversationApiId(conversationOrId);
         }
 
+        // Déterminer le type de message basé sur les attachments
+        const messageType = await this.determineMessageType(attachmentIds);
+
         // Utiliser l'ObjectId pour l'envoi au backend
-        const messageData = { 
-          conversationId, 
+        const messageData = {
+          conversationId,
           content,
           attachmentIds,
+          messageType,
           originalLanguage: originalLanguage || 'fr',
           replyToId
         };
