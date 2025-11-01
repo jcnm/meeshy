@@ -9,6 +9,7 @@ interface SimpleAudioRecorderProps {
   onRecordingComplete: (audioBlob: Blob, duration: number) => void;
   onCancel: () => void;
   maxDuration?: number; // en secondes, défaut: 600 (10 min)
+  autoStart?: boolean; // Démarrer automatiquement l'enregistrement au montage
 }
 
 // Constantes
@@ -26,7 +27,8 @@ const ALLOWED_CODECS = [
 export const SimpleAudioRecorder: React.FC<SimpleAudioRecorderProps> = ({
   onRecordingComplete,
   onCancel,
-  maxDuration = 600
+  maxDuration = 600,
+  autoStart = false
 }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
@@ -259,6 +261,13 @@ export const SimpleAudioRecorder: React.FC<SimpleAudioRecorderProps> = ({
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
+
+  // Auto-start recording si demandé
+  useEffect(() => {
+    if (autoStart && !isRecording && !audioBlob) {
+      startRecording();
+    }
+  }, [autoStart]); // Seulement au montage si autoStart est true
 
   // Cleanup on unmount
   useEffect(() => {

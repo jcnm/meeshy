@@ -14,7 +14,7 @@ import { useTextAttachmentDetection } from '@/hooks/useTextAttachmentDetection';
 import { AttachmentService } from '@/services/attachmentService';
 import { UploadedAttachmentResponse } from '@/shared/types/attachment';
 import { toast } from 'sonner';
-import { SimpleAudioRecorder } from '@/components/audio/SimpleAudioRecorder';
+import { AudioRecorderCard } from '@/components/audio/AudioRecorderCard';
 
 interface MessageComposerProps {
   value: string;
@@ -81,6 +81,9 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   // États pour l'enregistrement audio
   const [showAudioRecorder, setShowAudioRecorder] = useState(false);
   const [isUploadingAudio, setIsUploadingAudio] = useState(false);
+  const [audioAttachmentId, setAudioAttachmentId] = useState<string | null>(null);
+  const [currentAudioBlob, setCurrentAudioBlob] = useState<{ blob: Blob; duration: number } | null>(null);
+  const audioRecorderRef = useRef<any>(null);
   
   // Utiliser le placeholder fourni ou la traduction par défaut
   const finalPlaceholder = placeholder || t('conversationSearch.shareMessage');
@@ -339,6 +342,10 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     setSelectedFiles([]);
     setUploadedAttachments([]);
     setUploadProgress({});
+    // Reset aussi l'état audio
+    setShowAudioRecorder(false);
+    setAudioAttachmentId(null);
+    setCurrentAudioBlob(null);
   }, []);
 
   // Handler pour l'enregistrement audio terminé - mémorisé
@@ -346,13 +353,15 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     try {
       setIsUploadingAudio(true);
 
-      // Créer un FormData pour l'upload
-      const formData = new FormData();
+      // Stocker le blob pour pouvoir le convertir en fichier plus tard
+      setCurrentAudioBlob({ blob: audioBlob, duration });
+
+      // Créer un File pour l'upload
       const filename = `audio_${Date.now()}.webm`;
-      formData.append('file', audioBlob, filename);
+      const audioFile = new File([audioBlob], filename, { type: audioBlob.type });
 
       // Upload du fichier audio
-      const response = await AttachmentService.uploadFiles([audioBlob as File], token);
+      const response = await AttachmentService.uploadFiles([audioFile], token);
 
       if (response.success && response.attachments && response.attachments.length > 0) {
         const uploadedAttachment = response.attachments[0];
@@ -360,12 +369,8 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         // Ajouter à la liste des attachments
         setUploadedAttachments(prev => [...prev, uploadedAttachment]);
 
-        // Créer un File pour l'affichage dans le carrousel
-        const audioFile = new File([audioBlob], filename, { type: audioBlob.type });
-        setSelectedFiles(prev => [...prev, audioFile]);
-
-        // Fermer le recorder
-        setShowAudioRecorder(false);
+        // Stocker l'ID pour pouvoir le supprimer plus tard
+        setAudioAttachmentId(uploadedAttachment.id);
 
         console.log('✅ Audio message uploaded:', uploadedAttachment);
         toast.success('Message audio enregistré');
@@ -375,10 +380,72 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     } catch (error) {
       console.error('Failed to send audio message:', error);
       toast.error('Erreur lors de l\'envoi du message audio');
+      // Fermer le recorder en cas d'erreur
+      setShowAudioRecorder(false);
+      setCurrentAudioBlob(null);
     } finally {
       setIsUploadingAudio(false);
+      // NE PAS fermer le recorder - garder la carte en mode lecture
     }
   }, [token]);
+
+  // Handler pour supprimer l'enregistrement audio - mémorisé
+  const handleRemoveAudioRecording = useCallback(async () => {
+    // Si un attachment audio est uploadé, le supprimer
+    if (audioAttachmentId) {
+      try {
+        console.log('[MessageComposer] Suppression audio attachment:', audioAttachmentId);
+        await AttachmentService.deleteAttachment(audioAttachmentId, token);
+
+        // Retirer de la liste des attachments
+        setUploadedAttachments(prev => prev.filter(att => att.id !== audioAttachmentId));
+
+        console.log('[MessageComposer] ✅ Audio attachment supprimé');
+      } catch (error) {
+        console.error('[MessageComposer] ❌ Erreur suppression audio attachment:', error);
+        toast.error('Impossible de supprimer le fichier audio');
+      }
+    }
+
+    // Fermer le recorder et reset tous les états audio
+    setShowAudioRecorder(false);
+    setAudioAttachmentId(null);
+    setCurrentAudioBlob(null);
+  }, [audioAttachmentId, token]);
+
+  // Handler pour le clic sur le bouton micro - gère le workflow multi-audio
+  const handleMicrophoneClick = useCallback(async () => {
+    // Si un enregistrement est EN COURS, l'arrêter d'abord
+    if (showAudioRecorder && audioRecorderRef.current?.isRecording()) {
+      audioRecorderRef.current.stopRecording();
+      console.log('⏹️ Enregistrement en cours arrêté');
+      return; // On ne lance pas de nouvel enregistrement immédiatement
+    }
+
+    // Si un enregistrement est déjà terminé (en mode lecture)
+    if (showAudioRecorder && currentAudioBlob && audioAttachmentId) {
+      // Convertir l'audio actuel en fichier normal dans le carrousel
+      const filename = `audio_${Date.now()}.webm`;
+      const audioFile = new File([currentAudioBlob.blob], filename, { type: currentAudioBlob.blob.type });
+
+      // Ajouter au carrousel
+      setSelectedFiles(prev => [...prev, audioFile]);
+
+      console.log('✅ Audio converti en fichier normal, prêt pour nouvel enregistrement');
+
+      // Reset les états audio pour préparer un nouvel enregistrement
+      setCurrentAudioBlob(null);
+      setAudioAttachmentId(null);
+
+      // La carte reste visible mais va redémarrer un nouvel enregistrement
+      // On force un re-render en toggleant
+      setShowAudioRecorder(false);
+      setTimeout(() => setShowAudioRecorder(true), 10);
+    } else {
+      // Sinon, toggle le recorder normalement
+      setShowAudioRecorder(prev => !prev);
+    }
+  }, [showAudioRecorder, currentAudioBlob, audioAttachmentId]);
 
   useImperativeHandle(ref, () => ({
     focus: () => textareaRef.current?.focus(),
@@ -500,24 +567,24 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       )}
 
       {/* Carrousel d'attachments - positionné juste après la citation */}
-      {selectedFiles.length > 0 && (
+      {(selectedFiles.length > 0 || showAudioRecorder) && (
         <AttachmentCarousel
           files={selectedFiles}
           onRemove={handleRemoveFile}
           uploadProgress={uploadProgress}
           disabled={isUploading}
+          audioRecorderSlot={
+            showAudioRecorder ? (
+              <AudioRecorderCard
+                ref={audioRecorderRef}
+                onRecordingComplete={handleAudioRecordingComplete}
+                onRemove={handleRemoveAudioRecording}
+                autoStart={true}
+                maxDuration={600}
+              />
+            ) : undefined
+          }
         />
-      )}
-
-      {/* Recorder audio - affiché quand activé */}
-      {showAudioRecorder && (
-        <div className="p-2 border-t border-gray-200 dark:border-gray-700">
-          <SimpleAudioRecorder
-            onRecordingComplete={handleAudioRecordingComplete}
-            onCancel={() => setShowAudioRecorder(false)}
-            maxDuration={600}
-          />
-        </div>
       )}
       
       <Textarea
@@ -528,14 +595,14 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         onBlur={handleBlur}
         placeholder={finalPlaceholder}
         className={`expandable-textarea min-h-[60px] sm:min-h-[80px] max-h-40 resize-none pr-20 sm:pr-28 pb-6 sm:pb-10 pt-3 pl-3 border-blue-200/60 bg-white/90 backdrop-blur-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 focus:bg-white/95 placeholder:text-gray-600 scroll-hidden transition-all duration-200 ${
-          replyingTo || selectedFiles.length > 0 
-            ? 'rounded-b-2xl rounded-t-none border-t-0' 
+          replyingTo || selectedFiles.length > 0 || showAudioRecorder
+            ? 'rounded-b-2xl rounded-t-none border-t-0'
             : 'rounded-2xl'
         } ${isMobile ? 'text-base' : 'text-sm sm:text-base'}`}
         maxLength={maxMessageLength}
         disabled={!isComposingEnabled}
         style={{
-          borderRadius: replyingTo || selectedFiles.length > 0 ? '0 0 16px 16px' : '16px',
+          borderRadius: replyingTo || selectedFiles.length > 0 || showAudioRecorder ? '0 0 16px 16px' : '16px',
           boxShadow: '0 4px 20px rgba(59, 130, 246, 0.15)',
           fontSize: isMobile ? '16px' : undefined
         }}
@@ -607,7 +674,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
 
         {/* Bouton Microphone (Audio) */}
         <Button
-          onClick={() => setShowAudioRecorder(!showAudioRecorder)}
+          onClick={handleMicrophoneClick}
           disabled={!isComposingEnabled || isUploadingAudio}
           size="sm"
           variant="ghost"
@@ -624,7 +691,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         {/* Bouton d'envoi */}
         <Button
           onClick={onSend}
-          disabled={(!value.trim() && selectedFiles.length === 0) || value.length > maxMessageLength || !isComposingEnabled || isUploading}
+          disabled={(!value.trim() && selectedFiles.length === 0 && uploadedAttachments.length === 0) || value.length > maxMessageLength || !isComposingEnabled || isUploading}
           size="sm"
           className="bg-blue-600 hover:bg-blue-700 text-white h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
         >
