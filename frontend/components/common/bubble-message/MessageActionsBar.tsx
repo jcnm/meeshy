@@ -102,7 +102,11 @@ export const MessageActionsBar = memo(function MessageActionsBar({
   return (
     <TooltipProvider>
       <div
-        className="flex flex-col items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+        className={cn(
+          'flex items-center gap-1.5 px-1 transition-all duration-200',
+          isOwnMessage ? 'justify-end' : 'justify-start',
+          'opacity-0 group-hover:opacity-100 max-h-0 group-hover:max-h-10 group-hover:mt-2 overflow-hidden'
+        )}
       >
         {/* Translation Controls - Masquer pour les messages avec uniquement des attachments */}
         {!hasOnlyAttachments && (

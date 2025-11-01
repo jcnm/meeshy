@@ -392,7 +392,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
 
   return (
     <TooltipProvider>
-      {/* Container with avatar column on side */}
+      {/* Container with avatar on side */}
       <motion.div
         id={`message-${message.id}`}
         ref={messageRef}
@@ -401,9 +401,8 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
           isOwnMessage ? "flex-row-reverse" : "flex-row"
         )}
       >
-        {/* Avatar + Actions column */}
-        <div className="flex-shrink-0 flex flex-col items-center gap-1 mt-1">
-          {/* Avatar - cliquable pour voir en grand */}
+        {/* Avatar on side - cliquable pour voir en grand */}
+        <div className="flex-shrink-0 mt-1">
           <Avatar
             className={cn(
               "h-8 w-8 sm:h-9 sm:w-9",
@@ -426,31 +425,6 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
               {getMessageInitials(message)}
             </AvatarFallback>
           </Avatar>
-
-          {/* Actions positioned below avatar */}
-          <MessageActionsBar
-            message={message}
-            isOwnMessage={isOwnMessage}
-            canReportMessage={canReportMessage()}
-            canEditMessage={canModifyMessage()}
-            canDeleteMessage={canDeleteMessage()}
-            onReply={onReplyMessage ? () => onReplyMessage(message) : undefined}
-            onReaction={handleReactionClick}
-            onCopy={handleCopyMessage}
-            onReport={canReportMessage() ? handleReportMessage : undefined}
-            onEdit={canModifyMessage() ? handleEditMessage : undefined}
-            onDelete={canDeleteMessage() ? handleDeleteMessage : undefined}
-            t={tBubble}
-            tReport={tReport}
-            translationError={translationError}
-            currentDisplayLanguage={currentDisplayLanguage}
-            originalLanguage={message.originalLanguage || 'fr'}
-            userLanguage={userLanguage}
-            availableVersions={availableVersions}
-            onLanguageSwitch={onLanguageSwitch ? (lang: string) => onLanguageSwitch(message.id, lang) : () => {}}
-            onEnterLanguageMode={onEnterLanguageMode}
-            getLanguageInfo={getLanguageInfo}
-          />
         </div>
 
         {/* Message content wrapper */}
@@ -712,6 +686,31 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
           </div>
         </div>
           )}
+
+          {/* Actions Bar */}
+          <MessageActionsBar
+            message={message}
+            isOwnMessage={isOwnMessage}
+            canReportMessage={canReportMessage()}
+            canEditMessage={canModifyMessage()}
+            canDeleteMessage={canDeleteMessage()}
+            onReply={onReplyMessage ? () => onReplyMessage(message) : undefined}
+            onReaction={handleReactionClick}
+            onCopy={handleCopyMessage}
+            onReport={canReportMessage() ? handleReportMessage : undefined}
+            onEdit={canModifyMessage() ? handleEditMessage : undefined}
+            onDelete={canDeleteMessage() ? handleDeleteMessage : undefined}
+            t={tBubble}
+            tReport={tReport}
+            translationError={translationError}
+            currentDisplayLanguage={currentDisplayLanguage}
+            originalLanguage={message.originalLanguage || 'fr'}
+            userLanguage={userLanguage}
+            availableVersions={availableVersions}
+            onLanguageSwitch={onLanguageSwitch ? (lang: string) => onLanguageSwitch(message.id, lang) : () => {}}
+            onEnterLanguageMode={onEnterLanguageMode}
+            getLanguageInfo={getLanguageInfo}
+          />
         </div>
       </motion.div>
     </TooltipProvider>
