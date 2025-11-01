@@ -687,134 +687,30 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
         </div>
           )}
 
-          {/* Si attachments seuls (pas de texte) - Boutons d'action seulement */}
-          {(!message.content || !message.content.trim()) && message.attachments && message.attachments.length > 0 && (
-            <div className={cn(
-              "flex items-center gap-1.5 max-w-[85%] sm:max-w-[75%] md:max-w-[65%]",
-              isOwnMessage ? "ml-auto justify-end" : "mr-auto justify-start"
-            )}>
-              {/* Bouton de réponse */}
-              {onReplyMessage && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onReplyMessage(message)}
-                      aria-label={tBubble('replyToMessage')}
-                      className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-blue-600 hover:bg-blue-50"
-                    >
-                      <MessageCircle className="h-3.5 w-3.5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{tBubble('replyToMessage')}</p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-
-              {/* Bouton réaction */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleReactionClick}
-                    className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                    aria-label={tBubble('addReaction')}
-                  >
-                    <Smile className="h-3.5 w-3.5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{tBubble('addReaction')}</p>
-                </TooltipContent>
-              </Tooltip>
-
-              {/* Bouton copier le lien */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleCopyMessageLink}
-                    className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                    aria-label={tBubble('copyLink') || 'Copier le lien'}
-                  >
-                    <Copy className="h-3.5 w-3.5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{tBubble('copyLink') || 'Copier le lien'}</p>
-                </TooltipContent>
-              </Tooltip>
-
-              {/* Bouton signaler */}
-              {canReportMessage() && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleReportMessage}
-                      className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-800"
-                      aria-label={tReport('reportMessage')}
-                    >
-                      <Flag className="h-3.5 w-3.5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{tReport('reportMessage')}</p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-
-              {/* Bouton supprimer (seulement si permissions) */}
-              {canDeleteMessage() && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleDeleteMessage}
-                      className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-red-600 hover:bg-red-50"
-                      aria-label={tBubble('delete')}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{tBubble('delete')}</p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-            </div>
-          )}
-
-          {/* Actions Bar - TOUJOURS afficher, peu importe le type de message */}
+          {/* Actions Bar - TOUJOURS afficher */}
           <MessageActionsBar
-            message={message}
-            isOwnMessage={isOwnMessage}
-            canReportMessage={canReportMessage()}
-            canEditMessage={canModifyMessage()}
-            canDeleteMessage={canDeleteMessage()}
-            onReply={onReplyMessage ? () => onReplyMessage(message) : undefined}
-            onReaction={handleReactionClick}
-            onCopy={handleCopyMessage}
-            onReport={canReportMessage() ? handleReportMessage : undefined}
-            onEdit={canModifyMessage() ? handleEditMessage : undefined}
-            onDelete={canDeleteMessage() ? handleDeleteMessage : undefined}
-            t={tBubble}
-            tReport={tReport}
-            translationError={translationError}
-            currentDisplayLanguage={currentDisplayLanguage}
-            originalLanguage={message.originalLanguage || 'fr'}
-            userLanguage={userLanguage}
-            availableVersions={availableVersions}
-            onLanguageSwitch={onLanguageSwitch ? (lang: string) => onLanguageSwitch(message.id, lang) : () => {}}
-            onEnterLanguageMode={onEnterLanguageMode}
-            getLanguageInfo={getLanguageInfo}
-          />
+              message={message}
+              isOwnMessage={isOwnMessage}
+              canReportMessage={canReportMessage()}
+              canEditMessage={canModifyMessage()}
+              canDeleteMessage={canDeleteMessage()}
+              onReply={onReplyMessage ? () => onReplyMessage(message) : undefined}
+              onReaction={handleReactionClick}
+              onCopy={handleCopyMessage}
+              onReport={canReportMessage() ? handleReportMessage : undefined}
+              onEdit={canModifyMessage() ? handleEditMessage : undefined}
+              onDelete={canDeleteMessage() ? handleDeleteMessage : undefined}
+              t={tBubble}
+              tReport={tReport}
+              translationError={translationError}
+              currentDisplayLanguage={currentDisplayLanguage}
+              originalLanguage={message.originalLanguage || 'fr'}
+              userLanguage={userLanguage}
+              availableVersions={availableVersions}
+              onLanguageSwitch={onLanguageSwitch ? (lang: string) => onLanguageSwitch(message.id, lang) : () => {}}
+              onEnterLanguageMode={onEnterLanguageMode}
+              getLanguageInfo={getLanguageInfo}
+            />
         </div>
       </motion.div>
     </TooltipProvider>
