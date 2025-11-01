@@ -5,7 +5,7 @@
 
 'use client';
 
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useState, useRef } from 'react';
 import { X, File, Image, FileText, Video, Music, FileArchive, Loader2, CheckCircle } from 'lucide-react';
 import { formatFileSize, getAttachmentType } from '../../shared/types/attachment';
 import { Button } from '../ui/button';
@@ -35,7 +35,8 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
   // Mémoriser les miniatures d'images (beaucoup plus léger que les images complètes)
   const [thumbnails, setThumbnails] = useState<Map<string, string>>(new Map());
   const [isGeneratingThumbnails, setIsGeneratingThumbnails] = useState(false);
-  
+  const processedFilesRef = useRef<Set<string>>(new Set());
+
   // Détecter si c'est un appareil bas de gamme pour adapter les performances
   const isLowEnd = useMemo(() => isLowEndDevice(), []);
 
@@ -47,10 +48,16 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
       // Identifier les nouveaux fichiers qui nécessitent des miniatures
       const newFiles = files.filter((file) => {
         const fileKey = `${file.name}-${file.size}-${file.lastModified}`;
-        return file.type.startsWith('image/') && !thumbnails.has(fileKey);
+        return file.type.startsWith('image/') && !processedFilesRef.current.has(fileKey);
       });
 
       if (newFiles.length === 0) return;
+
+      // Mark files as being processed
+      newFiles.forEach((file) => {
+        const fileKey = `${file.name}-${file.size}-${file.lastModified}`;
+        processedFilesRef.current.add(fileKey);
+      });
 
       setIsGeneratingThumbnails(true);
 
@@ -89,7 +96,7 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
       isCancelled = true;
       clearTimeout(timeoutId);
     };
-  }, [files, isLowEnd, thumbnails]);
+  }, [files, isLowEnd]);
 
   // Nettoyer les miniatures qui ne sont plus utilisées
   useEffect(() => {
@@ -97,6 +104,7 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
       files.map((file) => `${file.name}-${file.size}-${file.lastModified}`)
     );
 
+    // Clean up thumbnails
     setThumbnails((prev) => {
       let hasChanges = false;
       const updated = new Map(prev);
@@ -111,6 +119,15 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
 
       return hasChanges ? updated : prev;
     });
+
+    // Clean up processedFilesRef
+    const keysToRemove: string[] = [];
+    processedFilesRef.current.forEach((key) => {
+      if (!currentFileKeys.has(key)) {
+        keysToRemove.push(key);
+      }
+    });
+    keysToRemove.forEach((key) => processedFilesRef.current.delete(key));
   }, [files]);
 
   // Cleanup final : révoquer toutes les URLs au démontage
