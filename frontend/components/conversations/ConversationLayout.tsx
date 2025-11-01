@@ -275,24 +275,25 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     onNewMessage: useCallback((message: any) => {
       // Utiliser la ref au lieu de selectedConversation?.id
       const currentConvId = selectedConversationIdRef.current;
+
+      // CORRECTION CRITIQUE: Comparer avec l'ID normalisé du service aussi
+      // Le backend peut retourner l'ObjectId normalisé même si on a join avec un identifier
+      const normalizedConvId = meeshySocketIOService.getCurrentConversationId();
+      const isForCurrentConversation = message.conversationId === currentConvId ||
+                                       message.conversationId === normalizedConvId;
+
       console.log(`[ConversationLayout-${instanceId}] 🔥 NOUVEAU MESSAGE VIA WEBSOCKET:`, {
         messageId: message.id,
         content: message.content?.substring(0, 50),
         senderId: message.senderId,
         conversationId: message.conversationId,
         selectedConversationId: currentConvId,
-        shouldAdd: message.conversationId === currentConvId
+        normalizedConvId,
+        shouldAdd: isForCurrentConversation
       });
 
-      // Ajouter seulement si c'est pour la conversation actuelle
-      if (message.conversationId === currentConvId) {
-        const wasAdded = addMessage(message);
-        console.log(`[ConversationLayout-${instanceId}] Message ajouté:`, wasAdded);
-      } else {
-        console.log(`[ConversationLayout-${instanceId}] Message ignoré (autre conversation)`);
-      }
-
       // Mettre à jour la liste des conversations pour refléter le nouveau message
+      // CORRECTION: Faire AVANT le filtrage pour que TOUS les messages mettent à jour la liste
       setConversations(prevConversations => {
         const conversationIndex = prevConversations.findIndex(c => c.id === message.conversationId);
 
@@ -324,6 +325,14 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
         return newConversations;
       });
+
+      // Ajouter le message à la vue seulement si c'est pour la conversation actuelle
+      if (isForCurrentConversation) {
+        const wasAdded = addMessage(message);
+        console.log(`[ConversationLayout-${instanceId}] Message ajouté à la vue:`, wasAdded);
+      } else {
+        console.log(`[ConversationLayout-${instanceId}] Message ignoré pour la vue (autre conversation)`);
+      }
     }, [addMessage, instanceId, setConversations]),
     onTranslation: useCallback((messageId: string, translations: any[]) => {
       console.log('🌐 [ConversationLayoutV2] Traductions reçues pour message:', messageId, translations);
