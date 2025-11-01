@@ -1838,9 +1838,10 @@ export class MeeshySocketIOManager {
       }
 
       // Construire le payload de message pour broadcast - compatible avec les types existants
+      // CORRECTION CRITIQUE: Utiliser l'ObjectId normalisé pour cohérence client-serveur
       const messagePayload = {
         id: message.id,
-        conversationId: conversationId,
+        conversationId: normalizedId,  // ← FIX: Toujours utiliser l'ObjectId normalisé
         senderId: message.senderId || undefined,
         content: message.content,
         originalLanguage: message.originalLanguage || 'fr',
@@ -1879,7 +1880,7 @@ export class MeeshySocketIOManager {
         replyToId: message.replyToId || undefined,
         replyTo: (message as any).replyTo ? {
           id: (message as any).replyTo.id,
-          conversationId: (message as any).replyTo.conversationId,
+          conversationId: normalizedId,  // ← FIX: Utiliser l'ObjectId normalisé cohérent
           senderId: (message as any).replyTo.senderId || undefined,
           anonymousSenderId: (message as any).replyTo.anonymousSenderId || undefined,
           content: (message as any).replyTo.content,
