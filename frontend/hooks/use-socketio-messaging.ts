@@ -168,6 +168,7 @@ export function useSocketIOMessaging(options: UseSocketIOMessagingOptions = {}) 
   const sendMessageWithAttachments = useCallback(async (
     content: string,
     attachmentIds: string[],
+    attachmentMimeTypes: string[],
     language: string,
     replyToId?: string
   ): Promise<boolean> => {
@@ -175,13 +176,14 @@ export function useSocketIOMessaging(options: UseSocketIOMessagingOptions = {}) 
       console.error('❌ [useSocketIOMessaging] Pas de conversationId');
       return false;
     }
-    
+
     // Passer l'identifiant directement - le service gère la conversion
     return await meeshySocketIOService.sendMessageWithAttachments(
-      conversationId, 
-      content, 
-      attachmentIds, 
-      language, 
+      conversationId,
+      content,
+      attachmentIds,
+      attachmentMimeTypes,
+      language,
       replyToId
     );
   }, [conversationId]);

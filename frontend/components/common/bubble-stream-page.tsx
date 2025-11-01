@@ -205,9 +205,10 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   const [activeUsers, setActiveUsers] = useState<User[]>(initialParticipants || []);
   // État pour les attachments
   const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
+  const [attachmentMimeTypes, setAttachmentMimeTypes] = useState<string[]>([]);
   // État pour la détection mobile
   const [isMobile, setIsMobile] = useState(false);
-  
+
   // Debug: log quand attachmentIds change
   useEffect(() => {
     console.log('📎 [BubbleStreamPage] attachmentIds mis à jour:', attachmentIds);
@@ -1148,7 +1149,9 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     
     // Clear les attachments après l'envoi
     const currentAttachmentIds = [...attachmentIds];
+    const currentAttachmentMimeTypes = [...attachmentMimeTypes];
     setAttachmentIds([]);
+    setAttachmentMimeTypes([]);
     
     // Clear les attachments du composer
     if (textareaRef.current && (textareaRef.current as any).clearAttachments) {
@@ -1172,6 +1175,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         // Restaurer le message pour permettre un nouvel essai
         setNewMessage(messageContent);
         setAttachmentIds(currentAttachmentIds);
+        setAttachmentMimeTypes(currentAttachmentMimeTypes);
         return;
       }
 
@@ -1200,8 +1204,8 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           console.log('📝 Envoi du message SANS attachments');
         }
         
-        const sendResult = hasAttachments 
-          ? await sendMessageWithAttachmentsToService(messageContent, currentAttachmentIds, selectedInputLanguage, replyToId)
+        const sendResult = hasAttachments
+          ? await sendMessageWithAttachmentsToService(messageContent, currentAttachmentIds, attachmentMimeTypes, selectedInputLanguage, replyToId)
           : await sendMessageToService(messageContent, selectedInputLanguage, replyToId);
         
         if (sendResult) {
@@ -1541,25 +1545,37 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           </div>
         </div>
 
-        {/* Zone de composition dans le flux au lieu de fixed */}
-        <div className="flex-shrink-0 xl:pr-80 z-30 bg-blue-50/20 dark:bg-gray-900/80 backdrop-blur-lg border-t border-blue-200/50 dark:border-gray-800/50 shadow-xl shadow-blue-500/10 dark:shadow-gray-900/50">
-          <div className="p-4 max-w-4xl mx-auto">
-            <MessageComposer
-              ref={textareaRef}
-              value={newMessage}
-              onChange={handleTyping}
-              onSend={handleSendMessage}
-              selectedLanguage={selectedInputLanguage}
-              onLanguageChange={setSelectedInputLanguage}
-              location={location}
-              isComposingEnabled={isComposingEnabled}
-              placeholder={t('conversationSearch.shareMessage')}
-              onKeyPress={handleKeyPress}
-              choices={languageChoices}
-              onAttachmentsChange={setAttachmentIds}
-              token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
-              userRole={user?.role}
-            />
+        {/* Dégradé inférieur fixe */}
+        <div className="fixed bottom-0 left-0 right-0 xl:right-80 h-32 bg-gradient-to-t from-blue-50 dark:from-gray-950 via-blue-50/40 dark:via-gray-950/40 to-transparent pointer-events-none z-20" />
+
+        {/* Zone de composition flottante */}
+        <div className="fixed bottom-0 left-0 right-0 xl:right-80 z-30">
+          {/* Dégradé de fond */}
+          <div className="h-10 bg-gradient-to-t from-blue-50 dark:from-gray-950 via-blue-50/40 dark:via-gray-950/40 to-transparent pointer-events-none" />
+          
+          {/* Zone de saisie */}
+          <div className="bg-blue-50/20 dark:bg-gray-900/80 backdrop-blur-lg border-t border-blue-200/50 dark:border-gray-800/50 shadow-xl shadow-blue-500/10 dark:shadow-gray-900/50">
+            <div className="p-4 max-w-4xl mx-auto">
+              <MessageComposer
+                ref={textareaRef}
+                value={newMessage}
+                onChange={handleTyping}
+                onSend={handleSendMessage}
+                selectedLanguage={selectedInputLanguage}
+                onLanguageChange={setSelectedInputLanguage}
+                location={location}
+                isComposingEnabled={isComposingEnabled}
+                placeholder={t('conversationSearch.shareMessage')}
+                onKeyPress={handleKeyPress}
+                choices={languageChoices}
+                onAttachmentsChange={(ids, mimeTypes) => {
+                  setAttachmentIds(ids);
+                  setAttachmentMimeTypes(mimeTypes);
+                }}
+                token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
+                userRole={user?.role}
+              />
+            </div>
           </div>
         </div>
 
