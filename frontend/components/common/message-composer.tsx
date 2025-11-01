@@ -419,28 +419,31 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   const handleTextareaChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
     onChange(newValue);
-    
+
     // Auto-resize textarea avec gestion améliorée des retours à la ligne
     if (textareaRef.current && textareaRef.current.style) {
       try {
         // Réinitialiser la hauteur pour obtenir la hauteur naturelle du contenu
         textareaRef.current.style.height = 'auto';
-        
+
         // Calculer la hauteur nécessaire avec une hauteur minimale
         const minHeight = 80; // Correspond à min-h-[80px]
         const maxHeight = 160; // Correspond à max-h-40 (40 * 4px = 160px)
         const scrollHeight = textareaRef.current.scrollHeight;
-        
+
         // Utiliser la hauteur calculée en respectant les limites
         const newHeight = Math.max(minHeight, Math.min(scrollHeight, maxHeight));
         textareaRef.current.style.height = `${newHeight}px`;
-        
+
         // Si le contenu dépasse la hauteur maximale, permettre le scroll
         if (scrollHeight > maxHeight) {
           textareaRef.current.style.overflowY = 'auto';
         } else {
           textareaRef.current.style.overflowY = 'hidden';
         }
+
+        // Auto-scroll vers la fin pendant la frappe
+        textareaRef.current.scrollTop = textareaRef.current.scrollHeight;
       } catch (error) {
         console.warn('Erreur lors du redimensionnement du textarea:', error);
       }
@@ -538,22 +541,19 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         }}
       />
 
-      
-      {/* Indicateurs dans le textarea */}
+
+      {/* Indicateurs à gauche: Flag selector, localisation, upload */}
       <div className="absolute bottom-2 sm:bottom-3 left-3 flex items-center space-x-2 sm:space-x-3 text-xs sm:text-sm text-gray-600 pointer-events-auto">
-        {/* Indicateur d'upload */}
-        {isUploading && (
-          <div className="flex items-center space-x-1 text-blue-600 dark:text-blue-400">
-            <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
-            <span className="hidden sm:inline">
-              {selectedFiles.length > 1 
-                ? t('uploadingMultiple', { count: selectedFiles.length })
-                : t('uploading')
-              }
-            </span>
-          </div>
-        )}
-        
+        {/* Sélecteur de langue d'envoi (en premier) */}
+        <LanguageFlagSelector
+          value={selectedLanguage}
+          onValueChange={onLanguageChange}
+          choices={choices}
+          popoverSide="top"
+          popoverAlign="start"
+          popoverSideOffset={8}
+        />
+
         {/* Localisation */}
         {location && !isUploading && (
           <div className="flex items-center space-x-1">
@@ -561,9 +561,22 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
             <span className="hidden sm:inline">{location}</span>
           </div>
         )}
+
+        {/* Indicateur d'upload */}
+        {isUploading && (
+          <div className="flex items-center space-x-1 text-blue-600 dark:text-blue-400">
+            <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+            <span className="hidden sm:inline">
+              {selectedFiles.length > 1
+                ? t('uploadingMultiple', { count: selectedFiles.length })
+                : t('uploading')
+              }
+            </span>
+          </div>
+        )}
       </div>
 
-      {/* Bouton d'envoi, compteur et sélecteur de langue */}
+      {/* Boutons alignés verticalement à droite: Compteur, Attachement, Micro, Envoi */}
       <div className="absolute bottom-2 sm:bottom-3 right-3 sm:right-4 flex items-center space-x-1 sm:space-x-2 pointer-events-auto">
         {/* Compteur de caractères : affiché uniquement si > 90% du max */}
         {value.length > maxMessageLength * 0.9 && (
@@ -571,7 +584,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
             {value.length}/{maxMessageLength}
           </span>
         )}
-        
+
         {/* Icône d'attachement */}
         <Button
           onClick={handleAttachmentClick}
@@ -607,27 +620,16 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
             <Mic className={`h-3 w-3 sm:h-4 sm:w-4 ${showAudioRecorder ? 'text-blue-600' : 'text-gray-600'}`} />
           )}
         </Button>
-        
-        {/* Sélecteur de langue d'envoi et bouton d'envoi côte à côte */}
-        <div className="flex flex-row items-center space-x-1">
-          <LanguageFlagSelector
-            value={selectedLanguage}
-            onValueChange={onLanguageChange}
-            choices={choices}
-            className="mr-1"
-            popoverSide="top"
-            popoverAlign="center"
-            popoverSideOffset={8}
-          />
-          <Button
-            onClick={onSend}
-            disabled={(!value.trim() && selectedFiles.length === 0) || value.length > maxMessageLength || !isComposingEnabled || isUploading}
-            size="sm"
-            className="bg-blue-600 hover:bg-blue-700 text-white h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
-          >
-            <Send className="h-3 w-3 sm:h-4 sm:w-4" />
-          </Button>
-        </div>
+
+        {/* Bouton d'envoi */}
+        <Button
+          onClick={onSend}
+          disabled={(!value.trim() && selectedFiles.length === 0) || value.length > maxMessageLength || !isComposingEnabled || isUploading}
+          size="sm"
+          className="bg-blue-600 hover:bg-blue-700 text-white h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+        >
+          <Send className="h-3 w-3 sm:h-4 sm:w-4" />
+        </Button>
       </div>
 
       {/* Input file caché */}
