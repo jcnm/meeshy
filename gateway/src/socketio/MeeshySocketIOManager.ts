@@ -1775,10 +1775,16 @@ export class MeeshySocketIOManager {
    */
   private async _broadcastNewMessage(message: Message, conversationId: string, senderSocket?: any): Promise<void> {
     try {
-      // Normaliser l'ID de conversation uniquement pour le broadcast Socket.IO
+      // Normaliser l'ID de conversation pour le broadcast ET le payload
       const normalizedId = await this.normalizeConversationId(conversationId);
-      
+
       console.log(`[PHASE 3.1] 📤 Broadcasting message ${message.id} vers conversation ${normalizedId} (original: ${conversationId})`);
+      console.log(`[DEBUG] message.conversationId AVANT normalisation: ${message.conversationId}`);
+
+      // CORRECTION CRITIQUE: Remplacer message.conversationId par l'ObjectId normalisé
+      // car le message en base peut contenir l'identifier au lieu de l'ObjectId
+      (message as any).conversationId = normalizedId;
+      console.log(`[DEBUG] message.conversationId APRÈS normalisation: ${message.conversationId}`);
       
       // OPTIMISATION: Récupérer les traductions et les stats en parallèle (non-bloquant)
       // Les stats seront envoyées séparément si elles prennent du temps
