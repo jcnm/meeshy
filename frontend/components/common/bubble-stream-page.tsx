@@ -605,7 +605,26 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     }
   }, [updateMessageTranslations, user.systemLanguage, user.regionalLanguage, user.customDestinationLanguage]);
 
+  // Refs pour éviter les re-créations du callback
+  const conversationIdRef = useRef(conversationId);
+  const userRef = useRef(user);
+  const isAnonymousModeRef = useRef(isAnonymousMode);
+
+  // Mettre à jour les refs quand les valeurs changent
+  useEffect(() => {
+    conversationIdRef.current = conversationId;
+  }, [conversationId]);
+
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
+
+  useEffect(() => {
+    isAnonymousModeRef.current = isAnonymousMode;
+  }, [isAnonymousMode]);
+
   // Handler pour les nouveaux messages reçus via WebSocket avec traductions optimisées
+  // CRITIQUE: Utiliser des REFS pour éviter les re-créations et désinscriptions
   const handleNewMessage = useCallback((message: Message) => {
     console.log('[BubbleStreamPage] 🔥 NOUVEAU MESSAGE REÇU:', {
       messageId: message.id,
@@ -614,18 +633,23 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     });
 
     // FILTRAGE CRITIQUE: N'accepter que les messages de la conversation actuelle
-    // Le backend retourne l'ObjectId normalisé, mais le composant peut utiliser un identifier ("meeshy")
-    // On doit comparer avec l'ID normalisé reçu du backend via CONVERSATION_JOINED
+    // Le backend peut retourner SOIT l'identifier ("meeshy") SOIT l'ObjectId dans message.conversationId
+    // On doit comparer avec les TROIS: prop, identifier original, et ObjectId normalisé
     const normalizedConvId = meeshySocketIOService.getCurrentConversationId();
-    const shouldAccept = message.conversationId === conversationId ||
-                        message.conversationId === normalizedConvId;
+    const conversationIdentifier = meeshySocketIOService.getCurrentConversationIdentifier();
+    const currentConvId = conversationIdRef.current;
+    const shouldAccept = message.conversationId === currentConvId ||
+                        message.conversationId === normalizedConvId ||
+                        message.conversationId === conversationIdentifier;
 
     console.log('[BubbleStreamPage] Filtrage:', {
       messageConvId: message.conversationId,
-      propConvId: conversationId,
+      propConvId: currentConvId,
       normalizedConvId,
-      match1: message.conversationId === conversationId,
+      conversationIdentifier,
+      match1: message.conversationId === currentConvId,
       match2: message.conversationId === normalizedConvId,
+      match3: message.conversationId === conversationIdentifier,
       shouldAccept
     });
 
@@ -640,52 +664,54 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
     // Enrichir le message avec les informations du sender si nécessaire
     const enrichedMessage = { ...message };
+    const currentUser = userRef.current;
+    const currentIsAnonymous = isAnonymousModeRef.current;
 
     // Si c'est notre propre message et que sender/anonymousSender manque, l'enrichir
-    if ((message.senderId === user.id || message.anonymousSenderId === user.id) &&
+    if ((message.senderId === currentUser.id || message.anonymousSenderId === currentUser.id) &&
         !message.sender && !message.anonymousSender) {
-      if (isAnonymousMode) {
+      if (currentIsAnonymous) {
         enrichedMessage.anonymousSender = {
-          id: user.id,
-          username: user.username,
-          firstName: user.firstName || '',
-          lastName: user.lastName || '',
-          language: user.systemLanguage || 'fr',
+          id: currentUser.id,
+          username: currentUser.username,
+          firstName: currentUser.firstName || '',
+          lastName: currentUser.lastName || '',
+          language: currentUser.systemLanguage || 'fr',
           isMeeshyer: false
         };
       } else {
         enrichedMessage.sender = {
-          id: user.id,
-          username: user.username,
-          email: user.email || '',
-          phoneNumber: user.phoneNumber || '',
-          firstName: user.firstName || '',
-          lastName: user.lastName || '',
-          displayName: user.displayName,
-          avatar: user.avatar,
-          role: user.role,
+          id: currentUser.id,
+          username: currentUser.username,
+          email: currentUser.email || '',
+          phoneNumber: currentUser.phoneNumber || '',
+          firstName: currentUser.firstName || '',
+          lastName: currentUser.lastName || '',
+          displayName: currentUser.displayName,
+          avatar: currentUser.avatar,
+          role: currentUser.role,
           isOnline: true,
           lastSeen: new Date(),
-          createdAt: user.createdAt || new Date(),
-          updatedAt: user.updatedAt || new Date(),
-          systemLanguage: user.systemLanguage || 'fr',
-          regionalLanguage: user.regionalLanguage || 'fr',
-          autoTranslateEnabled: user.autoTranslateEnabled !== false,
-          translateToSystemLanguage: user.translateToSystemLanguage !== false,
-          translateToRegionalLanguage: user.translateToRegionalLanguage || false,
-          useCustomDestination: user.useCustomDestination || false,
+          createdAt: currentUser.createdAt || new Date(),
+          updatedAt: currentUser.updatedAt || new Date(),
+          systemLanguage: currentUser.systemLanguage || 'fr',
+          regionalLanguage: currentUser.regionalLanguage || 'fr',
+          autoTranslateEnabled: currentUser.autoTranslateEnabled !== false,
+          translateToSystemLanguage: currentUser.translateToSystemLanguage !== false,
+          translateToRegionalLanguage: currentUser.translateToRegionalLanguage || false,
+          useCustomDestination: currentUser.useCustomDestination || false,
           isActive: true,
           lastActiveAt: new Date(),
           isMeeshyer: true
         };
       }
     }
-    
+
     // Ajouter le message enrichi à la liste (il sera inséré au début grâce au hook)
     addMessage(enrichedMessage);
-    
+
     // Scroll automatique pour les nouveaux messages d'autres utilisateurs
-    if (message.senderId !== user.id && message.anonymousSenderId !== user.id) {
+    if (message.senderId !== currentUser.id && message.anonymousSenderId !== currentUser.id) {
       // Scroll automatique SEULEMENT si l'utilisateur est déjà proche du haut (pour scrollDirection='down')
       setTimeout(() => {
         if (messagesContainerRef.current) {
@@ -702,7 +728,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         }
       }, 300);
     }
-  }, [conversationId, addMessage, user.id, user.username, user.firstName, user.lastName, user.displayName, user.avatar, user.systemLanguage, isAnonymousMode]);
+  }, [addMessage]); // CRITIQUE: Deps minimales pour éviter re-créations et désinscriptions
 
   // Hook pour les statistiques de traduction de messages
   const { stats: translationStats, incrementTranslationCount } = useMessageTranslation();
