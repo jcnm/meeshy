@@ -205,9 +205,10 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   const [activeUsers, setActiveUsers] = useState<User[]>(initialParticipants || []);
   // État pour les attachments
   const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
+  const [attachmentMimeTypes, setAttachmentMimeTypes] = useState<string[]>([]);
   // État pour la détection mobile
   const [isMobile, setIsMobile] = useState(false);
-  
+
   // Debug: log quand attachmentIds change
   useEffect(() => {
     console.log('📎 [BubbleStreamPage] attachmentIds mis à jour:', attachmentIds);
@@ -1148,7 +1149,9 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     
     // Clear les attachments après l'envoi
     const currentAttachmentIds = [...attachmentIds];
+    const currentAttachmentMimeTypes = [...attachmentMimeTypes];
     setAttachmentIds([]);
+    setAttachmentMimeTypes([]);
     
     // Clear les attachments du composer
     if (textareaRef.current && (textareaRef.current as any).clearAttachments) {
@@ -1172,6 +1175,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         // Restaurer le message pour permettre un nouvel essai
         setNewMessage(messageContent);
         setAttachmentIds(currentAttachmentIds);
+        setAttachmentMimeTypes(currentAttachmentMimeTypes);
         return;
       }
 
@@ -1200,8 +1204,8 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           console.log('📝 Envoi du message SANS attachments');
         }
         
-        const sendResult = hasAttachments 
-          ? await sendMessageWithAttachmentsToService(messageContent, currentAttachmentIds, selectedInputLanguage, replyToId)
+        const sendResult = hasAttachments
+          ? await sendMessageWithAttachmentsToService(messageContent, currentAttachmentIds, attachmentMimeTypes, selectedInputLanguage, replyToId)
           : await sendMessageToService(messageContent, selectedInputLanguage, replyToId);
         
         if (sendResult) {
@@ -1564,7 +1568,10 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                 placeholder={t('conversationSearch.shareMessage')}
                 onKeyPress={handleKeyPress}
                 choices={languageChoices}
-                onAttachmentsChange={setAttachmentIds}
+                onAttachmentsChange={(ids, mimeTypes) => {
+                  setAttachmentIds(ids);
+                  setAttachmentMimeTypes(mimeTypes);
+                }}
                 token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
                 userRole={user?.role}
               />
