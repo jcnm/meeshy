@@ -276,19 +276,25 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       // Utiliser la ref au lieu de selectedConversation?.id
       const currentConvId = selectedConversationIdRef.current;
 
-      // CORRECTION CRITIQUE: Comparer avec l'ID normalisé du service aussi
-      // Le backend peut retourner l'ObjectId normalisé même si on a join avec un identifier
+      // CORRECTION CRITIQUE: Comparer avec TROIS IDs
+      // Le backend peut retourner SOIT l'identifier SOIT l'ObjectId dans message.conversationId
       const normalizedConvId = meeshySocketIOService.getCurrentConversationId();
+      const conversationIdentifier = meeshySocketIOService.getCurrentConversationIdentifier();
       const isForCurrentConversation = message.conversationId === currentConvId ||
-                                       message.conversationId === normalizedConvId;
+                                       message.conversationId === normalizedConvId ||
+                                       message.conversationId === conversationIdentifier;
 
       console.log(`[ConversationLayout-${instanceId}] 🔥 NOUVEAU MESSAGE VIA WEBSOCKET:`, {
         messageId: message.id,
         content: message.content?.substring(0, 50),
         senderId: message.senderId,
-        conversationId: message.conversationId,
+        messageConvId: message.conversationId,
         selectedConversationId: currentConvId,
-        normalizedConvId,
+        normalizedConvId: normalizedConvId,
+        conversationIdentifier: conversationIdentifier,
+        match1: message.conversationId === currentConvId,
+        match2: message.conversationId === normalizedConvId,
+        match3: message.conversationId === conversationIdentifier,
         shouldAdd: isForCurrentConversation
       });
 
