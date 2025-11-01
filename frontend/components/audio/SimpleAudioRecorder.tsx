@@ -15,8 +15,10 @@ interface SimpleAudioRecorderProps {
 // Constantes
 const MAX_ALLOWED_DURATION = 600; // 10 minutes - HARD LIMIT
 const ALLOWED_CODECS = [
-  'audio/webm;codecs=opus', // Preferred
-  'audio/webm',
+  'audio/webm;codecs=opus', // Preferred - Chrome/Firefox
+  'audio/webm',              // Fallback Chrome/Firefox
+  'audio/mp4',               // Safari fallback
+  'audio/ogg;codecs=opus',   // Alternative
 ] as const;
 
 /**
@@ -67,6 +69,9 @@ export const SimpleAudioRecorder: React.FC<SimpleAudioRecorderProps> = ({
   const startRecording = useCallback(async () => {
     setPermissionError(null);
 
+    // Détection du navigateur pour adapter le comportement
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
     try {
       // Vérifier le contexte sécurisé
       if (!window.isSecureContext) {
@@ -98,11 +103,21 @@ export const SimpleAudioRecorder: React.FC<SimpleAudioRecorderProps> = ({
         }
       }
 
+      // FIX: Contraintes audio adaptées aux différents navigateurs
+
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
+        audio: isSafari ? {
+          // Safari : contraintes plus simples pour éviter les problèmes
           echoCancellation: true,
           noiseSuppression: true,
-          autoGainControl: true
+          sampleRate: 48000, // Safari préfère 48kHz
+        } : {
+          // Chrome/Firefox : contraintes complètes
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          sampleRate: 48000,
+          channelCount: 1, // Mono pour réduire la taille
         }
       });
 
@@ -110,6 +125,7 @@ export const SimpleAudioRecorder: React.FC<SimpleAudioRecorderProps> = ({
 
       // Choisir le codec sécurisé
       const mimeType = getSecureAudioCodec();
+      console.log(`[AudioRecorder] Using codec: ${mimeType} (Safari: ${isSafari})`);
 
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType,
@@ -152,7 +168,17 @@ export const SimpleAudioRecorder: React.FC<SimpleAudioRecorderProps> = ({
         }
       };
 
-      mediaRecorder.start(100); // Capture par chunks de 100ms
+      // FIX: Adapter le timeslice selon le navigateur
+      // Safari préfère pas de timeslice ou de gros chunks
+      // Chrome fonctionne bien avec 1000ms
+      if (isSafari) {
+        // Safari : pas de timeslice pour éviter les coupures
+        mediaRecorder.start();
+      } else {
+        // Chrome/Firefox : chunks de 1000ms pour un bon équilibre
+        mediaRecorder.start(1000);
+      }
+
       setIsRecording(true);
       setRecordingTime(0);
 

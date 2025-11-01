@@ -207,6 +207,31 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   // État pour les attachments
   const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
   const [attachmentMimeTypes, setAttachmentMimeTypes] = useState<string[]>([]);
+
+  // Ref pour stocker les valeurs précédentes d'attachments
+  const prevAttachmentIdsRef = useRef<string>('[]');
+  const prevMimeTypesRef = useRef<string>('[]');
+
+  // Callback mémorisé pour les changements d'attachments
+  // CRITIQUE: Mémoiser pour éviter les boucles infinies dans MessageComposer
+  const handleAttachmentsChange = useCallback((ids: string[], mimeTypes: string[]) => {
+    // Comparer par valeur sérialisée pour éviter les updates inutiles
+    const idsString = JSON.stringify(ids);
+    const mimeTypesString = JSON.stringify(mimeTypes);
+
+    // CRITIQUE: Ne mettre à jour QUE si les valeurs ont vraiment changé
+    if (idsString !== prevAttachmentIdsRef.current) {
+      console.log('🔄 [BubbleStreamPage] Mise à jour attachmentIds:', ids);
+      setAttachmentIds(ids);
+      prevAttachmentIdsRef.current = idsString;
+    }
+
+    if (mimeTypesString !== prevMimeTypesRef.current) {
+      console.log('🔄 [BubbleStreamPage] Mise à jour mimeTypes:', mimeTypes);
+      setAttachmentMimeTypes(mimeTypes);
+      prevMimeTypesRef.current = mimeTypesString;
+    }
+  }, []); // Pas de dépendances - les setState et refs sont stables
   // État pour la détection mobile
   const [isMobile, setIsMobile] = useState(false);
 
@@ -447,7 +472,12 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   const usedLanguages: string[] = getUserLanguagePreferences();
 
   // Obtenir les choix de langues pour l'utilisateur via la fonction centralisée
-  const languageChoices = getUserLanguageChoices(user);
+  // CRITIQUE: Mémoiser pour éviter les re-renders infinis
+  const languageChoices = useMemo(() => getUserLanguageChoices(user), [
+    user.systemLanguage,
+    user.regionalLanguage,
+    user.customDestinationLanguage
+  ]);
 
   // État pour les utilisateurs en train de taper avec leurs noms
   const [typingUsers, setTypingUsers] = useState<{id: string, displayName: string}[]>([]);
@@ -455,11 +485,18 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   // Fonctions de gestion des événements utilisateur
   const handleUserTyping = useCallback((userId: string, username: string, isTyping: boolean, typingConversationId: string) => {
     if (userId === user.id) return; // Ignorer nos propres événements de frappe
-    
-    // NE PAS FILTRER par conversationId !
-    // Le backend normalise les IDs et met tous les clients dans la même room
-    // Si tu reçois l'événement, c'est que tu es dans la bonne room
-    
+
+    // FIX: Filtrer les événements typing par conversation
+    // Le client peut être connecté à plusieurs rooms, il faut filtrer pour n'afficher
+    // que les indicateurs de frappe de la conversation actuelle
+    if (typingConversationId !== conversationIdRef.current) {
+      console.log('[BubbleStreamPage] 🚫 Événement de frappe ignoré (autre conversation):', {
+        typingConversationId,
+        currentConversationId: conversationIdRef.current
+      });
+      return;
+    }
+
     setTypingUsers(prev => {
       if (isTyping) {
         // Ajouter l'utilisateur s'il n'est pas déjà dans la liste
@@ -607,13 +644,26 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
   // Refs pour éviter les re-créations du callback
   const conversationIdRef = useRef(conversationId);
+  const normalizedConversationIdRef = useRef<string | null>(null); // ObjectId normalisé du backend
   const userRef = useRef(user);
   const isAnonymousModeRef = useRef(isAnonymousMode);
 
   // Mettre à jour les refs quand les valeurs changent
   useEffect(() => {
     conversationIdRef.current = conversationId;
+    // Récupérer l'ObjectId normalisé depuis le service
+    normalizedConversationIdRef.current = meeshySocketIOService.getCurrentConversationId();
   }, [conversationId]);
+
+  // Écouter l'événement CONVERSATION_JOINED pour obtenir l'ObjectId normalisé
+  useEffect(() => {
+    const unsubscribe = meeshySocketIOService.onConversationJoined((data: { conversationId: string; userId: string }) => {
+      console.log('[BubbleStreamPage] 🔗 CONVERSATION_JOINED reçu:', data);
+      normalizedConversationIdRef.current = data.conversationId;
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     userRef.current = user;
@@ -632,24 +682,18 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       conversationId: message.conversationId
     });
 
-    // FILTRAGE CRITIQUE: N'accepter que les messages de la conversation actuelle
-    // Le backend peut retourner SOIT l'identifier ("meeshy") SOIT l'ObjectId dans message.conversationId
-    // On doit comparer avec les TROIS: prop, identifier original, et ObjectId normalisé
+    // FILTRAGE SIMPLIFIÉ: Le backend envoie maintenant TOUJOURS l'ObjectId normalisé
+    // Plus besoin de triple comparaison ni de getCurrentConversationIdentifier()
     const normalizedConvId = meeshySocketIOService.getCurrentConversationId();
-    const conversationIdentifier = meeshySocketIOService.getCurrentConversationIdentifier();
     const currentConvId = conversationIdRef.current;
-    const shouldAccept = message.conversationId === currentConvId ||
-                        message.conversationId === normalizedConvId ||
-                        message.conversationId === conversationIdentifier;
+
+    // Comparer avec l'ObjectId normalisé reçu lors du CONVERSATION_JOINED
+    const shouldAccept = message.conversationId === normalizedConvId;
 
     console.log('[BubbleStreamPage] Filtrage:', {
       messageConvId: message.conversationId,
       propConvId: currentConvId,
       normalizedConvId,
-      conversationIdentifier,
-      match1: message.conversationId === currentConvId,
-      match2: message.conversationId === normalizedConvId,
-      match3: message.conversationId === conversationIdentifier,
       shouldAccept
     });
 
@@ -983,15 +1027,17 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   useEffect(() => {
     const newUserLanguage = resolveUserPreferredLanguage();
     setUserLanguage(newUserLanguage);
-    
-    // Vérifier si la langue actuellement sélectionnée est encore valide dans les choix disponibles
+  }, [user.systemLanguage, user.regionalLanguage, user.customDestinationLanguage, resolveUserPreferredLanguage]);
+
+  // Validation de la langue sélectionnée - Effet séparé pour éviter les boucles
+  useEffect(() => {
     const availableLanguageCodes = languageChoices.map(choice => choice.code);
     if (!availableLanguageCodes.includes(selectedInputLanguage)) {
       // Si la langue sélectionnée n'est plus dans les choix, revenir à la langue système
       console.log('Langue sélectionnée non disponible, retour à la langue système:', user.systemLanguage);
       setSelectedInputLanguage(user.systemLanguage || 'fr');
     }
-  }, [user.systemLanguage, user.regionalLanguage, user.customDestinationLanguage]); // Supprimé languageChoices et selectedInputLanguage
+  }, [languageChoices, selectedInputLanguage, user.systemLanguage]);
 
   // Suppression de la simulation des statistiques de langues (désormais alimentées en temps réel)
 
