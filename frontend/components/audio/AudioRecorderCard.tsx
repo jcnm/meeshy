@@ -151,13 +151,22 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
 
       // Timer pour la durée
       timerRef.current = setInterval(() => {
-        setRecordingTime((prev) => {
-          const newTime = prev + 1;
-          if (newTime >= effectiveDuration) {
-            stopRecording();
+        // Vérifier si le mediaRecorder est toujours actif avant d'incrémenter
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+          setRecordingTime((prev) => {
+            const newTime = prev + 1;
+            if (newTime >= effectiveDuration) {
+              stopRecording();
+            }
+            return newTime;
+          });
+        } else {
+          // Si le recorder n'est plus actif, arrêter le timer
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
           }
-          return newTime;
-        });
+        }
       }, 1000);
 
     } catch (error: any) {
