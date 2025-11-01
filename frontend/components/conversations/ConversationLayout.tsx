@@ -46,6 +46,11 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   // ID unique pour cette instance du composant
   const instanceId = useMemo(() => `layout-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, []);
 
+  // CRITIQUE: Mémoiser les choix de langues pour éviter re-renders de MessageComposer
+  const languageChoices = useMemo(() => {
+    return user ? getUserLanguageChoices(user) : [];
+  }, [user?.systemLanguage, user?.regionalLanguage, user?.customDestinationLanguage]);
+
   // Hook de pagination pour les conversations
   const {
     conversations: paginatedConversations,
@@ -100,6 +105,31 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   // État pour les attachments
   const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
   const [attachmentMimeTypes, setAttachmentMimeTypes] = useState<string[]>([]);
+
+  // Ref pour stocker les valeurs précédentes d'attachments
+  const prevAttachmentIdsRef = useRef<string>('[]');
+  const prevMimeTypesRef = useRef<string>('[]');
+
+  // Callback mémorisé pour les changements d'attachments
+  // FIX: Mémoiser ce callback pour éviter les boucles infinies dans MessageComposer
+  const handleAttachmentsChange = useCallback((ids: string[], mimeTypes: string[]) => {
+    // Comparer par valeur sérialisée pour éviter les updates inutiles
+    const idsString = JSON.stringify(ids);
+    const mimeTypesString = JSON.stringify(mimeTypes);
+
+    // CRITIQUE: Ne mettre à jour QUE si les valeurs ont vraiment changé
+    if (idsString !== prevAttachmentIdsRef.current) {
+      console.log('🔄 [ConversationLayout] Mise à jour attachmentIds:', ids);
+      setAttachmentIds(ids);
+      prevAttachmentIdsRef.current = idsString;
+    }
+
+    if (mimeTypesString !== prevMimeTypesRef.current) {
+      console.log('🔄 [ConversationLayout] Mise à jour mimeTypes:', mimeTypes);
+      setAttachmentMimeTypes(mimeTypes);
+      prevMimeTypesRef.current = mimeTypesString;
+    }
+  }, []); // Pas de dépendances - les setState et refs sont stables
 
   // Référence pour le textarea du MessageComposer
   const messageComposerRef = useRef<{ focus: () => void; blur: () => void; clearAttachments?: () => void }>(null);
@@ -202,11 +232,18 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       username,
       isTyping,
       typingConversationId,
+      selectedConversationId: selectedConversationIdRef.current,
       currentUserId: user?.id,
-      willIgnore: !user || userId === user.id
+      willIgnore: !user || userId === user.id || typingConversationId !== selectedConversationIdRef.current
     });
 
     if (!user || userId === user.id) return; // Ignorer nos propres événements
+
+    // FIX: Filtrer les événements typing par conversation
+    if (typingConversationId !== selectedConversationIdRef.current) {
+      console.log('[ConversationLayout] 🚫 Événement de frappe ignoré (autre conversation)');
+      return;
+    }
 
     console.log('[ConversationLayout] ✅ Traitement événement de frappe (pas ignoré)');
 
@@ -276,13 +313,12 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       // Utiliser la ref au lieu de selectedConversation?.id
       const currentConvId = selectedConversationIdRef.current;
 
-      // CORRECTION CRITIQUE: Comparer avec TROIS IDs
-      // Le backend peut retourner SOIT l'identifier SOIT l'ObjectId dans message.conversationId
+      // FILTRAGE SIMPLIFIÉ: Le backend envoie maintenant TOUJOURS l'ObjectId normalisé
+      // Plus besoin de triple comparaison ni de getCurrentConversationIdentifier()
       const normalizedConvId = meeshySocketIOService.getCurrentConversationId();
-      const conversationIdentifier = meeshySocketIOService.getCurrentConversationIdentifier();
-      const isForCurrentConversation = message.conversationId === currentConvId ||
-                                       message.conversationId === normalizedConvId ||
-                                       message.conversationId === conversationIdentifier;
+
+      // Comparer avec l'ObjectId normalisé reçu lors du CONVERSATION_JOINED
+      const isForCurrentConversation = message.conversationId === normalizedConvId;
 
       console.log(`[ConversationLayout-${instanceId}] 🔥 NOUVEAU MESSAGE VIA WEBSOCKET:`, {
         messageId: message.id,
@@ -291,10 +327,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         messageConvId: message.conversationId,
         selectedConversationId: currentConvId,
         normalizedConvId: normalizedConvId,
-        conversationIdentifier: conversationIdentifier,
-        match1: message.conversationId === currentConvId,
-        match2: message.conversationId === normalizedConvId,
-        match3: message.conversationId === conversationIdentifier,
         shouldAdd: isForCurrentConversation
       });
 
@@ -410,15 +442,19 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       });
       
       // Ajouter les nouvelles langues à la liste des langues utilisées
-      const newLanguages = translations
-        .map(t => t.targetLanguage || t.language)
-        .filter((lang): lang is string => Boolean(lang) && !usedLanguages.includes(lang));
-      
-      if (newLanguages.length > 0) {
-        console.log('📝 [ConversationLayoutV2] Ajout nouvelles langues utilisées:', newLanguages);
-        setUsedLanguages(prev => [...prev, ...newLanguages]);
-      }
-      
+      // Utiliser une fonction de mise à jour pour éviter la dépendance à usedLanguages
+      setUsedLanguages(prev => {
+        const newLanguages = translations
+          .map(t => t.targetLanguage || t.language)
+          .filter((lang): lang is string => Boolean(lang) && !prev.includes(lang));
+
+        if (newLanguages.length > 0) {
+          console.log('📝 [ConversationLayoutV2] Ajout nouvelles langues utilisées:', newLanguages);
+          return [...prev, ...newLanguages];
+        }
+        return prev;
+      });
+
       // Supprimer l'état de traduction en cours pour toutes les langues reçues
       translations.forEach(translation => {
         const targetLang = translation.targetLanguage || translation.language;
@@ -426,7 +462,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
           removeTranslatingState(messageId, targetLang);
         }
       });
-    }, [updateMessage, removeTranslatingState, usedLanguages])
+    }, [updateMessage, removeTranslatingState])
   });
 
   // Détection du mobile
@@ -478,10 +514,9 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   // Le chargement des conversations est maintenant géré par le hook useConversationsPagination
   // Cette fonction n'est plus nécessaire mais gardée pour compatibilité
   const loadConversations = useCallback(async () => {
-    if (!user) return;
     console.log('[ConversationLayout] Rafraîchissement des conversations via hook de pagination');
     refreshConversations();
-  }, [refreshConversations]); // Retirer user des dépendances
+  }, [refreshConversations]);
 
   // Chargement des participants
   const loadParticipants = useCallback(async (conversationId: string) => {
@@ -1279,11 +1314,8 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               onLanguageChange={setSelectedLanguage}
               placeholder={t('conversationLayout.writeMessage')}
               onKeyPress={handleKeyPress}
-              choices={getUserLanguageChoices(user)}
-              onAttachmentsChange={(ids, mimeTypes) => {
-                setAttachmentIds(ids);
-                setAttachmentMimeTypes(mimeTypes);
-              }}
+              choices={languageChoices}
+              onAttachmentsChange={handleAttachmentsChange}
               token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
               userRole={user.role}
             />
@@ -1443,11 +1475,8 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                     onLanguageChange={setSelectedLanguage}
                     placeholder={t('conversationLayout.writeMessage')}
                     onKeyPress={handleKeyPress}
-                    choices={getUserLanguageChoices(user)}
-                    onAttachmentsChange={(ids, mimeTypes) => {
-                setAttachmentIds(ids);
-                setAttachmentMimeTypes(mimeTypes);
-              }}
+                    choices={languageChoices}
+                    onAttachmentsChange={handleAttachmentsChange}
                     token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
                     userRole={user.role}
                   />
