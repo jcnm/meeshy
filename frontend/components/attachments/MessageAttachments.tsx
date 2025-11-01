@@ -143,13 +143,35 @@ export function MessageAttachments({
 
     // Image attachment - miniature cliquable
     if (type === 'image') {
-      // Déterminer si on doit afficher en grand (moins de 5 images)
-      const shouldDisplayLarge = imageAttachments.length < 5 && imageAttachments.length > 0;
-
       // Handler pour ouvrir la confirmation de suppression
       const handleDeleteClick = (event: React.MouseEvent) => {
         handleOpenDeleteConfirm(attachment, event);
       };
+
+      // Déterminer la taille d'affichage selon le nombre d'images
+      // Augmentation de 40% sur toutes les tailles
+      let sizeClasses = '';
+      let aspectRatioClass = '';
+
+      if (imageAttachments.length === 1) {
+        // 1 image: très grand, pleine largeur
+        sizeClasses = isMobile ? 'w-full max-w-lg' : 'w-full max-w-2xl';
+        aspectRatioClass = 'aspect-video'; // 16:9 ratio
+      } else if (imageAttachments.length === 2) {
+        // 2 images: côte à côte, moyennement grandes
+        sizeClasses = isMobile ? 'w-[calc(50%-4px)]' : 'w-[calc(50%-8px)]';
+        aspectRatioClass = 'aspect-square';
+      } else if (imageAttachments.length <= 4) {
+        // 3-4 images: grid 2x2 (+40%)
+        sizeClasses = isMobile ? 'w-44 h-44' : 'w-56 h-56';
+      } else {
+        // 5+ images: miniatures compactes (+40%)
+        sizeClasses = isMobile ? 'w-28 h-28' : 'w-32 h-32';
+      }
+
+      // Utiliser l'image originale pour 1 ou 2 images (meilleure qualité)
+      const useOriginalImage = imageAttachments.length <= 2;
+      const imageUrl = useOriginalImage ? attachment.fileUrl : (attachment.thumbnailUrl || attachment.fileUrl);
 
       return (
         <TooltipProvider key={attachment.id}>
@@ -159,13 +181,9 @@ export function MessageAttachments({
                 className="relative group cursor-pointer flex-shrink-0 snap-start"
                 onClick={() => onImageClick?.(attachment.id)}
               >
-                <div className={`relative bg-gray-100 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden hover:border-blue-400 dark:hover:border-blue-500 transition-all hover:shadow-md dark:hover:shadow-blue-500/20 flex-shrink-0 ${
-                  shouldDisplayLarge
-                    ? isMobile ? 'w-24 h-24' : 'w-32 h-32'  // Taille plus grande pour moins de 5 images
-                    : isMobile ? 'w-14 h-14' : 'w-16 h-16'   // Taille normale pour 5+ images
-                }`}>
+                <div className={`relative bg-gray-100 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden hover:border-blue-400 dark:hover:border-blue-500 transition-all hover:shadow-lg dark:hover:shadow-blue-500/30 flex-shrink-0 ${sizeClasses} ${aspectRatioClass}`}>
                   <img
-                    src={attachment.thumbnailUrl || attachment.fileUrl}
+                    src={imageUrl}
                     alt={attachment.originalName}
                     className="w-full h-full object-cover"
                     loading="lazy"
@@ -176,24 +194,28 @@ export function MessageAttachments({
                   {canDelete && (
                     <button
                       onClick={handleDeleteClick}
-                      className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10"
+                      className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10"
                       title="Supprimer"
                     >
-                      <X className="w-3 h-3" />
+                      <X className="w-3.5 h-3.5" />
                     </button>
                   )}
 
-                  {/* Extension badge */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-1 py-0.5">
-                    <div className="text-white text-[9px] font-medium truncate">
-                      {extension.toUpperCase()}
+                  {/* Extension badge - seulement pour petites images */}
+                  {imageAttachments.length > 2 && (
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-1.5 py-1">
+                      <div className="text-white text-[10px] font-medium truncate">
+                        {extension.toUpperCase()}
+                      </div>
                     </div>
+                  )}
+                </div>
+                {/* Size badge - seulement pour petites images */}
+                {imageAttachments.length > 2 && (
+                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-gray-700 dark:bg-gray-600 text-white text-[9px] px-1.5 py-0.5 rounded-full whitespace-nowrap shadow-sm">
+                    {formatFileSize(attachment.fileSize)}
                   </div>
-                </div>
-                {/* Size badge */}
-                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-gray-700 dark:bg-gray-600 text-white text-[8px] px-1 py-0.5 rounded-full whitespace-nowrap shadow-sm">
-                  {formatFileSize(attachment.fileSize)}
-                </div>
+                )}
               </div>
             </TooltipTrigger>
             <TooltipContent side="top">
@@ -299,13 +321,28 @@ export function MessageAttachments({
     );
   };
 
+  // Déterminer le layout selon le nombre d'images
+  const getImageLayoutClasses = () => {
+    const imageCount = imageAttachments.length;
+
+    if (imageCount === 1) {
+      return 'flex flex-col gap-2';
+    } else if (imageCount === 2) {
+      return 'flex flex-row gap-2 flex-wrap';
+    } else if (imageCount <= 4) {
+      return 'grid grid-cols-2 gap-2';
+    } else {
+      return 'flex flex-wrap gap-2';
+    }
+  };
+
   return (
     <div className="mt-2 p-2 bg-gray-50/50 dark:bg-gray-800/30 rounded-lg border border-gray-200 dark:border-gray-700 max-w-full overflow-hidden">
       {/* Affichage principal des attachments */}
-      <div className={`flex items-center gap-2 pb-1 ${
-        shouldUseMultiRow
-          ? 'flex-wrap overflow-y-auto max-h-40 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent'
-          : 'overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent snap-x snap-mandatory'
+      <div className={`${getImageLayoutClasses()} pb-1 ${
+        shouldUseMultiRow && imageAttachments.length > 4
+          ? 'overflow-y-auto max-h-96 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent'
+          : ''
       }`}>
         {displayedAttachments.map((attachment, index) => renderAttachment(attachment, index))}
         
