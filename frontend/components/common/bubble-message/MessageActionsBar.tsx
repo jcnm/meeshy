@@ -85,185 +85,19 @@ export const MessageActionsBar = memo(function MessageActionsBar({
     }, 50);
   }, [onLanguageSwitch]);
 
-  // Composant de traduction (drapeau + menu languages) - Memoïsé pour éviter les re-renders
-  const TranslationControls = useMemo(() => ({ showLanguagesMenu = true }: { showLanguagesMenu?: boolean }) => (
-    <>
-      {/* Erreur de traduction */}
-      {translationError && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="flex items-center text-red-500">
-              <AlertTriangle className="h-3.5 w-3.5" />
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{translationError}</p>
-          </TooltipContent>
-        </Tooltip>
-      )}
+  const handleFlagToggle = useCallback(() => {
+    const targetLang = currentDisplayLanguage === originalLanguage
+      ? userLanguage
+      : originalLanguage;
+    onLanguageSwitch(targetLang);
+  }, [currentDisplayLanguage, originalLanguage, userLanguage, onLanguageSwitch]);
 
-      {/* Bouton drapeau - Toggle langue originale/utilisateur */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="sm"
-            {...useSingleTap(() => {
-              const targetLang = currentDisplayLanguage === originalLanguage
-                ? userLanguage
-                : originalLanguage;
-              onLanguageSwitch(targetLang);
-            })}
-            className={cn(
-              "h-6 w-6 sm:h-7 sm:w-7 p-0 rounded-full transition-colors",
-              currentDisplayLanguage === originalLanguage
-                ? "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
-                : "text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
-            )}
-            aria-label={currentDisplayLanguage === originalLanguage ? t('showInUserLanguage') : t('showOriginal')}
-          >
-            <span className="text-sm">{getLanguageInfo(originalLanguage).flag}</span>
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>{currentDisplayLanguage === originalLanguage ? t('showInUserLanguage') : t('showOriginal')}</p>
-        </TooltipContent>
-      </Tooltip>
-
-      {/* Menu traductions - Icône Languages - Show only for own messages */}
-      {showLanguagesMenu && (
-        <DropdownMenu open={isTranslationMenuOpen} onOpenChange={setIsTranslationMenuOpen}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DropdownMenuTrigger asChild>
-              <div className="relative">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 sm:h-7 sm:w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/30"
-                  aria-label={t('selectLanguage')}
-                >
-                  <Languages className="h-3.5 w-3.5" />
-                </Button>
-
-                {/* Badge du nombre de traductions */}
-                {message.translations && message.translations.length > 0 && (
-                  <div className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm bg-blue-600 text-white">
-                    {message.translations.length}
-                  </div>
-                )}
-              </div>
-            </DropdownMenuTrigger>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{t('selectLanguage')} ({availableVersions.length})</p>
-          </TooltipContent>
-        </Tooltip>
-
-        <DropdownMenuContent
-          align="start"
-          side="top"
-          sideOffset={8}
-          className="w-64 p-0 max-h-[240px] overflow-y-auto"
-        >
-          <div className="p-2 space-y-1">
-            {/* Version originale */}
-            <button
-              onClick={() => handleLanguageSwitch(originalLanguage)}
-              className={cn(
-                "w-full flex items-start gap-2 p-2 rounded-md text-left transition-colors",
-                currentDisplayLanguage === originalLanguage
-                  ? "bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700"
-                  : "hover:bg-gray-50 dark:hover:bg-gray-700"
-              )}
-            >
-              <span className="text-lg mt-0.5">{getLanguageInfo(originalLanguage).flag}</span>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="font-medium text-sm">{getLanguageInfo(originalLanguage).name}</span>
-                  <Badge variant="secondary" className="text-xs h-4 px-1">
-                    {t('original')}
-                  </Badge>
-                  {currentDisplayLanguage === originalLanguage && (
-                    <CheckCircle2 className="h-3 w-3 text-blue-600" />
-                  )}
-                </div>
-                <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-1 leading-snug">
-                  {message.originalContent || message.content}
-                </p>
-              </div>
-            </button>
-
-            {/* Traductions disponibles */}
-            {availableVersions
-              .filter(v => !v.isOriginal)
-              .map((version, index) => {
-                const langInfo = getLanguageInfo(version.language);
-                const isCurrentlyDisplayed = currentDisplayLanguage === version.language;
-
-                return (
-                  <button
-                    key={`${version.language}-${index}`}
-                    onClick={() => handleLanguageSwitch(version.language)}
-                    className={cn(
-                      "w-full flex items-start gap-2 p-2 rounded-md text-left transition-colors",
-                      isCurrentlyDisplayed
-                        ? "bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700"
-                        : "hover:bg-gray-50 dark:hover:bg-gray-700"
-                    )}
-                  >
-                    <span className="text-lg mt-0.5">{langInfo.flag}</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="font-medium text-sm">{langInfo.name}</span>
-                        {isCurrentlyDisplayed && (
-                          <CheckCircle2 className="h-3 w-3 text-blue-600" />
-                        )}
-                      </div>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-1 leading-snug">
-                        {version.content}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })}
-
-            {/* Séparateur + lien vers vue complète */}
-            {onEnterLanguageMode && (
-              <>
-                <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
-                <button
-                  onClick={() => {
-                    setIsTranslationMenuOpen(false);
-                    onEnterLanguageMode();
-                  }}
-                  className="w-full flex items-center justify-center gap-2 p-2 rounded-md text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
-                >
-                  <Languages className="h-3.5 w-3.5" />
-                  <span>{t('moreTranslationOptions')}</span>
-                </button>
-              </>
-            )}
-          </div>
-        </DropdownMenuContent>
-        </DropdownMenu>
-      )}
-    </>
-  ), [
-    translationError,
-    currentDisplayLanguage,
-    originalLanguage,
-    userLanguage,
-    t,
-    getLanguageInfo,
-    message.translations,
-    message.originalContent,
-    message.content,
-    availableVersions,
-    handleLanguageSwitch,
-    isTranslationMenuOpen,
-    onEnterLanguageMode
-  ]);
+  // Détecter si le message n'a que des attachments (pas de texte)
+  const hasOnlyAttachments = useMemo(() => {
+    const hasText = message.content && message.content.trim().length > 0;
+    const hasAttachments = message.attachments && message.attachments.length > 0;
+    return !hasText && hasAttachments;
+  }, [message.content, message.attachments]);
 
   return (
     <TooltipProvider>
@@ -273,8 +107,164 @@ export const MessageActionsBar = memo(function MessageActionsBar({
           isOwnMessage ? 'justify-end' : 'justify-start'
         )}
       >
-        {/* Translation Controls - Always show flag first, then Languages menu inline for ALL messages */}
-        <TranslationControls showLanguagesMenu={true} />
+        {/* Translation Controls - Masquer pour les messages avec uniquement des attachments */}
+        {!hasOnlyAttachments && (
+          <>
+            {/* Erreur de traduction */}
+            {translationError && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center text-red-500">
+                    <AlertTriangle className="h-3.5 w-3.5" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{translationError}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+
+            {/* Bouton drapeau - Toggle langue originale/utilisateur */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  {...useSingleTap(handleFlagToggle)}
+                  className={cn(
+                    "h-6 w-6 sm:h-7 sm:w-7 p-0 rounded-full transition-colors",
+                    currentDisplayLanguage === originalLanguage
+                      ? "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                      : "text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
+                  )}
+                  aria-label={currentDisplayLanguage === originalLanguage ? t('showInUserLanguage') : t('showOriginal')}
+                >
+                  <span className="text-sm">{getLanguageInfo(originalLanguage).flag}</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{currentDisplayLanguage === originalLanguage ? t('showInUserLanguage') : t('showOriginal')}</p>
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Menu traductions - Icône Languages */}
+            <DropdownMenu open={isTranslationMenuOpen} onOpenChange={setIsTranslationMenuOpen}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DropdownMenuTrigger asChild>
+                    <div className="relative">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 sm:h-7 sm:w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/30"
+                        aria-label={t('selectLanguage')}
+                      >
+                        <Languages className="h-3.5 w-3.5" />
+                      </Button>
+
+                      {/* Badge du nombre de traductions */}
+                      {message.translations && message.translations.length > 0 && (
+                        <div className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm bg-blue-600 text-white">
+                          {message.translations.length}
+                        </div>
+                      )}
+                    </div>
+                  </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{t('selectLanguage')} ({availableVersions.length})</p>
+                </TooltipContent>
+              </Tooltip>
+
+              <DropdownMenuContent
+                align="start"
+                side="top"
+                sideOffset={8}
+                className="w-64 p-0 max-h-[240px] overflow-y-auto"
+              >
+                <div className="p-2 space-y-1">
+                  {/* Version originale */}
+                  <button
+                    onClick={() => handleLanguageSwitch(originalLanguage)}
+                    className={cn(
+                      "w-full flex items-start gap-2 p-2 rounded-md text-left transition-colors",
+                      currentDisplayLanguage === originalLanguage
+                        ? "bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700"
+                        : "hover:bg-gray-50 dark:hover:bg-gray-700"
+                    )}
+                  >
+                    <span className="text-lg mt-0.5">{getLanguageInfo(originalLanguage).flag}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="font-medium text-sm">{getLanguageInfo(originalLanguage).name}</span>
+                        <Badge variant="secondary" className="text-xs h-4 px-1">
+                          {t('original')}
+                        </Badge>
+                        {currentDisplayLanguage === originalLanguage && (
+                          <CheckCircle2 className="h-3 w-3 text-blue-600" />
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-1 leading-snug">
+                        {message.originalContent || message.content}
+                      </p>
+                    </div>
+                  </button>
+
+                  {/* Traductions disponibles */}
+                  {availableVersions
+                    .filter(v => !v.isOriginal)
+                    .map((version, index) => {
+                      const langInfo = getLanguageInfo(version.language);
+                      const isCurrentlyDisplayed = currentDisplayLanguage === version.language;
+
+                      return (
+                        <button
+                          key={`${version.language}-${index}`}
+                          onClick={() => handleLanguageSwitch(version.language)}
+                          className={cn(
+                            "w-full flex items-start gap-2 p-2 rounded-md text-left transition-colors",
+                            isCurrentlyDisplayed
+                              ? "bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700"
+                              : "hover:bg-gray-50 dark:hover:bg-gray-700"
+                          )}
+                        >
+                          <span className="text-lg mt-0.5">{langInfo.flag}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <span className="font-medium text-sm">{langInfo.name}</span>
+                              {isCurrentlyDisplayed && (
+                                <CheckCircle2 className="h-3 w-3 text-blue-600" />
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-1 leading-snug">
+                              {version.content}
+                            </p>
+                          </div>
+                        </button>
+                      );
+                    })}
+
+                  {/* Séparateur + lien vers vue complète */}
+                  {onEnterLanguageMode && (
+                    <>
+                      <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
+                      <button
+                        onClick={() => {
+                          setIsTranslationMenuOpen(false);
+                          onEnterLanguageMode();
+                        }}
+                        className="w-full flex items-center justify-center gap-2 p-2 rounded-md text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
+                      >
+                        <Languages className="h-3.5 w-3.5" />
+                        <span>{t('moreTranslationOptions')}</span>
+                      </button>
+                    </>
+                  )}
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </>
+        )}
 
         {/* Bouton de réponse */}
         {onReply && (
