@@ -90,6 +90,7 @@ import { AttachmentGallery } from '@/components/attachments/AttachmentGallery';
 
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { useNotifications } from '@/hooks/use-notifications';
+import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
 import { useMessageTranslations } from '@/hooks/use-message-translations';
 import { useMessageTranslation } from '@/hooks/useMessageTranslation';
 import { useFixRadixZIndex } from '@/hooks/use-fix-z-index';
@@ -607,10 +608,18 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   // Handler pour les nouveaux messages reçus via WebSocket avec traductions optimisées
   const handleNewMessage = useCallback((message: Message) => {
     // FILTRAGE CRITIQUE: N'accepter que les messages de la conversation actuelle
-    if (message.conversationId !== conversationId) {
+    // Le backend retourne l'ObjectId normalisé, mais le composant peut utiliser un identifier ("meeshy")
+    // On doit comparer avec l'ID normalisé reçu du backend via CONVERSATION_JOINED
+    const normalizedConvId = meeshySocketIOService.getCurrentConversationId();
+    const shouldAccept = message.conversationId === conversationId ||
+                        message.conversationId === normalizedConvId;
+
+    if (!shouldAccept) {
       console.log('[BubbleStreamPage] Message ignoré (autre conversation):', {
         messageConvId: message.conversationId,
-        currentConvId: conversationId
+        currentConvId: conversationId,
+        normalizedConvId,
+        shouldAccept
       });
       return;
     }
