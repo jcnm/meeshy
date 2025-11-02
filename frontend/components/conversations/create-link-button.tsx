@@ -142,11 +142,15 @@ export function CreateLinkButton({
       const maxUses = undefined;
       const maxConcurrentUsers = undefined;
 
+      // Calculer la date d'expiration
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + expirationDays);
+
       const linkData = {
         conversationId: conversationId,
-        title: config.title,
+        name: config.title, // Le backend attend "name" et non "title"
         description: config.description || 'Bienvenue dans la conversation !',
-        expirationDays: expirationDays,
+        expiresAt: expiresAt.toISOString(), // Envoyer la date ISO au lieu de expirationDays
         maxUses: maxUses,
         maxConcurrentUsers: maxConcurrentUsers,
         maxUniqueSessions: undefined,
@@ -188,9 +192,9 @@ export function CreateLinkButton({
         setLinkSummaryData({
           url: linkUrl,
           token: result.data.linkId,
-          title: linkData.title,
+          name: linkData.name,
           description: linkData.description,
-          expirationDays: linkData.expirationDays,
+          expiresAt: linkData.expiresAt,
           maxUses: linkData.maxUses,
           maxConcurrentUsers: linkData.maxConcurrentUsers,
           maxUniqueSessions: linkData.maxUniqueSessions,
