@@ -553,7 +553,7 @@ export default function LinksPage() {
 
                     <CardContent className="relative z-10 p-4 sm:p-6">
                       {/* Badge et Menu en absolute top-right sur mobile */}
-                      <div className="absolute top-4 right-4 sm:relative sm:top-auto sm:right-auto flex items-center gap-2 z-20">
+                      <div className="absolute top-4 right-4 sm:relative sm:top-auto sm:right-auto flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-2 z-20">
                         <Badge
                           variant={link.isActive ? 'default' : 'secondary'}
                           className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-semibold flex-shrink-0 whitespace-nowrap ${
@@ -724,7 +724,7 @@ export default function LinksPage() {
 
                       <CardContent className="relative z-10 p-4 sm:p-6">
                         {/* Badge et Menu en absolute top-right sur mobile */}
-                        <div className="absolute top-4 right-4 sm:relative sm:top-auto sm:right-auto flex items-center gap-2 z-20">
+                        <div className="absolute top-4 right-4 sm:relative sm:top-auto sm:right-auto flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-2 z-20">
                           <Badge
                             variant={link.isActive ? 'default' : 'secondary'}
                             className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-semibold flex-shrink-0 whitespace-nowrap ${
