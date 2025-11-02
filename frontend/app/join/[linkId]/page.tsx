@@ -221,7 +221,7 @@ export default function JoinConversationPage() {
 
     // Vérifier si la date de naissance est requise
     if (conversationLink?.requireBirthday && !anonymousForm.birthday.trim()) {
-      toast.error(t('birthdayRequired', 'La date de naissance est requise'));
+      toast.error(t('birthdayRequired'));
       return;
     }
 
@@ -700,10 +700,10 @@ export default function JoinConversationPage() {
                       {conversationLink?.requireAccount && (
                         <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg text-center">
                           <p className="text-sm text-blue-900 dark:text-blue-100 font-medium">
-                            {t('accountRequired', 'Un compte est requis pour rejoindre cette conversation')}
+                            {t('accountRequired')}
                           </p>
                           <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-                            {t('accountRequiredDescription', 'Veuillez vous connecter ou créer un compte pour continuer')}
+                            {t('accountRequiredDescription')}
                           </p>
                         </div>
                       )}
@@ -850,7 +850,7 @@ export default function JoinConversationPage() {
                       {conversationLink.requireBirthday && (
                         <div className="space-y-2">
                           <Label htmlFor="birthday">
-                            {t('birthday', 'Date de naissance')} <span className="text-red-500">*</span>
+                            {t('birthday')} <span className="text-red-500">*</span>
                           </Label>
                           <Input
                             id="birthday"
@@ -861,7 +861,7 @@ export default function JoinConversationPage() {
                             max={new Date().toISOString().split('T')[0]}
                           />
                           <p className="text-xs text-red-500">
-                            {t('birthdayRequired', 'La date de naissance est requise pour rejoindre cette conversation')}
+                            {t('birthdayRequired')}
                           </p>
                         </div>
                       )}

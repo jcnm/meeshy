@@ -145,17 +145,19 @@ function LandingPageContent() {
       console.log('[LANDING] 🎨 Rendu du DashboardLayout avec BubbleStreamPage');
     }
     return (
-      <DashboardLayout
-        title={tCommon('navigation.home') || t('navigation.home')}
-        className="!bg-none !bg-transparent !max-w-none !px-0 !h-full"
-      >
-        <BubbleStreamPage
-          user={user}
-          // conversationId accepte soit un ID MongoDB soit un identifier comme "meeshy" pour la conversation globale
-          conversationId="meeshy"
-          isAnonymousMode={false}
-        />
-      </DashboardLayout>
+      <div className="h-screen overflow-hidden flex flex-col">
+        <DashboardLayout
+          title={tCommon('navigation.home') || t('navigation.home')}
+          className="!bg-none !bg-transparent !max-w-none !px-0 !h-full !overflow-hidden flex-1 min-h-0"
+        >
+          <BubbleStreamPage
+            user={user}
+            // conversationId accepte soit un ID MongoDB soit un identifier comme "meeshy" pour la conversation globale
+            conversationId="meeshy"
+            isAnonymousMode={false}
+          />
+        </DashboardLayout>
+      </div>
     );
   }
   

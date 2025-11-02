@@ -11,6 +11,7 @@ import { MessageViewProvider } from "@/hooks/use-message-view-state";
 import { defaultFont, getAllFontVariables } from "@/lib/fonts";
 import { preloadCriticalComponents } from "@/lib/lazy-components";
 import { CallManager } from "@/components/video-call";
+import { GoogleAnalytics } from "@/components/analytics";
 import "@/utils/console-override"; // 🔇 Désactive console.log en production
 
 export const metadata: Metadata = {
@@ -70,6 +71,9 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className={`${getAllFontVariables()} antialiased font-nunito`}>
+        {/* Google Analytics - Tracking sur toutes les pages */}
+        <GoogleAnalytics />
+
         <StoreInitializer>
           <ThemeProvider>
             <MessageViewProvider>
@@ -82,7 +86,7 @@ export default function RootLayout({
             </MessageViewProvider>
           </ThemeProvider>
         </StoreInitializer>
-        <Toaster 
+        <Toaster
           position="bottom-right"
           expand={false}
           richColors

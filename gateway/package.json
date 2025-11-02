@@ -39,6 +39,7 @@
     "fastify": "^5.6.1",
     "ioredis": "^5.7.0",
     "jsonwebtoken": "^9.0.2",
+    "music-metadata": "7.14.0",
     "nice-grpc": "^2.1.12",
     "pino-pretty": "^11.0.0",
     "protobufjs": "^7.5.3",
