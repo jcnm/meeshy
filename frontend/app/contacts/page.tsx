@@ -928,8 +928,8 @@ export default function ContactsPage() {
                 mobileBreakpoint="md"
                 className="mb-6"
               />
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Modal d'affiliation */}
           <ShareAffiliateModal
