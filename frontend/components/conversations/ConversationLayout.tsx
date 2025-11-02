@@ -1250,6 +1250,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               onParticipantAdded={() => {}}
               onLinkCreated={() => {}}
               onStartCall={handleStartCall}
+              onOpenGallery={() => setGalleryOpen(true)}
               t={t}
               showBackButton={!!selectedConversationId}
             />
@@ -1285,6 +1286,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               onImageClick={handleImageClick}
               onLoadMore={loadMore}
               t={t}
+              tCommon={tCommon}
               reverseOrder={true}
             />
           </div>
@@ -1410,6 +1412,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                   onParticipantAdded={() => {}}
                   onLinkCreated={() => {}}
                   onStartCall={handleStartCall}
+                  onOpenGallery={() => setGalleryOpen(true)}
                   t={t}
                   showBackButton={!!selectedConversationId}
                 />
@@ -1451,6 +1454,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                   onImageClick={handleImageClick}
                   onLoadMore={loadMore}
                   t={t}
+                  tCommon={tCommon}
                   reverseOrder={true}
                 />
               </div>

@@ -103,9 +103,11 @@ export const MessageActionsBar = memo(function MessageActionsBar({
     <TooltipProvider>
       <div
         className={cn(
-          'flex items-center gap-1.5 px-1 transition-all duration-200',
+          'flex items-center gap-1.5 px-1 py-1 transition-all duration-200',
           isOwnMessage ? 'justify-end' : 'justify-start',
-          'opacity-0 group-hover:opacity-100 max-h-0 group-hover:max-h-10 group-hover:mt-2 overflow-hidden'
+          'max-h-0 group-hover/message:max-h-[32px]',
+          'opacity-0 group-hover/message:opacity-100',
+          'overflow-hidden group-hover/message:overflow-visible'
         )}
       >
         {/* Translation Controls - Masquer pour les messages avec uniquement des attachments */}
@@ -132,15 +134,21 @@ export const MessageActionsBar = memo(function MessageActionsBar({
                   variant="ghost"
                   size="sm"
                   {...useSingleTap(handleFlagToggle)}
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    minWidth: '24px',
+                    minHeight: '24px'
+                  }}
                   className={cn(
-                    "h-6 w-6 sm:h-7 sm:w-7 p-0 rounded-full transition-colors",
+                    "p-0 rounded-full transition-colors",
                     currentDisplayLanguage === originalLanguage
                       ? "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
                       : "text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
                   )}
                   aria-label={currentDisplayLanguage === originalLanguage ? t('showInUserLanguage') : t('showOriginal')}
                 >
-                  <span className="text-sm">{getLanguageInfo(originalLanguage).flag}</span>
+                  <span style={{ fontSize: '12px' }}>{getLanguageInfo(originalLanguage).flag}</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -157,10 +165,16 @@ export const MessageActionsBar = memo(function MessageActionsBar({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-6 w-6 sm:h-7 sm:w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/30"
+                        style={{
+                          width: '24px',
+                          height: '24px',
+                          minWidth: '24px',
+                          minHeight: '24px'
+                        }}
+                        className="p-0 rounded-full transition-colors text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/30"
                         aria-label={t('selectLanguage')}
                       >
-                        <Languages className="h-3.5 w-3.5" />
+                        <Languages className="h-3 w-3" />
                       </Button>
 
                       {/* Badge du nombre de traductions */}
@@ -275,8 +289,14 @@ export const MessageActionsBar = memo(function MessageActionsBar({
                 variant="ghost"
                 size="sm"
                 {...useSingleTap(onReply)}
+                style={{
+                  width: '24px',
+                  height: '24px',
+                  minWidth: '24px',
+                  minHeight: '24px'
+                }}
                 aria-label={t('replyToMessage')}
-                className="h-6 w-6 sm:h-7 sm:w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/30"
+                className="p-0 rounded-full transition-colors text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/30"
               >
                 <MessageCircle className="h-3.5 w-3.5" />
               </Button>
@@ -294,7 +314,13 @@ export const MessageActionsBar = memo(function MessageActionsBar({
               variant="ghost"
               size="sm"
               {...useSingleTap(onReaction)}
-              className="h-6 w-6 sm:h-7 sm:w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
+              style={{
+                width: '24px',
+                height: '24px',
+                minWidth: '24px',
+                minHeight: '24px'
+              }}
+              className="p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
               aria-label={t('addReaction')}
             >
               <Smile className="h-3.5 w-3.5" />
@@ -313,7 +339,13 @@ export const MessageActionsBar = memo(function MessageActionsBar({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 w-6 sm:h-7 sm:w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    minWidth: '24px',
+                    minHeight: '24px'
+                  }}
+                  className="p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
                   aria-label={t('messageActions.more') || 'Plus d\'options'}
                 >
                   <MoreVertical className="h-3.5 w-3.5" />

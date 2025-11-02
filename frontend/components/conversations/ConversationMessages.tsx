@@ -37,6 +37,7 @@ interface ConversationMessagesProps {
   onImageClick?: (attachmentId: string) => void;
   onLoadMore?: () => void;
   t: (key: string) => string;
+  tCommon?: (key: string) => string; // Traductions du namespace common
   reverseOrder?: boolean; // true = récent en haut (BubbleStream), false = ancien en haut (Conversations)
   scrollDirection?: 'up' | 'down'; // Direction du scroll pour charger plus: 'up' = haut (défaut), 'down' = bas
   scrollButtonDirection?: 'up' | 'down'; // Direction du bouton scroll: 'up' = ArrowUp (BubbleStream), 'down' = ArrowDown (Conversations)
@@ -67,6 +68,7 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
   onImageClick,
   onLoadMore,
   t,
+  tCommon,
   reverseOrder = false,
   scrollDirection = 'up', // Par défaut: scroll vers le haut (comportement classique messagerie)
   scrollButtonDirection = 'down', // Par défaut: ArrowDown pour Conversations (descendre vers récent)
@@ -397,7 +399,7 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
         <div className="flex justify-center py-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
-            <span>{t('common:messages.loadingOlderMessages')}</span>
+            <span>{(tCommon || t)('messages.loadingOlderMessages')}</span>
           </div>
         </div>
       )}
@@ -420,7 +422,7 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
           emptyStateMessage={t('noMessages')}
           emptyStateDescription={t('noMessagesDescription')}
           reverseOrder={reverseOrder}
-          className="space-y-1"
+          className="space-y-0.5"
           onEditMessage={onEditMessage}
           onDeleteMessage={onDeleteMessage}
           conversationId={conversationId}
@@ -441,7 +443,7 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
         <div className="flex justify-center py-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
-            <span>{t('common:messages.loadingOlderMessages')}</span>
+            <span>{(tCommon || t)('messages.loadingOlderMessages')}</span>
           </div>
         </div>
       )}

@@ -33,7 +33,7 @@ interface MessageReactionsProps {
  * - Bouton "+" pour ajouter une nouvelle réaction
  * - Responsive (stack sur mobile, inline sur desktop)
  */
-export const MessageReactions: React.FC<MessageReactionsProps> = ({
+export const MessageReactions: React.FC<MessageReactionsProps> = React.memo(({
   messageId,
   conversationId,
   currentUserId,
@@ -112,16 +112,22 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
   // Tracker les changements de compteur par emoji pour animer
   React.useEffect(() => {
     if (isInitialLoad) return; // Skip pendant le chargement initial
-    
+
     const newCounts: Record<string, number> = {};
     const newAnimating = new Set<string>();
     const newEmojis = new Set<string>();
     let hasChanges = false;
-    
+    let countsChanged = false;
+
     reactions.forEach(reaction => {
       const prevCount = reactionCounts[reaction.emoji] || 0;
       newCounts[reaction.emoji] = reaction.count;
-      
+
+      // Vérifier si le compteur a changé
+      if (reaction.count !== prevCount) {
+        countsChanged = true;
+      }
+
       // Détecter un nouvel emoji (jamais vu avant)
       if (!loadedEmojis.has(reaction.emoji)) {
         newEmojis.add(reaction.emoji);
@@ -134,20 +140,23 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
         hasChanges = true;
       }
     });
-    
+
     // Ne mettre à jour que si nécessaire pour éviter les boucles infinies
-    if (hasChanges) {
+    if (hasChanges || countsChanged) {
       // Mettre à jour les emojis chargés
       if (newEmojis.size > 0) {
         setLoadedEmojis(prev => new Set([...prev, ...newEmojis]));
       }
-      
-      setReactionCounts(newCounts);
-      
+
+      // Ne mettre à jour les compteurs que s'ils ont vraiment changé
+      if (countsChanged) {
+        setReactionCounts(newCounts);
+      }
+
       // Lancer les animations
       if (newAnimating.size > 0) {
         setAnimatingEmojis(prev => new Set([...prev, ...newAnimating]));
-        
+
         // Arrêter les animations après 500ms
         setTimeout(() => {
           setAnimatingEmojis(prev => {
@@ -157,9 +166,6 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
           });
         }, 500);
       }
-    } else {
-      // Juste mettre à jour les compteurs sans déclencher d'animations
-      setReactionCounts(newCounts);
     }
   }, [reactions, isInitialLoad]);
   // IMPORTANT: Ne pas inclure reactionCounts et loadedEmojis dans les dépendances pour éviter boucle infinie
@@ -195,9 +201,15 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
           }
         } : { scale: 1 }}
         className={cn(
-          'flex flex-wrap items-end gap-1',
+          'flex flex-nowrap items-end gap-1.5 md:gap-1',
+          'py-2 px-1',
+          'overflow-visible',
           className
         )}
+        style={{
+          overflowX: 'auto',
+          overflowY: 'visible'
+        }}
       >
         <AnimatePresence mode="popLayout">
           {visibleReactions.map((reaction) => {
@@ -210,9 +222,9 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
                   <motion.button
                     layout
                     initial={isNewEmoji ? { scale: 0, opacity: 0, y: 10 } : false}
-                    animate={{ 
-                      scale: 1, 
-                      opacity: 1, 
+                    animate={{
+                      scale: 1,
+                      opacity: 1,
                       y: 0,
                     }}
                     exit={{ scale: 0, opacity: 0, y: 10 }}
@@ -232,9 +244,15 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
                     }}
                     onClick={() => handleReactionClick(reaction.emoji)}
                     disabled={isLoading}
+                    style={{
+                      width: '24px',
+                      height: '24px',
+                      minWidth: '24px',
+                      minHeight: '24px'
+                    }}
                     className={cn(
                       'relative flex flex-col items-center justify-center',
-                      'w-[14px] h-[14px] md:w-7 md:h-7 rounded-full',
+                      'rounded-full',
                       'bg-white dark:bg-gray-800',
                       'border shadow-md',
                       'transition-all duration-200',
@@ -248,7 +266,8 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
                   >
                     {/* Emoji */}
                     <motion.span
-                      className="text-[22px] md:text-sm leading-none"
+                      className="leading-none"
+                      style={{ fontSize: '14px' }}
                       key={`emoji-${reaction.emoji}`}
                       animate={
                         animatingEmojis.has(reaction.emoji)
@@ -256,7 +275,7 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
                               scale: 1.3,
                               rotate: [0, -15, 15, -15, 0],
                             }
-                          : hasUserReacted 
+                          : hasUserReacted
                             ? { scale: 1.1 }
                             : { scale: 1 }
                       }
@@ -269,12 +288,12 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
                     </motion.span>
                     
                     {/* Badge avec le nombre - au-dessus de l'emoji */}
-                    <motion.span 
+                    <motion.span
                       key={`count-${reaction.emoji}-${reaction.count}`}
                       initial={{ scale: 0.5, opacity: 0 }}
                       animate={
                         animatingEmojis.has(reaction.emoji)
-                          ? { 
+                          ? {
                               scale: 1.2,
                               opacity: 1,
                             }
@@ -285,14 +304,19 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
                         stiffness: 600,
                         damping: 20,
                       }}
+                      style={{
+                        minWidth: '12px',
+                        height: '12px',
+                        fontSize: '8px'
+                      }}
                       className={cn(
                         'absolute -top-0.5 -right-0.5',
                         'flex items-center justify-center',
-                        'min-w-[18px] h-[18px] md:min-w-[14px] md:h-[14px] px-0.5',
-                        'rounded-full text-[10px] md:text-[8px] font-bold',
+                        'px-0.5',
+                        'rounded-full font-bold',
                         'shadow-sm border',
                         animatingEmojis.has(reaction.emoji)
-                          ? 'ring-2 ring-primary/50 ring-offset-1'
+                          ? 'ring-1 ring-primary/50 ring-offset-1'
                           : '',
                         hasUserReacted
                           ? 'bg-primary text-primary-foreground border-primary'
@@ -337,9 +361,15 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
                 damping: 30,
               }}
               onClick={onAddReactionClick}
+              style={{
+                width: '24px',
+                height: '24px',
+                minWidth: '24px',
+                minHeight: '24px'
+              }}
               className={cn(
                 'flex items-center justify-center',
-                'w-[14px] h-[14px] md:w-7 md:h-7 rounded-full',
+                'rounded-full',
                 'bg-secondary/50 border border-border',
                 'text-muted-foreground hover:text-foreground',
                 'hover:bg-secondary hover:border-primary/50',
@@ -351,15 +381,14 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="10"
-                height="10"
+                width="12"
+                height="12"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="md:w-[14px] md:h-[14px]"
               >
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
@@ -370,6 +399,8 @@ export const MessageReactions: React.FC<MessageReactionsProps> = ({
       </motion.div>
     </TooltipProvider>
   );
-};
+});
+
+MessageReactions.displayName = 'MessageReactions';
 
 export default MessageReactions;

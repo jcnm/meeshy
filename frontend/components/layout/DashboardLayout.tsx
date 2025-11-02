@@ -135,13 +135,13 @@ export function DashboardLayout({
 
   return (
     <div className={`${
-      className.includes('!h-full') ? 'h-screen' :
+      className.includes('!h-full') ? 'h-screen overflow-hidden' :
       className.includes('!h-auto') ? 'min-h-0' :
       'min-h-screen'
-    } bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-950 dark:to-gray-900 ${className}`}>
+    } bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-950 dark:to-gray-900 flex flex-col ${className}`}>
       {/* Header fixe - masqué sur mobile si demandé */}
       {!(isMobile && hideHeaderOnMobile) && (
-        <header className="fixed top-0 left-0 right-0 z-[50] bg-white dark:bg-gray-900 shadow-sm dark:shadow-gray-900/50 border-b dark:border-gray-800">
+        <header className="flex-shrink-0 top-0 left-0 right-0 z-[50] bg-white dark:bg-gray-900 shadow-sm dark:shadow-gray-900/50 border-b dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo et titre */}
@@ -290,26 +290,14 @@ export function DashboardLayout({
       )}
 
       {/* Contenu principal avec padding-top conditionnel */}
-      <main className={`${
+      <main className={`flex-1 min-h-0 flex flex-col ${
         className.includes('!max-w-none') ? 'w-full' : 'max-w-7xl mx-auto'
       } ${
         className.includes('!px-0') ? '' : 'px-4 sm:px-6 lg:px-8'
       } ${
-        !(isMobile && hideHeaderOnMobile) ? 'pt-16' : 'pt-0'
-      } ${
-        className.includes('!h-full') ? 'h-[calc(100%-4rem)]' :
-        className.includes('!h-auto') ? '' :
-        'h-[calc(100vh-4rem)]'
-      } ${
         className.includes('!overflow-hidden') ? 'overflow-hidden' : ''
       }`}>
-        {className.includes('!h-auto') || className.includes('!px-0') ? (
-          children
-        ) : (
-          <div className="pt-2">
-            {children}
-          </div>
-        )}
+        {children}
       </main>
     </div>
   );

@@ -97,7 +97,7 @@ import { useFixRadixZIndex } from '@/hooks/use-fix-z-index';
 import { detectLanguage } from '@/utils/language-detection';
 import { useI18n } from '@/hooks/useI18n';
 import { cn } from '@/lib/utils';
-import type { User, Message, BubbleTranslation, Attachment } from '@shared/types';
+import { UserRoleEnum, type User, type Message, type BubbleTranslation, type Attachment } from '@shared/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { messageTranslationService } from '@/services/message-translation.service';
 import { getAuthToken } from '@/utils/token-utils';
@@ -389,17 +389,22 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   }, [tCommon]);
 
   // Logique de permissions pour la modération
-  const getUserModerationRole = useCallback(() => {
+  const getUserModerationRole = useCallback((): UserRoleEnum => {
     // Pour BubbleStreamPage, nous considérons que c'est une conversation publique
     // Les utilisateurs avec des rôles élevés peuvent modérer
-    if (user.role === 'ADMIN' || user.role === 'BIGBOSS' || user.role === 'MODERATOR') {
-      return user.role;
+    const role = (user.role as UserRoleEnum) ?? UserRoleEnum.USER;
+
+    if (
+      role === UserRoleEnum.ADMIN ||
+      role === UserRoleEnum.BIGBOSS ||
+      role === UserRoleEnum.MODERATOR
+    ) {
+      return role;
     }
     
     // Pour les conversations publiques, les créateurs peuvent aussi modérer
     // Nous devrions vérifier si l'utilisateur est le créateur de la conversation
-    // Pour l'instant, nous utilisons le rôle utilisateur par défaut
-    return user.role || 'USER';
+    return role;
   }, [user.role]);
 
   // Fonction pour dédoublonner les utilisateurs actifs
@@ -1536,249 +1541,224 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       `}</style>
       
       {/* Conteneur principal avec gradient - Hauteur fixe sans scroll */}
-      <div className="h-screen overflow-hidden flex flex-col bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        
-        {/* Indicateur dynamique - Frappe prioritaire sur connexion */}
-        <div className="fixed top-16 left-0 right-0 xl:right-80 z-[40] px-4 sm:px-6 lg:px-8 pt-4 pb-2 bg-gradient-to-b from-blue-50 to-transparent dark:from-gray-900/80 dark:to-transparent pointer-events-none realtime-indicator hidden md:block">
-          <div className="pointer-events-auto">
-            {/* Priorité à l'indicateur de frappe quand actif */}
-            {typingUsers.length > 0 && connectionStatus.isConnected ? (
-              <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm backdrop-blur-sm bg-blue-100/90 text-blue-800 dark:bg-blue-900/90 dark:text-blue-200 border border-blue-200/80 dark:border-blue-700/80 transition-all">
-                <Loader2 className="h-3 w-3 animate-spin" />
-                <span>
-                  {typingUsers.length === 1 
-                    ? t('bubbleStream.typing.single', { name: typingUsers[0].displayName })
-                    : typingUsers.length === 2
-                    ? t('bubbleStream.typing.double', { name1: typingUsers[0].displayName, name2: typingUsers[1].displayName })
-                    : t('bubbleStream.typing.multiple', { name: typingUsers[0].displayName, count: typingUsers.length - 1 })
-                  }
-                </span>
-              </div>
-            ) : (
-              /* Indicateur de connexion par défaut */
-              <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm backdrop-blur-sm transition-all ${
-                connectionStatus.isConnected && connectionStatus.hasSocket
-                  ? 'bg-green-100/80 text-green-800 dark:bg-green-900/80 dark:text-green-200 border border-green-200/60 dark:border-green-700/60' 
-                  : 'bg-orange-100/80 text-orange-800 dark:bg-orange-900/80 dark:text-orange-200 border border-orange-200/60 dark:border-orange-700/60'
-              }`}>
-                <div className={`w-2 h-2 rounded-full animate-pulse ${
-                  connectionStatus.isConnected && connectionStatus.hasSocket ? 'bg-green-600 dark:bg-green-400' : 'bg-orange-600 dark:bg-orange-400'
-                }`} />
-                <span className="font-medium">
-                  {t('bubbleStream.realTimeMessages')}
-                </span>
-                {!(connectionStatus.isConnected && connectionStatus.hasSocket) && (
-                  <span className="text-xs opacity-75">• {t('bubbleStream.connectionInProgress')}</span>
-                )}
-                {!(connectionStatus.isConnected && connectionStatus.hasSocket) && (
-                  <>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        reconnect();
-                      }}
-                      className="ml-2 text-xs px-2 py-1 h-auto hover:bg-orange-200/50 dark:hover:bg-orange-800/50"
-                    >
-                      {t('bubbleStream.reconnect')}
-                    </Button>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Feed principal - Container de scroll avec ref pour le scroll infini */}
-        <div
-          ref={messagesContainerRef}
-          className="flex-1 overflow-y-auto overflow-x-hidden pt-4 md:pt-20 pb-4 xl:pr-80 min-h-0"
-        >
-          <div className={cn(
-            "max-w-4xl mx-auto",
-            isMobile ? "px-3 py-4" : "px-6 py-4"
-          )}>
-            {/* 
-              MODE BUBBLESTREAM: Messages récents EN HAUT (sous header)
-              - Backend retourne: orderBy createdAt DESC = [récent...ancien]
-              - reverseOrder=false garde l'ordre: [récent...ancien]
-              - scrollDirection='down' (spécifié dans useConversationMessages)
-              - Scroll vers le bas charge les plus anciens (ajoutés à la FIN)
-              - Résultat: Récent EN HAUT, Ancien EN BAS ✅
-            */}
-            <ConversationMessages
-              messages={messages}
-              translatedMessages={messages as any}
-              isLoadingMessages={isLoadingMessages}
-              isLoadingMore={isLoadingMore}
-              hasMore={hasMore}
-              currentUser={user}
-              userLanguage={userLanguage}
-              usedLanguages={usedLanguages}
-              isMobile={isMobile}
-              conversationType="public"
-              userRole={getUserModerationRole()}
-              conversationId={conversationId}
-              isAnonymous={isAnonymousMode}
-              currentAnonymousUserId={isAnonymousMode ? user.id : undefined}
-              addTranslatingState={addTranslatingState}
-              isTranslating={isTranslating}
-              onEditMessage={handleEditMessage}
-              onDeleteMessage={handleDeleteMessage}
-              onReplyMessage={handleReplyMessage}
-              onNavigateToMessage={handleNavigateToMessage}
-              onImageClick={handleImageClick}
-              onLoadMore={loadMore}
-              t={t}
-              reverseOrder={false}
-              scrollDirection="down"
-              scrollButtonDirection="up"
-              scrollContainerRef={messagesContainerRef}
-            />
-
-            {/* Indicateur si plus de messages disponibles */}
-            {!hasMore && messages.length > 0 && (
-              <div className="flex justify-center py-4">
-                <div className="text-sm text-muted-foreground">
-                  {tCommon('messages.allMessagesLoaded')}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Zone de composition dans le flux au lieu de fixed */}
-        <div className="flex-shrink-0 xl:pr-80 z-30 bg-blue-50/20 dark:bg-gray-900/80 backdrop-blur-lg border-t border-blue-200/50 dark:border-gray-800/50 shadow-xl shadow-blue-500/10 dark:shadow-gray-900/50">
-          <div className="p-4 max-w-4xl mx-auto">
-            <MessageComposer
-              ref={textareaRef}
-              value={newMessage}
-              onChange={handleTyping}
-              onSend={handleSendMessage}
-              selectedLanguage={selectedInputLanguage}
-              onLanguageChange={setSelectedInputLanguage}
-              location={location}
-              isComposingEnabled={isComposingEnabled}
-              placeholder={t('conversationSearch.shareMessage')}
-              onKeyPress={handleKeyPress}
-              choices={languageChoices}
-              onAttachmentsChange={setAttachmentIds}
-              token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
-              userRole={user?.role}
-            />
-          </div>
-        </div>
-
-        {/* Sidebar droite - Desktop uniquement */}
-        <div className="hidden xl:block w-80 fixed right-0 top-16 bottom-0 bg-white/60 dark:bg-gray-900/80 backdrop-blur-lg border-l border-blue-200/30 dark:border-gray-800/50 z-40">
-          <div className="h-full overflow-y-auto p-6 scroll-hidden">
-            
-            {/* Header avec langues globales */}
-            <SidebarLanguageHeader 
-              languageStats={messageLanguageStats} 
-              userLanguage={userLanguage}
-            />
-
-            {/* Section Langues Actives - Foldable */}
-            <FoldableSection
-              title={t('bubbleStream.activeLanguages')}
-              icon={<Languages className="h-4 w-4 mr-2" />}
-              defaultExpanded={true}
-            >
-              <LanguageIndicators languageStats={activeLanguageStats} />
-            </FoldableSection>
-
-            {/* Section Utilisateurs Actifs - Foldable - Remontée en 2e position */}
-            <FoldableSection
-              title={`${tCommon('sidebar.activeUsers')} (${activeUsers.length})`}
-              icon={<Users className="h-4 w-4 mr-2" />}
-              defaultExpanded={true}
-            >
-              <div className="space-y-3">
-                {/* Affichage des 6 premiers utilisateurs */}
-                {activeUsers.slice(0, 6).map((activeUser, index) => (
-                  <div
-                    key={`${activeUser.id}-${index}`}
-                    className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50/80 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
-                  >
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={activeUser.avatar || undefined} alt={activeUser.firstName} />
-                      <AvatarFallback className="bg-gradient-to-br from-blue-400 to-indigo-500 text-white">
-                        {activeUser.firstName?.charAt(0)}{activeUser.lastName?.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                        {activeUser.firstName} {activeUser.lastName}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                        @{activeUser.username}
-                      </p>
-                    </div>
-                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+      <div className="flex h-full min-h-0 w-full flex-col bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="flex h-full min-h-0 w-full flex-col xl:flex-row">
+          {/* Colonne principale */}
+          <section className="grid flex-1 min-h-0 grid-rows-[auto,1fr,auto] overflow-hidden">
+            {/* Indicateur dynamique - Frappe prioritaire sur connexion */}
+            <div className="row-start-1 px-4 pt-4 pb-2 sm:px-6 lg:px-8 bg-gradient-to-b from-blue-50 to-transparent dark:from-gray-900/80 dark:to-transparent pointer-events-none hidden md:block">
+              <div className="pointer-events-auto">
+                {typingUsers.length > 0 && connectionStatus.isConnected ? (
+                  <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm backdrop-blur-sm bg-blue-100/90 text-blue-800 dark:bg-blue-900/90 dark:text-blue-200 border border-blue-200/80 dark:border-blue-700/80 transition-all">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span>
+                      {typingUsers.length === 1 
+                        ? t('bubbleStream.typing.single', { name: typingUsers[0].displayName })
+                        : typingUsers.length === 2
+                        ? t('bubbleStream.typing.double', { name1: typingUsers[0].displayName, name2: typingUsers[1].displayName })
+                        : t('bubbleStream.typing.multiple', { name: typingUsers[0].displayName, count: typingUsers.length - 1 })
+                      }
+                    </span>
                   </div>
-                ))}
-                
-                {/* Section scrollable pour les utilisateurs restants */}
-                {activeUsers.length > 6 && (
-                  <div 
-                    className="max-h-48 overflow-y-auto space-y-3 pr-1 border-t border-gray-100 dark:border-gray-700 pt-3 mt-3 scroll-hidden"
-                  >
-                    {activeUsers.slice(6).map((activeUser, index) => (
-                      <div
-                        key={`${activeUser.id}-${index + 6}`}
-                        className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50/80 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
+                ) : (
+                  <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm backdrop-blur-sm transition-all ${
+                    connectionStatus.isConnected && connectionStatus.hasSocket
+                      ? 'bg-green-100/80 text-green-800 dark:bg-green-900/80 dark:text-green-200 border border-green-200/60 dark:border-green-700/60' 
+                      : 'bg-orange-100/80 text-orange-800 dark:bg-orange-900/80 dark:text-orange-200 border border-orange-200/60 dark:border-orange-700/60'
+                  }`}>
+                    <div className={`w-2 h-2 rounded-full animate-pulse ${
+                      connectionStatus.isConnected && connectionStatus.hasSocket ? 'bg-green-600 dark:bg-green-400' : 'bg-orange-600 dark:bg-orange-400'
+                    }`} />
+                    <span className="font-medium">
+                      {t('bubbleStream.realTimeMessages')}
+                    </span>
+                    {!(connectionStatus.isConnected && connectionStatus.hasSocket) && (
+                      <span className="text-xs opacity-75">• {t('bubbleStream.connectionInProgress')}</span>
+                    )}
+                    {!(connectionStatus.isConnected && connectionStatus.hasSocket) && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => reconnect()}
+                        className="ml-2 text-xs px-2 py-1 h-auto hover:bg-orange-200/50 dark:hover:bg-orange-800/50"
                       >
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={activeUser.avatar || undefined} alt={activeUser.firstName} />
-                          <AvatarFallback className="bg-gradient-to-br from-blue-400 to-indigo-500 text-white">
-                            {activeUser.firstName?.charAt(0)}{activeUser.lastName?.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                            {activeUser.firstName} {activeUser.lastName}
-                          </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                            @{activeUser.username}
-                          </p>
-                        </div>
-                        <div className="w-2 h-2 bg-green-500 rounded-full" />
-                      </div>
-                    ))}
+                        {t('bubbleStream.reconnect')}
+                      </Button>
+                    )}
                   </div>
                 )}
               </div>
-            </FoldableSection>
+            </div>
 
-            {/* Section Tendances - Statique non-interactive, grisée */}
-            <div className="opacity-60 saturate-50 bg-gray-50/50 dark:bg-gray-800/50 rounded-lg p-2">
-              <Card className="mb-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50 shadow-lg dark:shadow-gray-900/30">
-                <CardContent className="p-0">
-                  {/* Header non-cliquable */}
-                  <div className="flex items-center justify-between p-4 bg-gray-50/80 dark:bg-gray-700/50">
-                    <h3 className="font-semibold text-gray-500 dark:text-gray-400 flex items-center">
-                      <TrendingUp className="h-4 w-4 mr-2 text-gray-400 dark:text-gray-500" />
-                      {tCommon('sidebar.trends')}
-                    </h3>
-                    <ChevronDown className="h-4 w-4 text-gray-300 dark:text-gray-600" />
+            {/* Feed principal - Container de scroll avec ref pour le scroll infini */}
+            <div
+              ref={messagesContainerRef}
+              className="row-start-2 min-h-0 h-full overflow-y-auto overflow-x-hidden bg-gradient-to-b from-blue-50/50 to-white dark:from-gray-900/50 dark:to-gray-950"
+            >
+              <ConversationMessages
+                messages={messages}
+                translatedMessages={messages as any}
+                isLoadingMessages={isLoadingMessages}
+                isLoadingMore={isLoadingMore}
+                hasMore={hasMore}
+                currentUser={user}
+                userLanguage={userLanguage}
+                usedLanguages={usedLanguages}
+                isMobile={isMobile}
+                conversationType="public"
+                userRole={getUserModerationRole()}
+                conversationId={conversationId}
+                isAnonymous={isAnonymousMode}
+                currentAnonymousUserId={isAnonymousMode ? user.id : undefined}
+                addTranslatingState={addTranslatingState}
+                isTranslating={isTranslating}
+                onEditMessage={handleEditMessage}
+                onDeleteMessage={handleDeleteMessage}
+                onReplyMessage={handleReplyMessage}
+                onNavigateToMessage={handleNavigateToMessage}
+                onImageClick={handleImageClick}
+                onLoadMore={loadMore}
+                t={t}
+                tCommon={tCommon}
+                reverseOrder={false}
+                scrollDirection="down"
+                scrollButtonDirection="up"
+                scrollContainerRef={messagesContainerRef}
+              />
+
+              {!hasMore && messages.length > 0 && (
+                <div className="flex justify-center py-4">
+                  <div className="text-sm text-muted-foreground">
+                    {tCommon('messages.allMessagesLoaded')}
                   </div>
-                  
-                  {/* Contenu statique (non-visible car fermé) */}
-                  <div className="hidden">
-                    <div className="px-4 pb-4 border-t border-gray-100">
-                      <div className="mt-3 opacity-70">
-                        <TrendingSection hashtags={trendingHashtags} />
+                </div>
+              )}
+            </div>
+
+            {/* Zone de composition dans le flux */}
+            <div className="z-30 row-start-3 border-t border-gray-200/70 bg-white/98 backdrop-blur-xl shadow-2xl dark:border-gray-700/70 dark:bg-gray-950/98">
+              <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
+                <MessageComposer
+                  ref={textareaRef}
+                  value={newMessage}
+                  onChange={handleTyping}
+                  onSend={handleSendMessage}
+                  selectedLanguage={selectedInputLanguage}
+                  onLanguageChange={setSelectedInputLanguage}
+                  location={location}
+                  isComposingEnabled={isComposingEnabled}
+                  placeholder={t('conversationSearch.shareMessage')}
+                  onKeyPress={handleKeyPress}
+                  choices={languageChoices}
+                  onAttachmentsChange={handleAttachmentsChange}
+                  token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
+                  userRole={user?.role}
+                  conversationId={conversationId}
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* Sidebar droite - Desktop uniquement */}
+          <aside className="hidden xl:flex xl:w-80 xl:flex-col bg-white/60 dark:bg-gray-900/80 backdrop-blur-lg border-l border-blue-200/30 dark:border-gray-800/50">
+            <div className="flex-1 overflow-y-auto p-6 scroll-hidden">
+              <SidebarLanguageHeader 
+                languageStats={messageLanguageStats} 
+                userLanguage={userLanguage}
+              />
+
+              <FoldableSection
+                title={t('bubbleStream.activeLanguages')}
+                icon={<Languages className="h-4 w-4 mr-2" />}
+                defaultExpanded={true}
+              >
+                <LanguageIndicators languageStats={activeLanguageStats} />
+              </FoldableSection>
+
+              <FoldableSection
+                title={`${tCommon('sidebar.activeUsers')} (${activeUsers.length})`}
+                icon={<Users className="h-4 w-4 mr-2" />}
+                defaultExpanded={true}
+              >
+                <div className="space-y-3">
+                  {activeUsers.slice(0, 6).map((activeUser, index) => (
+                    <div
+                      key={`${activeUser.id}-${index}`}
+                      className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50/80 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
+                    >
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={activeUser.avatar || undefined} alt={activeUser.firstName} />
+                        <AvatarFallback className="bg-gradient-to-br from-blue-400 to-indigo-500 text-white">
+                          {activeUser.firstName?.charAt(0)}{activeUser.lastName?.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                          {activeUser.firstName} {activeUser.lastName}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                          @{activeUser.username}
+                        </p>
+                      </div>
+                      <div className="w-2 h-2 bg-green-500 rounded-full" />
+                    </div>
+                  ))}
+
+                  {activeUsers.length > 6 && (
+                    <div 
+                      className="max-h-48 overflow-y-auto space-y-3 pr-1 border-t border-gray-100 dark:border-gray-700 pt-3 mt-3 scroll-hidden"
+                    >
+                      {activeUsers.slice(6).map((activeUser, index) => (
+                        <div
+                          key={`${activeUser.id}-${index + 6}`}
+                          className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50/80 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
+                        >
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={activeUser.avatar || undefined} alt={activeUser.firstName} />
+                            <AvatarFallback className="bg-gradient-to-br from-blue-400 to-indigo-500 text-white">
+                              {activeUser.firstName?.charAt(0)}{activeUser.lastName?.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                              {activeUser.firstName} {activeUser.lastName}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                              @{activeUser.username}
+                            </p>
+                          </div>
+                          <div className="w-2 h-2 bg-green-500 rounded-full" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </FoldableSection>
+
+              <div className="opacity-60 saturate-50 bg-gray-50/50 dark:bg-gray-800/50 rounded-lg p-2 mt-6">
+                <Card className="mb-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50 shadow-lg dark:shadow-gray-900/30">
+                  <CardContent className="p-0">
+                    <div className="flex items-center justify-between p-4 bg-gray-50/80 dark:bg-gray-700/50">
+                      <h3 className="font-semibold text-gray-500 dark:text-gray-400 flex items-center">
+                        <TrendingUp className="h-4 w-4 mr-2 text-gray-400 dark:text-gray-500" />
+                        {tCommon('sidebar.trends')}
+                      </h3>
+                      <ChevronDown className="h-4 w-4 text-gray-300 dark:text-gray-600" />
+                    </div>
+
+                    <div className="hidden">
+                      <div className="px-4 pb-4 border-t border-gray-100">
+                        <div className="mt-3 opacity-70">
+                          <TrendingSection hashtags={trendingHashtags} />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          </div>
+          </aside>
         </div>
-      
-      {/* Fermeture du conteneur principal avec gradient */}
       </div>
 
       {/* Galerie d'images */}
