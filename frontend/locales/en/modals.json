@@ -476,8 +476,10 @@
       "languages": "Languages",
       "sendPermissions": "Send permissions",
       "authRequirements": "Authentication requirements",
+      "accountRequired": "Account required",
       "email": "Email",
       "nickname": "Nickname",
+      "birthday": "Birth date",
       "userLimits": "User limits",
       "maxSessions": "Max sessions",
       "maxConcurrent": "Max concurrent",
@@ -527,6 +529,10 @@
     "quickLinkModal": {
       "title": "Create a quick share link",
       "description": "Configure your secure share link with optimal default settings",
+      "steps": {
+        "config": "Configuration",
+        "summary": "Summary"
+      },
       "secureConfig": {
         "title": "Secure configuration",
         "description": "This link uses optimal security settings to protect your conversation",
@@ -549,6 +555,8 @@
       "expirationNote": "The link will automatically expire in 7 days",
       "actions": {
         "cancel": "Cancel",
+        "next": "Next",
+        "back": "Back",
         "create": "Create link",
         "creating": "Creating..."
       }

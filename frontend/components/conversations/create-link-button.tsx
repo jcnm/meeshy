@@ -246,11 +246,13 @@ export function CreateLinkButton({
             style: { cursor: 'pointer' }
           });
         }
-        
-        // Ouvrir le modal synthétique avec le récapitulatif seulement si pas désactivé
-        if (!disableSummaryModal) {
-          setIsSummaryModalOpen(true);
-        }
+
+        // Ne pas ouvrir le modal de résumé pour les liens rapides
+        // car le résumé est déjà intégré dans QuickLinkConfigModal
+        // Ouvrir uniquement si la modale complète était utilisée
+        // if (!disableSummaryModal) {
+        //   setIsSummaryModalOpen(true);
+        // }
         onLinkCreated?.();
       } else {
         const error = await response.json();

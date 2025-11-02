@@ -476,8 +476,10 @@
       "languages": "Langues",
       "sendPermissions": "Permissions d'envoi",
       "authRequirements": "Exigences d'authentification",
+      "accountRequired": "Compte obligatoire",
       "email": "Email",
       "nickname": "Pseudonyme",
+      "birthday": "Date de naissance",
       "userLimits": "Limites utilisateur",
       "maxSessions": "Sessions max",
       "maxConcurrent": "Concurrent max",
@@ -527,6 +529,10 @@
     "quickLinkModal": {
       "title": "Créer un lien de partage rapide",
       "description": "Configurez votre lien de partage sécurisé avec des paramètres optimaux par défaut",
+      "steps": {
+        "config": "Configuration",
+        "summary": "Résumé"
+      },
       "secureConfig": {
         "title": "Configuration sécurisée",
         "description": "Ce lien utilise des paramètres de sécurité optimaux pour protéger votre conversation",
@@ -549,6 +555,8 @@
       "expirationNote": "Le lien expirera automatiquement dans 7 jours",
       "actions": {
         "cancel": "Annuler",
+        "next": "Suivant",
+        "back": "Retour",
         "create": "Créer le lien",
         "creating": "Création en cours..."
       }

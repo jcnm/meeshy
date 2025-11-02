@@ -190,6 +190,13 @@ export function LinkSummaryModal({
                   <span className="text-muted-foreground">{t('linkSummaryModal.authRequirements')}</span>
                 </div>
                 <div className="ml-6 space-y-2">
+                  {linkData.requireAccount && (
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">{t('linkSummaryModal.accountRequired')}</span>
+                      <Check className="h-4 w-4 text-green-600" />
+                    </div>
+                  )}
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm">{t('linkSummaryModal.nickname')}</span>
@@ -208,6 +215,17 @@ export function LinkSummaryModal({
                       <X className="h-4 w-4 text-red-600" />
                     )}
                   </div>
+                  {linkData.requireBirthday !== undefined && (
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">{t('linkSummaryModal.birthday')}</span>
+                      {linkData.requireBirthday ? (
+                        <Check className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <X className="h-4 w-4 text-red-600" />
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
