@@ -203,7 +203,7 @@ export function CreateLinkModalV2({
   
   // États pour les étapes
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 4;
+  const totalSteps = 3;
 
   // États pour la sélection de conversation
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -554,11 +554,9 @@ export function CreateLinkModalV2({
         if (createNewConversation) {
           return newConversationData.title.trim() !== '';
         }
-        return true;
+        return true; // L'étape 2 inclut maintenant la configuration et les options (anciennement étapes 2 et 3)
       case 3:
-        return true; // L'étape 3 n'a pas de validation obligatoire
-      case 4:
-        return true; // Le nom est généré automatiquement
+        return true; // Étape de résumé - le nom est généré automatiquement
       default:
         return false;
     }
@@ -588,8 +586,6 @@ export function CreateLinkModalV2({
       case 2:
         return createNewConversation ? t('createLinkModal.createNewConversation.title') : t('createLinkModal.steps.configureLink');
       case 3:
-        return t('createLinkModal.steps.linkOptions');
-      case 4:
         return t('createLinkModal.steps.summaryAndGeneration');
       default:
         return '';
@@ -603,8 +599,6 @@ export function CreateLinkModalV2({
       case 2:
         return createNewConversation ? t('createLinkModal.stepDescriptions.configureNewConversation') : t('createLinkModal.stepDescriptions.configureLink');
       case 3:
-        return t('createLinkModal.stepDescriptions.linkOptions');
-      case 4:
         return t('createLinkModal.stepDescriptions.summaryAndGeneration');
       default:
         return '';
@@ -995,15 +989,10 @@ export function CreateLinkModalV2({
             </div>
           </CardContent>
         </Card>
-      </div>
-    );
-  };
 
-  // Étape 3: Options avancées
-  const renderStep3 = () => (
-    <div className="space-y-6">
-      {/* Permissions des participants anonymes */}
-      <Card>
+        {/* SECTION 3: OPTIONS AVANCÉES - fusionné dans l'étape 2 */}
+        {/* Permissions des participants anonymes */}
+        <Card>
         <CardHeader 
           className="pb-3 cursor-pointer hover:bg-muted/50 transition-colors"
           onClick={() => setIsPermissionsOpen(!isPermissionsOpen)}
@@ -1136,11 +1125,12 @@ export function CreateLinkModalV2({
           </CardContent>
         )}
       </Card>
-          </div>
-  );
+      </div>
+    );
+  };
 
-  // Étape 4: Résumé et génération
-  const renderStep4 = () => (
+  // Étape 3: Résumé et génération (anciennement étape 4)
+  const renderStep3 = () => (
     <div className="space-y-6">
       {/* Titre du lien - modifiable */}
       <Card className="border-2 border-dashed border-primary/20">
@@ -1447,7 +1437,6 @@ export function CreateLinkModalV2({
                 const stepTitles = [
                   t('createLinkModal.steps.selectConversation'),
                   t('createLinkModal.steps.configureLink'),
-                  t('createLinkModal.steps.linkOptions'),
                   t('createLinkModal.steps.summaryAndGeneration')
                 ];
                 
@@ -1615,7 +1604,6 @@ export function CreateLinkModalV2({
               {currentStep === 1 && renderStep1()}
               {currentStep === 2 && renderStep2()}
               {currentStep === 3 && renderStep3()}
-              {currentStep === 4 && renderStep4()}
             </>
           )}
           </div>
