@@ -203,24 +203,32 @@ export const MessageAttachments = React.memo(function MessageAttachments({
       };
 
       // Déterminer la taille d'affichage selon le nombre d'images
-      // Augmentation de 40% sur toutes les tailles
+      // Responsive: les images s'adaptent à la largeur disponible
       let sizeClasses = '';
       let aspectRatioClass = '';
 
       if (imageAttachments.length === 1) {
-        // 1 image: très grand, pleine largeur
-        sizeClasses = isMobile ? 'w-full max-w-lg' : 'w-full max-w-2xl';
-        aspectRatioClass = 'aspect-video'; // 16:9 ratio
+        // 1 image: grande taille mais toujours contenue dans l'écran
+        sizeClasses = isMobile
+          ? 'w-full max-w-full' // Mobile: 100% de la largeur disponible
+          : 'w-full max-w-2xl'; // Desktop: max 672px
+        aspectRatioClass = ''; // Pas de ratio forcé, utilise les dimensions naturelles
       } else if (imageAttachments.length === 2) {
-        // 2 images: côte à côte, moyennement grandes
-        sizeClasses = isMobile ? 'w-[calc(50%-4px)]' : 'w-[calc(50%-8px)]';
+        // 2 images: côte à côte, adaptatives
+        sizeClasses = isMobile
+          ? 'w-[calc(50%-4px)] max-w-[calc(50%-4px)]'
+          : 'w-[calc(50%-8px)] max-w-[calc(50%-8px)]';
         aspectRatioClass = 'aspect-square';
       } else if (imageAttachments.length <= 4) {
-        // 3-4 images: grid 2x2 (+40%)
-        sizeClasses = isMobile ? 'w-44 h-44' : 'w-56 h-56';
+        // 3-4 images: grid 2x2, taille fixe mais responsive
+        sizeClasses = isMobile
+          ? 'w-full max-w-[176px] h-44' // Mobile: max 176px (44*4rem)
+          : 'w-56 h-56';
       } else {
-        // 5+ images: miniatures plus visibles (40px min)
-        sizeClasses = isMobile ? 'w-40 h-40' : 'w-44 h-44';
+        // 5+ images: miniatures, taille fixe
+        sizeClasses = isMobile
+          ? 'w-full max-w-[160px] h-40'
+          : 'w-44 h-44';
       }
 
       // Utiliser l'image originale pour 1 ou 2 images (meilleure qualité)
@@ -235,7 +243,9 @@ export const MessageAttachments = React.memo(function MessageAttachments({
           <Tooltip delayDuration={300}>
             <TooltipTrigger asChild>
               <div
-                className="relative group cursor-pointer flex-shrink-0 snap-start"
+                className={`relative group cursor-pointer snap-start ${
+                  imageAttachments.length === 1 ? 'w-full' : 'flex-shrink-0'
+                }`}
                 onClick={handleImageClick}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -247,11 +257,11 @@ export const MessageAttachments = React.memo(function MessageAttachments({
                 tabIndex={0}
                 aria-label={`Ouvrir l'image ${attachment.originalName}`}
               >
-                <div className={`relative bg-gray-100 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden hover:border-blue-400 dark:hover:border-blue-500 transition-all hover:shadow-lg dark:hover:shadow-blue-500/30 flex-shrink-0 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${sizeClasses} ${aspectRatioClass}`}>
+                <div className={`relative bg-gray-100 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden hover:border-blue-400 dark:hover:border-blue-500 transition-all hover:shadow-lg dark:hover:shadow-blue-500/30 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${sizeClasses} ${aspectRatioClass}`}>
                   <img
                     src={imageUrl}
                     alt={attachment.originalName}
-                    className="w-full h-full object-contain"
+                    className={`w-full h-full ${imageAttachments.length === 1 ? 'object-contain max-h-[70vh]' : 'object-cover'}`}
                     loading="lazy"
                     decoding="async"
                     onError={(e) => {
@@ -549,7 +559,7 @@ export const MessageAttachments = React.memo(function MessageAttachments({
     const imageCount = imageAttachments.length;
 
     if (imageCount === 1) {
-      return 'flex flex-col gap-1';
+      return 'flex flex-col gap-1 items-start'; // items-start pour aligner à gauche
     } else if (imageCount === 2) {
       return 'flex flex-row gap-1 flex-wrap';
     } else if (imageCount <= 4) {
@@ -572,10 +582,10 @@ export const MessageAttachments = React.memo(function MessageAttachments({
 
   return (
     <>
-      <div className="mt-2 inline-flex flex-col gap-2 max-w-full overflow-hidden">
+      <div className="mt-2 flex flex-col gap-2 w-full max-w-full overflow-hidden">
         {/* Affichage des images */}
         {imageAttachments.length > 0 && (
-          <div className={`${getImageLayoutClasses()} ${
+          <div className={`${getImageLayoutClasses()} w-full max-w-full ${
             shouldUseMultiRow && imageAttachments.length > 4
               ? 'overflow-y-auto max-h-96 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent'
               : ''
