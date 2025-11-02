@@ -44,6 +44,10 @@ interface MessageAttachmentsProps {
    * Callback appelé après suppression d'un attachment
    */
   onAttachmentDeleted?: (attachmentId: string) => void;
+  /**
+   * Indique si c'est le message de l'utilisateur courant (pour l'alignement)
+   */
+  isOwnMessage?: boolean;
 }
 
 export const MessageAttachments = React.memo(function MessageAttachments({
@@ -51,13 +55,13 @@ export const MessageAttachments = React.memo(function MessageAttachments({
   onImageClick,
   currentUserId,
   token,
-  onAttachmentDeleted
+  onAttachmentDeleted,
+  isOwnMessage = false
 }: MessageAttachmentsProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [attachmentToDelete, setAttachmentToDelete] = useState<Attachment | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [selectedAttachmentId, setSelectedAttachmentId] = useState<string | null>(null);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
   const { t } = useI18n('common');
@@ -101,25 +105,6 @@ export const MessageAttachments = React.memo(function MessageAttachments({
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
-  // Désélectionner l'attachment quand on clique ailleurs (mobile)
-  React.useEffect(() => {
-    if (!selectedAttachmentId) return;
-
-    const handleClickOutside = () => {
-      setSelectedAttachmentId(null);
-    };
-
-    // Attendre un peu avant d'ajouter le listener pour éviter de détecter le clic qui a sélectionné
-    const timeoutId = setTimeout(() => {
-      document.addEventListener('click', handleClickOutside);
-    }, 100);
-
-    return () => {
-      clearTimeout(timeoutId);
-      document.removeEventListener('click', handleClickOutside);
-    };
-  }, [selectedAttachmentId]);
 
 
   if (!attachments || attachments.length === 0) return null;
@@ -178,28 +163,12 @@ export const MessageAttachments = React.memo(function MessageAttachments({
         handleOpenDeleteConfirm(attachment, event);
       };
 
-      // Handler pour le tap sur mobile (toggle actions visibility)
+      // Handler pour ouvrir le lightbox immédiatement
       const handleImageClick = (event: React.MouseEvent) => {
-        if (isMobile && canDelete) {
-          // Sur mobile, premier tap = afficher les actions, second tap = ouvrir l'image
-          if (selectedAttachmentId === attachment.id) {
-            // Déjà sélectionné, ouvrir le lightbox local uniquement
-            const imageIndex = imageAttachments.findIndex(img => img.id === attachment.id);
-            setLightboxImageIndex(imageIndex);
-            setLightboxOpen(true);
-            // Ne plus appeler onImageClick pour éviter d'ouvrir 2 lightbox
-          } else {
-            // Pas encore sélectionné, afficher les actions
-            event.stopPropagation();
-            setSelectedAttachmentId(attachment.id);
-          }
-        } else {
-          // Desktop ou pas de droits de suppression: ouvrir le lightbox local uniquement
-          const imageIndex = imageAttachments.findIndex(img => img.id === attachment.id);
-          setLightboxImageIndex(imageIndex);
-          setLightboxOpen(true);
-          // Ne plus appeler onImageClick pour éviter d'ouvrir 2 lightbox
-        }
+        // Toujours ouvrir le lightbox immédiatement (un seul clic)
+        const imageIndex = imageAttachments.findIndex(img => img.id === attachment.id);
+        setLightboxImageIndex(imageIndex);
+        setLightboxOpen(true);
       };
 
       // Déterminer la taille d'affichage selon le nombre d'images
@@ -207,36 +176,30 @@ export const MessageAttachments = React.memo(function MessageAttachments({
       let sizeClasses = '';
       let aspectRatioClass = '';
 
-      if (imageAttachments.length === 1) {
-        // 1 image: grande taille mais toujours contenue dans l'écran
-        sizeClasses = isMobile
-          ? 'w-full max-w-full' // Mobile: 100% de la largeur disponible
-          : 'w-full max-w-2xl'; // Desktop: max 672px
-        aspectRatioClass = ''; // Pas de ratio forcé, utilise les dimensions naturelles
-      } else if (imageAttachments.length === 2) {
-        // 2 images: côte à côte, adaptatives
-        sizeClasses = isMobile
-          ? 'w-[calc(50%-4px)] max-w-[calc(50%-4px)]'
-          : 'w-[calc(50%-8px)] max-w-[calc(50%-8px)]';
-        aspectRatioClass = 'aspect-square';
+      if (imageAttachments.length === 1 || imageAttachments.length === 2) {
+        // 1-2 images: afficher chaque image à sa taille naturelle
+        sizeClasses = ''; // Pas de contrainte de taille
+        aspectRatioClass = ''; // Pas de ratio forcé
       } else if (imageAttachments.length <= 4) {
-        // 3-4 images: grid 2x2, taille fixe mais responsive
+        // 3-4 images: grid 2x2, taille responsive
         sizeClasses = isMobile
-          ? 'w-full max-w-[176px] h-44' // Mobile: max 176px (44*4rem)
-          : 'w-56 h-56';
+          ? 'w-full max-w-[45vw] h-auto max-h-[180px]' // Mobile: 45% viewport width, max 180px hauteur
+          : 'w-full max-w-[200px] h-auto max-h-[200px]'; // Desktop: max 200px
+        aspectRatioClass = 'aspect-square'; // Garder un aspect carré
       } else {
-        // 5+ images: miniatures, taille fixe
+        // 5+ images: miniatures, taille responsive
         sizeClasses = isMobile
-          ? 'w-full max-w-[160px] h-40'
-          : 'w-44 h-44';
+          ? 'w-full max-w-[40vw] h-auto max-h-[160px]'
+          : 'w-full max-w-[176px] h-auto max-h-[176px]';
+        aspectRatioClass = 'aspect-square';
       }
 
-      // Utiliser l'image originale pour 1 ou 2 images (meilleure qualité)
-      const useOriginalImage = imageAttachments.length <= 2;
-      const imageUrl = useOriginalImage ? attachment.fileUrl : (attachment.thumbnailUrl || attachment.fileUrl);
-
-      // Déterminer si les actions doivent être visibles
-      const isActionsVisible = selectedAttachmentId === attachment.id;
+      // Utiliser l'image originale pour les PNG (problème de thumbnail noir)
+      // Pour les autres formats, utiliser le thumbnail
+      const isPng = attachment.mimeType === 'image/png';
+      const imageUrl = (isPng || imageAttachments.length <= 2)
+        ? attachment.fileUrl
+        : (attachment.thumbnailUrl || attachment.fileUrl);
 
       return (
         <TooltipProvider key={attachment.id}>
@@ -244,7 +207,7 @@ export const MessageAttachments = React.memo(function MessageAttachments({
             <TooltipTrigger asChild>
               <div
                 className={`relative group cursor-pointer snap-start ${
-                  imageAttachments.length === 1 ? 'w-full' : 'flex-shrink-0'
+                  imageAttachments.length <= 2 ? (isOwnMessage ? 'ml-auto' : 'mr-auto') : 'flex-shrink-0'
                 }`}
                 onClick={handleImageClick}
                 onKeyDown={(e) => {
@@ -257,15 +220,24 @@ export const MessageAttachments = React.memo(function MessageAttachments({
                 tabIndex={0}
                 aria-label={`Ouvrir l'image ${attachment.originalName}`}
               >
-                <div className={`relative bg-gray-100 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden hover:border-blue-400 dark:hover:border-blue-500 transition-all hover:shadow-lg dark:hover:shadow-blue-500/30 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${sizeClasses} ${aspectRatioClass}`}>
+                <div className={`relative bg-gray-100 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden hover:border-blue-400 dark:hover:border-blue-500 transition-all hover:shadow-lg dark:hover:shadow-blue-500/30 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${imageAttachments.length <= 2 ? 'inline-flex items-center justify-center max-h-[320px]' : sizeClasses} ${aspectRatioClass}`}>
                   <img
                     src={imageUrl}
                     alt={attachment.originalName}
-                    className={`w-full h-full ${imageAttachments.length === 1 ? 'object-contain max-h-[70vh]' : 'object-cover'}`}
+                    className={`${
+                      imageAttachments.length <= 2
+                        ? 'max-w-full max-h-[320px] w-auto h-auto object-contain'
+                        : 'w-full h-full object-cover'
+                    }`}
                     loading="lazy"
                     decoding="async"
                     onError={(e) => {
-                      e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999"%3EImage%3C/text%3E%3C/svg%3E';
+                      // Si le thumbnail échoue, essayer l'image originale
+                      if (e.currentTarget.src !== attachment.fileUrl) {
+                        e.currentTarget.src = attachment.fileUrl;
+                      } else {
+                        e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999"%3EImage%3C/text%3E%3C/svg%3E';
+                      }
                     }}
                   />
 
@@ -273,9 +245,7 @@ export const MessageAttachments = React.memo(function MessageAttachments({
                   {canDelete && (
                     <button
                       onClick={handleDeleteClick}
-                      className={`absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white flex items-center justify-center transition-opacity shadow-md z-10 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 ${
-                        isActionsVisible ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-visible:opacity-100'
-                      }`}
+                      className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white flex items-center justify-center transition-opacity shadow-md z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
                       title="Supprimer cette image"
                       aria-label={`Supprimer l'image ${attachment.originalName}`}
                     >
@@ -344,25 +314,11 @@ export const MessageAttachments = React.memo(function MessageAttachments({
         handleOpenDeleteConfirm(attachment, event);
       };
 
-      // Handler pour le tap sur mobile (toggle actions visibility)
+      // Handler pour ouvrir la vidéo immédiatement
       const handleVideoClick = (event: React.MouseEvent) => {
-        if (isMobile && canDelete) {
-          if (selectedAttachmentId === attachment.id) {
-            // Déjà sélectionné, ouvrir la vidéo
-            window.open(attachment.fileUrl, '_blank');
-          } else {
-            // Pas encore sélectionné, afficher les actions
-            event.stopPropagation();
-            setSelectedAttachmentId(attachment.id);
-          }
-        } else {
-          // Desktop ou pas de droits de suppression: ouvrir directement
-          window.open(attachment.fileUrl, '_blank');
-        }
+        // Toujours ouvrir la vidéo immédiatement
+        window.open(attachment.fileUrl, '_blank');
       };
-
-      // Déterminer si les actions doivent être visibles
-      const isActionsVisible = selectedAttachmentId === attachment.id;
 
       return (
         <TooltipProvider key={attachment.id}>
@@ -415,9 +371,7 @@ export const MessageAttachments = React.memo(function MessageAttachments({
                   {canDelete && (
                     <button
                       onClick={handleDeleteClick}
-                      className={`absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white flex items-center justify-center transition-opacity shadow-md z-10 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 ${
-                        isActionsVisible ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-visible:opacity-100'
-                      }`}
+                      className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white flex items-center justify-center transition-opacity shadow-md z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
                       title="Supprimer cette vidéo"
                       aria-label={`Supprimer la vidéo ${attachment.originalName}`}
                     >
@@ -466,26 +420,11 @@ export const MessageAttachments = React.memo(function MessageAttachments({
       handleOpenDeleteConfirm(attachment, event);
     };
 
-    // Handler pour le tap sur mobile (toggle actions visibility)
+    // Handler pour ouvrir le fichier immédiatement
     const handleFileClick = (event: React.MouseEvent) => {
-      if (isMobile && canDelete) {
-        // Sur mobile, premier tap = afficher les actions, second tap = ouvrir le fichier
-        if (selectedAttachmentId === attachment.id) {
-          // Déjà sélectionné, ouvrir le fichier
-          window.open(attachment.fileUrl, '_blank');
-        } else {
-          // Pas encore sélectionné, afficher les actions
-          event.stopPropagation();
-          setSelectedAttachmentId(attachment.id);
-        }
-      } else {
-        // Desktop ou pas de droits de suppression: ouvrir directement
-        window.open(attachment.fileUrl, '_blank');
-      }
+      // Toujours ouvrir le fichier immédiatement
+      window.open(attachment.fileUrl, '_blank');
     };
-
-    // Déterminer si les actions doivent être visibles
-    const isActionsVisible = selectedAttachmentId === attachment.id;
 
     return (
       <TooltipProvider key={attachment.id}>
@@ -518,9 +457,7 @@ export const MessageAttachments = React.memo(function MessageAttachments({
                 {canDelete ? (
                   <button
                     onClick={handleDeleteClick}
-                    className={`absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white flex items-center justify-center transition-opacity shadow-md z-10 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1 ${
-                      isActionsVisible ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-visible:opacity-100'
-                    }`}
+                    className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white flex items-center justify-center transition-opacity shadow-md z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1"
                     title="Supprimer ce fichier"
                     aria-label={`Supprimer le fichier ${attachment.originalName}`}
                   >
@@ -528,9 +465,7 @@ export const MessageAttachments = React.memo(function MessageAttachments({
                   </button>
                 ) : (
                   /* Download indicator si pas de droits de suppression */
-                  <div className={`absolute top-1 right-1 transition-opacity ${
-                    isActionsVisible ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                  }`} aria-hidden="true">
+                  <div className="absolute top-1 right-1 transition-opacity opacity-0 group-hover:opacity-100" aria-hidden="true">
                     <Download className="w-3 h-3 text-gray-600 dark:text-gray-400" />
                   </div>
                 )}
@@ -558,14 +493,15 @@ export const MessageAttachments = React.memo(function MessageAttachments({
   const getImageLayoutClasses = () => {
     const imageCount = imageAttachments.length;
 
-    if (imageCount === 1) {
-      return 'flex flex-col gap-1 items-start'; // items-start pour aligner à gauche
-    } else if (imageCount === 2) {
-      return 'flex flex-row gap-1 flex-wrap';
+    if (imageCount === 1 || imageCount === 2) {
+      // 1-2 images : chaque image indépendante, alignée selon l'émetteur
+      return `flex flex-col gap-1 ${isOwnMessage ? 'items-end' : 'items-start'}`;
     } else if (imageCount <= 4) {
-      return 'grid grid-cols-2 gap-1';
+      // 3-4 images : grid avec alignement selon l'émetteur
+      return `grid grid-cols-2 gap-1 ${isOwnMessage ? 'justify-items-end' : 'justify-items-start'}`;
     } else {
-      return 'flex flex-wrap gap-1';
+      // 5+ images : flex wrap avec alignement selon l'émetteur
+      return `flex flex-wrap gap-1 ${isOwnMessage ? 'justify-end' : 'justify-start'}`;
     }
   };
 

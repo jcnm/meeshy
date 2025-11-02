@@ -25,6 +25,163 @@ interface AttachmentCarouselProps {
   audioRecorderSlot?: React.ReactNode; // Slot pour la carte d'enregistrement audio
 }
 
+/**
+ * Composant séparé pour l'aperçu des fichiers audio
+ * Utilise des hooks React qui doivent être appelés de manière stable
+ */
+const AudioFilePreview = React.memo(function AudioFilePreview({
+  file,
+  extension,
+  isUploading,
+  isUploaded,
+  progress
+}: {
+  file: File;
+  extension: string;
+  isUploading: boolean;
+  isUploaded: boolean;
+  progress: number | undefined;
+}) {
+  const [audioUrl, setAudioUrl] = React.useState<string | null>(null);
+  const [audioDuration, setAudioDuration] = React.useState<number>(0);
+  const [currentTime, setCurrentTime] = React.useState<number>(0);
+  const [isPlayingAudio, setIsPlayingAudio] = React.useState(false);
+  const audioRef = React.useRef<HTMLAudioElement>(null);
+  const blobUrlRef = React.useRef<string | null>(null);
+
+  React.useEffect(() => {
+    // Créer le blob URL une seule fois et le stocker dans la ref
+    const url = URL.createObjectURL(file);
+    blobUrlRef.current = url;
+    setAudioUrl(url);
+
+    // Créer un audio element temporaire pour obtenir la durée
+    const audio = new Audio(url);
+    audio.addEventListener('loadedmetadata', () => {
+      setAudioDuration(audio.duration || 0);
+    });
+
+    // Cleanup : révoquer le blob URL seulement au démontage du composant
+    return () => {
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
+    };
+  }, [file]);
+
+  // Handler pour mettre à jour le temps actuel
+  const handleTimeUpdate = () => {
+    if (audioRef.current) {
+      setCurrentTime(audioRef.current.currentTime);
+    }
+  };
+
+  const toggleAudioPlay = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (audioRef.current) {
+      if (isPlayingAudio) {
+        audioRef.current.pause();
+        setIsPlayingAudio(false);
+      } else {
+        audioRef.current.play().catch(error => {
+          console.error('Error playing audio:', error);
+        });
+        setIsPlayingAudio(true);
+      }
+    }
+  };
+
+  const formatTime = (seconds: number): string => {
+    if (!isFinite(seconds) || isNaN(seconds)) return '0:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  if (!audioUrl) return null;
+
+  return (
+    <>
+      {/* Audio element caché */}
+      <audio
+        ref={audioRef}
+        src={audioUrl}
+        preload="metadata"
+        onTimeUpdate={handleTimeUpdate}
+        onEnded={() => {
+          setIsPlayingAudio(false);
+          setCurrentTime(0);
+        }}
+        onPause={() => setIsPlayingAudio(false)}
+        onPlay={() => setIsPlayingAudio(true)}
+        className="hidden"
+      />
+
+      {/* Container flex-col pour infos et barre de progression */}
+      <div className="flex flex-col gap-1 flex-1 min-w-0">
+        {/* Countdown et format */}
+        <div className="flex items-center justify-between">
+          <div className="text-sm font-bold text-green-600 dark:text-green-400 font-mono">
+            {formatTime(isPlayingAudio ? audioDuration - currentTime : audioDuration)}
+          </div>
+          <div className="text-[9px] text-green-600 dark:text-green-400 font-medium">
+            {extension.toUpperCase()}
+          </div>
+        </div>
+
+        {/* Barre de progression */}
+        <div className="relative w-full h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+          <div
+            className="absolute top-0 left-0 h-full bg-green-600 dark:bg-green-500 rounded-full transition-all duration-100"
+            style={{
+              width: `${audioDuration > 0 ? (currentTime / audioDuration) * 100 : 0}%`
+            }}
+          />
+        </div>
+
+        {/* Taille et status */}
+        <div className="flex items-center justify-between text-[8px] text-gray-500 dark:text-gray-400">
+          <span>{(file.size / 1024).toFixed(0)} KB</span>
+          <span>{isPlayingAudio ? 'Playing...' : 'Ready'}</span>
+        </div>
+      </div>
+
+      {/* Bouton Play/Pause */}
+      <button
+        onClick={toggleAudioPlay}
+        className="flex-shrink-0 w-10 h-10 bg-green-600 hover:bg-green-700 text-white rounded-full flex items-center justify-center transition-colors ml-2"
+        disabled={isUploading}
+      >
+        {isPlayingAudio ? (
+          <Pause className="w-4 h-4 fill-current" />
+        ) : (
+          <Play className="w-4 h-4 fill-current ml-0.5" />
+        )}
+      </button>
+
+      {/* Indicateur d'upload pour audio */}
+      {isUploading && (
+        <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
+          <div className="text-center">
+            <Loader2 className="w-4 h-4 text-white animate-spin mx-auto mb-1" />
+            <div className="text-white text-[8px] font-medium">
+              {Math.round(progress || 0)}%
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Indicateur d'upload terminé pour audio */}
+      {isUploaded && (
+        <div className="absolute top-1 right-1">
+          <CheckCircle className="w-3 h-3 text-green-500 bg-white rounded-full" />
+        </div>
+      )}
+    </>
+  );
+});
+
 export const AttachmentCarousel = React.memo(function AttachmentCarousel({
   files,
   onRemove,
@@ -36,9 +193,15 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
   const [thumbnails, setThumbnails] = useState<Map<string, string>>(new Map());
   const [isGeneratingThumbnails, setIsGeneratingThumbnails] = useState(false);
   const processedFilesRef = useRef<Set<string>>(new Set());
+  const thumbnailsRef = useRef<Map<string, string>>(new Map());
 
   // Détecter si c'est un appareil bas de gamme pour adapter les performances
   const isLowEnd = useMemo(() => isLowEndDevice(), []);
+
+  // Synchroniser la ref avec l'état pour le cleanup
+  useEffect(() => {
+    thumbnailsRef.current = thumbnails;
+  }, [thumbnails]);
 
   // Créer les miniatures de manière asynchrone et optimisée
   useEffect(() => {
@@ -133,7 +296,8 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
   // Cleanup final : révoquer toutes les URLs au démontage
   useEffect(() => {
     return () => {
-      thumbnails.forEach((url) => URL.revokeObjectURL(url));
+      // Utiliser la ref pour avoir la version la plus récente au démontage
+      thumbnailsRef.current.forEach((url) => URL.revokeObjectURL(url));
     };
   }, []);
 
@@ -176,69 +340,21 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
 
     // Audio files get wider size (160x80) to match AudioRecorderCard
     const isAudio = type === 'audio';
-    const cardSizeClass = isAudio ? 'w-40 h-20' : 'w-20 h-20';
-
-    // Créer une URL blob pour les fichiers audio afin d'afficher un lecteur
-    const [audioUrl, setAudioUrl] = React.useState<string | null>(null);
-    const [audioDuration, setAudioDuration] = React.useState<number>(0);
-    const [currentTime, setCurrentTime] = React.useState<number>(0);
-    const [isPlayingAudio, setIsPlayingAudio] = React.useState(false);
-    const audioRef = React.useRef<HTMLAudioElement>(null);
-
-    React.useEffect(() => {
-      if (isAudio && file) {
-        const url = URL.createObjectURL(file);
-        setAudioUrl(url);
-
-        // Créer un audio element temporaire pour obtenir la durée
-        const audio = new Audio(url);
-        audio.addEventListener('loadedmetadata', () => {
-          setAudioDuration(audio.duration || 0);
-        });
-
-        return () => {
-          URL.revokeObjectURL(url);
-        };
-      }
-    }, [file, isAudio]);
-
-    // Handler pour mettre à jour le temps actuel
-    const handleTimeUpdate = () => {
-      if (audioRef.current) {
-        setCurrentTime(audioRef.current.currentTime);
-      }
-    };
-
-    const toggleAudioPlay = () => {
-      if (audioRef.current) {
-        if (isPlayingAudio) {
-          audioRef.current.pause();
-          setIsPlayingAudio(false);
-        } else {
-          audioRef.current.play().catch(error => {
-            console.error('Error playing audio:', error);
-          });
-          setIsPlayingAudio(true);
-        }
-      }
-    };
-
-    const formatTime = (seconds: number): string => {
-      if (!isFinite(seconds) || isNaN(seconds)) return '0:00';
-      const mins = Math.floor(seconds / 60);
-      const secs = Math.floor(seconds % 60);
-      return `${mins}:${secs.toString().padStart(2, '0')}`;
-    };
+    // Video files get wider size for preview (160x120)
+    const isVideo = type === 'video';
+    const cardSizeClass = isAudio ? 'w-40 h-20' : isVideo ? 'w-40 h-32' : 'w-20 h-20';
 
     return (
       <TooltipProvider key={`${file.name}-${index}`}>
         <Tooltip delayDuration={300}>
           <TooltipTrigger asChild>
             <div className="relative group pt-3 pb-2">
-              <div className={`relative flex ${isAudio ? 'flex-row items-center justify-between px-3' : 'flex-col items-center justify-center'} ${cardSizeClass} bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-200 hover:shadow-md dark:hover:shadow-blue-500/20 ${
+              <div className={`relative flex ${isAudio ? 'flex-row items-center justify-between px-3' : isVideo ? 'flex-col items-center justify-center' : 'flex-col items-center justify-center'} ${cardSizeClass} bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-200 hover:shadow-md dark:hover:shadow-blue-500/20 ${
                 isUploading ? 'border-blue-400 dark:border-blue-500' : ''
               } ${isUploaded ? 'border-green-400 dark:border-green-500' : ''} ${
                 isAudio ? 'bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 border-green-400 dark:border-green-500' : ''
+              } ${
+                isVideo ? 'bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/30 dark:to-violet-900/30 border-purple-400 dark:border-purple-500 p-0' : ''
               }`}>
                 {/* Image preview avec miniature optimisée */}
                 {type === 'image' && thumbnailUrl ? (
@@ -246,9 +362,12 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
                     <img
                       src={thumbnailUrl}
                       alt={file.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                       loading="lazy"
                       decoding="async"
+                      onError={(e) => {
+                        console.error('Failed to load thumbnail:', file.name);
+                      }}
                     />
                     {/* Overlay with extension */}
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-1 py-0.5">
@@ -284,88 +403,55 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
                       Aperçu...
                     </div>
                   </div>
-                ) : isAudio && audioUrl ? (
-                  /* Mini lecteur audio pour les fichiers audio */
+                ) : isVideo ? (
+                  /* Prévisualisation vidéo avec icône play */
                   <>
-                    {/* Audio element caché */}
-                    <audio
-                      ref={audioRef}
-                      src={audioUrl}
-                      preload="metadata"
-                      onTimeUpdate={handleTimeUpdate}
-                      onEnded={() => {
-                        setIsPlayingAudio(false);
-                        setCurrentTime(0);
-                      }}
-                      onPause={() => setIsPlayingAudio(false)}
-                      onPlay={() => setIsPlayingAudio(true)}
-                      className="hidden"
-                    />
+                    <div className="absolute inset-0 rounded-lg overflow-hidden flex items-center justify-center">
+                      <Video className="w-12 h-12 text-purple-500 dark:text-purple-400" />
+                    </div>
 
-                    {/* Container flex-col pour infos et barre de progression */}
-                    <div className="flex flex-col gap-1 flex-1 min-w-0">
-                      {/* Countdown et format */}
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm font-bold text-green-600 dark:text-green-400 font-mono">
-                          {formatTime(isPlayingAudio ? audioDuration - currentTime : audioDuration)}
-                        </div>
-                        <div className="text-[9px] text-green-600 dark:text-green-400 font-medium">
-                          {extension.toUpperCase()}
-                        </div>
-                      </div>
-
-                      {/* Barre de progression */}
-                      <div className="relative w-full h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                        <div
-                          className="absolute top-0 left-0 h-full bg-green-600 dark:bg-green-500 rounded-full transition-all duration-100"
-                          style={{
-                            width: `${audioDuration > 0 ? (currentTime / audioDuration) * 100 : 0}%`
-                          }}
-                        />
-                      </div>
-
-                      {/* Taille et status */}
-                      <div className="flex items-center justify-between text-[8px] text-gray-500 dark:text-gray-400">
-                        <span>{(file.size / 1024).toFixed(0)} KB</span>
-                        <span>{isPlayingAudio ? 'Playing...' : 'Ready'}</span>
+                    {/* Icône play centrée */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-10 h-10 bg-purple-600 dark:bg-purple-500 rounded-full flex items-center justify-center">
+                        <div className="w-0 h-0 border-l-[8px] border-l-white border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent ml-0.5"></div>
                       </div>
                     </div>
 
-                    {/* Bouton Play/Pause */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleAudioPlay();
-                      }}
-                      className="flex-shrink-0 w-10 h-10 bg-green-600 hover:bg-green-700 text-white rounded-full flex items-center justify-center transition-colors ml-2"
-                      disabled={isUploading}
-                    >
-                      {isPlayingAudio ? (
-                        <Pause className="w-4 h-4 fill-current" />
-                      ) : (
-                        <Play className="w-4 h-4 fill-current ml-0.5" />
-                      )}
-                    </button>
+                    {/* Extension badge */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-1 py-0.5">
+                      <div className="text-white text-[10px] font-medium truncate">
+                        {extension.toUpperCase()}
+                      </div>
+                    </div>
 
-                    {/* Indicateur d'upload pour audio */}
+                    {/* Indicateur d'upload pour vidéo */}
                     {isUploading && (
                       <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
                         <div className="text-center">
                           <Loader2 className="w-4 h-4 text-white animate-spin mx-auto mb-1" />
                           <div className="text-white text-[8px] font-medium">
-                            {Math.round(progress)}%
+                            {Math.round(progress || 0)}%
                           </div>
                         </div>
                       </div>
                     )}
 
-                    {/* Indicateur d'upload terminé pour audio */}
+                    {/* Indicateur d'upload terminé pour vidéo */}
                     {isUploaded && (
                       <div className="absolute top-1 right-1">
                         <CheckCircle className="w-3 h-3 text-green-500 bg-white rounded-full" />
                       </div>
                     )}
                   </>
+                ) : isAudio ? (
+                  /* Mini lecteur audio pour les fichiers audio */
+                  <AudioFilePreview
+                    file={file}
+                    extension={extension}
+                    isUploading={isUploading}
+                    isUploaded={isUploaded}
+                    progress={progress}
+                  />
                 ) : (
                   <>
                     {/* Icon pour les autres types */}
