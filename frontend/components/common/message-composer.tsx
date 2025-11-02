@@ -15,6 +15,7 @@ import { AttachmentService } from '@/services/attachmentService';
 import { UploadedAttachmentResponse } from '@/shared/types/attachment';
 import { toast } from 'sonner';
 import { AudioRecorderCard } from '@/components/audio/AudioRecorderCard';
+import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
 
 interface MessageComposerProps {
   value: string;
@@ -32,6 +33,7 @@ interface MessageComposerProps {
   onAttachmentsChange?: (attachmentIds: string[], mimeTypes: string[]) => void;
   token?: string;
   userRole?: string; // Rôle de l'utilisateur pour déterminer la limite de caractères
+  conversationId?: string; // ID de la conversation pour les événements typing
 }
 
 export interface MessageComposerRef {
@@ -58,7 +60,8 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   choices,
   onAttachmentsChange,
   token,
-  userRole
+  userRole,
+  conversationId
 }, ref) => {
 
   // ...hooks d'état et variables...
@@ -83,8 +86,12 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   const [isUploadingAudio, setIsUploadingAudio] = useState(false);
   const [audioAttachmentId, setAudioAttachmentId] = useState<string | null>(null);
   const [currentAudioBlob, setCurrentAudioBlob] = useState<{ blob: Blob; duration: number } | null>(null);
+  const [audioRecorderKey, setAudioRecorderKey] = useState(0); // Key pour forcer re-mount
   const audioRecorderRef = useRef<any>(null);
-  
+
+  // Ref pour gérer le timeout de stopTyping
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // Utiliser le placeholder fourni ou la traduction par défaut
   const finalPlaceholder = placeholder || t('conversationSearch.shareMessage');
 
@@ -96,6 +103,18 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Cleanup du typing indicator au démontage
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      if (conversationId) {
+        meeshySocketIOService.stopTyping(conversationId);
+      }
+    };
+  }, [conversationId]);
 
   // Gestion du collage de texte trop long : créer un .txt UTF-8 et ne pas remplir le textarea
   useEffect(() => {
@@ -375,19 +394,21 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   }, []);
 
   // Handler pour l'enregistrement audio terminé - mémorisé
-  const handleAudioRecordingComplete = useCallback(async (audioBlob: Blob, duration: number) => {
+  const handleAudioRecordingComplete = useCallback(async (audioBlob: Blob, duration: number, metadata?: any) => {
     try {
       setIsUploadingAudio(true);
 
-      // Stocker le blob pour pouvoir le convertir en fichier plus tard
-      setCurrentAudioBlob({ blob: audioBlob, duration });
+      // Déterminer l'extension selon le codec/type MIME
+      const mimeType = audioBlob.type || metadata?.mimeType || 'audio/webm';
+      const extension = mimeType.includes('mp4') || mimeType.includes('m4a')
+        ? '.m4a'
+        : '.webm';
 
-      // Créer un File pour l'upload
-      const filename = `audio_${Date.now()}.webm`;
-      const audioFile = new File([audioBlob], filename, { type: audioBlob.type });
+      const filename = `audio_${Date.now()}${extension}`;
+      const audioFile = new File([audioBlob], filename, { type: mimeType });
 
-      // Upload du fichier audio
-      const response = await AttachmentService.uploadFiles([audioFile], token);
+      // Upload du fichier audio avec métadonnées
+      const response = await AttachmentService.uploadFiles([audioFile], token, metadata ? [metadata] : undefined);
 
       if (response.success && response.attachments && response.attachments.length > 0) {
         const uploadedAttachment = response.attachments[0];
@@ -444,8 +465,8 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     // Si un enregistrement est EN COURS, l'arrêter d'abord
     if (showAudioRecorder && audioRecorderRef.current?.isRecording()) {
       audioRecorderRef.current.stopRecording();
-      console.log('⏹️ Enregistrement en cours arrêté');
-      return; // On ne lance pas de nouvel enregistrement immédiatement
+      console.log('⏹️ Enregistrement en cours arrêté - vue préservée');
+      return; // L'enregistrement s'arrête mais la vue reste visible pour replay
     }
 
     // Si un enregistrement est déjà terminé (en mode lecture)
@@ -457,19 +478,22 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       // Ajouter au carrousel
       setSelectedFiles(prev => [...prev, audioFile]);
 
-      console.log('✅ Audio converti en fichier normal, prêt pour nouvel enregistrement');
+      console.log('✅ Audio converti en fichier normal, démarrage nouvel enregistrement');
 
-      // Reset les états audio pour préparer un nouvel enregistrement
+      // Reset les états audio ET changer la key pour forcer re-mount
       setCurrentAudioBlob(null);
       setAudioAttachmentId(null);
+      setAudioRecorderKey(prev => prev + 1);
 
-      // La carte reste visible mais va redémarrer un nouvel enregistrement
-      // On force un re-render en toggleant
-      setShowAudioRecorder(false);
-      setTimeout(() => setShowAudioRecorder(true), 10);
+      // PAS de toggle - on garde showAudioRecorder à true
+      // Le changement de key forcera le re-mount du AudioRecorderCard
     } else {
       // Sinon, toggle le recorder normalement
       setShowAudioRecorder(prev => !prev);
+      if (!showAudioRecorder) {
+        // Si on ouvre le recorder, reset la key
+        setAudioRecorderKey(prev => prev + 1);
+      }
     }
   }, [showAudioRecorder, currentAudioBlob, audioAttachmentId]);
 
@@ -513,6 +537,21 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     const newValue = e.target.value;
     onChange(newValue);
 
+    // Émettre l'événement typing si conversationId est fourni
+    if (conversationId && newValue.trim().length > 0) {
+      meeshySocketIOService.startTyping(conversationId);
+
+      // Clear le timeout précédent
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      // Programmer stopTyping après 3 secondes d'inactivité
+      typingTimeoutRef.current = setTimeout(() => {
+        meeshySocketIOService.stopTyping(conversationId);
+      }, 3000);
+    }
+
     // Auto-resize textarea avec gestion améliorée des retours à la ligne
     if (textareaRef.current && textareaRef.current.style) {
       try {
@@ -541,7 +580,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         console.warn('Erreur lors du redimensionnement du textarea:', error);
       }
     }
-  }, [onChange]);
+  }, [onChange, conversationId]);
 
 
   return (
@@ -602,6 +641,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
           audioRecorderSlot={
             showAudioRecorder ? (
               <AudioRecorderCard
+                key={audioRecorderKey}
                 ref={audioRecorderRef}
                 onRecordingComplete={handleAudioRecordingComplete}
                 onRemove={handleRemoveAudioRecording}

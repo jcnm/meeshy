@@ -5,8 +5,17 @@ import { Square, Play, Pause, Trash2, Mic, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
+// Types pour les métadonnées audio extraites
+interface AudioMetadata {
+  duration: number; // Durée exacte en secondes avec millisecondes
+  codec: string; // Codec utilisé
+  mimeType: string; // Type MIME complet
+  bitrate?: number; // Bitrate si disponible
+  sampleRate?: number; // Sample rate si disponible
+}
+
 interface AudioRecorderCardProps {
-  onRecordingComplete: (audioBlob: Blob, duration: number) => void;
+  onRecordingComplete: (audioBlob: Blob, duration: number, metadata?: AudioMetadata) => void;
   onRemove: () => void;
   autoStart?: boolean;
   maxDuration?: number; // en secondes, défaut: 600 (10 min)
@@ -19,12 +28,49 @@ export interface AudioRecorderCardRef {
 
 // Constantes
 const MAX_ALLOWED_DURATION = 600; // 10 minutes - HARD LIMIT
-const ALLOWED_CODECS = [
-  'audio/webm;codecs=opus', // Preferred - meilleure qualité
-  'audio/webm',             // Fallback WebM
-  'audio/ogg;codecs=opus',  // Fallback OGG
-  'audio/mp4',              // Fallback MP4 (Safari)
-] as const;
+
+// Détection du navigateur pour adapter le codec audio
+const getBrowserInfo = () => {
+  const ua = navigator.userAgent.toLowerCase();
+  return {
+    isSafari: /^((?!chrome|android).)*safari/i.test(navigator.userAgent),
+    isChrome: ua.includes('chrome') && !ua.includes('edge'),
+    isFirefox: ua.includes('firefox'),
+    isEdge: ua.includes('edge') || ua.includes('edg/'),
+  };
+};
+
+// Codecs audio par navigateur (ordre de préférence)
+const CODEC_PRIORITIES = {
+  safari: [
+    'audio/mp4',               // Safari préfère MP4/AAC
+    'audio/webm;codecs=opus',  // Safari récent peut supporter WebM
+    'audio/webm',
+  ],
+  chrome: [
+    'audio/webm;codecs=opus',  // Meilleure qualité pour Chrome
+    'audio/webm',
+    'audio/ogg;codecs=opus',
+    'audio/mp4',
+  ],
+  firefox: [
+    'audio/webm;codecs=opus',  // Firefox supporte bien Opus
+    'audio/ogg;codecs=opus',
+    'audio/webm',
+    'audio/mp4',
+  ],
+  edge: [
+    'audio/webm;codecs=opus',  // Edge Chromium
+    'audio/webm',
+    'audio/mp4',
+  ],
+  default: [
+    'audio/webm;codecs=opus',
+    'audio/webm',
+    'audio/ogg;codecs=opus',
+    'audio/mp4',
+  ],
+} as const;
 
 /**
  * Carte d'enregistrement audio compacte pour le carrousel d'attachments
@@ -39,7 +85,7 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
   maxDuration = 600
 }, ref) => {
   const [isRecording, setIsRecording] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(0);
+  const [recordingTime, setRecordingTime] = useState(0); // En millisecondes
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -49,23 +95,147 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const startTimeRef = useRef<number>(0); // Utiliser performance.now() pour précision
+  const animationFrameRef = useRef<number | null>(null);
   const audioUrlRef = useRef<string | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const selectedCodecRef = useRef<string>('');
 
   // Enforce hard limit
   const effectiveDuration = Math.min(maxDuration, MAX_ALLOWED_DURATION);
 
-  // Fonction pour obtenir le codec sécurisé
-  const getSecureAudioCodec = (): string => {
-    for (const codec of ALLOWED_CODECS) {
+  // Fonction pour obtenir le meilleur codec selon le navigateur
+  const getBestAudioCodec = (): { mimeType: string; browserType: string } => {
+    const browserInfo = getBrowserInfo();
+
+    let browserType = 'default';
+    let codecs: readonly string[] = CODEC_PRIORITIES.default;
+
+    if (browserInfo.isSafari) {
+      browserType = 'Safari';
+      codecs = CODEC_PRIORITIES.safari;
+    } else if (browserInfo.isChrome) {
+      browserType = 'Chrome';
+      codecs = CODEC_PRIORITIES.chrome;
+    } else if (browserInfo.isFirefox) {
+      browserType = 'Firefox';
+      codecs = CODEC_PRIORITIES.firefox;
+    } else if (browserInfo.isEdge) {
+      browserType = 'Edge';
+      codecs = CODEC_PRIORITIES.edge;
+    }
+
+    // Tester chaque codec dans l'ordre de préférence
+    for (const codec of codecs) {
       if (MediaRecorder.isTypeSupported(codec)) {
-        return codec;
+        return { mimeType: codec, browserType };
       }
     }
-    throw new Error('No supported audio codec found. Please use a modern browser.');
+
+    throw new Error(`No supported audio codec found for ${browserType}. Please use a modern browser.`);
   };
+
+  // Fonction pour extraire les métadonnées audio d'un blob
+  // Version simplifiée : utilise le temps d'enregistrement (plus fiable)
+  const extractAudioMetadata = async (blob: Blob, mimeType: string): Promise<AudioMetadata> => {
+    const browserInfo = getBrowserInfo();
+    const codec = mimeType.includes('opus') ? 'Opus' :
+                 mimeType.includes('aac') ? 'AAC' :
+                 mimeType.includes('mp4') ? 'MP4' :
+                 mimeType.includes('webm') ? 'WebM' : 'Unknown';
+
+    // Sur Safari ou si c'est du MP4, utiliser directement le temps d'enregistrement
+    // Safari ne supporte pas bien Web Audio API avec certains formats
+    if (browserInfo.isSafari || mimeType.includes('mp4')) {
+      const metadata: AudioMetadata = {
+        duration: recordingTime / 1000, // Utiliser le temps mesuré (plus fiable)
+        codec: codec,
+        mimeType: mimeType,
+      };
+      return metadata;
+    }
+
+    // Pour les autres navigateurs, essayer d'obtenir la durée de l'audio element
+    return new Promise((resolve) => {
+      const audio = document.createElement('audio');
+      const url = URL.createObjectURL(blob);
+      let resolved = false;
+
+      const cleanup = () => {
+        URL.revokeObjectURL(url);
+        audio.remove();
+      };
+
+      // Timeout de 500ms - si les métadonnées ne chargent pas, utiliser le temps enregistré
+      const timeout = setTimeout(() => {
+        if (!resolved) {
+          resolved = true;
+          cleanup();
+          resolve({
+            duration: recordingTime / 1000,
+            codec: codec,
+            mimeType: mimeType,
+          });
+        }
+      }, 500);
+
+      audio.addEventListener('loadedmetadata', () => {
+        if (resolved) return;
+        resolved = true;
+        clearTimeout(timeout);
+
+        const duration = audio.duration;
+
+        // Si duration est Infinity ou invalide, utiliser le temps d'enregistrement
+        const finalDuration = (duration === Infinity || !isFinite(duration) || duration <= 0)
+          ? recordingTime / 1000
+          : duration;
+
+        const metadata: AudioMetadata = {
+          duration: finalDuration,
+          codec: codec,
+          mimeType: mimeType,
+        };
+
+        cleanup();
+        resolve(metadata);
+      });
+
+      audio.addEventListener('error', () => {
+        if (resolved) return;
+        resolved = true;
+        clearTimeout(timeout);
+        cleanup();
+        resolve({
+          duration: recordingTime / 1000,
+          codec: codec,
+          mimeType: mimeType,
+        });
+      });
+
+      audio.src = url;
+    });
+  };
+
+  // Timer précis utilisant requestAnimationFrame pour les millisecondes
+  const updateTimer = useCallback(() => {
+    if (!startTimeRef.current || !mediaRecorderRef.current || mediaRecorderRef.current.state !== 'recording') {
+      return;
+    }
+
+    const elapsed = performance.now() - startTimeRef.current;
+    setRecordingTime(elapsed);
+
+    // Vérifier si on a atteint la durée maximale
+    if (elapsed >= effectiveDuration * 1000) {
+      stopRecording();
+      return;
+    }
+
+    // Continuer l'animation
+    animationFrameRef.current = requestAnimationFrame(updateTimer);
+  }, [effectiveDuration]);
 
   // Démarrer l'enregistrement
   const startRecording = useCallback(async () => {
@@ -88,18 +258,27 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
         return;
       }
 
+      // Obtenir le meilleur codec pour le navigateur
+      const { mimeType, browserType } = getBestAudioCodec();
+      selectedCodecRef.current = mimeType;
+
+      // Contraintes audio optimisées
+      const browserInfo = getBrowserInfo();
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
+        audio: browserInfo.isSafari ? {
           echoCancellation: true,
           noiseSuppression: true,
-          autoGainControl: true
+          sampleRate: 48000,
+        } : {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          sampleRate: 48000,
+          channelCount: 1,
         }
       });
 
       streamRef.current = stream;
-
-      // Choisir le codec sécurisé
-      const mimeType = getSecureAudioCodec();
 
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType,
@@ -116,7 +295,7 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
         }
       };
 
-      mediaRecorder.onstop = () => {
+      mediaRecorder.onstop = async () => {
         const blob = new Blob(chunksRef.current, { type: mimeType });
 
         // Stop all tracks
@@ -140,37 +319,29 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
         setAudioBlob(blob);
         setAudioUrl(url);
 
-        // Notifier le parent
-        onRecordingComplete(blob, recordingTime);
+        // Extraire les métadonnées audio
+        const metadata = await extractAudioMetadata(blob, mimeType);
+
+        // Notifier le parent avec métadonnées
+        onRecordingComplete(blob, metadata.duration, metadata);
       };
 
-      mediaRecorder.start(1000); // Chunks de 1 seconde pour meilleure stabilité
+      // Adapter le timeslice selon le navigateur
+      if (browserInfo.isSafari) {
+        mediaRecorder.start();
+      } else {
+        mediaRecorder.start(1000);
+      }
+
       setIsRecording(true);
       setIsInitializing(false);
       setRecordingTime(0);
 
-      // Timer pour la durée
-      timerRef.current = setInterval(() => {
-        // Vérifier si le mediaRecorder est toujours actif avant d'incrémenter
-        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-          setRecordingTime((prev) => {
-            const newTime = prev + 1;
-            if (newTime >= effectiveDuration) {
-              stopRecording();
-            }
-            return newTime;
-          });
-        } else {
-          // Si le recorder n'est plus actif, arrêter le timer
-          if (timerRef.current) {
-            clearInterval(timerRef.current);
-            timerRef.current = null;
-          }
-        }
-      }, 1000);
+      // Démarrer le timer haute précision avec requestAnimationFrame
+      startTimeRef.current = performance.now();
+      animationFrameRef.current = requestAnimationFrame(updateTimer);
 
     } catch (error: any) {
-      console.error('Failed to start recording:', error);
       setIsInitializing(false);
 
       if (error instanceof DOMException) {
@@ -189,15 +360,16 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
         setPermissionError('Recording error');
       }
     }
-  }, [effectiveDuration, onRecordingComplete]);
+  }, [effectiveDuration, onRecordingComplete, getBestAudioCodec, extractAudioMetadata, updateTimer]);
 
   // Arrêter l'enregistrement
   const stopRecording = useCallback(() => {
-    // Toujours arrêter le timer d'abord
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
+    // Toujours arrêter le timer d'animation d'abord
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
     }
+    startTimeRef.current = 0;
 
     // Puis arrêter le media recorder
     if (mediaRecorderRef.current) {
@@ -227,7 +399,6 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
           audioRef.current.currentTime = 0;
         }
         audioRef.current.play().catch(error => {
-          console.error('Erreur de lecture audio:', error);
           toast.error('Erreur lors de la lecture');
           setIsPlaying(false);
         });
@@ -247,9 +418,9 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      // Clean up timer
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
+      // Clean up animation frame
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
       }
 
       // Clean up media recorder
@@ -274,11 +445,13 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
     };
   }, []);
 
-  // Formater le temps
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  // Formater le temps avec millisecondes (MM:SS.ms)
+  const formatTime = (milliseconds: number): string => {
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const ms = Math.floor((milliseconds % 1000) / 10); // Deux chiffres pour les centièmes
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
   };
 
   // État: Initialisation
@@ -343,10 +516,10 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
           <Button
             onClick={stopRecording}
             size="sm"
-            className="bg-gray-700 hover:bg-gray-800 h-7 w-14 text-[9px] px-2"
+            className="group bg-white dark:bg-gray-800 hover:bg-black dark:hover:bg-white h-10 w-10 p-0 flex flex-col items-center justify-center gap-0 border-2 border-gray-300 dark:border-gray-600 hover:border-black dark:hover:border-white transition-all"
           >
-            <Square className="w-3 h-3 fill-current mr-1" />
-            Stop
+            <Square className="w-3 h-3 fill-transparent stroke-gray-700 dark:stroke-gray-300 group-hover:stroke-white dark:group-hover:stroke-black stroke-[1.5]" />
+            <span className="text-[8px] leading-tight font-semibold text-gray-700 dark:text-gray-300 group-hover:text-white dark:group-hover:text-black">STOP</span>
           </Button>
         </div>
 
@@ -370,7 +543,6 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
             preload="auto"
             onEnded={() => setIsPlaying(false)}
             onError={(e) => {
-              console.error('Audio error:', e);
               setIsPlaying(false);
               toast.error('Erreur de lecture audio');
             }}
