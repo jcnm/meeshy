@@ -53,6 +53,10 @@
       "requireEmail": {
         "label": "Exiger un email",
         "description": "Les participants doivent fournir un email pour rejoindre"
+      },
+      "requireBirthday": {
+        "label": "Date de naissance requise",
+        "description": "Les invités doivent fournir leur date de naissance pour rejoindre"
       }
     },
     "allowedLanguages": {
@@ -63,6 +67,10 @@
     "linkDetails": {
       "title": "Détails du lien",
       "description": "Configurez les informations du lien de partage",
+      "requireAccount": {
+        "label": "Compte obligatoire",
+        "description": "Seuls les utilisateurs avec un compte peuvent rejoindre cette conversation. Désactive l'accès anonyme."
+      },
       "linkName": "Nom du lien",
       "linkNameInfo": "Un nom convivial pour identifier ce lien",
       "linkNamePlaceholder": "Ex : Invitation équipe, Accès partenaire...",
