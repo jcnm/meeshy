@@ -95,15 +95,10 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
                        browserInfo.isFirefox ? 'Firefox' :
                        browserInfo.isEdge ? 'Edge' : 'Unknown';
 
-    console.log(`🎤 Détection codec pour ${browserType}`);
-
     // Tester chaque codec dans l'ordre de préférence UNIVERSEL
     for (const codec of UNIVERSAL_CODEC_PRIORITIES) {
       if (MediaRecorder.isTypeSupported(codec)) {
-        console.log(`✅ Codec sélectionné: ${codec}`);
         return { mimeType: codec, browserType };
-      } else {
-        console.log(`❌ Codec non supporté: ${codec}`);
       }
     }
 
@@ -118,8 +113,6 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
                  mimeType.includes('mp4') ? 'MP4/AAC' :
                  mimeType.includes('webm') ? 'WebM' : 'Unknown';
 
-    console.log(`📊 Métadonnées audio - Durée: ${(recordingTime / 1000).toFixed(2)}s - Codec: ${codec}`);
-
     const metadata: AudioMetadata = {
       duration: recordingTime / 1000, // Utiliser le temps mesuré avec performance.now() (très précis)
       codec: codec,
@@ -131,8 +124,6 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
 
   // Arrêter l'enregistrement
   const stopRecording = useCallback(() => {
-    console.log('⏹️ stopRecording appelé');
-
     // Appeler le callback onStop AVANT d'arrêter (pour permettre au parent de préparer l'upload)
     if (onStop) {
       onStop();
@@ -142,7 +133,6 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
     if (requestDataIntervalRef.current) {
       clearInterval(requestDataIntervalRef.current);
       requestDataIntervalRef.current = null;
-      console.log('🛑 Interval requestData arrêté');
     }
 
     // Arrêter le timer d'animation
@@ -272,7 +262,6 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
 
       // Démarrer l'enregistrement SANS timeslice + requestData() manuel
       // Cette approche évite les problèmes de buffer qui sacagent sur Chrome/Brave
-      console.log(`🎬 Démarrage enregistrement - Format: ${mimeType} - SANS timeslice + requestData() manuel`);
       mediaRecorder.start();
 
       // Appeler requestData() manuellement toutes les secondes pour TOUS les navigateurs

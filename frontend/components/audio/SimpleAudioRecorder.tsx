@@ -82,15 +82,10 @@ export const SimpleAudioRecorder: React.FC<SimpleAudioRecorderProps> = ({
                        browserInfo.isFirefox ? 'Firefox' :
                        browserInfo.isEdge ? 'Edge' : 'Unknown';
 
-    console.log(`🎤 Détection codec pour ${browserType}`);
-
     // Tester chaque codec dans l'ordre de préférence UNIVERSEL
     for (const codec of UNIVERSAL_CODEC_PRIORITIES) {
       if (MediaRecorder.isTypeSupported(codec)) {
-        console.log(`✅ Codec sélectionné: ${codec}`);
         return { mimeType: codec, browserType };
-      } else {
-        console.log(`❌ Codec non supporté: ${codec}`);
       }
     }
 
@@ -255,7 +250,6 @@ export const SimpleAudioRecorder: React.FC<SimpleAudioRecorderProps> = ({
 
       // Démarrer l'enregistrement SANS timeslice + requestData() manuel
       // Cette approche évite les problèmes de buffer qui sacagent sur Chrome/Brave
-      console.log(`🎬 Démarrage enregistrement - Format: ${mimeType} - SANS timeslice + requestData() manuel`);
       mediaRecorder.start();
 
       // Appeler requestData() manuellement toutes les secondes pour TOUS les navigateurs
@@ -300,7 +294,6 @@ export const SimpleAudioRecorder: React.FC<SimpleAudioRecorderProps> = ({
       if (requestDataIntervalRef.current) {
         clearInterval(requestDataIntervalRef.current);
         requestDataIntervalRef.current = null;
-        console.log('🛑 Interval requestData arrêté');
       }
 
       if (mediaRecorderRef.current.state !== 'inactive') {
