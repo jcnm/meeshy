@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, Fragment } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -1441,7 +1441,7 @@ export function CreateLinkModalV2({
                 ];
 
                 return (
-                  <React.Fragment key={i}>
+                  <Fragment key={i}>
                     {/* Ligne de connexion avant le point (sauf pour le premier) */}
                     {i > 0 && (
                       <div className={`flex-1 h-0.5 ${
@@ -1472,7 +1472,7 @@ export function CreateLinkModalV2({
                         </p>
                       </div>
                     </div>
-                  </React.Fragment>
+                  </Fragment>
                 );
               })}
             </div>
