@@ -291,10 +291,10 @@ export function CreateLinkButton({
         const conversation = await conversationsService.getConversation(currentConversationId);
         const conversationTitle = conversation.title || 'Conversation';
 
-        // Générer le nom du lien selon la langue de l'utilisateur
+        // Générer le nom du lien selon la langue de l'interface (priorité sur la langue utilisateur)
         const defaultTitle = generateLinkName({
           conversationTitle,
-          language: currentUser?.systemLanguage || detectedInterfaceLanguage || 'fr',
+          language: detectedInterfaceLanguage || currentUser?.systemLanguage || 'fr',
           durationDays: 7,
           maxParticipants: undefined,
           maxUses: undefined,
