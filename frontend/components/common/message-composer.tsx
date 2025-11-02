@@ -437,9 +437,6 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
 
   // Handler pour l'enregistrement audio terminé - mémorisé
   const handleAudioRecordingComplete = useCallback(async (audioBlob: Blob, duration: number, metadata?: any) => {
-    console.log('🎤 Enregistrement terminé, stockage local du blob');
-    console.log('📝 Type MIME du blob:', audioBlob.type);
-
     // Stocker le blob dans les refs ET le state
     const blobData = { blob: audioBlob, duration };
     currentAudioBlobRef.current = blobData;
@@ -447,7 +444,6 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
 
     // Si on doit uploader immédiatement après l'arrêt
     if (shouldUploadAfterStopRef.current) {
-      console.log('⬆️ Upload immédiat après arrêt (via bouton stop)');
       shouldUploadAfterStopRef.current = false; // Reset le flag
 
       // Nettoyer le MIME type en enlevant les paramètres (audio/webm;codecs=opus -> audio/webm)
@@ -457,18 +453,17 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       const extension = getAudioFileExtension(audioBlob.type);
       const filename = `audio_${Date.now()}.${extension}`;
 
-      console.log('📁 Création fichier:', filename, 'avec MIME type:', cleanMimeType);
       const audioFile = new File([audioBlob], filename, { type: cleanMimeType });
 
-      // Upload le fichier
-      await handleFilesSelected([audioFile]);
-      console.log('✅ Audio uploadé et ajouté au carrousel');
-
-      // Reset l'état audio et fermer le recorder
+      // Reset l'état audio et fermer le recorder IMMÉDIATEMENT avant l'upload
+      // Cela évite le glitch visuel où plusieurs AudioRecorderCard apparaissent
       currentAudioBlobRef.current = null;
       setCurrentAudioBlob(null);
       setShowAudioRecorder(false);
       setIsRecording(false);
+
+      // Upload le fichier en arrière-plan (après reset de l'UI)
+      await handleFilesSelected([audioFile]);
     }
   }, [handleFilesSelected, getAudioFileExtension]);
 
