@@ -141,7 +141,7 @@ export function DashboardLayout({
     } bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-950 dark:to-gray-900 flex flex-col ${className}`}>
       {/* Header fixe - masqué sur mobile si demandé */}
       {!(isMobile && hideHeaderOnMobile) && (
-        <header className="flex-shrink-0 top-0 left-0 right-0 z-[50] bg-white dark:bg-gray-900 shadow-sm dark:shadow-gray-900/50 border-b dark:border-gray-800">
+        <header className="sticky flex-shrink-0 top-0 left-0 right-0 z-[50] bg-white dark:bg-gray-900 shadow-sm dark:shadow-gray-900/50 border-b dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo et titre */}
