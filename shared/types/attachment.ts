@@ -34,7 +34,7 @@ export type DocumentMimeType =
 /**
  * Types MIME pour les fichiers audio
  */
-export type AudioMimeType = 'audio/mpeg' | 'audio/mp3' | 'audio/wav' | 'audio/ogg' | 'audio/webm';
+export type AudioMimeType = 'audio/mpeg' | 'audio/mp3' | 'audio/wav' | 'audio/ogg' | 'audio/webm' | 'audio/mp4' | 'audio/m4a' | 'audio/x-m4a' | 'audio/aac';
 
 /**
  * Types MIME pour les vidéos
@@ -81,6 +81,10 @@ export interface Attachment {
   readonly width?: number;
   readonly height?: number;
   readonly duration?: number;
+  readonly bitrate?: number;
+  readonly sampleRate?: number;
+  readonly codec?: string;
+  readonly channels?: number;
   readonly uploadedBy: string;
   readonly isAnonymous: boolean;
   readonly createdAt: string;
@@ -103,6 +107,10 @@ export interface AttachmentMetadata {
   width?: number;
   height?: number;
   duration?: number;
+  bitrate?: number;
+  sampleRate?: number;
+  codec?: string;
+  channels?: number;
   thumbnailGenerated?: boolean;
 }
 
@@ -121,6 +129,10 @@ export interface UploadedAttachmentResponse {
   readonly width?: number;
   readonly height?: number;
   readonly duration?: number;
+  readonly bitrate?: number;
+  readonly sampleRate?: number;
+  readonly codec?: string;
+  readonly channels?: number;
   readonly uploadedBy: string;
   readonly isAnonymous: boolean;
   readonly createdAt: string;
@@ -175,7 +187,7 @@ export const ACCEPTED_MIME_TYPES = {
     'application/zip',
     'application/x-zip-compressed',
   ] as const,
-  AUDIO: ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/webm'] as const,
+  AUDIO: ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/webm', 'audio/mp4', 'audio/m4a', 'audio/x-m4a', 'audio/aac'] as const,
   VIDEO: ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'] as const,
   TEXT: ['text/plain'] as const,
   CODE: [
@@ -208,14 +220,18 @@ export function isImageMimeType(mimeType: string): mimeType is ImageMimeType {
  * Type guard pour vérifier si un MIME type est audio
  */
 export function isAudioMimeType(mimeType: string): mimeType is AudioMimeType {
-  return (ACCEPTED_MIME_TYPES.AUDIO as unknown as string[]).includes(mimeType);
+  // Nettoyer le MIME type en enlevant les paramètres (ex: audio/webm;codecs=opus -> audio/webm)
+  const cleanMimeType = mimeType.split(';')[0].trim();
+  return (ACCEPTED_MIME_TYPES.AUDIO as unknown as string[]).includes(cleanMimeType);
 }
 
 /**
  * Type guard pour vérifier si un MIME type est vidéo
  */
 export function isVideoMimeType(mimeType: string): mimeType is VideoMimeType {
-  return (ACCEPTED_MIME_TYPES.VIDEO as unknown as string[]).includes(mimeType);
+  // Nettoyer le MIME type en enlevant les paramètres (ex: video/webm;codecs=vp8 -> video/webm)
+  const cleanMimeType = mimeType.split(';')[0].trim();
+  return (ACCEPTED_MIME_TYPES.VIDEO as unknown as string[]).includes(cleanMimeType);
 }
 
 /**

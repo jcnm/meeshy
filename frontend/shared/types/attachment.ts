@@ -220,14 +220,18 @@ export function isImageMimeType(mimeType: string): mimeType is ImageMimeType {
  * Type guard pour vérifier si un MIME type est audio
  */
 export function isAudioMimeType(mimeType: string): mimeType is AudioMimeType {
-  return (ACCEPTED_MIME_TYPES.AUDIO as unknown as string[]).includes(mimeType);
+  // Nettoyer le MIME type en enlevant les paramètres (ex: audio/webm;codecs=opus -> audio/webm)
+  const cleanMimeType = mimeType.split(';')[0].trim();
+  return (ACCEPTED_MIME_TYPES.AUDIO as unknown as string[]).includes(cleanMimeType);
 }
 
 /**
  * Type guard pour vérifier si un MIME type est vidéo
  */
 export function isVideoMimeType(mimeType: string): mimeType is VideoMimeType {
-  return (ACCEPTED_MIME_TYPES.VIDEO as unknown as string[]).includes(mimeType);
+  // Nettoyer le MIME type en enlevant les paramètres (ex: video/webm;codecs=vp8 -> video/webm)
+  const cleanMimeType = mimeType.split(';')[0].trim();
+  return (ACCEPTED_MIME_TYPES.VIDEO as unknown as string[]).includes(cleanMimeType);
 }
 
 /**

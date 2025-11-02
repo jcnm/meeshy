@@ -894,22 +894,43 @@ class MeeshySocketIOService {
 
     // Transformer les attachments si présents
     const attachments = Array.isArray((socketMessage as any).attachments)
-      ? (socketMessage as any).attachments.map((att: any) => ({
-          id: String(att.id || ''),
-          messageId: socketMessage.id,
-          fileName: String(att.fileName || ''),
-          originalName: String(att.originalName || att.fileName || ''),
-          fileUrl: String(att.fileUrl || ''),
-          mimeType: String(att.mimeType || ''),
-          fileSize: Number(att.fileSize) || 0,
-          thumbnailUrl: att.thumbnailUrl ? String(att.thumbnailUrl) : undefined,
-          width: att.width ? Number(att.width) : undefined,
-          height: att.height ? Number(att.height) : undefined,
-          duration: att.duration ? Number(att.duration) : undefined,
-          uploadedBy: String(att.uploadedBy || socketMessage.senderId || (socketMessage as any).anonymousSenderId || ''),
-          isAnonymous: Boolean(att.isAnonymous),
-          createdAt: String(att.createdAt || new Date().toISOString()),
-        }))
+      ? (socketMessage as any).attachments.map((att: any) => {
+          // Log pour déboguer les attachments reçus
+          if (!att.fileUrl || att.fileUrl.trim() === '') {
+            console.error('[Socket.IO] ❌ Attachment sans fileUrl valide reçu:', {
+              id: att.id,
+              fileName: att.fileName,
+              mimeType: att.mimeType,
+              fileUrl: att.fileUrl,
+              fileUrlType: typeof att.fileUrl,
+              fullAttachment: att
+            });
+          } else {
+            console.log('[Socket.IO] ✅ Attachment avec fileUrl valide:', {
+              id: att.id,
+              fileName: att.fileName,
+              fileUrl: att.fileUrl
+            });
+          }
+
+          return {
+            id: String(att.id || ''),
+            messageId: socketMessage.id,
+            fileName: String(att.fileName || ''),
+            originalName: String(att.originalName || att.fileName || ''),
+            // IMPORTANT: Préserver la valeur réelle du fileUrl sans conversion de undefined en ""
+            fileUrl: att.fileUrl ? String(att.fileUrl) : '',
+            mimeType: String(att.mimeType || ''),
+            fileSize: Number(att.fileSize) || 0,
+            thumbnailUrl: att.thumbnailUrl ? String(att.thumbnailUrl) : undefined,
+            width: att.width ? Number(att.width) : undefined,
+            height: att.height ? Number(att.height) : undefined,
+            duration: att.duration ? Number(att.duration) : undefined,
+            uploadedBy: String(att.uploadedBy || socketMessage.senderId || (socketMessage as any).anonymousSenderId || ''),
+            isAnonymous: Boolean(att.isAnonymous),
+            createdAt: String(att.createdAt || new Date().toISOString()),
+          };
+        })
       : [];
 
     return {

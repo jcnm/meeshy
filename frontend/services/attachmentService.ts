@@ -22,36 +22,33 @@ const buildApiUrl = (path: string): string => {
   
   // Si baseUrl contient déjà /api, ne pas le rajouter
   if (baseUrl.endsWith('/api')) {
-    const finalUrl = `${baseUrl}${cleanPath}`;
-    console.log('[AttachmentService] URL construite:', finalUrl, { baseUrl, cleanPath });
-    return finalUrl;
+    return `${baseUrl}${cleanPath}`;
   }
-  
-  const finalUrl = `${baseUrl}/api${cleanPath}`;
-  console.log('[AttachmentService] URL construite:', finalUrl, { baseUrl, cleanPath });
-  return finalUrl;
+
+  return `${baseUrl}/api${cleanPath}`;
 };
 
 export class AttachmentService {
   /**
    * Upload un ou plusieurs fichiers
+   * @param files - Fichiers à uploader
+   * @param token - Token d'authentification
+   * @param metadataArray - Métadonnées optionnelles pour chaque fichier (durée, codec, etc.)
    */
-  static async uploadFiles(files: File[], token?: string): Promise<UploadMultipleResponse> {
-    console.log('[AttachmentService] uploadFiles - Début', {
-      filesCount: files.length,
-      hasToken: !!token,
-      fileNames: files.map(f => f.name)
-    });
-    
+  static async uploadFiles(files: File[], token?: string, metadataArray?: any[]): Promise<UploadMultipleResponse> {
     const formData = new FormData();
-    
-    files.forEach((file) => {
+
+    files.forEach((file, index) => {
       formData.append('files', file);
+
+      // Si des métadonnées sont fournies pour ce fichier, les ajouter
+      if (metadataArray && metadataArray[index]) {
+        formData.append(`metadata_${index}`, JSON.stringify(metadataArray[index]));
+      }
     });
 
     // Utiliser l'utilitaire pour créer les bons headers d'authentification
     const authHeaders = createAuthHeaders(token);
-    console.log('[AttachmentService] Headers d\'authentification:', Object.keys(authHeaders));
 
     const response = await fetch(buildApiUrl('/attachments/upload'), {
       method: 'POST',
@@ -60,18 +57,8 @@ export class AttachmentService {
       credentials: 'include',
     });
 
-    console.log('[AttachmentService] Réponse HTTP:', {
-      status: response.status,
-      statusText: response.statusText,
-      ok: response.ok
-    });
-
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: 'Upload failed' }));
-      console.error('[AttachmentService] ❌ Erreur upload:', {
-        status: response.status,
-        error
-      });
       throw new Error(error.error || 'Failed to upload files');
     }
 
@@ -123,13 +110,6 @@ export class AttachmentService {
 
     const authHeaders = createAuthHeaders(token);
 
-    console.log('[AttachmentService] getConversationAttachments - Début', {
-      conversationId,
-      options,
-      authHeaders: Object.keys(authHeaders),
-      url: buildApiUrl(`/conversations/${conversationId}/attachments?${params}`)
-    });
-
     const response = await fetch(
       buildApiUrl(`/conversations/${conversationId}/attachments?${params}`),
       {
@@ -138,18 +118,8 @@ export class AttachmentService {
       }
     );
 
-    console.log('[AttachmentService] getConversationAttachments - Réponse:', {
-      status: response.status,
-      statusText: response.statusText,
-      ok: response.ok
-    });
-
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-      console.error('[AttachmentService] ❌ Erreur récupération attachments:', {
-        status: response.status,
-        error: errorData
-      });
       throw new Error(errorData.error || errorData.message || 'Failed to fetch attachments');
     }
 
