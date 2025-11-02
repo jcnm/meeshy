@@ -550,50 +550,65 @@ export default function LinksPage() {
                 {filteredLinks.map((link) => (
                   <Card key={link.id} className="relative border-2 hover:border-primary/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950">
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
-                    
-                    <CardHeader className="relative z-10 pb-4">
-                      <div className="flex items-start justify-between gap-3 md:gap-4">
-                        <div className="flex-1 min-w-0 space-y-2">
-                          <div className="flex items-start gap-3">
-                            <div className="p-2.5 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl flex-shrink-0">
-                              <Link2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+
+                    <CardContent className="relative z-10 p-4 sm:p-6">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div className="flex items-start sm:items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
+                          <div className="p-2 sm:p-2.5 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl flex-shrink-0">
+                            <Link2 className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white mb-1 break-words">
+                              <a
+                                href={`/join/${link.linkId}`}
+                                className="text-foreground hover:text-primary transition-colors"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  router.push(`/join/${link.linkId}`);
+                                }}
+                              >
+                                {link.name || t('unnamedLink')}
+                              </a>
+                            </h3>
+                            <div className="flex items-start gap-2 text-xs sm:text-sm mb-2 sm:mb-3">
+                              <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                              <a
+                                href={`/conversations/${link.conversationId}`}
+                                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline transition-colors cursor-pointer text-left break-all"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  router.push(`/conversations/${link.conversationId}`);
+                                }}
+                              >
+                                {link.conversation.title}
+                              </a>
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <CardTitle className="text-lg md:text-xl font-bold break-words">
-                                <a
-                                  href={`/join/${link.linkId}`}
-                                  className="text-foreground hover:text-primary transition-colors"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    router.push(`/join/${link.linkId}`);
-                                  }}
-                                >
-                                  {link.name || t('unnamedLink')}
-                                </a>
-                              </CardTitle>
+
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                              <div className="flex items-center space-x-2 flex-shrink-0">
+                                <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+                                <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
+                                  {link.currentUses} / {link.maxUses || '∞'} {t('stats.uses')}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center space-x-2 flex-shrink-0">
+                                <Activity className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+                                <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
+                                  {link.currentConcurrentUsers} {t('stats.active')}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                          <CardDescription className="flex items-start gap-2 text-sm">
-                            <MessageSquare className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                            <a 
-                              href={`/conversations/${link.conversationId}`}
-                              className="text-primary hover:underline font-medium break-all"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                router.push(`/conversations/${link.conversationId}`);
-                              }}
-                            >
-                              {link.conversation.title}
-                            </a>
-                          </CardDescription>
                         </div>
-                        
-                        <div className="flex flex-col sm:flex-row items-end sm:items-start gap-2 flex-shrink-0">
-                          <Badge 
+
+                        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                          <Badge
                             variant={link.isActive ? 'default' : 'secondary'}
                             className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-semibold flex-shrink-0 whitespace-nowrap ${
-                              link.isActive 
-                                ? 'bg-green-500 hover:bg-green-600' 
+                              link.isActive
+                                ? 'bg-green-500 hover:bg-green-600'
                                 : 'bg-gray-400 hover:bg-gray-500'
                             }`}
                           >
@@ -601,8 +616,8 @@ export default function LinksPage() {
                           </Badge>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="relative z-20 h-9 w-9 p-0 flex-shrink-0 hover:bg-gray-200 dark:hover:bg-gray-700">
-                                <MoreVertical className="h-5 w-5" />
+                              <Button variant="ghost" size="sm" className="h-9 w-9 sm:h-10 sm:w-10 p-0 hover:bg-gray-200 dark:hover:bg-gray-700 flex-shrink-0">
+                                <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
                                 <span className="sr-only">{t('actions.menu')}</span>
                               </Button>
                             </DropdownMenuTrigger>
@@ -644,7 +659,7 @@ export default function LinksPage() {
                                   <span className="font-medium">{t('actions.extend7Days')}</span>
                                 </DropdownMenuItem>
                               )}
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 onClick={() => handleDeleteLink(link)}
                                 className="text-red-600 py-3 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/20"
                               >
@@ -653,54 +668,6 @@ export default function LinksPage() {
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    
-                    <CardContent className="relative z-10 pt-4 border-t">
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                              <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                            </div>
-                            <span className="text-sm font-medium">{t('stats.uses')}</span>
-                          </div>
-                          <p className="text-lg font-bold text-foreground pl-8">
-                            {link.currentUses} / {link.maxUses || '∞'}
-                          </p>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <div className="p-1.5 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                              <Activity className="h-4 w-4 text-green-600 dark:text-green-400" />
-                            </div>
-                            <span className="text-sm font-medium">{t('stats.active')}</span>
-                          </div>
-                          <p className="text-lg font-bold text-foreground pl-8">{link.currentConcurrentUsers}</p>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <div className="p-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                              <Calendar className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                            </div>
-                            <span className="text-sm font-medium">{t('stats.created')}</span>
-                          </div>
-                          <p className="text-sm font-semibold text-foreground pl-8">{formatDate(link.createdAt)}</p>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <div className="p-1.5 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-                              <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                            </div>
-                            <span className="text-sm font-medium">{t('stats.expires')}</span>
-                          </div>
-                          <p className="text-sm font-semibold text-foreground pl-8">
-                            {link.expiresAt ? getTimeRemaining(link.expiresAt) : t('status.never')}
-                          </p>
                         </div>
                       </div>
                     </CardContent>
@@ -747,53 +714,68 @@ export default function LinksPage() {
             ) : (
               <div className="grid gap-6">
                 {trackingLinks
-                  .filter(link => 
+                  .filter(link =>
                     link.originalUrl.toLowerCase().includes(searchQuery.toLowerCase()) ||
                     link.shortUrl.toLowerCase().includes(searchQuery.toLowerCase())
                   )
                   .map((link) => (
                     <Card key={link.id} className="relative border-2 hover:border-purple-500/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950">
                       <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
-                      
-                      <CardHeader className="relative z-10 pb-4">
-                        <div className="flex items-start justify-between gap-3 md:gap-4">
-                          <div className="flex-1 min-w-0 space-y-2">
-                            <div className="flex items-start gap-3">
-                              <div className="p-2.5 bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 rounded-xl flex-shrink-0">
-                                <Link2 className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+
+                      <CardContent className="relative z-10 p-4 sm:p-6">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                          <div className="flex items-start sm:items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
+                            <div className="p-2 sm:p-2.5 bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 rounded-xl flex-shrink-0">
+                              <BarChart className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white mb-1 break-words">
+                                <button
+                                  onClick={() => router.push(`/links/tracked/${link.token}`)}
+                                  className="text-foreground hover:text-primary transition-colors cursor-pointer text-left"
+                                >
+                                  {link.shortUrl.startsWith('/')
+                                    ? `${typeof window !== 'undefined' ? window.location.origin : ''}${link.shortUrl}`
+                                    : link.shortUrl}
+                                </button>
+                              </h3>
+                              <div className="flex items-start gap-2 text-xs sm:text-sm mb-2 sm:mb-3">
+                                <ExternalLink className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
+                                <a
+                                  href={link.originalUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:underline transition-colors cursor-pointer text-left break-all"
+                                >
+                                  {link.originalUrl}
+                                </a>
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <CardTitle className="text-lg md:text-xl font-bold break-words">
-                                  <button
-                                    onClick={() => router.push(`/links/tracked/${link.token}`)}
-                                    className="text-foreground hover:text-primary transition-colors cursor-pointer text-left"
-                                  >
-                                    {link.shortUrl.startsWith('/')
-                                      ? `${typeof window !== 'undefined' ? window.location.origin : ''}${link.shortUrl}`
-                                      : link.shortUrl}
-                                  </button>
-                                </CardTitle>
+
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                                <div className="flex items-center space-x-2 flex-shrink-0">
+                                  <MousePointerClick className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+                                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
+                                    {link.totalClicks} {t('tracking.stats.totalClicks')}
+                                  </span>
+                                </div>
+
+                                <div className="flex items-center space-x-2 flex-shrink-0">
+                                  <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+                                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
+                                    {link.uniqueClicks} {t('tracking.stats.uniqueClicks')}
+                                  </span>
+                                </div>
                               </div>
                             </div>
-                            <CardDescription className="flex items-start gap-2 text-sm">
-                              <ExternalLink className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                              <a 
-                                href={link.originalUrl} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-primary hover:underline font-medium break-all"
-                              >
-                                {link.originalUrl}
-                              </a>
-                            </CardDescription>
                           </div>
-                          
-                          <div className="flex flex-col sm:flex-row items-end sm:items-start gap-2 flex-shrink-0">
-                            <Badge 
+
+                          <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                            <Badge
                               variant={link.isActive ? 'default' : 'secondary'}
                               className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-semibold flex-shrink-0 whitespace-nowrap ${
-                                link.isActive 
-                                  ? 'bg-green-500 hover:bg-green-600' 
+                                link.isActive
+                                  ? 'bg-green-500 hover:bg-green-600'
                                   : 'bg-gray-400 hover:bg-gray-500'
                               }`}
                             >
@@ -801,8 +783,8 @@ export default function LinksPage() {
                             </Badge>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="relative z-20 h-9 w-9 p-0 flex-shrink-0 hover:bg-gray-200 dark:hover:bg-gray-700">
-                                  <MoreVertical className="h-5 w-5" />
+                                <Button variant="ghost" size="sm" className="h-9 w-9 sm:h-10 sm:w-10 p-0 hover:bg-gray-200 dark:hover:bg-gray-700 flex-shrink-0">
+                                  <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
                                   <span className="sr-only">{t('actions.menu')}</span>
                                 </Button>
                               </DropdownMenuTrigger>
@@ -824,61 +806,15 @@ export default function LinksPage() {
                                     <span className="font-medium">{t('tracking.actions.deactivate')}</span>
                                   </DropdownMenuItem>
                                 )}
-                                <DropdownMenuItem 
+                                <DropdownMenuItem
                                   onClick={() => handleDeleteTrackingLink(link)}
-                                  className="text-red-600 py-3"
+                                  className="text-red-600 py-3 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/20"
                                 >
                                   <Trash2 className="h-4 w-4 mr-3" />
                                   <span className="font-medium">{t('actions.delete')}</span>
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      
-                      <CardContent className="relative z-10 pt-4 border-t">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                                <MousePointerClick className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                              </div>
-                              <span className="text-sm font-medium">{t('stats.totalClicks')}</span>
-                            </div>
-                            <p className="text-lg font-bold text-foreground pl-8">{link.totalClicks}</p>
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <div className="p-1.5 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                                <Users className="h-4 w-4 text-green-600 dark:text-green-400" />
-                              </div>
-                              <span className="text-sm font-medium">{t('stats.uniqueClicks')}</span>
-                            </div>
-                            <p className="text-lg font-bold text-foreground pl-8">{link.uniqueClicks}</p>
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <div className="p-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                                <Calendar className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                              </div>
-                              <span className="text-sm font-medium">{t('stats.created')}</span>
-                            </div>
-                            <p className="text-sm font-semibold text-foreground pl-8">{formatDate(link.createdAt)}</p>
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <div className="p-1.5 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-                                <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                              </div>
-                              <span className="text-sm font-medium">{t('stats.lastClicked')}</span>
-                            </div>
-                            <p className="text-sm font-semibold text-foreground pl-8">
-                              {link.lastClickedAt ? formatDate(link.lastClickedAt) : t('stats.never')}
-                            </p>
                           </div>
                         </div>
                       </CardContent>
