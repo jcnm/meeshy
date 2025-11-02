@@ -400,7 +400,7 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
           onClick={onRemove}
           className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg z-10"
         >
-          <Trash2 className="w-3.5 h-3.5" />
+          <Trash2 className="w-1 h-1" />
         </button>
       </div>
     );
@@ -421,7 +421,7 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
           onClick={onRemove}
           className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg z-10"
         >
-          <Trash2 className="w-3.5 h-3.5" />
+          <Trash2 className="w-1 h-1" />
         </button>
       </div>
     );
@@ -514,7 +514,7 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
           onClick={onRemove}
           className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10"
         >
-          <Trash2 className="w-3.5 h-3.5" />
+          <Trash2 className="w-1 h-1" />
         </button>
       </div>
     );
