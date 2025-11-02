@@ -5,8 +5,17 @@ import { Mic, Square, Send, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
+// Types pour les métadonnées audio extraites
+interface AudioMetadata {
+  duration: number; // Durée exacte en secondes avec millisecondes
+  codec: string; // Codec utilisé
+  mimeType: string; // Type MIME complet
+  bitrate?: number; // Bitrate si disponible
+  sampleRate?: number; // Sample rate si disponible
+}
+
 interface SimpleAudioRecorderProps {
-  onRecordingComplete: (audioBlob: Blob, duration: number) => void;
+  onRecordingComplete: (audioBlob: Blob, duration: number, metadata?: AudioMetadata) => void;
   onCancel: () => void;
   maxDuration?: number; // en secondes, défaut: 600 (10 min)
   autoStart?: boolean; // Démarrer automatiquement l'enregistrement au montage
@@ -14,11 +23,25 @@ interface SimpleAudioRecorderProps {
 
 // Constantes
 const MAX_ALLOWED_DURATION = 600; // 10 minutes - HARD LIMIT
-const ALLOWED_CODECS = [
-  'audio/webm;codecs=opus', // Preferred - Chrome/Firefox
-  'audio/webm',              // Fallback Chrome/Firefox
-  'audio/mp4',               // Safari fallback
-  'audio/ogg;codecs=opus',   // Alternative
+
+// Détection du navigateur pour adapter le codec audio
+const getBrowserInfo = () => {
+  const ua = navigator.userAgent.toLowerCase();
+  return {
+    isSafari: /^((?!chrome|android).)*safari/i.test(navigator.userAgent),
+    isChrome: ua.includes('chrome') && !ua.includes('edge'),
+    isFirefox: ua.includes('firefox'),
+    isEdge: ua.includes('edge') || ua.includes('edg/'),
+  };
+};
+
+// NOUVEAU: Codecs audio UNIVERSELS compatibles avec TOUS les navigateurs
+// Ordre de préférence: MP4/AAC en premier car compatible Safari, Chrome, Firefox, Edge, Brave
+const UNIVERSAL_CODEC_PRIORITIES = [
+  'audio/mp4',               // MP4/AAC - Compatible PARTOUT ✓
+  'audio/webm;codecs=opus',  // WebM/Opus - Chrome, Firefox, Edge, Brave (pas Safari)
+  'audio/webm',              // WebM générique
+  'audio/ogg;codecs=opus',   // OGG/Opus - Firefox, Chrome
 ] as const;
 
 /**
@@ -33,44 +56,110 @@ export const SimpleAudioRecorder: React.FC<SimpleAudioRecorderProps> = ({
   autoStart = false
 }) => {
   const [isRecording, setIsRecording] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(0);
+  const [recordingTime, setRecordingTime] = useState(0); // En millisecondes
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [permissionError, setPermissionError] = useState<string | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const startTimeRef = useRef<number>(0); // Utiliser performance.now() pour précision
+  const animationFrameRef = useRef<number | null>(null);
   const audioUrlRef = useRef<string | null>(null);
   const sendAfterStopRef = useRef(false);
   const streamRef = useRef<MediaStream | null>(null);
+  const selectedCodecRef = useRef<string>('');
+  const requestDataIntervalRef = useRef<NodeJS.Timeout | null>(null); // Pour requestData() manuel sur TOUS les navigateurs
 
   // Enforce hard limit
   const effectiveDuration = Math.min(maxDuration, MAX_ALLOWED_DURATION);
 
-  // Warn if prop exceeds limit
-  useEffect(() => {
-    if (maxDuration > MAX_ALLOWED_DURATION) {
-      console.warn(`[SimpleAudioRecorder] maxDuration ${maxDuration} exceeds limit ${MAX_ALLOWED_DURATION}, clamping to limit`);
-    }
-  }, [maxDuration]);
+  // Fonction pour obtenir le meilleur codec UNIVERSEL compatible avec tous les navigateurs
+  const getBestAudioCodec = (): { mimeType: string; browserType: string } => {
+    const browserInfo = getBrowserInfo();
+    const browserType = browserInfo.isSafari ? 'Safari' :
+                       browserInfo.isChrome ? 'Chrome' :
+                       browserInfo.isFirefox ? 'Firefox' :
+                       browserInfo.isEdge ? 'Edge' : 'Unknown';
 
-  // Fonction pour obtenir le codec sécurisé
-  const getSecureAudioCodec = (): string => {
-    for (const codec of ALLOWED_CODECS) {
+    console.log(`🎤 Détection codec pour ${browserType}`);
+
+    // Tester chaque codec dans l'ordre de préférence UNIVERSEL
+    for (const codec of UNIVERSAL_CODEC_PRIORITIES) {
       if (MediaRecorder.isTypeSupported(codec)) {
-        return codec;
+        console.log(`✅ Codec sélectionné: ${codec}`);
+        return { mimeType: codec, browserType };
+      } else {
+        console.log(`❌ Codec non supporté: ${codec}`);
       }
     }
-    throw new Error('No supported audio codec found. Please use a modern browser (Chrome, Firefox, Edge).');
+
+    throw new Error(`No supported audio codec found for ${browserType}. Please use a modern browser.`);
   };
+
+  // Fonction pour extraire les métadonnées audio d'un blob
+  const extractAudioMetadata = async (blob: Blob, mimeType: string): Promise<AudioMetadata> => {
+    return new Promise((resolve) => {
+      const audio = document.createElement('audio');
+      const url = URL.createObjectURL(blob);
+
+      const cleanup = () => {
+        URL.revokeObjectURL(url);
+        audio.remove();
+      };
+
+      audio.addEventListener('loadedmetadata', () => {
+        const duration = audio.duration;
+        const codec = mimeType.includes('opus') ? 'Opus' :
+                     mimeType.includes('aac') ? 'AAC' :
+                     mimeType.includes('mp4') ? 'MP4' :
+                     mimeType.includes('webm') ? 'WebM' : 'Unknown';
+
+        const metadata: AudioMetadata = {
+          duration: duration,
+          codec: codec,
+          mimeType: mimeType,
+        };
+
+        cleanup();
+        resolve(metadata);
+      });
+
+      audio.addEventListener('error', () => {
+        cleanup();
+        resolve({
+          duration: recordingTime / 1000,
+          codec: 'Unknown',
+          mimeType: mimeType,
+        });
+      });
+
+      audio.src = url;
+    });
+  };
+
+  // Timer précis utilisant requestAnimationFrame pour les millisecondes
+  const updateTimer = useCallback(() => {
+    if (!startTimeRef.current || !mediaRecorderRef.current || mediaRecorderRef.current.state !== 'recording') {
+      return;
+    }
+
+    const elapsed = performance.now() - startTimeRef.current;
+    setRecordingTime(elapsed);
+
+    // Vérifier si on a atteint la durée maximale
+    if (elapsed >= effectiveDuration * 1000) {
+      stopRecording();
+      return;
+    }
+
+    // Continuer l'animation
+    animationFrameRef.current = requestAnimationFrame(updateTimer);
+  }, [effectiveDuration]);
 
   // Démarrer l'enregistrement
   const startRecording = useCallback(async () => {
     setPermissionError(null);
-
-    // Détection du navigateur pour adapter le comportement
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
     try {
       // Vérifier le contexte sécurisé
@@ -103,16 +192,13 @@ export const SimpleAudioRecorder: React.FC<SimpleAudioRecorderProps> = ({
         }
       }
 
-      // FIX: Contraintes audio adaptées aux différents navigateurs
+      // Obtenir le meilleur codec pour le navigateur
+      const { mimeType, browserType } = getBestAudioCodec();
+      selectedCodecRef.current = mimeType;
 
+      // Contraintes audio UNIVERSELLES pour tous les navigateurs
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: isSafari ? {
-          // Safari : contraintes plus simples pour éviter les problèmes
-          echoCancellation: true,
-          noiseSuppression: true,
-          sampleRate: 48000, // Safari préfère 48kHz
-        } : {
-          // Chrome/Firefox : contraintes complètes
+        audio: {
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
@@ -122,10 +208,6 @@ export const SimpleAudioRecorder: React.FC<SimpleAudioRecorderProps> = ({
       });
 
       streamRef.current = stream;
-
-      // Choisir le codec sécurisé
-      const mimeType = getSecureAudioCodec();
-      console.log(`[AudioRecorder] Using codec: ${mimeType} (Safari: ${isSafari})`);
 
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType,
@@ -141,16 +223,19 @@ export const SimpleAudioRecorder: React.FC<SimpleAudioRecorderProps> = ({
         }
       };
 
-      mediaRecorder.onstop = () => {
+      mediaRecorder.onstop = async () => {
         const blob = new Blob(chunksRef.current, { type: mimeType });
 
         // Stop all tracks
         stream.getTracks().forEach(track => track.stop());
 
+        // Extraire les métadonnées audio
+        const metadata = await extractAudioMetadata(blob, mimeType);
+
         if (sendAfterStopRef.current) {
           // Send immediately
           sendAfterStopRef.current = false;
-          onRecordingComplete(blob, recordingTime);
+          onRecordingComplete(blob, metadata.duration, metadata);
           setRecordingTime(0);
           // Don't set audioBlob/audioUrl for preview
         } else {
@@ -168,43 +253,27 @@ export const SimpleAudioRecorder: React.FC<SimpleAudioRecorderProps> = ({
         }
       };
 
-      // FIX: Adapter le timeslice selon le navigateur
-      // Safari préfère pas de timeslice ou de gros chunks
-      // Chrome fonctionne bien avec 1000ms
-      if (isSafari) {
-        // Safari : pas de timeslice pour éviter les coupures
-        mediaRecorder.start();
-      } else {
-        // Chrome/Firefox : chunks de 1000ms pour un bon équilibre
-        mediaRecorder.start(1000);
-      }
+      // Démarrer l'enregistrement SANS timeslice + requestData() manuel
+      // Cette approche évite les problèmes de buffer qui sacagent sur Chrome/Brave
+      console.log(`🎬 Démarrage enregistrement - Format: ${mimeType} - SANS timeslice + requestData() manuel`);
+      mediaRecorder.start();
+
+      // Appeler requestData() manuellement toutes les secondes pour TOUS les navigateurs
+      // Cela évite les problèmes de buffer overflow et les sacages audio
+      requestDataIntervalRef.current = setInterval(() => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+          mediaRecorderRef.current.requestData();
+        }
+      }, 1000);
 
       setIsRecording(true);
       setRecordingTime(0);
 
-      // Timer pour la durée
-      timerRef.current = setInterval(() => {
-        // Vérifier si le mediaRecorder est toujours actif avant d'incrémenter
-        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-          setRecordingTime((prev) => {
-            const newTime = prev + 1;
-            if (newTime >= effectiveDuration) {
-              stopRecording();
-            }
-            return newTime;
-          });
-        } else {
-          // Si le recorder n'est plus actif, arrêter le timer
-          if (timerRef.current) {
-            clearInterval(timerRef.current);
-            timerRef.current = null;
-          }
-        }
-      }, 1000);
+      // Démarrer le timer haute précision avec requestAnimationFrame
+      startTimeRef.current = performance.now();
+      animationFrameRef.current = requestAnimationFrame(updateTimer);
 
     } catch (error: any) {
-      console.error('Failed to start recording:', error);
-
       if (error instanceof DOMException) {
         if (error.name === 'NotAllowedError') {
           setPermissionError('Accès au microphone refusé. Veuillez autoriser l\'accès dans les paramètres du navigateur.');
@@ -222,20 +291,29 @@ export const SimpleAudioRecorder: React.FC<SimpleAudioRecorderProps> = ({
         toast.error('Impossible d\'accéder au microphone.');
       }
     }
-  }, [effectiveDuration, onRecordingComplete]);
+  }, [effectiveDuration, onRecordingComplete, getBestAudioCodec, extractAudioMetadata, updateTimer]);
 
   // Arrêter l'enregistrement
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {
+      // Arrêter l'interval requestData
+      if (requestDataIntervalRef.current) {
+        clearInterval(requestDataIntervalRef.current);
+        requestDataIntervalRef.current = null;
+        console.log('🛑 Interval requestData arrêté');
+      }
+
       if (mediaRecorderRef.current.state !== 'inactive') {
         mediaRecorderRef.current.stop();
       }
       setIsRecording(false);
 
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
+      // Arrêter le timer d'animation
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
       }
+      startTimeRef.current = 0;
     }
   }, [isRecording]);
 
@@ -257,9 +335,11 @@ export const SimpleAudioRecorder: React.FC<SimpleAudioRecorderProps> = ({
   }, [stopRecording, onCancel]);
 
   // Envoyer l'enregistrement
-  const sendRecording = useCallback(() => {
+  const sendRecording = useCallback(async () => {
     if (audioBlob) {
-      onRecordingComplete(audioBlob, recordingTime);
+      // Extraire les métadonnées avant d'envoyer
+      const metadata = await extractAudioMetadata(audioBlob, selectedCodecRef.current);
+      onRecordingComplete(audioBlob, metadata.duration, metadata);
 
       // Revoke URL after sending
       if (audioUrlRef.current) {
@@ -272,7 +352,7 @@ export const SimpleAudioRecorder: React.FC<SimpleAudioRecorderProps> = ({
       setAudioUrl(null);
       setRecordingTime(0);
     }
-  }, [audioBlob, recordingTime, onRecordingComplete]);
+  }, [audioBlob, onRecordingComplete, extractAudioMetadata]);
 
   // Envoyer directement après l'arrêt
   const stopAndSend = useCallback(() => {
@@ -283,18 +363,22 @@ export const SimpleAudioRecorder: React.FC<SimpleAudioRecorderProps> = ({
       }
       setIsRecording(false);
 
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
+      // Arrêter le timer d'animation
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
       }
+      startTimeRef.current = 0;
     }
   }, [isRecording]);
 
-  // Formater le temps
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  // Formater le temps avec millisecondes (MM:SS.ms)
+  const formatTime = (milliseconds: number): string => {
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const ms = Math.floor((milliseconds % 1000) / 10); // Deux chiffres pour les centièmes
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
   };
 
   // Auto-start recording si demandé (only on mount)
@@ -308,9 +392,15 @@ export const SimpleAudioRecorder: React.FC<SimpleAudioRecorderProps> = ({
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      // Clean up timer
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
+      // Clean up requestData interval
+      if (requestDataIntervalRef.current) {
+        clearInterval(requestDataIntervalRef.current);
+        requestDataIntervalRef.current = null;
+      }
+
+      // Clean up animation frame
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
       }
 
       // Clean up media recorder

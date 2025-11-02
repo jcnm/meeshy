@@ -20,6 +20,7 @@ interface AudioRecorderCardProps {
   autoStart?: boolean;
   maxDuration?: number; // en secondes, défaut: 600 (10 min)
   onRecordingStateChange?: (isRecording: boolean) => void; // Callback pour synchroniser l'état
+  onStop?: () => void; // Callback appelé AVANT d'arrêter l'enregistrement (pour permettre au parent de préparer l'upload)
 }
 
 export interface AudioRecorderCardRef {
@@ -41,37 +42,14 @@ const getBrowserInfo = () => {
   };
 };
 
-// Codecs audio par navigateur (ordre de préférence)
-const CODEC_PRIORITIES = {
-  safari: [
-    'audio/mp4',               // Safari préfère MP4/AAC
-    'audio/webm;codecs=opus',  // Safari récent peut supporter WebM
-    'audio/webm',
-  ],
-  chrome: [
-    'audio/webm;codecs=opus',  // Meilleure qualité pour Chrome
-    'audio/webm',
-    'audio/ogg;codecs=opus',
-    'audio/mp4',
-  ],
-  firefox: [
-    'audio/webm;codecs=opus',  // Firefox supporte bien Opus
-    'audio/ogg;codecs=opus',
-    'audio/webm',
-    'audio/mp4',
-  ],
-  edge: [
-    'audio/webm;codecs=opus',  // Edge Chromium
-    'audio/webm',
-    'audio/mp4',
-  ],
-  default: [
-    'audio/webm;codecs=opus',
-    'audio/webm',
-    'audio/ogg;codecs=opus',
-    'audio/mp4',
-  ],
-} as const;
+// NOUVEAU: Codecs audio UNIVERSELS compatibles avec TOUS les navigateurs
+// Ordre de préférence: MP4/AAC en premier car compatible Safari, Chrome, Firefox, Edge, Brave
+const UNIVERSAL_CODEC_PRIORITIES = [
+  'audio/mp4',               // MP4/AAC - Compatible PARTOUT ✓
+  'audio/webm;codecs=opus',  // WebM/Opus - Chrome, Firefox, Edge, Brave (pas Safari)
+  'audio/webm',              // WebM générique
+  'audio/ogg;codecs=opus',   // OGG/Opus - Firefox, Chrome
+] as const;
 
 /**
  * Carte d'enregistrement audio compacte pour le carrousel d'attachments
@@ -84,7 +62,8 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
   onRemove,
   autoStart = true,
   maxDuration = 600,
-  onRecordingStateChange
+  onRecordingStateChange,
+  onStop
 }, ref) => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0); // En millisecondes
@@ -103,35 +82,28 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
   const streamRef = useRef<MediaStream | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const selectedCodecRef = useRef<string>('');
+  const requestDataIntervalRef = useRef<NodeJS.Timeout | null>(null); // Pour requestData() manuel sur TOUS les navigateurs
 
   // Enforce hard limit
   const effectiveDuration = Math.min(maxDuration, MAX_ALLOWED_DURATION);
 
-  // Fonction pour obtenir le meilleur codec selon le navigateur
+  // Fonction pour obtenir le meilleur codec UNIVERSEL compatible avec tous les navigateurs
   const getBestAudioCodec = (): { mimeType: string; browserType: string } => {
     const browserInfo = getBrowserInfo();
+    const browserType = browserInfo.isSafari ? 'Safari' :
+                       browserInfo.isChrome ? 'Chrome' :
+                       browserInfo.isFirefox ? 'Firefox' :
+                       browserInfo.isEdge ? 'Edge' : 'Unknown';
 
-    let browserType = 'default';
-    let codecs: readonly string[] = CODEC_PRIORITIES.default;
+    console.log(`🎤 Détection codec pour ${browserType}`);
 
-    if (browserInfo.isSafari) {
-      browserType = 'Safari';
-      codecs = CODEC_PRIORITIES.safari;
-    } else if (browserInfo.isChrome) {
-      browserType = 'Chrome';
-      codecs = CODEC_PRIORITIES.chrome;
-    } else if (browserInfo.isFirefox) {
-      browserType = 'Firefox';
-      codecs = CODEC_PRIORITIES.firefox;
-    } else if (browserInfo.isEdge) {
-      browserType = 'Edge';
-      codecs = CODEC_PRIORITIES.edge;
-    }
-
-    // Tester chaque codec dans l'ordre de préférence
-    for (const codec of codecs) {
+    // Tester chaque codec dans l'ordre de préférence UNIVERSEL
+    for (const codec of UNIVERSAL_CODEC_PRIORITIES) {
       if (MediaRecorder.isTypeSupported(codec)) {
+        console.log(`✅ Codec sélectionné: ${codec}`);
         return { mimeType: codec, browserType };
+      } else {
+        console.log(`❌ Codec non supporté: ${codec}`);
       }
     }
 
@@ -139,86 +111,61 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
   };
 
   // Fonction pour extraire les métadonnées audio d'un blob
-  // Version simplifiée : utilise le temps d'enregistrement (plus fiable)
+  // SIMPLIFIÉ: Utilise le temps d'enregistrement mesuré (le plus fiable pour tous les navigateurs)
   const extractAudioMetadata = async (blob: Blob, mimeType: string): Promise<AudioMetadata> => {
-    const browserInfo = getBrowserInfo();
     const codec = mimeType.includes('opus') ? 'Opus' :
                  mimeType.includes('aac') ? 'AAC' :
-                 mimeType.includes('mp4') ? 'MP4' :
+                 mimeType.includes('mp4') ? 'MP4/AAC' :
                  mimeType.includes('webm') ? 'WebM' : 'Unknown';
 
-    // Sur Safari ou si c'est du MP4, utiliser directement le temps d'enregistrement
-    // Safari ne supporte pas bien Web Audio API avec certains formats
-    if (browserInfo.isSafari || mimeType.includes('mp4')) {
-      const metadata: AudioMetadata = {
-        duration: recordingTime / 1000, // Utiliser le temps mesuré (plus fiable)
-        codec: codec,
-        mimeType: mimeType,
-      };
-      return metadata;
+    console.log(`📊 Métadonnées audio - Durée: ${(recordingTime / 1000).toFixed(2)}s - Codec: ${codec}`);
+
+    const metadata: AudioMetadata = {
+      duration: recordingTime / 1000, // Utiliser le temps mesuré avec performance.now() (très précis)
+      codec: codec,
+      mimeType: mimeType,
+    };
+
+    return metadata;
+  };
+
+  // Arrêter l'enregistrement
+  const stopRecording = useCallback(() => {
+    console.log('⏹️ stopRecording appelé');
+
+    // Appeler le callback onStop AVANT d'arrêter (pour permettre au parent de préparer l'upload)
+    if (onStop) {
+      onStop();
     }
 
-    // Pour les autres navigateurs, essayer d'obtenir la durée de l'audio element
-    return new Promise((resolve) => {
-      const audio = document.createElement('audio');
-      const url = URL.createObjectURL(blob);
-      let resolved = false;
+    // Arrêter l'interval requestData
+    if (requestDataIntervalRef.current) {
+      clearInterval(requestDataIntervalRef.current);
+      requestDataIntervalRef.current = null;
+      console.log('🛑 Interval requestData arrêté');
+    }
 
-      const cleanup = () => {
-        URL.revokeObjectURL(url);
-        audio.remove();
-      };
+    // Arrêter le timer d'animation
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+    startTimeRef.current = 0;
 
-      // Timeout de 500ms - si les métadonnées ne chargent pas, utiliser le temps enregistré
-      const timeout = setTimeout(() => {
-        if (!resolved) {
-          resolved = true;
-          cleanup();
-          resolve({
-            duration: recordingTime / 1000,
-            codec: codec,
-            mimeType: mimeType,
-          });
-        }
-      }, 500);
+    // Arrêter le media recorder
+    if (mediaRecorderRef.current) {
+      if (mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
+    }
 
-      audio.addEventListener('loadedmetadata', () => {
-        if (resolved) return;
-        resolved = true;
-        clearTimeout(timeout);
+    setIsRecording(false);
 
-        const duration = audio.duration;
-
-        // Si duration est Infinity ou invalide, utiliser le temps d'enregistrement
-        const finalDuration = (duration === Infinity || !isFinite(duration) || duration <= 0)
-          ? recordingTime / 1000
-          : duration;
-
-        const metadata: AudioMetadata = {
-          duration: finalDuration,
-          codec: codec,
-          mimeType: mimeType,
-        };
-
-        cleanup();
-        resolve(metadata);
-      });
-
-      audio.addEventListener('error', () => {
-        if (resolved) return;
-        resolved = true;
-        clearTimeout(timeout);
-        cleanup();
-        resolve({
-          duration: recordingTime / 1000,
-          codec: codec,
-          mimeType: mimeType,
-        });
-      });
-
-      audio.src = url;
-    });
-  };
+    // Notifier le parent du changement d'état
+    if (onRecordingStateChange) {
+      onRecordingStateChange(false);
+    }
+  }, [onRecordingStateChange, onStop]);
 
   // Timer précis utilisant requestAnimationFrame pour les millisecondes
   const updateTimer = useCallback(() => {
@@ -237,7 +184,7 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
 
     // Continuer l'animation
     animationFrameRef.current = requestAnimationFrame(updateTimer);
-  }, [effectiveDuration]);
+  }, [effectiveDuration, stopRecording]);
 
   // Démarrer l'enregistrement
   const startRecording = useCallback(async () => {
@@ -264,19 +211,14 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
       const { mimeType, browserType } = getBestAudioCodec();
       selectedCodecRef.current = mimeType;
 
-      // Contraintes audio optimisées
-      const browserInfo = getBrowserInfo();
+      // Contraintes audio UNIVERSELLES pour tous les navigateurs
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: browserInfo.isSafari ? {
-          echoCancellation: true,
-          noiseSuppression: true,
-          sampleRate: 48000,
-        } : {
+        audio: {
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
           sampleRate: 48000,
-          channelCount: 1,
+          channelCount: 1, // Mono pour réduire la taille
         }
       });
 
@@ -328,12 +270,18 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
         onRecordingComplete(blob, metadata.duration, metadata);
       };
 
-      // Adapter le timeslice selon le navigateur
-      if (browserInfo.isSafari) {
-        mediaRecorder.start();
-      } else {
-        mediaRecorder.start(1000);
-      }
+      // Démarrer l'enregistrement SANS timeslice + requestData() manuel
+      // Cette approche évite les problèmes de buffer qui sacagent sur Chrome/Brave
+      console.log(`🎬 Démarrage enregistrement - Format: ${mimeType} - SANS timeslice + requestData() manuel`);
+      mediaRecorder.start();
+
+      // Appeler requestData() manuellement toutes les secondes pour TOUS les navigateurs
+      // Cela évite les problèmes de buffer overflow et les sacages audio
+      requestDataIntervalRef.current = setInterval(() => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+          mediaRecorderRef.current.requestData();
+        }
+      }, 1000);
 
       setIsRecording(true);
       setIsInitializing(false);
@@ -368,30 +316,6 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
       }
     }
   }, [effectiveDuration, onRecordingComplete, getBestAudioCodec, extractAudioMetadata, updateTimer]);
-
-  // Arrêter l'enregistrement
-  const stopRecording = useCallback(() => {
-    // Toujours arrêter le timer d'animation d'abord
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-      animationFrameRef.current = null;
-    }
-    startTimeRef.current = 0;
-
-    // Puis arrêter le media recorder
-    if (mediaRecorderRef.current) {
-      if (mediaRecorderRef.current.state !== 'inactive') {
-        mediaRecorderRef.current.stop();
-      }
-    }
-
-    setIsRecording(false);
-
-    // Notifier le parent du changement d'état
-    if (onRecordingStateChange) {
-      onRecordingStateChange(false);
-    }
-  }, [onRecordingStateChange]);
 
   // Exposer les méthodes via ref pour contrôle externe
   useImperativeHandle(ref, () => ({
@@ -430,6 +354,12 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      // Clean up requestData interval
+      if (requestDataIntervalRef.current) {
+        clearInterval(requestDataIntervalRef.current);
+        requestDataIntervalRef.current = null;
+      }
+
       // Clean up animation frame
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
