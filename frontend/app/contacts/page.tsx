@@ -405,82 +405,9 @@ export default function ContactsPage() {
             <div className="absolute -left-12 -top-12 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl"></div>
           </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-            <Card className="border-2 hover:border-primary/50 transition-all hover:shadow-lg bg-white dark:bg-gray-950">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">{t('stats.totalContacts')}</p>
-                    <p className="text-3xl font-bold text-foreground">{stats.total}</p>
-                  </div>
-                  <div className="p-4 bg-blue-100 dark:bg-blue-900/30 rounded-2xl">
-                    <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 hover:border-green-500/50 transition-all hover:shadow-lg bg-white dark:bg-gray-950">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">{t('stats.online')}</p>
-                    <p className="text-3xl font-bold text-green-600 dark:text-green-400">{stats.online}</p>
-                  </div>
-                  <div className="p-4 bg-green-100 dark:bg-green-900/30 rounded-2xl">
-                    <Activity className="h-6 w-6 text-green-600 dark:text-green-400" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 hover:border-purple-500/50 transition-all hover:shadow-lg bg-white dark:bg-gray-950">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">{t('stats.connected')}</p>
-                    <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{stats.connected}</p>
-                  </div>
-                  <div className="p-4 bg-purple-100 dark:bg-purple-900/30 rounded-2xl">
-                    <UserCheck className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 hover:border-orange-500/50 transition-all hover:shadow-lg bg-white dark:bg-gray-950">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">{t('stats.pending')}</p>
-                    <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{stats.pending}</p>
-                  </div>
-                  <div className="p-4 bg-orange-100 dark:bg-orange-900/30 rounded-2xl">
-                    <Clock className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 hover:border-cyan-500/50 transition-all hover:shadow-lg bg-white dark:bg-gray-950">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">{t('stats.affiliates')}</p>
-                    <p className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">{stats.affiliates}</p>
-                  </div>
-                  <div className="p-4 bg-cyan-100 dark:bg-cyan-900/30 rounded-2xl">
-                    <Share2 className="h-6 w-6 text-cyan-600 dark:text-cyan-400" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Search and Actions */}
+          {/* Main Content Card */}
           <Card className="border-2 shadow-lg bg-white dark:bg-gray-950">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <form onSubmit={handleSearch} className="space-y-4">
                 <div className="flex flex-col md:flex-row gap-4">
                   <div className="flex-1 relative">
@@ -593,28 +520,10 @@ export default function ContactsPage() {
                                         </h3>
                                         <button
                                           onClick={() => router.push(`/u/${contact.id}`)}
-                                          className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline mb-2 sm:mb-3 break-all transition-colors cursor-pointer text-left"
+                                          className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline transition-colors cursor-pointer text-left"
                                         >
                                           @{contact.username}
                                         </button>
-                                        
-                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                                          <div className="flex items-center space-x-2 flex-shrink-0">
-                                            <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${contact.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
-                                            <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
-                                              {contact.isOnline ? t('status.online') : t('status.offline')}
-                                            </span>
-                                          </div>
-                                          
-                                          {contact.email && (
-                                            <div className="flex items-center space-x-2 min-w-0">
-                                              <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
-                                              <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
-                                                {contact.email}
-                                              </span>
-                                            </div>
-                                          )}
-                                        </div>
                                       </div>
                                     </div>
                                     
@@ -1019,8 +928,8 @@ export default function ContactsPage() {
                 mobileBreakpoint="md"
                 className="mb-6"
               />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           {/* Modal d'affiliation */}
           <ShareAffiliateModal
