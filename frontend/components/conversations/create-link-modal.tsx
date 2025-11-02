@@ -1467,9 +1467,6 @@ export function CreateLinkModalV2({
                         }`}>
                           {stepTitles[i]}
                         </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {tCommon('step', { step: stepNumber })}
-                        </p>
                       </div>
                     </div>
                   </Fragment>
