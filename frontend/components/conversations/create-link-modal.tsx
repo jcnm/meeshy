@@ -1439,46 +1439,40 @@ export function CreateLinkModalV2({
                   t('createLinkModal.steps.configureLink'),
                   t('createLinkModal.steps.summaryAndGeneration')
                 ];
-                
+
                 return (
-                  <div key={i} className="flex flex-col items-center flex-1">
-                    <div className="flex items-center w-full">
-                      {/* Ligne de connexion précédente - seulement si ce n'est pas le premier */}
-                      {i > 0 && (
-                        <div className={`flex-1 h-0.5 mx-2 ${
-                          isCompleted ? 'bg-primary' : 'bg-muted'
-                        }`} />
-                      )}
-                      
+                  <React.Fragment key={i}>
+                    {/* Ligne de connexion avant le point (sauf pour le premier) */}
+                    {i > 0 && (
+                      <div className={`flex-1 h-0.5 ${
+                        stepNumber <= currentStep ? 'bg-primary' : 'bg-muted'
+                      }`} />
+                    )}
+
+                    {/* Container du point et texte */}
+                    <div className="flex flex-col items-center">
                       {/* Point de l'étape */}
                       <div className={`w-3 h-3 rounded-full flex-shrink-0 ${
-                        isActive 
-                          ? 'bg-primary ring-4 ring-primary/20' 
-                          : isCompleted 
-                          ? 'bg-primary' 
+                        isActive
+                          ? 'bg-primary ring-4 ring-primary/20'
+                          : isCompleted
+                          ? 'bg-primary'
                           : 'bg-muted'
                       }`} />
-                      
-                      {/* Ligne de connexion suivante - seulement si ce n'est pas le dernier */}
-                      {i < totalSteps - 1 && (
-                        <div className={`flex-1 h-0.5 mx-2 ${
-                          isCompleted ? 'bg-primary' : 'bg-muted'
-                        }`} />
-                      )}
+
+                      {/* Texte de l'étape */}
+                      <div className="mt-3 text-center whitespace-nowrap">
+                        <p className={`text-xs font-medium ${
+                          isActive ? 'text-primary' : isCompleted ? 'text-primary' : 'text-muted-foreground'
+                        }`}>
+                          {stepTitles[i]}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {tCommon('step', { step: stepNumber })}
+                        </p>
+                      </div>
                     </div>
-                    
-                    {/* Texte de l'étape */}
-                    <div className="mt-3 text-center">
-                      <p className={`text-xs font-medium ${
-                        isActive ? 'text-primary' : isCompleted ? 'text-primary' : 'text-muted-foreground'
-                      }`}>
-                        {stepTitles[i]}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {tCommon('step', { step: stepNumber })}
-                      </p>
-                    </div>
-                  </div>
+                  </React.Fragment>
                 );
               })}
             </div>
