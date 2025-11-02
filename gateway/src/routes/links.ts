@@ -1732,8 +1732,10 @@ export async function linksRoutes(fastify: FastifyInstance) {
           allowAnonymousFiles: body.allowAnonymousFiles,
           allowAnonymousImages: body.allowAnonymousImages,
           allowViewHistory: body.allowViewHistory,
+          requireAccount: body.requireAccount,
           requireNickname: body.requireNickname,
           requireEmail: body.requireEmail,
+          requireBirthday: body.requireBirthday,
           allowedCountries: body.allowedCountries,
           allowedLanguages: body.allowedLanguages,
           allowedIpRanges: body.allowedIpRanges
@@ -1827,8 +1829,10 @@ export async function linksRoutes(fastify: FastifyInstance) {
       if (body.allowAnonymousFiles !== undefined) updateData.allowAnonymousFiles = body.allowAnonymousFiles;
       if (body.allowAnonymousImages !== undefined) updateData.allowAnonymousImages = body.allowAnonymousImages;
       if (body.allowViewHistory !== undefined) updateData.allowViewHistory = body.allowViewHistory;
+      if (body.requireAccount !== undefined) updateData.requireAccount = body.requireAccount;
       if (body.requireNickname !== undefined) updateData.requireNickname = body.requireNickname;
       if (body.requireEmail !== undefined) updateData.requireEmail = body.requireEmail;
+      if (body.requireBirthday !== undefined) updateData.requireBirthday = body.requireBirthday;
       if (body.allowedCountries !== undefined) updateData.allowedCountries = body.allowedCountries;
       if (body.allowedLanguages !== undefined) updateData.allowedLanguages = body.allowedLanguages;
       if (body.allowedIpRanges !== undefined) updateData.allowedIpRanges = body.allowedIpRanges;
