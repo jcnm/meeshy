@@ -724,14 +724,16 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       {/* Indicateurs à gauche: Flag selector, localisation, upload */}
       <div className="absolute bottom-2 sm:bottom-3 left-3 flex items-center space-x-2 sm:space-x-3 text-xs sm:text-sm text-gray-600 pointer-events-auto">
         {/* Sélecteur de langue d'envoi (en premier) */}
-        <LanguageFlagSelector
-          value={selectedLanguage}
-          onValueChange={onLanguageChange}
-          choices={choices}
-          popoverSide="top"
-          popoverAlign="start"
-          popoverSideOffset={8}
-        />
+        <div className="scale-150 sm:scale-[1.4] origin-left">
+          <LanguageFlagSelector
+            value={selectedLanguage}
+            onValueChange={onLanguageChange}
+            choices={choices}
+            popoverSide="top"
+            popoverAlign="start"
+            popoverSideOffset={8}
+          />
+        </div>
 
         {/* Localisation */}
         {location && !isUploading && (
