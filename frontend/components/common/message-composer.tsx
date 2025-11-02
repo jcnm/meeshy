@@ -87,6 +87,8 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   const [audioRecorderKey, setAudioRecorderKey] = useState(0); // Key pour forcer re-mount
   const [isRecording, setIsRecording] = useState(false); // État pour savoir si on enregistre
   const audioRecorderRef = useRef<any>(null);
+  const shouldUploadAfterStopRef = useRef(false); // Flag pour uploader après arrêt
+  const currentAudioBlobRef = useRef<{ blob: Blob; duration: number } | null>(null); // Ref pour éviter problème de closure
 
   // Ref pour gérer le timeout de stopTyping
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -273,18 +275,29 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   const handleFilesSelected = useCallback(async (files: File[]) => {
     if (files.length === 0) return;
 
+    console.log('📎 handleFilesSelected appelé avec', files.length, 'fichier(s)');
+    files.forEach((file, i) => {
+      console.log(`  Fichier ${i + 1}:`, file.name, '|', file.type, '|', file.size, 'bytes');
+    });
+
     // Valider les fichiers
     const validation = AttachmentService.validateFiles(files);
     if (!validation.valid) {
+      console.error('❌ Validation échouée:', validation.errors);
       // Show toast for each validation error
       validation.errors.forEach(error => {
         toast.error(error);
       });
-      console.error('Validation errors:', validation.errors);
       return;
     }
 
-    setSelectedFiles(prev => [...prev, ...files]);
+    console.log('✅ Validation réussie');
+
+    setSelectedFiles(prev => {
+      const newFiles = [...prev, ...files];
+      console.log('📁 selectedFiles mis à jour:', newFiles.length, 'fichiers au total');
+      return newFiles;
+    });
     setIsUploading(true);
 
     console.log('📎 Début upload de', files.length, 'fichier(s)');
@@ -292,14 +305,18 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     try {
       // Upload les fichiers
       const response = await AttachmentService.uploadFiles(files, token);
-      
+
       console.log('📎 Réponse upload:', response);
-      
+
       if (response.success && response.attachments) {
         console.log('✅ Upload réussi:', response.attachments.length, 'attachment(s)');
+        response.attachments.forEach((att, i) => {
+          console.log(`  Attachment ${i + 1}:`, att.id, '|', att.fileName, '|', att.mimeType);
+        });
+
         setUploadedAttachments(prev => {
           const newAttachments = [...prev, ...response.attachments];
-          console.log('📎 Total attachments après ajout:', newAttachments.length);
+          console.log('📎 uploadedAttachments mis à jour:', newAttachments.length, 'attachments au total');
           return newAttachments;
         });
       } else {
@@ -309,12 +326,14 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       console.error('❌ Upload error:', error);
       if (error instanceof Error) {
         console.error('❌ Error message:', error.message);
+        console.error('❌ Error stack:', error.stack);
         toast.error(`Upload failed: ${error.message}`);
       } else {
         toast.error('Upload failed. Please try again.');
       }
     } finally {
       setIsUploading(false);
+      console.log('📎 isUploading = false');
     }
   }, [token]);
 
@@ -389,8 +408,10 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     // Reset aussi l'état audio
     setShowAudioRecorder(false);
     setCurrentAudioBlob(null);
+    currentAudioBlobRef.current = null; // Reset le ref aussi
     setAudioRecorderKey(0);
     setIsRecording(false);
+    shouldUploadAfterStopRef.current = false; // Reset le flag
   }, []);
 
   // Handler pour le changement d'état d'enregistrement - mémorisé
@@ -399,15 +420,57 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     setIsRecording(recording);
   }, []);
 
-  // Handler pour l'enregistrement audio terminé - mémorisé
-  const handleAudioRecordingComplete = useCallback((audioBlob: Blob, duration: number, metadata?: any) => {
-    console.log('🎤 Enregistrement terminé, stockage local du blob');
+  // Fonction helper pour obtenir l'extension correcte selon le MIME type
+  const getAudioFileExtension = useCallback((mimeType: string): string => {
+    const cleanMimeType = mimeType.split(';')[0].trim();
 
-    // Stocker le blob localement (ne pas uploader maintenant)
-    setCurrentAudioBlob({ blob: audioBlob, duration });
+    // Détecter l'extension selon le MIME type
+    if (cleanMimeType.includes('webm')) return 'webm';
+    if (cleanMimeType.includes('mp4') || cleanMimeType.includes('m4a')) return 'm4a';
+    if (cleanMimeType.includes('ogg')) return 'ogg';
+    if (cleanMimeType.includes('wav')) return 'wav';
+    if (cleanMimeType.includes('mpeg') || cleanMimeType.includes('mp3')) return 'mp3';
 
-    // Le fichier sera uploadé quand on l'ajoute au carrousel ou à l'envoi
+    // Par défaut, utiliser webm
+    return 'webm';
   }, []);
+
+  // Handler pour l'enregistrement audio terminé - mémorisé
+  const handleAudioRecordingComplete = useCallback(async (audioBlob: Blob, duration: number, metadata?: any) => {
+    console.log('🎤 Enregistrement terminé, stockage local du blob');
+    console.log('📝 Type MIME du blob:', audioBlob.type);
+
+    // Stocker le blob dans les refs ET le state
+    const blobData = { blob: audioBlob, duration };
+    currentAudioBlobRef.current = blobData;
+    setCurrentAudioBlob(blobData);
+
+    // Si on doit uploader immédiatement après l'arrêt
+    if (shouldUploadAfterStopRef.current) {
+      console.log('⬆️ Upload immédiat après arrêt (via bouton stop)');
+      shouldUploadAfterStopRef.current = false; // Reset le flag
+
+      // Nettoyer le MIME type en enlevant les paramètres (audio/webm;codecs=opus -> audio/webm)
+      const cleanMimeType = audioBlob.type.split(';')[0].trim();
+
+      // Obtenir l'extension correcte selon le MIME type
+      const extension = getAudioFileExtension(audioBlob.type);
+      const filename = `audio_${Date.now()}.${extension}`;
+
+      console.log('📁 Création fichier:', filename, 'avec MIME type:', cleanMimeType);
+      const audioFile = new File([audioBlob], filename, { type: cleanMimeType });
+
+      // Upload le fichier
+      await handleFilesSelected([audioFile]);
+      console.log('✅ Audio uploadé et ajouté au carrousel');
+
+      // Reset l'état audio et fermer le recorder
+      currentAudioBlobRef.current = null;
+      setCurrentAudioBlob(null);
+      setShowAudioRecorder(false);
+      setIsRecording(false);
+    }
+  }, [handleFilesSelected, getAudioFileExtension]);
 
   // Handler pour supprimer l'enregistrement audio - mémorisé
   const handleRemoveAudioRecording = useCallback(() => {
@@ -416,62 +479,72 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     // Fermer le recorder et reset tous les états audio
     setShowAudioRecorder(false);
     setCurrentAudioBlob(null);
+    currentAudioBlobRef.current = null; // Reset le ref aussi
     setIsRecording(false);
+    shouldUploadAfterStopRef.current = false; // Reset le flag
+  }, []);
+
+  // Handler appelé AVANT que l'enregistrement s'arrête (depuis le bouton STOP du AudioRecorderCard)
+  const handleBeforeStop = useCallback(() => {
+    console.log('🛑 Bouton STOP du AudioRecorderCard cliqué - préparation upload');
+    // Activer le flag pour uploader après l'arrêt
+    shouldUploadAfterStopRef.current = true;
   }, []);
 
   // Handler pour le clic sur le bouton micro - workflow simplifié
-  const handleMicrophoneClick = useCallback(() => {
+  const handleMicrophoneClick = useCallback(async () => {
     // Si un enregistrement est EN COURS
     if (showAudioRecorder && isRecording) {
-      // Arrêter l'enregistrement
-      audioRecorderRef.current?.stopRecording();
       console.log('⏹️ Enregistrement arrêté via bouton micro');
 
-      // L'enregistrement va se terminer et appeler handleAudioRecordingComplete
-      // qui stockera le blob dans currentAudioBlob
-      // Puis on attend 100ms pour que le blob soit stocké avant de continuer
-      setTimeout(() => {
-        // Déplacer l'audio dans le carrousel et démarrer un nouveau
-        if (currentAudioBlob) {
-          const filename = `audio_${Date.now()}.webm`;
-          const audioFile = new File([currentAudioBlob.blob], filename, { type: currentAudioBlob.blob.type });
+      // Activer le flag pour uploader après l'arrêt
+      shouldUploadAfterStopRef.current = true;
 
-          // Ajouter au carrousel
-          setSelectedFiles(prev => [...prev, audioFile]);
-          console.log('✅ Audio ajouté au carrousel, démarrage nouvel enregistrement');
-        }
-
-        // Reset et démarrer nouveau
-        setCurrentAudioBlob(null);
-        setAudioRecorderKey(prev => prev + 1);
-        setIsRecording(true); // Le nouveau va démarrer
-      }, 100);
+      // Arrêter l'enregistrement - handleAudioRecordingComplete sera appelé et gérera l'upload
+      audioRecorderRef.current?.stopRecording();
 
       return;
     }
 
     // Si pas d'enregistrement en cours mais recorder ouvert (mode lecture)
-    if (showAudioRecorder && currentAudioBlob) {
-      // Convertir l'audio en fichier et l'ajouter au carrousel
-      const filename = `audio_${Date.now()}.webm`;
-      const audioFile = new File([currentAudioBlob.blob], filename, { type: currentAudioBlob.blob.type });
+    if (showAudioRecorder && currentAudioBlobRef.current) {
+      // Nettoyer le MIME type en enlevant les paramètres (audio/webm;codecs=opus -> audio/webm)
+      const cleanMimeType = currentAudioBlobRef.current.blob.type.split(';')[0].trim();
 
-      setSelectedFiles(prev => [...prev, audioFile]);
-      console.log('✅ Audio en lecture converti, démarrage nouvel enregistrement');
+      // Obtenir l'extension correcte selon le MIME type
+      const extension = getAudioFileExtension(currentAudioBlobRef.current.blob.type);
+      const filename = `audio_${Date.now()}.${extension}`;
 
-      // Reset et démarrer nouveau
+      console.log('📁 Création fichier en mode lecture:', filename, 'avec MIME type:', cleanMimeType);
+      const audioFile = new File([currentAudioBlobRef.current.blob], filename, { type: cleanMimeType });
+
+      // Upload le fichier via handleFilesSelected
+      await handleFilesSelected([audioFile]);
+      console.log('✅ Audio en lecture uploadé');
+
+      // Reset et fermer le recorder
+      currentAudioBlobRef.current = null;
       setCurrentAudioBlob(null);
-      setAudioRecorderKey(prev => prev + 1);
-      setIsRecording(true);
+      setShowAudioRecorder(false);
+      setIsRecording(false);
       return;
     }
 
     // Sinon, ouvrir le recorder et démarrer enregistrement
-    setShowAudioRecorder(true);
-    setAudioRecorderKey(prev => prev + 1);
-    setIsRecording(true);
-    console.log('🎤 Démarrage nouvel enregistrement');
-  }, [showAudioRecorder, isRecording, currentAudioBlob]);
+    if (!showAudioRecorder) {
+      setShowAudioRecorder(true);
+      setAudioRecorderKey(prev => prev + 1);
+      setIsRecording(true);
+      console.log('🎤 Démarrage nouvel enregistrement');
+    }
+  }, [showAudioRecorder, isRecording, handleFilesSelected, getAudioFileExtension]);
+
+  // Handler pour l'envoi de message
+  // Note: Le bouton est désactivé pendant l'enregistrement, donc pas besoin de gérer ce cas
+  const handleSendMessage = useCallback(() => {
+    console.log('📤 Envoi du message');
+    onSend();
+  }, [onSend]);
 
   useImperativeHandle(ref, () => ({
     focus: () => textareaRef.current?.focus(),
@@ -622,6 +695,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
                 onRecordingComplete={handleAudioRecordingComplete}
                 onRecordingStateChange={handleRecordingStateChange}
                 onRemove={handleRemoveAudioRecording}
+                onStop={handleBeforeStop}
                 autoStart={true}
                 maxDuration={600}
               />
@@ -735,10 +809,11 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
 
         {/* Bouton d'envoi */}
         <Button
-          onClick={onSend}
-          disabled={(!value.trim() && selectedFiles.length === 0 && uploadedAttachments.length === 0) || value.length > maxMessageLength || !isComposingEnabled || isUploading}
+          onClick={handleSendMessage}
+          disabled={(!value.trim() && selectedFiles.length === 0 && uploadedAttachments.length === 0) || value.length > maxMessageLength || !isComposingEnabled || isUploading || isRecording}
           size="sm"
           className="bg-blue-600 hover:bg-blue-700 text-white h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+          title={isRecording ? "Arrêtez l'enregistrement avant d'envoyer" : "Envoyer le message"}
         >
           <Send className="h-3 w-3 sm:h-4 sm:w-4" />
         </Button>
