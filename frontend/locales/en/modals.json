@@ -523,6 +523,35 @@
           "createNew": "Create new conversation"
         }
       }
+    },
+    "quickLinkModal": {
+      "title": "Create a quick share link",
+      "description": "Configure your secure share link with optimal default settings",
+      "secureConfig": {
+        "title": "Secure configuration",
+        "description": "This link uses optimal security settings to protect your conversation",
+        "tooltip": "The created link will require an authenticated account with email and birth date. All sharing permissions will be enabled for authenticated members. The link will expire in 7 days.",
+        "accountRequired": "Account required",
+        "emailRequired": "Email required",
+        "birthdayRequired": "Birthday required",
+        "allPermissions": "All permissions"
+      },
+      "linkTitle": {
+        "label": "Link title",
+        "placeholder": "Ex: Team invitation, Partner access...",
+        "hint": "This title will appear in your share links list"
+      },
+      "welcomeMessage": {
+        "label": "Welcome message",
+        "placeholder": "Welcome! Feel free to introduce yourself...",
+        "hint": "This message will be displayed to guests when they join via this link"
+      },
+      "expirationNote": "The link will automatically expire in 7 days",
+      "actions": {
+        "cancel": "Cancel",
+        "create": "Create link",
+        "creating": "Creating..."
+      }
     }
   }
 }

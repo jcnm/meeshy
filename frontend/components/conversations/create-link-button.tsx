@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Link2, Plus } from 'lucide-react';
 import { CreateLinkModalV2 } from './create-link-modal';
 import { LinkSummaryModal } from './link-summary-modal';
+import { QuickLinkConfigModal, QuickLinkConfig } from './quick-link-config-modal';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { copyToClipboard } from '@/lib/clipboard';
@@ -40,11 +41,14 @@ export function CreateLinkButton({
   disableSummaryModal = false
 }: CreateLinkButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isQuickConfigModalOpen, setIsQuickConfigModalOpen] = useState(false);
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const [generatedToken, setGeneratedToken] = useState<string | null>(null);
   const [linkSummaryData, setLinkSummaryData] = useState<any>(null);
+  const [pendingConversationId, setPendingConversationId] = useState<string | null>(null);
+  const [quickLinkDefaultTitle, setQuickLinkDefaultTitle] = useState<string>('');
   const { user: storeUser } = useUser();
   const currentUser = propCurrentUser || storeUser; // Utiliser la prop en priorité, sinon le store
   const router = useRouter();
@@ -119,54 +123,44 @@ export function CreateLinkButton({
     setLinkSummaryData(null);
   };
 
-  const createQuickLink = async (conversationId: string) => {
+  const createQuickLink = async (conversationId: string, config: QuickLinkConfig) => {
     if (!currentUser) {
       toast.error('Impossible de créer le lien : utilisateur non connecté');
       return;
     }
-    
+
     if (!conversationId) {
       toast.error('Impossible de créer le lien : conversation non identifiée');
       return;
     }
 
     setIsCreating(true);
-    
+
     try {
-      // Récupérer les détails de la conversation pour obtenir le titre
-      const conversation = await conversationsService.getConversation(conversationId);
-      const conversationTitle = conversation.title || 'Conversation';
-      
-      // Paramètres du lien
-      const expirationDays = 1; // 24h
+      // Paramètres du lien avec configuration sécurisée par défaut
+      const expirationDays = 7; // 1 semaine
       const maxUses = undefined;
       const maxConcurrentUsers = undefined;
-      
-      // Générer le nom du lien selon la langue de l'utilisateur
-      const linkTitle = generateLinkName({
-        conversationTitle,
-        language: currentUser.systemLanguage || detectedInterfaceLanguage || 'fr',
-        durationDays: expirationDays,
-        maxParticipants: maxConcurrentUsers,
-        maxUses: maxUses,
-        isPublic: true
-      });
-      
+
       const linkData = {
         conversationId: conversationId,
-        title: linkTitle,
-        description: 'Lien de partage créé automatiquement',
+        title: config.title,
+        description: config.description || 'Bienvenue dans la conversation !',
         expirationDays: expirationDays,
         maxUses: maxUses,
         maxConcurrentUsers: maxConcurrentUsers,
         maxUniqueSessions: undefined,
+        // Configuration sécurisée : tout autorisé pour les membres authentifiés
         allowAnonymousMessages: true,
-        allowAnonymousFiles: true, // Tous types de fichiers
+        allowAnonymousFiles: true,
         allowAnonymousImages: true,
         allowViewHistory: true,
-        requireNickname: false, // Pas de pseudo requis
-        requireEmail: false, // Pas d'email requis
-        allowedLanguages: ['fr', 'en', 'es', 'de', 'it', 'pt', 'zh', 'ja', 'ar'] // Toutes les langues supportées
+        // Configuration sécurisée : compte obligatoire avec toutes les vérifications
+        requireAccount: true,
+        requireNickname: true,
+        requireEmail: true,
+        requireBirthday: true,
+        allowedLanguages: [] // Toutes les langues (tableau vide = toutes autorisées)
       };
 
       const token = typeof window !== 'undefined' ? authManager.getAuthToken() : null;
@@ -204,8 +198,10 @@ export function CreateLinkButton({
           allowAnonymousFiles: linkData.allowAnonymousFiles,
           allowAnonymousImages: linkData.allowAnonymousImages,
           allowViewHistory: linkData.allowViewHistory,
+          requireAccount: linkData.requireAccount,
           requireNickname: linkData.requireNickname,
           requireEmail: linkData.requireEmail,
+          requireBirthday: linkData.requireBirthday,
           allowedLanguages: linkData.allowedLanguages
         });
         
@@ -269,8 +265,8 @@ export function CreateLinkButton({
     }
   };
 
-  const handleClick = () => {
-    // Si forceModal est activé, ouvrir toujours la modale
+  const handleClick = async () => {
+    // Si forceModal est activé, ouvrir toujours la modale complète
     if (forceModal) {
       setIsModalOpen(true);
       return;
@@ -281,14 +277,48 @@ export function CreateLinkButton({
     const conversationIdFromPath = currentPath.match(/\/conversations\/([^\/]+)/)?.[1];
     const conversationIdFromQuery = searchParams.get('id');
     const currentConversationId = propConversationId || conversationIdFromPath || conversationIdFromQuery;
-    
+
     if (currentConversationId) {
-      // Contexte : conversation spécifique -> génération automatique
-      createQuickLink(currentConversationId);
+      // Contexte : conversation spécifique -> modale de configuration rapide
+      try {
+        // Récupérer les détails de la conversation pour le titre par défaut
+        const conversation = await conversationsService.getConversation(currentConversationId);
+        const conversationTitle = conversation.title || 'Conversation';
+
+        // Générer le nom du lien selon la langue de l'utilisateur
+        const defaultTitle = generateLinkName({
+          conversationTitle,
+          language: currentUser?.systemLanguage || detectedInterfaceLanguage || 'fr',
+          durationDays: 7,
+          maxParticipants: undefined,
+          maxUses: undefined,
+          isPublic: false
+        });
+
+        setQuickLinkDefaultTitle(defaultTitle);
+        setPendingConversationId(currentConversationId);
+        setIsQuickConfigModalOpen(true);
+      } catch (error) {
+        console.error('Erreur récupération conversation:', error);
+        toast.error('Erreur lors de la récupération de la conversation');
+      }
     } else {
       // Contexte : liste des conversations -> modale complète
       setIsModalOpen(true);
     }
+  };
+
+  const handleQuickLinkConfirm = (config: QuickLinkConfig) => {
+    if (pendingConversationId) {
+      createQuickLink(pendingConversationId, config);
+      setIsQuickConfigModalOpen(false);
+    }
+  };
+
+  const handleQuickConfigClose = () => {
+    setIsQuickConfigModalOpen(false);
+    setPendingConversationId(null);
+    setQuickLinkDefaultTitle('');
   };
 
   return (
@@ -314,6 +344,14 @@ export function CreateLinkButton({
         onLinkCreated={handleLinkCreated}
         preGeneratedLink={generatedLink || undefined}
         preGeneratedToken={generatedToken || undefined}
+      />
+
+      <QuickLinkConfigModal
+        isOpen={isQuickConfigModalOpen}
+        onClose={handleQuickConfigClose}
+        onConfirm={handleQuickLinkConfirm}
+        defaultTitle={quickLinkDefaultTitle}
+        isCreating={isCreating}
       />
 
       {linkSummaryData && (

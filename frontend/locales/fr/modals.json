@@ -523,6 +523,35 @@
           "createNew": "Créer une nouvelle conversation"
         }
       }
+    },
+    "quickLinkModal": {
+      "title": "Créer un lien de partage rapide",
+      "description": "Configurez votre lien de partage sécurisé avec des paramètres optimaux par défaut",
+      "secureConfig": {
+        "title": "Configuration sécurisée",
+        "description": "Ce lien utilise des paramètres de sécurité optimaux pour protéger votre conversation",
+        "tooltip": "Le lien créé exigera un compte authentifié avec email et date de naissance. Toutes les permissions de partage seront activées pour les membres authentifiés. Le lien expirera dans 7 jours.",
+        "accountRequired": "Compte requis",
+        "emailRequired": "Email requis",
+        "birthdayRequired": "Date de naissance requise",
+        "allPermissions": "Toutes permissions"
+      },
+      "linkTitle": {
+        "label": "Titre du lien",
+        "placeholder": "Ex: Invitation équipe, Accès partenaire...",
+        "hint": "Ce titre apparaîtra dans la liste de vos liens de partage"
+      },
+      "welcomeMessage": {
+        "label": "Message de bienvenue",
+        "placeholder": "Bienvenue ! N'hésitez pas à vous présenter...",
+        "hint": "Ce message sera affiché aux invités lorsqu'ils rejoignent via ce lien"
+      },
+      "expirationNote": "Le lien expirera automatiquement dans 7 jours",
+      "actions": {
+        "cancel": "Annuler",
+        "create": "Créer le lien",
+        "creating": "Création en cours..."
+      }
     }
   }
 }
