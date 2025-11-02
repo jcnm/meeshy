@@ -9,8 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { 
-  Link2, 
+import {
+  Link2,
   Calendar as CalendarIcon,
   MessageSquare,
   Image,
@@ -18,7 +18,9 @@ import {
   Eye,
   Users,
   Mail,
-  Hash
+  Hash,
+  Shield,
+  Cake
 } from 'lucide-react';
 import { ConversationLink } from '@/types';
 import { useI18n } from '@/hooks/useI18n';
@@ -49,8 +51,10 @@ export function LinkEditModal({ link, isOpen, onClose, onUpdate }: LinkEditModal
     allowAnonymousImages: link.allowAnonymousImages,
     allowAnonymousFiles: link.allowAnonymousFiles,
     allowViewHistory: link.allowViewHistory,
+    requireAccount: link.requireAccount || false,
     requireNickname: link.requireNickname,
-    requireEmail: link.requireEmail
+    requireEmail: link.requireEmail,
+    requireBirthday: link.requireBirthday || false
   });
 
   const handleSubmit = async () => {
@@ -204,8 +208,9 @@ export function LinkEditModal({ link, isOpen, onClose, onUpdate }: LinkEditModal
                 </div>
                 <Switch
                   id="allowMessages"
-                  checked={formData.allowAnonymousMessages}
+                  checked={formData.requireAccount ? true : formData.allowAnonymousMessages}
                   onCheckedChange={(checked) => setFormData({ ...formData, allowAnonymousMessages: checked })}
+                  disabled={formData.requireAccount}
                 />
               </div>
 
@@ -219,8 +224,9 @@ export function LinkEditModal({ link, isOpen, onClose, onUpdate }: LinkEditModal
                 </div>
                 <Switch
                   id="allowImages"
-                  checked={formData.allowAnonymousImages}
+                  checked={formData.requireAccount ? true : formData.allowAnonymousImages}
                   onCheckedChange={(checked) => setFormData({ ...formData, allowAnonymousImages: checked })}
+                  disabled={formData.requireAccount}
                 />
               </div>
 
@@ -234,8 +240,9 @@ export function LinkEditModal({ link, isOpen, onClose, onUpdate }: LinkEditModal
                 </div>
                 <Switch
                   id="allowFiles"
-                  checked={formData.allowAnonymousFiles}
+                  checked={formData.requireAccount ? true : formData.allowAnonymousFiles}
                   onCheckedChange={(checked) => setFormData({ ...formData, allowAnonymousFiles: checked })}
+                  disabled={formData.requireAccount}
                 />
               </div>
 
@@ -249,8 +256,9 @@ export function LinkEditModal({ link, isOpen, onClose, onUpdate }: LinkEditModal
                 </div>
                 <Switch
                   id="allowHistory"
-                  checked={formData.allowViewHistory}
+                  checked={formData.requireAccount ? true : formData.allowViewHistory}
                   onCheckedChange={(checked) => setFormData({ ...formData, allowViewHistory: checked })}
+                  disabled={formData.requireAccount}
                 />
               </div>
             </CardContent>
@@ -260,7 +268,28 @@ export function LinkEditModal({ link, isOpen, onClose, onUpdate }: LinkEditModal
           <Card>
             <CardContent className="pt-6 space-y-4">
               <h3 className="font-medium mb-4">{t('edit.requirements')}</h3>
-              
+
+              {/* Require Account - mise en évidence */}
+              <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <Shield className="h-5 w-5 text-blue-600" />
+                    <div>
+                      <Label htmlFor="requireAccount" className="text-blue-900 dark:text-blue-100 font-semibold">
+                        {t('requirements.account')}
+                      </Label>
+                      <p className="text-sm text-blue-700 dark:text-blue-300">{t('requirements.accountDescription')}</p>
+                    </div>
+                  </div>
+                  <Switch
+                    id="requireAccount"
+                    checked={formData.requireAccount}
+                    onCheckedChange={(checked) => setFormData({ ...formData, requireAccount: checked })}
+                    className="data-[state=checked]:bg-blue-600"
+                  />
+                </div>
+              </div>
+
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <Hash className="h-5 w-5 text-muted-foreground" />
@@ -271,8 +300,9 @@ export function LinkEditModal({ link, isOpen, onClose, onUpdate }: LinkEditModal
                 </div>
                 <Switch
                   id="requireNickname"
-                  checked={formData.requireNickname}
+                  checked={formData.requireAccount ? true : formData.requireNickname}
                   onCheckedChange={(checked) => setFormData({ ...formData, requireNickname: checked })}
+                  disabled={formData.requireAccount}
                 />
               </div>
 
@@ -286,8 +316,25 @@ export function LinkEditModal({ link, isOpen, onClose, onUpdate }: LinkEditModal
                 </div>
                 <Switch
                   id="requireEmail"
-                  checked={formData.requireEmail}
+                  checked={formData.requireAccount ? true : formData.requireEmail}
                   onCheckedChange={(checked) => setFormData({ ...formData, requireEmail: checked })}
+                  disabled={formData.requireAccount}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <Cake className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <Label htmlFor="requireBirthday">{t('requirements.birthday')}</Label>
+                    <p className="text-sm text-muted-foreground">{t('requirements.birthdayDescription')}</p>
+                  </div>
+                </div>
+                <Switch
+                  id="requireBirthday"
+                  checked={formData.requireAccount ? true : formData.requireBirthday}
+                  onCheckedChange={(checked) => setFormData({ ...formData, requireBirthday: checked })}
+                  disabled={formData.requireAccount}
                 />
               </div>
             </CardContent>

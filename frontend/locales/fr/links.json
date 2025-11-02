@@ -108,10 +108,14 @@
       "viewHistoryDescription": "Autoriser la consultation de l'historique des conversations"
     },
     "requirements": {
+      "account": "Compte obligatoire",
+      "accountDescription": "Les visiteurs doivent se connecter avec un compte vérifié. Active automatiquement toutes les permissions et exigences.",
       "nickname": "Pseudonyme",
       "nicknameDescription": "Exiger un pseudonyme pour rejoindre",
       "email": "Email",
-      "emailDescription": "Exiger un email pour rejoindre"
+      "emailDescription": "Exiger un email pour rejoindre",
+      "birthday": "Date de naissance",
+      "birthdayDescription": "Exiger une date de naissance pour rejoindre"
     },
     "confirm": {
       "delete": "Êtes-vous sûr de vouloir supprimer ce lien ?"
