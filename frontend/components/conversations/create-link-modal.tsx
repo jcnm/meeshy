@@ -1450,7 +1450,7 @@ export function CreateLinkModalV2({
                     )}
 
                     {/* Container du point et texte */}
-                    <div className="flex flex-col items-center">
+                    <div className="flex flex-col items-center flex-shrink-0">
                       {/* Point de l'étape */}
                       <div className={`w-3 h-3 rounded-full flex-shrink-0 ${
                         isActive
@@ -1461,8 +1461,8 @@ export function CreateLinkModalV2({
                       }`} />
 
                       {/* Texte de l'étape */}
-                      <div className="mt-3 text-center whitespace-nowrap">
-                        <p className={`text-xs font-medium ${
+                      <div className="mt-3 text-center max-w-[120px]">
+                        <p className={`text-xs font-medium leading-tight ${
                           isActive ? 'text-primary' : isCompleted ? 'text-primary' : 'text-muted-foreground'
                         }`}>
                           {stepTitles[i]}
