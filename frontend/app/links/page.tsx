@@ -552,122 +552,122 @@ export default function LinksPage() {
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
 
                     <CardContent className="relative z-10 p-4 sm:p-6">
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                        <div className="flex items-start sm:items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
-                          <div className="p-2 sm:p-2.5 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl flex-shrink-0">
-                            <Link2 className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
-                          </div>
+                      {/* Badge et Menu en absolute top-right sur mobile */}
+                      <div className="absolute top-4 right-4 sm:relative sm:top-auto sm:right-auto flex items-center gap-2 z-20">
+                        <Badge
+                          variant={link.isActive ? 'default' : 'secondary'}
+                          className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-semibold flex-shrink-0 whitespace-nowrap ${
+                            link.isActive
+                              ? 'bg-green-500 hover:bg-green-600'
+                              : 'bg-gray-400 hover:bg-gray-500'
+                          }`}
+                        >
+                          {link.isActive ? t('status.active') : t('status.inactive')}
+                        </Badge>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 sm:h-10 sm:w-10 p-0 hover:bg-gray-200 dark:hover:bg-gray-700 flex-shrink-0">
+                              <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
+                              <span className="sr-only">{t('actions.menu')}</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-56 z-[100]">
+                            <DropdownMenuItem onClick={() => handleCopyLink(link.linkId)} className="py-3">
+                              <Copy className="h-4 w-4 mr-3" />
+                              <span className="font-medium">{t('actions.copy')}</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {
+                              setSelectedLink(link);
+                              setShowDetailsModal(true);
+                            }} className="py-3">
+                              <Eye className="h-4 w-4 mr-3" />
+                              <span className="font-medium">{t('actions.viewDetails')}</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {
+                              setSelectedLink(link);
+                              setShowEditModal(true);
+                            }} className="py-3">
+                              <Edit className="h-4 w-4 mr-3" />
+                              <span className="font-medium">{t('actions.edit')}</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleToggleActive(link)} className="py-3">
+                              {link.isActive ? (
+                                <>
+                                  <XCircle className="h-4 w-4 mr-3" />
+                                  <span className="font-medium">{t('actions.disable')}</span>
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircle className="h-4 w-4 mr-3" />
+                                  <span className="font-medium">{t('actions.enable')}</span>
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                            {link.expiresAt && (
+                              <DropdownMenuItem onClick={() => handleExtendDuration(link, 7)} className="py-3">
+                                <RefreshCw className="h-4 w-4 mr-3" />
+                                <span className="font-medium">{t('actions.extend7Days')}</span>
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem
+                              onClick={() => handleDeleteLink(link)}
+                              className="text-red-600 py-3 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/20"
+                            >
+                              <Trash2 className="h-4 w-4 mr-3" />
+                              <span className="font-medium">{t('actions.delete')}</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
 
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white mb-1 break-words">
-                              <a
-                                href={`/join/${link.linkId}`}
-                                className="text-foreground hover:text-primary transition-colors"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  router.push(`/join/${link.linkId}`);
-                                }}
-                              >
-                                {link.name || t('unnamedLink')}
-                              </a>
-                            </h3>
-                            <div className="flex items-start gap-2 text-xs sm:text-sm mb-2 sm:mb-3">
-                              <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                              <a
-                                href={`/conversations/${link.conversationId}`}
-                                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline transition-colors cursor-pointer text-left break-all"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  router.push(`/conversations/${link.conversationId}`);
-                                }}
-                              >
-                                {link.conversation.title}
-                              </a>
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                              <div className="flex items-center space-x-2 flex-shrink-0">
-                                <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
-                                <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
-                                  {link.currentUses} / {link.maxUses || '∞'} {t('stats.uses')}
-                                </span>
-                              </div>
-
-                              <div className="flex items-center space-x-2 flex-shrink-0">
-                                <Activity className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
-                                <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
-                                  {link.currentConcurrentUsers} {t('stats.active')}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
+                      {/* Contenu principal */}
+                      <div className="flex items-start space-x-3 sm:space-x-4 pr-24 sm:pr-0">
+                        <div className="p-2 sm:p-2.5 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl flex-shrink-0">
+                          <Link2 className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
                         </div>
 
-                        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
-                          <Badge
-                            variant={link.isActive ? 'default' : 'secondary'}
-                            className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-semibold flex-shrink-0 whitespace-nowrap ${
-                              link.isActive
-                                ? 'bg-green-500 hover:bg-green-600'
-                                : 'bg-gray-400 hover:bg-gray-500'
-                            }`}
-                          >
-                            {link.isActive ? t('status.active') : t('status.inactive')}
-                          </Badge>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-9 w-9 sm:h-10 sm:w-10 p-0 hover:bg-gray-200 dark:hover:bg-gray-700 flex-shrink-0">
-                                <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
-                                <span className="sr-only">{t('actions.menu')}</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56 z-[100]">
-                              <DropdownMenuItem onClick={() => handleCopyLink(link.linkId)} className="py-3">
-                                <Copy className="h-4 w-4 mr-3" />
-                                <span className="font-medium">{t('actions.copy')}</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => {
-                                setSelectedLink(link);
-                                setShowDetailsModal(true);
-                              }} className="py-3">
-                                <Eye className="h-4 w-4 mr-3" />
-                                <span className="font-medium">{t('actions.viewDetails')}</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => {
-                                setSelectedLink(link);
-                                setShowEditModal(true);
-                              }} className="py-3">
-                                <Edit className="h-4 w-4 mr-3" />
-                                <span className="font-medium">{t('actions.edit')}</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleToggleActive(link)} className="py-3">
-                                {link.isActive ? (
-                                  <>
-                                    <XCircle className="h-4 w-4 mr-3" />
-                                    <span className="font-medium">{t('actions.disable')}</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <CheckCircle className="h-4 w-4 mr-3" />
-                                    <span className="font-medium">{t('actions.enable')}</span>
-                                  </>
-                                )}
-                              </DropdownMenuItem>
-                              {link.expiresAt && (
-                                <DropdownMenuItem onClick={() => handleExtendDuration(link, 7)} className="py-3">
-                                  <RefreshCw className="h-4 w-4 mr-3" />
-                                  <span className="font-medium">{t('actions.extend7Days')}</span>
-                                </DropdownMenuItem>
-                              )}
-                              <DropdownMenuItem
-                                onClick={() => handleDeleteLink(link)}
-                                className="text-red-600 py-3 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/20"
-                              >
-                                <Trash2 className="h-4 w-4 mr-3" />
-                                <span className="font-medium">{t('actions.delete')}</span>
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white mb-1 break-words">
+                            <a
+                              href={`/join/${link.linkId}`}
+                              className="text-foreground hover:text-primary transition-colors"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                router.push(`/join/${link.linkId}`);
+                              }}
+                            >
+                              {link.name || t('unnamedLink')}
+                            </a>
+                          </h3>
+                          <div className="flex items-start gap-2 text-xs sm:text-sm mb-2 sm:mb-3">
+                            <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                            <a
+                              href={`/conversations/${link.conversationId}`}
+                              className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline transition-colors cursor-pointer text-left break-all"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                router.push(`/conversations/${link.conversationId}`);
+                              }}
+                            >
+                              {link.conversation.title}
+                            </a>
+                          </div>
+
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                            <div className="flex items-center space-x-2 flex-shrink-0">
+                              <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+                              <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
+                                {link.currentUses} / {link.maxUses || '∞'} {t('stats.uses')}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center space-x-2 flex-shrink-0">
+                              <Activity className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+                              <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
+                                {link.currentConcurrentUsers} {t('stats.active')}
+                              </span>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </CardContent>
@@ -723,98 +723,98 @@ export default function LinksPage() {
                       <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
 
                       <CardContent className="relative z-10 p-4 sm:p-6">
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                          <div className="flex items-start sm:items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
-                            <div className="p-2 sm:p-2.5 bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 rounded-xl flex-shrink-0">
-                              <BarChart className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
-                            </div>
+                        {/* Badge et Menu en absolute top-right sur mobile */}
+                        <div className="absolute top-4 right-4 sm:relative sm:top-auto sm:right-auto flex items-center gap-2 z-20">
+                          <Badge
+                            variant={link.isActive ? 'default' : 'secondary'}
+                            className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-semibold flex-shrink-0 whitespace-nowrap ${
+                              link.isActive
+                                ? 'bg-green-500 hover:bg-green-600'
+                                : 'bg-gray-400 hover:bg-gray-500'
+                            }`}
+                          >
+                            {link.isActive ? t('status.active') : t('status.inactive')}
+                          </Badge>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 sm:h-10 sm:w-10 p-0 hover:bg-gray-200 dark:hover:bg-gray-700 flex-shrink-0">
+                                <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
+                                <span className="sr-only">{t('actions.menu')}</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56 z-[100]">
+                              <DropdownMenuItem onClick={() => handleCopyTrackingLink(link.shortUrl)} className="py-3">
+                                <Copy className="h-4 w-4 mr-3" />
+                                <span className="font-medium">{t('tracking.actions.copyShortUrl')}</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => {
+                                setSelectedTrackingLink(link);
+                                setShowTrackingDetailsModal(true);
+                              }} className="py-3">
+                                <BarChart className="h-4 w-4 mr-3" />
+                                <span className="font-medium">{t('tracking.actions.viewStats')}</span>
+                              </DropdownMenuItem>
+                              {link.isActive && (
+                                <DropdownMenuItem onClick={() => handleToggleTrackingLink(link)} className="py-3">
+                                  <XCircle className="h-4 w-4 mr-3" />
+                                  <span className="font-medium">{t('tracking.actions.deactivate')}</span>
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuItem
+                                onClick={() => handleDeleteTrackingLink(link)}
+                                className="text-red-600 py-3 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/20"
+                              >
+                                <Trash2 className="h-4 w-4 mr-3" />
+                                <span className="font-medium">{t('actions.delete')}</span>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
 
-                            <div className="flex-1 min-w-0">
-                              <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white mb-1 break-words">
-                                <button
-                                  onClick={() => router.push(`/links/tracked/${link.token}`)}
-                                  className="text-foreground hover:text-primary transition-colors cursor-pointer text-left"
-                                >
-                                  {link.shortUrl.startsWith('/')
-                                    ? `${typeof window !== 'undefined' ? window.location.origin : ''}${link.shortUrl}`
-                                    : link.shortUrl}
-                                </button>
-                              </h3>
-                              <div className="flex items-start gap-2 text-xs sm:text-sm mb-2 sm:mb-3">
-                                <ExternalLink className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
-                                <a
-                                  href={link.originalUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:underline transition-colors cursor-pointer text-left break-all"
-                                >
-                                  {link.originalUrl}
-                                </a>
-                              </div>
-
-                              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                                <div className="flex items-center space-x-2 flex-shrink-0">
-                                  <MousePointerClick className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
-                                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
-                                    {link.totalClicks} {t('tracking.stats.totalClicks')}
-                                  </span>
-                                </div>
-
-                                <div className="flex items-center space-x-2 flex-shrink-0">
-                                  <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
-                                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
-                                    {link.uniqueClicks} {t('tracking.stats.uniqueClicks')}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
+                        {/* Contenu principal */}
+                        <div className="flex items-start space-x-3 sm:space-x-4 pr-24 sm:pr-0">
+                          <div className="p-2 sm:p-2.5 bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 rounded-xl flex-shrink-0">
+                            <BarChart className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
                           </div>
 
-                          <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
-                            <Badge
-                              variant={link.isActive ? 'default' : 'secondary'}
-                              className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-semibold flex-shrink-0 whitespace-nowrap ${
-                                link.isActive
-                                  ? 'bg-green-500 hover:bg-green-600'
-                                  : 'bg-gray-400 hover:bg-gray-500'
-                              }`}
-                            >
-                              {link.isActive ? t('status.active') : t('status.inactive')}
-                            </Badge>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="h-9 w-9 sm:h-10 sm:w-10 p-0 hover:bg-gray-200 dark:hover:bg-gray-700 flex-shrink-0">
-                                  <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
-                                  <span className="sr-only">{t('actions.menu')}</span>
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-56 z-[100]">
-                                <DropdownMenuItem onClick={() => handleCopyTrackingLink(link.shortUrl)} className="py-3">
-                                  <Copy className="h-4 w-4 mr-3" />
-                                  <span className="font-medium">{t('tracking.actions.copyShortUrl')}</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => {
-                                  setSelectedTrackingLink(link);
-                                  setShowTrackingDetailsModal(true);
-                                }} className="py-3">
-                                  <BarChart className="h-4 w-4 mr-3" />
-                                  <span className="font-medium">{t('tracking.actions.viewStats')}</span>
-                                </DropdownMenuItem>
-                                {link.isActive && (
-                                  <DropdownMenuItem onClick={() => handleToggleTrackingLink(link)} className="py-3">
-                                    <XCircle className="h-4 w-4 mr-3" />
-                                    <span className="font-medium">{t('tracking.actions.deactivate')}</span>
-                                  </DropdownMenuItem>
-                                )}
-                                <DropdownMenuItem
-                                  onClick={() => handleDeleteTrackingLink(link)}
-                                  className="text-red-600 py-3 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/20"
-                                >
-                                  <Trash2 className="h-4 w-4 mr-3" />
-                                  <span className="font-medium">{t('actions.delete')}</span>
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white mb-1 break-words">
+                              <button
+                                onClick={() => router.push(`/links/tracked/${link.token}`)}
+                                className="text-foreground hover:text-primary transition-colors cursor-pointer text-left"
+                              >
+                                {link.shortUrl.startsWith('/')
+                                  ? `${typeof window !== 'undefined' ? window.location.origin : ''}${link.shortUrl}`
+                                  : link.shortUrl}
+                              </button>
+                            </h3>
+                            <div className="flex items-start gap-2 text-xs sm:text-sm mb-2 sm:mb-3">
+                              <ExternalLink className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
+                              <a
+                                href={link.originalUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:underline transition-colors cursor-pointer text-left break-all"
+                              >
+                                {link.originalUrl}
+                              </a>
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                              <div className="flex items-center space-x-2 flex-shrink-0">
+                                <MousePointerClick className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+                                <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
+                                  {link.totalClicks} {t('tracking.stats.totalClicks')}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center space-x-2 flex-shrink-0">
+                                <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+                                <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
+                                  {link.uniqueClicks} {t('tracking.stats.uniqueClicks')}
+                                </span>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </CardContent>
