@@ -518,8 +518,8 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
   };
 
   return (
-    <div className="px-3 py-3 bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-800 dark:to-gray-700/50 border-t border-gray-200 dark:border-gray-600">
-      <div className="flex items-center gap-3 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent pb-1">
+    <div className="px-3 py-3 bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-800 dark:to-gray-700/50 border-t border-gray-200 dark:border-gray-600 min-h-[60px] sm:min-h-[80px] max-h-[60px] sm:max-h-[80px] flex items-center">
+      <div className="flex items-center gap-3 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent pb-1 w-full">
         {audioRecorderSlot}
         {files.map((file, index) => getFilePreview(file, index))}
       </div>
