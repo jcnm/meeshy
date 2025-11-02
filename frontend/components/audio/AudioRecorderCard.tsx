@@ -444,14 +444,13 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
           </div>
 
           {/* Bouton stop */}
-          <Button
+          <button
             onClick={stopRecording}
-            size="sm"
-            className="group bg-white dark:bg-gray-800 hover:bg-black dark:hover:bg-white h-10 w-10 p-0 flex flex-col items-center justify-center gap-0 border-2 border-gray-300 dark:border-gray-600 hover:border-black dark:hover:border-white transition-all"
+            className="group flex flex-col items-center justify-center gap-0 transition-all cursor-pointer"
           >
-            <Square className="w-3 h-3 fill-transparent stroke-gray-700 dark:stroke-gray-300 group-hover:stroke-white dark:group-hover:stroke-black stroke-[1.5]" />
-            <span className="text-[8px] leading-tight font-semibold text-gray-700 dark:text-gray-300 group-hover:text-white dark:group-hover:text-black">STOP</span>
-          </Button>
+            <Square className="w-3 h-3 fill-white dark:fill-white stroke-gray-700 dark:stroke-gray-300 group-hover:stroke-red-600 dark:group-hover:stroke-red-500 stroke-[1.5]" />
+            <span className="text-[8px] leading-tight font-semibold text-gray-700 dark:text-gray-300 group-hover:text-red-600 dark:group-hover:text-red-500">STOP</span>
+          </button>
         </div>
 
         {/* Badge durée max */}
