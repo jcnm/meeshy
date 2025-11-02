@@ -927,12 +927,12 @@ export function CreateLinkModalV2({
                   <div className="flex items-center gap-2 mb-1">
                     <Shield className="h-4 w-4 text-blue-600" />
                     <Label className="text-sm font-semibold text-blue-900 dark:text-blue-100">
-                      {t('createLinkModal.linkDetails.requireAccount.label', 'Compte obligatoire')}
+                      {t('createLinkModal.linkDetails.requireAccount.label')}
                     </Label>
-                    <InfoIcon content={t('createLinkModal.linkDetails.requireAccount.info', 'Lorsque cette option est activée, seuls les utilisateurs authentifiés avec un compte peuvent rejoindre. Cela désactive complètement l\'accès anonyme et force automatiquement toutes les autres exigences (email, date de naissance).')} />
+                    <InfoIcon content={t('createLinkModal.linkDetails.requireAccount.info')} />
                   </div>
                   <p className="text-xs text-blue-700 dark:text-blue-300">
-                    {t('createLinkModal.linkDetails.requireAccount.description', 'Seuls les utilisateurs avec un compte peuvent rejoindre cette conversation. Désactive l\'accès anonyme.')}
+                    {t('createLinkModal.linkDetails.requireAccount.description')}
                   </p>
                 </div>
                 <Switch
@@ -1079,8 +1079,8 @@ export function CreateLinkModalV2({
               <SelectableSquare
                 checked={requireAccount ? true : requireBirthday}
                 onChange={setRequireBirthday}
-                label={t('createLinkModal.permissions.requireBirthday.label', 'Date de naissance requise')}
-                description={t('createLinkModal.permissions.requireBirthday.description', 'Les invités doivent fournir leur date de naissance pour rejoindre')}
+                label={t('createLinkModal.permissions.requireBirthday.label')}
+                description={t('createLinkModal.permissions.requireBirthday.description')}
                 icon={<Calendar className="w-4 h-4" />}
                 disabled={requireAccount}
               />
@@ -1131,7 +1131,7 @@ export function CreateLinkModalV2({
               ))}
             </div>
             <p className="text-xs text-muted-foreground italic">
-              💡 {t('createLinkModal.allowedLanguages.allowAllLanguagesHint', 'Ne sélectionnez aucune langue pour autoriser toutes les langues')}
+              💡 {t('createLinkModal.allowedLanguages.allowAllLanguagesHint')}
             </p>
           </CardContent>
         )}

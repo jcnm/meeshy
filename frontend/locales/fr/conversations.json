@@ -40,6 +40,8 @@
     "noLastMessage": "Pas encore de messages",
     "authChecking": "Vérification de l'authentification...",
     "id": "ID",
+    "uploading": "Envoi en cours...",
+    "uploadingMultiple": "Envoi de {count} fichiers...",
     "conversationLayout": {
       "authChecking": "Vérification de l'authentification...",
       "conversations": {
@@ -82,7 +84,8 @@
       "backToList": "Retour aux conversations",
       "share": "Partager",
       "linkCopied": "Lien copié !",
-      "linkCopyError": "Erreur lors de la copie du lien"
+      "linkCopyError": "Erreur lors de la copie du lien",
+      "viewImages": "Voir les images"
     },
     "conversationUI": {
       "participants": "Participants",

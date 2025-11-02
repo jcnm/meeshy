@@ -126,7 +126,7 @@ export function QuickLinkConfigModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl w-[95vw] max-h-[95vh] overflow-y-auto">
+      <DialogContent className="max-w-lg w-[90vw] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Link2 className="h-5 w-5 text-primary" />
@@ -141,7 +141,7 @@ export function QuickLinkConfigModal({
         </DialogHeader>
 
         {/* Indicateur d'étapes */}
-        <div className="flex items-center justify-center gap-2 py-2">
+        <div className="flex items-center justify-center gap-2 py-1">
           <div className={`flex items-center gap-2 ${currentStep === 1 ? 'text-primary' : 'text-muted-foreground'}`}>
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
               currentStep === 1 ? 'bg-primary text-primary-foreground' : 'bg-muted'
@@ -163,31 +163,31 @@ export function QuickLinkConfigModal({
 
         {/* ÉTAPE 1 : Configuration */}
         {currentStep === 1 && (
-          <div className="space-y-4 py-4">
+          <div className="space-y-2 py-2">
             {/* Configuration sécurisée par défaut */}
-            <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg">
-              <div className="flex items-start gap-3">
-                <Shield className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-100">
+            <div className="p-2 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <div className="flex items-start gap-2">
+                <Shield className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1 space-y-1">
+                  <div className="flex items-center gap-1">
+                    <h4 className="text-xs font-semibold text-blue-900 dark:text-blue-100">
                       {t('quickLinkModal.secureConfig.title')}
                     </h4>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Info className="h-4 w-4 text-blue-600 cursor-help" />
+                          <Info className="h-3 w-3 text-blue-600 cursor-help" />
                         </TooltipTrigger>
-                        <TooltipContent className="max-w-xs">
-                          <p className="text-sm">{t('quickLinkModal.secureConfig.tooltip')}</p>
+                        <TooltipContent className="max-w-xs text-xs">
+                          <p>{t('quickLinkModal.secureConfig.tooltip')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   </div>
-                  <p className="text-xs text-blue-700 dark:text-blue-300">
+                  <p className="text-[11px] text-blue-700 dark:text-blue-300">
                     {t('quickLinkModal.secureConfig.description')}
                   </p>
-                  <div className="flex flex-wrap gap-1.5 mt-2">
+                  <div className="flex flex-wrap gap-1 mt-1">
                     <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100">
                       <CheckCircle className="h-3 w-3 mr-1" />
                       {t('quickLinkModal.secureConfig.accountRequired')}
@@ -236,7 +236,7 @@ export function QuickLinkConfigModal({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder={t('quickLinkModal.welcomeMessage.placeholder')}
-                className="min-h-[100px] resize-none"
+                className="min-h-[60px] resize-none"
                 maxLength={500}
               />
               <p className="text-xs text-muted-foreground">
@@ -245,7 +245,7 @@ export function QuickLinkConfigModal({
             </div>
 
             {/* Note sur la durée */}
-            <div className="p-3 bg-muted/50 rounded-lg">
+            <div className="p-2 bg-muted/50 rounded-lg text-xs">
               <p className="text-xs text-muted-foreground">
                 ℹ️ {t('quickLinkModal.expirationNote')}
               </p>
@@ -255,16 +255,16 @@ export function QuickLinkConfigModal({
 
         {/* ÉTAPE 2 : Résumé */}
         {currentStep === 2 && (
-          <div className="space-y-4 py-4">
+          <div className="space-y-2 py-2">
             {/* Informations du lien */}
-            <div className="space-y-3">
-              <div className="p-4 bg-muted/50 rounded-lg">
+            <div className="space-y-2">
+              <div className="p-2 bg-muted/50 rounded-lg">
                 <h4 className="text-sm font-semibold mb-2">{t('quickLinkModal.linkTitle.label')}</h4>
                 <p className="text-sm">{title}</p>
               </div>
 
               {description && (
-                <div className="p-4 bg-muted/50 rounded-lg">
+                <div className="p-2 bg-muted/50 rounded-lg text-sm">
                   <h4 className="text-sm font-semibold mb-2">{t('quickLinkModal.welcomeMessage.label')}</h4>
                   <p className="text-sm whitespace-pre-wrap">{description}</p>
                 </div>
@@ -272,92 +272,92 @@ export function QuickLinkConfigModal({
             </div>
 
             {/* Résumé de la configuration */}
-            <div className="space-y-4">
+            <div className="space-y-2">
               {/* Expiration et limites */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 bg-muted/30 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm mb-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div className="p-2 bg-muted/30 rounded-lg">
+                  <div className="flex items-center gap-1 text-xs mb-1">
+                    <Calendar className="h-3 w-3 text-muted-foreground" />
                     <span className="font-medium">{t('linkSummaryModal.expires')}</span>
                   </div>
-                  <p className="text-sm ml-6">{formatExpirationDate(DEFAULT_LINK_CONFIG.expirationDays)}</p>
+                  <p className="text-xs ml-4">{formatExpirationDate(DEFAULT_LINK_CONFIG.expirationDays)}</p>
                 </div>
 
-                <div className="p-4 bg-muted/30 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm mb-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
+                <div className="p-2 bg-muted/30 rounded-lg">
+                  <div className="flex items-center gap-1 text-xs mb-1">
+                    <Users className="h-3 w-3 text-muted-foreground" />
                     <span className="font-medium">{t('linkSummaryModal.userLimits')}</span>
                   </div>
-                  <p className="text-sm ml-6">{t('linkSummaryModal.unlimitedUsage')}</p>
+                  <p className="text-xs ml-4">{t('linkSummaryModal.unlimitedUsage')}</p>
                 </div>
               </div>
 
               {/* Exigences d'authentification */}
-              <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+              <div className="p-2 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <h4 className="text-xs font-semibold mb-1 flex items-center gap-2">
                   <Shield className="h-4 w-4 text-blue-600" />
                   {t('linkSummaryModal.authRequirements')}
                 </h4>
-                <div className="space-y-2 ml-6">
-                  <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">{t('linkSummaryModal.accountRequired')}</span>
-                    <Check className="h-4 w-4 text-green-600" />
+                <div className="space-y-1 ml-4 text-xs">
+                  <div className="flex items-center gap-1">
+                    <Shield className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-xs font-medium">{t('linkSummaryModal.accountRequired')}</span>
+                    <Check className="h-3 w-3 text-green-600" />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{t('linkSummaryModal.nickname')}</span>
-                    <Check className="h-4 w-4 text-green-600" />
+                  <div className="flex items-center gap-1">
+                    <User className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-xs">{t('linkSummaryModal.nickname')}</span>
+                    <Check className="h-3 w-3 text-green-600" />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{t('linkSummaryModal.email')}</span>
-                    <Check className="h-4 w-4 text-green-600" />
+                  <div className="flex items-center gap-1">
+                    <Mail className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-xs">{t('linkSummaryModal.email')}</span>
+                    <Check className="h-3 w-3 text-green-600" />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{t('linkSummaryModal.birthday')}</span>
-                    <Check className="h-4 w-4 text-green-600" />
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-xs">{t('linkSummaryModal.birthday')}</span>
+                    <Check className="h-3 w-3 text-green-600" />
                   </div>
                 </div>
               </div>
 
               {/* Permissions d'envoi */}
-              <div className="p-4 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
-                <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+              <div className="p-2 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
+                <h4 className="text-xs font-semibold mb-1 flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-green-600" />
                   {t('linkSummaryModal.sendPermissions')}
                 </h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 ml-6">
-                  <div className="flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{t('linkSummaryModal.messages')}</span>
-                    <Check className="h-4 w-4 text-green-600" />
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-1 ml-4 text-xs">
+                  <div className="flex items-center gap-1">
+                    <MessageSquare className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-xs">{t('linkSummaryModal.messages')}</span>
+                    <Check className="h-3 w-3 text-green-600" />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <ImageIcon className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{t('linkSummaryModal.images')}</span>
-                    <Check className="h-4 w-4 text-green-600" />
+                  <div className="flex items-center gap-1">
+                    <ImageIcon className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-xs">{t('linkSummaryModal.images')}</span>
+                    <Check className="h-3 w-3 text-green-600" />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{t('linkSummaryModal.files')}</span>
-                    <Check className="h-4 w-4 text-green-600" />
+                  <div className="flex items-center gap-1">
+                    <FileText className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-xs">{t('linkSummaryModal.files')}</span>
+                    <Check className="h-3 w-3 text-green-600" />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Video className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{t('linkSummaryModal.videos')}</span>
-                    <Check className="h-4 w-4 text-green-600" />
+                  <div className="flex items-center gap-1">
+                    <Video className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-xs">{t('linkSummaryModal.videos')}</span>
+                    <Check className="h-3 w-3 text-green-600" />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Volume2 className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{t('linkSummaryModal.audio')}</span>
-                    <Check className="h-4 w-4 text-green-600" />
+                  <div className="flex items-center gap-1">
+                    <Volume2 className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-xs">{t('linkSummaryModal.audio')}</span>
+                    <Check className="h-3 w-3 text-green-600" />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <File className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{t('linkSummaryModal.documents')}</span>
-                    <Check className="h-4 w-4 text-green-600" />
+                  <div className="flex items-center gap-1">
+                    <File className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-xs">{t('linkSummaryModal.documents')}</span>
+                    <Check className="h-3 w-3 text-green-600" />
                   </div>
                 </div>
               </div>

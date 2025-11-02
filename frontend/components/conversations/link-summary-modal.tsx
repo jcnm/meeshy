@@ -10,13 +10,13 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Link2, 
-  Copy, 
-  Calendar, 
-  Clock, 
-  MessageSquare, 
-  FileText, 
+import {
+  Link2,
+  Copy,
+  Calendar,
+  Clock,
+  MessageSquare,
+  FileText,
   Image,
   Check,
   X,
@@ -28,7 +28,8 @@ import {
   File,
   Link,
   MapPin,
-  Phone
+  Phone,
+  Shield
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { copyToClipboard } from '@/lib/clipboard';
