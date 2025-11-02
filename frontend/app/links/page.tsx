@@ -575,7 +575,7 @@ export default function LinksPage() {
                             </h3>
 
                             {/* Badge et Menu alignés avec le titre */}
-                            <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-2 flex-shrink-0">
+                            <div className="flex flex-row items-center gap-2 flex-shrink-0">
                               <Badge
                                 variant={link.isActive ? 'default' : 'secondary'}
                                 className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-semibold flex-shrink-0 whitespace-nowrap ${
@@ -747,7 +747,7 @@ export default function LinksPage() {
                               </h3>
 
                               {/* Badge et Menu alignés avec le titre */}
-                              <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-2 flex-shrink-0">
+                              <div className="flex flex-row items-center gap-2 flex-shrink-0">
                                 <Badge
                                   variant={link.isActive ? 'default' : 'secondary'}
                                   className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-semibold flex-shrink-0 whitespace-nowrap ${
