@@ -53,10 +53,6 @@
       "requireEmail": {
         "label": "Require email",
         "description": "Participants must provide an email to join"
-      },
-      "requireBirthday": {
-        "label": "Birthday required",
-        "description": "Guests must provide their birth date to join"
       }
     },
     "allowedLanguages": {
@@ -67,10 +63,6 @@
     "linkDetails": {
       "title": "Link details",
       "description": "Configure the sharing link information",
-      "requireAccount": {
-        "label": "Account required",
-        "description": "Only users with an account can join this conversation. Disables anonymous access."
-      },
       "linkName": "Link name",
       "linkNameInfo": "A friendly name to identify this link",
       "linkNamePlaceholder": "Ex: Team invitation, Partner access...",
@@ -391,17 +383,27 @@
         "requireEmail": {
           "label": "Require email",
           "description": "Participants must provide an email to join"
+        },
+        "requireBirthday": {
+          "label": "Birthday required",
+          "description": "Guests must provide their birth date to join"
         }
       },
       "allowedLanguages": {
         "title": "Allowed languages",
         "description": "Select which languages can be used in this conversation",
         "allowLanguage": "Allow {language}",
-        "allowAllLanguages": "Allow all languages"
+        "allowAllLanguages": "Allow all languages",
+        "allowAllLanguagesHint": "Select no language to allow all languages"
       },
       "linkDetails": {
         "title": "Link details",
         "description": "Configure the sharing link information",
+        "requireAccount": {
+          "label": "Account required",
+          "description": "Only users with an account can join this conversation. Disables anonymous access.",
+          "info": "When this option is enabled, only authenticated users with an account can join. This completely disables anonymous access and automatically enforces all other requirements (email, birth date)."
+        },
         "linkName": "Link name",
         "linkNameInfo": "A friendly name to identify this link",
         "linkNamePlaceholder": "Ex: Team invitation, Partner access...",

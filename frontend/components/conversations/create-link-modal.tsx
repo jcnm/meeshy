@@ -929,6 +929,7 @@ export function CreateLinkModalV2({
                     <Label className="text-sm font-semibold text-blue-900 dark:text-blue-100">
                       {t('createLinkModal.linkDetails.requireAccount.label', 'Compte obligatoire')}
                     </Label>
+                    <InfoIcon content={t('createLinkModal.linkDetails.requireAccount.info', 'Lorsque cette option est activée, seuls les utilisateurs authentifiés avec un compte peuvent rejoindre. Cela désactive complètement l\'accès anonyme et force automatiquement toutes les autres exigences (email, date de naissance).')} />
                   </div>
                   <p className="text-xs text-blue-700 dark:text-blue-300">
                     {t('createLinkModal.linkDetails.requireAccount.description', 'Seuls les utilisateurs avec un compte peuvent rejoindre cette conversation. Désactive l\'accès anonyme.')}
@@ -1129,8 +1130,8 @@ export function CreateLinkModalV2({
                   />
               ))}
             </div>
-            <p className="text-xs text-muted-foreground">
-              {t('createLinkModal.allowedLanguages.allowAllLanguages')}
+            <p className="text-xs text-muted-foreground italic">
+              💡 {t('createLinkModal.allowedLanguages.allowAllLanguagesHint', 'Ne sélectionnez aucune langue pour autoriser toutes les langues')}
             </p>
           </CardContent>
         )}
