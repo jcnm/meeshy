@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, KeyboardEvent, forwardRef, useImperativeHandle, useEffect, useCallback, useMemo, memo } from 'react';
-import { Send, MapPin, X, MessageCircle, Languages, Paperclip, Loader2, Mic } from 'lucide-react';
+import { Send, MapPin, X, MessageCircle, Languages, Paperclip, Loader2, Mic, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { LanguageFlagSelector } from '@/components/translation';
@@ -83,10 +83,9 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
 
   // États pour l'enregistrement audio
   const [showAudioRecorder, setShowAudioRecorder] = useState(false);
-  const [isUploadingAudio, setIsUploadingAudio] = useState(false);
-  const [audioAttachmentId, setAudioAttachmentId] = useState<string | null>(null);
   const [currentAudioBlob, setCurrentAudioBlob] = useState<{ blob: Blob; duration: number } | null>(null);
   const [audioRecorderKey, setAudioRecorderKey] = useState(0); // Key pour forcer re-mount
+  const [isRecording, setIsRecording] = useState(false); // État pour savoir si on enregistre
   const audioRecorderRef = useRef<any>(null);
 
   // Ref pour gérer le timeout de stopTyping
@@ -389,113 +388,90 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     setUploadProgress({});
     // Reset aussi l'état audio
     setShowAudioRecorder(false);
-    setAudioAttachmentId(null);
     setCurrentAudioBlob(null);
+    setAudioRecorderKey(0);
+    setIsRecording(false);
+  }, []);
+
+  // Handler pour le changement d'état d'enregistrement - mémorisé
+  const handleRecordingStateChange = useCallback((recording: boolean) => {
+    console.log('🔄 État enregistrement changé:', recording);
+    setIsRecording(recording);
   }, []);
 
   // Handler pour l'enregistrement audio terminé - mémorisé
-  const handleAudioRecordingComplete = useCallback(async (audioBlob: Blob, duration: number, metadata?: any) => {
-    try {
-      setIsUploadingAudio(true);
+  const handleAudioRecordingComplete = useCallback((audioBlob: Blob, duration: number, metadata?: any) => {
+    console.log('🎤 Enregistrement terminé, stockage local du blob');
 
-      // Déterminer l'extension selon le codec/type MIME
-      const mimeType = audioBlob.type || metadata?.mimeType || 'audio/webm';
-      const extension = mimeType.includes('mp4') || mimeType.includes('m4a')
-        ? '.m4a'
-        : '.webm';
+    // Stocker le blob localement (ne pas uploader maintenant)
+    setCurrentAudioBlob({ blob: audioBlob, duration });
 
-      const filename = `audio_${Date.now()}${extension}`;
-      const audioFile = new File([audioBlob], filename, { type: mimeType });
-
-      // Upload du fichier audio avec métadonnées
-      const response = await AttachmentService.uploadFiles([audioFile], token, metadata ? [metadata] : undefined);
-
-      if (response.success && response.attachments && response.attachments.length > 0) {
-        const uploadedAttachment = response.attachments[0];
-
-        // Ajouter à la liste des attachments
-        setUploadedAttachments(prev => [...prev, uploadedAttachment]);
-
-        // Stocker l'ID pour pouvoir le supprimer plus tard
-        setAudioAttachmentId(uploadedAttachment.id);
-
-        console.log('✅ Audio message uploaded:', uploadedAttachment);
-        toast.success('Message audio enregistré');
-      } else {
-        throw new Error('Upload failed');
-      }
-    } catch (error) {
-      console.error('Failed to send audio message:', error);
-      toast.error('Erreur lors de l\'envoi du message audio');
-      // Fermer le recorder en cas d'erreur
-      setShowAudioRecorder(false);
-      setCurrentAudioBlob(null);
-    } finally {
-      setIsUploadingAudio(false);
-      // NE PAS fermer le recorder - garder la carte en mode lecture
-    }
-  }, [token]);
+    // Le fichier sera uploadé quand on l'ajoute au carrousel ou à l'envoi
+  }, []);
 
   // Handler pour supprimer l'enregistrement audio - mémorisé
-  const handleRemoveAudioRecording = useCallback(async () => {
-    // Si un attachment audio est uploadé, le supprimer
-    if (audioAttachmentId) {
-      try {
-        console.log('[MessageComposer] Suppression audio attachment:', audioAttachmentId);
-        await AttachmentService.deleteAttachment(audioAttachmentId, token);
-
-        // Retirer de la liste des attachments
-        setUploadedAttachments(prev => prev.filter(att => att.id !== audioAttachmentId));
-
-        console.log('[MessageComposer] ✅ Audio attachment supprimé');
-      } catch (error) {
-        console.error('[MessageComposer] ❌ Erreur suppression audio attachment:', error);
-        toast.error('Impossible de supprimer le fichier audio');
-      }
-    }
+  const handleRemoveAudioRecording = useCallback(() => {
+    console.log('[MessageComposer] Suppression de l\'enregistrement en cours');
 
     // Fermer le recorder et reset tous les états audio
     setShowAudioRecorder(false);
-    setAudioAttachmentId(null);
     setCurrentAudioBlob(null);
-  }, [audioAttachmentId, token]);
+    setIsRecording(false);
+  }, []);
 
-  // Handler pour le clic sur le bouton micro - gère le workflow multi-audio
-  const handleMicrophoneClick = useCallback(async () => {
-    // Si un enregistrement est EN COURS, l'arrêter d'abord
-    if (showAudioRecorder && audioRecorderRef.current?.isRecording()) {
-      audioRecorderRef.current.stopRecording();
-      console.log('⏹️ Enregistrement en cours arrêté - vue préservée');
-      return; // L'enregistrement s'arrête mais la vue reste visible pour replay
+  // Handler pour le clic sur le bouton micro - workflow simplifié
+  const handleMicrophoneClick = useCallback(() => {
+    // Si un enregistrement est EN COURS
+    if (showAudioRecorder && isRecording) {
+      // Arrêter l'enregistrement
+      audioRecorderRef.current?.stopRecording();
+      console.log('⏹️ Enregistrement arrêté via bouton micro');
+
+      // L'enregistrement va se terminer et appeler handleAudioRecordingComplete
+      // qui stockera le blob dans currentAudioBlob
+      // Puis on attend 100ms pour que le blob soit stocké avant de continuer
+      setTimeout(() => {
+        // Déplacer l'audio dans le carrousel et démarrer un nouveau
+        if (currentAudioBlob) {
+          const filename = `audio_${Date.now()}.webm`;
+          const audioFile = new File([currentAudioBlob.blob], filename, { type: currentAudioBlob.blob.type });
+
+          // Ajouter au carrousel
+          setSelectedFiles(prev => [...prev, audioFile]);
+          console.log('✅ Audio ajouté au carrousel, démarrage nouvel enregistrement');
+        }
+
+        // Reset et démarrer nouveau
+        setCurrentAudioBlob(null);
+        setAudioRecorderKey(prev => prev + 1);
+        setIsRecording(true); // Le nouveau va démarrer
+      }, 100);
+
+      return;
     }
 
-    // Si un enregistrement est déjà terminé (en mode lecture)
-    if (showAudioRecorder && currentAudioBlob && audioAttachmentId) {
-      // Convertir l'audio actuel en fichier normal dans le carrousel
+    // Si pas d'enregistrement en cours mais recorder ouvert (mode lecture)
+    if (showAudioRecorder && currentAudioBlob) {
+      // Convertir l'audio en fichier et l'ajouter au carrousel
       const filename = `audio_${Date.now()}.webm`;
       const audioFile = new File([currentAudioBlob.blob], filename, { type: currentAudioBlob.blob.type });
 
-      // Ajouter au carrousel
       setSelectedFiles(prev => [...prev, audioFile]);
+      console.log('✅ Audio en lecture converti, démarrage nouvel enregistrement');
 
-      console.log('✅ Audio converti en fichier normal, démarrage nouvel enregistrement');
-
-      // Reset les états audio ET changer la key pour forcer re-mount
+      // Reset et démarrer nouveau
       setCurrentAudioBlob(null);
-      setAudioAttachmentId(null);
       setAudioRecorderKey(prev => prev + 1);
-
-      // PAS de toggle - on garde showAudioRecorder à true
-      // Le changement de key forcera le re-mount du AudioRecorderCard
-    } else {
-      // Sinon, toggle le recorder normalement
-      setShowAudioRecorder(prev => !prev);
-      if (!showAudioRecorder) {
-        // Si on ouvre le recorder, reset la key
-        setAudioRecorderKey(prev => prev + 1);
-      }
+      setIsRecording(true);
+      return;
     }
-  }, [showAudioRecorder, currentAudioBlob, audioAttachmentId]);
+
+    // Sinon, ouvrir le recorder et démarrer enregistrement
+    setShowAudioRecorder(true);
+    setAudioRecorderKey(prev => prev + 1);
+    setIsRecording(true);
+    console.log('🎤 Démarrage nouvel enregistrement');
+  }, [showAudioRecorder, isRecording, currentAudioBlob]);
 
   useImperativeHandle(ref, () => ({
     focus: () => textareaRef.current?.focus(),
@@ -644,6 +620,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
                 key={audioRecorderKey}
                 ref={audioRecorderRef}
                 onRecordingComplete={handleAudioRecordingComplete}
+                onRecordingStateChange={handleRecordingStateChange}
                 onRemove={handleRemoveAudioRecording}
                 autoStart={true}
                 maxDuration={600}
@@ -738,17 +715,19 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
           )}
         </Button>
 
-        {/* Bouton Microphone (Audio) */}
+        {/* Bouton Microphone/Stop (Audio) */}
         <Button
           onClick={handleMicrophoneClick}
-          disabled={!isComposingEnabled || isUploadingAudio}
+          disabled={!isComposingEnabled}
           size="sm"
           variant="ghost"
-          className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full hover:bg-gray-100 relative"
-          title="Enregistrer un message vocal"
+          className={`h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full hover:bg-gray-100 relative ${
+            isRecording ? 'bg-red-50 hover:bg-red-100' : ''
+          }`}
+          title={isRecording ? "Arrêter et démarrer nouvel enregistrement" : "Enregistrer un message vocal"}
         >
-          {isUploadingAudio ? (
-            <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600 animate-spin" />
+          {isRecording ? (
+            <Square className="h-3 w-3 sm:h-4 sm:w-4 text-red-600 fill-red-600" />
           ) : (
             <Mic className={`h-3 w-3 sm:h-4 sm:w-4 ${showAudioRecorder ? 'text-blue-600' : 'text-gray-600'}`} />
           )}

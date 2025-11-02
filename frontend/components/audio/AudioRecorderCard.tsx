@@ -19,6 +19,7 @@ interface AudioRecorderCardProps {
   onRemove: () => void;
   autoStart?: boolean;
   maxDuration?: number; // en secondes, défaut: 600 (10 min)
+  onRecordingStateChange?: (isRecording: boolean) => void; // Callback pour synchroniser l'état
 }
 
 export interface AudioRecorderCardRef {
@@ -82,7 +83,8 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
   onRecordingComplete,
   onRemove,
   autoStart = true,
-  maxDuration = 600
+  maxDuration = 600,
+  onRecordingStateChange
 }, ref) => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0); // En millisecondes
@@ -337,6 +339,11 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
       setIsInitializing(false);
       setRecordingTime(0);
 
+      // Notifier le parent du changement d'état
+      if (onRecordingStateChange) {
+        onRecordingStateChange(true);
+      }
+
       // Démarrer le timer haute précision avec requestAnimationFrame
       startTimeRef.current = performance.now();
       animationFrameRef.current = requestAnimationFrame(updateTimer);
@@ -379,7 +386,12 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
     }
 
     setIsRecording(false);
-  }, []);
+
+    // Notifier le parent du changement d'état
+    if (onRecordingStateChange) {
+      onRecordingStateChange(false);
+    }
+  }, [onRecordingStateChange]);
 
   // Exposer les méthodes via ref pour contrôle externe
   useImperativeHandle(ref, () => ({
