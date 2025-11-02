@@ -50,8 +50,10 @@ interface LinkSummaryModalProps {
     allowAnonymousFiles: boolean;
     allowAnonymousImages: boolean;
     allowViewHistory: boolean;
+    requireAccount: boolean;
     requireNickname: boolean;
     requireEmail: boolean;
+    requireBirthday: boolean;
     allowedLanguages: string[];
   };
 }

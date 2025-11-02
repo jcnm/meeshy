@@ -8332,8 +8332,10 @@ export namespace Prisma {
     allowAnonymousFiles: boolean | null
     allowAnonymousImages: boolean | null
     allowViewHistory: boolean | null
+    requireAccount: boolean | null
     requireNickname: boolean | null
     requireEmail: boolean | null
+    requireBirthday: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -8358,8 +8360,10 @@ export namespace Prisma {
     allowAnonymousFiles: boolean | null
     allowAnonymousImages: boolean | null
     allowViewHistory: boolean | null
+    requireAccount: boolean | null
     requireNickname: boolean | null
     requireEmail: boolean | null
+    requireBirthday: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -8384,8 +8388,10 @@ export namespace Prisma {
     allowAnonymousFiles: number
     allowAnonymousImages: number
     allowViewHistory: number
+    requireAccount: number
     requireNickname: number
     requireEmail: number
+    requireBirthday: number
     allowedCountries: number
     allowedLanguages: number
     allowedIpRanges: number
@@ -8433,8 +8439,10 @@ export namespace Prisma {
     allowAnonymousFiles?: true
     allowAnonymousImages?: true
     allowViewHistory?: true
+    requireAccount?: true
     requireNickname?: true
     requireEmail?: true
+    requireBirthday?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -8459,8 +8467,10 @@ export namespace Prisma {
     allowAnonymousFiles?: true
     allowAnonymousImages?: true
     allowViewHistory?: true
+    requireAccount?: true
     requireNickname?: true
     requireEmail?: true
+    requireBirthday?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -8485,8 +8495,10 @@ export namespace Prisma {
     allowAnonymousFiles?: true
     allowAnonymousImages?: true
     allowViewHistory?: true
+    requireAccount?: true
     requireNickname?: true
     requireEmail?: true
+    requireBirthday?: true
     allowedCountries?: true
     allowedLanguages?: true
     allowedIpRanges?: true
@@ -8601,8 +8613,10 @@ export namespace Prisma {
     allowAnonymousFiles: boolean
     allowAnonymousImages: boolean
     allowViewHistory: boolean
+    requireAccount: boolean
     requireNickname: boolean
     requireEmail: boolean
+    requireBirthday: boolean
     allowedCountries: string[]
     allowedLanguages: string[]
     allowedIpRanges: string[]
@@ -8649,8 +8663,10 @@ export namespace Prisma {
     allowAnonymousFiles?: boolean
     allowAnonymousImages?: boolean
     allowViewHistory?: boolean
+    requireAccount?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    requireBirthday?: boolean
     allowedCountries?: boolean
     allowedLanguages?: boolean
     allowedIpRanges?: boolean
@@ -8684,8 +8700,10 @@ export namespace Prisma {
     allowAnonymousFiles?: boolean
     allowAnonymousImages?: boolean
     allowViewHistory?: boolean
+    requireAccount?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    requireBirthday?: boolean
     allowedCountries?: boolean
     allowedLanguages?: boolean
     allowedIpRanges?: boolean
@@ -8693,7 +8711,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type ConversationShareLinkOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "linkId" | "identifier" | "conversationId" | "createdBy" | "name" | "description" | "maxUses" | "currentUses" | "maxConcurrentUsers" | "currentConcurrentUsers" | "maxUniqueSessions" | "currentUniqueSessions" | "expiresAt" | "isActive" | "allowAnonymousMessages" | "allowAnonymousFiles" | "allowAnonymousImages" | "allowViewHistory" | "requireNickname" | "requireEmail" | "allowedCountries" | "allowedLanguages" | "allowedIpRanges" | "createdAt" | "updatedAt", ExtArgs["result"]["conversationShareLink"]>
+  export type ConversationShareLinkOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "linkId" | "identifier" | "conversationId" | "createdBy" | "name" | "description" | "maxUses" | "currentUses" | "maxConcurrentUsers" | "currentConcurrentUsers" | "maxUniqueSessions" | "currentUniqueSessions" | "expiresAt" | "isActive" | "allowAnonymousMessages" | "allowAnonymousFiles" | "allowAnonymousImages" | "allowViewHistory" | "requireAccount" | "requireNickname" | "requireEmail" | "requireBirthday" | "allowedCountries" | "allowedLanguages" | "allowedIpRanges" | "createdAt" | "updatedAt", ExtArgs["result"]["conversationShareLink"]>
   export type ConversationShareLinkInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     anonymousParticipants?: boolean | ConversationShareLink$anonymousParticipantsArgs<ExtArgs>
     creator?: boolean | UserDefaultArgs<ExtArgs>
@@ -8731,8 +8749,16 @@ export namespace Prisma {
       allowAnonymousFiles: boolean
       allowAnonymousImages: boolean
       allowViewHistory: boolean
+      /**
+       * Si true, seuls les utilisateurs avec compte peuvent rejoindre (bloque l'accès anonyme)
+       */
+      requireAccount: boolean
       requireNickname: boolean
       requireEmail: boolean
+      /**
+       * Si true, demande la date de naissance pour vérifier l'âge minimum
+       */
+      requireBirthday: boolean
       allowedCountries: string[]
       allowedLanguages: string[]
       allowedIpRanges: string[]
@@ -9152,8 +9178,10 @@ export namespace Prisma {
     readonly allowAnonymousFiles: FieldRef<"ConversationShareLink", 'Boolean'>
     readonly allowAnonymousImages: FieldRef<"ConversationShareLink", 'Boolean'>
     readonly allowViewHistory: FieldRef<"ConversationShareLink", 'Boolean'>
+    readonly requireAccount: FieldRef<"ConversationShareLink", 'Boolean'>
     readonly requireNickname: FieldRef<"ConversationShareLink", 'Boolean'>
     readonly requireEmail: FieldRef<"ConversationShareLink", 'Boolean'>
+    readonly requireBirthday: FieldRef<"ConversationShareLink", 'Boolean'>
     readonly allowedCountries: FieldRef<"ConversationShareLink", 'String[]'>
     readonly allowedLanguages: FieldRef<"ConversationShareLink", 'String[]'>
     readonly allowedIpRanges: FieldRef<"ConversationShareLink", 'String[]'>
@@ -9589,6 +9617,7 @@ export namespace Prisma {
     lastName: string | null
     username: string | null
     email: string | null
+    birthday: Date | null
     sessionToken: string | null
     ipAddress: string | null
     country: string | null
@@ -9613,6 +9642,7 @@ export namespace Prisma {
     lastName: string | null
     username: string | null
     email: string | null
+    birthday: Date | null
     sessionToken: string | null
     ipAddress: string | null
     country: string | null
@@ -9637,6 +9667,7 @@ export namespace Prisma {
     lastName: number
     username: number
     email: number
+    birthday: number
     sessionToken: number
     ipAddress: number
     country: number
@@ -9663,6 +9694,7 @@ export namespace Prisma {
     lastName?: true
     username?: true
     email?: true
+    birthday?: true
     sessionToken?: true
     ipAddress?: true
     country?: true
@@ -9687,6 +9719,7 @@ export namespace Prisma {
     lastName?: true
     username?: true
     email?: true
+    birthday?: true
     sessionToken?: true
     ipAddress?: true
     country?: true
@@ -9711,6 +9744,7 @@ export namespace Prisma {
     lastName?: true
     username?: true
     email?: true
+    birthday?: true
     sessionToken?: true
     ipAddress?: true
     country?: true
@@ -9808,6 +9842,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email: string | null
+    birthday: Date | null
     sessionToken: string
     ipAddress: string | null
     country: string | null
@@ -9849,6 +9884,7 @@ export namespace Prisma {
     lastName?: boolean
     username?: boolean
     email?: boolean
+    birthday?: boolean
     sessionToken?: boolean
     ipAddress?: boolean
     country?: boolean
@@ -9881,6 +9917,7 @@ export namespace Prisma {
     lastName?: boolean
     username?: boolean
     email?: boolean
+    birthday?: boolean
     sessionToken?: boolean
     ipAddress?: boolean
     country?: boolean
@@ -9897,7 +9934,7 @@ export namespace Prisma {
     leftAt?: boolean
   }
 
-  export type AnonymousParticipantOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "shareLinkId" | "firstName" | "lastName" | "username" | "email" | "sessionToken" | "ipAddress" | "country" | "language" | "deviceFingerprint" | "isActive" | "isOnline" | "lastActiveAt" | "canSendMessages" | "canSendFiles" | "canSendImages" | "joinedAt" | "lastSeenAt" | "leftAt", ExtArgs["result"]["anonymousParticipant"]>
+  export type AnonymousParticipantOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "shareLinkId" | "firstName" | "lastName" | "username" | "email" | "birthday" | "sessionToken" | "ipAddress" | "country" | "language" | "deviceFingerprint" | "isActive" | "isOnline" | "lastActiveAt" | "canSendMessages" | "canSendFiles" | "canSendImages" | "joinedAt" | "lastSeenAt" | "leftAt", ExtArgs["result"]["anonymousParticipant"]>
   export type AnonymousParticipantInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     shareLink?: boolean | ConversationShareLinkDefaultArgs<ExtArgs>
     conversation?: boolean | ConversationDefaultArgs<ExtArgs>
@@ -9924,6 +9961,7 @@ export namespace Prisma {
       lastName: string
       username: string
       email: string | null
+      birthday: Date | null
       sessionToken: string
       ipAddress: string | null
       country: string | null
@@ -10342,6 +10380,7 @@ export namespace Prisma {
     readonly lastName: FieldRef<"AnonymousParticipant", 'String'>
     readonly username: FieldRef<"AnonymousParticipant", 'String'>
     readonly email: FieldRef<"AnonymousParticipant", 'String'>
+    readonly birthday: FieldRef<"AnonymousParticipant", 'DateTime'>
     readonly sessionToken: FieldRef<"AnonymousParticipant", 'String'>
     readonly ipAddress: FieldRef<"AnonymousParticipant", 'String'>
     readonly country: FieldRef<"AnonymousParticipant", 'String'>
@@ -13221,6 +13260,9 @@ export namespace Prisma {
     width: number | null
     height: number | null
     duration: number | null
+    bitrate: number | null
+    sampleRate: number | null
+    channels: number | null
   }
 
   export type MessageAttachmentSumAggregateOutputType = {
@@ -13228,6 +13270,9 @@ export namespace Prisma {
     width: number | null
     height: number | null
     duration: number | null
+    bitrate: number | null
+    sampleRate: number | null
+    channels: number | null
   }
 
   export type MessageAttachmentMinAggregateOutputType = {
@@ -13244,6 +13289,10 @@ export namespace Prisma {
     thumbnailPath: string | null
     thumbnailUrl: string | null
     duration: number | null
+    bitrate: number | null
+    sampleRate: number | null
+    codec: string | null
+    channels: number | null
     uploadedBy: string | null
     isAnonymous: boolean | null
     createdAt: Date | null
@@ -13263,6 +13312,10 @@ export namespace Prisma {
     thumbnailPath: string | null
     thumbnailUrl: string | null
     duration: number | null
+    bitrate: number | null
+    sampleRate: number | null
+    codec: string | null
+    channels: number | null
     uploadedBy: string | null
     isAnonymous: boolean | null
     createdAt: Date | null
@@ -13282,9 +13335,14 @@ export namespace Prisma {
     thumbnailPath: number
     thumbnailUrl: number
     duration: number
+    bitrate: number
+    sampleRate: number
+    codec: number
+    channels: number
     uploadedBy: number
     isAnonymous: number
     createdAt: number
+    metadata: number
     _all: number
   }
 
@@ -13294,6 +13352,9 @@ export namespace Prisma {
     width?: true
     height?: true
     duration?: true
+    bitrate?: true
+    sampleRate?: true
+    channels?: true
   }
 
   export type MessageAttachmentSumAggregateInputType = {
@@ -13301,6 +13362,9 @@ export namespace Prisma {
     width?: true
     height?: true
     duration?: true
+    bitrate?: true
+    sampleRate?: true
+    channels?: true
   }
 
   export type MessageAttachmentMinAggregateInputType = {
@@ -13317,6 +13381,10 @@ export namespace Prisma {
     thumbnailPath?: true
     thumbnailUrl?: true
     duration?: true
+    bitrate?: true
+    sampleRate?: true
+    codec?: true
+    channels?: true
     uploadedBy?: true
     isAnonymous?: true
     createdAt?: true
@@ -13336,6 +13404,10 @@ export namespace Prisma {
     thumbnailPath?: true
     thumbnailUrl?: true
     duration?: true
+    bitrate?: true
+    sampleRate?: true
+    codec?: true
+    channels?: true
     uploadedBy?: true
     isAnonymous?: true
     createdAt?: true
@@ -13355,9 +13427,14 @@ export namespace Prisma {
     thumbnailPath?: true
     thumbnailUrl?: true
     duration?: true
+    bitrate?: true
+    sampleRate?: true
+    codec?: true
+    channels?: true
     uploadedBy?: true
     isAnonymous?: true
     createdAt?: true
+    metadata?: true
     _all?: true
   }
 
@@ -13461,9 +13538,14 @@ export namespace Prisma {
     thumbnailPath: string | null
     thumbnailUrl: string | null
     duration: number | null
+    bitrate: number | null
+    sampleRate: number | null
+    codec: string | null
+    channels: number | null
     uploadedBy: string
     isAnonymous: boolean
     createdAt: Date
+    metadata: JsonValue | null
     _count: MessageAttachmentCountAggregateOutputType | null
     _avg: MessageAttachmentAvgAggregateOutputType | null
     _sum: MessageAttachmentSumAggregateOutputType | null
@@ -13499,9 +13581,14 @@ export namespace Prisma {
     thumbnailPath?: boolean
     thumbnailUrl?: boolean
     duration?: boolean
+    bitrate?: boolean
+    sampleRate?: boolean
+    codec?: boolean
+    channels?: boolean
     uploadedBy?: boolean
     isAnonymous?: boolean
     createdAt?: boolean
+    metadata?: boolean
     message?: boolean | MessageDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["messageAttachment"]>
 
@@ -13521,12 +13608,17 @@ export namespace Prisma {
     thumbnailPath?: boolean
     thumbnailUrl?: boolean
     duration?: boolean
+    bitrate?: boolean
+    sampleRate?: boolean
+    codec?: boolean
+    channels?: boolean
     uploadedBy?: boolean
     isAnonymous?: boolean
     createdAt?: boolean
+    metadata?: boolean
   }
 
-  export type MessageAttachmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "messageId" | "fileName" | "originalName" | "mimeType" | "fileSize" | "filePath" | "fileUrl" | "width" | "height" | "thumbnailPath" | "thumbnailUrl" | "duration" | "uploadedBy" | "isAnonymous" | "createdAt", ExtArgs["result"]["messageAttachment"]>
+  export type MessageAttachmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "messageId" | "fileName" | "originalName" | "mimeType" | "fileSize" | "filePath" | "fileUrl" | "width" | "height" | "thumbnailPath" | "thumbnailUrl" | "duration" | "bitrate" | "sampleRate" | "codec" | "channels" | "uploadedBy" | "isAnonymous" | "createdAt" | "metadata", ExtArgs["result"]["messageAttachment"]>
   export type MessageAttachmentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     message?: boolean | MessageDefaultArgs<ExtArgs>
   }
@@ -13550,9 +13642,17 @@ export namespace Prisma {
       thumbnailPath: string | null
       thumbnailUrl: string | null
       duration: number | null
+      bitrate: number | null
+      sampleRate: number | null
+      codec: string | null
+      channels: number | null
       uploadedBy: string
       isAnonymous: boolean
       createdAt: Date
+      /**
+       * Attachment metadata
+       */
+      metadata: Prisma.JsonValue | null
     }, ExtArgs["result"]["messageAttachment"]>
     composites: {}
   }
@@ -13959,9 +14059,14 @@ export namespace Prisma {
     readonly thumbnailPath: FieldRef<"MessageAttachment", 'String'>
     readonly thumbnailUrl: FieldRef<"MessageAttachment", 'String'>
     readonly duration: FieldRef<"MessageAttachment", 'Int'>
+    readonly bitrate: FieldRef<"MessageAttachment", 'Int'>
+    readonly sampleRate: FieldRef<"MessageAttachment", 'Int'>
+    readonly codec: FieldRef<"MessageAttachment", 'String'>
+    readonly channels: FieldRef<"MessageAttachment", 'Int'>
     readonly uploadedBy: FieldRef<"MessageAttachment", 'String'>
     readonly isAnonymous: FieldRef<"MessageAttachment", 'Boolean'>
     readonly createdAt: FieldRef<"MessageAttachment", 'DateTime'>
+    readonly metadata: FieldRef<"MessageAttachment", 'Json'>
   }
     
 
@@ -35831,8 +35936,10 @@ export namespace Prisma {
     allowAnonymousFiles: 'allowAnonymousFiles',
     allowAnonymousImages: 'allowAnonymousImages',
     allowViewHistory: 'allowViewHistory',
+    requireAccount: 'requireAccount',
     requireNickname: 'requireNickname',
     requireEmail: 'requireEmail',
+    requireBirthday: 'requireBirthday',
     allowedCountries: 'allowedCountries',
     allowedLanguages: 'allowedLanguages',
     allowedIpRanges: 'allowedIpRanges',
@@ -35851,6 +35958,7 @@ export namespace Prisma {
     lastName: 'lastName',
     username: 'username',
     email: 'email',
+    birthday: 'birthday',
     sessionToken: 'sessionToken',
     ipAddress: 'ipAddress',
     country: 'country',
@@ -35920,9 +36028,14 @@ export namespace Prisma {
     thumbnailPath: 'thumbnailPath',
     thumbnailUrl: 'thumbnailUrl',
     duration: 'duration',
+    bitrate: 'bitrate',
+    sampleRate: 'sampleRate',
+    codec: 'codec',
+    channels: 'channels',
     uploadedBy: 'uploadedBy',
     isAnonymous: 'isAnonymous',
-    createdAt: 'createdAt'
+    createdAt: 'createdAt',
+    metadata: 'metadata'
   };
 
   export type MessageAttachmentScalarFieldEnum = (typeof MessageAttachmentScalarFieldEnum)[keyof typeof MessageAttachmentScalarFieldEnum]
@@ -36330,6 +36443,13 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+  /**
    * Reference to a field of type 'CallMode'
    */
   export type EnumCallModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CallMode'>
@@ -36354,13 +36474,6 @@ export namespace Prisma {
    * Reference to a field of type 'CallStatus[]'
    */
   export type ListEnumCallStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CallStatus[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'Json'
-   */
-  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
     
 
 
@@ -36909,8 +37022,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFilter<"ConversationShareLink"> | boolean
     allowAnonymousImages?: BoolFilter<"ConversationShareLink"> | boolean
     allowViewHistory?: BoolFilter<"ConversationShareLink"> | boolean
+    requireAccount?: BoolFilter<"ConversationShareLink"> | boolean
     requireNickname?: BoolFilter<"ConversationShareLink"> | boolean
     requireEmail?: BoolFilter<"ConversationShareLink"> | boolean
+    requireBirthday?: BoolFilter<"ConversationShareLink"> | boolean
     allowedCountries?: StringNullableListFilter<"ConversationShareLink">
     allowedLanguages?: StringNullableListFilter<"ConversationShareLink">
     allowedIpRanges?: StringNullableListFilter<"ConversationShareLink">
@@ -36941,8 +37056,10 @@ export namespace Prisma {
     allowAnonymousFiles?: SortOrder
     allowAnonymousImages?: SortOrder
     allowViewHistory?: SortOrder
+    requireAccount?: SortOrder
     requireNickname?: SortOrder
     requireEmail?: SortOrder
+    requireBirthday?: SortOrder
     allowedCountries?: SortOrder
     allowedLanguages?: SortOrder
     allowedIpRanges?: SortOrder
@@ -36976,8 +37093,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFilter<"ConversationShareLink"> | boolean
     allowAnonymousImages?: BoolFilter<"ConversationShareLink"> | boolean
     allowViewHistory?: BoolFilter<"ConversationShareLink"> | boolean
+    requireAccount?: BoolFilter<"ConversationShareLink"> | boolean
     requireNickname?: BoolFilter<"ConversationShareLink"> | boolean
     requireEmail?: BoolFilter<"ConversationShareLink"> | boolean
+    requireBirthday?: BoolFilter<"ConversationShareLink"> | boolean
     allowedCountries?: StringNullableListFilter<"ConversationShareLink">
     allowedLanguages?: StringNullableListFilter<"ConversationShareLink">
     allowedIpRanges?: StringNullableListFilter<"ConversationShareLink">
@@ -37008,8 +37127,10 @@ export namespace Prisma {
     allowAnonymousFiles?: SortOrder
     allowAnonymousImages?: SortOrder
     allowViewHistory?: SortOrder
+    requireAccount?: SortOrder
     requireNickname?: SortOrder
     requireEmail?: SortOrder
+    requireBirthday?: SortOrder
     allowedCountries?: SortOrder
     allowedLanguages?: SortOrder
     allowedIpRanges?: SortOrder
@@ -37045,8 +37166,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolWithAggregatesFilter<"ConversationShareLink"> | boolean
     allowAnonymousImages?: BoolWithAggregatesFilter<"ConversationShareLink"> | boolean
     allowViewHistory?: BoolWithAggregatesFilter<"ConversationShareLink"> | boolean
+    requireAccount?: BoolWithAggregatesFilter<"ConversationShareLink"> | boolean
     requireNickname?: BoolWithAggregatesFilter<"ConversationShareLink"> | boolean
     requireEmail?: BoolWithAggregatesFilter<"ConversationShareLink"> | boolean
+    requireBirthday?: BoolWithAggregatesFilter<"ConversationShareLink"> | boolean
     allowedCountries?: StringNullableListFilter<"ConversationShareLink">
     allowedLanguages?: StringNullableListFilter<"ConversationShareLink">
     allowedIpRanges?: StringNullableListFilter<"ConversationShareLink">
@@ -37065,6 +37188,7 @@ export namespace Prisma {
     lastName?: StringFilter<"AnonymousParticipant"> | string
     username?: StringFilter<"AnonymousParticipant"> | string
     email?: StringNullableFilter<"AnonymousParticipant"> | string | null
+    birthday?: DateTimeNullableFilter<"AnonymousParticipant"> | Date | string | null
     sessionToken?: StringFilter<"AnonymousParticipant"> | string
     ipAddress?: StringNullableFilter<"AnonymousParticipant"> | string | null
     country?: StringNullableFilter<"AnonymousParticipant"> | string | null
@@ -37094,6 +37218,7 @@ export namespace Prisma {
     lastName?: SortOrder
     username?: SortOrder
     email?: SortOrder
+    birthday?: SortOrder
     sessionToken?: SortOrder
     ipAddress?: SortOrder
     country?: SortOrder
@@ -37127,6 +37252,7 @@ export namespace Prisma {
     lastName?: StringFilter<"AnonymousParticipant"> | string
     username?: StringFilter<"AnonymousParticipant"> | string
     email?: StringNullableFilter<"AnonymousParticipant"> | string | null
+    birthday?: DateTimeNullableFilter<"AnonymousParticipant"> | Date | string | null
     ipAddress?: StringNullableFilter<"AnonymousParticipant"> | string | null
     country?: StringNullableFilter<"AnonymousParticipant"> | string | null
     language?: StringFilter<"AnonymousParticipant"> | string
@@ -37155,6 +37281,7 @@ export namespace Prisma {
     lastName?: SortOrder
     username?: SortOrder
     email?: SortOrder
+    birthday?: SortOrder
     sessionToken?: SortOrder
     ipAddress?: SortOrder
     country?: SortOrder
@@ -37185,6 +37312,7 @@ export namespace Prisma {
     lastName?: StringWithAggregatesFilter<"AnonymousParticipant"> | string
     username?: StringWithAggregatesFilter<"AnonymousParticipant"> | string
     email?: StringNullableWithAggregatesFilter<"AnonymousParticipant"> | string | null
+    birthday?: DateTimeNullableWithAggregatesFilter<"AnonymousParticipant"> | Date | string | null
     sessionToken?: StringWithAggregatesFilter<"AnonymousParticipant"> | string
     ipAddress?: StringNullableWithAggregatesFilter<"AnonymousParticipant"> | string | null
     country?: StringNullableWithAggregatesFilter<"AnonymousParticipant"> | string | null
@@ -37428,9 +37556,14 @@ export namespace Prisma {
     thumbnailPath?: StringNullableFilter<"MessageAttachment"> | string | null
     thumbnailUrl?: StringNullableFilter<"MessageAttachment"> | string | null
     duration?: IntNullableFilter<"MessageAttachment"> | number | null
+    bitrate?: IntNullableFilter<"MessageAttachment"> | number | null
+    sampleRate?: IntNullableFilter<"MessageAttachment"> | number | null
+    codec?: StringNullableFilter<"MessageAttachment"> | string | null
+    channels?: IntNullableFilter<"MessageAttachment"> | number | null
     uploadedBy?: StringFilter<"MessageAttachment"> | string
     isAnonymous?: BoolFilter<"MessageAttachment"> | boolean
     createdAt?: DateTimeFilter<"MessageAttachment"> | Date | string
+    metadata?: JsonNullableFilter<"MessageAttachment">
     message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
   }
 
@@ -37448,9 +37581,14 @@ export namespace Prisma {
     thumbnailPath?: SortOrder
     thumbnailUrl?: SortOrder
     duration?: SortOrder
+    bitrate?: SortOrder
+    sampleRate?: SortOrder
+    codec?: SortOrder
+    channels?: SortOrder
     uploadedBy?: SortOrder
     isAnonymous?: SortOrder
     createdAt?: SortOrder
+    metadata?: SortOrder
     message?: MessageOrderByWithRelationInput
   }
 
@@ -37471,9 +37609,14 @@ export namespace Prisma {
     thumbnailPath?: StringNullableFilter<"MessageAttachment"> | string | null
     thumbnailUrl?: StringNullableFilter<"MessageAttachment"> | string | null
     duration?: IntNullableFilter<"MessageAttachment"> | number | null
+    bitrate?: IntNullableFilter<"MessageAttachment"> | number | null
+    sampleRate?: IntNullableFilter<"MessageAttachment"> | number | null
+    codec?: StringNullableFilter<"MessageAttachment"> | string | null
+    channels?: IntNullableFilter<"MessageAttachment"> | number | null
     uploadedBy?: StringFilter<"MessageAttachment"> | string
     isAnonymous?: BoolFilter<"MessageAttachment"> | boolean
     createdAt?: DateTimeFilter<"MessageAttachment"> | Date | string
+    metadata?: JsonNullableFilter<"MessageAttachment">
     message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
   }, "id">
 
@@ -37491,9 +37634,14 @@ export namespace Prisma {
     thumbnailPath?: SortOrder
     thumbnailUrl?: SortOrder
     duration?: SortOrder
+    bitrate?: SortOrder
+    sampleRate?: SortOrder
+    codec?: SortOrder
+    channels?: SortOrder
     uploadedBy?: SortOrder
     isAnonymous?: SortOrder
     createdAt?: SortOrder
+    metadata?: SortOrder
     _count?: MessageAttachmentCountOrderByAggregateInput
     _avg?: MessageAttachmentAvgOrderByAggregateInput
     _max?: MessageAttachmentMaxOrderByAggregateInput
@@ -37518,9 +37666,14 @@ export namespace Prisma {
     thumbnailPath?: StringNullableWithAggregatesFilter<"MessageAttachment"> | string | null
     thumbnailUrl?: StringNullableWithAggregatesFilter<"MessageAttachment"> | string | null
     duration?: IntNullableWithAggregatesFilter<"MessageAttachment"> | number | null
+    bitrate?: IntNullableWithAggregatesFilter<"MessageAttachment"> | number | null
+    sampleRate?: IntNullableWithAggregatesFilter<"MessageAttachment"> | number | null
+    codec?: StringNullableWithAggregatesFilter<"MessageAttachment"> | string | null
+    channels?: IntNullableWithAggregatesFilter<"MessageAttachment"> | number | null
     uploadedBy?: StringWithAggregatesFilter<"MessageAttachment"> | string
     isAnonymous?: BoolWithAggregatesFilter<"MessageAttachment"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"MessageAttachment"> | Date | string
+    metadata?: JsonNullableWithAggregatesFilter<"MessageAttachment">
   }
 
   export type MessageStatusWhereInput = {
@@ -39799,8 +39952,10 @@ export namespace Prisma {
     allowAnonymousFiles?: boolean
     allowAnonymousImages?: boolean
     allowViewHistory?: boolean
+    requireAccount?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    requireBirthday?: boolean
     allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
@@ -39831,8 +39986,10 @@ export namespace Prisma {
     allowAnonymousFiles?: boolean
     allowAnonymousImages?: boolean
     allowViewHistory?: boolean
+    requireAccount?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    requireBirthday?: boolean
     allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
@@ -39858,8 +40015,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireAccount?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    requireBirthday?: BoolFieldUpdateOperationsInput | boolean
     allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
@@ -39889,8 +40048,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireAccount?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    requireBirthday?: BoolFieldUpdateOperationsInput | boolean
     allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
@@ -39919,8 +40080,10 @@ export namespace Prisma {
     allowAnonymousFiles?: boolean
     allowAnonymousImages?: boolean
     allowViewHistory?: boolean
+    requireAccount?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    requireBirthday?: boolean
     allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
@@ -39945,8 +40108,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireAccount?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    requireBirthday?: BoolFieldUpdateOperationsInput | boolean
     allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
@@ -39973,8 +40138,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireAccount?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    requireBirthday?: BoolFieldUpdateOperationsInput | boolean
     allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
@@ -39988,6 +40155,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -40017,6 +40185,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -40041,6 +40210,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40069,6 +40239,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40096,6 +40267,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -40117,6 +40289,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40140,6 +40313,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40390,9 +40564,14 @@ export namespace Prisma {
     thumbnailPath?: string | null
     thumbnailUrl?: string | null
     duration?: number | null
+    bitrate?: number | null
+    sampleRate?: number | null
+    codec?: string | null
+    channels?: number | null
     uploadedBy: string
     isAnonymous?: boolean
     createdAt?: Date | string
+    metadata?: InputJsonValue | null
     message: MessageCreateNestedOneWithoutAttachmentsInput
   }
 
@@ -40410,9 +40589,14 @@ export namespace Prisma {
     thumbnailPath?: string | null
     thumbnailUrl?: string | null
     duration?: number | null
+    bitrate?: number | null
+    sampleRate?: number | null
+    codec?: string | null
+    channels?: number | null
     uploadedBy: string
     isAnonymous?: boolean
     createdAt?: Date | string
+    metadata?: InputJsonValue | null
   }
 
   export type MessageAttachmentUpdateInput = {
@@ -40427,9 +40611,14 @@ export namespace Prisma {
     thumbnailPath?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    bitrate?: NullableIntFieldUpdateOperationsInput | number | null
+    sampleRate?: NullableIntFieldUpdateOperationsInput | number | null
+    codec?: NullableStringFieldUpdateOperationsInput | string | null
+    channels?: NullableIntFieldUpdateOperationsInput | number | null
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: InputJsonValue | InputJsonValue | null
     message?: MessageUpdateOneRequiredWithoutAttachmentsNestedInput
   }
 
@@ -40446,9 +40635,14 @@ export namespace Prisma {
     thumbnailPath?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    bitrate?: NullableIntFieldUpdateOperationsInput | number | null
+    sampleRate?: NullableIntFieldUpdateOperationsInput | number | null
+    codec?: NullableStringFieldUpdateOperationsInput | string | null
+    channels?: NullableIntFieldUpdateOperationsInput | number | null
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: InputJsonValue | InputJsonValue | null
   }
 
   export type MessageAttachmentCreateManyInput = {
@@ -40465,9 +40659,14 @@ export namespace Prisma {
     thumbnailPath?: string | null
     thumbnailUrl?: string | null
     duration?: number | null
+    bitrate?: number | null
+    sampleRate?: number | null
+    codec?: string | null
+    channels?: number | null
     uploadedBy: string
     isAnonymous?: boolean
     createdAt?: Date | string
+    metadata?: InputJsonValue | null
   }
 
   export type MessageAttachmentUpdateManyMutationInput = {
@@ -40482,9 +40681,14 @@ export namespace Prisma {
     thumbnailPath?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    bitrate?: NullableIntFieldUpdateOperationsInput | number | null
+    sampleRate?: NullableIntFieldUpdateOperationsInput | number | null
+    codec?: NullableStringFieldUpdateOperationsInput | string | null
+    channels?: NullableIntFieldUpdateOperationsInput | number | null
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: InputJsonValue | InputJsonValue | null
   }
 
   export type MessageAttachmentUncheckedUpdateManyInput = {
@@ -40500,9 +40704,14 @@ export namespace Prisma {
     thumbnailPath?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    bitrate?: NullableIntFieldUpdateOperationsInput | number | null
+    sampleRate?: NullableIntFieldUpdateOperationsInput | number | null
+    codec?: NullableStringFieldUpdateOperationsInput | string | null
+    channels?: NullableIntFieldUpdateOperationsInput | number | null
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: InputJsonValue | InputJsonValue | null
   }
 
   export type MessageStatusCreateInput = {
@@ -42872,8 +43081,10 @@ export namespace Prisma {
     allowAnonymousFiles?: SortOrder
     allowAnonymousImages?: SortOrder
     allowViewHistory?: SortOrder
+    requireAccount?: SortOrder
     requireNickname?: SortOrder
     requireEmail?: SortOrder
+    requireBirthday?: SortOrder
     allowedCountries?: SortOrder
     allowedLanguages?: SortOrder
     allowedIpRanges?: SortOrder
@@ -42910,8 +43121,10 @@ export namespace Prisma {
     allowAnonymousFiles?: SortOrder
     allowAnonymousImages?: SortOrder
     allowViewHistory?: SortOrder
+    requireAccount?: SortOrder
     requireNickname?: SortOrder
     requireEmail?: SortOrder
+    requireBirthday?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -42936,8 +43149,10 @@ export namespace Prisma {
     allowAnonymousFiles?: SortOrder
     allowAnonymousImages?: SortOrder
     allowViewHistory?: SortOrder
+    requireAccount?: SortOrder
     requireNickname?: SortOrder
     requireEmail?: SortOrder
+    requireBirthday?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -42980,6 +43195,7 @@ export namespace Prisma {
     lastName?: SortOrder
     username?: SortOrder
     email?: SortOrder
+    birthday?: SortOrder
     sessionToken?: SortOrder
     ipAddress?: SortOrder
     country?: SortOrder
@@ -43004,6 +43220,7 @@ export namespace Prisma {
     lastName?: SortOrder
     username?: SortOrder
     email?: SortOrder
+    birthday?: SortOrder
     sessionToken?: SortOrder
     ipAddress?: SortOrder
     country?: SortOrder
@@ -43028,6 +43245,7 @@ export namespace Prisma {
     lastName?: SortOrder
     username?: SortOrder
     email?: SortOrder
+    birthday?: SortOrder
     sessionToken?: SortOrder
     ipAddress?: SortOrder
     country?: SortOrder
@@ -43215,6 +43433,18 @@ export namespace Prisma {
     _max?: NestedFloatNullableFilter<$PrismaModel>
     isSet?: boolean
   }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    isSet?: boolean
+  }
 
   export type MessageAttachmentCountOrderByAggregateInput = {
     id?: SortOrder
@@ -43230,9 +43460,14 @@ export namespace Prisma {
     thumbnailPath?: SortOrder
     thumbnailUrl?: SortOrder
     duration?: SortOrder
+    bitrate?: SortOrder
+    sampleRate?: SortOrder
+    codec?: SortOrder
+    channels?: SortOrder
     uploadedBy?: SortOrder
     isAnonymous?: SortOrder
     createdAt?: SortOrder
+    metadata?: SortOrder
   }
 
   export type MessageAttachmentAvgOrderByAggregateInput = {
@@ -43240,6 +43475,9 @@ export namespace Prisma {
     width?: SortOrder
     height?: SortOrder
     duration?: SortOrder
+    bitrate?: SortOrder
+    sampleRate?: SortOrder
+    channels?: SortOrder
   }
 
   export type MessageAttachmentMaxOrderByAggregateInput = {
@@ -43256,6 +43494,10 @@ export namespace Prisma {
     thumbnailPath?: SortOrder
     thumbnailUrl?: SortOrder
     duration?: SortOrder
+    bitrate?: SortOrder
+    sampleRate?: SortOrder
+    codec?: SortOrder
+    channels?: SortOrder
     uploadedBy?: SortOrder
     isAnonymous?: SortOrder
     createdAt?: SortOrder
@@ -43275,6 +43517,10 @@ export namespace Prisma {
     thumbnailPath?: SortOrder
     thumbnailUrl?: SortOrder
     duration?: SortOrder
+    bitrate?: SortOrder
+    sampleRate?: SortOrder
+    codec?: SortOrder
+    channels?: SortOrder
     uploadedBy?: SortOrder
     isAnonymous?: SortOrder
     createdAt?: SortOrder
@@ -43285,6 +43531,24 @@ export namespace Prisma {
     width?: SortOrder
     height?: SortOrder
     duration?: SortOrder
+    bitrate?: SortOrder
+    sampleRate?: SortOrder
+    channels?: SortOrder
+  }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
+    isSet?: boolean
   }
 
   export type MessageStatusMessageId_userIdCompoundUniqueInput = {
@@ -44020,18 +44284,6 @@ export namespace Prisma {
     notIn?: $Enums.CallStatus[] | ListEnumCallStatusFieldRefInput<$PrismaModel>
     not?: NestedEnumCallStatusFilter<$PrismaModel> | $Enums.CallStatus
   }
-  export type JsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    isSet?: boolean
-  }
 
   export type TranscriptionListRelationFilter = {
     every?: TranscriptionWhereInput
@@ -44106,21 +44358,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumCallStatusFilter<$PrismaModel>
     _max?: NestedEnumCallStatusFilter<$PrismaModel>
-  }
-  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedJsonNullableFilter<$PrismaModel>
-    _max?: NestedJsonNullableFilter<$PrismaModel>
-    isSet?: boolean
   }
 
   export type EnumParticipantRoleFilter<$PrismaModel = never> = {
@@ -47168,6 +47405,18 @@ export namespace Prisma {
     _max?: NestedFloatNullableFilter<$PrismaModel>
     isSet?: boolean
   }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    isSet?: boolean
+  }
 
   export type NestedEnumCallModeFilter<$PrismaModel = never> = {
     equals?: $Enums.CallMode | EnumCallModeFieldRefInput<$PrismaModel>
@@ -47201,18 +47450,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumCallStatusFilter<$PrismaModel>
     _max?: NestedEnumCallStatusFilter<$PrismaModel>
-  }
-  export type NestedJsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<NestedJsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    isSet?: boolean
   }
 
   export type NestedEnumParticipantRoleFilter<$PrismaModel = never> = {
@@ -47397,8 +47634,10 @@ export namespace Prisma {
     allowAnonymousFiles?: boolean
     allowAnonymousImages?: boolean
     allowViewHistory?: boolean
+    requireAccount?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    requireBirthday?: boolean
     allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
@@ -47427,8 +47666,10 @@ export namespace Prisma {
     allowAnonymousFiles?: boolean
     allowAnonymousImages?: boolean
     allowViewHistory?: boolean
+    requireAccount?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    requireBirthday?: boolean
     allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
@@ -48152,8 +48393,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFilter<"ConversationShareLink"> | boolean
     allowAnonymousImages?: BoolFilter<"ConversationShareLink"> | boolean
     allowViewHistory?: BoolFilter<"ConversationShareLink"> | boolean
+    requireAccount?: BoolFilter<"ConversationShareLink"> | boolean
     requireNickname?: BoolFilter<"ConversationShareLink"> | boolean
     requireEmail?: BoolFilter<"ConversationShareLink"> | boolean
+    requireBirthday?: BoolFilter<"ConversationShareLink"> | boolean
     allowedCountries?: StringNullableListFilter<"ConversationShareLink">
     allowedLanguages?: StringNullableListFilter<"ConversationShareLink">
     allowedIpRanges?: StringNullableListFilter<"ConversationShareLink">
@@ -48663,6 +48906,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -48690,6 +48934,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -48808,8 +49053,10 @@ export namespace Prisma {
     allowAnonymousFiles?: boolean
     allowAnonymousImages?: boolean
     allowViewHistory?: boolean
+    requireAccount?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    requireBirthday?: boolean
     allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
@@ -48838,8 +49085,10 @@ export namespace Prisma {
     allowAnonymousFiles?: boolean
     allowAnonymousImages?: boolean
     allowViewHistory?: boolean
+    requireAccount?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    requireBirthday?: boolean
     allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
@@ -49030,6 +49279,7 @@ export namespace Prisma {
     lastName?: StringFilter<"AnonymousParticipant"> | string
     username?: StringFilter<"AnonymousParticipant"> | string
     email?: StringNullableFilter<"AnonymousParticipant"> | string | null
+    birthday?: DateTimeNullableFilter<"AnonymousParticipant"> | Date | string | null
     sessionToken?: StringFilter<"AnonymousParticipant"> | string
     ipAddress?: StringNullableFilter<"AnonymousParticipant"> | string | null
     country?: StringNullableFilter<"AnonymousParticipant"> | string | null
@@ -49535,6 +49785,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -49562,6 +49813,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -49976,8 +50228,10 @@ export namespace Prisma {
     allowAnonymousFiles?: boolean
     allowAnonymousImages?: boolean
     allowViewHistory?: boolean
+    requireAccount?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    requireBirthday?: boolean
     allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
@@ -50007,8 +50261,10 @@ export namespace Prisma {
     allowAnonymousFiles?: boolean
     allowAnonymousImages?: boolean
     allowViewHistory?: boolean
+    requireAccount?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    requireBirthday?: boolean
     allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
@@ -50223,8 +50479,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireAccount?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    requireBirthday?: BoolFieldUpdateOperationsInput | boolean
     allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
@@ -50253,8 +50511,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireAccount?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    requireBirthday?: BoolFieldUpdateOperationsInput | boolean
     allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
@@ -50459,9 +50719,14 @@ export namespace Prisma {
     thumbnailPath?: string | null
     thumbnailUrl?: string | null
     duration?: number | null
+    bitrate?: number | null
+    sampleRate?: number | null
+    codec?: string | null
+    channels?: number | null
     uploadedBy: string
     isAnonymous?: boolean
     createdAt?: Date | string
+    metadata?: InputJsonValue | null
   }
 
   export type MessageAttachmentUncheckedCreateWithoutMessageInput = {
@@ -50477,9 +50742,14 @@ export namespace Prisma {
     thumbnailPath?: string | null
     thumbnailUrl?: string | null
     duration?: number | null
+    bitrate?: number | null
+    sampleRate?: number | null
+    codec?: string | null
+    channels?: number | null
     uploadedBy: string
     isAnonymous?: boolean
     createdAt?: Date | string
+    metadata?: InputJsonValue | null
   }
 
   export type MessageAttachmentCreateOrConnectWithoutMessageInput = {
@@ -50626,6 +50896,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -50654,6 +50925,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -50946,9 +51218,14 @@ export namespace Prisma {
     thumbnailPath?: StringNullableFilter<"MessageAttachment"> | string | null
     thumbnailUrl?: StringNullableFilter<"MessageAttachment"> | string | null
     duration?: IntNullableFilter<"MessageAttachment"> | number | null
+    bitrate?: IntNullableFilter<"MessageAttachment"> | number | null
+    sampleRate?: IntNullableFilter<"MessageAttachment"> | number | null
+    codec?: StringNullableFilter<"MessageAttachment"> | string | null
+    channels?: IntNullableFilter<"MessageAttachment"> | number | null
     uploadedBy?: StringFilter<"MessageAttachment"> | string
     isAnonymous?: BoolFilter<"MessageAttachment"> | boolean
     createdAt?: DateTimeFilter<"MessageAttachment"> | Date | string
+    metadata?: JsonNullableFilter<"MessageAttachment">
   }
 
   export type ReactionUpsertWithWhereUniqueWithoutMessageInput = {
@@ -51052,6 +51329,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -51079,6 +51357,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -52113,6 +52392,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -52141,6 +52421,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -52360,6 +52641,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -52387,6 +52669,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -56392,6 +56675,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -56420,6 +56704,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -56631,6 +56916,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -56658,6 +56944,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -57716,8 +58003,10 @@ export namespace Prisma {
     allowAnonymousFiles?: boolean
     allowAnonymousImages?: boolean
     allowViewHistory?: boolean
+    requireAccount?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    requireBirthday?: boolean
     allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
@@ -58039,8 +58328,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireAccount?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    requireBirthday?: BoolFieldUpdateOperationsInput | boolean
     allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
@@ -58068,8 +58359,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireAccount?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    requireBirthday?: BoolFieldUpdateOperationsInput | boolean
     allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
@@ -58096,8 +58389,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireAccount?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    requireBirthday?: BoolFieldUpdateOperationsInput | boolean
     allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
@@ -58597,6 +58892,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -58659,8 +58955,10 @@ export namespace Prisma {
     allowAnonymousFiles?: boolean
     allowAnonymousImages?: boolean
     allowViewHistory?: boolean
+    requireAccount?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    requireBirthday?: boolean
     allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
@@ -58709,6 +59007,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -58735,6 +59034,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -58760,6 +59060,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -58868,8 +59169,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireAccount?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    requireBirthday?: BoolFieldUpdateOperationsInput | boolean
     allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
@@ -58897,8 +59200,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireAccount?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    requireBirthday?: BoolFieldUpdateOperationsInput | boolean
     allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
@@ -58925,8 +59230,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireAccount?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    requireBirthday?: BoolFieldUpdateOperationsInput | boolean
     allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
@@ -59056,6 +59363,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -59077,6 +59385,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -59103,6 +59412,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -59128,6 +59438,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -59360,9 +59671,14 @@ export namespace Prisma {
     thumbnailPath?: string | null
     thumbnailUrl?: string | null
     duration?: number | null
+    bitrate?: number | null
+    sampleRate?: number | null
+    codec?: string | null
+    channels?: number | null
     uploadedBy: string
     isAnonymous?: boolean
     createdAt?: Date | string
+    metadata?: InputJsonValue | null
   }
 
   export type ReactionCreateManyMessageInput = {
@@ -59477,9 +59793,14 @@ export namespace Prisma {
     thumbnailPath?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    bitrate?: NullableIntFieldUpdateOperationsInput | number | null
+    sampleRate?: NullableIntFieldUpdateOperationsInput | number | null
+    codec?: NullableStringFieldUpdateOperationsInput | string | null
+    channels?: NullableIntFieldUpdateOperationsInput | number | null
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: InputJsonValue | InputJsonValue | null
   }
 
   export type MessageAttachmentUncheckedUpdateWithoutMessageInput = {
@@ -59494,9 +59815,14 @@ export namespace Prisma {
     thumbnailPath?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    bitrate?: NullableIntFieldUpdateOperationsInput | number | null
+    sampleRate?: NullableIntFieldUpdateOperationsInput | number | null
+    codec?: NullableStringFieldUpdateOperationsInput | string | null
+    channels?: NullableIntFieldUpdateOperationsInput | number | null
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: InputJsonValue | InputJsonValue | null
   }
 
   export type MessageAttachmentUncheckedUpdateManyWithoutMessageInput = {
@@ -59511,9 +59837,14 @@ export namespace Prisma {
     thumbnailPath?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    bitrate?: NullableIntFieldUpdateOperationsInput | number | null
+    sampleRate?: NullableIntFieldUpdateOperationsInput | number | null
+    codec?: NullableStringFieldUpdateOperationsInput | string | null
+    channels?: NullableIntFieldUpdateOperationsInput | number | null
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: InputJsonValue | InputJsonValue | null
   }
 
   export type ReactionUpdateWithoutMessageInput = {

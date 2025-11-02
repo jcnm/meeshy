@@ -205,8 +205,10 @@ exports.Prisma.ConversationShareLinkScalarFieldEnum = {
   allowAnonymousFiles: 'allowAnonymousFiles',
   allowAnonymousImages: 'allowAnonymousImages',
   allowViewHistory: 'allowViewHistory',
+  requireAccount: 'requireAccount',
   requireNickname: 'requireNickname',
   requireEmail: 'requireEmail',
+  requireBirthday: 'requireBirthday',
   allowedCountries: 'allowedCountries',
   allowedLanguages: 'allowedLanguages',
   allowedIpRanges: 'allowedIpRanges',
@@ -222,6 +224,7 @@ exports.Prisma.AnonymousParticipantScalarFieldEnum = {
   lastName: 'lastName',
   username: 'username',
   email: 'email',
+  birthday: 'birthday',
   sessionToken: 'sessionToken',
   ipAddress: 'ipAddress',
   country: 'country',
@@ -282,9 +285,14 @@ exports.Prisma.MessageAttachmentScalarFieldEnum = {
   thumbnailPath: 'thumbnailPath',
   thumbnailUrl: 'thumbnailUrl',
   duration: 'duration',
+  bitrate: 'bitrate',
+  sampleRate: 'sampleRate',
+  codec: 'codec',
+  channels: 'channels',
   uploadedBy: 'uploadedBy',
   isAnonymous: 'isAnonymous',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  metadata: 'metadata'
 };
 
 exports.Prisma.MessageStatusScalarFieldEnum = {

@@ -34,7 +34,7 @@ export type DocumentMimeType =
 /**
  * Types MIME pour les fichiers audio
  */
-export type AudioMimeType = 'audio/mpeg' | 'audio/mp3' | 'audio/wav' | 'audio/ogg' | 'audio/webm';
+export type AudioMimeType = 'audio/mpeg' | 'audio/mp3' | 'audio/wav' | 'audio/ogg' | 'audio/webm' | 'audio/mp4' | 'audio/m4a' | 'audio/x-m4a' | 'audio/aac';
 
 /**
  * Types MIME pour les vidéos
@@ -81,6 +81,10 @@ export interface Attachment {
   readonly width?: number;
   readonly height?: number;
   readonly duration?: number;
+  readonly bitrate?: number;
+  readonly sampleRate?: number;
+  readonly codec?: string;
+  readonly channels?: number;
   readonly uploadedBy: string;
   readonly isAnonymous: boolean;
   readonly createdAt: string;
@@ -103,6 +107,10 @@ export interface AttachmentMetadata {
   width?: number;
   height?: number;
   duration?: number;
+  bitrate?: number;
+  sampleRate?: number;
+  codec?: string;
+  channels?: number;
   thumbnailGenerated?: boolean;
 }
 
@@ -121,6 +129,10 @@ export interface UploadedAttachmentResponse {
   readonly width?: number;
   readonly height?: number;
   readonly duration?: number;
+  readonly bitrate?: number;
+  readonly sampleRate?: number;
+  readonly codec?: string;
+  readonly channels?: number;
   readonly uploadedBy: string;
   readonly isAnonymous: boolean;
   readonly createdAt: string;
@@ -175,7 +187,7 @@ export const ACCEPTED_MIME_TYPES = {
     'application/zip',
     'application/x-zip-compressed',
   ] as const,
-  AUDIO: ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/webm'] as const,
+  AUDIO: ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/webm', 'audio/mp4', 'audio/m4a', 'audio/x-m4a', 'audio/aac'] as const,
   VIDEO: ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'] as const,
   TEXT: ['text/plain'] as const,
   CODE: [

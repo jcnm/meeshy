@@ -379,6 +379,16 @@ export interface ConversationShareLink {
   readonly isActive: boolean;
   readonly createdBy: string;
   readonly createdAt: Date;
+  // Permissions anonymes
+  readonly allowAnonymousMessages?: boolean;
+  readonly allowAnonymousFiles?: boolean;
+  readonly allowAnonymousImages?: boolean;
+  readonly allowViewHistory?: boolean;
+  // Exigences pour rejoindre
+  readonly requireAccount?: boolean;
+  readonly requireNickname?: boolean;
+  readonly requireEmail?: boolean;
+  readonly requireBirthday?: boolean;
 }
 
 // ===== CONVERSATION PARTICIPANT =====
