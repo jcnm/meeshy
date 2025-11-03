@@ -13,8 +13,10 @@ import { logger } from '../utils/logger';
 export class CallCleanupService {
   private cleanupInterval: NodeJS.Timeout | null = null;
   private readonly CLEANUP_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
-  private readonly MAX_CALL_DURATION_HOURS = 5;
-  private readonly MAX_CALL_DURATION_MS = this.MAX_CALL_DURATION_HOURS * 60 * 60 * 1000;
+
+  // URGENT FIX: Different timeouts for different call statuses
+  private readonly MAX_INITIATED_DURATION_MS = 2 * 60 * 1000; // 2 minutes for 'initiated' calls
+  private readonly MAX_ACTIVE_DURATION_MS = 5 * 60 * 60 * 1000; // 5 hours for 'active' calls
 
   constructor(private prisma: PrismaClient) {}
 
@@ -29,7 +31,8 @@ export class CallCleanupService {
 
     logger.info('[CallCleanupService] Starting automatic call cleanup job', {
       intervalMinutes: this.CLEANUP_INTERVAL_MS / 60000,
-      maxCallDurationHours: this.MAX_CALL_DURATION_HOURS
+      maxInitiatedDurationMinutes: this.MAX_INITIATED_DURATION_MS / 60000,
+      maxActiveDurationHours: this.MAX_ACTIVE_DURATION_MS / 3600000
     });
 
     // Run cleanup immediately on start
@@ -58,33 +61,54 @@ export class CallCleanupService {
 
   /**
    * Run cleanup of zombie calls
-   * Closes calls that have been active for more than MAX_CALL_DURATION_HOURS
+   * URGENT FIX: Different timeouts for 'initiated' (2min) vs 'active' (5h) calls
    */
   async runCleanup(): Promise<{ cleaned: number; errors: number }> {
     logger.info('[CallCleanupService] Running zombie call cleanup');
 
     try {
       const now = new Date();
-      const cutoffTime = new Date(now.getTime() - this.MAX_CALL_DURATION_MS);
+      const initiatedCutoff = new Date(now.getTime() - this.MAX_INITIATED_DURATION_MS);
+      const activeCutoff = new Date(now.getTime() - this.MAX_ACTIVE_DURATION_MS);
 
-      // Find all active or ringing calls older than cutoff time
-      const zombieCalls = await this.prisma.callSession.findMany({
+      // Find 'initiated' calls older than 2 minutes (unanswered calls)
+      const zombieInitiatedCalls = await this.prisma.callSession.findMany({
         where: {
-          status: {
-            in: [CallStatus.initiated, CallStatus.active, CallStatus.ringing]
-          },
+          status: CallStatus.initiated,
           startedAt: {
-            lt: cutoffTime
+            lt: initiatedCutoff
           }
         },
         include: {
           participants: {
             where: {
-              leftAt: null // Only active participants
+              leftAt: null
             }
           }
         }
       });
+
+      // Find 'active' or 'ringing' calls older than 5 hours (stuck calls)
+      const zombieActiveCalls = await this.prisma.callSession.findMany({
+        where: {
+          status: {
+            in: [CallStatus.active, CallStatus.ringing]
+          },
+          startedAt: {
+            lt: activeCutoff
+          }
+        },
+        include: {
+          participants: {
+            where: {
+              leftAt: null
+            }
+          }
+        }
+      });
+
+      // Combine both lists
+      const zombieCalls = [...zombieInitiatedCalls, ...zombieActiveCalls];
 
       if (zombieCalls.length === 0) {
         logger.info('[CallCleanupService] No zombie calls found');
@@ -93,6 +117,8 @@ export class CallCleanupService {
 
       logger.warn('[CallCleanupService] Found zombie calls', {
         count: zombieCalls.length,
+        initiatedCount: zombieInitiatedCalls.length,
+        activeCount: zombieActiveCalls.length,
         callIds: zombieCalls.map(c => c.id),
         oldestCallStarted: zombieCalls.reduce((oldest, call) =>
           call.startedAt < oldest ? call.startedAt : oldest,
@@ -134,9 +160,14 @@ export class CallCleanupService {
           logger.info('[CallCleanupService] Closed zombie call', {
             callId: call.id,
             conversationId: call.conversationId,
+            status: call.status,
             startedAt: call.startedAt,
-            durationHours: (duration / 3600).toFixed(2),
-            activeParticipants: call.participants.length
+            durationSeconds: duration,
+            durationHuman: call.status === 'initiated'
+              ? `${Math.floor(duration / 60)} minutes`
+              : `${(duration / 3600).toFixed(2)} hours`,
+            activeParticipants: call.participants.length,
+            reason: call.status === 'initiated' ? 'Unanswered call (>2min)' : 'Stuck active call (>5h)'
           });
 
           cleaned++;

@@ -248,8 +248,10 @@ export function CallManager() {
    * Handle call error
    */
   const handleCallError = useCallback((error: CallError) => {
-    logger.error('[CallManager]', 'Call error: ' + error.message);
-    toast.error(error.message || 'Call error occurred');
+    // Defensive: handle cases where error might not have proper structure
+    const errorMessage = error?.message || String(error) || 'Call error occurred';
+    logger.error('[CallManager]', 'Call error: ' + errorMessage, { error });
+    toast.error(errorMessage);
   }, []);
 
   /**

@@ -36,8 +36,10 @@ export function CallInterface({ callId }: CallInterfaceProps) {
 
   // Stable error handler to prevent useWebRTCP2P from recreating on every render
   const handleWebRTCError = useCallback((error: Error) => {
-    logger.error('[CallInterface]', 'WebRTC error: ' + error.message);
-    toast.error('Call connection error: ' + error.message);
+    // Defensive: handle cases where error might not be a proper Error object
+    const errorMessage = error?.message || String(error) || 'Unknown WebRTC error';
+    logger.error('[CallInterface]', 'WebRTC error: ' + errorMessage, { error });
+    toast.error('Call connection error: ' + errorMessage);
   }, []);
 
   // Pass fallback empty string if user not loaded yet (hook will handle gracefully)
