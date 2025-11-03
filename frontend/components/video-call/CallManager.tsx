@@ -347,6 +347,12 @@ export function CallManager() {
     let checkInterval: NodeJS.Timeout;
 
     const setupListeners = () => {
+      // Wait for user to be loaded before setting up listeners
+      if (!user || !user.id) {
+        logger.warn('[CallManager]', 'User not loaded yet, waiting before setting up listeners...');
+        return false;
+      }
+
       const socket = meeshySocketIOService.getSocket();
 
       if (!socket) {
@@ -361,7 +367,8 @@ export function CallManager() {
 
       console.log('🎧 [CallManager] Setting up Socket.IO call listeners', {
         socketId: socket.id,
-        connected: socket.connected
+        connected: socket.connected,
+        userId: user.id
       });
       logger.info('[CallManager]', 'Setting up Socket.IO listeners', {
         socketId: socket.id
@@ -420,6 +427,7 @@ export function CallManager() {
       }
     };
   }, [
+    user,
     handleIncomingCall,
     handleParticipantJoined,
     handleParticipantLeft,
