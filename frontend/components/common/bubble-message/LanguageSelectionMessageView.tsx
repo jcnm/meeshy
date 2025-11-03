@@ -88,7 +88,7 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
       case 'medium':
       case 'standard': return t('translation.standard.title');
       case 'premium': return t('translation.premium.title');
-      default: return 'Unknown';
+      default: return t('translation.unknown');
     }
   };
 
@@ -125,7 +125,7 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
       const timestamp = new Date(date);
       return formatDistanceToNow(timestamp, { addSuffix: true, locale: fr });
     } catch {
-      return 'Date invalide';
+      return t('invalidDate');
     }
   };
 
@@ -502,7 +502,7 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
                                     </Button>
                                   </TooltipTrigger>
                                   <TooltipContent>
-                                    <p>Réduire vers {getModelLabel(getPreviousTier(version.model || 'basic') || '')}</p>
+                                    <p>{t('downgradeToModel', { model: getModelLabel(getPreviousTier(version.model || 'basic') || '') })}</p>
                                   </TooltipContent>
                                 </Tooltip>
                               )}

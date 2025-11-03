@@ -471,6 +471,8 @@ class TranslationMLService:
 
         Cette méthode segmente le texte, traduit chaque segment séparément,
         puis réassemble en préservant la structure originale
+
+        AMÉLIORATION: Sélection automatique du modèle selon la longueur du texte
         """
         start_time = time.time()
 
@@ -478,6 +480,26 @@ class TranslationMLService:
             # Validation
             if not text.strip():
                 raise ValueError("Text cannot be empty")
+
+            # AMÉLIORATION: Sélection automatique du modèle selon la longueur
+            # - Textes < 50 chars: basic (rapide)
+            # - Textes >= 50 chars: medium (meilleure qualité)
+            # - Textes >= 200 chars: premium si disponible (qualité maximale)
+            text_length = len(text)
+            original_model_type = model_type
+
+            if text_length >= 200 and 'premium' in self.models:
+                model_type = 'premium'
+                logger.info(f"[STRUCTURED] Text length {text_length} chars → Using PREMIUM model for best quality")
+            elif text_length >= 50 and 'medium' in self.models:
+                model_type = 'medium'
+                logger.info(f"[STRUCTURED] Text length {text_length} chars → Using MEDIUM model for better quality")
+            elif model_type not in self.models and 'basic' in self.models:
+                model_type = 'basic'
+                logger.info(f"[STRUCTURED] Requested model not available → Using BASIC model")
+
+            if model_type != original_model_type:
+                logger.info(f"[STRUCTURED] Model switched: {original_model_type} → {model_type}")
 
             # Vérifier si le texte est court et sans structure complexe
             if len(text) <= 100 and '\n\n' not in text and not self.text_segmenter.extract_emojis(text)[1]:
@@ -528,24 +550,51 @@ class TranslationMLService:
             #       - Gérer les erreurs individuellement (return_exceptions=True)
             #       - Limiter la charge mémoire GPU avec Semaphore
             
-            # 2. Traduire chaque segment (paragraphes, lignes + éléments de liste)
+            # 2. Traduire chaque segment (lignes uniquement, les séparateurs et code sont préservés)
             # XXX: ACTUELLEMENT SÉQUENTIEL - voir TODO ci-dessus pour parallélisation
             translated_segments = []
             for segment in segments:
                 segment_type = segment['type']
 
-                # Préserver les séparateurs de paragraphes
-                if segment_type == 'paragraph_break':
+                # Préserver les séparateurs, lignes vides et blocs de code
+                if segment_type in ['paragraph_break', 'separator', 'empty_line', 'code']:
                     translated_segments.append(segment)
+                    if segment_type == 'code':
+                        logger.debug(f"[STRUCTURED] Code block preserved (not translated): {segment['text'][:50]}...")
                     continue
 
-                # Traduire les paragraphes, lignes et éléments de liste
-                if segment_type in ['paragraph', 'line', 'sentence', 'list_item']:
+                # Traduire uniquement les lignes de texte normal
+                if segment_type == 'line':
                     segment_text = segment['text']
                     if segment_text.strip():
                         try:
-                            # Détecter les placeholders d'emojis AVANT traduction
-                            placeholders_before = re.findall(r'<EMOJI_\d+/>', segment_text)
+                            # Détecter les placeholders d'emojis AVANT traduction (nouveau format)
+                            placeholders_before = re.findall(r'🔹EMOJI_\d+🔹', segment_text)
+
+                            # AMÉLIORATION: Détecter la position des emojis (début, fin, milieu)
+                            emoji_positions = {}
+                            for placeholder in placeholders_before:
+                                pos = segment_text.find(placeholder)
+                                length = len(segment_text)
+
+                                # Calculer si c'est au début, fin, ou milieu
+                                # Début: dans les 10% premiers caractères OU juste après le premier mot
+                                # Fin: dans les 10% derniers caractères OU juste avant la ponctuation finale
+                                if pos <= max(3, length * 0.1):
+                                    emoji_positions[placeholder] = 'start'
+                                elif pos >= length - max(3, length * 0.1):
+                                    emoji_positions[placeholder] = 'end'
+                                else:
+                                    # Vérifier si après un saut de ligne (début de ligne)
+                                    if pos > 0 and segment_text[pos-1] == '\n':
+                                        emoji_positions[placeholder] = 'line_start'
+                                    # Vérifier si avant un saut de ligne (fin de ligne)
+                                    elif pos + len(placeholder) < length and segment_text[pos + len(placeholder)] == '\n':
+                                        emoji_positions[placeholder] = 'line_end'
+                                    else:
+                                        emoji_positions[placeholder] = ('middle', pos / length)
+
+                            logger.debug(f"[STRUCTURED] Emoji positions mapped: {emoji_positions}")
 
                             translated = await self._ml_translate(
                                 segment_text,
@@ -555,7 +604,7 @@ class TranslationMLService:
                             )
 
                             # VÉRIFICATION CRITIQUE: Détecter les placeholders APRÈS traduction
-                            placeholders_after = re.findall(r'<EMOJI_\d+/>', translated)
+                            placeholders_after = re.findall(r'🔹EMOJI_\d+🔹', translated)
 
                             # Comparer les placeholders avant/après
                             if len(placeholders_before) != len(placeholders_after):
@@ -565,23 +614,52 @@ class TranslationMLService:
                                 logger.error(f"    Original: '{segment_text}'")
                                 logger.error(f"    Translated: '{translated}'")
 
-                                # FALLBACK: Réinjecter les placeholders manquants
-                                # (simple heuristique: ajouter à la fin si perdus)
+                                # AMÉLIORATION: Réinjecter les placeholders selon leur position d'origine
                                 missing_placeholders = set(placeholders_before) - set(placeholders_after)
                                 if missing_placeholders:
                                     logger.warning(f"[STRUCTURED] ⚠️  Attempting to restore {len(missing_placeholders)} lost placeholders")
-                                    # On ajoute les placeholders manquants là où ils devraient être
-                                    # Pour l'instant, on les ajoute simplement au texte traduit
+
                                     for placeholder in missing_placeholders:
-                                        # Trouver la position dans l'original
-                                        original_pos = segment_text.find(placeholder)
-                                        if original_pos >= 0:
-                                            # Essayer d'estimer la position dans la traduction
-                                            # (approximativement au même ratio de position)
-                                            ratio = original_pos / len(segment_text) if len(segment_text) > 0 else 0
+                                        position_type = emoji_positions.get(placeholder, 'middle')
+
+                                        if position_type == 'start':
+                                            # Emoji était au tout début → remettre au début
+                                            translated = placeholder + ' ' + translated.lstrip()
+                                            logger.info(f"[STRUCTURED] ✅ Restored {placeholder} at START (sentence beginning)")
+
+                                        elif position_type == 'end':
+                                            # Emoji était à la toute fin → remettre à la fin
+                                            translated = translated.rstrip() + ' ' + placeholder
+                                            logger.info(f"[STRUCTURED] ✅ Restored {placeholder} at END (sentence ending)")
+
+                                        elif position_type == 'line_start':
+                                            # Emoji était au début d'une ligne → chercher un \n et insérer après
+                                            newline_pos = translated.find('\n')
+                                            if newline_pos >= 0:
+                                                translated = translated[:newline_pos+1] + placeholder + ' ' + translated[newline_pos+1:]
+                                            else:
+                                                translated = placeholder + ' ' + translated
+                                            logger.info(f"[STRUCTURED] ✅ Restored {placeholder} at LINE_START")
+
+                                        elif position_type == 'line_end':
+                                            # Emoji était à la fin d'une ligne → chercher un \n et insérer avant
+                                            newline_pos = translated.find('\n')
+                                            if newline_pos >= 0:
+                                                translated = translated[:newline_pos] + ' ' + placeholder + translated[newline_pos:]
+                                            else:
+                                                translated = translated + ' ' + placeholder
+                                            logger.info(f"[STRUCTURED] ✅ Restored {placeholder} at LINE_END")
+
+                                        else:
+                                            # Milieu - utiliser le ratio
+                                            _, ratio = position_type if isinstance(position_type, tuple) else ('middle', 0.5)
                                             insert_pos = int(len(translated) * ratio)
+                                            # S'assurer d'insérer à un espace pour éviter de couper un mot
+                                            space_pos = translated.find(' ', insert_pos)
+                                            if space_pos > 0 and (space_pos - insert_pos) < 10:
+                                                insert_pos = space_pos + 1
                                             translated = translated[:insert_pos] + placeholder + ' ' + translated[insert_pos:]
-                                            logger.info(f"[STRUCTURED] ✅ Restored placeholder {placeholder} at position {insert_pos}")
+                                            logger.info(f"[STRUCTURED] ✅ Restored {placeholder} at MIDDLE position {insert_pos}")
 
                             translated_segments.append({
                                 'text': translated,

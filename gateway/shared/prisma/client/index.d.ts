@@ -31720,11 +31720,11 @@ export namespace Prisma {
       id: string
       conversationId: string
       /**
-       * Call mode: 'p2p' for 2 participants, 'sfu' for 3+
+       * Call mode: p2p for 2 participants, sfu for 3+
        */
       mode: $Enums.CallMode
       /**
-       * Call status: 'initiated', 'ringing', 'active', 'ended'
+       * Call status: initiated, ringing, active, ended
        */
       status: $Enums.CallStatus
       /**
@@ -32827,7 +32827,7 @@ export namespace Prisma {
        */
       anonymousId: string | null
       /**
-       * Participant role: 'initiator', 'participant'
+       * Participant role: initiator or participant
        */
       role: $Enums.ParticipantRole
       /**
@@ -33932,7 +33932,7 @@ export namespace Prisma {
        */
       participantId: string
       /**
-       * Transcription source: 'client' (Web Speech API/Whisper.js) or 'server' (faster-whisper)
+       * Transcription source: client (Web Speech API/Whisper.js) or server (faster-whisper)
        */
       source: $Enums.TranscriptionSource
       /**

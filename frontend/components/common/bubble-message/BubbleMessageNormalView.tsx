@@ -553,18 +553,18 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
           {/* Message bubble wrapper with reactions - Seulement si contenu textuel */}
           {message.content && message.content.trim() && (
             <div className={cn(
-              "relative inline-flex max-w-[85%] sm:max-w-[75%] md:max-w-[65%] mb-1",
+              "relative flex max-w-[85%] sm:max-w-[75%] md:max-w-[65%] mb-1 overflow-hidden",
               isOwnMessage ? "ml-auto" : "mr-auto"
             )}>
               <Card
                 className={cn(
-                  "relative transition-colors duration-200 border shadow-none overflow-visible py-0 w-auto",
+                  "relative transition-colors duration-200 border shadow-none overflow-visible py-0 w-full",
                   isOwnMessage
                     ? 'bg-gradient-to-br from-blue-400 to-blue-500 dark:from-gray-700 dark:to-gray-800 border-blue-400 dark:border-gray-600 text-white'
                     : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
                 )}
               >
-                <CardContent className="p-1 max-w-full overflow-visible">
+                <CardContent className="p-1 w-full break-words overflow-hidden">
 
                 {/* Message parent si c'est une réponse */}
               {message.replyTo && (
@@ -669,17 +669,17 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                       content={displayContent}
                       className={cn(
                         "leading-relaxed text-sm sm:text-base break-words",
-                        isOwnMessage 
-                          ? "text-white" 
+                        isOwnMessage
+                          ? "text-white"
                           : "text-gray-800 dark:text-gray-100"
                       )}
                       linkClassName={cn(
-                        "relative z-10",
+                        "relative z-10 break-all",
                         isOwnMessage
                           ? "text-white hover:text-white/90 decoration-white/40 hover:decoration-white/70"
                           : "text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 decoration-blue-500/30 hover:decoration-blue-500/60"
                       )}
-                      textClassName="whitespace-pre-wrap"
+                      textClassName="whitespace-pre-wrap break-words"
                       enableTracking={true}
                       onLinkClick={(url, isTracking) => {
                         console.log(`Link clicked: ${url} (tracking: ${isTracking})`);

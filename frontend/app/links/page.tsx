@@ -42,6 +42,8 @@ import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import type { TrackingLink } from '@shared/types/tracking-link';
 import { useI18n } from '@/hooks/useI18n';
+import { ExpandableLinkCard } from '@/components/links/expandable-link-card';
+import { ExpandableTrackingLinkCard } from '@/components/links/expandable-tracking-link-card';
 
 // Extended type for ConversationLink with all fields from Prisma
 interface ConversationLink {
@@ -76,9 +78,7 @@ interface ConversationLink {
     avatar?: string;
   };
 }
-import { LinkDetailsModal } from '@/components/links/link-details-modal';
 import { LinkEditModal } from '@/components/links/link-edit-modal';
-import { TrackingLinkDetailsModal } from '@/components/links/tracking-link-details-modal';
 import { CreateLinkButton } from '@/components/links/create-link-button';
 import { CreateLinkModalV2 } from '@/components/conversations/create-link-modal';
 import { CreateTrackingLinkModal } from '@/components/links/create-tracking-link-modal';
@@ -99,11 +99,9 @@ export default function LinksPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [mainTab, setMainTab] = useState<'shareLinks' | 'trackingLinks'>('shareLinks');
-  const [selectedTab, setSelectedTab] = useState('active');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'expired'>('all');
   const [selectedLink, setSelectedLink] = useState<ConversationLink | null>(null);
   const [selectedTrackingLink, setSelectedTrackingLink] = useState<TrackingLink | null>(null);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [showTrackingDetailsModal, setShowTrackingDetailsModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCreateConversationModal, setShowCreateConversationModal] = useState(false);
   const [showCreateLinkModal, setShowCreateLinkModal] = useState(false);
@@ -216,21 +214,45 @@ export default function LinksPage() {
     }
   }, [links, trackingLinks, mainTab]);
 
-  // Filtrer les liens
-  const filteredLinks = links.filter(link => {
-    const matchesSearch = link.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         link.conversation.title?.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    if (selectedTab === 'active') {
-      return matchesSearch && link.isActive && (!link.expiresAt || new Date(link.expiresAt) > new Date());
-    } else if (selectedTab === 'expired') {
-      return matchesSearch && link.expiresAt && new Date(link.expiresAt) <= new Date();
-    } else if (selectedTab === 'disabled') {
-      return matchesSearch && !link.isActive;
-    }
-    
-    return matchesSearch;
-  });
+  // Filtrer les liens de partage
+  const filteredLinks = useMemo(() => {
+    return links.filter(link => {
+      const matchesSearch = link.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           link.conversation.title?.toLowerCase().includes(searchQuery.toLowerCase());
+
+      let matchesStatus = true;
+      if (statusFilter === 'active') {
+        matchesStatus = link.isActive;
+      } else if (statusFilter === 'inactive') {
+        matchesStatus = !link.isActive;
+      } else if (statusFilter === 'expired') {
+        // Un lien est expiré si expiresAt existe et est dans le passé
+        matchesStatus = link.expiresAt ? new Date(link.expiresAt) < new Date() : false;
+      }
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [links, searchQuery, statusFilter]);
+
+  // Filtrer les liens de tracking
+  const filteredTrackingLinks = useMemo(() => {
+    return trackingLinks.filter(link => {
+      const matchesSearch = link.originalUrl.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           link.shortUrl.toLowerCase().includes(searchQuery.toLowerCase());
+
+      let matchesStatus = true;
+      if (statusFilter === 'active') {
+        matchesStatus = link.isActive;
+      } else if (statusFilter === 'inactive') {
+        matchesStatus = !link.isActive;
+      } else if (statusFilter === 'expired') {
+        // Un lien est expiré si expiresAt existe et est dans le passé
+        matchesStatus = link.expiresAt ? new Date(link.expiresAt) < new Date() : false;
+      }
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [trackingLinks, searchQuery, statusFilter]);
 
   // Copier le lien
   const handleCopyLink = async (linkId: string) => {
@@ -508,6 +530,48 @@ export default function LinksPage() {
                 <span>{t('createLink')}</span>
               </Button>
             </div>
+
+            {/* Filtres de statut */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('filters.status')}:</span>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant={statusFilter === 'all' ? 'default' : 'outline'}
+                  onClick={() => setStatusFilter('all')}
+                  className="h-9 px-4"
+                >
+                  {t('filters.all')}
+                </Button>
+                <Button
+                  size="sm"
+                  variant={statusFilter === 'active' ? 'default' : 'outline'}
+                  onClick={() => setStatusFilter('active')}
+                  className={`h-9 px-4 ${statusFilter === 'active' ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                >
+                  <CheckCircle className="h-4 w-4 mr-1" />
+                  {t('filters.active')}
+                </Button>
+                <Button
+                  size="sm"
+                  variant={statusFilter === 'inactive' ? 'default' : 'outline'}
+                  onClick={() => setStatusFilter('inactive')}
+                  className={`h-9 px-4 ${statusFilter === 'inactive' ? 'bg-gray-600 hover:bg-gray-700' : ''}`}
+                >
+                  <XCircle className="h-4 w-4 mr-1" />
+                  {t('filters.inactive')}
+                </Button>
+                <Button
+                  size="sm"
+                  variant={statusFilter === 'expired' ? 'default' : 'outline'}
+                  onClick={() => setStatusFilter('expired')}
+                  className={`h-9 px-4 ${statusFilter === 'expired' ? 'bg-red-600 hover:bg-red-700' : ''}`}
+                >
+                  <Clock className="h-4 w-4 mr-1" />
+                  {t('filters.expired') || 'Expired'}
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -548,133 +612,18 @@ export default function LinksPage() {
             ) : (
               <div className="grid gap-6">
                 {filteredLinks.map((link) => (
-                  <Card key={link.id} className="relative border-2 hover:border-primary/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950">
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
-
-                    <CardContent className="relative z-10 p-4 sm:p-6">
-                      {/* Contenu principal */}
-                      <div className="flex items-start space-x-3 sm:space-x-4">
-                        <div className="p-2 sm:p-2.5 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl flex-shrink-0">
-                          <Link2 className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          {/* Titre avec Badge et Menu alignés */}
-                          <div className="flex items-start justify-between gap-2 mb-1">
-                            <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white break-words flex-1">
-                              <a
-                                href={`/join/${link.linkId}`}
-                                className="text-foreground hover:text-primary transition-colors"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  router.push(`/join/${link.linkId}`);
-                                }}
-                              >
-                                {link.name || t('unnamedLink')}
-                              </a>
-                            </h3>
-
-                            {/* Badge et Menu alignés avec le titre */}
-                            <div className="flex flex-row items-center gap-2 flex-shrink-0">
-                              <Badge
-                                variant={link.isActive ? 'default' : 'secondary'}
-                                className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-semibold flex-shrink-0 whitespace-nowrap ${
-                                  link.isActive
-                                    ? 'bg-green-500 hover:bg-green-600'
-                                    : 'bg-gray-400 hover:bg-gray-500'
-                                }`}
-                              >
-                                {link.isActive ? t('status.active') : t('status.inactive')}
-                              </Badge>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="sm" className="h-8 w-8 sm:h-10 sm:w-10 p-0 hover:bg-gray-200 dark:hover:bg-gray-700 flex-shrink-0">
-                                    <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
-                                    <span className="sr-only">{t('actions.menu')}</span>
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-56 z-[100]">
-                                  <DropdownMenuItem onClick={() => handleCopyLink(link.linkId)} className="py-3">
-                                    <Copy className="h-4 w-4 mr-3" />
-                                    <span className="font-medium">{t('actions.copy')}</span>
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => {
-                                    setSelectedLink(link);
-                                    setShowDetailsModal(true);
-                                  }} className="py-3">
-                                    <Eye className="h-4 w-4 mr-3" />
-                                    <span className="font-medium">{t('actions.viewDetails')}</span>
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => {
-                                    setSelectedLink(link);
-                                    setShowEditModal(true);
-                                  }} className="py-3">
-                                    <Edit className="h-4 w-4 mr-3" />
-                                    <span className="font-medium">{t('actions.edit')}</span>
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleToggleActive(link)} className="py-3">
-                                    {link.isActive ? (
-                                      <>
-                                        <XCircle className="h-4 w-4 mr-3" />
-                                        <span className="font-medium">{t('actions.disable')}</span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <CheckCircle className="h-4 w-4 mr-3" />
-                                        <span className="font-medium">{t('actions.enable')}</span>
-                                      </>
-                                    )}
-                                  </DropdownMenuItem>
-                                  {link.expiresAt && (
-                                    <DropdownMenuItem onClick={() => handleExtendDuration(link, 7)} className="py-3">
-                                      <RefreshCw className="h-4 w-4 mr-3" />
-                                      <span className="font-medium">{t('actions.extend7Days')}</span>
-                                    </DropdownMenuItem>
-                                  )}
-                                  <DropdownMenuItem
-                                    onClick={() => handleDeleteLink(link)}
-                                    className="text-red-600 py-3 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/20"
-                                  >
-                                    <Trash2 className="h-4 w-4 mr-3" />
-                                    <span className="font-medium">{t('actions.delete')}</span>
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-2 text-xs sm:text-sm mb-2 sm:mb-3">
-                            <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                            <a
-                              href={`/conversations/${link.conversationId}`}
-                              className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline transition-colors cursor-pointer text-left break-all"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                router.push(`/conversations/${link.conversationId}`);
-                              }}
-                            >
-                              {link.conversation.title}
-                            </a>
-                          </div>
-
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                            <div className="flex items-center space-x-2 flex-shrink-0">
-                              <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
-                              <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
-                                {link.currentUses} / {link.maxUses || '∞'} {t('stats.uses')}
-                              </span>
-                            </div>
-
-                            <div className="flex items-center space-x-2 flex-shrink-0">
-                              <Activity className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
-                              <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
-                                {link.currentConcurrentUsers} {t('stats.active')}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <ExpandableLinkCard
+                    key={link.id}
+                    link={link}
+                    onCopy={() => handleCopyLink(link.linkId)}
+                    onEdit={() => {
+                      setSelectedLink(link);
+                      setShowEditModal(true);
+                    }}
+                    onToggle={() => handleToggleActive(link)}
+                    onExtend={(days) => handleExtendDuration(link, days)}
+                    onDelete={() => handleDeleteLink(link)}
+                  />
                 ))}
               </div>
             )}
@@ -716,116 +665,15 @@ export default function LinksPage() {
               </Card>
             ) : (
               <div className="grid gap-6">
-                {trackingLinks
-                  .filter(link =>
-                    link.originalUrl.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    link.shortUrl.toLowerCase().includes(searchQuery.toLowerCase())
-                  )
-                  .map((link) => (
-                    <Card key={link.id} className="relative border-2 hover:border-purple-500/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950">
-                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
-
-                      <CardContent className="relative z-10 p-4 sm:p-6">
-                        {/* Contenu principal */}
-                        <div className="flex items-start space-x-3 sm:space-x-4">
-                          <div className="p-2 sm:p-2.5 bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 rounded-xl flex-shrink-0">
-                            <BarChart className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
-                          </div>
-
-                          <div className="flex-1 min-w-0">
-                            {/* Titre avec Badge et Menu alignés */}
-                            <div className="flex items-start justify-between gap-2 mb-1">
-                              <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white break-words flex-1">
-                                <button
-                                  onClick={() => router.push(`/links/tracked/${link.token}`)}
-                                  className="text-foreground hover:text-primary transition-colors cursor-pointer text-left"
-                                >
-                                  {link.shortUrl.startsWith('/')
-                                    ? `${typeof window !== 'undefined' ? window.location.origin : ''}${link.shortUrl}`
-                                    : link.shortUrl}
-                                </button>
-                              </h3>
-
-                              {/* Badge et Menu alignés avec le titre */}
-                              <div className="flex flex-row items-center gap-2 flex-shrink-0">
-                                <Badge
-                                  variant={link.isActive ? 'default' : 'secondary'}
-                                  className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-semibold flex-shrink-0 whitespace-nowrap ${
-                                    link.isActive
-                                      ? 'bg-green-500 hover:bg-green-600'
-                                      : 'bg-gray-400 hover:bg-gray-500'
-                                  }`}
-                                >
-                                  {link.isActive ? t('status.active') : t('status.inactive')}
-                                </Badge>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="h-8 w-8 sm:h-10 sm:w-10 p-0 hover:bg-gray-200 dark:hover:bg-gray-700 flex-shrink-0">
-                                      <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
-                                      <span className="sr-only">{t('actions.menu')}</span>
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end" className="w-56 z-[100]">
-                                    <DropdownMenuItem onClick={() => handleCopyTrackingLink(link.shortUrl)} className="py-3">
-                                      <Copy className="h-4 w-4 mr-3" />
-                                      <span className="font-medium">{t('tracking.actions.copyShortUrl')}</span>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => {
-                                      setSelectedTrackingLink(link);
-                                      setShowTrackingDetailsModal(true);
-                                    }} className="py-3">
-                                      <BarChart className="h-4 w-4 mr-3" />
-                                      <span className="font-medium">{t('tracking.actions.viewStats')}</span>
-                                    </DropdownMenuItem>
-                                    {link.isActive && (
-                                      <DropdownMenuItem onClick={() => handleToggleTrackingLink(link)} className="py-3">
-                                        <XCircle className="h-4 w-4 mr-3" />
-                                        <span className="font-medium">{t('tracking.actions.deactivate')}</span>
-                                      </DropdownMenuItem>
-                                    )}
-                                    <DropdownMenuItem
-                                      onClick={() => handleDeleteTrackingLink(link)}
-                                      className="text-red-600 py-3 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/20"
-                                    >
-                                      <Trash2 className="h-4 w-4 mr-3" />
-                                      <span className="font-medium">{t('actions.delete')}</span>
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
-                            </div>
-                            <div className="flex items-start gap-2 text-xs sm:text-sm mb-2 sm:mb-3">
-                              <ExternalLink className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
-                              <a
-                                href={link.originalUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:underline transition-colors cursor-pointer text-left break-all"
-                              >
-                                {link.originalUrl}
-                              </a>
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                              <div className="flex items-center space-x-2 flex-shrink-0">
-                                <MousePointerClick className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
-                                <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
-                                  {link.totalClicks} {t('tracking.stats.totalClicks')}
-                                </span>
-                              </div>
-
-                              <div className="flex items-center space-x-2 flex-shrink-0">
-                                <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
-                                <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
-                                  {link.uniqueClicks} {t('tracking.stats.uniqueClicks')}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                {filteredTrackingLinks.map((link) => (
+                  <ExpandableTrackingLinkCard
+                    key={link.id}
+                    link={link}
+                    onCopy={() => handleCopyTrackingLink(link.shortUrl)}
+                    onToggle={() => handleToggleTrackingLink(link)}
+                    onDelete={() => handleDeleteTrackingLink(link)}
+                  />
+                ))}
               </div>
             )}
           </div>
@@ -833,39 +681,17 @@ export default function LinksPage() {
 
         {/* Modales */}
         {selectedLink && (
-          <>
-            <LinkDetailsModal
-              link={selectedLink}
-              isOpen={showDetailsModal}
-              onClose={() => {
-                setShowDetailsModal(false);
-                setSelectedLink(null);
-              }}
-            />
-            <LinkEditModal
-              link={selectedLink}
-              isOpen={showEditModal}
-              onClose={() => {
-                setShowEditModal(false);
-                setSelectedLink(null);
-              }}
-              onUpdate={() => {
-                loadLinks();
-                setShowEditModal(false);
-                setSelectedLink(null);
-              }}
-            />
-          </>
-        )}
-
-        {/* Tracking Link Details Modal */}
-        {selectedTrackingLink && (
-          <TrackingLinkDetailsModal
-            link={selectedTrackingLink}
-            isOpen={showTrackingDetailsModal}
+          <LinkEditModal
+            link={selectedLink}
+            isOpen={showEditModal}
             onClose={() => {
-              setShowTrackingDetailsModal(false);
-              setSelectedTrackingLink(null);
+              setShowEditModal(false);
+              setSelectedLink(null);
+            }}
+            onUpdate={() => {
+              loadLinks();
+              setShowEditModal(false);
+              setSelectedLink(null);
             }}
           />
         )}

@@ -706,7 +706,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         onKeyPress={handleKeyPress}
         onBlur={handleBlur}
         placeholder={finalPlaceholder}
-        className={`expandable-textarea min-h-[60px] sm:min-h-[80px] max-h-40 resize-none pr-20 sm:pr-28 pb-6 sm:pb-10 pt-3 pl-3 border-blue-200/60 bg-white/90 backdrop-blur-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 focus:bg-white/95 placeholder:text-gray-600 scroll-hidden transition-all duration-200 ${
+        className={`expandable-textarea min-h-[60px] sm:min-h-[80px] max-h-40 resize-none pr-20 sm:pr-28 pb-12 pt-3 pl-3 border-blue-200/60 bg-white/90 backdrop-blur-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 focus:bg-white/95 placeholder:text-gray-600 scroll-hidden transition-all duration-200 ${
           replyingTo || selectedFiles.length > 0 || showAudioRecorder
             ? 'rounded-b-2xl rounded-t-none border-t-0'
             : 'rounded-2xl'
@@ -721,8 +721,8 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       />
 
 
-      {/* Indicateurs à gauche: Flag selector, localisation, upload */}
-      <div className="absolute bottom-2 sm:bottom-3 left-3 flex items-center space-x-2 sm:space-x-3 text-xs sm:text-sm text-gray-600 pointer-events-auto">
+      {/* Indicateurs et boutons à gauche: Flag selector, Audio, Document, localisation, upload */}
+      <div className="absolute bottom-2 sm:bottom-3 left-3 flex items-center space-x-1 text-xs sm:text-sm text-gray-600 pointer-events-auto">
         {/* Sélecteur de langue d'envoi (en premier) */}
         <div className="scale-100 sm:scale-100 origin-left">
           <LanguageFlagSelector
@@ -734,6 +734,44 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
             popoverSideOffset={8}
           />
         </div>
+
+        {/* Bouton Microphone/Stop (Audio) */}
+        <Button
+          onClick={handleMicrophoneClick}
+          disabled={!isComposingEnabled}
+          size="sm"
+          variant="ghost"
+          className={`h-5 w-5 p-0 rounded-full hover:bg-gray-100 relative ${
+            isRecording ? 'bg-red-50 hover:bg-red-100' : ''
+          }`}
+          title={isRecording ? "Arrêter et démarrer nouvel enregistrement" : "Enregistrer un message vocal"}
+        >
+          {isRecording ? (
+            <Square className="h-2.5 w-2.5 text-red-600 fill-red-600" />
+          ) : (
+            <Mic className={`h-2.5 w-2.5 ${showAudioRecorder ? 'text-blue-600' : 'text-gray-600'}`} />
+          )}
+        </Button>
+
+        {/* Bouton d'attachement (Document) */}
+        <Button
+          onClick={handleAttachmentClick}
+          disabled={!isComposingEnabled || isUploading}
+          size="sm"
+          variant="ghost"
+          className="h-5 w-5 p-0 rounded-full hover:bg-gray-100 relative"
+        >
+          {isUploading ? (
+            <Loader2 className="h-2.5 w-2.5 text-blue-600 animate-spin" />
+          ) : (
+            <Paperclip className="h-2.5 w-2.5 text-gray-600" />
+          )}
+          {selectedFiles.length > 0 && (
+            <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] rounded-full h-3.5 w-3.5 flex items-center justify-center">
+              {selectedFiles.length}
+            </span>
+          )}
+        </Button>
 
         {/* Localisation */}
         {location && !isUploading && (
@@ -757,8 +795,8 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         )}
       </div>
 
-      {/* Boutons alignés verticalement à droite: Compteur, Attachement, Micro, Envoi */}
-      <div className="absolute bottom-2 sm:bottom-3 right-3 sm:right-4 flex items-center space-x-1 sm:space-x-2 pointer-events-auto">
+      {/* Bouton d'envoi à droite */}
+      <div className="absolute bottom-2 sm:bottom-3 right-3 sm:right-4 flex items-center space-x-2 pointer-events-auto">
         {/* Compteur de caractères : affiché uniquement si > 90% du max */}
         {value.length > maxMessageLength * 0.9 && (
           <span className={`hidden sm:inline text-xs ${value.length > maxMessageLength ? 'text-red-500' : 'text-orange-500'}`}>
@@ -766,53 +804,15 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
           </span>
         )}
 
-        {/* Icône d'attachement */}
-        <Button
-          onClick={handleAttachmentClick}
-          disabled={!isComposingEnabled || isUploading}
-          size="sm"
-          variant="ghost"
-          className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full hover:bg-gray-100 relative"
-        >
-          {isUploading ? (
-            <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600 animate-spin" />
-          ) : (
-            <Paperclip className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600" />
-          )}
-          {selectedFiles.length > 0 && (
-            <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-              {selectedFiles.length}
-            </span>
-          )}
-        </Button>
-
-        {/* Bouton Microphone/Stop (Audio) */}
-        <Button
-          onClick={handleMicrophoneClick}
-          disabled={!isComposingEnabled}
-          size="sm"
-          variant="ghost"
-          className={`h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full hover:bg-gray-100 relative ${
-            isRecording ? 'bg-red-50 hover:bg-red-100' : ''
-          }`}
-          title={isRecording ? "Arrêter et démarrer nouvel enregistrement" : "Enregistrer un message vocal"}
-        >
-          {isRecording ? (
-            <Square className="h-3 w-3 sm:h-4 sm:w-4 text-red-600 fill-red-600" />
-          ) : (
-            <Mic className={`h-3 w-3 sm:h-4 sm:w-4 ${showAudioRecorder ? 'text-blue-600' : 'text-gray-600'}`} />
-          )}
-        </Button>
-
-        {/* Bouton d'envoi */}
+        {/* Bouton d'envoi (agrandi de 50% sur desktop) */}
         <Button
           onClick={handleSendMessage}
           disabled={(!value.trim() && selectedFiles.length === 0 && uploadedAttachments.length === 0) || value.length > maxMessageLength || !isComposingEnabled || isUploading || isRecording}
           size="sm"
-          className="bg-blue-600 hover:bg-blue-700 text-white h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+          className="bg-blue-600 hover:bg-blue-700 text-white h-6 w-6 sm:h-9 sm:w-9 p-0 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
           title={isRecording ? "Arrêtez l'enregistrement avant d'envoyer" : "Envoyer le message"}
         >
-          <Send className="h-3 w-3 sm:h-4 sm:w-4" />
+          <Send className="h-3 w-3 sm:h-5 sm:w-5" />
         </Button>
       </div>
 

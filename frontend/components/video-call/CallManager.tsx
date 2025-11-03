@@ -10,7 +10,6 @@ import { useRouter } from 'next/navigation';
 import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
 import { useCallStore } from '@/stores/call-store';
 import { useAuth } from '@/hooks/use-auth';
-import { useWebRTCP2P } from '@/hooks/use-webrtc-p2p';
 import { CallNotification } from './CallNotification';
 import { CallInterface } from './CallInterface';
 import { logger } from '@/utils/logger';

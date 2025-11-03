@@ -46,13 +46,13 @@ export function CompleteUserSettings({ user, onUserUpdate, children }: CompleteU
     {
       value: "user",
       label: t('tabs.profile'),
-      icon: <UserIcon className="h-3 w-3 lg:h-4 lg:w-4" />,
+      icon: <UserIcon className="h-4 w-4" />,
       content: <UserSettings user={user} onUserUpdate={onUserUpdate} />
     },
     {
       value: "translation",
       label: t('tabs.translation'),
-      icon: <Globe className="h-3 w-3 lg:h-4 lg:w-4" />,
+      icon: <Globe className="h-4 w-4" />,
       content: (
         <Card>
           <CardHeader>
@@ -70,28 +70,26 @@ export function CompleteUserSettings({ user, onUserUpdate, children }: CompleteU
     {
       value: "security",
       label: t('tabs.security'),
-      icon: <Lock className="h-3 w-3 lg:h-4 lg:w-4" />,
+      icon: <Lock className="h-4 w-4" />,
       content: <PasswordSettings />
     },
     {
       value: "theme",
       label: t('tabs.theme'),
-      icon: <Palette className="h-3 w-3 lg:h-4 lg:w-4" />,
+      icon: <Palette className="h-4 w-4" />,
       content: <ThemeSettings />
     }
   ];
 
   return (
-    <div className="w-full space-y-6">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <ResponsiveTabs
-          items={tabItems}
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="w-full"
-          mobileBreakpoint="lg"
-        />
-      </div>
+    <div className="w-full p-6">
+      <ResponsiveTabs
+        items={tabItems}
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="w-full"
+        mobileBreakpoint="lg"
+      />
 
       {children}
     </div>

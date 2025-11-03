@@ -58,6 +58,7 @@ export default function TrackingLinkDetailsPage() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState<TrackingLinkStats | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadStats();
@@ -66,6 +67,7 @@ export default function TrackingLinkDetailsPage() {
   const loadStats = async () => {
     try {
       setIsLoading(true);
+      setError(null);
       const data = await getTrackingLinkStats(token);
 
       // Transformer les données du format API vers le format attendu par le composant
@@ -96,7 +98,30 @@ export default function TrackingLinkDetailsPage() {
       setStats(transformedStats);
     } catch (error) {
       console.error('Erreur lors du chargement des statistiques:', error);
-      toast.error(t('tracking.errors.statsFailed'));
+
+      // Vérifier le type d'erreur
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      if (errorMessage.includes('Non authentifié') || errorMessage.includes('401')) {
+        // Rediriger vers la page de login avec retour vers cette page
+        toast.error(t('tracking.errors.authRequired') || 'Vous devez être connecté pour voir ces statistiques');
+        setTimeout(() => {
+          router.push(`/login?redirect=/links/tracked/${token}`);
+        }, 1500);
+        setError('auth_required');
+      } else if (errorMessage.includes('403') || errorMessage.includes('Accès non autorisé')) {
+        // L'utilisateur n'est pas le créateur du lien
+        toast.error(t('tracking.errors.unauthorized') || 'Vous n\'êtes pas autorisé à voir ces statistiques');
+        setError('unauthorized');
+      } else if (errorMessage.includes('404') || errorMessage.includes('non trouvé')) {
+        // Le lien n'existe pas
+        toast.error(t('tracking.errors.notFound') || 'Lien de tracking non trouvé');
+        setError('not_found');
+      } else {
+        // Erreur générique
+        toast.error(t('tracking.errors.statsFailed') || 'Erreur lors du chargement des statistiques');
+        setError('generic');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -127,6 +152,48 @@ export default function TrackingLinkDetailsPage() {
     );
   }
 
+  if (!stats && error) {
+    // Messages d'erreur personnalisés selon le type d'erreur
+    let errorTitle = t('tracking.details.linkNotFound') || 'Lien non trouvé';
+    let errorDescription = t('tracking.details.linkNotFoundDescription') || 'Ce lien de tracking n\'existe pas';
+    let errorIcon = <XCircle className="h-16 w-16 text-red-600 mb-4" />;
+
+    if (error === 'auth_required') {
+      errorTitle = t('tracking.errors.authRequiredTitle') || 'Authentification requise';
+      errorDescription = t('tracking.errors.authRequiredDesc') || 'Vous devez être connecté pour voir les statistiques de ce lien. Redirection vers la page de connexion...';
+      errorIcon = <Activity className="h-16 w-16 text-orange-600 mb-4" />;
+    } else if (error === 'unauthorized') {
+      errorTitle = t('tracking.errors.unauthorizedTitle') || 'Accès refusé';
+      errorDescription = t('tracking.errors.unauthorizedDesc') || 'Vous n\'êtes pas autorisé à voir les statistiques de ce lien. Seul le créateur peut y accéder.';
+      errorIcon = <XCircle className="h-16 w-16 text-red-600 mb-4" />;
+    } else if (error === 'not_found') {
+      errorTitle = t('tracking.details.linkNotFound') || 'Lien non trouvé';
+      errorDescription = t('tracking.details.linkNotFoundDescription') || 'Ce lien de tracking n\'existe pas ou a été supprimé.';
+      errorIcon = <XCircle className="h-16 w-16 text-red-600 mb-4" />;
+    }
+
+    return (
+      <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        <DashboardLayout title={t('tracking.details.title')} className="!bg-none !bg-transparent !h-auto">
+          <div className="relative z-10 space-y-6 pb-8">
+            <Card className="border-2 bg-white dark:bg-gray-950">
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                {errorIcon}
+                <h3 className="text-2xl font-bold text-foreground mb-3">{errorTitle}</h3>
+                <p className="text-muted-foreground mb-6 text-center max-w-md">{errorDescription}</p>
+                <Button onClick={() => router.push('/links#tracked')} variant="default">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  {t('tracking.details.backToLinks') || 'Retour aux liens'}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </DashboardLayout>
+      </div>
+    );
+  }
+
+  // Fallback au cas où stats est null sans erreur (ne devrait jamais arriver)
   if (!stats) {
     return (
       <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -135,11 +202,11 @@ export default function TrackingLinkDetailsPage() {
             <Card className="border-2 bg-white dark:bg-gray-950">
               <CardContent className="flex flex-col items-center justify-center py-16">
                 <XCircle className="h-16 w-16 text-red-600 mb-4" />
-                <h3 className="text-2xl font-bold text-foreground mb-3">{t('tracking.details.linkNotFound')}</h3>
-                <p className="text-muted-foreground mb-6">{t('tracking.details.linkNotFoundDescription')}</p>
+                <h3 className="text-2xl font-bold text-foreground mb-3">{t('tracking.details.linkNotFound') || 'Erreur'}</h3>
+                <p className="text-muted-foreground mb-6">Une erreur inattendue s'est produite</p>
                 <Button onClick={() => router.push('/links#tracked')} variant="default">
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  {t('tracking.details.backToLinks')}
+                  {t('tracking.details.backToLinks') || 'Retour aux liens'}
                 </Button>
               </CardContent>
             </Card>

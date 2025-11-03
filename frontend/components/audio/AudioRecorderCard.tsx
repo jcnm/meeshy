@@ -388,19 +388,19 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
   // État: Initialisation
   if (isInitializing) {
     return (
-      <div className="relative group pt-3 pb-2">
-        <div className="relative flex flex-col items-center justify-center w-40 h-20 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border-2 border-blue-400 dark:border-blue-500 rounded-lg">
-          <Loader2 className="w-6 h-6 text-blue-600 dark:text-blue-400 animate-spin" />
-          <div className="text-[9px] text-blue-600 dark:text-blue-400 mt-1">
+      <div className="relative group pt-2 pb-1">
+        <div className="relative flex flex-col items-center justify-center !w-36 !h-11 !min-w-[144px] !min-h-[44px] !max-w-[144px] !max-h-[44px] bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border-2 border-blue-400 dark:border-blue-500 rounded-lg">
+          <Loader2 className="w-4 h-4 text-blue-600 dark:text-blue-400 animate-spin" />
+          <div className="text-[8px] text-blue-600 dark:text-blue-400 mt-0.5">
             Initializing...
           </div>
         </div>
         {/* Bouton supprimer */}
         <button
           onClick={onRemove}
-          className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg z-10"
+          className="absolute -top-0.5 -right-0.5 !w-3 !h-3 !min-w-[12px] !min-h-[12px] !max-w-[12px] !max-h-[12px] bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-md z-10 !p-0"
         >
-          <Trash2 className="w-1 h-1" />
+          <Trash2 className="!w-1.5 !h-1.5" />
         </button>
       </div>
     );
@@ -409,19 +409,19 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
   // État: Erreur de permission
   if (permissionError) {
     return (
-      <div className="relative group pt-3 pb-2">
-        <div className="relative flex flex-col items-center justify-center w-40 h-20 bg-red-50 dark:bg-red-900/20 border-2 border-red-400 dark:border-red-500 rounded-lg">
-          <Mic className="w-5 h-5 text-red-600 dark:text-red-400 mb-1" />
-          <div className="text-[8px] text-red-600 dark:text-red-400 text-center px-1">
+      <div className="relative group pt-2 pb-1">
+        <div className="relative flex flex-col items-center justify-center !w-36 !h-11 !min-w-[144px] !min-h-[44px] !max-w-[144px] !max-h-[44px] bg-red-50 dark:bg-red-900/20 border-2 border-red-400 dark:border-red-500 rounded-lg">
+          <Mic className="w-3.5 h-3.5 text-red-600 dark:text-red-400 mb-0.5" />
+          <div className="text-[7px] text-red-600 dark:text-red-400 text-center px-1">
             {permissionError}
           </div>
         </div>
         {/* Bouton supprimer */}
         <button
           onClick={onRemove}
-          className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg z-10"
+          className="absolute -top-0.5 -right-0.5 !w-3 !h-3 !min-w-[12px] !min-h-[12px] !max-w-[12px] !max-h-[12px] bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-md z-10 !p-0"
         >
-          <Trash2 className="w-1 h-1" />
+          <Trash2 className="!w-1.5 !h-1.5" />
         </button>
       </div>
     );
@@ -431,30 +431,30 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
   if (isRecording) {
     return (
       <div className="relative group pt-3 pb-2">
-        <div className="relative flex flex-row items-center justify-between w-40 h-20 bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/30 dark:to-orange-900/30 border-2 border-red-400 dark:border-red-500 rounded-lg px-3">
+        <div className="relative flex flex-row items-center justify-between gap-2 !w-48 !h-24 !min-w-[192px] !min-h-[96px] !max-w-[192px] !max-h-[96px] bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/30 dark:to-orange-900/30 border-2 border-red-400 dark:border-red-500 rounded-lg !px-3 !py-2">
           {/* Timer et indicateur */}
-          <div className="flex flex-col items-start">
-            <div className="text-lg font-bold text-red-600 dark:text-red-400 font-mono">
+          <div className="flex flex-col items-start justify-center gap-1">
+            <div className="text-sm font-bold text-red-600 dark:text-red-400 font-mono leading-none">
               {formatTime(recordingTime)}
             </div>
             <div className="flex items-center gap-1 mt-0.5">
               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-              <span className="text-[9px] text-red-600 dark:text-red-400 font-medium">RECORDING</span>
+              <span className="text-[9px] text-red-600 dark:text-red-400 font-medium leading-none">REC</span>
             </div>
           </div>
 
           {/* Bouton stop */}
           <button
             onClick={stopRecording}
-            className="group flex flex-col items-center justify-center gap-0 transition-all cursor-pointer"
+            className="group flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer !p-1"
           >
-            <Square className="w-3 h-3 fill-white dark:fill-white stroke-gray-700 dark:stroke-gray-300 group-hover:stroke-red-600 dark:group-hover:stroke-red-500 stroke-[1.5]" />
-            <span className="text-[8px] leading-tight font-semibold text-gray-700 dark:text-gray-300 group-hover:text-red-600 dark:group-hover:text-red-500">STOP</span>
+            <Square className="!w-4 !h-4 fill-white dark:fill-white stroke-gray-700 dark:stroke-gray-300 group-hover:stroke-red-600 dark:group-hover:stroke-red-500 stroke-[1.5]" />
+            <span className="text-[9px] leading-none font-semibold text-gray-700 dark:text-gray-300 group-hover:text-red-600 dark:group-hover:text-red-500">STOP</span>
           </button>
         </div>
 
         {/* Badge durée max */}
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 bg-gray-700 text-white text-[9px] px-1.5 py-0.5 rounded-full whitespace-nowrap shadow-sm">
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 bg-gray-700 text-white text-[7px] px-1 py-0.5 rounded-full whitespace-nowrap shadow-sm">
           Max {Math.floor(effectiveDuration / 60)}min
         </div>
       </div>
@@ -464,8 +464,8 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
   // État: Enregistrement terminé
   if (audioBlob && audioUrl) {
     return (
-      <div className="relative group pt-3 pb-2">
-        <div className="relative flex flex-row items-center justify-between w-40 h-20 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 border-2 border-green-400 dark:border-green-500 rounded-lg px-3">
+      <div className="relative group pt-2 pb-1">
+        <div className="relative flex flex-row items-center justify-between !w-36 !h-11 !min-w-[144px] !min-h-[44px] !max-w-[144px] !max-h-[44px] bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 border-2 border-green-400 dark:border-green-500 rounded-lg !px-1">
           {/* Lecteur audio caché */}
           <audio
             ref={audioRef}
@@ -482,38 +482,37 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
           />
 
           {/* Infos audio */}
-          <div className="flex flex-col items-start gap-0.5">
-            <div className="text-sm font-bold text-green-600 dark:text-green-400 font-mono">
+          <div className="flex flex-col items-start justify-center gap-0">
+            <div className="text-xs font-bold text-green-600 dark:text-green-400 font-mono leading-none">
               {formatTime(recordingTime)}
             </div>
-            <div className="text-[9px] text-green-600 dark:text-green-400 font-medium">
+            <div className="text-[7px] text-green-600 dark:text-green-400 font-medium leading-none mt-0.5">
               {audioFormat} · {(audioBlob.size / 1024).toFixed(0)} KB
             </div>
-            <div className="text-[8px] text-gray-500 dark:text-gray-400">
+            <div className="text-[7px] text-gray-500 dark:text-gray-400 leading-none mt-0.5">
               {isPlaying ? 'Playing...' : 'Ready'}
             </div>
           </div>
 
           {/* Bouton Play/Pause */}
-          <Button
+          <button
             onClick={togglePlayPause}
-            size="sm"
-            className="bg-green-600 hover:bg-green-700 h-10 w-10 p-0 rounded-full flex-shrink-0"
+            className="bg-green-600 hover:bg-green-700 rounded-full flex-shrink-0 flex items-center justify-center transition-all cursor-pointer !w-5 !h-5 !min-w-[20px] !min-h-[20px] !max-w-[20px] !max-h-[20px] sm:!w-6 sm:!h-6 sm:!min-w-[24px] sm:!min-h-[24px] sm:!max-w-[24px] sm:!max-h-[24px] !p-0"
           >
             {isPlaying ? (
-              <Pause className="w-4 h-4 fill-current" />
+              <Pause className="!w-2 !h-2 sm:!w-2.5 sm:!h-2.5 fill-white" />
             ) : (
-              <Play className="w-4 h-4 fill-current ml-0.5" />
+              <Play className="!w-2 !h-2 sm:!w-2.5 sm:!h-2.5 fill-white ml-0.5" />
             )}
-          </Button>
+          </button>
         </div>
 
         {/* Bouton supprimer */}
         <button
           onClick={onRemove}
-          className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10"
+          className="absolute -top-0.5 -right-0.5 !w-3 !h-3 !min-w-[12px] !min-h-[12px] !max-w-[12px] !max-h-[12px] bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10 !p-0"
         >
-          <Trash2 className="w-1 h-1" />
+          <Trash2 className="!w-1.5 !h-1.5" />
         </button>
       </div>
     );

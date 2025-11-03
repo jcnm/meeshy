@@ -491,9 +491,9 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
                       e.stopPropagation();
                       onRemove(index);
                     }}
-                    className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10"
+                    className="!absolute !-top-0.5 !-right-0.5 !w-3 !h-3 !min-w-[12px] !min-h-[12px] !max-w-[12px] !max-h-[12px] sm:!w-4 sm:!h-4 sm:!min-w-[16px] sm:!min-h-[16px] sm:!max-w-[16px] sm:!max-h-[16px] bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md !z-[100] !p-0"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <X className="!w-1.5 !h-1.5 sm:!w-2 sm:!h-2" />
                   </button>
                 )}
               </div>
@@ -518,10 +518,25 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
   };
 
   return (
-    <div className="px-3 py-3 bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-800 dark:to-gray-700/50 border-t border-gray-200 dark:border-gray-600 min-h-[60px] sm:min-h-[80px] max-h-[60px] sm:max-h-[80px] flex items-center">
-      <div className="flex items-center gap-3 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent pb-1 w-full">
-        {audioRecorderSlot}
-        {files.map((file, index) => getFilePreview(file, index))}
+    <div className="w-full overflow-hidden bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-800 dark:to-gray-700/50 border-t border-gray-200 dark:border-gray-600">
+      <div
+        className="flex items-center gap-3 px-3 py-3 overflow-x-scroll overflow-y-hidden min-h-[60px] sm:min-h-[80px] max-h-[60px] sm:max-h-[80px]"
+        style={{
+          scrollbarWidth: 'thin',
+          scrollbarColor: '#d1d5db transparent',
+          WebkitOverflowScrolling: 'touch'
+        }}
+      >
+        {audioRecorderSlot && (
+          <div className="flex-shrink-0">
+            {audioRecorderSlot}
+          </div>
+        )}
+        {files.map((file, index) => (
+          <div key={`${file.name}-${index}`} className="flex-shrink-0">
+            {getFilePreview(file, index)}
+          </div>
+        ))}
       </div>
     </div>
   );

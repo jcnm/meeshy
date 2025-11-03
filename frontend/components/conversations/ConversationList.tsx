@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo, memo, useEffect, useRef } from 'react';
-import { MessageSquare, Link2, Users, Globe, Search, Plus, Loader2 } from 'lucide-react';
+import { MessageSquare, Link2, Users, Globe, Search, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -279,9 +279,9 @@ export function ConversationList({
               className="h-8 w-8"
               title={t('createNewConversation')}
             >
-              <Plus className="h-4 w-4" />
+              <MessageSquare className="h-4 w-4 text-primary" />
             </Button>
-            
+
             {/* Bouton créer lien */}
             <CreateLinkButton
               onLinkCreated={onLinkCreated}
@@ -290,7 +290,7 @@ export function ConversationList({
               size="icon"
               className="h-8 w-8"
             >
-              <Link2 className="h-4 w-4" />
+              <Link2 className="h-4 w-4 text-primary" />
             </CreateLinkButton>
           </div>
         </div>
@@ -368,7 +368,7 @@ export function ConversationList({
           onClick={onCreateConversation}
           className="w-full flex items-center justify-center gap-2 h-11 text-sm font-medium"
         >
-          <Plus className="h-5 w-5" />
+          <MessageSquare className="h-5 w-5" />
           {t('createNewConversation')}
         </Button>
       </div>

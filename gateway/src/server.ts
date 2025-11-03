@@ -21,6 +21,7 @@ import { PrismaClient } from '../shared/prisma/client';
 import winston from 'winston';
 import { TranslationService } from './services/TranslationService';
 import { MessagingService } from './services/MessagingService';
+import { StatusService } from './services/status.service';
 import { AuthMiddleware, createUnifiedAuthMiddleware } from './middleware/auth';
 import { authRoutes } from './routes/auth';
 import { conversationRoutes } from './routes/conversations';
@@ -230,6 +231,7 @@ class MeeshyServer {
   private prisma: PrismaClient;
   private translationService: TranslationService;
   private messagingService: MessagingService;
+  private statusService: StatusService;
   private authMiddleware: AuthMiddleware;
   private socketIOHandler: MeeshySocketIOHandler;
   private callCleanupService: CallCleanupService;
@@ -243,13 +245,16 @@ class MeeshyServer {
     this.prisma = new PrismaClient({
       log: config.isDev ? ['query', 'info', 'warn', 'error'] : ['error', 'warn']
     });
-    
-    // Initialiser le middleware d'authentification unifié
-    this.authMiddleware = new AuthMiddleware(this.prisma);
-    
+
+    // NOUVEAU: Initialiser le StatusService en premier (requis par AuthMiddleware)
+    this.statusService = new StatusService(this.prisma);
+
+    // Initialiser le middleware d'authentification unifié avec StatusService
+    this.authMiddleware = new AuthMiddleware(this.prisma, this.statusService);
+
     // Initialiser le service de traduction
     this.translationService = new TranslationService(this.prisma);
-    
+
     // Initialiser le service de messaging
     this.messagingService = new MessagingService(this.prisma, this.translationService);
 
@@ -405,7 +410,8 @@ class MeeshyServer {
   private createAuthMiddleware() {
     return createUnifiedAuthMiddleware(this.prisma, {
       requireAuth: true,
-      allowAnonymous: false
+      allowAnonymous: false,
+      statusService: this.statusService // NOUVEAU: Injecter StatusService
     });
   }
 

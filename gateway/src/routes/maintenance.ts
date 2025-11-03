@@ -6,12 +6,14 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { MaintenanceService } from '../services/maintenance.service';
 import { AttachmentService } from '../services/AttachmentService';
+import { StatusService } from '../services/status.service';
 import { PrismaClient } from '../../shared/prisma/client';
 
 export async function maintenanceRoutes(fastify: FastifyInstance) {
   const prisma = fastify.prisma as PrismaClient;
   const attachmentService = new AttachmentService(prisma);
   const maintenanceService = new MaintenanceService(prisma, attachmentService);
+  const statusService = new StatusService(prisma);
 
   // Route pour obtenir les statistiques de maintenance
   fastify.get('/stats', {
@@ -125,6 +127,82 @@ export async function maintenanceRoutes(fastify: FastifyInstance) {
       reply.status(500).send({
         success: false,
         error: 'Erreur lors de la mise à jour du statut utilisateur'
+      });
+    }
+  });
+
+  // NOUVEAU: Route pour obtenir les métriques du StatusService
+  fastify.get('/status-metrics', {
+    schema: {
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            data: {
+              type: 'object',
+              properties: {
+                totalRequests: { type: 'number' },
+                throttledRequests: { type: 'number' },
+                successfulUpdates: { type: 'number' },
+                failedUpdates: { type: 'number' },
+                cacheSize: { type: 'number' },
+                throttleRate: { type: 'number' }
+              }
+            }
+          }
+        }
+      }
+    }
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const metrics = statusService.getMetrics();
+      const throttleRate = metrics.totalRequests > 0
+        ? (metrics.throttledRequests / metrics.totalRequests * 100).toFixed(2)
+        : '0.00';
+
+      return reply.send({
+        success: true,
+        data: {
+          ...metrics,
+          throttleRate: parseFloat(throttleRate)
+        }
+      });
+    } catch (error) {
+      console.error('[GATEWAY] Error in /maintenance/status-metrics:', error);
+      reply.status(500).send({
+        success: false,
+        error: 'Erreur lors de la récupération des métriques de statut'
+      });
+    }
+  });
+
+  // NOUVEAU: Route pour réinitialiser les métriques du StatusService
+  fastify.post('/status-metrics/reset', {
+    schema: {
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            message: { type: 'string' }
+          }
+        }
+      }
+    }
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      statusService.resetMetrics();
+
+      return reply.send({
+        success: true,
+        message: 'Métriques de statut réinitialisées avec succès'
+      });
+    } catch (error) {
+      console.error('[GATEWAY] Error in /maintenance/status-metrics/reset:', error);
+      reply.status(500).send({
+        success: false,
+        error: 'Erreur lors de la réinitialisation des métriques'
       });
     }
   });

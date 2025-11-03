@@ -245,11 +245,11 @@ export const MessageAttachments = React.memo(function MessageAttachments({
                   {canDelete && (
                     <button
                       onClick={handleDeleteClick}
-                      className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white flex items-center justify-center transition-opacity shadow-md z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+                      className="!absolute !top-1 !right-1 !w-3 !h-3 !min-w-[12px] !min-h-[12px] !max-w-[12px] !max-h-[12px] rounded-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white flex items-center justify-center transition-opacity shadow-md !z-[100] opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1 !p-0"
                       title="Supprimer cette image"
                       aria-label={`Supprimer l'image ${attachment.originalName}`}
                     >
-                      <X className="w-3.5 h-3.5" />
+                      <X className="!w-1.5 !h-1.5" />
                     </button>
                   )}
 
@@ -371,11 +371,11 @@ export const MessageAttachments = React.memo(function MessageAttachments({
                   {canDelete && (
                     <button
                       onClick={handleDeleteClick}
-                      className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white flex items-center justify-center transition-opacity shadow-md z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+                      className="!absolute !top-1 !right-1 !w-3 !h-3 !min-w-[12px] !min-h-[12px] !max-w-[12px] !max-h-[12px] rounded-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white flex items-center justify-center transition-opacity shadow-md !z-[100] opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1 !p-0"
                       title="Supprimer cette vidéo"
                       aria-label={`Supprimer la vidéo ${attachment.originalName}`}
                     >
-                      <X className="w-3.5 h-3.5" />
+                      <X className="!w-1.5 !h-1.5" />
                     </button>
                   )}
 
@@ -457,11 +457,11 @@ export const MessageAttachments = React.memo(function MessageAttachments({
                 {canDelete ? (
                   <button
                     onClick={handleDeleteClick}
-                    className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white flex items-center justify-center transition-opacity shadow-md z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1"
+                    className="!absolute !top-0.5 !right-0.5 !w-3 !h-3 !min-w-[12px] !min-h-[12px] !max-w-[12px] !max-h-[12px] rounded-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white flex items-center justify-center transition-opacity shadow-md !z-[100] opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1 !p-0"
                     title="Supprimer ce fichier"
                     aria-label={`Supprimer le fichier ${attachment.originalName}`}
                   >
-                    <X className="w-3 h-3" />
+                    <X className="!w-1.5 !h-1.5" />
                   </button>
                 ) : (
                   /* Download indicator si pas de droits de suppression */

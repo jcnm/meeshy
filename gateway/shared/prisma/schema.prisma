@@ -619,10 +619,10 @@ model CallSession {
   conversationId  String           @db.ObjectId
   conversation    Conversation     @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
-  /// Call mode: 'p2p' for 2 participants, 'sfu' for 3+
+  /// Call mode: p2p for 2 participants, sfu for 3+
   mode            CallMode         @default(p2p)
 
-  /// Call status: 'initiated', 'ringing', 'active', 'ended'
+  /// Call status: initiated, ringing, active, ended
   status          CallStatus       @default(initiated)
 
   /// User who initiated the call
@@ -665,7 +665,7 @@ model CallParticipant {
   /// Anonymous participant ID (from AnonymousParticipant model)
   anonymousId     String?
 
-  /// Participant role: 'initiator', 'participant'
+  /// Participant role: initiator or participant
   role            ParticipantRole @default(participant)
 
   /// Timestamps
@@ -696,7 +696,7 @@ model Transcription {
   /// Participant who spoke
   participantId   String       @db.ObjectId
 
-  /// Transcription source: 'client' (Web Speech API/Whisper.js) or 'server' (faster-whisper)
+  /// Transcription source: client (Web Speech API/Whisper.js) or server (faster-whisper)
   source          TranscriptionSource
 
   /// Transcribed text

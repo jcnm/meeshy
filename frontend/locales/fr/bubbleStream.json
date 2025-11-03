@@ -79,6 +79,13 @@
     "translate": "Traduire",
     "selectLanguage": "Sélectionner la langue",
     "searchLanguage": "Rechercher une langue...",
+    "generate": "Générer",
+    "available": "Disponibles",
+    "noLanguagesFound": "Aucune langue trouvée",
+    "translateWith": "Traduire avec",
+    "invalidDate": "Date invalide",
+    "downgradeToModel": "Réduire vers {model}",
+    "close": "Fermer",
     "translation": {
       "showOriginal": "Afficher l'original",
       "showTranslation": "Afficher la traduction",
@@ -89,8 +96,8 @@
       "translationRequestError": "Erreur lors de la demande de traduction",
       "translationAlreadyInProgress": "Traduction déjà en cours pour cette langue",
       "improveTranslationQuality": "Améliorer la qualité de traduction",
-      "clickToTranslateWith": "Cliquer pour traduire avec le modèle {model}",
       "translateWith": "Traduire avec",
+      "clickToTranslateWith": "Cliquer pour traduire avec le modèle {model}",
       "aiDisclaimer": "Les traductions sont générées par des modèles d'IA et peuvent contenir des erreurs ou des inexactitudes.",
       "basic": {
         "title": "Basique"
@@ -100,7 +107,8 @@
       },
       "premium": {
         "title": "Premium"
-      }
+      },
+      "unknown": "Inconnu"
     }
   }
 }

@@ -22,6 +22,12 @@
       "indefinitely": "indéfiniment"
     },
     "searchPlaceholder": "Rechercher des liens...",
+    "filters": {
+      "status": "Statut",
+      "all": "Tous",
+      "active": "Actifs",
+      "inactive": "Inactifs"
+    },
     "tabs": {
       "shareLinks": "Liens de partage",
       "trackingLinks": "Liens suivis",
@@ -68,9 +74,12 @@
       "linkName": "Nom du lien",
       "linkUrl": "URL du lien",
       "description": "Description",
+      "invitationMessage": "Message d'invitation",
       "conversation": "Conversation",
       "creator": "Créé par",
       "created": "Créé",
+      "createdAt": "Créé le",
+      "expiresAt": "Expire le",
       "lastUpdated": "Dernière mise à jour",
       "expires": "Expire",
       "dates": "Dates",
@@ -79,7 +88,9 @@
       "totalParticipants": "Participants totaux",
       "activeUsers": "Utilisateurs actifs",
       "permissions": "Permissions",
-      "languages": "Langues autorisées"
+      "languages": "Langues autorisées",
+      "viewMore": "Voir plus de détails",
+      "requirements": "Exigences"
     },
     "edit": {
       "title": "Modifier le lien",
@@ -112,6 +123,7 @@
       "accountDescription": "Les visiteurs doivent se connecter avec un compte vérifié. Active automatiquement toutes les permissions et exigences.",
       "nickname": "Pseudonyme",
       "nicknameDescription": "Exiger un pseudonyme pour rejoindre",
+      "name": "Nom requis",
       "email": "Email",
       "emailDescription": "Exiger un email pour rejoindre",
       "birthday": "Date de naissance",

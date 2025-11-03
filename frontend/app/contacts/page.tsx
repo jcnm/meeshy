@@ -101,14 +101,14 @@ export default function ContactsPage() {
         const response = await fetch(buildApiUrl('/auth/me'), {
           headers: { Authorization: `Bearer ${token}` }
         });
-        
+
         if (!response.ok) {
           authManager.clearAllSessions();
           toast.error(t('errors.sessionExpired'));
           router.push('/login');
           return;
         }
-        
+
         // Si l'authentification est valide, charger les contacts
         loadContacts();
         loadFriendRequests();
@@ -122,6 +122,16 @@ export default function ContactsPage() {
 
     checkAuth();
   }, [router]);
+
+  // Gérer le hash de l'URL pour activer l'onglet correspondant
+  useEffect(() => {
+    const hash = window.location.hash.slice(1); // Enlever le #
+    const validTabs: Array<typeof activeTab> = ['all', 'connected', 'pending', 'refused', 'affiliates'];
+
+    if (hash && validTabs.includes(hash as typeof activeTab)) {
+      setActiveTab(hash as typeof activeTab);
+    }
+  }, []);
 
   const loadContacts = async (appliedFilters?: ParticipantsFilters) => {
     try {
@@ -403,7 +413,12 @@ export default function ContactsPage() {
           <Card className="border-2 shadow-lg bg-white dark:bg-gray-950">
             <CardContent className="p-6 space-y-6">
               {/* Tabs */}
-              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)}>
+              <Tabs value={activeTab} onValueChange={(value) => {
+                const newTab = value as typeof activeTab;
+                setActiveTab(newTab);
+                // Mettre à jour le hash de l'URL
+                window.history.replaceState(null, '', `#${newTab}`);
+              }}>
                 <TabsList className="w-full grid grid-cols-5 h-auto p-1.5 bg-gray-100 dark:bg-gray-800">
                   <TabsTrigger
                     value="all"
