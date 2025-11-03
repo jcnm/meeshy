@@ -17,9 +17,10 @@ import { toast } from 'sonner';
 
 interface CallInterfaceProps {
   callId: string;
+  userId: string;  // CRITICAL: Pass userId as prop to avoid race condition
 }
 
-export function CallInterface({ callId }: CallInterfaceProps) {
+export function CallInterface({ callId, userId }: CallInterfaceProps) {
   const { user } = useAuth();
 
   // IMPORTANT: Call ALL hooks BEFORE any conditional returns to comply with React rules
@@ -42,10 +43,10 @@ export function CallInterface({ callId }: CallInterfaceProps) {
     toast.error('Call connection error: ' + errorMessage);
   }, []);
 
-  // Pass fallback empty string if user not loaded yet (hook will handle gracefully)
+  // CRITICAL: Use userId from props (passed by CallManager) to avoid race condition
   const { initializeLocalStream, createOffer, connectionState } = useWebRTCP2P({
     callId,
-    userId: user?.id || '',
+    userId,  // Use prop instead of user?.id
     onError: handleWebRTCError,
   });
 

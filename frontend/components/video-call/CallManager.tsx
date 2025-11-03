@@ -466,7 +466,9 @@ export function CallManager() {
       )}
 
       {/* Active Call Interface */}
-      {isInCall && currentCall && <CallInterface callId={currentCall.id} />}
+      {isInCall && currentCall && user?.id && (
+        <CallInterface callId={currentCall.id} userId={user.id} />
+      )}
     </>
   );
 }
