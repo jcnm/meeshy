@@ -21,6 +21,18 @@ interface CallInterfaceProps {
 
 export function CallInterface({ callId }: CallInterfaceProps) {
   const { user } = useAuth();
+
+  // Return loading state BEFORE calling hooks if user not loaded yet
+  // This prevents hooks from being called with undefined userId
+  if (!user || !user.id) {
+    logger.warn('[CallInterface]', 'User not loaded yet, waiting...');
+    return (
+      <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
+        <div className="text-white text-lg">Loading call...</div>
+      </div>
+    );
+  }
+
   const {
     localStream,
     remoteStreams,
@@ -37,22 +49,12 @@ export function CallInterface({ callId }: CallInterfaceProps) {
     toast.error('Call connection error: ' + error.message);
   }, []);
 
-  // Only call hook if user.id is available, otherwise pass undefined
+  // Now we can safely call useWebRTCP2P with guaranteed user.id
   const { initializeLocalStream, createOffer, connectionState } = useWebRTCP2P({
     callId,
-    userId: user?.id,
+    userId: user.id,
     onError: handleWebRTCError,
   });
-
-  // Return loading state if user not loaded yet
-  if (!user || !user.id) {
-    logger.warn('[CallInterface]', 'User not loaded yet, waiting...');
-    return (
-      <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
-        <div className="text-white text-lg">Loading call...</div>
-      </div>
-    );
-  }
 
   // Initialize local stream on mount (only once)
   useEffect(() => {
