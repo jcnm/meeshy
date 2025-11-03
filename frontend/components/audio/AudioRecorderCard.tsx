@@ -142,6 +142,14 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
     }
     startTimeRef.current = 0;
 
+    // IMPORTANT: Arrêter IMMÉDIATEMENT tous les tracks du stream pour couper le microphone
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => {
+        track.stop();
+        console.log('🎤 Microphone track stopped:', track.label);
+      });
+    }
+
     // Arrêter le media recorder
     if (mediaRecorderRef.current) {
       if (mediaRecorderRef.current.state !== 'inactive') {

@@ -518,26 +518,71 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
   };
 
   return (
-    <div className="w-full overflow-hidden bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-800 dark:to-gray-700/50 border-t border-gray-200 dark:border-gray-600">
+    <div
+      className="w-full max-w-full bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-800 dark:to-gray-700/50 border-t border-gray-200 dark:border-gray-600"
+      role="region"
+      aria-label="Attachments carousel"
+    >
       <div
-        className="flex items-center gap-3 px-3 py-3 overflow-x-scroll overflow-y-hidden min-h-[60px] sm:min-h-[80px] max-h-[60px] sm:max-h-[80px]"
+        className="flex items-center gap-3 px-3 py-3 overflow-x-auto overflow-y-hidden w-full min-w-0"
         style={{
+          // Scrollbar styling pour tous les navigateurs
           scrollbarWidth: 'thin',
-          scrollbarColor: '#d1d5db transparent',
-          WebkitOverflowScrolling: 'touch'
+          scrollbarColor: '#9ca3af #f3f4f6',
+          WebkitOverflowScrolling: 'touch',
+          // Hauteur minimale pour accommoder les cartes
+          minHeight: '100px',
         }}
+        tabIndex={0}
+        role="list"
+        aria-label="Attached files"
       >
         {audioRecorderSlot && (
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0" role="listitem">
             {audioRecorderSlot}
           </div>
         )}
         {files.map((file, index) => (
-          <div key={`${file.name}-${index}`} className="flex-shrink-0">
+          <div key={`${file.name}-${index}`} className="flex-shrink-0" role="listitem">
             {getFilePreview(file, index)}
           </div>
         ))}
       </div>
+
+      {/* Styles pour la scrollbar Webkit (Chrome, Safari, Edge) */}
+      <style jsx>{`
+        div[role="list"]::-webkit-scrollbar {
+          height: 8px;
+        }
+        div[role="list"]::-webkit-scrollbar-track {
+          background: #f3f4f6;
+          border-radius: 4px;
+        }
+        div[role="list"]::-webkit-scrollbar-thumb {
+          background: #9ca3af;
+          border-radius: 4px;
+        }
+        div[role="list"]::-webkit-scrollbar-thumb:hover {
+          background: #6b7280;
+        }
+
+        /* Dark mode scrollbar */
+        :global(.dark) div[role="list"]::-webkit-scrollbar-track {
+          background: #374151;
+        }
+        :global(.dark) div[role="list"]::-webkit-scrollbar-thumb {
+          background: #6b7280;
+        }
+        :global(.dark) div[role="list"]::-webkit-scrollbar-thumb:hover {
+          background: #9ca3af;
+        }
+
+        /* Améliorer la navigation clavier */
+        div[role="list"]:focus {
+          outline: 2px solid #3b82f6;
+          outline-offset: -2px;
+        }
+      `}</style>
     </div>
   );
 }, (prevProps, nextProps) => {
