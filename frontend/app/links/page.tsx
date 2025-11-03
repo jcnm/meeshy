@@ -405,7 +405,7 @@ export default function LinksPage() {
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Main content area - scrollable */}
       <DashboardLayout title={t('title')} className="!bg-none !bg-transparent !h-auto">
-        <div className="relative z-10 space-y-8 pb-8 py-8">
+        <div className="relative z-10 max-w-7xl mx-auto space-y-8 pb-8 w-full py-8">
 
         {/* Hero Section */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 p-8 md:p-12 text-white shadow-2xl">
@@ -435,18 +435,18 @@ export default function LinksPage() {
                 <TabsTrigger
                   value="shareLinks"
                   id="shared"
-                  className="data-[state=active]:bg-blue-500 data-[state=active]:text-white py-3 px-6 rounded-lg font-medium transition-all"
+                  className="data-[state=active]:bg-blue-500 data-[state=active]:text-white py-2 md:py-3 px-2 md:px-6 rounded-lg font-medium transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2"
                 >
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  {t('tabs.shareLinks')}
+                  <MessageSquare className="h-4 w-4" />
+                  <span className="text-xs md:text-sm">{t('tabs.shareLinks')}</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="trackingLinks"
                   id="tracked"
-                  className="data-[state=active]:bg-purple-500 data-[state=active]:text-white py-3 px-6 rounded-lg font-medium transition-all"
+                  className="data-[state=active]:bg-purple-500 data-[state=active]:text-white py-2 md:py-3 px-2 md:px-6 rounded-lg font-medium transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2"
                 >
-                  <BarChart className="h-4 w-4 mr-2" />
-                  {t('tabs.trackingLinks')}
+                  <BarChart className="h-4 w-4" />
+                  <span className="text-xs md:text-sm">{t('tabs.trackingLinks')}</span>
                 </TabsTrigger>
               </TabsList>
             </Tabs>

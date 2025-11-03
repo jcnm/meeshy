@@ -5,11 +5,15 @@
   "inviteContact": "Invite contact",
   "contactsFound": "{count} contact found",
   "contactsFound_plural": "{count} contacts found",
+  "loading": "Loading contacts...",
   "stats": {
     "totalContacts": "Total contacts",
     "online": "Online",
+    "offline": "Offline",
     "connected": "Connected",
+    "connections": "Connections",
     "pending": "Pending",
+    "refused": "Refused",
     "affiliates": "Affiliates"
   },
   "tabs": {
@@ -26,6 +30,7 @@
     "rejected": "Rejected"
   },
   "actions": {
+    "menu": "Actions menu",
     "message": "Message",
     "sendMessage": "Send message",
     "call": "Call",

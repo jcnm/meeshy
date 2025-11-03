@@ -6,33 +6,28 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ResponsiveTabs } from '@/components/ui/responsive-tabs';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Footer } from '@/components/layout/Footer';
 import { toast } from 'sonner';
 import { buildApiUrl } from '@/lib/config';
-import { 
+import {
   Search,
-  UserPlus,
   MessageSquare,
   Users,
   Phone,
   Mail,
   MoreVertical,
-  UserMinus,
+  UserCheck,
+  Share2,
+  Zap,
+  Clock,
+  UserX,
   Check,
   X,
-  Clock,
-  UserCheck,
-  UserX,
-  Share2,
-  Calendar,
-  Link,
-  ChevronDown,
-  Activity,
-  TrendingUp,
-  Zap
+  UserPlus,
+  Link
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -91,7 +86,7 @@ export default function ContactsPage() {
   const [filters, setFilters] = useState<ParticipantsFilters>({});
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const [affiliateRelations, setAffiliateRelations] = useState<AffiliateRelation[]>([]);
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'connected' | 'pending' | 'refused' | 'affiliates'>('all');
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   useEffect(() => {
@@ -176,20 +171,19 @@ export default function ContactsPage() {
     const contactsArray = Array.isArray(contacts) ? contacts : [];
     const requestsArray = Array.isArray(friendRequests) ? friendRequests : [];
     const affiliatesArray = Array.isArray(affiliateRelations) ? affiliateRelations : [];
-    
-    const onlineContacts = contactsArray.filter(contact => contact.isOnline);
+
     const connectedRequests = requestsArray.filter(req => req.status === 'accepted');
     const pendingRequests = requestsArray.filter(req => req.status === 'pending');
-    
+    const refusedRequests = requestsArray.filter(req => req.status === 'rejected');
+
     return {
       total: contactsArray.length,
-      online: onlineContacts.length,
       connected: connectedRequests.length,
       pending: pendingRequests.length,
+      refused: refusedRequests.length,
       affiliates: affiliatesArray.length
     };
   }, [contacts, friendRequests, affiliateRelations]);
-
 
   const loadFriendRequests = async () => {
     try {
@@ -407,528 +401,562 @@ export default function ContactsPage() {
 
           {/* Main Content Card */}
           <Card className="border-2 shadow-lg bg-white dark:bg-gray-950">
-            <CardContent className="p-4 sm:p-6">
-              <form onSubmit={handleSearch} className="space-y-4">
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <Input
-                      type="text"
-                      placeholder={t('searchPlaceholder')}
-                      value={searchQuery}
-                      onChange={(e) => {
-                        setSearchQuery(e.target.value);
-                        searchUsers(e.target.value);
-                      }}
-                      className="pl-10 h-12 text-base border-2 focus:border-primary"
-                    />
-                  </div>
-                  
-                  <Button 
-                    onClick={() => setIsShareModalOpen(true)}
-                    variant="default"
-                    className="h-12 rounded-xl px-6 font-semibold shadow-md hover:shadow-lg transition-all bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+            <CardContent className="p-6 space-y-6">
+              {/* Tabs */}
+              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)}>
+                <TabsList className="w-full grid grid-cols-5 h-auto p-1.5 bg-gray-100 dark:bg-gray-800">
+                  <TabsTrigger
+                    value="all"
+                    className="data-[state=active]:bg-blue-500 data-[state=active]:text-white py-2 md:py-3 px-2 md:px-6 rounded-lg font-medium transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2"
                   >
-                    <Share2 className="h-5 w-5 mr-2" />
-                    <span>{t('inviteContact')}</span>
-                  </Button>
+                    <Users className="h-4 w-4" />
+                    <span className="text-xs md:text-sm">{t('tabs.all')}</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="connected"
+                    className="data-[state=active]:bg-purple-500 data-[state=active]:text-white py-2 md:py-3 px-2 md:px-6 rounded-lg font-medium transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2"
+                  >
+                    <UserCheck className="h-4 w-4" />
+                    <span className="text-xs md:text-sm">{t('tabs.connected')}</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="pending"
+                    className="data-[state=active]:bg-orange-500 data-[state=active]:text-white py-2 md:py-3 px-2 md:px-6 rounded-lg font-medium transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2"
+                  >
+                    <Clock className="h-4 w-4" />
+                    <span className="text-xs md:text-sm">{t('tabs.pending')}</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="refused"
+                    className="data-[state=active]:bg-red-500 data-[state=active]:text-white py-2 md:py-3 px-2 md:px-6 rounded-lg font-medium transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2"
+                  >
+                    <UserX className="h-4 w-4" />
+                    <span className="text-xs md:text-sm">{t('tabs.refused')}</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="affiliates"
+                    className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white py-2 md:py-3 px-2 md:px-6 rounded-lg font-medium transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2"
+                  >
+                    <Share2 className="h-4 w-4" />
+                    <span className="text-xs md:text-sm">{t('tabs.affiliates')}</span>
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              {/* Stats in 2x2 grid */}
+              <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">{t('stats.totalContacts')}</p>
+                  <p className="text-2xl font-bold text-foreground">{stats.total}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">{t('stats.connected')}</p>
+                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.connected}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">{t('stats.pending')}</p>
+                  <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{stats.pending}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">{t('stats.affiliates')}</p>
+                  <p className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">{stats.affiliates}</p>
+                </div>
+              </div>
+
+              {/* Search and Actions */}
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <Input
+                    type="text"
+                    placeholder={t('searchPlaceholder')}
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      searchUsers(e.target.value);
+                    }}
+                    className="pl-10 h-12 text-base border-2 focus:border-primary"
+                  />
                 </div>
 
-                {displayedUsers.length > 0 && (
-                  <div className="mt-4 flex items-center gap-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground font-medium">
-                      {displayedUsers.length === 1 ? t('contactsFound', { count: displayedUsers.length }) : t('contactsFound_plural', { count: displayedUsers.length })}
-                    </p>
-                  </div>
-                )}
-              </form>
+                <Button
+                  onClick={() => setIsShareModalOpen(true)}
+                  variant="default"
+                  className="h-12 rounded-xl px-6 font-semibold shadow-md hover:shadow-lg transition-all bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                >
+                  <Share2 className="h-5 w-5 mr-2" />
+                  <span>{t('inviteContact')}</span>
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
-          {/* Tabs modernisés */}
+          {/* Contenu des tabs */}
           <div className="space-y-6">
-            <div className="w-full">
-              <ResponsiveTabs
-                value={activeTab}
-                onValueChange={setActiveTab}
-                items={[
-                  {
-                    value: "all",
-                    label: t('tabs.all'),
-                    icon: <Users className="h-4 w-4" />,
-                    content: (
-                      <div className="space-y-4">
-                        {displayedUsers.length === 0 ? (
-                          <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
-                            <CardContent className="flex flex-col items-center justify-center py-16 px-6">
-                              <div className="relative mb-6">
-                                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 blur-3xl rounded-full"></div>
-                                <div className="relative p-6 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-3xl">
-                                  <Users className="h-16 w-16 text-blue-600 dark:text-blue-400" />
+            {loading ? (
+              <Card className="border-2 bg-white dark:bg-gray-950">
+                <CardContent className="flex flex-col items-center justify-center py-16">
+                  <div className="relative">
+                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-primary"></div>
+                    <Zap className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-6 w-6 text-primary" />
+                  </div>
+                  <p className="mt-4 text-muted-foreground font-medium">{t('loading')}</p>
+                </CardContent>
+              </Card>
+            ) : activeTab === 'all' ? (
+              displayedUsers.length === 0 ? (
+                <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
+                  <CardContent className="flex flex-col items-center justify-center py-16 px-6">
+                    <div className="relative mb-6">
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 blur-3xl rounded-full"></div>
+                      <div className="relative p-6 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-3xl">
+                        <Users className="h-16 w-16 text-blue-600 dark:text-blue-400" />
+                      </div>
+                    </div>
+
+                    <h3 className="text-2xl font-bold text-foreground mb-3 text-center">
+                      {searchQuery ? t('messages.noContactsFound') : t('messages.noContacts')}
+                    </h3>
+                    <p className="text-muted-foreground text-base text-center max-w-md">
+                      {searchQuery
+                        ? t('messages.noContactsFoundDescription')
+                        : t('messages.noContactsDescription')
+                      }
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-6">
+                  {displayedUsers.map((contact) => (
+                    <Card key={contact.id} className="relative border-2 hover:border-primary/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950">
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
+
+                      <CardContent className="relative z-10 p-4 sm:p-6">
+                        <div className="flex items-start space-x-3 sm:space-x-4">
+                          <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-white shadow-lg flex-shrink-0">
+                            <AvatarImage src={contact.avatar} alt={getUserDisplayName(contact)} />
+                            <AvatarFallback className="text-sm sm:text-lg font-bold">
+                              {getUserDisplayName(contact).slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white break-words flex-1">
+                                {getUserDisplayName(contact)}
+                              </h3>
+
+                              <div className="flex flex-row items-center gap-2 flex-shrink-0">
+                                <Badge
+                                  variant={contact.isOnline ? 'default' : 'secondary'}
+                                  className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-semibold flex-shrink-0 whitespace-nowrap ${
+                                    contact.isOnline
+                                      ? 'bg-green-500 hover:bg-green-600'
+                                      : 'bg-gray-400 hover:bg-gray-500'
+                                  }`}
+                                >
+                                  {contact.isOnline ? t('status.online') : t('status.offline')}
+                                </Badge>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="h-8 w-8 sm:h-10 sm:w-10 p-0 hover:bg-gray-200 dark:hover:bg-gray-700 flex-shrink-0">
+                                      <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
+                                      <span className="sr-only">{t('actions.menu')}</span>
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" className="w-56 z-[100]">
+                                    <DropdownMenuItem
+                                      onClick={() => router.push(`/u/${contact.id}`)}
+                                      className="py-3"
+                                    >
+                                      <UserCheck className="h-4 w-4 mr-3" />
+                                      <span className="font-medium">{t('actions.viewProfile')}</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() => startConversation(contact.id)}
+                                      className="py-3"
+                                    >
+                                      <MessageSquare className="h-4 w-4 mr-3" />
+                                      <span className="font-medium">{t('actions.message')}</span>
+                                    </DropdownMenuItem>
+                                    {contact.phoneNumber && (
+                                      <DropdownMenuItem className="py-3">
+                                        <Phone className="h-4 w-4 mr-3" />
+                                        <span className="font-medium">{t('actions.call')}</span>
+                                      </DropdownMenuItem>
+                                    )}
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => router.push(`/u/${contact.id}`)}
+                              className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline mb-2 sm:mb-3 break-all transition-colors cursor-pointer text-left"
+                            >
+                              @{contact.username}
+                            </button>
+
+                            <div className="flex items-center space-x-2">
+                              <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${contact.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
+                              <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
+                                {contact.isOnline ? t('status.online') : t('status.offline')}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )
+            ) : activeTab === 'connected' ? (
+              friendRequests.filter(r => r.status === 'accepted').length === 0 ? (
+                <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
+                  <CardContent className="flex flex-col items-center justify-center py-16 px-6">
+                    <div className="relative mb-6">
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 blur-3xl rounded-full"></div>
+                      <div className="relative p-6 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-3xl">
+                        <UserCheck className="h-16 w-16 text-purple-600 dark:text-purple-400" />
+                      </div>
+                    </div>
+                    <h3 className="text-2xl font-bold text-foreground mb-3 text-center">{t('messages.noConnectedContacts')}</h3>
+                    <p className="text-muted-foreground text-base text-center max-w-md">
+                      {t('messages.noConnectedContactsDescription')}
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-6">
+                  {friendRequests.filter(r => r.status === 'accepted').map((request) => {
+                    const otherUser = request.senderId === user?.id ? request.receiver : request.sender;
+                    const otherUserId = request.senderId === user?.id ? request.receiverId : request.senderId;
+
+                    return (
+                      <Card key={request.id} className="relative border-2 hover:border-purple-500/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950">
+                        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
+
+                        <CardContent className="relative z-10 p-4 sm:p-6">
+                          <div className="flex items-start space-x-3 sm:space-x-4">
+                            <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-white shadow-lg flex-shrink-0">
+                              <AvatarImage src={otherUser?.avatar} alt={getUserDisplayName(otherUser!)} />
+                              <AvatarFallback className="text-sm sm:text-lg font-bold">
+                                {getUserDisplayName(otherUser!).slice(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2 mb-1">
+                                <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white break-words flex-1">
+                                  {getUserDisplayName(otherUser!)}
+                                </h3>
+
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="h-8 w-8 sm:h-10 sm:w-10 p-0 hover:bg-gray-200 dark:hover:bg-gray-700 flex-shrink-0">
+                                      <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
+                                      <span className="sr-only">{t('actions.menu')}</span>
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" className="w-56 z-[100]">
+                                    <DropdownMenuItem
+                                      onClick={() => router.push(`/u/${otherUserId}`)}
+                                      className="py-3"
+                                    >
+                                      <UserCheck className="h-4 w-4 mr-3" />
+                                      <span className="font-medium">{t('actions.viewProfile')}</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() => startConversation(otherUserId)}
+                                      className="py-3"
+                                    >
+                                      <MessageSquare className="h-4 w-4 mr-3" />
+                                      <span className="font-medium">{t('actions.message')}</span>
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                              <button
+                                onClick={() => router.push(`/u/${otherUserId}`)}
+                                className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline mb-2 sm:mb-3 break-all transition-colors cursor-pointer text-left"
+                              >
+                                @{otherUser?.username}
+                              </button>
+
+                              <div className="space-y-2">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                                  <div className="flex items-center space-x-2">
+                                    <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${otherUser?.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                    <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
+                                      {otherUser?.isOnline ? t('status.online') : t('status.offline')}
+                                    </span>
+                                  </div>
+
+                                  {otherUser?.email && (
+                                    <div className="flex items-center space-x-2 min-w-0">
+                                      <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+                                      <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
+                                        {otherUser.email}
+                                      </span>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
-                              
-                              <h3 className="text-2xl font-bold text-foreground mb-3 text-center">
-                                {searchQuery ? t('messages.noContactsFound') : t('messages.noContacts')}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )
+            ) : activeTab === 'pending' ? (
+              friendRequests.filter(r => r.status === 'pending').length === 0 ? (
+                <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
+                  <CardContent className="flex flex-col items-center justify-center py-16 px-6">
+                    <div className="relative mb-6">
+                      <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-yellow-500/20 blur-3xl rounded-full"></div>
+                      <div className="relative p-6 bg-gradient-to-br from-orange-100 to-yellow-100 dark:from-orange-900/30 dark:to-yellow-900/30 rounded-3xl">
+                        <Clock className="h-16 w-16 text-orange-600 dark:text-orange-400" />
+                      </div>
+                    </div>
+                    <h3 className="text-2xl font-bold text-foreground mb-3 text-center">{t('messages.noPendingRequests')}</h3>
+                    <p className="text-muted-foreground text-base text-center max-w-md">
+                      {t('messages.noPendingRequestsDescription')}
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-6">
+                  {friendRequests.filter(r => r.status === 'pending').map((request) => {
+                    const isCurrentUserSender = request.senderId === user?.id;
+                    const otherUser = isCurrentUserSender ? request.receiver : request.sender;
+
+                    return (
+                      <Card key={request.id} className="relative border-2 hover:border-orange-500/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950">
+                        <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-yellow-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
+
+                        <CardContent className="relative z-10 p-4 sm:p-6">
+                          <div className="flex items-start space-x-3 sm:space-x-4">
+                            <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-white shadow-lg flex-shrink-0">
+                              <AvatarImage src={otherUser?.avatar} alt={getUserDisplayName(otherUser!)} />
+                              <AvatarFallback className="text-sm sm:text-lg font-bold">
+                                {getUserDisplayName(otherUser!).slice(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white mb-1 break-words">
+                                {getUserDisplayName(otherUser!)}
                               </h3>
-                              <p className="text-muted-foreground text-base mb-8 text-center max-w-md">
-                                {searchQuery 
-                                  ? t('messages.noContactsFoundDescription')
-                                  : t('messages.noContactsDescription')
+                              <button
+                                onClick={() => router.push(`/u/${otherUser?.id}`)}
+                                className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline mb-2 break-all transition-colors cursor-pointer text-left"
+                              >
+                                @{otherUser?.username}
+                              </button>
+                              <p className="text-xs sm:text-sm text-gray-500 font-medium break-words mb-3">
+                                {isCurrentUserSender
+                                  ? t('messages.requestSent', { date: new Date(request.createdAt).toLocaleDateString() })
+                                  : t('messages.requestReceived', { date: new Date(request.createdAt).toLocaleDateString() })
                                 }
                               </p>
-                              
-                              <div className="flex flex-col sm:flex-row gap-3">
-                                <Button 
-                                  onClick={() => router.push('/search')}
-                                  variant="outline"
-                                  className="h-12 rounded-xl px-6 font-semibold shadow-md hover:shadow-lg transition-all border-2"
-                                >
-                                  <UserPlus className="h-5 w-5 mr-2" />
-                                  <span>{t('messages.searchUsers')}</span>
-                                </Button>
-                                <Button 
-                                  onClick={() => setIsShareModalOpen(true)}
-                                  className="h-12 rounded-xl px-6 font-semibold shadow-md hover:shadow-lg transition-all bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-                                >
-                                  <Share2 className="h-5 w-5 mr-2" />
-                                  <span>{t('inviteContact')}</span>
-                                </Button>
+
+                              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                                {isCurrentUserSender ? (
+                                  <Badge variant="outline" className="text-orange-600 border-orange-200 px-3 py-1.5 font-semibold">
+                                    <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-2" />
+                                    {t('status.pending')}
+                                  </Badge>
+                                ) : (
+                                  <>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => handleFriendRequest(request.id, 'accept')}
+                                      className="flex-1 sm:flex-none items-center gap-2 h-9 sm:h-10 px-3 sm:px-4 bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg transition-all"
+                                    >
+                                      <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                      <span className="text-xs sm:text-sm">{t('actions.accept')}</span>
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => handleFriendRequest(request.id, 'reject')}
+                                      className="flex-1 sm:flex-none items-center gap-2 h-9 sm:h-10 px-3 sm:px-4 border-2 shadow-md hover:shadow-lg transition-all"
+                                    >
+                                      <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                      <span className="text-xs sm:text-sm">{t('actions.reject')}</span>
+                                    </Button>
+                                  </>
+                                )}
                               </div>
-                            </CardContent>
-                          </Card>
-                        ) : (
-                          <div className="grid gap-6">
-                            {displayedUsers.map((contact) => (
-                              <Card key={contact.id} className="relative border-2 hover:border-primary/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950">
-                                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
-                                
-                                <CardContent className="relative z-10 p-4 sm:p-6">
-                                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                                    <div className="flex items-start sm:items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
-                                      <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-white shadow-lg flex-shrink-0">
-                                        <AvatarImage src={contact.avatar} alt={getUserDisplayName(contact)} />
-                                        <AvatarFallback className="text-sm sm:text-lg font-bold">
-                                          {getUserDisplayName(contact).slice(0, 2).toUpperCase()}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                      
-                                      <div className="flex-1 min-w-0">
-                                        <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white mb-1 break-words">
-                                          {getUserDisplayName(contact)}
-                                        </h3>
-                                        <button
-                                          onClick={() => router.push(`/u/${contact.id}`)}
-                                          className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline transition-colors cursor-pointer text-left"
-                                        >
-                                          @{contact.username}
-                                        </button>
-                                      </div>
-                                    </div>
-                                    
-                                    <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
-                                      {searchQuery && (
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          onClick={() => sendFriendRequest(contact.id)}
-                                          className="flex-1 sm:flex-none items-center gap-2 h-9 sm:h-10 px-3 sm:px-4 border-2 shadow-md hover:shadow-lg transition-all"
-                                        >
-                                          <Link className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                                          <span className="text-xs sm:text-sm">{t('actions.connection')}</span>
-                                        </Button>
-                                      )}
-                                      
-                                      <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                          <Button variant="ghost" size="sm" className="h-9 w-9 sm:h-10 sm:w-10 p-0 hover:bg-gray-200 dark:hover:bg-gray-700 flex-shrink-0">
-                                            <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
-                                          </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end" className="w-56 z-[100]">
-                                          <DropdownMenuItem 
-                                            onClick={() => router.push(`/u/${contact.id}`)}
-                                            className="py-3"
-                                          >
-                                            <UserCheck className="h-4 w-4 mr-3" />
-                                            <span className="font-medium">{t('actions.viewProfile')}</span>
-                                          </DropdownMenuItem>
-                                          {contact.phoneNumber && (
-                                            <DropdownMenuItem className="py-3">
-                                              <Phone className="h-4 w-4 mr-3" />
-                                              <span className="font-medium">{t('actions.call')}</span>
-                                            </DropdownMenuItem>
-                                          )}
-                                          {activeTab !== 'all' && (
-                                            <DropdownMenuItem className="text-red-600 py-3 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/20">
-                                              <UserMinus className="h-4 w-4 mr-3" />
-                                              <span className="font-medium">{t('actions.remove')}</span>
-                                            </DropdownMenuItem>
-                                          )}
-                                        </DropdownMenuContent>
-                                      </DropdownMenu>
-                                    </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )
+            ) : activeTab === 'refused' ? (
+              friendRequests.filter(r => r.status === 'rejected').length === 0 ? (
+                <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
+                  <CardContent className="flex flex-col items-center justify-center py-16 px-6">
+                    <div className="relative mb-6">
+                      <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-orange-500/20 blur-3xl rounded-full"></div>
+                      <div className="relative p-6 bg-gradient-to-br from-red-100 to-orange-100 dark:from-red-900/30 dark:to-orange-900/30 rounded-3xl">
+                        <UserX className="h-16 w-16 text-red-600 dark:text-red-400" />
+                      </div>
+                    </div>
+                    <h3 className="text-2xl font-bold text-foreground mb-3 text-center">{t('messages.noRefusedRequests')}</h3>
+                    <p className="text-muted-foreground text-base text-center max-w-md">
+                      {t('messages.noRefusedRequestsDescription')}
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-6">
+                  {friendRequests.filter(r => r.status === 'rejected').map((request) => {
+                    const isCurrentUserSender = request.senderId === user?.id;
+                    const otherUser = isCurrentUserSender ? request.receiver : request.sender;
+                    const otherUserId = isCurrentUserSender ? request.receiverId : request.senderId;
+
+                    return (
+                      <Card key={request.id} className="relative border-2 hover:border-red-500/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950">
+                        <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
+
+                        <CardContent className="relative z-10 p-4 sm:p-6">
+                          <div className="flex items-start space-x-3 sm:space-x-4">
+                            <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-white shadow-lg flex-shrink-0">
+                              <AvatarImage src={otherUser?.avatar} alt={getUserDisplayName(otherUser!)} />
+                              <AvatarFallback className="text-sm sm:text-lg font-bold">
+                                {getUserDisplayName(otherUser!).slice(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white mb-1 break-words">
+                                {getUserDisplayName(otherUser!)}
+                              </h3>
+                              <button
+                                onClick={() => router.push(`/u/${otherUserId}`)}
+                                className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline mb-2 break-all transition-colors cursor-pointer text-left"
+                              >
+                                @{otherUser?.username}
+                              </button>
+                              <p className="text-xs sm:text-sm text-gray-500 font-medium mb-3">
+                                {t('messages.requestRejected', { date: new Date(request.updatedAt).toLocaleDateString() })}
+                              </p>
+
+                              <div className="flex items-center gap-2">
+                                {isCurrentUserSender ? (
+                                  <Badge variant="outline" className="text-red-600 border-red-200 px-3 py-1.5 font-semibold">
+                                    <UserX className="h-4 w-4 mr-2" />
+                                    {t('status.rejected')}
+                                  </Badge>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => sendFriendRequest(otherUserId)}
+                                    className="flex items-center space-x-2 h-10 px-4 border-2 shadow-md hover:shadow-lg transition-all"
+                                  >
+                                    <UserPlus className="h-4 w-4" />
+                                    <span>{t('actions.resend')}</span>
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )
+            ) : activeTab === 'affiliates' ? (
+              affiliateRelations.length === 0 ? (
+                <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
+                  <CardContent className="flex flex-col items-center justify-center py-16 px-6">
+                    <div className="relative mb-6">
+                      <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-teal-500/20 blur-3xl rounded-full"></div>
+                      <div className="relative p-6 bg-gradient-to-br from-cyan-100 to-teal-100 dark:from-cyan-900/30 dark:to-teal-900/30 rounded-3xl">
+                        <Share2 className="h-16 w-16 text-cyan-600 dark:text-cyan-400" />
+                      </div>
+                    </div>
+
+                    <h3 className="text-2xl font-bold text-foreground mb-3 text-center">{t('messages.noAffiliateContacts')}</h3>
+                    <p className="text-muted-foreground text-base mb-8 text-center max-w-md">
+                      {t('messages.noAffiliateContactsDescription')}
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-6">
+                  {affiliateRelations.map((relation) => (
+                    <Card key={relation.id} className="relative border-2 hover:border-cyan-500/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950">
+                      <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
+
+                      <CardContent className="relative z-10 p-6">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-start sm:items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
+                            <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-white shadow-lg flex-shrink-0">
+                              <AvatarImage src={relation.referredUser.avatar} alt={getUserDisplayName(relation.referredUser)} />
+                              <AvatarFallback className="text-sm sm:text-lg font-bold">
+                                {getUserDisplayName(relation.referredUser).slice(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white mb-1 break-words">
+                                {getUserDisplayName(relation.referredUser)}
+                              </h3>
+                              <button
+                                onClick={() => router.push(`/u/${relation.referredUser.id}`)}
+                                className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline mb-2 sm:mb-3 break-all transition-colors cursor-pointer text-left"
+                              >
+                                @{relation.referredUser.username}
+                              </button>
+
+                              {/* Informations détaillées compactes */}
+                              <div className="space-y-2">
+                                {/* Status et email */}
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                                  <div className="flex items-center space-x-2">
+                                    <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${relation.referredUser.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                    <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
+                                      {relation.referredUser.isOnline ? t('status.online') : t('status.offline')}
+                                    </span>
                                   </div>
-                                </CardContent>
-                              </Card>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )
-                  },
-                  {
-                    value: "pending",
-                    label: t('tabs.pending'),
-                    icon: <Clock className="h-4 w-4" />,
-                    content: (
-                      <div className="space-y-4">
-                        {friendRequests.filter(r => r.status === 'pending').length === 0 ? (
-                          <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
-                            <CardContent className="flex flex-col items-center justify-center py-16 px-6">
-                              <div className="relative mb-6">
-                                <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-yellow-500/20 blur-3xl rounded-full"></div>
-                                <div className="relative p-6 bg-gradient-to-br from-orange-100 to-yellow-100 dark:from-orange-900/30 dark:to-yellow-900/30 rounded-3xl">
-                                  <Clock className="h-16 w-16 text-orange-600 dark:text-orange-400" />
-                                </div>
-                              </div>
-                              
-                              <h3 className="text-2xl font-bold text-foreground mb-3 text-center">{t('messages.noPendingRequests')}</h3>
-                              <p className="text-muted-foreground text-base mb-8 text-center max-w-md">
-                                {t('messages.noPendingRequestsDescription')}
-                              </p>
-                            </CardContent>
-                          </Card>
-                        ) : (
-                          <div className="grid gap-6">
-                            {friendRequests.filter(r => r.status === 'pending').map((request) => {
-                              const isCurrentUserSender = request.senderId === user?.id;
-                              const otherUser = isCurrentUserSender ? request.receiver : request.sender;
-                              
-                              return (
-                                <Card key={request.id} className="relative border-2 hover:border-orange-500/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950">
-                                  <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-yellow-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
-                                  
-                                  <CardContent className="relative z-10 p-4 sm:p-6">
-                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                                      <div className="flex items-start sm:items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
-                                        <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-white shadow-lg flex-shrink-0">
-                                          <AvatarImage src={otherUser?.avatar} alt={getUserDisplayName(otherUser!)} />
-                                          <AvatarFallback className="text-sm sm:text-lg font-bold">
-                                            {getUserDisplayName(otherUser!).slice(0, 2).toUpperCase()}
-                                          </AvatarFallback>
-                                        </Avatar>
-                                        
-                                        <div className="flex-1 min-w-0">
-                                          <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white mb-1 break-words">
-                                            {getUserDisplayName(otherUser!)}
-                                          </h3>
-                                          <button
-                                            onClick={() => router.push(`/u/${otherUser?.id}`)}
-                                            className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline mb-2 break-all transition-colors cursor-pointer text-left"
-                                          >
-                                            @{otherUser?.username}
-                                          </button>
-                                          <p className="text-xs sm:text-sm text-gray-500 font-medium break-words">
-                                            {isCurrentUserSender 
-                                              ? t('messages.requestSent', { date: new Date(request.createdAt).toLocaleDateString('fr-FR') })
-                                              : t('messages.requestReceived', { date: new Date(request.createdAt).toLocaleDateString('fr-FR') })
-                                            }
-                                          </p>
-                                        </div>
-                                      </div>
-                                      
-                                      <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto flex-wrap sm:flex-nowrap">
-                                        {isCurrentUserSender ? (
-                                          <Badge variant="outline" className="text-orange-600 border-orange-200 px-3 py-1.5 font-semibold w-full sm:w-auto justify-center">
-                                            <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-2" />
-                                            {t('status.pending')}
-                                          </Badge>
-                                        ) : (
-                                          <>
-                                            <Button
-                                              size="sm"
-                                              onClick={() => handleFriendRequest(request.id, 'accept')}
-                                              className="flex-1 sm:flex-none items-center gap-2 h-9 sm:h-10 px-3 sm:px-4 bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg transition-all"
-                                            >
-                                              <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                                              <span className="text-xs sm:text-sm">{t('actions.accept')}</span>
-                                            </Button>
-                                            <Button
-                                              size="sm"
-                                              variant="outline"
-                                              onClick={() => handleFriendRequest(request.id, 'reject')}
-                                              className="flex-1 sm:flex-none items-center gap-2 h-9 sm:h-10 px-3 sm:px-4 border-2 shadow-md hover:shadow-lg transition-all"
-                                            >
-                                              <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                                              <span className="text-xs sm:text-sm">{t('actions.reject')}</span>
-                                            </Button>
-                                          </>
-                                        )}
-                                      </div>
+
+                                  {relation.referredUser.email && (
+                                    <div className="flex items-center space-x-2 min-w-0">
+                                      <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+                                      <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
+                                        {relation.referredUser.email}
+                                      </span>
                                     </div>
-                                  </CardContent>
-                                </Card>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    )
-                  },
-                  {
-                    value: "connected", 
-                    label: t('tabs.connected'),
-                    icon: <UserCheck className="h-4 w-4" />,
-                    content: (
-                      <div className="space-y-4">
-                        {friendRequests.filter(r => r.status === 'accepted').length === 0 ? (
-                          <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
-                            <CardContent className="flex flex-col items-center justify-center py-16 px-6">
-                              <div className="relative mb-6">
-                                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 blur-3xl rounded-full"></div>
-                                <div className="relative p-6 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-3xl">
-                                  <UserCheck className="h-16 w-16 text-purple-600 dark:text-purple-400" />
+                                  )}
                                 </div>
-                              </div>
-                              
-                              <h3 className="text-2xl font-bold text-foreground mb-3 text-center">{t('messages.noConnectedContacts')}</h3>
-                              <p className="text-muted-foreground text-base mb-8 text-center max-w-md">
-                                {t('messages.noConnectedContactsDescription')}
-                              </p>
-                            </CardContent>
-                          </Card>
-                        ) : (
-                          <div className="grid gap-6">
-                            {friendRequests.filter(r => r.status === 'accepted').map((request) => {
-                              const otherUser = request.senderId === user?.id ? request.receiver : request.sender;
-                              const otherUserId = request.senderId === user?.id ? request.receiverId : request.senderId;
-                              
-                              return (
-                                <Card key={request.id} className="relative border-2 hover:border-purple-500/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950">
-                                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
-                                  
-                                  <CardContent className="relative z-10 p-4 sm:p-6">
-                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                                      <div className="flex items-start sm:items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
-                                        <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-white shadow-lg flex-shrink-0">
-                                          <AvatarImage src={otherUser?.avatar} alt={getUserDisplayName(otherUser!)} />
-                                          <AvatarFallback className="text-sm sm:text-lg font-bold">
-                                            {getUserDisplayName(otherUser!).slice(0, 2).toUpperCase()}
-                                          </AvatarFallback>
-                                        </Avatar>
-                                        
-                                        <div className="flex-1 min-w-0">
-                                          <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white mb-1 break-words">
-                                            {getUserDisplayName(otherUser!)}
-                                          </h3>
-                                          <button
-                                            onClick={() => router.push(`/u/${otherUserId}`)}
-                                            className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline mb-2 sm:mb-3 break-all transition-colors cursor-pointer text-left"
-                                          >
-                                            @{otherUser?.username}
-                                          </button>
-                                          <div className="flex items-center space-x-2">
-                                            <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${otherUser?.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
-                                            <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
-                                              {otherUser?.isOnline ? t('status.online') : t('status.offline')}
-                                            </span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      
-                                      <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
-                                        {/* Actions disponibles via le menu dropdown */}
-                                      </div>
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    )
-                  },
-                  {
-                    value: "refused",
-                    label: t('tabs.refused'),
-                    icon: <UserX className="h-4 w-4" />,
-                    content: (
-                      <div className="space-y-4">
-                        {friendRequests.filter(r => r.status === 'rejected').length === 0 ? (
-                          <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
-                            <CardContent className="flex flex-col items-center justify-center py-16 px-6">
-                              <div className="relative mb-6">
-                                <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-orange-500/20 blur-3xl rounded-full"></div>
-                                <div className="relative p-6 bg-gradient-to-br from-red-100 to-orange-100 dark:from-red-900/30 dark:to-orange-900/30 rounded-3xl">
-                                  <UserX className="h-16 w-16 text-red-600 dark:text-red-400" />
-                                </div>
-                              </div>
-                              
-                              <h3 className="text-2xl font-bold text-foreground mb-3 text-center">{t('messages.noRefusedRequests')}</h3>
-                              <p className="text-muted-foreground text-base mb-8 text-center max-w-md">
-                                {t('messages.noRefusedRequestsDescription')}
-                              </p>
-                            </CardContent>
-                          </Card>
-                        ) : (
-                          <div className="grid gap-6">
-                            {friendRequests.filter(r => r.status === 'rejected').map((request) => {
-                              const isCurrentUserSender = request.senderId === user?.id;
-                              const otherUser = isCurrentUserSender ? request.receiver : request.sender;
-                              const otherUserId = isCurrentUserSender ? request.receiverId : request.senderId;
-                              
-                              return (
-                                <Card key={request.id} className="relative border-2 hover:border-red-500/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950">
-                                  <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
-                                  
-                                  <CardContent className="relative z-10 p-6">
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex items-center space-x-4">
-                                        <Avatar className="h-16 w-16 border-2 border-white shadow-lg">
-                                          <AvatarImage src={otherUser?.avatar} alt={getUserDisplayName(otherUser!)} />
-                                          <AvatarFallback className="text-lg font-bold">
-                                            {getUserDisplayName(otherUser!).slice(0, 2).toUpperCase()}
-                                          </AvatarFallback>
-                                        </Avatar>
-                                        
-                                        <div className="flex-1 min-w-0">
-                                          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
-                                            {getUserDisplayName(otherUser!)}
-                                          </h3>
-                                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">@{otherUser?.username}</p>
-                                          <p className="text-sm text-gray-500 font-medium">
-                                            {t('messages.requestRejected', { date: new Date(request.updatedAt).toLocaleDateString('fr-FR') })}
-                                          </p>
-                                        </div>
-                                      </div>
-                                      
-                                      <div className="flex items-center space-x-3">
-                                        {isCurrentUserSender ? (
-                                          <Badge variant="outline" className="text-red-600 dark:text-red-400 border-red-200 px-3 py-1.5 font-semibold">
-                                            <UserX className="h-4 w-4 mr-2" />
-                                            {t('status.rejected')}
-                                          </Badge>
-                                        ) : (
-                                          <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() => sendFriendRequest(otherUserId)}
-                                            className="flex items-center space-x-2 h-10 px-4 border-2 shadow-md hover:shadow-lg transition-all"
-                                          >
-                                            <UserPlus className="h-4 w-4" />
-                                            <span>{t('actions.resend')}</span>
-                                          </Button>
-                                        )}
-                                      </div>
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    )
-                  },
-                  {
-                    value: "affiliates",
-                    label: t('tabs.affiliates'),
-                    icon: <Share2 className="h-4 w-4" />,
-                    content: (
-                      <div className="space-y-4">
-                        {affiliateRelations.length === 0 ? (
-                          <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
-                            <CardContent className="flex flex-col items-center justify-center py-16 px-6">
-                              <div className="relative mb-6">
-                                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-teal-500/20 blur-3xl rounded-full"></div>
-                                <div className="relative p-6 bg-gradient-to-br from-cyan-100 to-teal-100 dark:from-cyan-900/30 dark:to-teal-900/30 rounded-3xl">
-                                  <Share2 className="h-16 w-16 text-cyan-600 dark:text-cyan-400" />
-                                </div>
-                              </div>
-                              
-                              <h3 className="text-2xl font-bold text-foreground mb-3 text-center">{t('messages.noAffiliateContacts')}</h3>
-                              <p className="text-muted-foreground text-base mb-8 text-center max-w-md">
-                                {t('messages.noAffiliateContactsDescription')}
-                              </p>
-                            </CardContent>
-                          </Card>
-                        ) : (
-                          <div className="grid gap-6">
-                            {affiliateRelations.map((relation) => (
-                              <Card key={relation.id} className="relative border-2 hover:border-cyan-500/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950">
-                                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
-                                
-                                <CardContent className="relative z-10 p-6">
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-start sm:items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
-                                      <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-white shadow-lg flex-shrink-0">
-                                        <AvatarImage src={relation.referredUser.avatar} alt={getUserDisplayName(relation.referredUser)} />
-                                        <AvatarFallback className="text-sm sm:text-lg font-bold">
-                                          {getUserDisplayName(relation.referredUser).slice(0, 2).toUpperCase()}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                      
-                                      <div className="flex-1 min-w-0">
-                                        <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white mb-1 break-words">
-                                          {getUserDisplayName(relation.referredUser)}
-                                        </h3>
-                                        <button
-                                          onClick={() => router.push(`/u/${relation.referredUser.id}`)}
-                                          className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline mb-2 sm:mb-3 break-all transition-colors cursor-pointer text-left"
-                                        >
-                                          @{relation.referredUser.username}
-                                        </button>
-                                        
-                                        {/* Informations détaillées compactes */}
-                                        <div className="space-y-2">
-                                          {/* Status et email */}
-                                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                                            <div className="flex items-center space-x-2">
-                                              <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${relation.referredUser.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
-                                              <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
-                                                {relation.referredUser.isOnline ? t('status.online') : t('status.offline')}
-                                              </span>
-                                            </div>
-                                            
-                                            {relation.referredUser.email && (
-                                              <div className="flex items-center space-x-2 min-w-0">
-                                                <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
-                                                <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
-                                                  {relation.referredUser.email}
-                                                </span>
-                                              </div>
-                                            )}
-                                          </div>
-                                          
-                                          {/* Lien d'invitation utilisé */}
-                                          <div className="flex items-center space-x-2 p-2 sm:p-3 bg-cyan-50 dark:bg-cyan-900/20 rounded-lg">
-                                            <Link className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-cyan-600 flex-shrink-0" />
-                                            <div className="flex-1 min-w-0">
-                                              <span className="text-xs text-cyan-600 uppercase tracking-wide block font-medium break-words">
-                                                {t('messages.linkUsed')}: {relation.affiliateToken.name}
-                                              </span>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
+
+                                {/* Lien d'invitation utilisé */}
+                                <div className="flex items-center space-x-2 p-2 sm:p-3 bg-cyan-50 dark:bg-cyan-900/20 rounded-lg">
+                                  <Link className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-cyan-600 flex-shrink-0" />
+                                  <div className="flex-1 min-w-0">
+                                    <span className="text-xs text-cyan-600 uppercase tracking-wide block font-medium break-words">
+                                      {t('messages.linkUsed')}: {relation.affiliateToken.name}
+                                    </span>
                                   </div>
-                                </CardContent>
-                              </Card>
-                            ))}
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                        )}
-                      </div>
-                    )
-                  }
-                ]}
-                mobileBreakpoint="md"
-                className="mb-6"
-              />
-            </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )
+            ) : null}
           </div>
 
           {/* Modal d'affiliation */}
