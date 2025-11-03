@@ -22,17 +22,8 @@ interface CallInterfaceProps {
 export function CallInterface({ callId }: CallInterfaceProps) {
   const { user } = useAuth();
 
-  // Return loading state BEFORE calling hooks if user not loaded yet
-  // This prevents hooks from being called with undefined userId
-  if (!user || !user.id) {
-    logger.warn('[CallInterface]', 'User not loaded yet, waiting...');
-    return (
-      <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
-        <div className="text-white text-lg">Loading call...</div>
-      </div>
-    );
-  }
-
+  // IMPORTANT: Call ALL hooks BEFORE any conditional returns to comply with React rules
+  // Hooks must be called in the same order on every render
   const {
     localStream,
     remoteStreams,
@@ -49,10 +40,10 @@ export function CallInterface({ callId }: CallInterfaceProps) {
     toast.error('Call connection error: ' + error.message);
   }, []);
 
-  // Now we can safely call useWebRTCP2P with guaranteed user.id
+  // Pass fallback empty string if user not loaded yet (hook will handle gracefully)
   const { initializeLocalStream, createOffer, connectionState } = useWebRTCP2P({
     callId,
-    userId: user.id,
+    userId: user?.id || '',
     onError: handleWebRTCError,
   });
 
@@ -171,6 +162,17 @@ export function CallInterface({ callId }: CallInterfaceProps) {
     // but we also reset here for immediate UI feedback
     reset();
   };
+
+  // AFTER all hooks have been called, check if user is loaded
+  // This ensures hooks are always called in the same order
+  if (!user || !user.id) {
+    logger.warn('[CallInterface]', 'User not loaded yet, waiting...');
+    return (
+      <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
+        <div className="text-white text-lg">Loading call...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 bg-black">
