@@ -283,10 +283,22 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     });
 
     // Filtrer les doublons basés sur nom, taille et date de modification
-    const existingFileSignatures = selectedFiles.map(f => `${f.name}_${f.size}_${f.lastModified}`);
+    // Vérifier contre selectedFiles ET uploadedAttachments
+    const existingFileSignatures = new Set([
+      ...selectedFiles.map(f => `${f.name}_${f.size}_${f.lastModified}`),
+      ...uploadedAttachments.map(att => `${att.originalName}_${att.fileSize}_${new Date(att.uploadedAt).getTime()}`)
+    ]);
+
+    console.log('🔍 Signatures existantes:', Array.from(existingFileSignatures));
+
     const uniqueFiles = files.filter(file => {
       const signature = `${file.name}_${file.size}_${file.lastModified}`;
-      return !existingFileSignatures.includes(signature);
+      console.log(`🔍 Vérification fichier: ${signature}`);
+      const isDuplicate = existingFileSignatures.has(signature);
+      if (isDuplicate) {
+        console.log(`❌ DOUBLON détecté: ${file.name}`);
+      }
+      return !isDuplicate;
     });
 
     if (uniqueFiles.length < files.length) {
