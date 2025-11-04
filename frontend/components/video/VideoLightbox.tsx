@@ -15,6 +15,8 @@ import {
   Pause,
   Volume2,
   VolumeX,
+  Maximize,
+  Minimize,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Attachment, formatFileSize } from '../../shared/types/attachment';
@@ -39,8 +41,13 @@ export function VideoLightbox({
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [videoDimensions, setVideoDimensions] = useState({ width: 0, height: 0 });
   const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const touchStartX = useRef<number>(0);
+  const touchEndX = useRef<number>(0);
 
   // Reset état quand on change de vidéo
   useEffect(() => {
@@ -81,36 +88,6 @@ export function VideoLightbox({
     };
   }, [isPlaying, updateProgress]);
 
-  // Navigation clavier
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      switch (e.key) {
-        case 'Escape':
-          onClose();
-          break;
-        case 'ArrowLeft':
-          goToPrevious();
-          break;
-        case 'ArrowRight':
-          goToNext();
-          break;
-        case ' ':
-          e.preventDefault();
-          togglePlay();
-          break;
-        case 'm':
-        case 'M':
-          toggleMute();
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, currentIndex, isPlaying, isMuted]);
-
   // Empêcher le scroll du body quand le lightbox est ouvert
   useEffect(() => {
     if (isOpen) {
@@ -129,16 +106,18 @@ export function VideoLightbox({
   const canGoNext = currentIndex < videos.length - 1;
 
   const goToPrevious = useCallback(() => {
-    if (canGoPrevious) {
-      setCurrentIndex((prev) => prev - 1);
+    if (videos.length > 1) {
+      // Navigation circulaire
+      setCurrentIndex((prev) => (prev === 0 ? videos.length - 1 : prev - 1));
     }
-  }, [canGoPrevious]);
+  }, [videos.length]);
 
   const goToNext = useCallback(() => {
-    if (canGoNext) {
-      setCurrentIndex((prev) => prev + 1);
+    if (videos.length > 1) {
+      // Navigation circulaire
+      setCurrentIndex((prev) => (prev === videos.length - 1 ? 0 : prev + 1));
     }
-  }, [canGoNext]);
+  }, [videos.length]);
 
   const togglePlay = useCallback(async () => {
     if (!videoRef.current) return;
@@ -163,6 +142,85 @@ export function VideoLightbox({
     }
   }, [isMuted]);
 
+  const toggleFullscreen = useCallback(async () => {
+    if (!videoRef.current) return;
+
+    try {
+      if (!document.fullscreenElement) {
+        // Entrer en mode plein écran avec la vidéo elle-même
+        await videoRef.current.requestFullscreen();
+        setIsFullscreen(true);
+      } else {
+        // Sortir du mode plein écran
+        await document.exitFullscreen();
+        setIsFullscreen(false);
+      }
+    } catch (error) {
+      console.error('Erreur plein écran:', error);
+    }
+  }, []);
+
+  // Écouter les changements de plein écran
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  // Recalculer les dimensions lors du redimensionnement de la fenêtre
+  useEffect(() => {
+    const handleResize = () => {
+      // Force un re-render pour recalculer les dimensions
+      if (videoRef.current && videoDimensions.width > 0) {
+        setVideoDimensions({
+          width: videoRef.current.videoWidth,
+          height: videoRef.current.videoHeight,
+        });
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [videoDimensions.width]);
+
+  // Navigation clavier
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case 'Escape':
+          onClose();
+          break;
+        case 'ArrowLeft':
+          goToPrevious();
+          break;
+        case 'ArrowRight':
+          goToNext();
+          break;
+        case ' ':
+          e.preventDefault();
+          togglePlay();
+          break;
+        case 'm':
+        case 'M':
+          toggleMute();
+          break;
+        case 'f':
+        case 'F':
+          e.preventDefault();
+          toggleFullscreen();
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, goToPrevious, goToNext, togglePlay, toggleMute, toggleFullscreen, onClose]);
+
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newVolume = parseFloat(e.target.value);
     setVolume(newVolume);
@@ -186,6 +244,11 @@ export function VideoLightbox({
   const handleLoadedMetadata = useCallback(() => {
     if (videoRef.current) {
       setDuration(videoRef.current.duration);
+      // Récupérer les dimensions réelles de la vidéo
+      setVideoDimensions({
+        width: videoRef.current.videoWidth,
+        height: videoRef.current.videoHeight,
+      });
     }
   }, []);
 
@@ -215,7 +278,86 @@ export function VideoLightbox({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Gestion du swipe
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+
+    const diff = touchStartX.current - touchEndX.current;
+    const minSwipeDistance = 50;
+
+    if (Math.abs(diff) > minSwipeDistance) {
+      if (diff > 0) {
+        // Swipe vers la gauche -> vidéo suivante
+        goToNext();
+      } else {
+        // Swipe vers la droite -> vidéo précédente
+        goToPrevious();
+      }
+    }
+
+    touchStartX.current = 0;
+    touchEndX.current = 0;
+  };
+
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+  // Calculer les dimensions du container vidéo
+  const getVideoContainerStyle = (): React.CSSProperties => {
+    // Sur mobile : toujours plein écran
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      return {
+        width: '100%',
+        height: '100%',
+      };
+    }
+
+    // Sur desktop : utiliser les proportions de la vidéo
+    if (videoDimensions.width > 0 && videoDimensions.height > 0) {
+      const aspectRatio = videoDimensions.width / videoDimensions.height;
+      const screenWidth = typeof window !== 'undefined' ? window.innerWidth : 1920;
+      const screenHeight = typeof window !== 'undefined' ? window.innerHeight : 1080;
+
+      // Réserver de l'espace pour les contrôles (120px en haut + 150px en bas)
+      const availableHeight = screenHeight - 270;
+      const availableWidth = screenWidth - 100; // Marges latérales
+
+      let width = availableWidth;
+      let height = width / aspectRatio;
+
+      // Si la hauteur dépasse l'espace disponible, ajuster par la hauteur
+      if (height > availableHeight) {
+        height = availableHeight;
+        width = height * aspectRatio;
+      }
+
+      // Appliquer une marge de 10% en hauteur pour garantir la visibilité des contrôles
+      const heightWithMargin = height * 0.90; // 10% de réduction
+      const widthWithMargin = heightWithMargin * aspectRatio;
+
+      return {
+        width: `${widthWithMargin}px`,
+        height: `${heightWithMargin}px`,
+        maxWidth: '90vw',
+        maxHeight: '80vh',
+      };
+    }
+
+    // Par défaut : dimensions raisonnables
+    return {
+      width: '90vw',
+      height: '80vh',
+      maxWidth: '1600px',
+      maxHeight: '900px',
+    };
+  };
 
   if (!isOpen || !currentVideo) return null;
 
@@ -226,7 +368,12 @@ export function VideoLightbox({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[9999] bg-black/95 dark:bg-black/98 backdrop-blur-sm"
-        onClick={onClose}
+        onClick={(e) => {
+          // Fermer seulement si on clique sur le backdrop (pas sur les contrôles ou la vidéo)
+          if (e.target === e.currentTarget) {
+            onClose();
+          }
+        }}
       >
         {/* Barre d'outils supérieure */}
         <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gradient-to-b from-black/50 to-transparent">
@@ -273,17 +420,23 @@ export function VideoLightbox({
         </div>
 
         {/* Zone d'affichage de la vidéo */}
-        <div className="absolute inset-0 flex items-center justify-center p-4 md:p-8">
+        <div
+          className="absolute inset-0 flex items-center justify-center"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           <motion.div
             key={currentVideo.id}
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, x: 100 }}
             animate={{
               opacity: 1,
-              scale: 1,
+              x: 0,
             }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.2 }}
-            className="relative w-full max-w-6xl aspect-video"
+            exit={{ opacity: 0, x: -100 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="relative md:rounded-lg overflow-hidden"
+            style={getVideoContainerStyle()}
             onClick={(e) => e.stopPropagation()}
           >
             <video
@@ -291,8 +444,8 @@ export function VideoLightbox({
               src={currentVideo.fileUrl}
               onLoadedMetadata={handleLoadedMetadata}
               onEnded={handleEnded}
-              className="w-full h-full object-contain rounded-lg"
-              onClick={togglePlay}
+              className="w-full h-full object-contain bg-black"
+              controls={false}
               playsInline
             >
               Votre navigateur ne supporte pas la lecture vidéo.
@@ -301,8 +454,11 @@ export function VideoLightbox({
             {/* Bouton play central (quand en pause) */}
             {!isPlaying && (
               <button
-                onClick={togglePlay}
-                className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/30 transition-all duration-200 group rounded-lg"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  togglePlay();
+                }}
+                className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/30 transition-all duration-200 group"
               >
                 <div className="w-20 h-20 rounded-full bg-purple-600 hover:bg-purple-700 flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
                   <Play className="w-10 h-10 text-white ml-1 fill-current" />
@@ -313,7 +469,7 @@ export function VideoLightbox({
         </div>
 
         {/* Navigation gauche */}
-        {canGoPrevious && (
+        {videos.length > 1 && (
           <Button
             variant="ghost"
             size="icon"
@@ -321,7 +477,7 @@ export function VideoLightbox({
               e.stopPropagation();
               goToPrevious();
             }}
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 text-white hover:bg-white/10 bg-black/30"
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 text-white hover:bg-white/10 bg-black/30 z-20"
             aria-label="Vidéo précédente"
           >
             <ChevronLeft className="w-8 h-8" />
@@ -329,7 +485,7 @@ export function VideoLightbox({
         )}
 
         {/* Navigation droite */}
-        {canGoNext && (
+        {videos.length > 1 && (
           <Button
             variant="ghost"
             size="icon"
@@ -337,7 +493,7 @@ export function VideoLightbox({
               e.stopPropagation();
               goToNext();
             }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 text-white hover:bg-white/10 bg-black/30"
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 text-white hover:bg-white/10 bg-black/30 z-20"
             aria-label="Vidéo suivante"
           >
             <ChevronRight className="w-8 h-8" />
@@ -423,6 +579,24 @@ export function VideoLightbox({
                   onClick={(e) => e.stopPropagation()}
                 />
               </div>
+
+              {/* Bouton plein écran */}
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleFullscreen();
+                }}
+                size="sm"
+                variant="ghost"
+                className="w-9 h-9 p-0 text-white hover:bg-white/10"
+                title={isFullscreen ? "Quitter le plein écran (F)" : "Plein écran (F)"}
+              >
+                {isFullscreen ? (
+                  <Minimize className="w-5 h-5" />
+                ) : (
+                  <Maximize className="w-5 h-5" />
+                )}
+              </Button>
             </div>
           </div>
         </div>
@@ -431,7 +605,7 @@ export function VideoLightbox({
         <div className="hidden md:block absolute bottom-24 left-1/2 -translate-x-1/2 text-white/60 text-xs text-center">
           <p>
             Utilisez les flèches ← → pour naviguer • Espace pour play/pause • M
-            pour mute • Échap pour fermer
+            pour mute • F pour plein écran • Échap pour fermer
           </p>
         </div>
       </motion.div>

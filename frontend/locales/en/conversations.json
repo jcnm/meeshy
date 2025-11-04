@@ -82,7 +82,8 @@
       "backToList": "Back to conversations",
       "share": "Share",
       "linkCopied": "Link copied!",
-      "linkCopyError": "Error copying link"
+      "linkCopyError": "Error copying link",
+      "viewImages": "View images"
     },
     "conversationUI": {
       "participants": "Participants",
