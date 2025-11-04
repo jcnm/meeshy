@@ -44,6 +44,10 @@ export function RegisterForm({
   const [isLoading, setIsLoading] = useState(false);
 
   const validateUsername = (username: string) => {
+    // Validation: longueur minimale de 4 caractères
+    if (username.length < 4) {
+      return false;
+    }
     // Validation: uniquement lettres, chiffres, tirets et underscores
     const usernameRegex = /^[a-zA-Z0-9_-]+$/;
     return usernameRegex.test(username);

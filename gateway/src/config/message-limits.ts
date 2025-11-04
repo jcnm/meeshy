@@ -8,8 +8,9 @@ export const MESSAGE_LIMITS = {
    * Limite maximale de caractères pour un message (validé à l'envoi)
    * Frontend: validation à l'envoi (pas de blocage de saisie)
    * Backend: rejet des messages dépassant cette limite
+   * Aligné avec frontend: 2000 caractères pour USER, 4000 pour MODERATOR+
    */
-  MAX_MESSAGE_LENGTH: parseInt(process.env.MAX_MESSAGE_LENGTH || '1024', 10),
+  MAX_MESSAGE_LENGTH: parseInt(process.env.MAX_MESSAGE_LENGTH || '2000', 10),
 
   /**
    * Seuil pour convertir le texte en pièce jointe textuelle

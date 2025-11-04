@@ -30,6 +30,8 @@
     "delete": "Supprimer",
     "viewing": "Affichage",
     "viewTranslations": "Voir les traductions",
+    "viewAllTranslations": "Voir toutes les traductions",
+    "moreTranslationOptions": "Plus d'options de traduction",
     "translations": "Traductions",
     "translateTo": "Traduire en",
     "filterLanguages": "Filtrer les langues...",
@@ -56,13 +58,15 @@
     "editMessagePrompt": "Modifier le message :",
     "deleteMessageConfirm": "Êtes-vous sûr de vouloir supprimer ce message ?",
     "originalBadge": "Original",
+    "original": "Original",
     "improveQuality": "Améliorer la qualité (modèle {current} → {next})",
     "messageActions": {
       "copy": "Copier le message",
       "translate": "Traduire",
       "reply": "Répondre",
       "edit": "Modifier",
-      "delete": "Supprimer"
+      "delete": "Supprimer",
+      "more": "Plus d'options"
     },
     "replyToMessage": "Répondre au message",
     "replyingTo": "Réponse à",
@@ -75,6 +79,13 @@
     "translate": "Traduire",
     "selectLanguage": "Sélectionner la langue",
     "searchLanguage": "Rechercher une langue...",
+    "generate": "Générer",
+    "available": "Disponibles",
+    "noLanguagesFound": "Aucune langue trouvée",
+    "translateWith": "Traduire avec",
+    "invalidDate": "Date invalide",
+    "downgradeToModel": "Réduire vers {model}",
+    "close": "Fermer",
     "translation": {
       "showOriginal": "Afficher l'original",
       "showTranslation": "Afficher la traduction",
@@ -85,8 +96,8 @@
       "translationRequestError": "Erreur lors de la demande de traduction",
       "translationAlreadyInProgress": "Traduction déjà en cours pour cette langue",
       "improveTranslationQuality": "Améliorer la qualité de traduction",
-      "clickToTranslateWith": "Cliquer pour traduire avec le modèle {model}",
       "translateWith": "Traduire avec",
+      "clickToTranslateWith": "Cliquer pour traduire avec le modèle {model}",
       "aiDisclaimer": "Les traductions sont générées par des modèles d'IA et peuvent contenir des erreurs ou des inexactitudes.",
       "basic": {
         "title": "Basique"
@@ -96,7 +107,8 @@
       },
       "premium": {
         "title": "Premium"
-      }
+      },
+      "unknown": "Inconnu"
     }
   }
 }

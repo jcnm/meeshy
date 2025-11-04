@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,8 @@ import {
   UserX,
   UserPlus,
   X,
-  Ghost
+  Ghost,
+  RefreshCw
 } from 'lucide-react';
 import { ThreadMember } from '@shared/types';
 import { conversationsService } from '@/services/conversations.service';
@@ -29,6 +30,9 @@ import { UserRoleEnum } from '@shared/types';
 import { InviteUserModal } from './invite-user-modal';
 import { getUserInitials } from '@/lib/avatar-utils';
 import type { AnonymousParticipant } from '@shared/types/anonymous';
+import { useUserStatusRealtime } from '@/hooks/use-user-status-realtime';
+import { useUserStore } from '@/stores/user-store';
+import { useManualStatusRefresh } from '@/hooks/use-manual-status-refresh';
 
 // Helper pour détecter si un utilisateur est anonyme
 function isAnonymousUser(user: any): user is AnonymousParticipant {
@@ -64,12 +68,48 @@ export function ConversationParticipantsDrawer({
   const [isLoading, setIsLoading] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
 
+  // TEMPS RÉEL: Activer les listeners Socket.IO pour les statuts utilisateur
+  useUserStatusRealtime();
+
+  // FALLBACK: Hook de rafraîchissement manuel si WebSocket down
+  const { refresh: manualRefresh, isRefreshing } = useManualStatusRefresh(conversationId);
+
+  // Store global des utilisateurs (mis à jour en temps réel par useUserStatusRealtime)
+  const storeParticipants = useUserStore(state => state.participants);
+  const setStoreParticipants = useUserStore(state => state.setParticipants);
+
+  // Initialiser le store avec les participants au montage
+  useEffect(() => {
+    if (participants && participants.length > 0) {
+      const users = participants.map(p => p.user);
+      setStoreParticipants(users);
+    }
+  }, [participants, setStoreParticipants]);
+
+  // Utiliser les participants du store (mis à jour en temps réel)
+  // Fallback sur les props si le store est vide
+  const activeParticipants = storeParticipants.length > 0
+    ? participants.map(p => ({
+        ...p,
+        user: storeParticipants.find(u => u.id === p.userId) || p.user
+      }))
+    : participants;
+
+  const handleManualRefresh = async () => {
+    try {
+      await manualRefresh();
+      toast.success('Statuts rafraîchis');
+    } catch (error) {
+      toast.error('Erreur lors du rafraîchissement');
+    }
+  };
+
   // Vérifier si l'utilisateur actuel est admin
   const currentUserParticipant = participants.find(p => p.userId === currentUser.id);
   const isAdmin = currentUserParticipant?.role === UserRoleEnum.ADMIN || currentUserParticipant?.role === UserRoleEnum.CREATOR;
 
-  // Filtrer les participants selon la recherche
-  const filteredParticipants = participants.filter(participant => {
+  // Filtrer les participants selon la recherche (utiliser activeParticipants au lieu de participants)
+  const filteredParticipants = activeParticipants.filter(participant => {
     if (!searchQuery.trim()) return true;
     const user = participant.user;
     const searchTerm = searchQuery.toLowerCase();
@@ -82,7 +122,7 @@ export function ConversationParticipantsDrawer({
     );
   });
 
-  // Séparer en ligne / hors ligne
+  // Séparer en ligne / hors ligne (les statuts sont maintenant en temps réel)
   const onlineParticipants = filteredParticipants.filter(p => p.user.isOnline);
   const offlineParticipants = filteredParticipants.filter(p => !p.user.isOnline);
 
@@ -149,34 +189,43 @@ export function ConversationParticipantsDrawer({
               <SheetTitle className="text-lg font-semibold">
                 {t('conversationUI.participants')} ({participants.length})
               </SheetTitle>
-              {isAdmin && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  title={t('conversationUI.addParticipant')}
-                  onClick={() => {
-                    setIsOpen(false);
-                    setShowInviteModal(true);
-                  }}
-                >
-                  <UserPlus className="h-4 w-4" />
-                </Button>
-              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleManualRefresh}
+                disabled={isRefreshing}
+                className="h-8 w-8 p-0"
+                title="Rafraîchir les statuts"
+              >
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              </Button>
             </div>
           </SheetHeader>
 
           <div className="px-6 py-4">
-            {/* Barre de recherche */}
+            {/* Barre de recherche avec bouton d'ajout */}
             <div className="mb-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder={t('conversationDetails.searchParticipants')}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-accent/50"
-                />
+              <div className="relative flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder={t('conversationDetails.searchParticipants')}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 bg-accent/50"
+                  />
+                </div>
+                {isAdmin && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-10 w-10 p-0 flex-shrink-0 opacity-50 cursor-not-allowed"
+                    title={`${t('conversationUI.addParticipant')} (Bientôt disponible)`}
+                    disabled={true}
+                  >
+                    <UserPlus className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
             </div>
 

@@ -2,6 +2,7 @@
   "conversations": {
     "title": "Conversations",
     "conversations": "Conversations",
+    "andMe": "et moi",
     "createConversation": "Créer une conversation",
     "createNewConversation": "Créer une nouvelle conversation",
     "loading": "Chargement des conversations...",
@@ -39,6 +40,8 @@
     "noLastMessage": "Pas encore de messages",
     "authChecking": "Vérification de l'authentification...",
     "id": "ID",
+    "uploading": "Envoi en cours...",
+    "uploadingMultiple": "Envoi de {count} fichiers...",
     "conversationLayout": {
       "authChecking": "Vérification de l'authentification...",
       "conversations": {
@@ -81,7 +84,8 @@
       "backToList": "Retour aux conversations",
       "share": "Partager",
       "linkCopied": "Lien copié !",
-      "linkCopyError": "Erreur lors de la copie du lien"
+      "linkCopyError": "Erreur lors de la copie du lien",
+      "viewImages": "Voir les images"
     },
     "conversationUI": {
       "participants": "Participants",
@@ -223,7 +227,19 @@
       "members": "membres",
       "private": "Privé",
       "public": "Public"
-    }
+    },
+    "attachmentLimit": {
+      "title": "Limite d'attachements atteinte",
+      "partialMessage": "Vous avez actuellement {current} attachement(s). Vous ne pouvez ajouter que {remaining} fichier(s) supplémentaire(s) pour atteindre la limite de {max} attachements par message.",
+      "fullMessage": "Vous avez atteint la limite maximale de {max} attachements par message.",
+      "suggestion": "Pour envoyer votre message, veuillez supprimer des fichiers en cliquant sur la croix (×) sur les fichiers que vous souhaitez retirer.",
+      "current": "Attachements actuels"
+    },
+    "attachmentDuplicate": {
+      "single": "Ce fichier est déjà ajouté",
+      "multiple": "{count} fichiers sont déjà ajoutés"
+    },
+    "pasteTooLongTxtCreated": "Texte trop long : un fichier .txt a été créé automatiquement"
   }
 }
 

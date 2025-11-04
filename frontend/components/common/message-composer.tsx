@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef, KeyboardEvent, forwardRef, useImperativeHandle, useEffect, useCallback, memo } from 'react';
-import { Send, MapPin, X, MessageCircle, Languages, Paperclip, Loader2 } from 'lucide-react';
+import { useState, useRef, KeyboardEvent, forwardRef, useImperativeHandle, useEffect, useCallback, useMemo, memo } from 'react';
+import { Send, MapPin, X, MessageCircle, Languages, Paperclip, Loader2, Mic, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { LanguageFlagSelector } from '@/components/translation';
@@ -10,10 +10,13 @@ import { type LanguageChoice } from '@/lib/bubble-stream-modules';
 import { useI18n } from '@/hooks/useI18n';
 import { useReplyStore, type ReplyingToMessage } from '@/stores/reply-store';
 import { AttachmentCarousel } from '@/components/attachments/AttachmentCarousel';
+import { AttachmentLimitModal } from '@/components/attachments/AttachmentLimitModal';
 import { useTextAttachmentDetection } from '@/hooks/useTextAttachmentDetection';
 import { AttachmentService } from '@/services/attachmentService';
 import { UploadedAttachmentResponse } from '@/shared/types/attachment';
 import { toast } from 'sonner';
+import { AudioRecorderCard } from '@/components/audio/AudioRecorderCard';
+import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
 
 interface MessageComposerProps {
   value: string;
@@ -28,9 +31,10 @@ interface MessageComposerProps {
   className?: string;
   choices?: LanguageChoice[]; // Choix de langues disponibles pour l'utilisateur
   // Nouveaux props pour les attachments
-  onAttachmentsChange?: (attachmentIds: string[]) => void;
+  onAttachmentsChange?: (attachmentIds: string[], mimeTypes: string[]) => void;
   token?: string;
   userRole?: string; // Rôle de l'utilisateur pour déterminer la limite de caractères
+  conversationId?: string; // ID de la conversation pour les événements typing
 }
 
 export interface MessageComposerRef {
@@ -57,7 +61,8 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   choices,
   onAttachmentsChange,
   token,
-  userRole
+  userRole,
+  conversationId
 }, ref) => {
 
   // ...hooks d'état et variables...
@@ -69,14 +74,28 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { replyingTo, clearReply } = useReplyStore();
   const [isMobile, setIsMobile] = useState(false);
-  
+
   // États pour les attachments
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploadedAttachments, setUploadedAttachments] = useState<UploadedAttachmentResponse[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{ [key: number]: number }>({});
-  
+  const [showAttachmentLimitModal, setShowAttachmentLimitModal] = useState(false);
+  const [attemptedCount, setAttemptedCount] = useState(0); // Compte incluant les fichiers rejetés
+
+  // États pour l'enregistrement audio
+  const [showAudioRecorder, setShowAudioRecorder] = useState(false);
+  const [currentAudioBlob, setCurrentAudioBlob] = useState<{ blob: Blob; duration: number } | null>(null);
+  const [audioRecorderKey, setAudioRecorderKey] = useState(0); // Key pour forcer re-mount
+  const [isRecording, setIsRecording] = useState(false); // État pour savoir si on enregistre
+  const audioRecorderRef = useRef<any>(null);
+  const shouldUploadAfterStopRef = useRef(false); // Flag pour uploader après arrêt
+  const currentAudioBlobRef = useRef<{ blob: Blob; duration: number } | null>(null); // Ref pour éviter problème de closure
+
+  // Ref pour gérer le timeout de stopTyping
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // Utiliser le placeholder fourni ou la traduction par défaut
   const finalPlaceholder = placeholder || t('conversationSearch.shareMessage');
 
@@ -89,40 +108,52 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Cleanup du typing indicator au démontage
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      if (conversationId) {
+        meeshySocketIOService.stopTyping(conversationId);
+      }
+    };
+  }, [conversationId]);
+
+  // Gestion du collage de texte trop long : créer un .txt UTF-8 et ne pas remplir le textarea
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    const handlePaste = async (e: ClipboardEvent) => {
+      const text = e.clipboardData?.getData('text');
+      if (text && text.length > maxMessageLength) {
+        e.preventDefault();
+        // Créer un fichier texte UTF-8
+        const encoder = new TextEncoder();
+        const utf8Text = encoder.encode(text);
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        const fileName = `presspaper-content-${year}${month}${day}-${hours}${minutes}${seconds}.txt`;
+        const textFile = new File([utf8Text], fileName, { type: 'text/plain;charset=utf-8' });
+        setSelectedFiles(prev => [...prev, textFile]);
+        toast.info(t('conversations.pasteTooLongTxtCreated'));
+      }
+    };
+    textarea.addEventListener('paste', handlePaste as any);
+    return () => textarea.removeEventListener('paste', handlePaste as any);
+  }, [maxMessageLength, t]);
+
   // Fonction pour formater la date en fonction du jour
   const formatReplyDate = (date: Date | string) => {
     const messageDate = new Date(date);
     const now = new Date();
-    
+
     // Réinitialiser l'heure pour comparer uniquement les dates
-    
-    // Gestion du collage de texte trop long : créer un .txt UTF-8 et ne pas remplir le textarea
-    useEffect(() => {
-      const textarea = textareaRef.current;
-      if (!textarea) return;
-      const handlePaste = async (e: ClipboardEvent) => {
-        const text = e.clipboardData?.getData('text');
-        if (text && text.length > maxMessageLength) {
-          e.preventDefault();
-          // Créer un fichier texte UTF-8
-          const encoder = new TextEncoder();
-          const utf8Text = encoder.encode(text);
-          const now = new Date();
-          const year = now.getFullYear();
-          const month = String(now.getMonth() + 1).padStart(2, '0');
-          const day = String(now.getDate()).padStart(2, '0');
-          const hours = String(now.getHours()).padStart(2, '0');
-          const minutes = String(now.getMinutes()).padStart(2, '0');
-          const seconds = String(now.getSeconds()).padStart(2, '0');
-          const fileName = `presspaper-content-${year}${month}${day}-${hours}${minutes}${seconds}.txt`;
-          const textFile = new File([utf8Text], fileName, { type: 'text/plain;charset=utf-8' });
-          setSelectedFiles(prev => [...prev, textFile]);
-          toast.info(t('conversations.pasteTooLongTxtCreated'));
-        }
-      };
-      textarea.addEventListener('paste', handlePaste as any);
-      return () => textarea.removeEventListener('paste', handlePaste as any);
-    }, [maxMessageLength, t]);
     const messageDateOnly = new Date(messageDate.getFullYear(), messageDate.getMonth(), messageDate.getDate());
     const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
@@ -206,46 +237,136 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     },
   });
 
-  // Notifier le parent quand les attachments changent
+  // FIX CRITIQUE: Mémoiser les IDs pour éviter les re-renders inutiles
+  const attachmentIdsString = useMemo(() => {
+    return JSON.stringify(uploadedAttachments.map(att => att.id));
+  }, [uploadedAttachments]);
+
+  // Ref pour stocker uploadedAttachments et éviter la closure stale
+  const uploadedAttachmentsRef = useRef<UploadedAttachmentResponse[]>([]);
   useEffect(() => {
-    if (onAttachmentsChange) {
-      const attachmentIds = uploadedAttachments.map(att => att.id);
-      console.log('📎 Notification parent - IDs d\'attachments:', attachmentIds);
-      onAttachmentsChange(attachmentIds);
+    uploadedAttachmentsRef.current = uploadedAttachments;
+  }, [uploadedAttachments]);
+
+  // Ref pour tracker la dernière valeur notifiée au parent
+  const lastNotifiedIdsStringRef = useRef<string>('');
+
+  // Notifier le parent quand les attachments changent (comparaison par valeur sérialisée)
+  useEffect(() => {
+    // PROTECTION ABSOLUE: Ne rien faire si les IDs n'ont pas changé
+    if (attachmentIdsString === lastNotifiedIdsStringRef.current) {
+      return;
     }
-  }, [uploadedAttachments, onAttachmentsChange]);
+
+    // Les IDs ont changé, notifier le parent
+    const currentAttachments = uploadedAttachmentsRef.current;
+    const attachmentIds = currentAttachments.map(att => att.id);
+    const mimeTypes = currentAttachments.map(att => att.mimeType);
+
+    console.log('📎 Notification parent - IDs d\'attachments:', attachmentIds);
+    console.log('📎 MIME types:', mimeTypes);
+
+    if (onAttachmentsChange) {
+      onAttachmentsChange(attachmentIds, mimeTypes);
+    }
+
+    // Sauvegarder la valeur notifiée
+    lastNotifiedIdsStringRef.current = attachmentIdsString;
+  }, [attachmentIdsString, onAttachmentsChange]);
 
   // Handler pour la sélection de fichiers - mémorisé
   const handleFilesSelected = useCallback(async (files: File[]) => {
     if (files.length === 0) return;
 
+    console.log('📎 handleFilesSelected appelé avec', files.length, 'fichier(s)');
+    files.forEach((file, i) => {
+      console.log(`  Fichier ${i + 1}:`, file.name, '|', file.type, '|', file.size, 'bytes');
+    });
+
+    // Filtrer les doublons basés sur nom, taille et date de modification
+    // Vérifier contre selectedFiles ET uploadedAttachments
+    const existingFileSignatures = new Set([
+      ...selectedFiles.map(f => `${f.name}_${f.size}_${f.lastModified}`),
+      ...uploadedAttachments.map(att => `${att.originalName}_${att.fileSize}_${new Date(att.uploadedAt).getTime()}`)
+    ]);
+
+    console.log('🔍 Signatures existantes:', Array.from(existingFileSignatures));
+
+    const uniqueFiles = files.filter(file => {
+      const signature = `${file.name}_${file.size}_${file.lastModified}`;
+      console.log(`🔍 Vérification fichier: ${signature}`);
+      const isDuplicate = existingFileSignatures.has(signature);
+      if (isDuplicate) {
+        console.log(`❌ DOUBLON détecté: ${file.name}`);
+      }
+      return !isDuplicate;
+    });
+
+    if (uniqueFiles.length < files.length) {
+      const duplicateCount = files.length - uniqueFiles.length;
+      toast.warning(
+        duplicateCount === 1
+          ? t('attachmentDuplicate.single')
+          : t('attachmentDuplicate.multiple', { count: duplicateCount })
+      );
+      console.log(`⚠️ ${duplicateCount} fichier(s) dupliqué(s) ignoré(s)`);
+    }
+
+    if (uniqueFiles.length === 0) {
+      console.log('❌ Tous les fichiers sont des doublons');
+      return;
+    }
+
+    // Vérifier la limite de 50 attachements par message
+    const currentTotalAttachments = selectedFiles.length + uploadedAttachments.length;
+    const newTotalAttachments = currentTotalAttachments + uniqueFiles.length;
+
+    console.log(`📊 Limite attachements: ${currentTotalAttachments} actuel + ${uniqueFiles.length} nouveau = ${newTotalAttachments}/50`);
+
+    if (newTotalAttachments > 50) {
+      console.log(`❌ Limite de 50 attachements dépassée: tentative d'ajouter ${newTotalAttachments} fichiers (max 50)`);
+      setAttemptedCount(newTotalAttachments); // Stocker le nombre tenté pour affichage dans la modale
+      setShowAttachmentLimitModal(true);
+      return;
+    }
+
     // Valider les fichiers
-    const validation = AttachmentService.validateFiles(files);
+    const validation = AttachmentService.validateFiles(uniqueFiles);
     if (!validation.valid) {
+      console.error('❌ Validation échouée:', validation.errors);
       // Show toast for each validation error
       validation.errors.forEach(error => {
         toast.error(error);
       });
-      console.error('Validation errors:', validation.errors);
       return;
     }
 
-    setSelectedFiles(prev => [...prev, ...files]);
+    console.log('✅ Validation réussie');
+
+    setSelectedFiles(prev => {
+      const newFiles = [...prev, ...uniqueFiles];
+      console.log('📁 selectedFiles mis à jour:', newFiles.length, 'fichiers au total');
+      return newFiles;
+    });
     setIsUploading(true);
 
-    console.log('📎 Début upload de', files.length, 'fichier(s)');
+    console.log('📎 Début upload de', uniqueFiles.length, 'fichier(s)');
 
     try {
       // Upload les fichiers
-      const response = await AttachmentService.uploadFiles(files, token);
-      
+      const response = await AttachmentService.uploadFiles(uniqueFiles, token);
+
       console.log('📎 Réponse upload:', response);
-      
+
       if (response.success && response.attachments) {
         console.log('✅ Upload réussi:', response.attachments.length, 'attachment(s)');
+        response.attachments.forEach((att, i) => {
+          console.log(`  Attachment ${i + 1}:`, att.id, '|', att.fileName, '|', att.mimeType);
+        });
+
         setUploadedAttachments(prev => {
           const newAttachments = [...prev, ...response.attachments];
-          console.log('📎 Total attachments après ajout:', newAttachments.length);
+          console.log('📎 uploadedAttachments mis à jour:', newAttachments.length, 'attachments au total');
           return newAttachments;
         });
       } else {
@@ -255,14 +376,16 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       console.error('❌ Upload error:', error);
       if (error instanceof Error) {
         console.error('❌ Error message:', error.message);
+        console.error('❌ Error stack:', error.stack);
         toast.error(`Upload failed: ${error.message}`);
       } else {
         toast.error('Upload failed. Please try again.');
       }
     } finally {
       setIsUploading(false);
+      console.log('📎 isUploading = false');
     }
-  }, [token]);
+  }, [token, selectedFiles, uploadedAttachments, t]);
 
   // Handlers pour le drag & drop - mémorisés pour éviter les re-créations
   const handleDragEnter = useCallback((e: React.DragEvent) => {
@@ -332,7 +455,141 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     setSelectedFiles([]);
     setUploadedAttachments([]);
     setUploadProgress({});
+    // Reset aussi l'état audio
+    setShowAudioRecorder(false);
+    setCurrentAudioBlob(null);
+    currentAudioBlobRef.current = null; // Reset le ref aussi
+    setAudioRecorderKey(0);
+    setIsRecording(false);
+    shouldUploadAfterStopRef.current = false; // Reset le flag
   }, []);
+
+  // Handler pour le changement d'état d'enregistrement - mémorisé
+  const handleRecordingStateChange = useCallback((recording: boolean) => {
+    console.log('🔄 État enregistrement changé:', recording);
+    setIsRecording(recording);
+  }, []);
+
+  // Fonction helper pour obtenir l'extension correcte selon le MIME type
+  const getAudioFileExtension = useCallback((mimeType: string): string => {
+    const cleanMimeType = mimeType.split(';')[0].trim();
+
+    // Détecter l'extension selon le MIME type
+    if (cleanMimeType.includes('webm')) return 'webm';
+    if (cleanMimeType.includes('mp4') || cleanMimeType.includes('m4a')) return 'm4a';
+    if (cleanMimeType.includes('ogg')) return 'ogg';
+    if (cleanMimeType.includes('wav')) return 'wav';
+    if (cleanMimeType.includes('mpeg') || cleanMimeType.includes('mp3')) return 'mp3';
+
+    // Par défaut, utiliser webm
+    return 'webm';
+  }, []);
+
+  // Handler pour l'enregistrement audio terminé - mémorisé
+  const handleAudioRecordingComplete = useCallback(async (audioBlob: Blob, duration: number, metadata?: any) => {
+    // Stocker le blob dans les refs ET le state
+    const blobData = { blob: audioBlob, duration };
+    currentAudioBlobRef.current = blobData;
+    setCurrentAudioBlob(blobData);
+
+    // Si on doit uploader immédiatement après l'arrêt
+    if (shouldUploadAfterStopRef.current) {
+      shouldUploadAfterStopRef.current = false; // Reset le flag
+
+      // Nettoyer le MIME type en enlevant les paramètres (audio/webm;codecs=opus -> audio/webm)
+      const cleanMimeType = audioBlob.type.split(';')[0].trim();
+
+      // Obtenir l'extension correcte selon le MIME type
+      const extension = getAudioFileExtension(audioBlob.type);
+      const filename = `audio_${Date.now()}.${extension}`;
+
+      const audioFile = new File([audioBlob], filename, { type: cleanMimeType });
+
+      // Reset l'état audio et fermer le recorder IMMÉDIATEMENT avant l'upload
+      // Cela évite le glitch visuel où plusieurs AudioRecorderCard apparaissent
+      currentAudioBlobRef.current = null;
+      setCurrentAudioBlob(null);
+      setShowAudioRecorder(false);
+      setIsRecording(false);
+
+      // Upload le fichier en arrière-plan (après reset de l'UI)
+      await handleFilesSelected([audioFile]);
+    }
+  }, [handleFilesSelected, getAudioFileExtension]);
+
+  // Handler pour supprimer l'enregistrement audio - mémorisé
+  const handleRemoveAudioRecording = useCallback(() => {
+    console.log('[MessageComposer] Suppression de l\'enregistrement en cours');
+
+    // Fermer le recorder et reset tous les états audio
+    setShowAudioRecorder(false);
+    setCurrentAudioBlob(null);
+    currentAudioBlobRef.current = null; // Reset le ref aussi
+    setIsRecording(false);
+    shouldUploadAfterStopRef.current = false; // Reset le flag
+  }, []);
+
+  // Handler appelé AVANT que l'enregistrement s'arrête (depuis le bouton STOP du AudioRecorderCard)
+  const handleBeforeStop = useCallback(() => {
+    console.log('🛑 Bouton STOP du AudioRecorderCard cliqué - préparation upload');
+    // Activer le flag pour uploader après l'arrêt
+    shouldUploadAfterStopRef.current = true;
+  }, []);
+
+  // Handler pour le clic sur le bouton micro - workflow simplifié
+  const handleMicrophoneClick = useCallback(async () => {
+    // Si un enregistrement est EN COURS
+    if (showAudioRecorder && isRecording) {
+      console.log('⏹️ Enregistrement arrêté via bouton micro');
+
+      // Activer le flag pour uploader après l'arrêt
+      shouldUploadAfterStopRef.current = true;
+
+      // Arrêter l'enregistrement - handleAudioRecordingComplete sera appelé et gérera l'upload
+      audioRecorderRef.current?.stopRecording();
+
+      return;
+    }
+
+    // Si pas d'enregistrement en cours mais recorder ouvert (mode lecture)
+    if (showAudioRecorder && currentAudioBlobRef.current) {
+      // Nettoyer le MIME type en enlevant les paramètres (audio/webm;codecs=opus -> audio/webm)
+      const cleanMimeType = currentAudioBlobRef.current.blob.type.split(';')[0].trim();
+
+      // Obtenir l'extension correcte selon le MIME type
+      const extension = getAudioFileExtension(currentAudioBlobRef.current.blob.type);
+      const filename = `audio_${Date.now()}.${extension}`;
+
+      console.log('📁 Création fichier en mode lecture:', filename, 'avec MIME type:', cleanMimeType);
+      const audioFile = new File([currentAudioBlobRef.current.blob], filename, { type: cleanMimeType });
+
+      // Upload le fichier via handleFilesSelected
+      await handleFilesSelected([audioFile]);
+      console.log('✅ Audio en lecture uploadé');
+
+      // Reset et fermer le recorder
+      currentAudioBlobRef.current = null;
+      setCurrentAudioBlob(null);
+      setShowAudioRecorder(false);
+      setIsRecording(false);
+      return;
+    }
+
+    // Sinon, ouvrir le recorder et démarrer enregistrement
+    if (!showAudioRecorder) {
+      setShowAudioRecorder(true);
+      setAudioRecorderKey(prev => prev + 1);
+      setIsRecording(true);
+      console.log('🎤 Démarrage nouvel enregistrement');
+    }
+  }, [showAudioRecorder, isRecording, handleFilesSelected, getAudioFileExtension]);
+
+  // Handler pour l'envoi de message
+  // Note: Le bouton est désactivé pendant l'enregistrement, donc pas besoin de gérer ce cas
+  const handleSendMessage = useCallback(() => {
+    console.log('📤 Envoi du message');
+    onSend();
+  }, [onSend]);
 
   useImperativeHandle(ref, () => ({
     focus: () => textareaRef.current?.focus(),
@@ -373,33 +630,51 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   const handleTextareaChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
     onChange(newValue);
-    
+
+    // Émettre l'événement typing si conversationId est fourni
+    if (conversationId && newValue.trim().length > 0) {
+      meeshySocketIOService.startTyping(conversationId);
+
+      // Clear le timeout précédent
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      // Programmer stopTyping après 3 secondes d'inactivité
+      typingTimeoutRef.current = setTimeout(() => {
+        meeshySocketIOService.stopTyping(conversationId);
+      }, 3000);
+    }
+
     // Auto-resize textarea avec gestion améliorée des retours à la ligne
     if (textareaRef.current && textareaRef.current.style) {
       try {
         // Réinitialiser la hauteur pour obtenir la hauteur naturelle du contenu
         textareaRef.current.style.height = 'auto';
-        
+
         // Calculer la hauteur nécessaire avec une hauteur minimale
         const minHeight = 80; // Correspond à min-h-[80px]
         const maxHeight = 160; // Correspond à max-h-40 (40 * 4px = 160px)
         const scrollHeight = textareaRef.current.scrollHeight;
-        
+
         // Utiliser la hauteur calculée en respectant les limites
         const newHeight = Math.max(minHeight, Math.min(scrollHeight, maxHeight));
         textareaRef.current.style.height = `${newHeight}px`;
-        
+
         // Si le contenu dépasse la hauteur maximale, permettre le scroll
         if (scrollHeight > maxHeight) {
           textareaRef.current.style.overflowY = 'auto';
         } else {
           textareaRef.current.style.overflowY = 'hidden';
         }
+
+        // Auto-scroll vers la fin pendant la frappe
+        textareaRef.current.scrollTop = textareaRef.current.scrollHeight;
       } catch (error) {
         console.warn('Erreur lors du redimensionnement du textarea:', error);
       }
     }
-  }, [onChange]);
+  }, [onChange, conversationId]);
 
 
   return (
@@ -451,13 +726,45 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       )}
 
       {/* Carrousel d'attachments - positionné juste après la citation */}
-      {selectedFiles.length > 0 && (
-        <AttachmentCarousel
-          files={selectedFiles}
-          onRemove={handleRemoveFile}
-          uploadProgress={uploadProgress}
-          disabled={isUploading}
-        />
+      {((selectedFiles.length > 0 || showAudioRecorder) || showAttachmentLimitModal) && (
+        <div className="relative min-h-[120px] mb-2">
+          {(selectedFiles.length > 0 || showAudioRecorder) && (
+            <AttachmentCarousel
+              files={selectedFiles}
+              onRemove={handleRemoveFile}
+              uploadProgress={uploadProgress}
+              disabled={isUploading}
+              audioRecorderSlot={
+                showAudioRecorder ? (
+                  <AudioRecorderCard
+                    key={audioRecorderKey}
+                    ref={audioRecorderRef}
+                    onRecordingComplete={handleAudioRecordingComplete}
+                    onRecordingStateChange={handleRecordingStateChange}
+                    onRemove={handleRemoveAudioRecording}
+                    onStop={handleBeforeStop}
+                    autoStart={true}
+                    maxDuration={600}
+                  />
+                ) : undefined
+              }
+            />
+          )}
+
+          {/* Modale de limite d'attachements - Overlay de la zone d'attachement */}
+          {showAttachmentLimitModal && (
+            <AttachmentLimitModal
+              isOpen={showAttachmentLimitModal}
+              onClose={() => {
+                setShowAttachmentLimitModal(false);
+                setAttemptedCount(0);
+              }}
+              currentCount={attemptedCount > 0 ? attemptedCount : selectedFiles.length + uploadedAttachments.length}
+              maxCount={50}
+              remainingSlots={Math.max(0, 50 - (selectedFiles.length + uploadedAttachments.length))}
+            />
+          )}
+        </div>
       )}
       
       <Textarea
@@ -467,94 +774,121 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         onKeyPress={handleKeyPress}
         onBlur={handleBlur}
         placeholder={finalPlaceholder}
-        className={`expandable-textarea min-h-[60px] sm:min-h-[80px] max-h-40 resize-none pr-20 sm:pr-28 pb-8 sm:pb-10 pt-3 pl-3 border-blue-200/60 bg-white/90 backdrop-blur-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 focus:bg-white/95 placeholder:text-gray-600 scroll-hidden transition-all duration-200 ${
-          replyingTo || selectedFiles.length > 0 
-            ? 'rounded-b-2xl rounded-t-none border-t-0' 
+        className={`expandable-textarea min-h-[60px] sm:min-h-[80px] max-h-40 resize-none pr-20 sm:pr-28 pb-12 pt-3 pl-3 border-blue-200/60 bg-white/90 backdrop-blur-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 focus:bg-white/95 placeholder:text-gray-600 scroll-hidden transition-all duration-200 ${
+          replyingTo || selectedFiles.length > 0 || showAudioRecorder
+            ? 'rounded-b-2xl rounded-t-none border-t-0'
             : 'rounded-2xl'
         } ${isMobile ? 'text-base' : 'text-sm sm:text-base'}`}
         maxLength={maxMessageLength}
         disabled={!isComposingEnabled}
         style={{
-          borderRadius: replyingTo || selectedFiles.length > 0 ? '0 0 16px 16px' : '16px',
+          borderRadius: replyingTo || selectedFiles.length > 0 || showAudioRecorder ? '0 0 16px 16px' : '16px',
           boxShadow: '0 4px 20px rgba(59, 130, 246, 0.15)',
           fontSize: isMobile ? '16px' : undefined
         }}
       />
 
-      
-      {/* Indicateurs dans le textarea */}
-      <div className="absolute bottom-2 sm:bottom-3 left-3 flex items-center space-x-2 sm:space-x-3 text-xs sm:text-sm text-gray-600 pointer-events-auto">
+
+      {/* Indicateurs et boutons à gauche: Flag selector, Audio, Document, localisation, upload */}
+      <div className="absolute bottom-2 sm:bottom-3 left-3 flex items-center space-x-1 text-xs sm:text-sm text-gray-600 pointer-events-auto">
+        {/* Sélecteur de langue d'envoi (en premier) */}
+        <div className="scale-100 sm:scale-100 origin-left">
+          <LanguageFlagSelector
+            value={selectedLanguage}
+            onValueChange={onLanguageChange}
+            choices={choices}
+            popoverSide="top"
+            popoverAlign="start"
+            popoverSideOffset={8}
+          />
+        </div>
+
+        {/* Bouton Microphone/Stop (Audio) */}
+        <Button
+          onClick={handleMicrophoneClick}
+          disabled={!isComposingEnabled}
+          size="sm"
+          variant="ghost"
+          className={`h-4 w-4 sm:h-4 sm:w-4 p-0 rounded-full hover:bg-gray-100 relative min-w-0 min-h-0 ${
+            isRecording ? 'bg-red-50 hover:bg-red-100' : ''
+          }`}
+          title={isRecording ? "Arrêter et démarrer nouvel enregistrement" : "Enregistrer un message vocal"}
+        >
+          {isRecording ? (
+            <Square className="h-4 w-4 sm:h-4 sm:w-4 text-red-600 fill-red-600" />
+          ) : (
+            <Mic className={`h-4 w-4 sm:h-4 sm:w-4 ${showAudioRecorder ? 'text-blue-600' : 'text-gray-600'}`} />
+          )}
+        </Button>
+
+        {/* Bouton d'attachement (Document) */}
+        <Button
+          onClick={handleAttachmentClick}
+          disabled={!isComposingEnabled || isUploading}
+          size="sm"
+          variant="ghost"
+          className="h-4 w-4 sm:h-4 sm:w-4 p-0 rounded-full hover:bg-gray-100 relative min-w-0 min-h-0"
+        >
+          {isUploading ? (
+            <Loader2 className="h-4 w-4 sm:h-4 sm:w-4 text-blue-600 animate-spin" />
+          ) : (
+            <Paperclip className="h-4 w-4 sm:h-4 sm:w-4 text-gray-600" />
+          )}
+          {selectedFiles.length > 0 && (
+            <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] rounded-full h-3.5 w-3.5 flex items-center justify-center">
+              {selectedFiles.length}
+            </span>
+          )}
+        </Button>
+
+        {/* Localisation */}
+        {location && !isUploading && (
+          <div className="flex items-center space-x-1">
+            <MapPin className="h-4 w-4 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">{location}</span>
+          </div>
+        )}
+
         {/* Indicateur d'upload */}
         {isUploading && (
           <div className="flex items-center space-x-1 text-blue-600 dark:text-blue-400">
-            <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+            <Loader2 className="h-4 w-4 sm:h-4 sm:w-4 animate-spin" />
             <span className="hidden sm:inline">
-              {selectedFiles.length > 1 
+              {selectedFiles.length > 1
                 ? t('uploadingMultiple', { count: selectedFiles.length })
                 : t('uploading')
               }
             </span>
           </div>
         )}
-        
-        {/* Localisation */}
-        {location && !isUploading && (
-          <div className="flex items-center space-x-1">
-            <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">{location}</span>
-          </div>
-        )}
       </div>
 
-      {/* Bouton d'envoi, compteur et sélecteur de langue */}
-      <div className="absolute bottom-2 sm:bottom-3 right-3 sm:right-4 flex items-center space-x-1 sm:space-x-2 pointer-events-auto">
+      {/* Bouton d'envoi à droite */}
+      <div className="absolute bottom-2 sm:bottom-3 right-3 sm:right-4 flex items-center space-x-2 pointer-events-auto">
         {/* Compteur de caractères : affiché uniquement si > 90% du max */}
         {value.length > maxMessageLength * 0.9 && (
           <span className={`hidden sm:inline text-xs ${value.length > maxMessageLength ? 'text-red-500' : 'text-orange-500'}`}>
             {value.length}/{maxMessageLength}
           </span>
         )}
-        
-        {/* Icône d'attachement */}
+
+        {/* Compteur d'attachements : affiché si > 40 attachements (80% de 50) */}
+        {(selectedFiles.length + uploadedAttachments.length) > 40 && (
+          <span className={`hidden sm:inline text-xs ${(selectedFiles.length + uploadedAttachments.length) > 50 ? 'text-red-500' : 'text-orange-500'}`}>
+            {selectedFiles.length + uploadedAttachments.length}/50
+          </span>
+        )}
+
+        {/* Bouton d'envoi (agrandi de 50% sur desktop) */}
         <Button
-          onClick={handleAttachmentClick}
-          disabled={!isComposingEnabled || isUploading}
+          onClick={handleSendMessage}
+          disabled={(!value.trim() && selectedFiles.length === 0 && uploadedAttachments.length === 0) || value.length > maxMessageLength || !isComposingEnabled || isUploading || isRecording || (selectedFiles.length + uploadedAttachments.length) > 50}
           size="sm"
-          variant="ghost"
-          className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full hover:bg-gray-100 relative"
+          className="bg-blue-600 hover:bg-blue-700 text-white h-6 w-6 sm:h-9 sm:w-9 p-0 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+          title={isRecording ? "Arrêtez l'enregistrement avant d'envoyer" : "Envoyer le message"}
         >
-          {isUploading ? (
-            <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600 animate-spin" />
-          ) : (
-            <Paperclip className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600" />
-          )}
-          {selectedFiles.length > 0 && (
-            <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-              {selectedFiles.length}
-            </span>
-          )}
+          <Send className="h-3 w-3 sm:h-5 sm:w-5" />
         </Button>
-        
-        {/* Sélecteur de langue d'envoi et bouton d'envoi côte à côte */}
-        <div className="flex flex-row items-center space-x-1">
-          <LanguageFlagSelector
-            value={selectedLanguage}
-            onValueChange={onLanguageChange}
-            choices={choices}
-            className="mr-1"
-            popoverSide="top"
-            popoverAlign="center"
-            popoverSideOffset={8}
-          />
-          <Button
-            onClick={onSend}
-            disabled={(!value.trim() && selectedFiles.length === 0) || value.length > maxMessageLength || !isComposingEnabled || isUploading}
-            size="sm"
-            className="bg-blue-600 hover:bg-blue-700 text-white h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
-          >
-            <Send className="h-3 w-3 sm:h-4 sm:w-4" />
-          </Button>
-        </div>
       </div>
 
       {/* Input file caché */}

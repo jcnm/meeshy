@@ -92,27 +92,25 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         if (onSuccess) {
           onSuccess(userData, token);
         } else {
-          // Comportement par défaut : Recharger la page si on est sur "/" sinon rediriger
+          // Comportement par défaut : TOUJOURS recharger pour forcer le refresh des données
           const currentPath = window.location.pathname;
-          
+          const urlParams = new URLSearchParams(window.location.search);
+          const returnUrl = urlParams.get('returnUrl');
+
           // Petit délai pour permettre à l'état d'être mis à jour
           setTimeout(() => {
             if (currentPath === '/') {
               // Sur la page d'accueil, recharger la page pour afficher la conversation meeshy
               console.log('[LOGIN_FORM] Sur la page d\'accueil, rechargement de la page');
               window.location.reload();
+            } else if (returnUrl) {
+              // Redirection avec rechargement forcé vers returnUrl
+              console.log('[LOGIN_FORM] Redirection avec rechargement vers returnUrl:', returnUrl);
+              window.location.href = returnUrl;
             } else {
-              // Sur les autres pages, redirection normale
-              const urlParams = new URLSearchParams(window.location.search);
-              const returnUrl = urlParams.get('returnUrl');
-              
-              if (returnUrl) {
-                console.log('[LOGIN_FORM] Redirection vers returnUrl:', returnUrl);
-                router.push(returnUrl);
-              } else {
-                console.log('[LOGIN_FORM] Redirection vers dashboard');
-                router.push('/dashboard');
-              }
+              // Redirection avec rechargement forcé vers dashboard
+              console.log('[LOGIN_FORM] Redirection avec rechargement vers dashboard');
+              window.location.href = '/dashboard';
             }
           }, 100);
         }

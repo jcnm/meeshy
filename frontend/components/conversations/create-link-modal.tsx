@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, Fragment } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -113,21 +113,26 @@ interface SelectableSquareProps {
   label: string;
   description: string;
   icon?: React.ReactNode;
+  disabled?: boolean;
 }
 
-const SelectableSquare = ({ checked, onChange, label, description, icon }: SelectableSquareProps) => (
-  <div 
-    className={`p-4 rounded-lg border-2 cursor-pointer transition-all hover:shadow-md ${
-      checked 
-        ? 'border-primary bg-primary/5' 
+const SelectableSquare = ({ checked, onChange, label, description, icon, disabled = false }: SelectableSquareProps) => (
+  <div
+    className={`p-4 rounded-lg border-2 transition-all ${
+      disabled
+        ? 'opacity-50 cursor-not-allowed'
+        : 'cursor-pointer hover:shadow-md'
+    } ${
+      checked
+        ? 'border-primary bg-primary/5'
         : 'border-muted-foreground/20 hover:border-muted-foreground/40'
     }`}
-    onClick={() => onChange(!checked)}
+    onClick={() => !disabled && onChange(!checked)}
   >
     <div className="flex items-start space-x-3">
       <div className={`w-6 h-6 rounded border-2 flex items-center justify-center flex-shrink-0 ${
-        checked 
-          ? 'border-primary bg-primary text-primary-foreground' 
+        checked
+          ? 'border-primary bg-primary text-primary-foreground'
           : 'border-muted-foreground/40'
       }`}>
         {checked && <Check className="w-4 h-4" />}
@@ -135,7 +140,7 @@ const SelectableSquare = ({ checked, onChange, label, description, icon }: Selec
       <div className="flex-1 min-w-0">
         <div className="flex items-center space-x-2 mb-1">
           {icon && <div className="text-muted-foreground">{icon}</div>}
-          <Label className="text-sm font-medium cursor-pointer">{label}</Label>
+          <Label className={`text-sm font-medium ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>{label}</Label>
         </div>
         <p className="text-xs text-muted-foreground">{description}</p>
       </div>
@@ -198,7 +203,7 @@ export function CreateLinkModalV2({
   
   // États pour les étapes
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 4;
+  const totalSteps = 3;
 
   // États pour la sélection de conversation
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -231,8 +236,10 @@ export function CreateLinkModalV2({
   const [allowAnonymousFiles, setAllowAnonymousFiles] = useState(false);
   const [allowAnonymousImages, setAllowAnonymousImages] = useState(true);
   const [allowViewHistory, setAllowViewHistory] = useState(true);
+  const [requireAccount, setRequireAccount] = useState(false);
   const [requireNickname, setRequireNickname] = useState(true);
   const [requireEmail, setRequireEmail] = useState(false);
+  const [requireBirthday, setRequireBirthday] = useState(false);
 
   // États des restrictions de sécurité
   const [allowedLanguages, setAllowedLanguages] = useState<string[]>([]);
@@ -403,8 +410,10 @@ export function CreateLinkModalV2({
         allowAnonymousFiles,
         allowAnonymousImages,
         allowViewHistory,
+        requireAccount,
         requireNickname,
         requireEmail,
+        requireBirthday,
         allowedLanguages: allowedLanguages.length > 0 ? allowedLanguages : undefined
       };
 
@@ -545,11 +554,9 @@ export function CreateLinkModalV2({
         if (createNewConversation) {
           return newConversationData.title.trim() !== '';
         }
-        return true;
+        return true; // L'étape 2 inclut maintenant la configuration et les options (anciennement étapes 2 et 3)
       case 3:
-        return true; // L'étape 3 n'a pas de validation obligatoire
-      case 4:
-        return true; // Le nom est généré automatiquement
+        return true; // Étape de résumé - le nom est généré automatiquement
       default:
         return false;
     }
@@ -579,8 +586,6 @@ export function CreateLinkModalV2({
       case 2:
         return createNewConversation ? t('createLinkModal.createNewConversation.title') : t('createLinkModal.steps.configureLink');
       case 3:
-        return t('createLinkModal.steps.linkOptions');
-      case 4:
         return t('createLinkModal.steps.summaryAndGeneration');
       default:
         return '';
@@ -594,8 +599,6 @@ export function CreateLinkModalV2({
       case 2:
         return createNewConversation ? t('createLinkModal.stepDescriptions.configureNewConversation') : t('createLinkModal.stepDescriptions.configureLink');
       case 3:
-        return t('createLinkModal.stepDescriptions.linkOptions');
-      case 4:
         return t('createLinkModal.stepDescriptions.summaryAndGeneration');
       default:
         return '';
@@ -910,7 +913,32 @@ export function CreateLinkModalV2({
               {t('createLinkModal.linkConfiguration.validityDurationInfo')}
             </CardDescription>
           </CardHeader>
-          <CardContent className="pt-6">
+          <CardContent className="pt-6 space-y-6">
+            {/* Option requireAccount */}
+            <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Shield className="h-4 w-4 text-blue-600" />
+                    <Label className="text-sm font-semibold text-blue-900 dark:text-blue-100">
+                      {t('createLinkModal.linkDetails.requireAccount.label')}
+                    </Label>
+                    <InfoIcon content={t('createLinkModal.linkDetails.requireAccount.info')} />
+                  </div>
+                  <p className="text-xs text-blue-700 dark:text-blue-300">
+                    {t('createLinkModal.linkDetails.requireAccount.description')}
+                  </p>
+                </div>
+                <Switch
+                  checked={requireAccount}
+                  onCheckedChange={setRequireAccount}
+                  className="data-[state=checked]:bg-blue-600"
+                />
+              </div>
+            </div>
+
+            <Separator />
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
@@ -961,15 +989,10 @@ export function CreateLinkModalV2({
             </div>
           </CardContent>
         </Card>
-      </div>
-    );
-  };
 
-  // Étape 3: Options avancées
-  const renderStep3 = () => (
-    <div className="space-y-6">
-      {/* Permissions des participants anonymes */}
-      <Card>
+        {/* SECTION 3: OPTIONS AVANCÉES - fusionné dans l'étape 2 */}
+        {/* Permissions des participants anonymes */}
+        <Card>
         <CardHeader 
           className="pb-3 cursor-pointer hover:bg-muted/50 transition-colors"
           onClick={() => setIsPermissionsOpen(!isPermissionsOpen)}
@@ -993,55 +1016,62 @@ export function CreateLinkModalV2({
         <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <SelectableSquare
-                checked={allowAnonymousMessages}
+                checked={requireAccount ? true : allowAnonymousMessages}
                 onChange={setAllowAnonymousMessages}
                 label={t('createLinkModal.permissions.sendMessages.label')}
                 description={t('createLinkModal.permissions.sendMessages.description')}
                 icon={<MessageSquare className="w-4 h-4" />}
+                disabled={requireAccount}
               />
-              
+
               <SelectableSquare
-                checked={allowAnonymousImages}
+                checked={requireAccount ? true : allowAnonymousImages}
                 onChange={setAllowAnonymousImages}
                 label={t('createLinkModal.permissions.shareImages.label')}
                 description={t('createLinkModal.permissions.shareImages.description')}
                 icon={<Image className="w-4 h-4" />}
+                disabled={requireAccount}
               />
-              
+
               <SelectableSquare
-                checked={allowAnonymousFiles}
+                checked={requireAccount ? true : allowAnonymousFiles}
                 onChange={setAllowAnonymousFiles}
                 label={t('createLinkModal.permissions.shareFiles.label')}
                 description={t('createLinkModal.permissions.shareFiles.description')}
                 icon={<FileText className="w-4 h-4" />}
+                disabled={requireAccount}
               />
-              
+
               <SelectableSquare
-                checked={allowViewHistory}
+                checked={requireAccount ? true : allowViewHistory}
                 onChange={setAllowViewHistory}
                 label={t('createLinkModal.permissions.viewHistory.label')}
                 description={t('createLinkModal.permissions.viewHistory.description')}
                 icon={<Eye className="w-4 h-4" />}
+                disabled={requireAccount}
               />
           </div>
 
           <Separator />
 
+            {/* Note: requireNickname est toujours true (pas de toggle) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <SelectableSquare
-                checked={requireNickname}
-                onChange={setRequireNickname}
-                label={t('createLinkModal.permissions.requireNickname.label')}
-                description={t('createLinkModal.permissions.requireNickname.description')}
-                icon={<Users className="w-4 h-4" />}
-              />
-              
-              <SelectableSquare
-                checked={requireEmail}
+                checked={requireAccount ? true : requireEmail}
                 onChange={setRequireEmail}
                 label={t('createLinkModal.permissions.requireEmail.label')}
                 description={t('createLinkModal.permissions.requireEmail.description')}
                 icon={<Settings className="w-4 h-4" />}
+                disabled={requireAccount}
+              />
+
+              <SelectableSquare
+                checked={requireAccount ? true : requireBirthday}
+                onChange={setRequireBirthday}
+                label={t('createLinkModal.permissions.requireBirthday.label')}
+                description={t('createLinkModal.permissions.requireBirthday.description')}
+                icon={<Calendar className="w-4 h-4" />}
+                disabled={requireAccount}
               />
           </div>
         </CardContent>
@@ -1089,17 +1119,18 @@ export function CreateLinkModalV2({
                   />
               ))}
             </div>
-            <p className="text-xs text-muted-foreground">
-              {t('createLinkModal.allowedLanguages.allowAllLanguages')}
+            <p className="text-xs text-muted-foreground italic">
+              💡 {t('createLinkModal.allowedLanguages.allowAllLanguagesHint')}
             </p>
           </CardContent>
         )}
       </Card>
-          </div>
-  );
+      </div>
+    );
+  };
 
-  // Étape 4: Résumé et génération
-  const renderStep4 = () => (
+  // Étape 3: Résumé et génération (anciennement étape 4)
+  const renderStep3 = () => (
     <div className="space-y-6">
       {/* Titre du lien - modifiable */}
       <Card className="border-2 border-dashed border-primary/20">
@@ -1406,49 +1437,39 @@ export function CreateLinkModalV2({
                 const stepTitles = [
                   t('createLinkModal.steps.selectConversation'),
                   t('createLinkModal.steps.configureLink'),
-                  t('createLinkModal.steps.linkOptions'),
                   t('createLinkModal.steps.summaryAndGeneration')
                 ];
-                
+
                 return (
-                  <div key={i} className="flex flex-col items-center flex-1">
-                    <div className="flex items-center w-full">
-                      {/* Ligne de connexion précédente - seulement si ce n'est pas le premier */}
-                      {i > 0 && (
-                        <div className={`flex-1 h-0.5 mx-2 ${
-                          isCompleted ? 'bg-primary' : 'bg-muted'
-                        }`} />
-                      )}
-                      
+                  <Fragment key={i}>
+                    {/* Ligne de connexion avant le point (sauf pour le premier) */}
+                    {i > 0 && (
+                      <div className={`flex-1 h-0.5 ${
+                        stepNumber <= currentStep ? 'bg-primary' : 'bg-muted'
+                      }`} />
+                    )}
+
+                    {/* Container du point et texte */}
+                    <div className="flex flex-col items-center flex-shrink-0">
                       {/* Point de l'étape */}
                       <div className={`w-3 h-3 rounded-full flex-shrink-0 ${
-                        isActive 
-                          ? 'bg-primary ring-4 ring-primary/20' 
-                          : isCompleted 
-                          ? 'bg-primary' 
+                        isActive
+                          ? 'bg-primary ring-4 ring-primary/20'
+                          : isCompleted
+                          ? 'bg-primary'
                           : 'bg-muted'
                       }`} />
-                      
-                      {/* Ligne de connexion suivante - seulement si ce n'est pas le dernier */}
-                      {i < totalSteps - 1 && (
-                        <div className={`flex-1 h-0.5 mx-2 ${
-                          isCompleted ? 'bg-primary' : 'bg-muted'
-                        }`} />
-                      )}
+
+                      {/* Texte de l'étape */}
+                      <div className="mt-3 text-center max-w-[120px]">
+                        <p className={`text-xs font-medium leading-tight ${
+                          isActive ? 'text-primary' : isCompleted ? 'text-primary' : 'text-muted-foreground'
+                        }`}>
+                          {stepTitles[i]}
+                        </p>
+                      </div>
                     </div>
-                    
-                    {/* Texte de l'étape */}
-                    <div className="mt-3 text-center">
-                      <p className={`text-xs font-medium ${
-                        isActive ? 'text-primary' : isCompleted ? 'text-primary' : 'text-muted-foreground'
-                      }`}>
-                        {stepTitles[i]}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {tCommon('step', { step: stepNumber })}
-                      </p>
-                    </div>
-                  </div>
+                  </Fragment>
                 );
               })}
             </div>
@@ -1574,7 +1595,6 @@ export function CreateLinkModalV2({
               {currentStep === 1 && renderStep1()}
               {currentStep === 2 && renderStep2()}
               {currentStep === 3 && renderStep3()}
-              {currentStep === 4 && renderStep4()}
             </>
           )}
           </div>

@@ -314,7 +314,7 @@ ENVIRONMENT=development
 LOG_LEVEL=DEBUG
 
 # Base de données (sans authentification pour développement local)
-DATABASE_URL=mongodb://localhost:27017/meeshy
+DATABASE_URL=mongodb://localhost:27017/meeshy?replicaSet=rs0&directConnection=true
 
 # Prisma Configuration
 PRISMA_CLIENT_ENGINE_TYPE="binary"

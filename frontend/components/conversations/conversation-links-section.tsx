@@ -53,8 +53,10 @@ interface ShareLink {
   allowAnonymousFiles: boolean;
   allowAnonymousImages: boolean;
   allowViewHistory: boolean;
+  requireAccount: boolean;
   requireNickname: boolean;
   requireEmail: boolean;
+  requireBirthday: boolean;
   allowedCountries: string[];
   allowedLanguages: string[];
   allowedIpRanges: string[];

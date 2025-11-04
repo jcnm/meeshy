@@ -50,6 +50,7 @@ export interface AnonymousParticipant {
   readonly lastName: string;
   readonly username: string;
   readonly email?: string;
+  readonly birthday?: Date;
   readonly sessionToken: string;
   readonly ipAddress?: string;
   readonly country?: CountryCode;

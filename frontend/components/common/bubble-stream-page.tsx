@@ -90,13 +90,14 @@ import { AttachmentGallery } from '@/components/attachments/AttachmentGallery';
 
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { useNotifications } from '@/hooks/use-notifications';
+import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
 import { useMessageTranslations } from '@/hooks/use-message-translations';
 import { useMessageTranslation } from '@/hooks/useMessageTranslation';
 import { useFixRadixZIndex } from '@/hooks/use-fix-z-index';
 import { detectLanguage } from '@/utils/language-detection';
 import { useI18n } from '@/hooks/useI18n';
 import { cn } from '@/lib/utils';
-import type { User, Message, BubbleTranslation, Attachment } from '@shared/types';
+import { UserRoleEnum, type User, type Message, type BubbleTranslation, type Attachment } from '@shared/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { messageTranslationService } from '@/services/message-translation.service';
 import { getAuthToken } from '@/utils/token-utils';
@@ -205,9 +206,35 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   const [activeUsers, setActiveUsers] = useState<User[]>(initialParticipants || []);
   // État pour les attachments
   const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
+  const [attachmentMimeTypes, setAttachmentMimeTypes] = useState<string[]>([]);
+
+  // Ref pour stocker les valeurs précédentes d'attachments
+  const prevAttachmentIdsRef = useRef<string>('[]');
+  const prevMimeTypesRef = useRef<string>('[]');
+
+  // Callback mémorisé pour les changements d'attachments
+  // CRITIQUE: Mémoiser pour éviter les boucles infinies dans MessageComposer
+  const handleAttachmentsChange = useCallback((ids: string[], mimeTypes: string[]) => {
+    // Comparer par valeur sérialisée pour éviter les updates inutiles
+    const idsString = JSON.stringify(ids);
+    const mimeTypesString = JSON.stringify(mimeTypes);
+
+    // CRITIQUE: Ne mettre à jour QUE si les valeurs ont vraiment changé
+    if (idsString !== prevAttachmentIdsRef.current) {
+      console.log('🔄 [BubbleStreamPage] Mise à jour attachmentIds:', ids);
+      setAttachmentIds(ids);
+      prevAttachmentIdsRef.current = idsString;
+    }
+
+    if (mimeTypesString !== prevMimeTypesRef.current) {
+      console.log('🔄 [BubbleStreamPage] Mise à jour mimeTypes:', mimeTypes);
+      setAttachmentMimeTypes(mimeTypes);
+      prevMimeTypesRef.current = mimeTypesString;
+    }
+  }, []); // Pas de dépendances - les setState et refs sont stables
   // État pour la détection mobile
   const [isMobile, setIsMobile] = useState(false);
-  
+
   // Debug: log quand attachmentIds change
   useEffect(() => {
     console.log('📎 [BubbleStreamPage] attachmentIds mis à jour:', attachmentIds);
@@ -362,17 +389,22 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   }, [tCommon]);
 
   // Logique de permissions pour la modération
-  const getUserModerationRole = useCallback(() => {
+  const getUserModerationRole = useCallback((): UserRoleEnum => {
     // Pour BubbleStreamPage, nous considérons que c'est une conversation publique
     // Les utilisateurs avec des rôles élevés peuvent modérer
-    if (user.role === 'ADMIN' || user.role === 'BIGBOSS' || user.role === 'MODERATOR') {
-      return user.role;
+    const role = (user.role as UserRoleEnum) ?? UserRoleEnum.USER;
+
+    if (
+      role === UserRoleEnum.ADMIN ||
+      role === UserRoleEnum.BIGBOSS ||
+      role === UserRoleEnum.MODERATOR
+    ) {
+      return role;
     }
     
     // Pour les conversations publiques, les créateurs peuvent aussi modérer
     // Nous devrions vérifier si l'utilisateur est le créateur de la conversation
-    // Pour l'instant, nous utilisons le rôle utilisateur par défaut
-    return user.role || 'USER';
+    return role;
   }, [user.role]);
 
   // Fonction pour dédoublonner les utilisateurs actifs
@@ -445,7 +477,12 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   const usedLanguages: string[] = getUserLanguagePreferences();
 
   // Obtenir les choix de langues pour l'utilisateur via la fonction centralisée
-  const languageChoices = getUserLanguageChoices(user);
+  // CRITIQUE: Mémoiser pour éviter les re-renders infinis
+  const languageChoices = useMemo(() => getUserLanguageChoices(user), [
+    user.systemLanguage,
+    user.regionalLanguage,
+    user.customDestinationLanguage
+  ]);
 
   // État pour les utilisateurs en train de taper avec leurs noms
   const [typingUsers, setTypingUsers] = useState<{id: string, displayName: string}[]>([]);
@@ -453,11 +490,18 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   // Fonctions de gestion des événements utilisateur
   const handleUserTyping = useCallback((userId: string, username: string, isTyping: boolean, typingConversationId: string) => {
     if (userId === user.id) return; // Ignorer nos propres événements de frappe
-    
-    // NE PAS FILTRER par conversationId !
-    // Le backend normalise les IDs et met tous les clients dans la même room
-    // Si tu reçois l'événement, c'est que tu es dans la bonne room
-    
+
+    // FIX: Filtrer les événements typing par conversation
+    // Le client peut être connecté à plusieurs rooms, il faut filtrer pour n'afficher
+    // que les indicateurs de frappe de la conversation actuelle
+    if (typingConversationId !== conversationIdRef.current) {
+      console.log('[BubbleStreamPage] 🚫 Événement de frappe ignoré (autre conversation):', {
+        typingConversationId,
+        currentConversationId: conversationIdRef.current
+      });
+      return;
+    }
+
     setTypingUsers(prev => {
       if (isTyping) {
         // Ajouter l'utilisateur s'il n'est pas déjà dans la liste
@@ -603,58 +647,120 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     }
   }, [updateMessageTranslations, user.systemLanguage, user.regionalLanguage, user.customDestinationLanguage]);
 
+  // Refs pour éviter les re-créations du callback
+  const conversationIdRef = useRef(conversationId);
+  const normalizedConversationIdRef = useRef<string | null>(null); // ObjectId normalisé du backend
+  const userRef = useRef(user);
+  const isAnonymousModeRef = useRef(isAnonymousMode);
+
+  // Mettre à jour les refs quand les valeurs changent
+  useEffect(() => {
+    conversationIdRef.current = conversationId;
+    // Récupérer l'ObjectId normalisé depuis le service
+    normalizedConversationIdRef.current = meeshySocketIOService.getCurrentConversationId();
+  }, [conversationId]);
+
+  // Écouter l'événement CONVERSATION_JOINED pour obtenir l'ObjectId normalisé
+  useEffect(() => {
+    const unsubscribe = meeshySocketIOService.onConversationJoined((data: { conversationId: string; userId: string }) => {
+      console.log('[BubbleStreamPage] 🔗 CONVERSATION_JOINED reçu:', data);
+      normalizedConversationIdRef.current = data.conversationId;
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
+
+  useEffect(() => {
+    isAnonymousModeRef.current = isAnonymousMode;
+  }, [isAnonymousMode]);
+
   // Handler pour les nouveaux messages reçus via WebSocket avec traductions optimisées
+  // CRITIQUE: Utiliser des REFS pour éviter les re-créations et désinscriptions
   const handleNewMessage = useCallback((message: Message) => {
+    console.log('[BubbleStreamPage] 🔥 NOUVEAU MESSAGE REÇU:', {
+      messageId: message.id,
+      content: message.content?.substring(0, 50),
+      conversationId: message.conversationId
+    });
+
+    // FILTRAGE SIMPLIFIÉ: Le backend envoie maintenant TOUJOURS l'ObjectId normalisé
+    // Plus besoin de triple comparaison ni de getCurrentConversationIdentifier()
+    const normalizedConvId = meeshySocketIOService.getCurrentConversationId();
+    const currentConvId = conversationIdRef.current;
+
+    // Comparer avec l'ObjectId normalisé reçu lors du CONVERSATION_JOINED
+    const shouldAccept = message.conversationId === normalizedConvId;
+
+    console.log('[BubbleStreamPage] Filtrage:', {
+      messageConvId: message.conversationId,
+      propConvId: currentConvId,
+      normalizedConvId,
+      shouldAccept
+    });
+
+    if (!shouldAccept) {
+      console.log('[BubbleStreamPage] ❌ Message IGNORÉ (autre conversation)');
+      return;
+    }
+
+    console.log('[BubbleStreamPage] ✅ Message ACCEPTÉ');
+
     // Message reçu via WebSocket
-    
+
     // Enrichir le message avec les informations du sender si nécessaire
     const enrichedMessage = { ...message };
-    
+    const currentUser = userRef.current;
+    const currentIsAnonymous = isAnonymousModeRef.current;
+
     // Si c'est notre propre message et que sender/anonymousSender manque, l'enrichir
-    if ((message.senderId === user.id || message.anonymousSenderId === user.id) && 
+    if ((message.senderId === currentUser.id || message.anonymousSenderId === currentUser.id) &&
         !message.sender && !message.anonymousSender) {
-      if (isAnonymousMode) {
+      if (currentIsAnonymous) {
         enrichedMessage.anonymousSender = {
-          id: user.id,
-          username: user.username,
-          firstName: user.firstName || '',
-          lastName: user.lastName || '',
-          language: user.systemLanguage || 'fr',
+          id: currentUser.id,
+          username: currentUser.username,
+          firstName: currentUser.firstName || '',
+          lastName: currentUser.lastName || '',
+          language: currentUser.systemLanguage || 'fr',
           isMeeshyer: false
         };
       } else {
         enrichedMessage.sender = {
-          id: user.id,
-          username: user.username,
-          email: user.email || '',
-          phoneNumber: user.phoneNumber || '',
-          firstName: user.firstName || '',
-          lastName: user.lastName || '',
-          displayName: user.displayName,
-          avatar: user.avatar,
-          role: user.role,
+          id: currentUser.id,
+          username: currentUser.username,
+          email: currentUser.email || '',
+          phoneNumber: currentUser.phoneNumber || '',
+          firstName: currentUser.firstName || '',
+          lastName: currentUser.lastName || '',
+          displayName: currentUser.displayName,
+          avatar: currentUser.avatar,
+          role: currentUser.role,
           isOnline: true,
           lastSeen: new Date(),
-          createdAt: user.createdAt || new Date(),
-          updatedAt: user.updatedAt || new Date(),
-          systemLanguage: user.systemLanguage || 'fr',
-          regionalLanguage: user.regionalLanguage || 'fr',
-          autoTranslateEnabled: user.autoTranslateEnabled !== false,
-          translateToSystemLanguage: user.translateToSystemLanguage !== false,
-          translateToRegionalLanguage: user.translateToRegionalLanguage || false,
-          useCustomDestination: user.useCustomDestination || false,
+          createdAt: currentUser.createdAt || new Date(),
+          updatedAt: currentUser.updatedAt || new Date(),
+          systemLanguage: currentUser.systemLanguage || 'fr',
+          regionalLanguage: currentUser.regionalLanguage || 'fr',
+          autoTranslateEnabled: currentUser.autoTranslateEnabled !== false,
+          translateToSystemLanguage: currentUser.translateToSystemLanguage !== false,
+          translateToRegionalLanguage: currentUser.translateToRegionalLanguage || false,
+          useCustomDestination: currentUser.useCustomDestination || false,
           isActive: true,
           lastActiveAt: new Date(),
           isMeeshyer: true
         };
       }
     }
-    
+
     // Ajouter le message enrichi à la liste (il sera inséré au début grâce au hook)
     addMessage(enrichedMessage);
-    
+
     // Scroll automatique pour les nouveaux messages d'autres utilisateurs
-    if (message.senderId !== user.id && message.anonymousSenderId !== user.id) {
+    if (message.senderId !== currentUser.id && message.anonymousSenderId !== currentUser.id) {
       // Scroll automatique SEULEMENT si l'utilisateur est déjà proche du haut (pour scrollDirection='down')
       setTimeout(() => {
         if (messagesContainerRef.current) {
@@ -671,7 +777,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         }
       }, 300);
     }
-  }, [addMessage, user.id, user.username, user.firstName, user.lastName, user.displayName, user.avatar, user.systemLanguage, isAnonymousMode]);
+  }, [addMessage]); // CRITIQUE: Deps minimales pour éviter re-créations et désinscriptions
 
   // Hook pour les statistiques de traduction de messages
   const { stats: translationStats, incrementTranslationCount } = useMessageTranslation();
@@ -926,15 +1032,17 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   useEffect(() => {
     const newUserLanguage = resolveUserPreferredLanguage();
     setUserLanguage(newUserLanguage);
-    
-    // Vérifier si la langue actuellement sélectionnée est encore valide dans les choix disponibles
+  }, [user.systemLanguage, user.regionalLanguage, user.customDestinationLanguage, resolveUserPreferredLanguage]);
+
+  // Validation de la langue sélectionnée - Effet séparé pour éviter les boucles
+  useEffect(() => {
     const availableLanguageCodes = languageChoices.map(choice => choice.code);
     if (!availableLanguageCodes.includes(selectedInputLanguage)) {
       // Si la langue sélectionnée n'est plus dans les choix, revenir à la langue système
       console.log('Langue sélectionnée non disponible, retour à la langue système:', user.systemLanguage);
       setSelectedInputLanguage(user.systemLanguage || 'fr');
     }
-  }, [user.systemLanguage, user.regionalLanguage, user.customDestinationLanguage]); // Supprimé languageChoices et selectedInputLanguage
+  }, [languageChoices, selectedInputLanguage, user.systemLanguage]);
 
   // Suppression de la simulation des statistiques de langues (désormais alimentées en temps réel)
 
@@ -1148,7 +1256,9 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     
     // Clear les attachments après l'envoi
     const currentAttachmentIds = [...attachmentIds];
+    const currentAttachmentMimeTypes = [...attachmentMimeTypes];
     setAttachmentIds([]);
+    setAttachmentMimeTypes([]);
     
     // Clear les attachments du composer
     if (textareaRef.current && (textareaRef.current as any).clearAttachments) {
@@ -1172,6 +1282,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         // Restaurer le message pour permettre un nouvel essai
         setNewMessage(messageContent);
         setAttachmentIds(currentAttachmentIds);
+        setAttachmentMimeTypes(currentAttachmentMimeTypes);
         return;
       }
 
@@ -1200,8 +1311,8 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           console.log('📝 Envoi du message SANS attachments');
         }
         
-        const sendResult = hasAttachments 
-          ? await sendMessageWithAttachmentsToService(messageContent, currentAttachmentIds, selectedInputLanguage, replyToId)
+        const sendResult = hasAttachments
+          ? await sendMessageWithAttachmentsToService(messageContent, currentAttachmentIds, attachmentMimeTypes, selectedInputLanguage, replyToId)
           : await sendMessageToService(messageContent, selectedInputLanguage, replyToId);
         
         if (sendResult) {
@@ -1429,259 +1540,217 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         }
       `}</style>
       
-      {/* Conteneur principal avec gradient */}
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        
-        {/* Indicateur dynamique - Frappe prioritaire sur connexion */}
-        <div className="fixed top-16 left-0 right-0 xl:right-80 z-[40] px-4 sm:px-6 lg:px-8 pt-4 pb-2 bg-gradient-to-b from-blue-50 to-transparent dark:from-gray-900/80 dark:to-transparent pointer-events-none realtime-indicator hidden md:block">
-          <div className="pointer-events-auto">
-            {/* Priorité à l'indicateur de frappe quand actif */}
-            {typingUsers.length > 0 && connectionStatus.isConnected ? (
-              <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm backdrop-blur-sm bg-blue-100/90 text-blue-800 dark:bg-blue-900/90 dark:text-blue-200 border border-blue-200/80 dark:border-blue-700/80 transition-all">
-                <Loader2 className="h-3 w-3 animate-spin" />
-                <span>
-                  {typingUsers.length === 1 
-                    ? t('bubbleStream.typing.single', { name: typingUsers[0].displayName })
-                    : typingUsers.length === 2
-                    ? t('bubbleStream.typing.double', { name1: typingUsers[0].displayName, name2: typingUsers[1].displayName })
-                    : t('bubbleStream.typing.multiple', { name: typingUsers[0].displayName, count: typingUsers.length - 1 })
-                  }
-                </span>
-              </div>
-            ) : (
-              /* Indicateur de connexion par défaut */
-              <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm backdrop-blur-sm transition-all ${
-                connectionStatus.isConnected && connectionStatus.hasSocket
-                  ? 'bg-green-100/80 text-green-800 dark:bg-green-900/80 dark:text-green-200 border border-green-200/60 dark:border-green-700/60' 
-                  : 'bg-orange-100/80 text-orange-800 dark:bg-orange-900/80 dark:text-orange-200 border border-orange-200/60 dark:border-orange-700/60'
-              }`}>
-                <div className={`w-2 h-2 rounded-full animate-pulse ${
-                  connectionStatus.isConnected && connectionStatus.hasSocket ? 'bg-green-600 dark:bg-green-400' : 'bg-orange-600 dark:bg-orange-400'
-                }`} />
-                <span className="font-medium">
-                  {t('bubbleStream.realTimeMessages')}
-                </span>
-                {!(connectionStatus.isConnected && connectionStatus.hasSocket) && (
-                  <span className="text-xs opacity-75">• {t('bubbleStream.connectionInProgress')}</span>
-                )}
-                {!(connectionStatus.isConnected && connectionStatus.hasSocket) && (
-                  <>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        reconnect();
-                      }}
-                      className="ml-2 text-xs px-2 py-1 h-auto hover:bg-orange-200/50 dark:hover:bg-orange-800/50"
-                    >
-                      {t('bubbleStream.reconnect')}
-                    </Button>
-                  </>
+      {/* Conteneur principal avec gradient - Hauteur fixe sans scroll */}
+      <div className="flex h-full min-h-0 w-full flex-col bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="flex h-full min-h-0 w-full flex-col xl:flex-row">
+          {/* Colonne principale */}
+          <section className="grid flex-1 min-h-0 grid-rows-[auto,1fr,auto] overflow-hidden">
+            {/* Indicateur dynamique - Frappe prioritaire sur connexion */}
+            <div className="row-start-1 px-4 pt-4 pb-2 sm:px-6 lg:px-8 bg-gradient-to-b from-blue-50 to-transparent dark:from-gray-900/80 dark:to-transparent pointer-events-none hidden md:block">
+              <div className="pointer-events-auto">
+                {typingUsers.length > 0 && connectionStatus.isConnected ? (
+                  <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm backdrop-blur-sm bg-blue-100/90 text-blue-800 dark:bg-blue-900/90 dark:text-blue-200 border border-blue-200/80 dark:border-blue-700/80 transition-all">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span>
+                      {typingUsers.length === 1 
+                        ? t('bubbleStream.typing.single', { name: typingUsers[0].displayName })
+                        : typingUsers.length === 2
+                        ? t('bubbleStream.typing.double', { name1: typingUsers[0].displayName, name2: typingUsers[1].displayName })
+                        : t('bubbleStream.typing.multiple', { name: typingUsers[0].displayName, count: typingUsers.length - 1 })
+                      }
+                    </span>
+                  </div>
+                ) : (
+                  <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm backdrop-blur-sm transition-all ${
+                    connectionStatus.isConnected && connectionStatus.hasSocket
+                      ? 'bg-green-100/80 text-green-800 dark:bg-green-900/80 dark:text-green-200 border border-green-200/60 dark:border-green-700/60' 
+                      : 'bg-orange-100/80 text-orange-800 dark:bg-orange-900/80 dark:text-orange-200 border border-orange-200/60 dark:border-orange-700/60'
+                  }`}>
+                    <div className={`w-2 h-2 rounded-full animate-pulse ${
+                      connectionStatus.isConnected && connectionStatus.hasSocket ? 'bg-green-600 dark:bg-green-400' : 'bg-orange-600 dark:bg-orange-400'
+                    }`} />
+                    <span className="font-medium">
+                      {t('bubbleStream.realTimeMessages')}
+                    </span>
+                    {!(connectionStatus.isConnected && connectionStatus.hasSocket) && (
+                      <span className="text-xs opacity-75">• {t('bubbleStream.connectionInProgress')}</span>
+                    )}
+                    {!(connectionStatus.isConnected && connectionStatus.hasSocket) && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => reconnect()}
+                        className="ml-2 text-xs px-2 py-1 h-auto hover:bg-orange-200/50 dark:hover:bg-orange-800/50"
+                      >
+                        {t('bubbleStream.reconnect')}
+                      </Button>
+                    )}
+                  </div>
                 )}
               </div>
-            )}
-          </div>
-        </div>
+            </div>
 
-        {/* Feed principal - Container de scroll avec ref pour le scroll infini */}
-        <div 
-          ref={messagesContainerRef}
-          className="flex-1 overflow-y-auto overflow-x-hidden pt-4 md:pt-20 pb-48 xl:pr-80"
-        >
-          <div className={cn(
-            "max-w-4xl mx-auto",
-            isMobile ? "px-3 py-4" : "px-6 py-4"
-          )}>
-            {/* 
-              MODE BUBBLESTREAM: Messages récents EN HAUT (sous header)
-              - Backend retourne: orderBy createdAt DESC = [récent...ancien]
-              - reverseOrder=false garde l'ordre: [récent...ancien]
-              - scrollDirection='down' (spécifié dans useConversationMessages)
-              - Scroll vers le bas charge les plus anciens (ajoutés à la FIN)
-              - Résultat: Récent EN HAUT, Ancien EN BAS ✅
-            */}
-            <ConversationMessages
-              messages={messages}
-              translatedMessages={messages as any}
-              isLoadingMessages={isLoadingMessages}
-              isLoadingMore={isLoadingMore}
-              hasMore={hasMore}
-              currentUser={user}
-              userLanguage={userLanguage}
-              usedLanguages={usedLanguages}
-              isMobile={isMobile}
-              conversationType="public"
-              userRole={getUserModerationRole()}
-              conversationId={conversationId}
-              isAnonymous={isAnonymousMode}
-              currentAnonymousUserId={isAnonymousMode ? user.id : undefined}
-              addTranslatingState={addTranslatingState}
-              isTranslating={isTranslating}
-              onEditMessage={handleEditMessage}
-              onDeleteMessage={handleDeleteMessage}
-              onReplyMessage={handleReplyMessage}
-              onNavigateToMessage={handleNavigateToMessage}
-              onImageClick={handleImageClick}
-              onLoadMore={loadMore}
-              t={t}
-              reverseOrder={false}
-              scrollDirection="down"
-              scrollButtonDirection="up"
-              scrollContainerRef={messagesContainerRef}
-            />
-
-            {/* Indicateur si plus de messages disponibles */}
-            {!hasMore && messages.length > 0 && (
-              <div className="flex justify-center py-4">
-                <div className="text-sm text-muted-foreground">
-                  {tCommon('messages.allMessagesLoaded')}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Dégradé inférieur fixe */}
-        <div className="fixed bottom-0 left-0 right-0 xl:right-80 h-32 bg-gradient-to-t from-blue-50 dark:from-gray-950 via-blue-50/40 dark:via-gray-950/40 to-transparent pointer-events-none z-20" />
-
-        {/* Zone de composition flottante */}
-        <div className="fixed bottom-0 left-0 right-0 xl:right-80 z-30">
-          {/* Dégradé de fond */}
-          <div className="h-10 bg-gradient-to-t from-blue-50 dark:from-gray-950 via-blue-50/40 dark:via-gray-950/40 to-transparent pointer-events-none" />
-          
-          {/* Zone de saisie */}
-          <div className="bg-blue-50/20 dark:bg-gray-900/80 backdrop-blur-lg border-t border-blue-200/50 dark:border-gray-800/50 shadow-xl shadow-blue-500/10 dark:shadow-gray-900/50">
-            <div className="p-4 max-w-4xl mx-auto">
-              <MessageComposer
-                ref={textareaRef}
-                value={newMessage}
-                onChange={handleTyping}
-                onSend={handleSendMessage}
-                selectedLanguage={selectedInputLanguage}
-                onLanguageChange={setSelectedInputLanguage}
-                location={location}
-                isComposingEnabled={isComposingEnabled}
-                placeholder={t('conversationSearch.shareMessage')}
-                onKeyPress={handleKeyPress}
-                choices={languageChoices}
-                onAttachmentsChange={setAttachmentIds}
-                token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
-                userRole={user?.role}
+            {/* Feed principal - Container de scroll avec ref pour le scroll infini */}
+            <div
+              ref={messagesContainerRef}
+              className="row-start-2 min-h-0 h-full overflow-y-auto overflow-x-hidden bg-gradient-to-b from-blue-50/50 to-white dark:from-gray-900/50 dark:to-gray-950"
+            >
+              <ConversationMessages
+                messages={messages}
+                translatedMessages={messages as any}
+                isLoadingMessages={isLoadingMessages}
+                isLoadingMore={isLoadingMore}
+                hasMore={hasMore}
+                currentUser={user}
+                userLanguage={userLanguage}
+                usedLanguages={usedLanguages}
+                isMobile={isMobile}
+                conversationType="public"
+                userRole={getUserModerationRole()}
+                conversationId={conversationId}
+                isAnonymous={isAnonymousMode}
+                currentAnonymousUserId={isAnonymousMode ? user.id : undefined}
+                addTranslatingState={addTranslatingState}
+                isTranslating={isTranslating}
+                onEditMessage={handleEditMessage}
+                onDeleteMessage={handleDeleteMessage}
+                onReplyMessage={handleReplyMessage}
+                onNavigateToMessage={handleNavigateToMessage}
+                onImageClick={handleImageClick}
+                onLoadMore={loadMore}
+                t={t}
+                tCommon={tCommon}
+                reverseOrder={false}
+                scrollDirection="down"
+                scrollButtonDirection="up"
+                scrollContainerRef={messagesContainerRef}
               />
             </div>
-          </div>
-        </div>
 
-        {/* Sidebar droite - Desktop uniquement */}
-        <div className="hidden xl:block w-80 fixed right-0 top-16 bottom-0 bg-white/60 dark:bg-gray-900/80 backdrop-blur-lg border-l border-blue-200/30 dark:border-gray-800/50 z-40">
-          <div className="h-full overflow-y-auto p-6 scroll-hidden">
-            
-            {/* Header avec langues globales */}
-            <SidebarLanguageHeader 
-              languageStats={messageLanguageStats} 
-              userLanguage={userLanguage}
-            />
-
-            {/* Section Langues Actives - Foldable */}
-            <FoldableSection
-              title={t('bubbleStream.activeLanguages')}
-              icon={<Languages className="h-4 w-4 mr-2" />}
-              defaultExpanded={true}
-            >
-              <LanguageIndicators languageStats={activeLanguageStats} />
-            </FoldableSection>
-
-            {/* Section Utilisateurs Actifs - Foldable - Remontée en 2e position */}
-            <FoldableSection
-              title={`${tCommon('sidebar.activeUsers')} (${activeUsers.length})`}
-              icon={<Users className="h-4 w-4 mr-2" />}
-              defaultExpanded={true}
-            >
-              <div className="space-y-3">
-                {/* Affichage des 6 premiers utilisateurs */}
-                {activeUsers.slice(0, 6).map((activeUser, index) => (
-                  <div
-                    key={`${activeUser.id}-${index}`}
-                    className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50/80 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
-                  >
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={activeUser.avatar || undefined} alt={activeUser.firstName} />
-                      <AvatarFallback className="bg-gradient-to-br from-blue-400 to-indigo-500 text-white">
-                        {activeUser.firstName?.charAt(0)}{activeUser.lastName?.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                        {activeUser.firstName} {activeUser.lastName}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                        @{activeUser.username}
-                      </p>
-                    </div>
-                    <div className="w-2 h-2 bg-green-500 rounded-full" />
-                  </div>
-                ))}
-                
-                {/* Section scrollable pour les utilisateurs restants */}
-                {activeUsers.length > 6 && (
-                  <div 
-                    className="max-h-48 overflow-y-auto space-y-3 pr-1 border-t border-gray-100 dark:border-gray-700 pt-3 mt-3 scroll-hidden"
-                  >
-                    {activeUsers.slice(6).map((activeUser, index) => (
-                      <div
-                        key={`${activeUser.id}-${index + 6}`}
-                        className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50/80 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
-                      >
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={activeUser.avatar || undefined} alt={activeUser.firstName} />
-                          <AvatarFallback className="bg-gradient-to-br from-blue-400 to-indigo-500 text-white">
-                            {activeUser.firstName?.charAt(0)}{activeUser.lastName?.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                            {activeUser.firstName} {activeUser.lastName}
-                          </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                            @{activeUser.username}
-                          </p>
-                        </div>
-                        <div className="w-2 h-2 bg-green-500 rounded-full" />
-                      </div>
-                    ))}
-                  </div>
-                )}
+            {/* Zone de composition dans le flux */}
+            <div className="z-30 row-start-3 border-t border-gray-200/70 bg-white/98 backdrop-blur-xl shadow-2xl dark:border-gray-700/70 dark:bg-gray-950/98">
+              <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
+                <MessageComposer
+                  ref={textareaRef}
+                  value={newMessage}
+                  onChange={handleTyping}
+                  onSend={handleSendMessage}
+                  selectedLanguage={selectedInputLanguage}
+                  onLanguageChange={setSelectedInputLanguage}
+                  location={location}
+                  isComposingEnabled={isComposingEnabled}
+                  placeholder={t('conversationSearch.shareMessage')}
+                  onKeyPress={handleKeyPress}
+                  choices={languageChoices}
+                  onAttachmentsChange={handleAttachmentsChange}
+                  token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
+                  userRole={user?.role}
+                  conversationId={conversationId}
+                />
               </div>
-            </FoldableSection>
+            </div>
+          </section>
 
-            {/* Section Tendances - Statique non-interactive, grisée */}
-            <div className="opacity-60 saturate-50 bg-gray-50/50 dark:bg-gray-800/50 rounded-lg p-2">
-              <Card className="mb-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50 shadow-lg dark:shadow-gray-900/30">
-                <CardContent className="p-0">
-                  {/* Header non-cliquable */}
-                  <div className="flex items-center justify-between p-4 bg-gray-50/80 dark:bg-gray-700/50">
-                    <h3 className="font-semibold text-gray-500 dark:text-gray-400 flex items-center">
-                      <TrendingUp className="h-4 w-4 mr-2 text-gray-400 dark:text-gray-500" />
-                      {tCommon('sidebar.trends')}
-                    </h3>
-                    <ChevronDown className="h-4 w-4 text-gray-300 dark:text-gray-600" />
-                  </div>
-                  
-                  {/* Contenu statique (non-visible car fermé) */}
-                  <div className="hidden">
-                    <div className="px-4 pb-4 border-t border-gray-100">
-                      <div className="mt-3 opacity-70">
-                        <TrendingSection hashtags={trendingHashtags} />
+          {/* Sidebar droite - Desktop uniquement */}
+          <aside className="hidden xl:flex xl:w-80 xl:flex-col bg-white/60 dark:bg-gray-900/80 backdrop-blur-lg border-l border-blue-200/30 dark:border-gray-800/50">
+            <div className="flex-1 overflow-y-auto p-6 scroll-hidden">
+              <SidebarLanguageHeader 
+                languageStats={messageLanguageStats} 
+                userLanguage={userLanguage}
+              />
+
+              <FoldableSection
+                title={t('bubbleStream.activeLanguages')}
+                icon={<Languages className="h-4 w-4 mr-2" />}
+                defaultExpanded={true}
+              >
+                <LanguageIndicators languageStats={activeLanguageStats} />
+              </FoldableSection>
+
+              <FoldableSection
+                title={`${tCommon('sidebar.activeUsers')} (${activeUsers.length})`}
+                icon={<Users className="h-4 w-4 mr-2" />}
+                defaultExpanded={true}
+              >
+                <div className="space-y-3">
+                  {activeUsers.slice(0, 6).map((activeUser, index) => (
+                    <div
+                      key={`${activeUser.id}-${index}`}
+                      className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50/80 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
+                    >
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={activeUser.avatar || undefined} alt={activeUser.firstName} />
+                        <AvatarFallback className="bg-gradient-to-br from-blue-400 to-indigo-500 text-white">
+                          {activeUser.firstName?.charAt(0)}{activeUser.lastName?.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                          {activeUser.firstName} {activeUser.lastName}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                          @{activeUser.username}
+                        </p>
+                      </div>
+                      <div className="w-2 h-2 bg-green-500 rounded-full" />
+                    </div>
+                  ))}
+
+                  {activeUsers.length > 6 && (
+                    <div 
+                      className="max-h-48 overflow-y-auto space-y-3 pr-1 border-t border-gray-100 dark:border-gray-700 pt-3 mt-3 scroll-hidden"
+                    >
+                      {activeUsers.slice(6).map((activeUser, index) => (
+                        <div
+                          key={`${activeUser.id}-${index + 6}`}
+                          className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50/80 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
+                        >
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={activeUser.avatar || undefined} alt={activeUser.firstName} />
+                            <AvatarFallback className="bg-gradient-to-br from-blue-400 to-indigo-500 text-white">
+                              {activeUser.firstName?.charAt(0)}{activeUser.lastName?.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                              {activeUser.firstName} {activeUser.lastName}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                              @{activeUser.username}
+                            </p>
+                          </div>
+                          <div className="w-2 h-2 bg-green-500 rounded-full" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </FoldableSection>
+
+              <div className="opacity-60 saturate-50 bg-gray-50/50 dark:bg-gray-800/50 rounded-lg p-2 mt-6">
+                <Card className="mb-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50 shadow-lg dark:shadow-gray-900/30">
+                  <CardContent className="p-0">
+                    <div className="flex items-center justify-between p-4 bg-gray-50/80 dark:bg-gray-700/50">
+                      <h3 className="font-semibold text-gray-500 dark:text-gray-400 flex items-center">
+                        <TrendingUp className="h-4 w-4 mr-2 text-gray-400 dark:text-gray-500" />
+                        {tCommon('sidebar.trends')}
+                      </h3>
+                      <ChevronDown className="h-4 w-4 text-gray-300 dark:text-gray-600" />
+                    </div>
+
+                    <div className="hidden">
+                      <div className="px-4 pb-4 border-t border-gray-100">
+                        <div className="mt-3 opacity-70">
+                          <TrendingSection hashtags={trendingHashtags} />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          </div>
+          </aside>
         </div>
-      
-      {/* Fermeture du conteneur principal avec gradient */}
       </div>
 
       {/* Galerie d'images */}

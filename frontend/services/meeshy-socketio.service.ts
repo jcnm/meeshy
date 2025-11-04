@@ -44,6 +44,7 @@ class MeeshySocketIOService {
   private reconnectTimeout: NodeJS.Timeout | null = null;
   
   // CORRECTION: Mémoriser la conversation active pour auto-join après reconnexion
+  // Stocke l'ObjectId normalisé reçu du backend via CONVERSATION_JOINED
   private currentConversationId: string | null = null;
 
   /**
@@ -104,6 +105,7 @@ class MeeshySocketIOService {
   private onlineStatsListeners: Set<(data: { conversationId: string; onlineUsers: any[]; updatedAt: Date }) => void> = new Set();
   private reactionAddedListeners: Set<(data: any) => void> = new Set();
   private reactionRemovedListeners: Set<(data: any) => void> = new Set();
+  private conversationJoinedListeners: Set<(data: { conversationId: string; userId: string }) => void> = new Set();
 
   // Amélioration: Gestion des traductions en batch et mise en cache
   private translationCache: Map<string, any> = new Map(); // Cache pour éviter les traductions redondantes
@@ -613,6 +615,9 @@ class MeeshySocketIOService {
       if (data.conversationId) {
         this.currentConversationId = data.conversationId;
       }
+
+      // Notify all listeners
+      this.conversationJoinedListeners.forEach(listener => listener(data));
     });
 
     // Événements de frappe - réception immédiate sans timeout automatique
@@ -889,22 +894,43 @@ class MeeshySocketIOService {
 
     // Transformer les attachments si présents
     const attachments = Array.isArray((socketMessage as any).attachments)
-      ? (socketMessage as any).attachments.map((att: any) => ({
-          id: String(att.id || ''),
-          messageId: socketMessage.id,
-          fileName: String(att.fileName || ''),
-          originalName: String(att.originalName || att.fileName || ''),
-          fileUrl: String(att.fileUrl || ''),
-          mimeType: String(att.mimeType || ''),
-          fileSize: Number(att.fileSize) || 0,
-          thumbnailUrl: att.thumbnailUrl ? String(att.thumbnailUrl) : undefined,
-          width: att.width ? Number(att.width) : undefined,
-          height: att.height ? Number(att.height) : undefined,
-          duration: att.duration ? Number(att.duration) : undefined,
-          uploadedBy: String(att.uploadedBy || socketMessage.senderId || (socketMessage as any).anonymousSenderId || ''),
-          isAnonymous: Boolean(att.isAnonymous),
-          createdAt: String(att.createdAt || new Date().toISOString()),
-        }))
+      ? (socketMessage as any).attachments.map((att: any) => {
+          // Log pour déboguer les attachments reçus
+          if (!att.fileUrl || att.fileUrl.trim() === '') {
+            console.error('[Socket.IO] ❌ Attachment sans fileUrl valide reçu:', {
+              id: att.id,
+              fileName: att.fileName,
+              mimeType: att.mimeType,
+              fileUrl: att.fileUrl,
+              fileUrlType: typeof att.fileUrl,
+              fullAttachment: att
+            });
+          } else {
+            console.log('[Socket.IO] ✅ Attachment avec fileUrl valide:', {
+              id: att.id,
+              fileName: att.fileName,
+              fileUrl: att.fileUrl
+            });
+          }
+
+          return {
+            id: String(att.id || ''),
+            messageId: socketMessage.id,
+            fileName: String(att.fileName || ''),
+            originalName: String(att.originalName || att.fileName || ''),
+            // IMPORTANT: Préserver la valeur réelle du fileUrl sans conversion de undefined en ""
+            fileUrl: att.fileUrl ? String(att.fileUrl) : '',
+            mimeType: String(att.mimeType || ''),
+            fileSize: Number(att.fileSize) || 0,
+            thumbnailUrl: att.thumbnailUrl ? String(att.thumbnailUrl) : undefined,
+            width: att.width ? Number(att.width) : undefined,
+            height: att.height ? Number(att.height) : undefined,
+            duration: att.duration ? Number(att.duration) : undefined,
+            uploadedBy: String(att.uploadedBy || socketMessage.senderId || (socketMessage as any).anonymousSenderId || ''),
+            isAnonymous: Boolean(att.isAnonymous),
+            createdAt: String(att.createdAt || new Date().toISOString()),
+          };
+        })
       : [];
 
     return {
@@ -1060,8 +1086,9 @@ class MeeshySocketIOService {
       }
       
       // CORRECTION: Mémoriser la conversation active pour auto-join après reconnexion
+      // Sera mis à jour avec l'ObjectId normalisé lors de CONVERSATION_JOINED
       this.currentConversationId = conversationId;
-      
+
       // Utiliser l'ID pour les communications WebSocket
       this.socket.emit(CLIENT_EVENTS.CONVERSATION_JOIN, { conversationId });
     } catch (error) {
@@ -1230,12 +1257,26 @@ class MeeshySocketIOService {
   }
 
   /**
+   * Détermine le type de message basé sur le MIME type
+   */
+  private determineMessageTypeFromMime(mimeType: string): string {
+    if (!mimeType) return 'text';
+    if (mimeType.startsWith('image/')) return 'image';
+    if (mimeType.startsWith('audio/')) return 'audio';
+    if (mimeType.startsWith('video/')) return 'video';
+    if (mimeType === 'application/pdf') return 'file';
+    if (mimeType.startsWith('text/')) return 'text';
+    return 'file';
+  }
+
+  /**
    * Envoie un message avec des attachments
    */
   public async sendMessageWithAttachments(
     conversationOrId: any,
     content: string,
     attachmentIds: string[],
+    attachmentMimeTypes: string[],
     originalLanguage?: string,
     replyToId?: string
   ): Promise<boolean> {
@@ -1315,11 +1356,17 @@ class MeeshySocketIOService {
           conversationId = getConversationApiId(conversationOrId);
         }
 
+        // Déterminer le type de message basé sur le premier MIME type
+        const messageType = attachmentMimeTypes && attachmentMimeTypes.length > 0
+          ? this.determineMessageTypeFromMime(attachmentMimeTypes[0])
+          : 'file';
+
         // Utiliser l'ObjectId pour l'envoi au backend
-        const messageData = { 
-          conversationId, 
+        const messageData = {
+          conversationId,
           content,
           attachmentIds,
+          messageType,
           originalLanguage: originalLanguage || 'fr',
           replyToId
         };
@@ -1535,6 +1582,11 @@ class MeeshySocketIOService {
     return () => this.reactionRemovedListeners.delete(listener);
   }
 
+  public onConversationJoined(listener: (data: { conversationId: string; userId: string }) => void): () => void {
+    this.conversationJoinedListeners.add(listener);
+    return () => this.conversationJoinedListeners.delete(listener);
+  }
+
   /**
    * Obtient le statut de connexion
    * CORRECTION: Vérifier l'état réel du socket, pas seulement le flag interne
@@ -1572,6 +1624,7 @@ class MeeshySocketIOService {
   public getCurrentConversationId(): string | null {
     return this.currentConversationId;
   }
+
 
   /**
    * Obtient l'instance Socket directe (pour usage avancé)
@@ -1632,6 +1685,7 @@ class MeeshySocketIOService {
     this.translationListeners.clear();
     this.typingListeners.clear();
     this.statusListeners.clear();
+    this.conversationJoinedListeners.clear();
 
     this.isConnected = false;
     this.currentUser = null;

@@ -8,6 +8,7 @@ import sharp from 'sharp';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { parseFile } from 'music-metadata';
 import { 
   Attachment, 
   AttachmentType, 
@@ -25,6 +26,14 @@ export interface FileToUpload {
   size: number;
 }
 
+export interface AudioMetadata {
+  duration: number;
+  bitrate: number;
+  sampleRate: number;
+  codec: string;
+  channels: number;
+}
+
 export interface UploadResult {
   id: string;
   messageId: string;
@@ -37,6 +46,10 @@ export interface UploadResult {
   width?: number;
   height?: number;
   duration?: number;
+  bitrate?: number;
+  sampleRate?: number;
+  codec?: string;
+  channels?: number;
   uploadedBy: string;
   isAnonymous: boolean;
   createdAt: Date;
@@ -93,28 +106,16 @@ export class AttachmentService {
    * Valide un fichier selon son type et sa taille
    */
   validateFile(file: FileToUpload): { valid: boolean; error?: string } {
-    // Vérifier le MIME type
+    // Accepter tous les types de fichiers - pas de restriction MIME
     const attachmentType = getAttachmentType(file.mimeType);
-    const allAcceptedTypes = [
-      ...ACCEPTED_MIME_TYPES.IMAGE,
-      ...ACCEPTED_MIME_TYPES.DOCUMENT,
-      ...ACCEPTED_MIME_TYPES.AUDIO,
-      ...ACCEPTED_MIME_TYPES.VIDEO,
-      ...ACCEPTED_MIME_TYPES.TEXT,
-      ...ACCEPTED_MIME_TYPES.CODE,
-    ];
 
-    if (!allAcceptedTypes.includes(file.mimeType as any)) {
-      return { valid: false, error: `Type de fichier non accepté: ${file.mimeType}` };
-    }
-
-    // Vérifier la taille
+    // Vérifier la taille (2GB max)
     const sizeLimit = getSizeLimit(attachmentType);
     if (file.size > sizeLimit) {
-      const limitMB = Math.floor(sizeLimit / (1024 * 1024));
-      return { 
-        valid: false, 
-        error: `Fichier trop volumineux. Taille max: ${limitMB}MB` 
+      const limitGB = Math.floor(sizeLimit / (1024 * 1024 * 1024));
+      return {
+        valid: false,
+        error: `Fichier trop volumineux. Taille max: ${limitGB}GB`
       };
     }
 
@@ -198,6 +199,49 @@ export class AttachmentService {
   }
 
   /**
+   * Extrait les métadonnées d'un fichier audio
+   * Supporte WebM, MP4, OGG, MP3, WAV, etc.
+   */
+  async extractAudioMetadata(audioPath: string): Promise<AudioMetadata> {
+    try {
+      const fullPath = path.join(this.uploadBasePath, audioPath);
+      const metadata = await parseFile(fullPath);
+
+      const format = metadata.format;
+
+      // Extraction des métadonnées audio
+      const audioMetadata: AudioMetadata = {
+        duration: Math.round(format.duration || 0), // Durée en secondes (arrondie)
+        bitrate: format.bitrate || 0, // Débit en bps
+        sampleRate: format.sampleRate || 0, // Fréquence d'échantillonnage
+        codec: format.codec || format.codecProfile || 'unknown', // Codec détecté
+        channels: format.numberOfChannels || 1, // Nombre de canaux (mono=1, stereo=2)
+      };
+
+      console.log('[AttachmentService] Métadonnées audio extraites:', {
+        filePath: audioPath,
+        ...audioMetadata,
+      });
+
+      return audioMetadata;
+    } catch (error) {
+      console.error('[AttachmentService] Erreur extraction métadonnées audio:', {
+        filePath: audioPath,
+        error: error instanceof Error ? error.message : error,
+      });
+
+      // Retourner des valeurs par défaut en cas d'erreur
+      return {
+        duration: 0,
+        bitrate: 0,
+        sampleRate: 0,
+        codec: 'unknown',
+        channels: 1,
+      };
+    }
+  }
+
+  /**
    * Génère une URL publique pour un fichier
    */
   getAttachmentUrl(filePath: string): string {
@@ -211,7 +255,8 @@ export class AttachmentService {
     file: FileToUpload,
     userId: string,
     isAnonymous: boolean = false,
-    messageId?: string
+    messageId?: string,
+    providedMetadata?: any
   ): Promise<UploadResult> {
     console.log('[AttachmentService] uploadFile - Début', {
       filename: file.filename,
@@ -220,6 +265,7 @@ export class AttachmentService {
       userId,
       isAnonymous,
       messageId,
+      hasProvidedMetadata: !!providedMetadata,
     });
 
     // Valider le fichier
@@ -251,9 +297,32 @@ export class AttachmentService {
       const imageMeta = await this.extractImageMetadata(filePath);
       metadata.width = imageMeta.width;
       metadata.height = imageMeta.height;
-      
+
       thumbnailPath = await this.generateThumbnail(filePath);
       metadata.thumbnailGenerated = !!thumbnailPath;
+    }
+
+    // Si c'est un fichier audio, extraire les métadonnées audio complètes
+    if (attachmentType === 'audio') {
+      // Utiliser les métadonnées fournies par le frontend si disponibles (Web Audio API)
+      // Sinon, extraire avec music-metadata (peut échouer sur WebM mal encodé)
+      if (providedMetadata && providedMetadata.duration !== undefined) {
+        console.log('[AttachmentService] ✅ Utilisation des métadonnées fournies par le frontend:', providedMetadata);
+        metadata.duration = Math.round(providedMetadata.duration);
+        metadata.bitrate = providedMetadata.bitrate || 0;
+        metadata.sampleRate = providedMetadata.sampleRate || 0;
+        metadata.codec = providedMetadata.codec || 'unknown';
+        metadata.channels = providedMetadata.channels || 1;
+      } else {
+        console.log('[AttachmentService] 📋 Extraction des métadonnées audio avec music-metadata...');
+        const audioMeta = await this.extractAudioMetadata(filePath);
+        metadata.duration = audioMeta.duration;
+        metadata.bitrate = audioMeta.bitrate;
+        metadata.sampleRate = audioMeta.sampleRate;
+        metadata.codec = audioMeta.codec;
+        metadata.channels = audioMeta.channels;
+      }
+      console.log('[AttachmentService] Métadonnées audio finales:', metadata);
     }
 
     // Générer les URLs
@@ -279,6 +348,10 @@ export class AttachmentService {
         width: metadata.width,
         height: metadata.height,
         duration: metadata.duration,
+        bitrate: metadata.bitrate,
+        sampleRate: metadata.sampleRate,
+        codec: metadata.codec,
+        channels: metadata.channels,
         uploadedBy: userId,
         isAnonymous: isAnonymous,
       },
@@ -302,6 +375,10 @@ export class AttachmentService {
       width: attachment.width || undefined,
       height: attachment.height || undefined,
       duration: attachment.duration || undefined,
+      bitrate: attachment.bitrate || undefined,
+      sampleRate: attachment.sampleRate || undefined,
+      codec: attachment.codec || undefined,
+      channels: attachment.channels || undefined,
       uploadedBy: attachment.uploadedBy,
       isAnonymous: attachment.isAnonymous,
       createdAt: attachment.createdAt,
@@ -324,25 +401,30 @@ export class AttachmentService {
     files: FileToUpload[],
     userId: string,
     isAnonymous: boolean = false,
-    messageId?: string
+    messageId?: string,
+    metadataMap?: Map<number, any>
   ): Promise<UploadResult[]> {
     console.log('[AttachmentService] uploadMultiple - Début', {
       filesCount: files.length,
       userId,
       isAnonymous,
       messageId,
+      hasMetadata: !!metadataMap,
     });
 
     const results: UploadResult[] = [];
 
-    for (const file of files) {
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
       try {
         console.log('[AttachmentService] Uploading file:', file.filename);
-        const result = await this.uploadFile(file, userId, isAnonymous, messageId);
+        const fileMetadata = metadataMap?.get(i);
+        const result = await this.uploadFile(file, userId, isAnonymous, messageId, fileMetadata);
         console.log('[AttachmentService] Upload result:', {
           id: result.id,
           fileName: result.fileName,
           fileSize: result.fileSize,
+          hadMetadata: !!fileMetadata,
         });
         results.push(result);
       } catch (error) {
@@ -404,6 +486,10 @@ export class AttachmentService {
       width: attachment.width || undefined,
       height: attachment.height || undefined,
       duration: attachment.duration || undefined,
+      bitrate: attachment.bitrate || undefined,
+      sampleRate: attachment.sampleRate || undefined,
+      codec: attachment.codec || undefined,
+      channels: attachment.channels || undefined,
       uploadedBy: attachment.uploadedBy,
       isAnonymous: attachment.isAnonymous,
       createdAt: attachment.createdAt.toISOString(),
@@ -516,6 +602,10 @@ export class AttachmentService {
       width: att.width || undefined,
       height: att.height || undefined,
       duration: att.duration || undefined,
+      bitrate: att.bitrate || undefined,
+      sampleRate: att.sampleRate || undefined,
+      codec: att.codec || undefined,
+      channels: att.channels || undefined,
       uploadedBy: att.uploadedBy,
       isAnonymous: att.isAnonymous,
       createdAt: att.createdAt.toISOString(),

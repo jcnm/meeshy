@@ -89,7 +89,7 @@ export async function authRoutes(fastify: FastifyInstance) {
         required: ['username', 'password', 'firstName', 'lastName', 'email'],
         properties: {
           username: { type: 'string', minLength: 1 },
-          password: { type: 'string', minLength: 6 },
+          password: { type: 'string', minLength: 1 },
           firstName: { type: 'string', minLength: 1 },
           lastName: { type: 'string', minLength: 1 },
           email: { type: 'string', format: 'email' },
@@ -199,8 +199,8 @@ export async function authRoutes(fastify: FastifyInstance) {
               lastSeen: user.lastActiveAt,
               lastActiveAt: user.lastActiveAt,
               isActive: true,
-              createdAt: new Date(), // TODO: Récupérer depuis la DB si nécessaire
-              updatedAt: new Date(),
+              createdAt: user.createdAt,
+              updatedAt: user.updatedAt,
               permissions
             }
           }

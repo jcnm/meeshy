@@ -4,13 +4,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { 
-  Link2, 
-  Users, 
-  Calendar, 
-  Clock, 
-  Shield, 
-  Globe, 
+import {
+  Link2,
+  Users,
+  Calendar,
+  Clock,
+  Shield,
+  Globe,
   Copy,
   Activity,
   BarChart,
@@ -18,7 +18,12 @@ import {
   Image,
   FileText,
   Eye,
-  ExternalLink
+  ExternalLink,
+  Hash,
+  Mail,
+  Cake,
+  CheckCircle,
+  XCircle
 } from 'lucide-react';
 import { ConversationLink } from '@/types';
 import { useI18n } from '@/hooks/useI18n';
@@ -62,15 +67,18 @@ export function LinkDetailsModal({ link, isOpen, onClose }: LinkDetailsModalProp
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg w-[95vw] max-h-[80vh] overflow-y-auto sm:max-w-lg sm:w-[90vw] sm:max-h-[75vh]">
-        <DialogHeader>
+      <DialogContent className="max-w-lg w-[95vw] max-h-[90vh] p-0 gap-0 flex flex-col sm:max-w-lg sm:w-[90vw] sm:max-h-[85vh]">
+        {/* Header fixe */}
+        <DialogHeader className="flex-shrink-0 border-b px-6 py-4">
           <DialogTitle className="flex items-center gap-2">
             <Link2 className="h-5 w-5" />
             {t('details.title')}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        {/* Contenu scrollable */}
+        <div className="flex-1 overflow-y-auto px-6 py-6">
+          <div className="space-y-4">
           {/* Informations de base - toujours visibles */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -237,6 +245,77 @@ export function LinkDetailsModal({ link, isOpen, onClose }: LinkDetailsModalProp
               </AccordionContent>
             </AccordionItem>
 
+            {/* Exigences */}
+            <AccordionItem value="requirements">
+              <AccordionTrigger className="text-sm">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4" />
+                  {t('edit.requirements')}
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-3 pt-2">
+                  {/* Require Account - mise en évidence si actif */}
+                  <div className={`p-3 rounded-lg ${link.requireAccount ? 'bg-blue-50 dark:bg-blue-950/20 border-2 border-blue-200 dark:border-blue-800' : 'bg-muted/30'}`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Shield className={`h-4 w-4 ${link.requireAccount ? 'text-blue-600' : 'text-muted-foreground'}`} />
+                        <span className={`text-sm ${link.requireAccount ? 'font-semibold text-blue-900 dark:text-blue-100' : ''}`}>
+                          {t('requirements.account')}
+                        </span>
+                      </div>
+                      {link.requireAccount ? (
+                        <CheckCircle className="h-4 w-4 text-blue-600" />
+                      ) : (
+                        <XCircle className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </div>
+                    {link.requireAccount && (
+                      <p className="text-xs text-blue-700 dark:text-blue-300 mt-1 ml-6">
+                        {t('requirements.accountDescription')}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Hash className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">{t('requirements.nickname')}</span>
+                    </div>
+                    {link.requireNickname ? (
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">{t('requirements.email')}</span>
+                    </div>
+                    {link.requireEmail ? (
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Cake className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">{t('requirements.birthday')}</span>
+                    </div>
+                    {link.requireBirthday ? (
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
             {/* Dates importantes */}
             <AccordionItem value="dates">
               <AccordionTrigger className="text-sm">
@@ -294,6 +373,7 @@ export function LinkDetailsModal({ link, isOpen, onClose }: LinkDetailsModalProp
               </AccordionItem>
             )}
           </Accordion>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

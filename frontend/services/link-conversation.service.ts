@@ -19,8 +19,10 @@ export interface LinkConversationData {
     allowAnonymousMessages: boolean;
     allowAnonymousFiles: boolean;
     allowAnonymousImages: boolean;
+    requireAccount: boolean;
     requireEmail: boolean;
     requireNickname: boolean;
+    requireBirthday: boolean;
     expiresAt: string | null;
     isActive: boolean;
   };
@@ -246,8 +248,10 @@ export class LinkConversationService {
       allowAnonymousMessages?: boolean;
       allowAnonymousFiles?: boolean;
       allowAnonymousImages?: boolean;
+      requireAccount: boolean;
       requireEmail: boolean;
       requireNickname: boolean;
+      requireBirthday: boolean;
       expiresAt: string | null;
       isActive?: boolean;
       conversation: {

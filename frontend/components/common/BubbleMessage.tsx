@@ -150,14 +150,15 @@ const BubbleMessageInner = memo(function BubbleMessageInner({
     const dateObj = typeof date === 'string' ? new Date(date) : date;
     const now = new Date();
     const diffMs = now.getTime() - dateObj.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    
-    if (diffHours < 1) return t('justNow');
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffMinutes < 1) return t('justNow');
+    if (diffMinutes < 60) return t('minutesAgo', { minutes: diffMinutes });
     if (diffHours < 24) return t('hoursAgo', { hours: diffHours });
-    
-    const diffDays = Math.floor(diffHours / 24);
     if (diffDays < 7) return t('daysAgo', { days: diffDays });
-    
+
     return dateObj.toLocaleDateString();
   }, [t]);
 

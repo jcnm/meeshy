@@ -124,6 +124,24 @@ class ApiService {
     }
   }
 
+  /**
+   * Perform a GET request with optional query parameters
+   *
+   * @param endpoint - API endpoint path (e.g., '/admin/users')
+   * @param params - Query string parameters as a flat key-value object (NOT wrapped in {params: ...})
+   * @param options - Additional options (abort signal, custom headers)
+   *
+   * @example
+   * // Correct usage:
+   * apiService.get('/users', { page: 1, limit: 20, search: 'john' })
+   * // → GET /users?page=1&limit=20&search=john
+   *
+   * @example
+   * // WRONG - Do NOT wrap in {params: ...}:
+   * apiService.get('/users', { params: { page: 1 } }) // ✗ This will NOT work
+   *
+   * @returns Promise resolving to ApiResponse<T>
+   */
   async get<T>(endpoint: string, params?: Record<string, unknown>, options?: { signal?: AbortSignal; headers?: Record<string, string> }): Promise<ApiResponse<T>> {
     let url = endpoint;
     if (params) {
@@ -136,8 +154,8 @@ class ApiService {
       url += `?${searchParams.toString()}`;
     }
 
-    return this.request<T>(url, { 
-      method: 'GET', 
+    return this.request<T>(url, {
+      method: 'GET',
       signal: options?.signal,
       headers: options?.headers
     });

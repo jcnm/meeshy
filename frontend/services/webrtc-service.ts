@@ -15,7 +15,7 @@ const DEFAULT_ICE_SERVERS: RTCIceServer[] = [
   { urls: 'stun:stun1.l.google.com:19302' },
 ];
 
-// Default media constraints
+// Default media constraints - optimized for mobile Safari compatibility
 const DEFAULT_MEDIA_CONSTRAINTS: MediaStreamConstraints = {
   audio: {
     echoCancellation: true,
@@ -23,9 +23,10 @@ const DEFAULT_MEDIA_CONSTRAINTS: MediaStreamConstraints = {
     autoGainControl: true,
   },
   video: {
-    width: { ideal: 1280 },
-    height: { ideal: 720 },
-    frameRate: { ideal: 30 },
+    width: { ideal: 640, max: 1280 },
+    height: { ideal: 480, max: 720 },
+    frameRate: { ideal: 24, max: 30 },
+    facingMode: 'user', // Use front camera by default on mobile
   },
 };
 

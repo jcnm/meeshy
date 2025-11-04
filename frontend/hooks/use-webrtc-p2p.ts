@@ -62,9 +62,14 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
               return;
             }
 
-            // Skip if userId not available yet
-            if (!userId) {
-              logger.error('[useWebRTCP2P]', 'Cannot send ICE candidate: userId not available');
+            // CRITICAL FIX: Check if userId is empty string or undefined
+            if (!userId || userId === '') {
+              logger.error('[useWebRTCP2P]', 'Cannot send ICE candidate: userId not available', {
+                userId,
+                userIdType: typeof userId,
+                participantId,
+                callId
+              });
               return;
             }
 
@@ -139,7 +144,7 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
 
       return service;
     },
-    [callId, addRemoteStream, setError, setConnecting, onError]
+    [callId, userId, addRemoteStream, setError, setConnecting, onError]  // CRITICAL: Added userId
   );
 
   /**
@@ -432,6 +437,32 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
 
     logger.info('[useWebRTCP2P]', 'Cleanup completed', { callId });
   }, [callId, removePeerConnection]);
+
+  /**
+   * CRITICAL FIX: Recreate WebRTC services when userId changes
+   * This ensures ICE candidates are sent with correct userId
+   */
+  useEffect(() => {
+    // If userId was empty and now has a value, clear existing services
+    // so they get recreated with the new userId
+    if (userId && userId !== '') {
+      const currentServices = webrtcServicesRef.current;
+      if (currentServices.size > 0) {
+        logger.warn('[useWebRTCP2P]', 'userId changed, clearing WebRTC services to recreate with new userId', {
+          callId,
+          userId,
+          servicesCount: currentServices.size
+        });
+        // Close and clear all existing services
+        currentServices.forEach((service, participantId) => {
+          service.close();
+          removePeerConnection(participantId);
+        });
+        currentServices.clear();
+        iceCandidateQueueRef.current.clear();
+      }
+    }
+  }, [userId, callId, removePeerConnection]);
 
   /**
    * Cleanup on unmount

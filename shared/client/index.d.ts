@@ -128,6 +128,88 @@ export type TrackingLinkClick = $Result.DefaultSelection<Prisma.$TrackingLinkCli
  * Journal d'audit des actions administratives
  */
 export type AdminAuditLog = $Result.DefaultSelection<Prisma.$AdminAuditLogPayload>
+/**
+ * Model Report
+ * Signalement de contenu inapproprié
+ */
+export type Report = $Result.DefaultSelection<Prisma.$ReportPayload>
+/**
+ * Model CallSession
+ * Call Session - Represents an active or completed video call
+ */
+export type CallSession = $Result.DefaultSelection<Prisma.$CallSessionPayload>
+/**
+ * Model CallParticipant
+ * Call Participant - Represents a user participating in a call
+ */
+export type CallParticipant = $Result.DefaultSelection<Prisma.$CallParticipantPayload>
+/**
+ * Model Transcription
+ * Transcription - Phase 2A/2B (prepared for future)
+ * Stores transcriptions from client or server
+ */
+export type Transcription = $Result.DefaultSelection<Prisma.$TranscriptionPayload>
+/**
+ * Model TranslationCall
+ * Translation - Phase 3 (prepared for future)
+ * Stores translations of transcriptions
+ */
+export type TranslationCall = $Result.DefaultSelection<Prisma.$TranslationCallPayload>
+
+/**
+ * Enums
+ */
+export namespace $Enums {
+  export const CallMode: {
+  p2p: 'p2p',
+  sfu: 'sfu'
+};
+
+export type CallMode = (typeof CallMode)[keyof typeof CallMode]
+
+
+export const CallStatus: {
+  initiated: 'initiated',
+  ringing: 'ringing',
+  active: 'active',
+  ended: 'ended'
+};
+
+export type CallStatus = (typeof CallStatus)[keyof typeof CallStatus]
+
+
+export const ParticipantRole: {
+  initiator: 'initiator',
+  participant: 'participant'
+};
+
+export type ParticipantRole = (typeof ParticipantRole)[keyof typeof ParticipantRole]
+
+
+export const TranscriptionSource: {
+  client: 'client',
+  server: 'server'
+};
+
+export type TranscriptionSource = (typeof TranscriptionSource)[keyof typeof TranscriptionSource]
+
+}
+
+export type CallMode = $Enums.CallMode
+
+export const CallMode: typeof $Enums.CallMode
+
+export type CallStatus = $Enums.CallStatus
+
+export const CallStatus: typeof $Enums.CallStatus
+
+export type ParticipantRole = $Enums.ParticipantRole
+
+export const ParticipantRole: typeof $Enums.ParticipantRole
+
+export type TranscriptionSource = $Enums.TranscriptionSource
+
+export const TranscriptionSource: typeof $Enums.TranscriptionSource
 
 /**
  * ##  Prisma Client ʲˢ
@@ -450,6 +532,56 @@ export class PrismaClient<
     * ```
     */
   get adminAuditLog(): Prisma.AdminAuditLogDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.report`: Exposes CRUD operations for the **Report** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Reports
+    * const reports = await prisma.report.findMany()
+    * ```
+    */
+  get report(): Prisma.ReportDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.callSession`: Exposes CRUD operations for the **CallSession** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more CallSessions
+    * const callSessions = await prisma.callSession.findMany()
+    * ```
+    */
+  get callSession(): Prisma.CallSessionDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.callParticipant`: Exposes CRUD operations for the **CallParticipant** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more CallParticipants
+    * const callParticipants = await prisma.callParticipant.findMany()
+    * ```
+    */
+  get callParticipant(): Prisma.CallParticipantDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.transcription`: Exposes CRUD operations for the **Transcription** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Transcriptions
+    * const transcriptions = await prisma.transcription.findMany()
+    * ```
+    */
+  get transcription(): Prisma.TranscriptionDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.translationCall`: Exposes CRUD operations for the **TranslationCall** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more TranslationCalls
+    * const translationCalls = await prisma.translationCall.findMany()
+    * ```
+    */
+  get translationCall(): Prisma.TranslationCallDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -912,7 +1044,12 @@ export namespace Prisma {
     AffiliateRelation: 'AffiliateRelation',
     TrackingLink: 'TrackingLink',
     TrackingLinkClick: 'TrackingLinkClick',
-    AdminAuditLog: 'AdminAuditLog'
+    AdminAuditLog: 'AdminAuditLog',
+    Report: 'Report',
+    CallSession: 'CallSession',
+    CallParticipant: 'CallParticipant',
+    Transcription: 'Transcription',
+    TranslationCall: 'TranslationCall'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -931,7 +1068,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "conversation" | "conversationMember" | "conversationShareLink" | "anonymousParticipant" | "message" | "messageTranslation" | "messageAttachment" | "messageStatus" | "reaction" | "friendRequest" | "typingIndicator" | "notification" | "community" | "communityMember" | "userStats" | "userPreference" | "conversationPreference" | "affiliateToken" | "affiliateRelation" | "trackingLink" | "trackingLinkClick" | "adminAuditLog"
+      modelProps: "user" | "conversation" | "conversationMember" | "conversationShareLink" | "anonymousParticipant" | "message" | "messageTranslation" | "messageAttachment" | "messageStatus" | "reaction" | "friendRequest" | "typingIndicator" | "notification" | "community" | "communityMember" | "userStats" | "userPreference" | "conversationPreference" | "affiliateToken" | "affiliateRelation" | "trackingLink" | "trackingLinkClick" | "adminAuditLog" | "report" | "callSession" | "callParticipant" | "transcription" | "translationCall"
       txIsolationLevel: never
     }
     model: {
@@ -2637,6 +2774,376 @@ export namespace Prisma {
           }
         }
       }
+      Report: {
+        payload: Prisma.$ReportPayload<ExtArgs>
+        fields: Prisma.ReportFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ReportFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ReportFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload>
+          }
+          findFirst: {
+            args: Prisma.ReportFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ReportFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload>
+          }
+          findMany: {
+            args: Prisma.ReportFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload>[]
+          }
+          create: {
+            args: Prisma.ReportCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload>
+          }
+          createMany: {
+            args: Prisma.ReportCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.ReportDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload>
+          }
+          update: {
+            args: Prisma.ReportUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload>
+          }
+          deleteMany: {
+            args: Prisma.ReportDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ReportUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ReportUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportPayload>
+          }
+          aggregate: {
+            args: Prisma.ReportAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateReport>
+          }
+          groupBy: {
+            args: Prisma.ReportGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ReportGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.ReportFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.ReportAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.ReportCountArgs<ExtArgs>
+            result: $Utils.Optional<ReportCountAggregateOutputType> | number
+          }
+        }
+      }
+      CallSession: {
+        payload: Prisma.$CallSessionPayload<ExtArgs>
+        fields: Prisma.CallSessionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.CallSessionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CallSessionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.CallSessionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CallSessionPayload>
+          }
+          findFirst: {
+            args: Prisma.CallSessionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CallSessionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.CallSessionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CallSessionPayload>
+          }
+          findMany: {
+            args: Prisma.CallSessionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CallSessionPayload>[]
+          }
+          create: {
+            args: Prisma.CallSessionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CallSessionPayload>
+          }
+          createMany: {
+            args: Prisma.CallSessionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.CallSessionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CallSessionPayload>
+          }
+          update: {
+            args: Prisma.CallSessionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CallSessionPayload>
+          }
+          deleteMany: {
+            args: Prisma.CallSessionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.CallSessionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.CallSessionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CallSessionPayload>
+          }
+          aggregate: {
+            args: Prisma.CallSessionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateCallSession>
+          }
+          groupBy: {
+            args: Prisma.CallSessionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<CallSessionGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.CallSessionFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.CallSessionAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.CallSessionCountArgs<ExtArgs>
+            result: $Utils.Optional<CallSessionCountAggregateOutputType> | number
+          }
+        }
+      }
+      CallParticipant: {
+        payload: Prisma.$CallParticipantPayload<ExtArgs>
+        fields: Prisma.CallParticipantFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.CallParticipantFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CallParticipantPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.CallParticipantFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CallParticipantPayload>
+          }
+          findFirst: {
+            args: Prisma.CallParticipantFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CallParticipantPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.CallParticipantFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CallParticipantPayload>
+          }
+          findMany: {
+            args: Prisma.CallParticipantFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CallParticipantPayload>[]
+          }
+          create: {
+            args: Prisma.CallParticipantCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CallParticipantPayload>
+          }
+          createMany: {
+            args: Prisma.CallParticipantCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.CallParticipantDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CallParticipantPayload>
+          }
+          update: {
+            args: Prisma.CallParticipantUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CallParticipantPayload>
+          }
+          deleteMany: {
+            args: Prisma.CallParticipantDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.CallParticipantUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.CallParticipantUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CallParticipantPayload>
+          }
+          aggregate: {
+            args: Prisma.CallParticipantAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateCallParticipant>
+          }
+          groupBy: {
+            args: Prisma.CallParticipantGroupByArgs<ExtArgs>
+            result: $Utils.Optional<CallParticipantGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.CallParticipantFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.CallParticipantAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.CallParticipantCountArgs<ExtArgs>
+            result: $Utils.Optional<CallParticipantCountAggregateOutputType> | number
+          }
+        }
+      }
+      Transcription: {
+        payload: Prisma.$TranscriptionPayload<ExtArgs>
+        fields: Prisma.TranscriptionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.TranscriptionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TranscriptionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.TranscriptionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TranscriptionPayload>
+          }
+          findFirst: {
+            args: Prisma.TranscriptionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TranscriptionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.TranscriptionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TranscriptionPayload>
+          }
+          findMany: {
+            args: Prisma.TranscriptionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TranscriptionPayload>[]
+          }
+          create: {
+            args: Prisma.TranscriptionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TranscriptionPayload>
+          }
+          createMany: {
+            args: Prisma.TranscriptionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.TranscriptionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TranscriptionPayload>
+          }
+          update: {
+            args: Prisma.TranscriptionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TranscriptionPayload>
+          }
+          deleteMany: {
+            args: Prisma.TranscriptionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.TranscriptionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.TranscriptionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TranscriptionPayload>
+          }
+          aggregate: {
+            args: Prisma.TranscriptionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateTranscription>
+          }
+          groupBy: {
+            args: Prisma.TranscriptionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<TranscriptionGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.TranscriptionFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.TranscriptionAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.TranscriptionCountArgs<ExtArgs>
+            result: $Utils.Optional<TranscriptionCountAggregateOutputType> | number
+          }
+        }
+      }
+      TranslationCall: {
+        payload: Prisma.$TranslationCallPayload<ExtArgs>
+        fields: Prisma.TranslationCallFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.TranslationCallFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TranslationCallPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.TranslationCallFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TranslationCallPayload>
+          }
+          findFirst: {
+            args: Prisma.TranslationCallFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TranslationCallPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.TranslationCallFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TranslationCallPayload>
+          }
+          findMany: {
+            args: Prisma.TranslationCallFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TranslationCallPayload>[]
+          }
+          create: {
+            args: Prisma.TranslationCallCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TranslationCallPayload>
+          }
+          createMany: {
+            args: Prisma.TranslationCallCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.TranslationCallDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TranslationCallPayload>
+          }
+          update: {
+            args: Prisma.TranslationCallUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TranslationCallPayload>
+          }
+          deleteMany: {
+            args: Prisma.TranslationCallDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.TranslationCallUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.TranslationCallUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TranslationCallPayload>
+          }
+          aggregate: {
+            args: Prisma.TranslationCallAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateTranslationCall>
+          }
+          groupBy: {
+            args: Prisma.TranslationCallGroupByArgs<ExtArgs>
+            result: $Utils.Optional<TranslationCallGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.TranslationCallFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.TranslationCallAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.TranslationCallCountArgs<ExtArgs>
+            result: $Utils.Optional<TranslationCallCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2739,6 +3246,11 @@ export namespace Prisma {
     trackingLink?: TrackingLinkOmit
     trackingLinkClick?: TrackingLinkClickOmit
     adminAuditLog?: AdminAuditLogOmit
+    report?: ReportOmit
+    callSession?: CallSessionOmit
+    callParticipant?: CallParticipantOmit
+    transcription?: TranscriptionOmit
+    translationCall?: TranslationCallOmit
   }
 
   /* Types for Logging */
@@ -2856,6 +3368,8 @@ export namespace Prisma {
     referredRelations: number
     createdTrackingLinks: number
     trackingLinkClicks: number
+    initiatedCalls: number
+    callParticipations: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2877,6 +3391,8 @@ export namespace Prisma {
     referredRelations?: boolean | UserCountOutputTypeCountReferredRelationsArgs
     createdTrackingLinks?: boolean | UserCountOutputTypeCountCreatedTrackingLinksArgs
     trackingLinkClicks?: boolean | UserCountOutputTypeCountTrackingLinkClicksArgs
+    initiatedCalls?: boolean | UserCountOutputTypeCountInitiatedCallsArgs
+    callParticipations?: boolean | UserCountOutputTypeCountCallParticipationsArgs
   }
 
   // Custom InputTypes
@@ -3016,6 +3532,20 @@ export namespace Prisma {
     where?: TrackingLinkClickWhereInput
   }
 
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountInitiatedCallsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CallSessionWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountCallParticipationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CallParticipantWhereInput
+  }
+
 
   /**
    * Count Type ConversationCountOutputType
@@ -3028,6 +3558,7 @@ export namespace Prisma {
     shareLinks: number
     messages: number
     typingIndicators: number
+    callSessions: number
   }
 
   export type ConversationCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3037,6 +3568,7 @@ export namespace Prisma {
     shareLinks?: boolean | ConversationCountOutputTypeCountShareLinksArgs
     messages?: boolean | ConversationCountOutputTypeCountMessagesArgs
     typingIndicators?: boolean | ConversationCountOutputTypeCountTypingIndicatorsArgs
+    callSessions?: boolean | ConversationCountOutputTypeCountCallSessionsArgs
   }
 
   // Custom InputTypes
@@ -3090,6 +3622,13 @@ export namespace Prisma {
    */
   export type ConversationCountOutputTypeCountTypingIndicatorsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TypingIndicatorWhereInput
+  }
+
+  /**
+   * ConversationCountOutputType without action
+   */
+  export type ConversationCountOutputTypeCountCallSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CallSessionWhereInput
   }
 
 
@@ -3348,6 +3887,77 @@ export namespace Prisma {
    */
   export type TrackingLinkCountOutputTypeCountClicksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TrackingLinkClickWhereInput
+  }
+
+
+  /**
+   * Count Type CallSessionCountOutputType
+   */
+
+  export type CallSessionCountOutputType = {
+    participants: number
+    transcriptions: number
+  }
+
+  export type CallSessionCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    participants?: boolean | CallSessionCountOutputTypeCountParticipantsArgs
+    transcriptions?: boolean | CallSessionCountOutputTypeCountTranscriptionsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * CallSessionCountOutputType without action
+   */
+  export type CallSessionCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CallSessionCountOutputType
+     */
+    select?: CallSessionCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * CallSessionCountOutputType without action
+   */
+  export type CallSessionCountOutputTypeCountParticipantsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CallParticipantWhereInput
+  }
+
+  /**
+   * CallSessionCountOutputType without action
+   */
+  export type CallSessionCountOutputTypeCountTranscriptionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TranscriptionWhereInput
+  }
+
+
+  /**
+   * Count Type TranscriptionCountOutputType
+   */
+
+  export type TranscriptionCountOutputType = {
+    translations: number
+  }
+
+  export type TranscriptionCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    translations?: boolean | TranscriptionCountOutputTypeCountTranslationsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * TranscriptionCountOutputType without action
+   */
+  export type TranscriptionCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TranscriptionCountOutputType
+     */
+    select?: TranscriptionCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * TranscriptionCountOutputType without action
+   */
+  export type TranscriptionCountOutputTypeCountTranslationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TranslationCallWhereInput
   }
 
 
@@ -3734,17 +4344,17 @@ export namespace Prisma {
     role: string
     isActive: boolean
     deactivatedAt: Date | null
-    emailVerified: boolean
+    emailVerified: boolean | null
     emailVerifiedAt: Date | null
-    phoneVerified: boolean
+    phoneVerified: boolean | null
     phoneVerifiedAt: Date | null
-    twoFactorEnabled: boolean
-    failedLoginAttempts: number
+    twoFactorEnabled: boolean | null
+    failedLoginAttempts: number | null
     lockedUntil: Date | null
-    lastPasswordChange: Date
+    lastPasswordChange: Date | null
     deletedAt: Date | null
     deletedBy: string | null
-    profileCompletionRate: number
+    profileCompletionRate: number | null
     createdAt: Date
     updatedAt: Date
     _count: UserCountAggregateOutputType | null
@@ -3824,6 +4434,8 @@ export namespace Prisma {
     referredRelations?: boolean | User$referredRelationsArgs<ExtArgs>
     createdTrackingLinks?: boolean | User$createdTrackingLinksArgs<ExtArgs>
     trackingLinkClicks?: boolean | User$trackingLinkClicksArgs<ExtArgs>
+    initiatedCalls?: boolean | User$initiatedCallsArgs<ExtArgs>
+    callParticipations?: boolean | User$callParticipationsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -3889,6 +4501,8 @@ export namespace Prisma {
     referredRelations?: boolean | User$referredRelationsArgs<ExtArgs>
     createdTrackingLinks?: boolean | User$createdTrackingLinksArgs<ExtArgs>
     trackingLinkClicks?: boolean | User$trackingLinkClicksArgs<ExtArgs>
+    initiatedCalls?: boolean | User$initiatedCallsArgs<ExtArgs>
+    callParticipations?: boolean | User$callParticipationsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -3914,6 +4528,8 @@ export namespace Prisma {
       referredRelations: Prisma.$AffiliateRelationPayload<ExtArgs>[]
       createdTrackingLinks: Prisma.$TrackingLinkPayload<ExtArgs>[]
       trackingLinkClicks: Prisma.$TrackingLinkClickPayload<ExtArgs>[]
+      initiatedCalls: Prisma.$CallSessionPayload<ExtArgs>[]
+      callParticipations: Prisma.$CallParticipantPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -3942,17 +4558,17 @@ export namespace Prisma {
       role: string
       isActive: boolean
       deactivatedAt: Date | null
-      emailVerified: boolean
+      emailVerified: boolean | null
       emailVerifiedAt: Date | null
-      phoneVerified: boolean
+      phoneVerified: boolean | null
       phoneVerifiedAt: Date | null
-      twoFactorEnabled: boolean
-      failedLoginAttempts: number
+      twoFactorEnabled: boolean | null
+      failedLoginAttempts: number | null
       lockedUntil: Date | null
-      lastPasswordChange: Date
+      lastPasswordChange: Date | null
       deletedAt: Date | null
       deletedBy: string | null
-      profileCompletionRate: number
+      profileCompletionRate: number | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["user"]>
@@ -4337,6 +4953,8 @@ export namespace Prisma {
     referredRelations<T extends User$referredRelationsArgs<ExtArgs> = {}>(args?: Subset<T, User$referredRelationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     createdTrackingLinks<T extends User$createdTrackingLinksArgs<ExtArgs> = {}>(args?: Subset<T, User$createdTrackingLinksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TrackingLinkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     trackingLinkClicks<T extends User$trackingLinkClicksArgs<ExtArgs> = {}>(args?: Subset<T, User$trackingLinkClicksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TrackingLinkClickPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    initiatedCalls<T extends User$initiatedCallsArgs<ExtArgs> = {}>(args?: Subset<T, User$initiatedCallsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CallSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    callParticipations<T extends User$callParticipationsArgs<ExtArgs> = {}>(args?: Subset<T, User$callParticipationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CallParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5223,6 +5841,54 @@ export namespace Prisma {
   }
 
   /**
+   * User.initiatedCalls
+   */
+  export type User$initiatedCallsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CallSession
+     */
+    select?: CallSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CallSession
+     */
+    omit?: CallSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CallSessionInclude<ExtArgs> | null
+    where?: CallSessionWhereInput
+    orderBy?: CallSessionOrderByWithRelationInput | CallSessionOrderByWithRelationInput[]
+    cursor?: CallSessionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CallSessionScalarFieldEnum | CallSessionScalarFieldEnum[]
+  }
+
+  /**
+   * User.callParticipations
+   */
+  export type User$callParticipationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CallParticipant
+     */
+    select?: CallParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CallParticipant
+     */
+    omit?: CallParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CallParticipantInclude<ExtArgs> | null
+    where?: CallParticipantWhereInput
+    orderBy?: CallParticipantOrderByWithRelationInput | CallParticipantOrderByWithRelationInput[]
+    cursor?: CallParticipantWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CallParticipantScalarFieldEnum | CallParticipantScalarFieldEnum[]
+  }
+
+  /**
    * User without action
    */
   export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5476,6 +6142,7 @@ export namespace Prisma {
     community?: boolean | Conversation$communityArgs<ExtArgs>
     messages?: boolean | Conversation$messagesArgs<ExtArgs>
     typingIndicators?: boolean | Conversation$typingIndicatorsArgs<ExtArgs>
+    callSessions?: boolean | Conversation$callSessionsArgs<ExtArgs>
     _count?: boolean | ConversationCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["conversation"]>
 
@@ -5506,6 +6173,7 @@ export namespace Prisma {
     community?: boolean | Conversation$communityArgs<ExtArgs>
     messages?: boolean | Conversation$messagesArgs<ExtArgs>
     typingIndicators?: boolean | Conversation$typingIndicatorsArgs<ExtArgs>
+    callSessions?: boolean | Conversation$callSessionsArgs<ExtArgs>
     _count?: boolean | ConversationCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -5519,6 +6187,7 @@ export namespace Prisma {
       community: Prisma.$CommunityPayload<ExtArgs> | null
       messages: Prisma.$MessagePayload<ExtArgs>[]
       typingIndicators: Prisma.$TypingIndicatorPayload<ExtArgs>[]
+      callSessions: Prisma.$CallSessionPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -5910,6 +6579,7 @@ export namespace Prisma {
     community<T extends Conversation$communityArgs<ExtArgs> = {}>(args?: Subset<T, Conversation$communityArgs<ExtArgs>>): Prisma__CommunityClient<$Result.GetResult<Prisma.$CommunityPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     messages<T extends Conversation$messagesArgs<ExtArgs> = {}>(args?: Subset<T, Conversation$messagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     typingIndicators<T extends Conversation$typingIndicatorsArgs<ExtArgs> = {}>(args?: Subset<T, Conversation$typingIndicatorsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TypingIndicatorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    callSessions<T extends Conversation$callSessionsArgs<ExtArgs> = {}>(args?: Subset<T, Conversation$callSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CallSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6482,6 +7152,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: TypingIndicatorScalarFieldEnum | TypingIndicatorScalarFieldEnum[]
+  }
+
+  /**
+   * Conversation.callSessions
+   */
+  export type Conversation$callSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CallSession
+     */
+    select?: CallSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CallSession
+     */
+    omit?: CallSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CallSessionInclude<ExtArgs> | null
+    where?: CallSessionWhereInput
+    orderBy?: CallSessionOrderByWithRelationInput | CallSessionOrderByWithRelationInput[]
+    cursor?: CallSessionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CallSessionScalarFieldEnum | CallSessionScalarFieldEnum[]
   }
 
   /**
@@ -12527,6 +13221,9 @@ export namespace Prisma {
     width: number | null
     height: number | null
     duration: number | null
+    bitrate: number | null
+    sampleRate: number | null
+    channels: number | null
   }
 
   export type MessageAttachmentSumAggregateOutputType = {
@@ -12534,6 +13231,9 @@ export namespace Prisma {
     width: number | null
     height: number | null
     duration: number | null
+    bitrate: number | null
+    sampleRate: number | null
+    channels: number | null
   }
 
   export type MessageAttachmentMinAggregateOutputType = {
@@ -12550,6 +13250,10 @@ export namespace Prisma {
     thumbnailPath: string | null
     thumbnailUrl: string | null
     duration: number | null
+    bitrate: number | null
+    sampleRate: number | null
+    codec: string | null
+    channels: number | null
     uploadedBy: string | null
     isAnonymous: boolean | null
     createdAt: Date | null
@@ -12569,6 +13273,10 @@ export namespace Prisma {
     thumbnailPath: string | null
     thumbnailUrl: string | null
     duration: number | null
+    bitrate: number | null
+    sampleRate: number | null
+    codec: string | null
+    channels: number | null
     uploadedBy: string | null
     isAnonymous: boolean | null
     createdAt: Date | null
@@ -12588,6 +13296,10 @@ export namespace Prisma {
     thumbnailPath: number
     thumbnailUrl: number
     duration: number
+    bitrate: number
+    sampleRate: number
+    codec: number
+    channels: number
     uploadedBy: number
     isAnonymous: number
     createdAt: number
@@ -12600,6 +13312,9 @@ export namespace Prisma {
     width?: true
     height?: true
     duration?: true
+    bitrate?: true
+    sampleRate?: true
+    channels?: true
   }
 
   export type MessageAttachmentSumAggregateInputType = {
@@ -12607,6 +13322,9 @@ export namespace Prisma {
     width?: true
     height?: true
     duration?: true
+    bitrate?: true
+    sampleRate?: true
+    channels?: true
   }
 
   export type MessageAttachmentMinAggregateInputType = {
@@ -12623,6 +13341,10 @@ export namespace Prisma {
     thumbnailPath?: true
     thumbnailUrl?: true
     duration?: true
+    bitrate?: true
+    sampleRate?: true
+    codec?: true
+    channels?: true
     uploadedBy?: true
     isAnonymous?: true
     createdAt?: true
@@ -12642,6 +13364,10 @@ export namespace Prisma {
     thumbnailPath?: true
     thumbnailUrl?: true
     duration?: true
+    bitrate?: true
+    sampleRate?: true
+    codec?: true
+    channels?: true
     uploadedBy?: true
     isAnonymous?: true
     createdAt?: true
@@ -12661,6 +13387,10 @@ export namespace Prisma {
     thumbnailPath?: true
     thumbnailUrl?: true
     duration?: true
+    bitrate?: true
+    sampleRate?: true
+    codec?: true
+    channels?: true
     uploadedBy?: true
     isAnonymous?: true
     createdAt?: true
@@ -12767,6 +13497,10 @@ export namespace Prisma {
     thumbnailPath: string | null
     thumbnailUrl: string | null
     duration: number | null
+    bitrate: number | null
+    sampleRate: number | null
+    codec: string | null
+    channels: number | null
     uploadedBy: string
     isAnonymous: boolean
     createdAt: Date
@@ -12805,6 +13539,10 @@ export namespace Prisma {
     thumbnailPath?: boolean
     thumbnailUrl?: boolean
     duration?: boolean
+    bitrate?: boolean
+    sampleRate?: boolean
+    codec?: boolean
+    channels?: boolean
     uploadedBy?: boolean
     isAnonymous?: boolean
     createdAt?: boolean
@@ -12827,12 +13565,16 @@ export namespace Prisma {
     thumbnailPath?: boolean
     thumbnailUrl?: boolean
     duration?: boolean
+    bitrate?: boolean
+    sampleRate?: boolean
+    codec?: boolean
+    channels?: boolean
     uploadedBy?: boolean
     isAnonymous?: boolean
     createdAt?: boolean
   }
 
-  export type MessageAttachmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "messageId" | "fileName" | "originalName" | "mimeType" | "fileSize" | "filePath" | "fileUrl" | "width" | "height" | "thumbnailPath" | "thumbnailUrl" | "duration" | "uploadedBy" | "isAnonymous" | "createdAt", ExtArgs["result"]["messageAttachment"]>
+  export type MessageAttachmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "messageId" | "fileName" | "originalName" | "mimeType" | "fileSize" | "filePath" | "fileUrl" | "width" | "height" | "thumbnailPath" | "thumbnailUrl" | "duration" | "bitrate" | "sampleRate" | "codec" | "channels" | "uploadedBy" | "isAnonymous" | "createdAt", ExtArgs["result"]["messageAttachment"]>
   export type MessageAttachmentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     message?: boolean | MessageDefaultArgs<ExtArgs>
   }
@@ -12856,6 +13598,10 @@ export namespace Prisma {
       thumbnailPath: string | null
       thumbnailUrl: string | null
       duration: number | null
+      bitrate: number | null
+      sampleRate: number | null
+      codec: string | null
+      channels: number | null
       uploadedBy: string
       isAnonymous: boolean
       createdAt: Date
@@ -13265,6 +14011,10 @@ export namespace Prisma {
     readonly thumbnailPath: FieldRef<"MessageAttachment", 'String'>
     readonly thumbnailUrl: FieldRef<"MessageAttachment", 'String'>
     readonly duration: FieldRef<"MessageAttachment", 'Int'>
+    readonly bitrate: FieldRef<"MessageAttachment", 'Int'>
+    readonly sampleRate: FieldRef<"MessageAttachment", 'Int'>
+    readonly codec: FieldRef<"MessageAttachment", 'String'>
+    readonly channels: FieldRef<"MessageAttachment", 'Int'>
     readonly uploadedBy: FieldRef<"MessageAttachment", 'String'>
     readonly isAnonymous: FieldRef<"MessageAttachment", 'Boolean'>
     readonly createdAt: FieldRef<"MessageAttachment", 'DateTime'>
@@ -29569,6 +30319,5470 @@ export namespace Prisma {
 
 
   /**
+   * Model Report
+   */
+
+  export type AggregateReport = {
+    _count: ReportCountAggregateOutputType | null
+    _min: ReportMinAggregateOutputType | null
+    _max: ReportMaxAggregateOutputType | null
+  }
+
+  export type ReportMinAggregateOutputType = {
+    id: string | null
+    reportedType: string | null
+    reportedEntityId: string | null
+    reporterId: string | null
+    reporterName: string | null
+    reportType: string | null
+    reason: string | null
+    status: string | null
+    moderatorId: string | null
+    moderatorNotes: string | null
+    actionTaken: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    resolvedAt: Date | null
+  }
+
+  export type ReportMaxAggregateOutputType = {
+    id: string | null
+    reportedType: string | null
+    reportedEntityId: string | null
+    reporterId: string | null
+    reporterName: string | null
+    reportType: string | null
+    reason: string | null
+    status: string | null
+    moderatorId: string | null
+    moderatorNotes: string | null
+    actionTaken: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    resolvedAt: Date | null
+  }
+
+  export type ReportCountAggregateOutputType = {
+    id: number
+    reportedType: number
+    reportedEntityId: number
+    reporterId: number
+    reporterName: number
+    reportType: number
+    reason: number
+    status: number
+    moderatorId: number
+    moderatorNotes: number
+    actionTaken: number
+    createdAt: number
+    updatedAt: number
+    resolvedAt: number
+    _all: number
+  }
+
+
+  export type ReportMinAggregateInputType = {
+    id?: true
+    reportedType?: true
+    reportedEntityId?: true
+    reporterId?: true
+    reporterName?: true
+    reportType?: true
+    reason?: true
+    status?: true
+    moderatorId?: true
+    moderatorNotes?: true
+    actionTaken?: true
+    createdAt?: true
+    updatedAt?: true
+    resolvedAt?: true
+  }
+
+  export type ReportMaxAggregateInputType = {
+    id?: true
+    reportedType?: true
+    reportedEntityId?: true
+    reporterId?: true
+    reporterName?: true
+    reportType?: true
+    reason?: true
+    status?: true
+    moderatorId?: true
+    moderatorNotes?: true
+    actionTaken?: true
+    createdAt?: true
+    updatedAt?: true
+    resolvedAt?: true
+  }
+
+  export type ReportCountAggregateInputType = {
+    id?: true
+    reportedType?: true
+    reportedEntityId?: true
+    reporterId?: true
+    reporterName?: true
+    reportType?: true
+    reason?: true
+    status?: true
+    moderatorId?: true
+    moderatorNotes?: true
+    actionTaken?: true
+    createdAt?: true
+    updatedAt?: true
+    resolvedAt?: true
+    _all?: true
+  }
+
+  export type ReportAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Report to aggregate.
+     */
+    where?: ReportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Reports to fetch.
+     */
+    orderBy?: ReportOrderByWithRelationInput | ReportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ReportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Reports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Reports.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Reports
+    **/
+    _count?: true | ReportCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ReportMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ReportMaxAggregateInputType
+  }
+
+  export type GetReportAggregateType<T extends ReportAggregateArgs> = {
+        [P in keyof T & keyof AggregateReport]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateReport[P]>
+      : GetScalarType<T[P], AggregateReport[P]>
+  }
+
+
+
+
+  export type ReportGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReportWhereInput
+    orderBy?: ReportOrderByWithAggregationInput | ReportOrderByWithAggregationInput[]
+    by: ReportScalarFieldEnum[] | ReportScalarFieldEnum
+    having?: ReportScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ReportCountAggregateInputType | true
+    _min?: ReportMinAggregateInputType
+    _max?: ReportMaxAggregateInputType
+  }
+
+  export type ReportGroupByOutputType = {
+    id: string
+    reportedType: string
+    reportedEntityId: string
+    reporterId: string | null
+    reporterName: string | null
+    reportType: string
+    reason: string | null
+    status: string
+    moderatorId: string | null
+    moderatorNotes: string | null
+    actionTaken: string | null
+    createdAt: Date
+    updatedAt: Date
+    resolvedAt: Date | null
+    _count: ReportCountAggregateOutputType | null
+    _min: ReportMinAggregateOutputType | null
+    _max: ReportMaxAggregateOutputType | null
+  }
+
+  type GetReportGroupByPayload<T extends ReportGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ReportGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ReportGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ReportGroupByOutputType[P]>
+            : GetScalarType<T[P], ReportGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ReportSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    reportedType?: boolean
+    reportedEntityId?: boolean
+    reporterId?: boolean
+    reporterName?: boolean
+    reportType?: boolean
+    reason?: boolean
+    status?: boolean
+    moderatorId?: boolean
+    moderatorNotes?: boolean
+    actionTaken?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    resolvedAt?: boolean
+  }, ExtArgs["result"]["report"]>
+
+
+
+  export type ReportSelectScalar = {
+    id?: boolean
+    reportedType?: boolean
+    reportedEntityId?: boolean
+    reporterId?: boolean
+    reporterName?: boolean
+    reportType?: boolean
+    reason?: boolean
+    status?: boolean
+    moderatorId?: boolean
+    moderatorNotes?: boolean
+    actionTaken?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    resolvedAt?: boolean
+  }
+
+  export type ReportOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "reportedType" | "reportedEntityId" | "reporterId" | "reporterName" | "reportType" | "reason" | "status" | "moderatorId" | "moderatorNotes" | "actionTaken" | "createdAt" | "updatedAt" | "resolvedAt", ExtArgs["result"]["report"]>
+
+  export type $ReportPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Report"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      /**
+       * Type de contenu signalé: message, user, conversation, community
+       */
+      reportedType: string
+      /**
+       * ID de l'entité signalée
+       */
+      reportedEntityId: string
+      /**
+       * ID de l'utilisateur qui signale (null si anonyme)
+       */
+      reporterId: string | null
+      /**
+       * Nom de l'utilisateur anonyme qui signale
+       */
+      reporterName: string | null
+      /**
+       * Type de signalement: spam, inappropriate, harassment, violence, hate_speech, other
+       */
+      reportType: string
+      /**
+       * Raison détaillée du signalement
+       */
+      reason: string | null
+      /**
+       * Statut: pending, under_review, resolved, rejected, dismissed
+       */
+      status: string
+      /**
+       * ID du modérateur qui traite le signalement
+       */
+      moderatorId: string | null
+      /**
+       * Notes du modérateur
+       */
+      moderatorNotes: string | null
+      /**
+       * Action prise: none, warning_sent, content_removed, user_suspended, user_banned
+       */
+      actionTaken: string | null
+      /**
+       * Date de création du signalement
+       */
+      createdAt: Date
+      /**
+       * Date de mise à jour
+       */
+      updatedAt: Date
+      /**
+       * Date de résolution
+       */
+      resolvedAt: Date | null
+    }, ExtArgs["result"]["report"]>
+    composites: {}
+  }
+
+  type ReportGetPayload<S extends boolean | null | undefined | ReportDefaultArgs> = $Result.GetResult<Prisma.$ReportPayload, S>
+
+  type ReportCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ReportFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ReportCountAggregateInputType | true
+    }
+
+  export interface ReportDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Report'], meta: { name: 'Report' } }
+    /**
+     * Find zero or one Report that matches the filter.
+     * @param {ReportFindUniqueArgs} args - Arguments to find a Report
+     * @example
+     * // Get one Report
+     * const report = await prisma.report.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ReportFindUniqueArgs>(args: SelectSubset<T, ReportFindUniqueArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Report that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ReportFindUniqueOrThrowArgs} args - Arguments to find a Report
+     * @example
+     * // Get one Report
+     * const report = await prisma.report.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ReportFindUniqueOrThrowArgs>(args: SelectSubset<T, ReportFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Report that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportFindFirstArgs} args - Arguments to find a Report
+     * @example
+     * // Get one Report
+     * const report = await prisma.report.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ReportFindFirstArgs>(args?: SelectSubset<T, ReportFindFirstArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Report that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportFindFirstOrThrowArgs} args - Arguments to find a Report
+     * @example
+     * // Get one Report
+     * const report = await prisma.report.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ReportFindFirstOrThrowArgs>(args?: SelectSubset<T, ReportFindFirstOrThrowArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Reports that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Reports
+     * const reports = await prisma.report.findMany()
+     * 
+     * // Get first 10 Reports
+     * const reports = await prisma.report.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const reportWithIdOnly = await prisma.report.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ReportFindManyArgs>(args?: SelectSubset<T, ReportFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Report.
+     * @param {ReportCreateArgs} args - Arguments to create a Report.
+     * @example
+     * // Create one Report
+     * const Report = await prisma.report.create({
+     *   data: {
+     *     // ... data to create a Report
+     *   }
+     * })
+     * 
+     */
+    create<T extends ReportCreateArgs>(args: SelectSubset<T, ReportCreateArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Reports.
+     * @param {ReportCreateManyArgs} args - Arguments to create many Reports.
+     * @example
+     * // Create many Reports
+     * const report = await prisma.report.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ReportCreateManyArgs>(args?: SelectSubset<T, ReportCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a Report.
+     * @param {ReportDeleteArgs} args - Arguments to delete one Report.
+     * @example
+     * // Delete one Report
+     * const Report = await prisma.report.delete({
+     *   where: {
+     *     // ... filter to delete one Report
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ReportDeleteArgs>(args: SelectSubset<T, ReportDeleteArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Report.
+     * @param {ReportUpdateArgs} args - Arguments to update one Report.
+     * @example
+     * // Update one Report
+     * const report = await prisma.report.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ReportUpdateArgs>(args: SelectSubset<T, ReportUpdateArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Reports.
+     * @param {ReportDeleteManyArgs} args - Arguments to filter Reports to delete.
+     * @example
+     * // Delete a few Reports
+     * const { count } = await prisma.report.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ReportDeleteManyArgs>(args?: SelectSubset<T, ReportDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Reports.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Reports
+     * const report = await prisma.report.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ReportUpdateManyArgs>(args: SelectSubset<T, ReportUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Report.
+     * @param {ReportUpsertArgs} args - Arguments to update or create a Report.
+     * @example
+     * // Update or create a Report
+     * const report = await prisma.report.upsert({
+     *   create: {
+     *     // ... data to create a Report
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Report we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ReportUpsertArgs>(args: SelectSubset<T, ReportUpsertArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Reports that matches the filter.
+     * @param {ReportFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const report = await prisma.report.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: ReportFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a Report.
+     * @param {ReportAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const report = await prisma.report.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: ReportAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of Reports.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportCountArgs} args - Arguments to filter Reports to count.
+     * @example
+     * // Count the number of Reports
+     * const count = await prisma.report.count({
+     *   where: {
+     *     // ... the filter for the Reports we want to count
+     *   }
+     * })
+    **/
+    count<T extends ReportCountArgs>(
+      args?: Subset<T, ReportCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ReportCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Report.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ReportAggregateArgs>(args: Subset<T, ReportAggregateArgs>): Prisma.PrismaPromise<GetReportAggregateType<T>>
+
+    /**
+     * Group by Report.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReportGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ReportGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ReportGroupByArgs['orderBy'] }
+        : { orderBy?: ReportGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ReportGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetReportGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Report model
+   */
+  readonly fields: ReportFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Report.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ReportClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Report model
+   */
+  interface ReportFieldRefs {
+    readonly id: FieldRef<"Report", 'String'>
+    readonly reportedType: FieldRef<"Report", 'String'>
+    readonly reportedEntityId: FieldRef<"Report", 'String'>
+    readonly reporterId: FieldRef<"Report", 'String'>
+    readonly reporterName: FieldRef<"Report", 'String'>
+    readonly reportType: FieldRef<"Report", 'String'>
+    readonly reason: FieldRef<"Report", 'String'>
+    readonly status: FieldRef<"Report", 'String'>
+    readonly moderatorId: FieldRef<"Report", 'String'>
+    readonly moderatorNotes: FieldRef<"Report", 'String'>
+    readonly actionTaken: FieldRef<"Report", 'String'>
+    readonly createdAt: FieldRef<"Report", 'DateTime'>
+    readonly updatedAt: FieldRef<"Report", 'DateTime'>
+    readonly resolvedAt: FieldRef<"Report", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Report findUnique
+   */
+  export type ReportFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Report
+     */
+    omit?: ReportOmit<ExtArgs> | null
+    /**
+     * Filter, which Report to fetch.
+     */
+    where: ReportWhereUniqueInput
+  }
+
+  /**
+   * Report findUniqueOrThrow
+   */
+  export type ReportFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Report
+     */
+    omit?: ReportOmit<ExtArgs> | null
+    /**
+     * Filter, which Report to fetch.
+     */
+    where: ReportWhereUniqueInput
+  }
+
+  /**
+   * Report findFirst
+   */
+  export type ReportFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Report
+     */
+    omit?: ReportOmit<ExtArgs> | null
+    /**
+     * Filter, which Report to fetch.
+     */
+    where?: ReportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Reports to fetch.
+     */
+    orderBy?: ReportOrderByWithRelationInput | ReportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Reports.
+     */
+    cursor?: ReportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Reports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Reports.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Reports.
+     */
+    distinct?: ReportScalarFieldEnum | ReportScalarFieldEnum[]
+  }
+
+  /**
+   * Report findFirstOrThrow
+   */
+  export type ReportFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Report
+     */
+    omit?: ReportOmit<ExtArgs> | null
+    /**
+     * Filter, which Report to fetch.
+     */
+    where?: ReportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Reports to fetch.
+     */
+    orderBy?: ReportOrderByWithRelationInput | ReportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Reports.
+     */
+    cursor?: ReportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Reports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Reports.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Reports.
+     */
+    distinct?: ReportScalarFieldEnum | ReportScalarFieldEnum[]
+  }
+
+  /**
+   * Report findMany
+   */
+  export type ReportFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Report
+     */
+    omit?: ReportOmit<ExtArgs> | null
+    /**
+     * Filter, which Reports to fetch.
+     */
+    where?: ReportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Reports to fetch.
+     */
+    orderBy?: ReportOrderByWithRelationInput | ReportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Reports.
+     */
+    cursor?: ReportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Reports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Reports.
+     */
+    skip?: number
+    distinct?: ReportScalarFieldEnum | ReportScalarFieldEnum[]
+  }
+
+  /**
+   * Report create
+   */
+  export type ReportCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Report
+     */
+    omit?: ReportOmit<ExtArgs> | null
+    /**
+     * The data needed to create a Report.
+     */
+    data: XOR<ReportCreateInput, ReportUncheckedCreateInput>
+  }
+
+  /**
+   * Report createMany
+   */
+  export type ReportCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Reports.
+     */
+    data: ReportCreateManyInput | ReportCreateManyInput[]
+  }
+
+  /**
+   * Report update
+   */
+  export type ReportUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Report
+     */
+    omit?: ReportOmit<ExtArgs> | null
+    /**
+     * The data needed to update a Report.
+     */
+    data: XOR<ReportUpdateInput, ReportUncheckedUpdateInput>
+    /**
+     * Choose, which Report to update.
+     */
+    where: ReportWhereUniqueInput
+  }
+
+  /**
+   * Report updateMany
+   */
+  export type ReportUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Reports.
+     */
+    data: XOR<ReportUpdateManyMutationInput, ReportUncheckedUpdateManyInput>
+    /**
+     * Filter which Reports to update
+     */
+    where?: ReportWhereInput
+    /**
+     * Limit how many Reports to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Report upsert
+   */
+  export type ReportUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Report
+     */
+    omit?: ReportOmit<ExtArgs> | null
+    /**
+     * The filter to search for the Report to update in case it exists.
+     */
+    where: ReportWhereUniqueInput
+    /**
+     * In case the Report found by the `where` argument doesn't exist, create a new Report with this data.
+     */
+    create: XOR<ReportCreateInput, ReportUncheckedCreateInput>
+    /**
+     * In case the Report was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ReportUpdateInput, ReportUncheckedUpdateInput>
+  }
+
+  /**
+   * Report delete
+   */
+  export type ReportDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Report
+     */
+    omit?: ReportOmit<ExtArgs> | null
+    /**
+     * Filter which Report to delete.
+     */
+    where: ReportWhereUniqueInput
+  }
+
+  /**
+   * Report deleteMany
+   */
+  export type ReportDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Reports to delete
+     */
+    where?: ReportWhereInput
+    /**
+     * Limit how many Reports to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Report findRaw
+   */
+  export type ReportFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * Report aggregateRaw
+   */
+  export type ReportAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * Report without action
+   */
+  export type ReportDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Report
+     */
+    select?: ReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Report
+     */
+    omit?: ReportOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model CallSession
+   */
+
+  export type AggregateCallSession = {
+    _count: CallSessionCountAggregateOutputType | null
+    _avg: CallSessionAvgAggregateOutputType | null
+    _sum: CallSessionSumAggregateOutputType | null
+    _min: CallSessionMinAggregateOutputType | null
+    _max: CallSessionMaxAggregateOutputType | null
+  }
+
+  export type CallSessionAvgAggregateOutputType = {
+    duration: number | null
+  }
+
+  export type CallSessionSumAggregateOutputType = {
+    duration: number | null
+  }
+
+  export type CallSessionMinAggregateOutputType = {
+    id: string | null
+    conversationId: string | null
+    mode: $Enums.CallMode | null
+    status: $Enums.CallStatus | null
+    initiatorId: string | null
+    startedAt: Date | null
+    answeredAt: Date | null
+    endedAt: Date | null
+    duration: number | null
+  }
+
+  export type CallSessionMaxAggregateOutputType = {
+    id: string | null
+    conversationId: string | null
+    mode: $Enums.CallMode | null
+    status: $Enums.CallStatus | null
+    initiatorId: string | null
+    startedAt: Date | null
+    answeredAt: Date | null
+    endedAt: Date | null
+    duration: number | null
+  }
+
+  export type CallSessionCountAggregateOutputType = {
+    id: number
+    conversationId: number
+    mode: number
+    status: number
+    initiatorId: number
+    startedAt: number
+    answeredAt: number
+    endedAt: number
+    duration: number
+    metadata: number
+    _all: number
+  }
+
+
+  export type CallSessionAvgAggregateInputType = {
+    duration?: true
+  }
+
+  export type CallSessionSumAggregateInputType = {
+    duration?: true
+  }
+
+  export type CallSessionMinAggregateInputType = {
+    id?: true
+    conversationId?: true
+    mode?: true
+    status?: true
+    initiatorId?: true
+    startedAt?: true
+    answeredAt?: true
+    endedAt?: true
+    duration?: true
+  }
+
+  export type CallSessionMaxAggregateInputType = {
+    id?: true
+    conversationId?: true
+    mode?: true
+    status?: true
+    initiatorId?: true
+    startedAt?: true
+    answeredAt?: true
+    endedAt?: true
+    duration?: true
+  }
+
+  export type CallSessionCountAggregateInputType = {
+    id?: true
+    conversationId?: true
+    mode?: true
+    status?: true
+    initiatorId?: true
+    startedAt?: true
+    answeredAt?: true
+    endedAt?: true
+    duration?: true
+    metadata?: true
+    _all?: true
+  }
+
+  export type CallSessionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CallSession to aggregate.
+     */
+    where?: CallSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CallSessions to fetch.
+     */
+    orderBy?: CallSessionOrderByWithRelationInput | CallSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: CallSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CallSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CallSessions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned CallSessions
+    **/
+    _count?: true | CallSessionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: CallSessionAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: CallSessionSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: CallSessionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: CallSessionMaxAggregateInputType
+  }
+
+  export type GetCallSessionAggregateType<T extends CallSessionAggregateArgs> = {
+        [P in keyof T & keyof AggregateCallSession]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateCallSession[P]>
+      : GetScalarType<T[P], AggregateCallSession[P]>
+  }
+
+
+
+
+  export type CallSessionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CallSessionWhereInput
+    orderBy?: CallSessionOrderByWithAggregationInput | CallSessionOrderByWithAggregationInput[]
+    by: CallSessionScalarFieldEnum[] | CallSessionScalarFieldEnum
+    having?: CallSessionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: CallSessionCountAggregateInputType | true
+    _avg?: CallSessionAvgAggregateInputType
+    _sum?: CallSessionSumAggregateInputType
+    _min?: CallSessionMinAggregateInputType
+    _max?: CallSessionMaxAggregateInputType
+  }
+
+  export type CallSessionGroupByOutputType = {
+    id: string
+    conversationId: string
+    mode: $Enums.CallMode
+    status: $Enums.CallStatus
+    initiatorId: string
+    startedAt: Date
+    answeredAt: Date | null
+    endedAt: Date | null
+    duration: number | null
+    metadata: JsonValue | null
+    _count: CallSessionCountAggregateOutputType | null
+    _avg: CallSessionAvgAggregateOutputType | null
+    _sum: CallSessionSumAggregateOutputType | null
+    _min: CallSessionMinAggregateOutputType | null
+    _max: CallSessionMaxAggregateOutputType | null
+  }
+
+  type GetCallSessionGroupByPayload<T extends CallSessionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<CallSessionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof CallSessionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], CallSessionGroupByOutputType[P]>
+            : GetScalarType<T[P], CallSessionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type CallSessionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    conversationId?: boolean
+    mode?: boolean
+    status?: boolean
+    initiatorId?: boolean
+    startedAt?: boolean
+    answeredAt?: boolean
+    endedAt?: boolean
+    duration?: boolean
+    metadata?: boolean
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
+    initiator?: boolean | UserDefaultArgs<ExtArgs>
+    participants?: boolean | CallSession$participantsArgs<ExtArgs>
+    transcriptions?: boolean | CallSession$transcriptionsArgs<ExtArgs>
+    _count?: boolean | CallSessionCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["callSession"]>
+
+
+
+  export type CallSessionSelectScalar = {
+    id?: boolean
+    conversationId?: boolean
+    mode?: boolean
+    status?: boolean
+    initiatorId?: boolean
+    startedAt?: boolean
+    answeredAt?: boolean
+    endedAt?: boolean
+    duration?: boolean
+    metadata?: boolean
+  }
+
+  export type CallSessionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "mode" | "status" | "initiatorId" | "startedAt" | "answeredAt" | "endedAt" | "duration" | "metadata", ExtArgs["result"]["callSession"]>
+  export type CallSessionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
+    initiator?: boolean | UserDefaultArgs<ExtArgs>
+    participants?: boolean | CallSession$participantsArgs<ExtArgs>
+    transcriptions?: boolean | CallSession$transcriptionsArgs<ExtArgs>
+    _count?: boolean | CallSessionCountOutputTypeDefaultArgs<ExtArgs>
+  }
+
+  export type $CallSessionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "CallSession"
+    objects: {
+      conversation: Prisma.$ConversationPayload<ExtArgs>
+      initiator: Prisma.$UserPayload<ExtArgs>
+      /**
+       * Participants in this call
+       */
+      participants: Prisma.$CallParticipantPayload<ExtArgs>[]
+      /**
+       * Transcriptions (Phase 2A/2B)
+       */
+      transcriptions: Prisma.$TranscriptionPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      conversationId: string
+      /**
+       * Call mode: 'p2p' for 2 participants, 'sfu' for 3+
+       */
+      mode: $Enums.CallMode
+      /**
+       * Call status: 'initiated', 'ringing', 'active', 'ended'
+       */
+      status: $Enums.CallStatus
+      /**
+       * User who initiated the call
+       */
+      initiatorId: string
+      /**
+       * Timestamps
+       */
+      startedAt: Date
+      answeredAt: Date | null
+      endedAt: Date | null
+      duration: number | null
+      /**
+       * Call metadata
+       */
+      metadata: Prisma.JsonValue | null
+    }, ExtArgs["result"]["callSession"]>
+    composites: {}
+  }
+
+  type CallSessionGetPayload<S extends boolean | null | undefined | CallSessionDefaultArgs> = $Result.GetResult<Prisma.$CallSessionPayload, S>
+
+  type CallSessionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<CallSessionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: CallSessionCountAggregateInputType | true
+    }
+
+  export interface CallSessionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['CallSession'], meta: { name: 'CallSession' } }
+    /**
+     * Find zero or one CallSession that matches the filter.
+     * @param {CallSessionFindUniqueArgs} args - Arguments to find a CallSession
+     * @example
+     * // Get one CallSession
+     * const callSession = await prisma.callSession.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends CallSessionFindUniqueArgs>(args: SelectSubset<T, CallSessionFindUniqueArgs<ExtArgs>>): Prisma__CallSessionClient<$Result.GetResult<Prisma.$CallSessionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one CallSession that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {CallSessionFindUniqueOrThrowArgs} args - Arguments to find a CallSession
+     * @example
+     * // Get one CallSession
+     * const callSession = await prisma.callSession.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends CallSessionFindUniqueOrThrowArgs>(args: SelectSubset<T, CallSessionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__CallSessionClient<$Result.GetResult<Prisma.$CallSessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CallSession that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CallSessionFindFirstArgs} args - Arguments to find a CallSession
+     * @example
+     * // Get one CallSession
+     * const callSession = await prisma.callSession.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends CallSessionFindFirstArgs>(args?: SelectSubset<T, CallSessionFindFirstArgs<ExtArgs>>): Prisma__CallSessionClient<$Result.GetResult<Prisma.$CallSessionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CallSession that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CallSessionFindFirstOrThrowArgs} args - Arguments to find a CallSession
+     * @example
+     * // Get one CallSession
+     * const callSession = await prisma.callSession.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends CallSessionFindFirstOrThrowArgs>(args?: SelectSubset<T, CallSessionFindFirstOrThrowArgs<ExtArgs>>): Prisma__CallSessionClient<$Result.GetResult<Prisma.$CallSessionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more CallSessions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CallSessionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all CallSessions
+     * const callSessions = await prisma.callSession.findMany()
+     * 
+     * // Get first 10 CallSessions
+     * const callSessions = await prisma.callSession.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const callSessionWithIdOnly = await prisma.callSession.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends CallSessionFindManyArgs>(args?: SelectSubset<T, CallSessionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CallSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a CallSession.
+     * @param {CallSessionCreateArgs} args - Arguments to create a CallSession.
+     * @example
+     * // Create one CallSession
+     * const CallSession = await prisma.callSession.create({
+     *   data: {
+     *     // ... data to create a CallSession
+     *   }
+     * })
+     * 
+     */
+    create<T extends CallSessionCreateArgs>(args: SelectSubset<T, CallSessionCreateArgs<ExtArgs>>): Prisma__CallSessionClient<$Result.GetResult<Prisma.$CallSessionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many CallSessions.
+     * @param {CallSessionCreateManyArgs} args - Arguments to create many CallSessions.
+     * @example
+     * // Create many CallSessions
+     * const callSession = await prisma.callSession.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends CallSessionCreateManyArgs>(args?: SelectSubset<T, CallSessionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a CallSession.
+     * @param {CallSessionDeleteArgs} args - Arguments to delete one CallSession.
+     * @example
+     * // Delete one CallSession
+     * const CallSession = await prisma.callSession.delete({
+     *   where: {
+     *     // ... filter to delete one CallSession
+     *   }
+     * })
+     * 
+     */
+    delete<T extends CallSessionDeleteArgs>(args: SelectSubset<T, CallSessionDeleteArgs<ExtArgs>>): Prisma__CallSessionClient<$Result.GetResult<Prisma.$CallSessionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one CallSession.
+     * @param {CallSessionUpdateArgs} args - Arguments to update one CallSession.
+     * @example
+     * // Update one CallSession
+     * const callSession = await prisma.callSession.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends CallSessionUpdateArgs>(args: SelectSubset<T, CallSessionUpdateArgs<ExtArgs>>): Prisma__CallSessionClient<$Result.GetResult<Prisma.$CallSessionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more CallSessions.
+     * @param {CallSessionDeleteManyArgs} args - Arguments to filter CallSessions to delete.
+     * @example
+     * // Delete a few CallSessions
+     * const { count } = await prisma.callSession.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends CallSessionDeleteManyArgs>(args?: SelectSubset<T, CallSessionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more CallSessions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CallSessionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many CallSessions
+     * const callSession = await prisma.callSession.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends CallSessionUpdateManyArgs>(args: SelectSubset<T, CallSessionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one CallSession.
+     * @param {CallSessionUpsertArgs} args - Arguments to update or create a CallSession.
+     * @example
+     * // Update or create a CallSession
+     * const callSession = await prisma.callSession.upsert({
+     *   create: {
+     *     // ... data to create a CallSession
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the CallSession we want to update
+     *   }
+     * })
+     */
+    upsert<T extends CallSessionUpsertArgs>(args: SelectSubset<T, CallSessionUpsertArgs<ExtArgs>>): Prisma__CallSessionClient<$Result.GetResult<Prisma.$CallSessionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more CallSessions that matches the filter.
+     * @param {CallSessionFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const callSession = await prisma.callSession.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: CallSessionFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a CallSession.
+     * @param {CallSessionAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const callSession = await prisma.callSession.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: CallSessionAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of CallSessions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CallSessionCountArgs} args - Arguments to filter CallSessions to count.
+     * @example
+     * // Count the number of CallSessions
+     * const count = await prisma.callSession.count({
+     *   where: {
+     *     // ... the filter for the CallSessions we want to count
+     *   }
+     * })
+    **/
+    count<T extends CallSessionCountArgs>(
+      args?: Subset<T, CallSessionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], CallSessionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a CallSession.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CallSessionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends CallSessionAggregateArgs>(args: Subset<T, CallSessionAggregateArgs>): Prisma.PrismaPromise<GetCallSessionAggregateType<T>>
+
+    /**
+     * Group by CallSession.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CallSessionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends CallSessionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: CallSessionGroupByArgs['orderBy'] }
+        : { orderBy?: CallSessionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, CallSessionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetCallSessionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the CallSession model
+   */
+  readonly fields: CallSessionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for CallSession.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__CallSessionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    conversation<T extends ConversationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ConversationDefaultArgs<ExtArgs>>): Prisma__ConversationClient<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    initiator<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    participants<T extends CallSession$participantsArgs<ExtArgs> = {}>(args?: Subset<T, CallSession$participantsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CallParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    transcriptions<T extends CallSession$transcriptionsArgs<ExtArgs> = {}>(args?: Subset<T, CallSession$transcriptionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TranscriptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the CallSession model
+   */
+  interface CallSessionFieldRefs {
+    readonly id: FieldRef<"CallSession", 'String'>
+    readonly conversationId: FieldRef<"CallSession", 'String'>
+    readonly mode: FieldRef<"CallSession", 'CallMode'>
+    readonly status: FieldRef<"CallSession", 'CallStatus'>
+    readonly initiatorId: FieldRef<"CallSession", 'String'>
+    readonly startedAt: FieldRef<"CallSession", 'DateTime'>
+    readonly answeredAt: FieldRef<"CallSession", 'DateTime'>
+    readonly endedAt: FieldRef<"CallSession", 'DateTime'>
+    readonly duration: FieldRef<"CallSession", 'Int'>
+    readonly metadata: FieldRef<"CallSession", 'Json'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * CallSession findUnique
+   */
+  export type CallSessionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CallSession
+     */
+    select?: CallSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CallSession
+     */
+    omit?: CallSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CallSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which CallSession to fetch.
+     */
+    where: CallSessionWhereUniqueInput
+  }
+
+  /**
+   * CallSession findUniqueOrThrow
+   */
+  export type CallSessionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CallSession
+     */
+    select?: CallSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CallSession
+     */
+    omit?: CallSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CallSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which CallSession to fetch.
+     */
+    where: CallSessionWhereUniqueInput
+  }
+
+  /**
+   * CallSession findFirst
+   */
+  export type CallSessionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CallSession
+     */
+    select?: CallSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CallSession
+     */
+    omit?: CallSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CallSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which CallSession to fetch.
+     */
+    where?: CallSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CallSessions to fetch.
+     */
+    orderBy?: CallSessionOrderByWithRelationInput | CallSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CallSessions.
+     */
+    cursor?: CallSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CallSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CallSessions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CallSessions.
+     */
+    distinct?: CallSessionScalarFieldEnum | CallSessionScalarFieldEnum[]
+  }
+
+  /**
+   * CallSession findFirstOrThrow
+   */
+  export type CallSessionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CallSession
+     */
+    select?: CallSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CallSession
+     */
+    omit?: CallSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CallSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which CallSession to fetch.
+     */
+    where?: CallSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CallSessions to fetch.
+     */
+    orderBy?: CallSessionOrderByWithRelationInput | CallSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CallSessions.
+     */
+    cursor?: CallSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CallSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CallSessions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CallSessions.
+     */
+    distinct?: CallSessionScalarFieldEnum | CallSessionScalarFieldEnum[]
+  }
+
+  /**
+   * CallSession findMany
+   */
+  export type CallSessionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CallSession
+     */
+    select?: CallSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CallSession
+     */
+    omit?: CallSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CallSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which CallSessions to fetch.
+     */
+    where?: CallSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CallSessions to fetch.
+     */
+    orderBy?: CallSessionOrderByWithRelationInput | CallSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing CallSessions.
+     */
+    cursor?: CallSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CallSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CallSessions.
+     */
+    skip?: number
+    distinct?: CallSessionScalarFieldEnum | CallSessionScalarFieldEnum[]
+  }
+
+  /**
+   * CallSession create
+   */
+  export type CallSessionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CallSession
+     */
+    select?: CallSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CallSession
+     */
+    omit?: CallSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CallSessionInclude<ExtArgs> | null
+    /**
+     * The data needed to create a CallSession.
+     */
+    data: XOR<CallSessionCreateInput, CallSessionUncheckedCreateInput>
+  }
+
+  /**
+   * CallSession createMany
+   */
+  export type CallSessionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many CallSessions.
+     */
+    data: CallSessionCreateManyInput | CallSessionCreateManyInput[]
+  }
+
+  /**
+   * CallSession update
+   */
+  export type CallSessionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CallSession
+     */
+    select?: CallSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CallSession
+     */
+    omit?: CallSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CallSessionInclude<ExtArgs> | null
+    /**
+     * The data needed to update a CallSession.
+     */
+    data: XOR<CallSessionUpdateInput, CallSessionUncheckedUpdateInput>
+    /**
+     * Choose, which CallSession to update.
+     */
+    where: CallSessionWhereUniqueInput
+  }
+
+  /**
+   * CallSession updateMany
+   */
+  export type CallSessionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update CallSessions.
+     */
+    data: XOR<CallSessionUpdateManyMutationInput, CallSessionUncheckedUpdateManyInput>
+    /**
+     * Filter which CallSessions to update
+     */
+    where?: CallSessionWhereInput
+    /**
+     * Limit how many CallSessions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * CallSession upsert
+   */
+  export type CallSessionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CallSession
+     */
+    select?: CallSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CallSession
+     */
+    omit?: CallSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CallSessionInclude<ExtArgs> | null
+    /**
+     * The filter to search for the CallSession to update in case it exists.
+     */
+    where: CallSessionWhereUniqueInput
+    /**
+     * In case the CallSession found by the `where` argument doesn't exist, create a new CallSession with this data.
+     */
+    create: XOR<CallSessionCreateInput, CallSessionUncheckedCreateInput>
+    /**
+     * In case the CallSession was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<CallSessionUpdateInput, CallSessionUncheckedUpdateInput>
+  }
+
+  /**
+   * CallSession delete
+   */
+  export type CallSessionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CallSession
+     */
+    select?: CallSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CallSession
+     */
+    omit?: CallSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CallSessionInclude<ExtArgs> | null
+    /**
+     * Filter which CallSession to delete.
+     */
+    where: CallSessionWhereUniqueInput
+  }
+
+  /**
+   * CallSession deleteMany
+   */
+  export type CallSessionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CallSessions to delete
+     */
+    where?: CallSessionWhereInput
+    /**
+     * Limit how many CallSessions to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * CallSession findRaw
+   */
+  export type CallSessionFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * CallSession aggregateRaw
+   */
+  export type CallSessionAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * CallSession.participants
+   */
+  export type CallSession$participantsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CallParticipant
+     */
+    select?: CallParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CallParticipant
+     */
+    omit?: CallParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CallParticipantInclude<ExtArgs> | null
+    where?: CallParticipantWhereInput
+    orderBy?: CallParticipantOrderByWithRelationInput | CallParticipantOrderByWithRelationInput[]
+    cursor?: CallParticipantWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CallParticipantScalarFieldEnum | CallParticipantScalarFieldEnum[]
+  }
+
+  /**
+   * CallSession.transcriptions
+   */
+  export type CallSession$transcriptionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Transcription
+     */
+    select?: TranscriptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Transcription
+     */
+    omit?: TranscriptionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TranscriptionInclude<ExtArgs> | null
+    where?: TranscriptionWhereInput
+    orderBy?: TranscriptionOrderByWithRelationInput | TranscriptionOrderByWithRelationInput[]
+    cursor?: TranscriptionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TranscriptionScalarFieldEnum | TranscriptionScalarFieldEnum[]
+  }
+
+  /**
+   * CallSession without action
+   */
+  export type CallSessionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CallSession
+     */
+    select?: CallSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CallSession
+     */
+    omit?: CallSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CallSessionInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model CallParticipant
+   */
+
+  export type AggregateCallParticipant = {
+    _count: CallParticipantCountAggregateOutputType | null
+    _min: CallParticipantMinAggregateOutputType | null
+    _max: CallParticipantMaxAggregateOutputType | null
+  }
+
+  export type CallParticipantMinAggregateOutputType = {
+    id: string | null
+    callSessionId: string | null
+    userId: string | null
+    anonymousId: string | null
+    role: $Enums.ParticipantRole | null
+    joinedAt: Date | null
+    leftAt: Date | null
+    isAudioEnabled: boolean | null
+    isVideoEnabled: boolean | null
+  }
+
+  export type CallParticipantMaxAggregateOutputType = {
+    id: string | null
+    callSessionId: string | null
+    userId: string | null
+    anonymousId: string | null
+    role: $Enums.ParticipantRole | null
+    joinedAt: Date | null
+    leftAt: Date | null
+    isAudioEnabled: boolean | null
+    isVideoEnabled: boolean | null
+  }
+
+  export type CallParticipantCountAggregateOutputType = {
+    id: number
+    callSessionId: number
+    userId: number
+    anonymousId: number
+    role: number
+    joinedAt: number
+    leftAt: number
+    isAudioEnabled: number
+    isVideoEnabled: number
+    connectionQuality: number
+    _all: number
+  }
+
+
+  export type CallParticipantMinAggregateInputType = {
+    id?: true
+    callSessionId?: true
+    userId?: true
+    anonymousId?: true
+    role?: true
+    joinedAt?: true
+    leftAt?: true
+    isAudioEnabled?: true
+    isVideoEnabled?: true
+  }
+
+  export type CallParticipantMaxAggregateInputType = {
+    id?: true
+    callSessionId?: true
+    userId?: true
+    anonymousId?: true
+    role?: true
+    joinedAt?: true
+    leftAt?: true
+    isAudioEnabled?: true
+    isVideoEnabled?: true
+  }
+
+  export type CallParticipantCountAggregateInputType = {
+    id?: true
+    callSessionId?: true
+    userId?: true
+    anonymousId?: true
+    role?: true
+    joinedAt?: true
+    leftAt?: true
+    isAudioEnabled?: true
+    isVideoEnabled?: true
+    connectionQuality?: true
+    _all?: true
+  }
+
+  export type CallParticipantAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CallParticipant to aggregate.
+     */
+    where?: CallParticipantWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CallParticipants to fetch.
+     */
+    orderBy?: CallParticipantOrderByWithRelationInput | CallParticipantOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: CallParticipantWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CallParticipants from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CallParticipants.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned CallParticipants
+    **/
+    _count?: true | CallParticipantCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: CallParticipantMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: CallParticipantMaxAggregateInputType
+  }
+
+  export type GetCallParticipantAggregateType<T extends CallParticipantAggregateArgs> = {
+        [P in keyof T & keyof AggregateCallParticipant]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateCallParticipant[P]>
+      : GetScalarType<T[P], AggregateCallParticipant[P]>
+  }
+
+
+
+
+  export type CallParticipantGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CallParticipantWhereInput
+    orderBy?: CallParticipantOrderByWithAggregationInput | CallParticipantOrderByWithAggregationInput[]
+    by: CallParticipantScalarFieldEnum[] | CallParticipantScalarFieldEnum
+    having?: CallParticipantScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: CallParticipantCountAggregateInputType | true
+    _min?: CallParticipantMinAggregateInputType
+    _max?: CallParticipantMaxAggregateInputType
+  }
+
+  export type CallParticipantGroupByOutputType = {
+    id: string
+    callSessionId: string
+    userId: string | null
+    anonymousId: string | null
+    role: $Enums.ParticipantRole
+    joinedAt: Date
+    leftAt: Date | null
+    isAudioEnabled: boolean
+    isVideoEnabled: boolean
+    connectionQuality: JsonValue | null
+    _count: CallParticipantCountAggregateOutputType | null
+    _min: CallParticipantMinAggregateOutputType | null
+    _max: CallParticipantMaxAggregateOutputType | null
+  }
+
+  type GetCallParticipantGroupByPayload<T extends CallParticipantGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<CallParticipantGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof CallParticipantGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], CallParticipantGroupByOutputType[P]>
+            : GetScalarType<T[P], CallParticipantGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type CallParticipantSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    callSessionId?: boolean
+    userId?: boolean
+    anonymousId?: boolean
+    role?: boolean
+    joinedAt?: boolean
+    leftAt?: boolean
+    isAudioEnabled?: boolean
+    isVideoEnabled?: boolean
+    connectionQuality?: boolean
+    callSession?: boolean | CallSessionDefaultArgs<ExtArgs>
+    user?: boolean | CallParticipant$userArgs<ExtArgs>
+  }, ExtArgs["result"]["callParticipant"]>
+
+
+
+  export type CallParticipantSelectScalar = {
+    id?: boolean
+    callSessionId?: boolean
+    userId?: boolean
+    anonymousId?: boolean
+    role?: boolean
+    joinedAt?: boolean
+    leftAt?: boolean
+    isAudioEnabled?: boolean
+    isVideoEnabled?: boolean
+    connectionQuality?: boolean
+  }
+
+  export type CallParticipantOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "callSessionId" | "userId" | "anonymousId" | "role" | "joinedAt" | "leftAt" | "isAudioEnabled" | "isVideoEnabled" | "connectionQuality", ExtArgs["result"]["callParticipant"]>
+  export type CallParticipantInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    callSession?: boolean | CallSessionDefaultArgs<ExtArgs>
+    user?: boolean | CallParticipant$userArgs<ExtArgs>
+  }
+
+  export type $CallParticipantPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "CallParticipant"
+    objects: {
+      callSession: Prisma.$CallSessionPayload<ExtArgs>
+      user: Prisma.$UserPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      callSessionId: string
+      /**
+       * Authenticated user (null for anonymous)
+       */
+      userId: string | null
+      /**
+       * Anonymous participant ID (from AnonymousParticipant model)
+       */
+      anonymousId: string | null
+      /**
+       * Participant role: 'initiator', 'participant'
+       */
+      role: $Enums.ParticipantRole
+      /**
+       * Timestamps
+       */
+      joinedAt: Date
+      leftAt: Date | null
+      /**
+       * Media state
+       */
+      isAudioEnabled: boolean
+      isVideoEnabled: boolean
+      /**
+       * Connection quality metadata
+       */
+      connectionQuality: Prisma.JsonValue | null
+    }, ExtArgs["result"]["callParticipant"]>
+    composites: {}
+  }
+
+  type CallParticipantGetPayload<S extends boolean | null | undefined | CallParticipantDefaultArgs> = $Result.GetResult<Prisma.$CallParticipantPayload, S>
+
+  type CallParticipantCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<CallParticipantFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: CallParticipantCountAggregateInputType | true
+    }
+
+  export interface CallParticipantDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['CallParticipant'], meta: { name: 'CallParticipant' } }
+    /**
+     * Find zero or one CallParticipant that matches the filter.
+     * @param {CallParticipantFindUniqueArgs} args - Arguments to find a CallParticipant
+     * @example
+     * // Get one CallParticipant
+     * const callParticipant = await prisma.callParticipant.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends CallParticipantFindUniqueArgs>(args: SelectSubset<T, CallParticipantFindUniqueArgs<ExtArgs>>): Prisma__CallParticipantClient<$Result.GetResult<Prisma.$CallParticipantPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one CallParticipant that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {CallParticipantFindUniqueOrThrowArgs} args - Arguments to find a CallParticipant
+     * @example
+     * // Get one CallParticipant
+     * const callParticipant = await prisma.callParticipant.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends CallParticipantFindUniqueOrThrowArgs>(args: SelectSubset<T, CallParticipantFindUniqueOrThrowArgs<ExtArgs>>): Prisma__CallParticipantClient<$Result.GetResult<Prisma.$CallParticipantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CallParticipant that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CallParticipantFindFirstArgs} args - Arguments to find a CallParticipant
+     * @example
+     * // Get one CallParticipant
+     * const callParticipant = await prisma.callParticipant.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends CallParticipantFindFirstArgs>(args?: SelectSubset<T, CallParticipantFindFirstArgs<ExtArgs>>): Prisma__CallParticipantClient<$Result.GetResult<Prisma.$CallParticipantPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CallParticipant that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CallParticipantFindFirstOrThrowArgs} args - Arguments to find a CallParticipant
+     * @example
+     * // Get one CallParticipant
+     * const callParticipant = await prisma.callParticipant.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends CallParticipantFindFirstOrThrowArgs>(args?: SelectSubset<T, CallParticipantFindFirstOrThrowArgs<ExtArgs>>): Prisma__CallParticipantClient<$Result.GetResult<Prisma.$CallParticipantPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more CallParticipants that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CallParticipantFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all CallParticipants
+     * const callParticipants = await prisma.callParticipant.findMany()
+     * 
+     * // Get first 10 CallParticipants
+     * const callParticipants = await prisma.callParticipant.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const callParticipantWithIdOnly = await prisma.callParticipant.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends CallParticipantFindManyArgs>(args?: SelectSubset<T, CallParticipantFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CallParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a CallParticipant.
+     * @param {CallParticipantCreateArgs} args - Arguments to create a CallParticipant.
+     * @example
+     * // Create one CallParticipant
+     * const CallParticipant = await prisma.callParticipant.create({
+     *   data: {
+     *     // ... data to create a CallParticipant
+     *   }
+     * })
+     * 
+     */
+    create<T extends CallParticipantCreateArgs>(args: SelectSubset<T, CallParticipantCreateArgs<ExtArgs>>): Prisma__CallParticipantClient<$Result.GetResult<Prisma.$CallParticipantPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many CallParticipants.
+     * @param {CallParticipantCreateManyArgs} args - Arguments to create many CallParticipants.
+     * @example
+     * // Create many CallParticipants
+     * const callParticipant = await prisma.callParticipant.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends CallParticipantCreateManyArgs>(args?: SelectSubset<T, CallParticipantCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a CallParticipant.
+     * @param {CallParticipantDeleteArgs} args - Arguments to delete one CallParticipant.
+     * @example
+     * // Delete one CallParticipant
+     * const CallParticipant = await prisma.callParticipant.delete({
+     *   where: {
+     *     // ... filter to delete one CallParticipant
+     *   }
+     * })
+     * 
+     */
+    delete<T extends CallParticipantDeleteArgs>(args: SelectSubset<T, CallParticipantDeleteArgs<ExtArgs>>): Prisma__CallParticipantClient<$Result.GetResult<Prisma.$CallParticipantPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one CallParticipant.
+     * @param {CallParticipantUpdateArgs} args - Arguments to update one CallParticipant.
+     * @example
+     * // Update one CallParticipant
+     * const callParticipant = await prisma.callParticipant.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends CallParticipantUpdateArgs>(args: SelectSubset<T, CallParticipantUpdateArgs<ExtArgs>>): Prisma__CallParticipantClient<$Result.GetResult<Prisma.$CallParticipantPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more CallParticipants.
+     * @param {CallParticipantDeleteManyArgs} args - Arguments to filter CallParticipants to delete.
+     * @example
+     * // Delete a few CallParticipants
+     * const { count } = await prisma.callParticipant.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends CallParticipantDeleteManyArgs>(args?: SelectSubset<T, CallParticipantDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more CallParticipants.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CallParticipantUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many CallParticipants
+     * const callParticipant = await prisma.callParticipant.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends CallParticipantUpdateManyArgs>(args: SelectSubset<T, CallParticipantUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one CallParticipant.
+     * @param {CallParticipantUpsertArgs} args - Arguments to update or create a CallParticipant.
+     * @example
+     * // Update or create a CallParticipant
+     * const callParticipant = await prisma.callParticipant.upsert({
+     *   create: {
+     *     // ... data to create a CallParticipant
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the CallParticipant we want to update
+     *   }
+     * })
+     */
+    upsert<T extends CallParticipantUpsertArgs>(args: SelectSubset<T, CallParticipantUpsertArgs<ExtArgs>>): Prisma__CallParticipantClient<$Result.GetResult<Prisma.$CallParticipantPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more CallParticipants that matches the filter.
+     * @param {CallParticipantFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const callParticipant = await prisma.callParticipant.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: CallParticipantFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a CallParticipant.
+     * @param {CallParticipantAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const callParticipant = await prisma.callParticipant.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: CallParticipantAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of CallParticipants.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CallParticipantCountArgs} args - Arguments to filter CallParticipants to count.
+     * @example
+     * // Count the number of CallParticipants
+     * const count = await prisma.callParticipant.count({
+     *   where: {
+     *     // ... the filter for the CallParticipants we want to count
+     *   }
+     * })
+    **/
+    count<T extends CallParticipantCountArgs>(
+      args?: Subset<T, CallParticipantCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], CallParticipantCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a CallParticipant.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CallParticipantAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends CallParticipantAggregateArgs>(args: Subset<T, CallParticipantAggregateArgs>): Prisma.PrismaPromise<GetCallParticipantAggregateType<T>>
+
+    /**
+     * Group by CallParticipant.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CallParticipantGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends CallParticipantGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: CallParticipantGroupByArgs['orderBy'] }
+        : { orderBy?: CallParticipantGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, CallParticipantGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetCallParticipantGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the CallParticipant model
+   */
+  readonly fields: CallParticipantFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for CallParticipant.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__CallParticipantClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    callSession<T extends CallSessionDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CallSessionDefaultArgs<ExtArgs>>): Prisma__CallSessionClient<$Result.GetResult<Prisma.$CallSessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    user<T extends CallParticipant$userArgs<ExtArgs> = {}>(args?: Subset<T, CallParticipant$userArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the CallParticipant model
+   */
+  interface CallParticipantFieldRefs {
+    readonly id: FieldRef<"CallParticipant", 'String'>
+    readonly callSessionId: FieldRef<"CallParticipant", 'String'>
+    readonly userId: FieldRef<"CallParticipant", 'String'>
+    readonly anonymousId: FieldRef<"CallParticipant", 'String'>
+    readonly role: FieldRef<"CallParticipant", 'ParticipantRole'>
+    readonly joinedAt: FieldRef<"CallParticipant", 'DateTime'>
+    readonly leftAt: FieldRef<"CallParticipant", 'DateTime'>
+    readonly isAudioEnabled: FieldRef<"CallParticipant", 'Boolean'>
+    readonly isVideoEnabled: FieldRef<"CallParticipant", 'Boolean'>
+    readonly connectionQuality: FieldRef<"CallParticipant", 'Json'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * CallParticipant findUnique
+   */
+  export type CallParticipantFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CallParticipant
+     */
+    select?: CallParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CallParticipant
+     */
+    omit?: CallParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CallParticipantInclude<ExtArgs> | null
+    /**
+     * Filter, which CallParticipant to fetch.
+     */
+    where: CallParticipantWhereUniqueInput
+  }
+
+  /**
+   * CallParticipant findUniqueOrThrow
+   */
+  export type CallParticipantFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CallParticipant
+     */
+    select?: CallParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CallParticipant
+     */
+    omit?: CallParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CallParticipantInclude<ExtArgs> | null
+    /**
+     * Filter, which CallParticipant to fetch.
+     */
+    where: CallParticipantWhereUniqueInput
+  }
+
+  /**
+   * CallParticipant findFirst
+   */
+  export type CallParticipantFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CallParticipant
+     */
+    select?: CallParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CallParticipant
+     */
+    omit?: CallParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CallParticipantInclude<ExtArgs> | null
+    /**
+     * Filter, which CallParticipant to fetch.
+     */
+    where?: CallParticipantWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CallParticipants to fetch.
+     */
+    orderBy?: CallParticipantOrderByWithRelationInput | CallParticipantOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CallParticipants.
+     */
+    cursor?: CallParticipantWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CallParticipants from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CallParticipants.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CallParticipants.
+     */
+    distinct?: CallParticipantScalarFieldEnum | CallParticipantScalarFieldEnum[]
+  }
+
+  /**
+   * CallParticipant findFirstOrThrow
+   */
+  export type CallParticipantFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CallParticipant
+     */
+    select?: CallParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CallParticipant
+     */
+    omit?: CallParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CallParticipantInclude<ExtArgs> | null
+    /**
+     * Filter, which CallParticipant to fetch.
+     */
+    where?: CallParticipantWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CallParticipants to fetch.
+     */
+    orderBy?: CallParticipantOrderByWithRelationInput | CallParticipantOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CallParticipants.
+     */
+    cursor?: CallParticipantWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CallParticipants from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CallParticipants.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CallParticipants.
+     */
+    distinct?: CallParticipantScalarFieldEnum | CallParticipantScalarFieldEnum[]
+  }
+
+  /**
+   * CallParticipant findMany
+   */
+  export type CallParticipantFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CallParticipant
+     */
+    select?: CallParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CallParticipant
+     */
+    omit?: CallParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CallParticipantInclude<ExtArgs> | null
+    /**
+     * Filter, which CallParticipants to fetch.
+     */
+    where?: CallParticipantWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CallParticipants to fetch.
+     */
+    orderBy?: CallParticipantOrderByWithRelationInput | CallParticipantOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing CallParticipants.
+     */
+    cursor?: CallParticipantWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CallParticipants from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CallParticipants.
+     */
+    skip?: number
+    distinct?: CallParticipantScalarFieldEnum | CallParticipantScalarFieldEnum[]
+  }
+
+  /**
+   * CallParticipant create
+   */
+  export type CallParticipantCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CallParticipant
+     */
+    select?: CallParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CallParticipant
+     */
+    omit?: CallParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CallParticipantInclude<ExtArgs> | null
+    /**
+     * The data needed to create a CallParticipant.
+     */
+    data: XOR<CallParticipantCreateInput, CallParticipantUncheckedCreateInput>
+  }
+
+  /**
+   * CallParticipant createMany
+   */
+  export type CallParticipantCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many CallParticipants.
+     */
+    data: CallParticipantCreateManyInput | CallParticipantCreateManyInput[]
+  }
+
+  /**
+   * CallParticipant update
+   */
+  export type CallParticipantUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CallParticipant
+     */
+    select?: CallParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CallParticipant
+     */
+    omit?: CallParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CallParticipantInclude<ExtArgs> | null
+    /**
+     * The data needed to update a CallParticipant.
+     */
+    data: XOR<CallParticipantUpdateInput, CallParticipantUncheckedUpdateInput>
+    /**
+     * Choose, which CallParticipant to update.
+     */
+    where: CallParticipantWhereUniqueInput
+  }
+
+  /**
+   * CallParticipant updateMany
+   */
+  export type CallParticipantUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update CallParticipants.
+     */
+    data: XOR<CallParticipantUpdateManyMutationInput, CallParticipantUncheckedUpdateManyInput>
+    /**
+     * Filter which CallParticipants to update
+     */
+    where?: CallParticipantWhereInput
+    /**
+     * Limit how many CallParticipants to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * CallParticipant upsert
+   */
+  export type CallParticipantUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CallParticipant
+     */
+    select?: CallParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CallParticipant
+     */
+    omit?: CallParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CallParticipantInclude<ExtArgs> | null
+    /**
+     * The filter to search for the CallParticipant to update in case it exists.
+     */
+    where: CallParticipantWhereUniqueInput
+    /**
+     * In case the CallParticipant found by the `where` argument doesn't exist, create a new CallParticipant with this data.
+     */
+    create: XOR<CallParticipantCreateInput, CallParticipantUncheckedCreateInput>
+    /**
+     * In case the CallParticipant was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<CallParticipantUpdateInput, CallParticipantUncheckedUpdateInput>
+  }
+
+  /**
+   * CallParticipant delete
+   */
+  export type CallParticipantDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CallParticipant
+     */
+    select?: CallParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CallParticipant
+     */
+    omit?: CallParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CallParticipantInclude<ExtArgs> | null
+    /**
+     * Filter which CallParticipant to delete.
+     */
+    where: CallParticipantWhereUniqueInput
+  }
+
+  /**
+   * CallParticipant deleteMany
+   */
+  export type CallParticipantDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CallParticipants to delete
+     */
+    where?: CallParticipantWhereInput
+    /**
+     * Limit how many CallParticipants to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * CallParticipant findRaw
+   */
+  export type CallParticipantFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * CallParticipant aggregateRaw
+   */
+  export type CallParticipantAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * CallParticipant.user
+   */
+  export type CallParticipant$userArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * CallParticipant without action
+   */
+  export type CallParticipantDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CallParticipant
+     */
+    select?: CallParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CallParticipant
+     */
+    omit?: CallParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CallParticipantInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Transcription
+   */
+
+  export type AggregateTranscription = {
+    _count: TranscriptionCountAggregateOutputType | null
+    _avg: TranscriptionAvgAggregateOutputType | null
+    _sum: TranscriptionSumAggregateOutputType | null
+    _min: TranscriptionMinAggregateOutputType | null
+    _max: TranscriptionMaxAggregateOutputType | null
+  }
+
+  export type TranscriptionAvgAggregateOutputType = {
+    confidence: number | null
+    offsetMs: number | null
+  }
+
+  export type TranscriptionSumAggregateOutputType = {
+    confidence: number | null
+    offsetMs: number | null
+  }
+
+  export type TranscriptionMinAggregateOutputType = {
+    id: string | null
+    callSessionId: string | null
+    participantId: string | null
+    source: $Enums.TranscriptionSource | null
+    text: string | null
+    language: string | null
+    confidence: number | null
+    timestamp: Date | null
+    offsetMs: number | null
+  }
+
+  export type TranscriptionMaxAggregateOutputType = {
+    id: string | null
+    callSessionId: string | null
+    participantId: string | null
+    source: $Enums.TranscriptionSource | null
+    text: string | null
+    language: string | null
+    confidence: number | null
+    timestamp: Date | null
+    offsetMs: number | null
+  }
+
+  export type TranscriptionCountAggregateOutputType = {
+    id: number
+    callSessionId: number
+    participantId: number
+    source: number
+    text: number
+    language: number
+    confidence: number
+    timestamp: number
+    offsetMs: number
+    _all: number
+  }
+
+
+  export type TranscriptionAvgAggregateInputType = {
+    confidence?: true
+    offsetMs?: true
+  }
+
+  export type TranscriptionSumAggregateInputType = {
+    confidence?: true
+    offsetMs?: true
+  }
+
+  export type TranscriptionMinAggregateInputType = {
+    id?: true
+    callSessionId?: true
+    participantId?: true
+    source?: true
+    text?: true
+    language?: true
+    confidence?: true
+    timestamp?: true
+    offsetMs?: true
+  }
+
+  export type TranscriptionMaxAggregateInputType = {
+    id?: true
+    callSessionId?: true
+    participantId?: true
+    source?: true
+    text?: true
+    language?: true
+    confidence?: true
+    timestamp?: true
+    offsetMs?: true
+  }
+
+  export type TranscriptionCountAggregateInputType = {
+    id?: true
+    callSessionId?: true
+    participantId?: true
+    source?: true
+    text?: true
+    language?: true
+    confidence?: true
+    timestamp?: true
+    offsetMs?: true
+    _all?: true
+  }
+
+  export type TranscriptionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Transcription to aggregate.
+     */
+    where?: TranscriptionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Transcriptions to fetch.
+     */
+    orderBy?: TranscriptionOrderByWithRelationInput | TranscriptionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: TranscriptionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Transcriptions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Transcriptions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Transcriptions
+    **/
+    _count?: true | TranscriptionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: TranscriptionAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: TranscriptionSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: TranscriptionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: TranscriptionMaxAggregateInputType
+  }
+
+  export type GetTranscriptionAggregateType<T extends TranscriptionAggregateArgs> = {
+        [P in keyof T & keyof AggregateTranscription]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateTranscription[P]>
+      : GetScalarType<T[P], AggregateTranscription[P]>
+  }
+
+
+
+
+  export type TranscriptionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TranscriptionWhereInput
+    orderBy?: TranscriptionOrderByWithAggregationInput | TranscriptionOrderByWithAggregationInput[]
+    by: TranscriptionScalarFieldEnum[] | TranscriptionScalarFieldEnum
+    having?: TranscriptionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: TranscriptionCountAggregateInputType | true
+    _avg?: TranscriptionAvgAggregateInputType
+    _sum?: TranscriptionSumAggregateInputType
+    _min?: TranscriptionMinAggregateInputType
+    _max?: TranscriptionMaxAggregateInputType
+  }
+
+  export type TranscriptionGroupByOutputType = {
+    id: string
+    callSessionId: string
+    participantId: string
+    source: $Enums.TranscriptionSource
+    text: string
+    language: string
+    confidence: number | null
+    timestamp: Date
+    offsetMs: number | null
+    _count: TranscriptionCountAggregateOutputType | null
+    _avg: TranscriptionAvgAggregateOutputType | null
+    _sum: TranscriptionSumAggregateOutputType | null
+    _min: TranscriptionMinAggregateOutputType | null
+    _max: TranscriptionMaxAggregateOutputType | null
+  }
+
+  type GetTranscriptionGroupByPayload<T extends TranscriptionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<TranscriptionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof TranscriptionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], TranscriptionGroupByOutputType[P]>
+            : GetScalarType<T[P], TranscriptionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type TranscriptionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    callSessionId?: boolean
+    participantId?: boolean
+    source?: boolean
+    text?: boolean
+    language?: boolean
+    confidence?: boolean
+    timestamp?: boolean
+    offsetMs?: boolean
+    callSession?: boolean | CallSessionDefaultArgs<ExtArgs>
+    translations?: boolean | Transcription$translationsArgs<ExtArgs>
+    _count?: boolean | TranscriptionCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["transcription"]>
+
+
+
+  export type TranscriptionSelectScalar = {
+    id?: boolean
+    callSessionId?: boolean
+    participantId?: boolean
+    source?: boolean
+    text?: boolean
+    language?: boolean
+    confidence?: boolean
+    timestamp?: boolean
+    offsetMs?: boolean
+  }
+
+  export type TranscriptionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "callSessionId" | "participantId" | "source" | "text" | "language" | "confidence" | "timestamp" | "offsetMs", ExtArgs["result"]["transcription"]>
+  export type TranscriptionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    callSession?: boolean | CallSessionDefaultArgs<ExtArgs>
+    translations?: boolean | Transcription$translationsArgs<ExtArgs>
+    _count?: boolean | TranscriptionCountOutputTypeDefaultArgs<ExtArgs>
+  }
+
+  export type $TranscriptionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Transcription"
+    objects: {
+      callSession: Prisma.$CallSessionPayload<ExtArgs>
+      /**
+       * Translations of this transcription (Phase 3)
+       */
+      translations: Prisma.$TranslationCallPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      callSessionId: string
+      /**
+       * Participant who spoke
+       */
+      participantId: string
+      /**
+       * Transcription source: 'client' (Web Speech API/Whisper.js) or 'server' (faster-whisper)
+       */
+      source: $Enums.TranscriptionSource
+      /**
+       * Transcribed text
+       */
+      text: string
+      /**
+       * Original language detected/specified
+       */
+      language: string
+      /**
+       * Confidence score (0-1)
+       */
+      confidence: number | null
+      /**
+       * Timestamp in call (milliseconds from call start)
+       */
+      timestamp: Date
+      offsetMs: number | null
+    }, ExtArgs["result"]["transcription"]>
+    composites: {}
+  }
+
+  type TranscriptionGetPayload<S extends boolean | null | undefined | TranscriptionDefaultArgs> = $Result.GetResult<Prisma.$TranscriptionPayload, S>
+
+  type TranscriptionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<TranscriptionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: TranscriptionCountAggregateInputType | true
+    }
+
+  export interface TranscriptionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Transcription'], meta: { name: 'Transcription' } }
+    /**
+     * Find zero or one Transcription that matches the filter.
+     * @param {TranscriptionFindUniqueArgs} args - Arguments to find a Transcription
+     * @example
+     * // Get one Transcription
+     * const transcription = await prisma.transcription.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends TranscriptionFindUniqueArgs>(args: SelectSubset<T, TranscriptionFindUniqueArgs<ExtArgs>>): Prisma__TranscriptionClient<$Result.GetResult<Prisma.$TranscriptionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Transcription that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {TranscriptionFindUniqueOrThrowArgs} args - Arguments to find a Transcription
+     * @example
+     * // Get one Transcription
+     * const transcription = await prisma.transcription.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends TranscriptionFindUniqueOrThrowArgs>(args: SelectSubset<T, TranscriptionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TranscriptionClient<$Result.GetResult<Prisma.$TranscriptionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Transcription that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TranscriptionFindFirstArgs} args - Arguments to find a Transcription
+     * @example
+     * // Get one Transcription
+     * const transcription = await prisma.transcription.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends TranscriptionFindFirstArgs>(args?: SelectSubset<T, TranscriptionFindFirstArgs<ExtArgs>>): Prisma__TranscriptionClient<$Result.GetResult<Prisma.$TranscriptionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Transcription that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TranscriptionFindFirstOrThrowArgs} args - Arguments to find a Transcription
+     * @example
+     * // Get one Transcription
+     * const transcription = await prisma.transcription.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends TranscriptionFindFirstOrThrowArgs>(args?: SelectSubset<T, TranscriptionFindFirstOrThrowArgs<ExtArgs>>): Prisma__TranscriptionClient<$Result.GetResult<Prisma.$TranscriptionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Transcriptions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TranscriptionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Transcriptions
+     * const transcriptions = await prisma.transcription.findMany()
+     * 
+     * // Get first 10 Transcriptions
+     * const transcriptions = await prisma.transcription.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const transcriptionWithIdOnly = await prisma.transcription.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends TranscriptionFindManyArgs>(args?: SelectSubset<T, TranscriptionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TranscriptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Transcription.
+     * @param {TranscriptionCreateArgs} args - Arguments to create a Transcription.
+     * @example
+     * // Create one Transcription
+     * const Transcription = await prisma.transcription.create({
+     *   data: {
+     *     // ... data to create a Transcription
+     *   }
+     * })
+     * 
+     */
+    create<T extends TranscriptionCreateArgs>(args: SelectSubset<T, TranscriptionCreateArgs<ExtArgs>>): Prisma__TranscriptionClient<$Result.GetResult<Prisma.$TranscriptionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Transcriptions.
+     * @param {TranscriptionCreateManyArgs} args - Arguments to create many Transcriptions.
+     * @example
+     * // Create many Transcriptions
+     * const transcription = await prisma.transcription.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends TranscriptionCreateManyArgs>(args?: SelectSubset<T, TranscriptionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a Transcription.
+     * @param {TranscriptionDeleteArgs} args - Arguments to delete one Transcription.
+     * @example
+     * // Delete one Transcription
+     * const Transcription = await prisma.transcription.delete({
+     *   where: {
+     *     // ... filter to delete one Transcription
+     *   }
+     * })
+     * 
+     */
+    delete<T extends TranscriptionDeleteArgs>(args: SelectSubset<T, TranscriptionDeleteArgs<ExtArgs>>): Prisma__TranscriptionClient<$Result.GetResult<Prisma.$TranscriptionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Transcription.
+     * @param {TranscriptionUpdateArgs} args - Arguments to update one Transcription.
+     * @example
+     * // Update one Transcription
+     * const transcription = await prisma.transcription.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends TranscriptionUpdateArgs>(args: SelectSubset<T, TranscriptionUpdateArgs<ExtArgs>>): Prisma__TranscriptionClient<$Result.GetResult<Prisma.$TranscriptionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Transcriptions.
+     * @param {TranscriptionDeleteManyArgs} args - Arguments to filter Transcriptions to delete.
+     * @example
+     * // Delete a few Transcriptions
+     * const { count } = await prisma.transcription.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends TranscriptionDeleteManyArgs>(args?: SelectSubset<T, TranscriptionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Transcriptions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TranscriptionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Transcriptions
+     * const transcription = await prisma.transcription.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends TranscriptionUpdateManyArgs>(args: SelectSubset<T, TranscriptionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Transcription.
+     * @param {TranscriptionUpsertArgs} args - Arguments to update or create a Transcription.
+     * @example
+     * // Update or create a Transcription
+     * const transcription = await prisma.transcription.upsert({
+     *   create: {
+     *     // ... data to create a Transcription
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Transcription we want to update
+     *   }
+     * })
+     */
+    upsert<T extends TranscriptionUpsertArgs>(args: SelectSubset<T, TranscriptionUpsertArgs<ExtArgs>>): Prisma__TranscriptionClient<$Result.GetResult<Prisma.$TranscriptionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Transcriptions that matches the filter.
+     * @param {TranscriptionFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const transcription = await prisma.transcription.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: TranscriptionFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a Transcription.
+     * @param {TranscriptionAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const transcription = await prisma.transcription.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: TranscriptionAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of Transcriptions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TranscriptionCountArgs} args - Arguments to filter Transcriptions to count.
+     * @example
+     * // Count the number of Transcriptions
+     * const count = await prisma.transcription.count({
+     *   where: {
+     *     // ... the filter for the Transcriptions we want to count
+     *   }
+     * })
+    **/
+    count<T extends TranscriptionCountArgs>(
+      args?: Subset<T, TranscriptionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], TranscriptionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Transcription.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TranscriptionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends TranscriptionAggregateArgs>(args: Subset<T, TranscriptionAggregateArgs>): Prisma.PrismaPromise<GetTranscriptionAggregateType<T>>
+
+    /**
+     * Group by Transcription.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TranscriptionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends TranscriptionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: TranscriptionGroupByArgs['orderBy'] }
+        : { orderBy?: TranscriptionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, TranscriptionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTranscriptionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Transcription model
+   */
+  readonly fields: TranscriptionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Transcription.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__TranscriptionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    callSession<T extends CallSessionDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CallSessionDefaultArgs<ExtArgs>>): Prisma__CallSessionClient<$Result.GetResult<Prisma.$CallSessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    translations<T extends Transcription$translationsArgs<ExtArgs> = {}>(args?: Subset<T, Transcription$translationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TranslationCallPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Transcription model
+   */
+  interface TranscriptionFieldRefs {
+    readonly id: FieldRef<"Transcription", 'String'>
+    readonly callSessionId: FieldRef<"Transcription", 'String'>
+    readonly participantId: FieldRef<"Transcription", 'String'>
+    readonly source: FieldRef<"Transcription", 'TranscriptionSource'>
+    readonly text: FieldRef<"Transcription", 'String'>
+    readonly language: FieldRef<"Transcription", 'String'>
+    readonly confidence: FieldRef<"Transcription", 'Float'>
+    readonly timestamp: FieldRef<"Transcription", 'DateTime'>
+    readonly offsetMs: FieldRef<"Transcription", 'Int'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Transcription findUnique
+   */
+  export type TranscriptionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Transcription
+     */
+    select?: TranscriptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Transcription
+     */
+    omit?: TranscriptionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TranscriptionInclude<ExtArgs> | null
+    /**
+     * Filter, which Transcription to fetch.
+     */
+    where: TranscriptionWhereUniqueInput
+  }
+
+  /**
+   * Transcription findUniqueOrThrow
+   */
+  export type TranscriptionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Transcription
+     */
+    select?: TranscriptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Transcription
+     */
+    omit?: TranscriptionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TranscriptionInclude<ExtArgs> | null
+    /**
+     * Filter, which Transcription to fetch.
+     */
+    where: TranscriptionWhereUniqueInput
+  }
+
+  /**
+   * Transcription findFirst
+   */
+  export type TranscriptionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Transcription
+     */
+    select?: TranscriptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Transcription
+     */
+    omit?: TranscriptionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TranscriptionInclude<ExtArgs> | null
+    /**
+     * Filter, which Transcription to fetch.
+     */
+    where?: TranscriptionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Transcriptions to fetch.
+     */
+    orderBy?: TranscriptionOrderByWithRelationInput | TranscriptionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Transcriptions.
+     */
+    cursor?: TranscriptionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Transcriptions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Transcriptions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Transcriptions.
+     */
+    distinct?: TranscriptionScalarFieldEnum | TranscriptionScalarFieldEnum[]
+  }
+
+  /**
+   * Transcription findFirstOrThrow
+   */
+  export type TranscriptionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Transcription
+     */
+    select?: TranscriptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Transcription
+     */
+    omit?: TranscriptionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TranscriptionInclude<ExtArgs> | null
+    /**
+     * Filter, which Transcription to fetch.
+     */
+    where?: TranscriptionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Transcriptions to fetch.
+     */
+    orderBy?: TranscriptionOrderByWithRelationInput | TranscriptionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Transcriptions.
+     */
+    cursor?: TranscriptionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Transcriptions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Transcriptions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Transcriptions.
+     */
+    distinct?: TranscriptionScalarFieldEnum | TranscriptionScalarFieldEnum[]
+  }
+
+  /**
+   * Transcription findMany
+   */
+  export type TranscriptionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Transcription
+     */
+    select?: TranscriptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Transcription
+     */
+    omit?: TranscriptionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TranscriptionInclude<ExtArgs> | null
+    /**
+     * Filter, which Transcriptions to fetch.
+     */
+    where?: TranscriptionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Transcriptions to fetch.
+     */
+    orderBy?: TranscriptionOrderByWithRelationInput | TranscriptionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Transcriptions.
+     */
+    cursor?: TranscriptionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Transcriptions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Transcriptions.
+     */
+    skip?: number
+    distinct?: TranscriptionScalarFieldEnum | TranscriptionScalarFieldEnum[]
+  }
+
+  /**
+   * Transcription create
+   */
+  export type TranscriptionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Transcription
+     */
+    select?: TranscriptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Transcription
+     */
+    omit?: TranscriptionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TranscriptionInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Transcription.
+     */
+    data: XOR<TranscriptionCreateInput, TranscriptionUncheckedCreateInput>
+  }
+
+  /**
+   * Transcription createMany
+   */
+  export type TranscriptionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Transcriptions.
+     */
+    data: TranscriptionCreateManyInput | TranscriptionCreateManyInput[]
+  }
+
+  /**
+   * Transcription update
+   */
+  export type TranscriptionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Transcription
+     */
+    select?: TranscriptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Transcription
+     */
+    omit?: TranscriptionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TranscriptionInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Transcription.
+     */
+    data: XOR<TranscriptionUpdateInput, TranscriptionUncheckedUpdateInput>
+    /**
+     * Choose, which Transcription to update.
+     */
+    where: TranscriptionWhereUniqueInput
+  }
+
+  /**
+   * Transcription updateMany
+   */
+  export type TranscriptionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Transcriptions.
+     */
+    data: XOR<TranscriptionUpdateManyMutationInput, TranscriptionUncheckedUpdateManyInput>
+    /**
+     * Filter which Transcriptions to update
+     */
+    where?: TranscriptionWhereInput
+    /**
+     * Limit how many Transcriptions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Transcription upsert
+   */
+  export type TranscriptionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Transcription
+     */
+    select?: TranscriptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Transcription
+     */
+    omit?: TranscriptionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TranscriptionInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Transcription to update in case it exists.
+     */
+    where: TranscriptionWhereUniqueInput
+    /**
+     * In case the Transcription found by the `where` argument doesn't exist, create a new Transcription with this data.
+     */
+    create: XOR<TranscriptionCreateInput, TranscriptionUncheckedCreateInput>
+    /**
+     * In case the Transcription was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<TranscriptionUpdateInput, TranscriptionUncheckedUpdateInput>
+  }
+
+  /**
+   * Transcription delete
+   */
+  export type TranscriptionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Transcription
+     */
+    select?: TranscriptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Transcription
+     */
+    omit?: TranscriptionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TranscriptionInclude<ExtArgs> | null
+    /**
+     * Filter which Transcription to delete.
+     */
+    where: TranscriptionWhereUniqueInput
+  }
+
+  /**
+   * Transcription deleteMany
+   */
+  export type TranscriptionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Transcriptions to delete
+     */
+    where?: TranscriptionWhereInput
+    /**
+     * Limit how many Transcriptions to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Transcription findRaw
+   */
+  export type TranscriptionFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * Transcription aggregateRaw
+   */
+  export type TranscriptionAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * Transcription.translations
+   */
+  export type Transcription$translationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TranslationCall
+     */
+    select?: TranslationCallSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TranslationCall
+     */
+    omit?: TranslationCallOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TranslationCallInclude<ExtArgs> | null
+    where?: TranslationCallWhereInput
+    orderBy?: TranslationCallOrderByWithRelationInput | TranslationCallOrderByWithRelationInput[]
+    cursor?: TranslationCallWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TranslationCallScalarFieldEnum | TranslationCallScalarFieldEnum[]
+  }
+
+  /**
+   * Transcription without action
+   */
+  export type TranscriptionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Transcription
+     */
+    select?: TranscriptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Transcription
+     */
+    omit?: TranscriptionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TranscriptionInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model TranslationCall
+   */
+
+  export type AggregateTranslationCall = {
+    _count: TranslationCallCountAggregateOutputType | null
+    _avg: TranslationCallAvgAggregateOutputType | null
+    _sum: TranslationCallSumAggregateOutputType | null
+    _min: TranslationCallMinAggregateOutputType | null
+    _max: TranslationCallMaxAggregateOutputType | null
+  }
+
+  export type TranslationCallAvgAggregateOutputType = {
+    confidence: number | null
+  }
+
+  export type TranslationCallSumAggregateOutputType = {
+    confidence: number | null
+  }
+
+  export type TranslationCallMinAggregateOutputType = {
+    id: string | null
+    transcriptionId: string | null
+    targetLanguage: string | null
+    translatedText: string | null
+    confidence: number | null
+    model: string | null
+    cached: boolean | null
+    createdAt: Date | null
+  }
+
+  export type TranslationCallMaxAggregateOutputType = {
+    id: string | null
+    transcriptionId: string | null
+    targetLanguage: string | null
+    translatedText: string | null
+    confidence: number | null
+    model: string | null
+    cached: boolean | null
+    createdAt: Date | null
+  }
+
+  export type TranslationCallCountAggregateOutputType = {
+    id: number
+    transcriptionId: number
+    targetLanguage: number
+    translatedText: number
+    confidence: number
+    model: number
+    cached: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type TranslationCallAvgAggregateInputType = {
+    confidence?: true
+  }
+
+  export type TranslationCallSumAggregateInputType = {
+    confidence?: true
+  }
+
+  export type TranslationCallMinAggregateInputType = {
+    id?: true
+    transcriptionId?: true
+    targetLanguage?: true
+    translatedText?: true
+    confidence?: true
+    model?: true
+    cached?: true
+    createdAt?: true
+  }
+
+  export type TranslationCallMaxAggregateInputType = {
+    id?: true
+    transcriptionId?: true
+    targetLanguage?: true
+    translatedText?: true
+    confidence?: true
+    model?: true
+    cached?: true
+    createdAt?: true
+  }
+
+  export type TranslationCallCountAggregateInputType = {
+    id?: true
+    transcriptionId?: true
+    targetLanguage?: true
+    translatedText?: true
+    confidence?: true
+    model?: true
+    cached?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type TranslationCallAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TranslationCall to aggregate.
+     */
+    where?: TranslationCallWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TranslationCalls to fetch.
+     */
+    orderBy?: TranslationCallOrderByWithRelationInput | TranslationCallOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: TranslationCallWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TranslationCalls from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TranslationCalls.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned TranslationCalls
+    **/
+    _count?: true | TranslationCallCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: TranslationCallAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: TranslationCallSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: TranslationCallMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: TranslationCallMaxAggregateInputType
+  }
+
+  export type GetTranslationCallAggregateType<T extends TranslationCallAggregateArgs> = {
+        [P in keyof T & keyof AggregateTranslationCall]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateTranslationCall[P]>
+      : GetScalarType<T[P], AggregateTranslationCall[P]>
+  }
+
+
+
+
+  export type TranslationCallGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TranslationCallWhereInput
+    orderBy?: TranslationCallOrderByWithAggregationInput | TranslationCallOrderByWithAggregationInput[]
+    by: TranslationCallScalarFieldEnum[] | TranslationCallScalarFieldEnum
+    having?: TranslationCallScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: TranslationCallCountAggregateInputType | true
+    _avg?: TranslationCallAvgAggregateInputType
+    _sum?: TranslationCallSumAggregateInputType
+    _min?: TranslationCallMinAggregateInputType
+    _max?: TranslationCallMaxAggregateInputType
+  }
+
+  export type TranslationCallGroupByOutputType = {
+    id: string
+    transcriptionId: string
+    targetLanguage: string
+    translatedText: string
+    confidence: number | null
+    model: string | null
+    cached: boolean
+    createdAt: Date
+    _count: TranslationCallCountAggregateOutputType | null
+    _avg: TranslationCallAvgAggregateOutputType | null
+    _sum: TranslationCallSumAggregateOutputType | null
+    _min: TranslationCallMinAggregateOutputType | null
+    _max: TranslationCallMaxAggregateOutputType | null
+  }
+
+  type GetTranslationCallGroupByPayload<T extends TranslationCallGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<TranslationCallGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof TranslationCallGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], TranslationCallGroupByOutputType[P]>
+            : GetScalarType<T[P], TranslationCallGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type TranslationCallSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    transcriptionId?: boolean
+    targetLanguage?: boolean
+    translatedText?: boolean
+    confidence?: boolean
+    model?: boolean
+    cached?: boolean
+    createdAt?: boolean
+    transcription?: boolean | TranscriptionDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["translationCall"]>
+
+
+
+  export type TranslationCallSelectScalar = {
+    id?: boolean
+    transcriptionId?: boolean
+    targetLanguage?: boolean
+    translatedText?: boolean
+    confidence?: boolean
+    model?: boolean
+    cached?: boolean
+    createdAt?: boolean
+  }
+
+  export type TranslationCallOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "transcriptionId" | "targetLanguage" | "translatedText" | "confidence" | "model" | "cached" | "createdAt", ExtArgs["result"]["translationCall"]>
+  export type TranslationCallInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    transcription?: boolean | TranscriptionDefaultArgs<ExtArgs>
+  }
+
+  export type $TranslationCallPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "TranslationCall"
+    objects: {
+      transcription: Prisma.$TranscriptionPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      transcriptionId: string
+      /**
+       * Target language code
+       */
+      targetLanguage: string
+      /**
+       * Translated text
+       */
+      translatedText: string
+      /**
+       * Translation confidence (0-1)
+       */
+      confidence: number | null
+      /**
+       * Translation model used
+       */
+      model: string | null
+      /**
+       * Cached translation
+       */
+      cached: boolean
+      /**
+       * Timestamp
+       */
+      createdAt: Date
+    }, ExtArgs["result"]["translationCall"]>
+    composites: {}
+  }
+
+  type TranslationCallGetPayload<S extends boolean | null | undefined | TranslationCallDefaultArgs> = $Result.GetResult<Prisma.$TranslationCallPayload, S>
+
+  type TranslationCallCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<TranslationCallFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: TranslationCallCountAggregateInputType | true
+    }
+
+  export interface TranslationCallDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['TranslationCall'], meta: { name: 'TranslationCall' } }
+    /**
+     * Find zero or one TranslationCall that matches the filter.
+     * @param {TranslationCallFindUniqueArgs} args - Arguments to find a TranslationCall
+     * @example
+     * // Get one TranslationCall
+     * const translationCall = await prisma.translationCall.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends TranslationCallFindUniqueArgs>(args: SelectSubset<T, TranslationCallFindUniqueArgs<ExtArgs>>): Prisma__TranslationCallClient<$Result.GetResult<Prisma.$TranslationCallPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one TranslationCall that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {TranslationCallFindUniqueOrThrowArgs} args - Arguments to find a TranslationCall
+     * @example
+     * // Get one TranslationCall
+     * const translationCall = await prisma.translationCall.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends TranslationCallFindUniqueOrThrowArgs>(args: SelectSubset<T, TranslationCallFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TranslationCallClient<$Result.GetResult<Prisma.$TranslationCallPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first TranslationCall that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TranslationCallFindFirstArgs} args - Arguments to find a TranslationCall
+     * @example
+     * // Get one TranslationCall
+     * const translationCall = await prisma.translationCall.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends TranslationCallFindFirstArgs>(args?: SelectSubset<T, TranslationCallFindFirstArgs<ExtArgs>>): Prisma__TranslationCallClient<$Result.GetResult<Prisma.$TranslationCallPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first TranslationCall that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TranslationCallFindFirstOrThrowArgs} args - Arguments to find a TranslationCall
+     * @example
+     * // Get one TranslationCall
+     * const translationCall = await prisma.translationCall.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends TranslationCallFindFirstOrThrowArgs>(args?: SelectSubset<T, TranslationCallFindFirstOrThrowArgs<ExtArgs>>): Prisma__TranslationCallClient<$Result.GetResult<Prisma.$TranslationCallPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more TranslationCalls that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TranslationCallFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all TranslationCalls
+     * const translationCalls = await prisma.translationCall.findMany()
+     * 
+     * // Get first 10 TranslationCalls
+     * const translationCalls = await prisma.translationCall.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const translationCallWithIdOnly = await prisma.translationCall.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends TranslationCallFindManyArgs>(args?: SelectSubset<T, TranslationCallFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TranslationCallPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a TranslationCall.
+     * @param {TranslationCallCreateArgs} args - Arguments to create a TranslationCall.
+     * @example
+     * // Create one TranslationCall
+     * const TranslationCall = await prisma.translationCall.create({
+     *   data: {
+     *     // ... data to create a TranslationCall
+     *   }
+     * })
+     * 
+     */
+    create<T extends TranslationCallCreateArgs>(args: SelectSubset<T, TranslationCallCreateArgs<ExtArgs>>): Prisma__TranslationCallClient<$Result.GetResult<Prisma.$TranslationCallPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many TranslationCalls.
+     * @param {TranslationCallCreateManyArgs} args - Arguments to create many TranslationCalls.
+     * @example
+     * // Create many TranslationCalls
+     * const translationCall = await prisma.translationCall.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends TranslationCallCreateManyArgs>(args?: SelectSubset<T, TranslationCallCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a TranslationCall.
+     * @param {TranslationCallDeleteArgs} args - Arguments to delete one TranslationCall.
+     * @example
+     * // Delete one TranslationCall
+     * const TranslationCall = await prisma.translationCall.delete({
+     *   where: {
+     *     // ... filter to delete one TranslationCall
+     *   }
+     * })
+     * 
+     */
+    delete<T extends TranslationCallDeleteArgs>(args: SelectSubset<T, TranslationCallDeleteArgs<ExtArgs>>): Prisma__TranslationCallClient<$Result.GetResult<Prisma.$TranslationCallPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one TranslationCall.
+     * @param {TranslationCallUpdateArgs} args - Arguments to update one TranslationCall.
+     * @example
+     * // Update one TranslationCall
+     * const translationCall = await prisma.translationCall.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends TranslationCallUpdateArgs>(args: SelectSubset<T, TranslationCallUpdateArgs<ExtArgs>>): Prisma__TranslationCallClient<$Result.GetResult<Prisma.$TranslationCallPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more TranslationCalls.
+     * @param {TranslationCallDeleteManyArgs} args - Arguments to filter TranslationCalls to delete.
+     * @example
+     * // Delete a few TranslationCalls
+     * const { count } = await prisma.translationCall.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends TranslationCallDeleteManyArgs>(args?: SelectSubset<T, TranslationCallDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more TranslationCalls.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TranslationCallUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many TranslationCalls
+     * const translationCall = await prisma.translationCall.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends TranslationCallUpdateManyArgs>(args: SelectSubset<T, TranslationCallUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one TranslationCall.
+     * @param {TranslationCallUpsertArgs} args - Arguments to update or create a TranslationCall.
+     * @example
+     * // Update or create a TranslationCall
+     * const translationCall = await prisma.translationCall.upsert({
+     *   create: {
+     *     // ... data to create a TranslationCall
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the TranslationCall we want to update
+     *   }
+     * })
+     */
+    upsert<T extends TranslationCallUpsertArgs>(args: SelectSubset<T, TranslationCallUpsertArgs<ExtArgs>>): Prisma__TranslationCallClient<$Result.GetResult<Prisma.$TranslationCallPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more TranslationCalls that matches the filter.
+     * @param {TranslationCallFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const translationCall = await prisma.translationCall.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: TranslationCallFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a TranslationCall.
+     * @param {TranslationCallAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const translationCall = await prisma.translationCall.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: TranslationCallAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of TranslationCalls.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TranslationCallCountArgs} args - Arguments to filter TranslationCalls to count.
+     * @example
+     * // Count the number of TranslationCalls
+     * const count = await prisma.translationCall.count({
+     *   where: {
+     *     // ... the filter for the TranslationCalls we want to count
+     *   }
+     * })
+    **/
+    count<T extends TranslationCallCountArgs>(
+      args?: Subset<T, TranslationCallCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], TranslationCallCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a TranslationCall.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TranslationCallAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends TranslationCallAggregateArgs>(args: Subset<T, TranslationCallAggregateArgs>): Prisma.PrismaPromise<GetTranslationCallAggregateType<T>>
+
+    /**
+     * Group by TranslationCall.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TranslationCallGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends TranslationCallGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: TranslationCallGroupByArgs['orderBy'] }
+        : { orderBy?: TranslationCallGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, TranslationCallGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTranslationCallGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the TranslationCall model
+   */
+  readonly fields: TranslationCallFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for TranslationCall.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__TranslationCallClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    transcription<T extends TranscriptionDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TranscriptionDefaultArgs<ExtArgs>>): Prisma__TranscriptionClient<$Result.GetResult<Prisma.$TranscriptionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the TranslationCall model
+   */
+  interface TranslationCallFieldRefs {
+    readonly id: FieldRef<"TranslationCall", 'String'>
+    readonly transcriptionId: FieldRef<"TranslationCall", 'String'>
+    readonly targetLanguage: FieldRef<"TranslationCall", 'String'>
+    readonly translatedText: FieldRef<"TranslationCall", 'String'>
+    readonly confidence: FieldRef<"TranslationCall", 'Float'>
+    readonly model: FieldRef<"TranslationCall", 'String'>
+    readonly cached: FieldRef<"TranslationCall", 'Boolean'>
+    readonly createdAt: FieldRef<"TranslationCall", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * TranslationCall findUnique
+   */
+  export type TranslationCallFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TranslationCall
+     */
+    select?: TranslationCallSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TranslationCall
+     */
+    omit?: TranslationCallOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TranslationCallInclude<ExtArgs> | null
+    /**
+     * Filter, which TranslationCall to fetch.
+     */
+    where: TranslationCallWhereUniqueInput
+  }
+
+  /**
+   * TranslationCall findUniqueOrThrow
+   */
+  export type TranslationCallFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TranslationCall
+     */
+    select?: TranslationCallSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TranslationCall
+     */
+    omit?: TranslationCallOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TranslationCallInclude<ExtArgs> | null
+    /**
+     * Filter, which TranslationCall to fetch.
+     */
+    where: TranslationCallWhereUniqueInput
+  }
+
+  /**
+   * TranslationCall findFirst
+   */
+  export type TranslationCallFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TranslationCall
+     */
+    select?: TranslationCallSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TranslationCall
+     */
+    omit?: TranslationCallOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TranslationCallInclude<ExtArgs> | null
+    /**
+     * Filter, which TranslationCall to fetch.
+     */
+    where?: TranslationCallWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TranslationCalls to fetch.
+     */
+    orderBy?: TranslationCallOrderByWithRelationInput | TranslationCallOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TranslationCalls.
+     */
+    cursor?: TranslationCallWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TranslationCalls from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TranslationCalls.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TranslationCalls.
+     */
+    distinct?: TranslationCallScalarFieldEnum | TranslationCallScalarFieldEnum[]
+  }
+
+  /**
+   * TranslationCall findFirstOrThrow
+   */
+  export type TranslationCallFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TranslationCall
+     */
+    select?: TranslationCallSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TranslationCall
+     */
+    omit?: TranslationCallOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TranslationCallInclude<ExtArgs> | null
+    /**
+     * Filter, which TranslationCall to fetch.
+     */
+    where?: TranslationCallWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TranslationCalls to fetch.
+     */
+    orderBy?: TranslationCallOrderByWithRelationInput | TranslationCallOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TranslationCalls.
+     */
+    cursor?: TranslationCallWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TranslationCalls from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TranslationCalls.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TranslationCalls.
+     */
+    distinct?: TranslationCallScalarFieldEnum | TranslationCallScalarFieldEnum[]
+  }
+
+  /**
+   * TranslationCall findMany
+   */
+  export type TranslationCallFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TranslationCall
+     */
+    select?: TranslationCallSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TranslationCall
+     */
+    omit?: TranslationCallOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TranslationCallInclude<ExtArgs> | null
+    /**
+     * Filter, which TranslationCalls to fetch.
+     */
+    where?: TranslationCallWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TranslationCalls to fetch.
+     */
+    orderBy?: TranslationCallOrderByWithRelationInput | TranslationCallOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing TranslationCalls.
+     */
+    cursor?: TranslationCallWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TranslationCalls from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TranslationCalls.
+     */
+    skip?: number
+    distinct?: TranslationCallScalarFieldEnum | TranslationCallScalarFieldEnum[]
+  }
+
+  /**
+   * TranslationCall create
+   */
+  export type TranslationCallCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TranslationCall
+     */
+    select?: TranslationCallSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TranslationCall
+     */
+    omit?: TranslationCallOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TranslationCallInclude<ExtArgs> | null
+    /**
+     * The data needed to create a TranslationCall.
+     */
+    data: XOR<TranslationCallCreateInput, TranslationCallUncheckedCreateInput>
+  }
+
+  /**
+   * TranslationCall createMany
+   */
+  export type TranslationCallCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many TranslationCalls.
+     */
+    data: TranslationCallCreateManyInput | TranslationCallCreateManyInput[]
+  }
+
+  /**
+   * TranslationCall update
+   */
+  export type TranslationCallUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TranslationCall
+     */
+    select?: TranslationCallSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TranslationCall
+     */
+    omit?: TranslationCallOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TranslationCallInclude<ExtArgs> | null
+    /**
+     * The data needed to update a TranslationCall.
+     */
+    data: XOR<TranslationCallUpdateInput, TranslationCallUncheckedUpdateInput>
+    /**
+     * Choose, which TranslationCall to update.
+     */
+    where: TranslationCallWhereUniqueInput
+  }
+
+  /**
+   * TranslationCall updateMany
+   */
+  export type TranslationCallUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update TranslationCalls.
+     */
+    data: XOR<TranslationCallUpdateManyMutationInput, TranslationCallUncheckedUpdateManyInput>
+    /**
+     * Filter which TranslationCalls to update
+     */
+    where?: TranslationCallWhereInput
+    /**
+     * Limit how many TranslationCalls to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * TranslationCall upsert
+   */
+  export type TranslationCallUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TranslationCall
+     */
+    select?: TranslationCallSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TranslationCall
+     */
+    omit?: TranslationCallOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TranslationCallInclude<ExtArgs> | null
+    /**
+     * The filter to search for the TranslationCall to update in case it exists.
+     */
+    where: TranslationCallWhereUniqueInput
+    /**
+     * In case the TranslationCall found by the `where` argument doesn't exist, create a new TranslationCall with this data.
+     */
+    create: XOR<TranslationCallCreateInput, TranslationCallUncheckedCreateInput>
+    /**
+     * In case the TranslationCall was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<TranslationCallUpdateInput, TranslationCallUncheckedUpdateInput>
+  }
+
+  /**
+   * TranslationCall delete
+   */
+  export type TranslationCallDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TranslationCall
+     */
+    select?: TranslationCallSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TranslationCall
+     */
+    omit?: TranslationCallOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TranslationCallInclude<ExtArgs> | null
+    /**
+     * Filter which TranslationCall to delete.
+     */
+    where: TranslationCallWhereUniqueInput
+  }
+
+  /**
+   * TranslationCall deleteMany
+   */
+  export type TranslationCallDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TranslationCalls to delete
+     */
+    where?: TranslationCallWhereInput
+    /**
+     * Limit how many TranslationCalls to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * TranslationCall findRaw
+   */
+  export type TranslationCallFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * TranslationCall aggregateRaw
+   */
+  export type TranslationCallAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * TranslationCall without action
+   */
+  export type TranslationCallDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TranslationCall
+     */
+    select?: TranslationCallSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TranslationCall
+     */
+    omit?: TranslationCallOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TranslationCallInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -29762,6 +35976,10 @@ export namespace Prisma {
     thumbnailPath: 'thumbnailPath',
     thumbnailUrl: 'thumbnailUrl',
     duration: 'duration',
+    bitrate: 'bitrate',
+    sampleRate: 'sampleRate',
+    codec: 'codec',
+    channels: 'channels',
     uploadedBy: 'uploadedBy',
     isAnonymous: 'isAnonymous',
     createdAt: 'createdAt'
@@ -30006,6 +36224,87 @@ export namespace Prisma {
   export type AdminAuditLogScalarFieldEnum = (typeof AdminAuditLogScalarFieldEnum)[keyof typeof AdminAuditLogScalarFieldEnum]
 
 
+  export const ReportScalarFieldEnum: {
+    id: 'id',
+    reportedType: 'reportedType',
+    reportedEntityId: 'reportedEntityId',
+    reporterId: 'reporterId',
+    reporterName: 'reporterName',
+    reportType: 'reportType',
+    reason: 'reason',
+    status: 'status',
+    moderatorId: 'moderatorId',
+    moderatorNotes: 'moderatorNotes',
+    actionTaken: 'actionTaken',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    resolvedAt: 'resolvedAt'
+  };
+
+  export type ReportScalarFieldEnum = (typeof ReportScalarFieldEnum)[keyof typeof ReportScalarFieldEnum]
+
+
+  export const CallSessionScalarFieldEnum: {
+    id: 'id',
+    conversationId: 'conversationId',
+    mode: 'mode',
+    status: 'status',
+    initiatorId: 'initiatorId',
+    startedAt: 'startedAt',
+    answeredAt: 'answeredAt',
+    endedAt: 'endedAt',
+    duration: 'duration',
+    metadata: 'metadata'
+  };
+
+  export type CallSessionScalarFieldEnum = (typeof CallSessionScalarFieldEnum)[keyof typeof CallSessionScalarFieldEnum]
+
+
+  export const CallParticipantScalarFieldEnum: {
+    id: 'id',
+    callSessionId: 'callSessionId',
+    userId: 'userId',
+    anonymousId: 'anonymousId',
+    role: 'role',
+    joinedAt: 'joinedAt',
+    leftAt: 'leftAt',
+    isAudioEnabled: 'isAudioEnabled',
+    isVideoEnabled: 'isVideoEnabled',
+    connectionQuality: 'connectionQuality'
+  };
+
+  export type CallParticipantScalarFieldEnum = (typeof CallParticipantScalarFieldEnum)[keyof typeof CallParticipantScalarFieldEnum]
+
+
+  export const TranscriptionScalarFieldEnum: {
+    id: 'id',
+    callSessionId: 'callSessionId',
+    participantId: 'participantId',
+    source: 'source',
+    text: 'text',
+    language: 'language',
+    confidence: 'confidence',
+    timestamp: 'timestamp',
+    offsetMs: 'offsetMs'
+  };
+
+  export type TranscriptionScalarFieldEnum = (typeof TranscriptionScalarFieldEnum)[keyof typeof TranscriptionScalarFieldEnum]
+
+
+  export const TranslationCallScalarFieldEnum: {
+    id: 'id',
+    transcriptionId: 'transcriptionId',
+    targetLanguage: 'targetLanguage',
+    translatedText: 'translatedText',
+    confidence: 'confidence',
+    model: 'model',
+    cached: 'cached',
+    createdAt: 'createdAt'
+  };
+
+  export type TranslationCallScalarFieldEnum = (typeof TranslationCallScalarFieldEnum)[keyof typeof TranslationCallScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -30088,6 +36387,69 @@ export namespace Prisma {
    */
   export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
+
+
+  /**
+   * Reference to a field of type 'CallMode'
+   */
+  export type EnumCallModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CallMode'>
+    
+
+
+  /**
+   * Reference to a field of type 'CallMode[]'
+   */
+  export type ListEnumCallModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CallMode[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'CallStatus'
+   */
+  export type EnumCallStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CallStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'CallStatus[]'
+   */
+  export type ListEnumCallStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CallStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+  /**
+   * Reference to a field of type 'ParticipantRole'
+   */
+  export type EnumParticipantRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ParticipantRole'>
+    
+
+
+  /**
+   * Reference to a field of type 'ParticipantRole[]'
+   */
+  export type ListEnumParticipantRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ParticipantRole[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'TranscriptionSource'
+   */
+  export type EnumTranscriptionSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TranscriptionSource'>
+    
+
+
+  /**
+   * Reference to a field of type 'TranscriptionSource[]'
+   */
+  export type ListEnumTranscriptionSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TranscriptionSource[]'>
+    
   /**
    * Deep Input Types
    */
@@ -30120,17 +36482,17 @@ export namespace Prisma {
     role?: StringFilter<"User"> | string
     isActive?: BoolFilter<"User"> | boolean
     deactivatedAt?: DateTimeNullableFilter<"User"> | Date | string | null
-    emailVerified?: BoolFilter<"User"> | boolean
+    emailVerified?: BoolNullableFilter<"User"> | boolean | null
     emailVerifiedAt?: DateTimeNullableFilter<"User"> | Date | string | null
-    phoneVerified?: BoolFilter<"User"> | boolean
+    phoneVerified?: BoolNullableFilter<"User"> | boolean | null
     phoneVerifiedAt?: DateTimeNullableFilter<"User"> | Date | string | null
-    twoFactorEnabled?: BoolFilter<"User"> | boolean
-    failedLoginAttempts?: IntFilter<"User"> | number
+    twoFactorEnabled?: BoolNullableFilter<"User"> | boolean | null
+    failedLoginAttempts?: IntNullableFilter<"User"> | number | null
     lockedUntil?: DateTimeNullableFilter<"User"> | Date | string | null
-    lastPasswordChange?: DateTimeFilter<"User"> | Date | string
+    lastPasswordChange?: DateTimeNullableFilter<"User"> | Date | string | null
     deletedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     deletedBy?: StringNullableFilter<"User"> | string | null
-    profileCompletionRate?: IntFilter<"User"> | number
+    profileCompletionRate?: IntNullableFilter<"User"> | number | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     createdCommunities?: CommunityListRelationFilter
@@ -30152,6 +36514,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationListRelationFilter
     createdTrackingLinks?: TrackingLinkListRelationFilter
     trackingLinkClicks?: TrackingLinkClickListRelationFilter
+    initiatedCalls?: CallSessionListRelationFilter
+    callParticipations?: CallParticipantListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -30210,6 +36574,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationOrderByRelationAggregateInput
     createdTrackingLinks?: TrackingLinkOrderByRelationAggregateInput
     trackingLinkClicks?: TrackingLinkClickOrderByRelationAggregateInput
+    initiatedCalls?: CallSessionOrderByRelationAggregateInput
+    callParticipations?: CallParticipantOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -30239,17 +36605,17 @@ export namespace Prisma {
     role?: StringFilter<"User"> | string
     isActive?: BoolFilter<"User"> | boolean
     deactivatedAt?: DateTimeNullableFilter<"User"> | Date | string | null
-    emailVerified?: BoolFilter<"User"> | boolean
+    emailVerified?: BoolNullableFilter<"User"> | boolean | null
     emailVerifiedAt?: DateTimeNullableFilter<"User"> | Date | string | null
-    phoneVerified?: BoolFilter<"User"> | boolean
+    phoneVerified?: BoolNullableFilter<"User"> | boolean | null
     phoneVerifiedAt?: DateTimeNullableFilter<"User"> | Date | string | null
-    twoFactorEnabled?: BoolFilter<"User"> | boolean
-    failedLoginAttempts?: IntFilter<"User"> | number
+    twoFactorEnabled?: BoolNullableFilter<"User"> | boolean | null
+    failedLoginAttempts?: IntNullableFilter<"User"> | number | null
     lockedUntil?: DateTimeNullableFilter<"User"> | Date | string | null
-    lastPasswordChange?: DateTimeFilter<"User"> | Date | string
+    lastPasswordChange?: DateTimeNullableFilter<"User"> | Date | string | null
     deletedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     deletedBy?: StringNullableFilter<"User"> | string | null
-    profileCompletionRate?: IntFilter<"User"> | number
+    profileCompletionRate?: IntNullableFilter<"User"> | number | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     createdCommunities?: CommunityListRelationFilter
@@ -30271,6 +36637,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationListRelationFilter
     createdTrackingLinks?: TrackingLinkListRelationFilter
     trackingLinkClicks?: TrackingLinkClickListRelationFilter
+    initiatedCalls?: CallSessionListRelationFilter
+    callParticipations?: CallParticipantListRelationFilter
   }, "id" | "username" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -30344,17 +36712,17 @@ export namespace Prisma {
     role?: StringWithAggregatesFilter<"User"> | string
     isActive?: BoolWithAggregatesFilter<"User"> | boolean
     deactivatedAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
-    emailVerified?: BoolWithAggregatesFilter<"User"> | boolean
+    emailVerified?: BoolNullableWithAggregatesFilter<"User"> | boolean | null
     emailVerifiedAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
-    phoneVerified?: BoolWithAggregatesFilter<"User"> | boolean
+    phoneVerified?: BoolNullableWithAggregatesFilter<"User"> | boolean | null
     phoneVerifiedAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
-    twoFactorEnabled?: BoolWithAggregatesFilter<"User"> | boolean
-    failedLoginAttempts?: IntWithAggregatesFilter<"User"> | number
+    twoFactorEnabled?: BoolNullableWithAggregatesFilter<"User"> | boolean | null
+    failedLoginAttempts?: IntNullableWithAggregatesFilter<"User"> | number | null
     lockedUntil?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
-    lastPasswordChange?: DateTimeWithAggregatesFilter<"User"> | Date | string
+    lastPasswordChange?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     deletedAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     deletedBy?: StringNullableWithAggregatesFilter<"User"> | string | null
-    profileCompletionRate?: IntWithAggregatesFilter<"User"> | number
+    profileCompletionRate?: IntNullableWithAggregatesFilter<"User"> | number | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
   }
@@ -30383,6 +36751,7 @@ export namespace Prisma {
     community?: XOR<CommunityNullableScalarRelationFilter, CommunityWhereInput> | null
     messages?: MessageListRelationFilter
     typingIndicators?: TypingIndicatorListRelationFilter
+    callSessions?: CallSessionListRelationFilter
   }
 
   export type ConversationOrderByWithRelationInput = {
@@ -30406,6 +36775,7 @@ export namespace Prisma {
     community?: CommunityOrderByWithRelationInput
     messages?: MessageOrderByRelationAggregateInput
     typingIndicators?: TypingIndicatorOrderByRelationAggregateInput
+    callSessions?: CallSessionOrderByRelationAggregateInput
   }
 
   export type ConversationWhereUniqueInput = Prisma.AtLeast<{
@@ -30432,6 +36802,7 @@ export namespace Prisma {
     community?: XOR<CommunityNullableScalarRelationFilter, CommunityWhereInput> | null
     messages?: MessageListRelationFilter
     typingIndicators?: TypingIndicatorListRelationFilter
+    callSessions?: CallSessionListRelationFilter
   }, "id" | "identifier">
 
   export type ConversationOrderByWithAggregationInput = {
@@ -31117,6 +37488,10 @@ export namespace Prisma {
     thumbnailPath?: StringNullableFilter<"MessageAttachment"> | string | null
     thumbnailUrl?: StringNullableFilter<"MessageAttachment"> | string | null
     duration?: IntNullableFilter<"MessageAttachment"> | number | null
+    bitrate?: IntNullableFilter<"MessageAttachment"> | number | null
+    sampleRate?: IntNullableFilter<"MessageAttachment"> | number | null
+    codec?: StringNullableFilter<"MessageAttachment"> | string | null
+    channels?: IntNullableFilter<"MessageAttachment"> | number | null
     uploadedBy?: StringFilter<"MessageAttachment"> | string
     isAnonymous?: BoolFilter<"MessageAttachment"> | boolean
     createdAt?: DateTimeFilter<"MessageAttachment"> | Date | string
@@ -31137,6 +37512,10 @@ export namespace Prisma {
     thumbnailPath?: SortOrder
     thumbnailUrl?: SortOrder
     duration?: SortOrder
+    bitrate?: SortOrder
+    sampleRate?: SortOrder
+    codec?: SortOrder
+    channels?: SortOrder
     uploadedBy?: SortOrder
     isAnonymous?: SortOrder
     createdAt?: SortOrder
@@ -31160,6 +37539,10 @@ export namespace Prisma {
     thumbnailPath?: StringNullableFilter<"MessageAttachment"> | string | null
     thumbnailUrl?: StringNullableFilter<"MessageAttachment"> | string | null
     duration?: IntNullableFilter<"MessageAttachment"> | number | null
+    bitrate?: IntNullableFilter<"MessageAttachment"> | number | null
+    sampleRate?: IntNullableFilter<"MessageAttachment"> | number | null
+    codec?: StringNullableFilter<"MessageAttachment"> | string | null
+    channels?: IntNullableFilter<"MessageAttachment"> | number | null
     uploadedBy?: StringFilter<"MessageAttachment"> | string
     isAnonymous?: BoolFilter<"MessageAttachment"> | boolean
     createdAt?: DateTimeFilter<"MessageAttachment"> | Date | string
@@ -31180,6 +37563,10 @@ export namespace Prisma {
     thumbnailPath?: SortOrder
     thumbnailUrl?: SortOrder
     duration?: SortOrder
+    bitrate?: SortOrder
+    sampleRate?: SortOrder
+    codec?: SortOrder
+    channels?: SortOrder
     uploadedBy?: SortOrder
     isAnonymous?: SortOrder
     createdAt?: SortOrder
@@ -31207,6 +37594,10 @@ export namespace Prisma {
     thumbnailPath?: StringNullableWithAggregatesFilter<"MessageAttachment"> | string | null
     thumbnailUrl?: StringNullableWithAggregatesFilter<"MessageAttachment"> | string | null
     duration?: IntNullableWithAggregatesFilter<"MessageAttachment"> | number | null
+    bitrate?: IntNullableWithAggregatesFilter<"MessageAttachment"> | number | null
+    sampleRate?: IntNullableWithAggregatesFilter<"MessageAttachment"> | number | null
+    codec?: StringNullableWithAggregatesFilter<"MessageAttachment"> | string | null
+    channels?: IntNullableWithAggregatesFilter<"MessageAttachment"> | number | null
     uploadedBy?: StringWithAggregatesFilter<"MessageAttachment"> | string
     isAnonymous?: BoolWithAggregatesFilter<"MessageAttachment"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"MessageAttachment"> | Date | string
@@ -32446,6 +38837,429 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"AdminAuditLog"> | Date | string
   }
 
+  export type ReportWhereInput = {
+    AND?: ReportWhereInput | ReportWhereInput[]
+    OR?: ReportWhereInput[]
+    NOT?: ReportWhereInput | ReportWhereInput[]
+    id?: StringFilter<"Report"> | string
+    reportedType?: StringFilter<"Report"> | string
+    reportedEntityId?: StringFilter<"Report"> | string
+    reporterId?: StringNullableFilter<"Report"> | string | null
+    reporterName?: StringNullableFilter<"Report"> | string | null
+    reportType?: StringFilter<"Report"> | string
+    reason?: StringNullableFilter<"Report"> | string | null
+    status?: StringFilter<"Report"> | string
+    moderatorId?: StringNullableFilter<"Report"> | string | null
+    moderatorNotes?: StringNullableFilter<"Report"> | string | null
+    actionTaken?: StringNullableFilter<"Report"> | string | null
+    createdAt?: DateTimeFilter<"Report"> | Date | string
+    updatedAt?: DateTimeFilter<"Report"> | Date | string
+    resolvedAt?: DateTimeNullableFilter<"Report"> | Date | string | null
+  }
+
+  export type ReportOrderByWithRelationInput = {
+    id?: SortOrder
+    reportedType?: SortOrder
+    reportedEntityId?: SortOrder
+    reporterId?: SortOrder
+    reporterName?: SortOrder
+    reportType?: SortOrder
+    reason?: SortOrder
+    status?: SortOrder
+    moderatorId?: SortOrder
+    moderatorNotes?: SortOrder
+    actionTaken?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    resolvedAt?: SortOrder
+  }
+
+  export type ReportWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: ReportWhereInput | ReportWhereInput[]
+    OR?: ReportWhereInput[]
+    NOT?: ReportWhereInput | ReportWhereInput[]
+    reportedType?: StringFilter<"Report"> | string
+    reportedEntityId?: StringFilter<"Report"> | string
+    reporterId?: StringNullableFilter<"Report"> | string | null
+    reporterName?: StringNullableFilter<"Report"> | string | null
+    reportType?: StringFilter<"Report"> | string
+    reason?: StringNullableFilter<"Report"> | string | null
+    status?: StringFilter<"Report"> | string
+    moderatorId?: StringNullableFilter<"Report"> | string | null
+    moderatorNotes?: StringNullableFilter<"Report"> | string | null
+    actionTaken?: StringNullableFilter<"Report"> | string | null
+    createdAt?: DateTimeFilter<"Report"> | Date | string
+    updatedAt?: DateTimeFilter<"Report"> | Date | string
+    resolvedAt?: DateTimeNullableFilter<"Report"> | Date | string | null
+  }, "id">
+
+  export type ReportOrderByWithAggregationInput = {
+    id?: SortOrder
+    reportedType?: SortOrder
+    reportedEntityId?: SortOrder
+    reporterId?: SortOrder
+    reporterName?: SortOrder
+    reportType?: SortOrder
+    reason?: SortOrder
+    status?: SortOrder
+    moderatorId?: SortOrder
+    moderatorNotes?: SortOrder
+    actionTaken?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    resolvedAt?: SortOrder
+    _count?: ReportCountOrderByAggregateInput
+    _max?: ReportMaxOrderByAggregateInput
+    _min?: ReportMinOrderByAggregateInput
+  }
+
+  export type ReportScalarWhereWithAggregatesInput = {
+    AND?: ReportScalarWhereWithAggregatesInput | ReportScalarWhereWithAggregatesInput[]
+    OR?: ReportScalarWhereWithAggregatesInput[]
+    NOT?: ReportScalarWhereWithAggregatesInput | ReportScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Report"> | string
+    reportedType?: StringWithAggregatesFilter<"Report"> | string
+    reportedEntityId?: StringWithAggregatesFilter<"Report"> | string
+    reporterId?: StringNullableWithAggregatesFilter<"Report"> | string | null
+    reporterName?: StringNullableWithAggregatesFilter<"Report"> | string | null
+    reportType?: StringWithAggregatesFilter<"Report"> | string
+    reason?: StringNullableWithAggregatesFilter<"Report"> | string | null
+    status?: StringWithAggregatesFilter<"Report"> | string
+    moderatorId?: StringNullableWithAggregatesFilter<"Report"> | string | null
+    moderatorNotes?: StringNullableWithAggregatesFilter<"Report"> | string | null
+    actionTaken?: StringNullableWithAggregatesFilter<"Report"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"Report"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Report"> | Date | string
+    resolvedAt?: DateTimeNullableWithAggregatesFilter<"Report"> | Date | string | null
+  }
+
+  export type CallSessionWhereInput = {
+    AND?: CallSessionWhereInput | CallSessionWhereInput[]
+    OR?: CallSessionWhereInput[]
+    NOT?: CallSessionWhereInput | CallSessionWhereInput[]
+    id?: StringFilter<"CallSession"> | string
+    conversationId?: StringFilter<"CallSession"> | string
+    mode?: EnumCallModeFilter<"CallSession"> | $Enums.CallMode
+    status?: EnumCallStatusFilter<"CallSession"> | $Enums.CallStatus
+    initiatorId?: StringFilter<"CallSession"> | string
+    startedAt?: DateTimeFilter<"CallSession"> | Date | string
+    answeredAt?: DateTimeNullableFilter<"CallSession"> | Date | string | null
+    endedAt?: DateTimeNullableFilter<"CallSession"> | Date | string | null
+    duration?: IntNullableFilter<"CallSession"> | number | null
+    metadata?: JsonNullableFilter<"CallSession">
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
+    initiator?: XOR<UserScalarRelationFilter, UserWhereInput>
+    participants?: CallParticipantListRelationFilter
+    transcriptions?: TranscriptionListRelationFilter
+  }
+
+  export type CallSessionOrderByWithRelationInput = {
+    id?: SortOrder
+    conversationId?: SortOrder
+    mode?: SortOrder
+    status?: SortOrder
+    initiatorId?: SortOrder
+    startedAt?: SortOrder
+    answeredAt?: SortOrder
+    endedAt?: SortOrder
+    duration?: SortOrder
+    metadata?: SortOrder
+    conversation?: ConversationOrderByWithRelationInput
+    initiator?: UserOrderByWithRelationInput
+    participants?: CallParticipantOrderByRelationAggregateInput
+    transcriptions?: TranscriptionOrderByRelationAggregateInput
+  }
+
+  export type CallSessionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: CallSessionWhereInput | CallSessionWhereInput[]
+    OR?: CallSessionWhereInput[]
+    NOT?: CallSessionWhereInput | CallSessionWhereInput[]
+    conversationId?: StringFilter<"CallSession"> | string
+    mode?: EnumCallModeFilter<"CallSession"> | $Enums.CallMode
+    status?: EnumCallStatusFilter<"CallSession"> | $Enums.CallStatus
+    initiatorId?: StringFilter<"CallSession"> | string
+    startedAt?: DateTimeFilter<"CallSession"> | Date | string
+    answeredAt?: DateTimeNullableFilter<"CallSession"> | Date | string | null
+    endedAt?: DateTimeNullableFilter<"CallSession"> | Date | string | null
+    duration?: IntNullableFilter<"CallSession"> | number | null
+    metadata?: JsonNullableFilter<"CallSession">
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
+    initiator?: XOR<UserScalarRelationFilter, UserWhereInput>
+    participants?: CallParticipantListRelationFilter
+    transcriptions?: TranscriptionListRelationFilter
+  }, "id">
+
+  export type CallSessionOrderByWithAggregationInput = {
+    id?: SortOrder
+    conversationId?: SortOrder
+    mode?: SortOrder
+    status?: SortOrder
+    initiatorId?: SortOrder
+    startedAt?: SortOrder
+    answeredAt?: SortOrder
+    endedAt?: SortOrder
+    duration?: SortOrder
+    metadata?: SortOrder
+    _count?: CallSessionCountOrderByAggregateInput
+    _avg?: CallSessionAvgOrderByAggregateInput
+    _max?: CallSessionMaxOrderByAggregateInput
+    _min?: CallSessionMinOrderByAggregateInput
+    _sum?: CallSessionSumOrderByAggregateInput
+  }
+
+  export type CallSessionScalarWhereWithAggregatesInput = {
+    AND?: CallSessionScalarWhereWithAggregatesInput | CallSessionScalarWhereWithAggregatesInput[]
+    OR?: CallSessionScalarWhereWithAggregatesInput[]
+    NOT?: CallSessionScalarWhereWithAggregatesInput | CallSessionScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"CallSession"> | string
+    conversationId?: StringWithAggregatesFilter<"CallSession"> | string
+    mode?: EnumCallModeWithAggregatesFilter<"CallSession"> | $Enums.CallMode
+    status?: EnumCallStatusWithAggregatesFilter<"CallSession"> | $Enums.CallStatus
+    initiatorId?: StringWithAggregatesFilter<"CallSession"> | string
+    startedAt?: DateTimeWithAggregatesFilter<"CallSession"> | Date | string
+    answeredAt?: DateTimeNullableWithAggregatesFilter<"CallSession"> | Date | string | null
+    endedAt?: DateTimeNullableWithAggregatesFilter<"CallSession"> | Date | string | null
+    duration?: IntNullableWithAggregatesFilter<"CallSession"> | number | null
+    metadata?: JsonNullableWithAggregatesFilter<"CallSession">
+  }
+
+  export type CallParticipantWhereInput = {
+    AND?: CallParticipantWhereInput | CallParticipantWhereInput[]
+    OR?: CallParticipantWhereInput[]
+    NOT?: CallParticipantWhereInput | CallParticipantWhereInput[]
+    id?: StringFilter<"CallParticipant"> | string
+    callSessionId?: StringFilter<"CallParticipant"> | string
+    userId?: StringNullableFilter<"CallParticipant"> | string | null
+    anonymousId?: StringNullableFilter<"CallParticipant"> | string | null
+    role?: EnumParticipantRoleFilter<"CallParticipant"> | $Enums.ParticipantRole
+    joinedAt?: DateTimeFilter<"CallParticipant"> | Date | string
+    leftAt?: DateTimeNullableFilter<"CallParticipant"> | Date | string | null
+    isAudioEnabled?: BoolFilter<"CallParticipant"> | boolean
+    isVideoEnabled?: BoolFilter<"CallParticipant"> | boolean
+    connectionQuality?: JsonNullableFilter<"CallParticipant">
+    callSession?: XOR<CallSessionScalarRelationFilter, CallSessionWhereInput>
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }
+
+  export type CallParticipantOrderByWithRelationInput = {
+    id?: SortOrder
+    callSessionId?: SortOrder
+    userId?: SortOrder
+    anonymousId?: SortOrder
+    role?: SortOrder
+    joinedAt?: SortOrder
+    leftAt?: SortOrder
+    isAudioEnabled?: SortOrder
+    isVideoEnabled?: SortOrder
+    connectionQuality?: SortOrder
+    callSession?: CallSessionOrderByWithRelationInput
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type CallParticipantWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: CallParticipantWhereInput | CallParticipantWhereInput[]
+    OR?: CallParticipantWhereInput[]
+    NOT?: CallParticipantWhereInput | CallParticipantWhereInput[]
+    callSessionId?: StringFilter<"CallParticipant"> | string
+    userId?: StringNullableFilter<"CallParticipant"> | string | null
+    anonymousId?: StringNullableFilter<"CallParticipant"> | string | null
+    role?: EnumParticipantRoleFilter<"CallParticipant"> | $Enums.ParticipantRole
+    joinedAt?: DateTimeFilter<"CallParticipant"> | Date | string
+    leftAt?: DateTimeNullableFilter<"CallParticipant"> | Date | string | null
+    isAudioEnabled?: BoolFilter<"CallParticipant"> | boolean
+    isVideoEnabled?: BoolFilter<"CallParticipant"> | boolean
+    connectionQuality?: JsonNullableFilter<"CallParticipant">
+    callSession?: XOR<CallSessionScalarRelationFilter, CallSessionWhereInput>
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }, "id">
+
+  export type CallParticipantOrderByWithAggregationInput = {
+    id?: SortOrder
+    callSessionId?: SortOrder
+    userId?: SortOrder
+    anonymousId?: SortOrder
+    role?: SortOrder
+    joinedAt?: SortOrder
+    leftAt?: SortOrder
+    isAudioEnabled?: SortOrder
+    isVideoEnabled?: SortOrder
+    connectionQuality?: SortOrder
+    _count?: CallParticipantCountOrderByAggregateInput
+    _max?: CallParticipantMaxOrderByAggregateInput
+    _min?: CallParticipantMinOrderByAggregateInput
+  }
+
+  export type CallParticipantScalarWhereWithAggregatesInput = {
+    AND?: CallParticipantScalarWhereWithAggregatesInput | CallParticipantScalarWhereWithAggregatesInput[]
+    OR?: CallParticipantScalarWhereWithAggregatesInput[]
+    NOT?: CallParticipantScalarWhereWithAggregatesInput | CallParticipantScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"CallParticipant"> | string
+    callSessionId?: StringWithAggregatesFilter<"CallParticipant"> | string
+    userId?: StringNullableWithAggregatesFilter<"CallParticipant"> | string | null
+    anonymousId?: StringNullableWithAggregatesFilter<"CallParticipant"> | string | null
+    role?: EnumParticipantRoleWithAggregatesFilter<"CallParticipant"> | $Enums.ParticipantRole
+    joinedAt?: DateTimeWithAggregatesFilter<"CallParticipant"> | Date | string
+    leftAt?: DateTimeNullableWithAggregatesFilter<"CallParticipant"> | Date | string | null
+    isAudioEnabled?: BoolWithAggregatesFilter<"CallParticipant"> | boolean
+    isVideoEnabled?: BoolWithAggregatesFilter<"CallParticipant"> | boolean
+    connectionQuality?: JsonNullableWithAggregatesFilter<"CallParticipant">
+  }
+
+  export type TranscriptionWhereInput = {
+    AND?: TranscriptionWhereInput | TranscriptionWhereInput[]
+    OR?: TranscriptionWhereInput[]
+    NOT?: TranscriptionWhereInput | TranscriptionWhereInput[]
+    id?: StringFilter<"Transcription"> | string
+    callSessionId?: StringFilter<"Transcription"> | string
+    participantId?: StringFilter<"Transcription"> | string
+    source?: EnumTranscriptionSourceFilter<"Transcription"> | $Enums.TranscriptionSource
+    text?: StringFilter<"Transcription"> | string
+    language?: StringFilter<"Transcription"> | string
+    confidence?: FloatNullableFilter<"Transcription"> | number | null
+    timestamp?: DateTimeFilter<"Transcription"> | Date | string
+    offsetMs?: IntNullableFilter<"Transcription"> | number | null
+    callSession?: XOR<CallSessionScalarRelationFilter, CallSessionWhereInput>
+    translations?: TranslationCallListRelationFilter
+  }
+
+  export type TranscriptionOrderByWithRelationInput = {
+    id?: SortOrder
+    callSessionId?: SortOrder
+    participantId?: SortOrder
+    source?: SortOrder
+    text?: SortOrder
+    language?: SortOrder
+    confidence?: SortOrder
+    timestamp?: SortOrder
+    offsetMs?: SortOrder
+    callSession?: CallSessionOrderByWithRelationInput
+    translations?: TranslationCallOrderByRelationAggregateInput
+  }
+
+  export type TranscriptionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: TranscriptionWhereInput | TranscriptionWhereInput[]
+    OR?: TranscriptionWhereInput[]
+    NOT?: TranscriptionWhereInput | TranscriptionWhereInput[]
+    callSessionId?: StringFilter<"Transcription"> | string
+    participantId?: StringFilter<"Transcription"> | string
+    source?: EnumTranscriptionSourceFilter<"Transcription"> | $Enums.TranscriptionSource
+    text?: StringFilter<"Transcription"> | string
+    language?: StringFilter<"Transcription"> | string
+    confidence?: FloatNullableFilter<"Transcription"> | number | null
+    timestamp?: DateTimeFilter<"Transcription"> | Date | string
+    offsetMs?: IntNullableFilter<"Transcription"> | number | null
+    callSession?: XOR<CallSessionScalarRelationFilter, CallSessionWhereInput>
+    translations?: TranslationCallListRelationFilter
+  }, "id">
+
+  export type TranscriptionOrderByWithAggregationInput = {
+    id?: SortOrder
+    callSessionId?: SortOrder
+    participantId?: SortOrder
+    source?: SortOrder
+    text?: SortOrder
+    language?: SortOrder
+    confidence?: SortOrder
+    timestamp?: SortOrder
+    offsetMs?: SortOrder
+    _count?: TranscriptionCountOrderByAggregateInput
+    _avg?: TranscriptionAvgOrderByAggregateInput
+    _max?: TranscriptionMaxOrderByAggregateInput
+    _min?: TranscriptionMinOrderByAggregateInput
+    _sum?: TranscriptionSumOrderByAggregateInput
+  }
+
+  export type TranscriptionScalarWhereWithAggregatesInput = {
+    AND?: TranscriptionScalarWhereWithAggregatesInput | TranscriptionScalarWhereWithAggregatesInput[]
+    OR?: TranscriptionScalarWhereWithAggregatesInput[]
+    NOT?: TranscriptionScalarWhereWithAggregatesInput | TranscriptionScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Transcription"> | string
+    callSessionId?: StringWithAggregatesFilter<"Transcription"> | string
+    participantId?: StringWithAggregatesFilter<"Transcription"> | string
+    source?: EnumTranscriptionSourceWithAggregatesFilter<"Transcription"> | $Enums.TranscriptionSource
+    text?: StringWithAggregatesFilter<"Transcription"> | string
+    language?: StringWithAggregatesFilter<"Transcription"> | string
+    confidence?: FloatNullableWithAggregatesFilter<"Transcription"> | number | null
+    timestamp?: DateTimeWithAggregatesFilter<"Transcription"> | Date | string
+    offsetMs?: IntNullableWithAggregatesFilter<"Transcription"> | number | null
+  }
+
+  export type TranslationCallWhereInput = {
+    AND?: TranslationCallWhereInput | TranslationCallWhereInput[]
+    OR?: TranslationCallWhereInput[]
+    NOT?: TranslationCallWhereInput | TranslationCallWhereInput[]
+    id?: StringFilter<"TranslationCall"> | string
+    transcriptionId?: StringFilter<"TranslationCall"> | string
+    targetLanguage?: StringFilter<"TranslationCall"> | string
+    translatedText?: StringFilter<"TranslationCall"> | string
+    confidence?: FloatNullableFilter<"TranslationCall"> | number | null
+    model?: StringNullableFilter<"TranslationCall"> | string | null
+    cached?: BoolFilter<"TranslationCall"> | boolean
+    createdAt?: DateTimeFilter<"TranslationCall"> | Date | string
+    transcription?: XOR<TranscriptionScalarRelationFilter, TranscriptionWhereInput>
+  }
+
+  export type TranslationCallOrderByWithRelationInput = {
+    id?: SortOrder
+    transcriptionId?: SortOrder
+    targetLanguage?: SortOrder
+    translatedText?: SortOrder
+    confidence?: SortOrder
+    model?: SortOrder
+    cached?: SortOrder
+    createdAt?: SortOrder
+    transcription?: TranscriptionOrderByWithRelationInput
+  }
+
+  export type TranslationCallWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: TranslationCallWhereInput | TranslationCallWhereInput[]
+    OR?: TranslationCallWhereInput[]
+    NOT?: TranslationCallWhereInput | TranslationCallWhereInput[]
+    transcriptionId?: StringFilter<"TranslationCall"> | string
+    targetLanguage?: StringFilter<"TranslationCall"> | string
+    translatedText?: StringFilter<"TranslationCall"> | string
+    confidence?: FloatNullableFilter<"TranslationCall"> | number | null
+    model?: StringNullableFilter<"TranslationCall"> | string | null
+    cached?: BoolFilter<"TranslationCall"> | boolean
+    createdAt?: DateTimeFilter<"TranslationCall"> | Date | string
+    transcription?: XOR<TranscriptionScalarRelationFilter, TranscriptionWhereInput>
+  }, "id">
+
+  export type TranslationCallOrderByWithAggregationInput = {
+    id?: SortOrder
+    transcriptionId?: SortOrder
+    targetLanguage?: SortOrder
+    translatedText?: SortOrder
+    confidence?: SortOrder
+    model?: SortOrder
+    cached?: SortOrder
+    createdAt?: SortOrder
+    _count?: TranslationCallCountOrderByAggregateInput
+    _avg?: TranslationCallAvgOrderByAggregateInput
+    _max?: TranslationCallMaxOrderByAggregateInput
+    _min?: TranslationCallMinOrderByAggregateInput
+    _sum?: TranslationCallSumOrderByAggregateInput
+  }
+
+  export type TranslationCallScalarWhereWithAggregatesInput = {
+    AND?: TranslationCallScalarWhereWithAggregatesInput | TranslationCallScalarWhereWithAggregatesInput[]
+    OR?: TranslationCallScalarWhereWithAggregatesInput[]
+    NOT?: TranslationCallScalarWhereWithAggregatesInput | TranslationCallScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"TranslationCall"> | string
+    transcriptionId?: StringWithAggregatesFilter<"TranslationCall"> | string
+    targetLanguage?: StringWithAggregatesFilter<"TranslationCall"> | string
+    translatedText?: StringWithAggregatesFilter<"TranslationCall"> | string
+    confidence?: FloatNullableWithAggregatesFilter<"TranslationCall"> | number | null
+    model?: StringNullableWithAggregatesFilter<"TranslationCall"> | string | null
+    cached?: BoolWithAggregatesFilter<"TranslationCall"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"TranslationCall"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     username: string
@@ -32470,17 +39284,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -32502,6 +39316,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -32528,17 +39344,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -32560,6 +39376,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -32585,17 +39403,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -32617,6 +39435,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -32642,17 +39462,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -32674,6 +39494,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -32700,17 +39522,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -32738,17 +39560,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -32776,17 +39598,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -32811,6 +39633,7 @@ export namespace Prisma {
     community?: CommunityCreateNestedOneWithoutConversationInput
     messages?: MessageCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
+    callSessions?: CallSessionCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUncheckedCreateInput = {
@@ -32833,6 +39656,7 @@ export namespace Prisma {
     shareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput
     messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
+    callSessions?: CallSessionUncheckedCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUpdateInput = {
@@ -32854,6 +39678,7 @@ export namespace Prisma {
     community?: CommunityUpdateOneWithoutConversationNestedInput
     messages?: MessageUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
+    callSessions?: CallSessionUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationUncheckedUpdateInput = {
@@ -32875,6 +39700,7 @@ export namespace Prisma {
     shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
     messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
+    callSessions?: CallSessionUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationCreateManyInput = {
@@ -33644,6 +40470,10 @@ export namespace Prisma {
     thumbnailPath?: string | null
     thumbnailUrl?: string | null
     duration?: number | null
+    bitrate?: number | null
+    sampleRate?: number | null
+    codec?: string | null
+    channels?: number | null
     uploadedBy: string
     isAnonymous?: boolean
     createdAt?: Date | string
@@ -33664,6 +40494,10 @@ export namespace Prisma {
     thumbnailPath?: string | null
     thumbnailUrl?: string | null
     duration?: number | null
+    bitrate?: number | null
+    sampleRate?: number | null
+    codec?: string | null
+    channels?: number | null
     uploadedBy: string
     isAnonymous?: boolean
     createdAt?: Date | string
@@ -33681,6 +40515,10 @@ export namespace Prisma {
     thumbnailPath?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    bitrate?: NullableIntFieldUpdateOperationsInput | number | null
+    sampleRate?: NullableIntFieldUpdateOperationsInput | number | null
+    codec?: NullableStringFieldUpdateOperationsInput | string | null
+    channels?: NullableIntFieldUpdateOperationsInput | number | null
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33700,6 +40538,10 @@ export namespace Prisma {
     thumbnailPath?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    bitrate?: NullableIntFieldUpdateOperationsInput | number | null
+    sampleRate?: NullableIntFieldUpdateOperationsInput | number | null
+    codec?: NullableStringFieldUpdateOperationsInput | string | null
+    channels?: NullableIntFieldUpdateOperationsInput | number | null
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33719,6 +40561,10 @@ export namespace Prisma {
     thumbnailPath?: string | null
     thumbnailUrl?: string | null
     duration?: number | null
+    bitrate?: number | null
+    sampleRate?: number | null
+    codec?: string | null
+    channels?: number | null
     uploadedBy: string
     isAnonymous?: boolean
     createdAt?: Date | string
@@ -33736,6 +40582,10 @@ export namespace Prisma {
     thumbnailPath?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    bitrate?: NullableIntFieldUpdateOperationsInput | number | null
+    sampleRate?: NullableIntFieldUpdateOperationsInput | number | null
+    codec?: NullableStringFieldUpdateOperationsInput | string | null
+    channels?: NullableIntFieldUpdateOperationsInput | number | null
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33754,6 +40604,10 @@ export namespace Prisma {
     thumbnailPath?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    bitrate?: NullableIntFieldUpdateOperationsInput | number | null
+    sampleRate?: NullableIntFieldUpdateOperationsInput | number | null
+    codec?: NullableStringFieldUpdateOperationsInput | string | null
+    channels?: NullableIntFieldUpdateOperationsInput | number | null
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35026,6 +41880,454 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ReportCreateInput = {
+    id?: string
+    reportedType: string
+    reportedEntityId: string
+    reporterId?: string | null
+    reporterName?: string | null
+    reportType: string
+    reason?: string | null
+    status?: string
+    moderatorId?: string | null
+    moderatorNotes?: string | null
+    actionTaken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    resolvedAt?: Date | string | null
+  }
+
+  export type ReportUncheckedCreateInput = {
+    id?: string
+    reportedType: string
+    reportedEntityId: string
+    reporterId?: string | null
+    reporterName?: string | null
+    reportType: string
+    reason?: string | null
+    status?: string
+    moderatorId?: string | null
+    moderatorNotes?: string | null
+    actionTaken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    resolvedAt?: Date | string | null
+  }
+
+  export type ReportUpdateInput = {
+    reportedType?: StringFieldUpdateOperationsInput | string
+    reportedEntityId?: StringFieldUpdateOperationsInput | string
+    reporterId?: NullableStringFieldUpdateOperationsInput | string | null
+    reporterName?: NullableStringFieldUpdateOperationsInput | string | null
+    reportType?: StringFieldUpdateOperationsInput | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    moderatorId?: NullableStringFieldUpdateOperationsInput | string | null
+    moderatorNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    actionTaken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type ReportUncheckedUpdateInput = {
+    reportedType?: StringFieldUpdateOperationsInput | string
+    reportedEntityId?: StringFieldUpdateOperationsInput | string
+    reporterId?: NullableStringFieldUpdateOperationsInput | string | null
+    reporterName?: NullableStringFieldUpdateOperationsInput | string | null
+    reportType?: StringFieldUpdateOperationsInput | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    moderatorId?: NullableStringFieldUpdateOperationsInput | string | null
+    moderatorNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    actionTaken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type ReportCreateManyInput = {
+    id?: string
+    reportedType: string
+    reportedEntityId: string
+    reporterId?: string | null
+    reporterName?: string | null
+    reportType: string
+    reason?: string | null
+    status?: string
+    moderatorId?: string | null
+    moderatorNotes?: string | null
+    actionTaken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    resolvedAt?: Date | string | null
+  }
+
+  export type ReportUpdateManyMutationInput = {
+    reportedType?: StringFieldUpdateOperationsInput | string
+    reportedEntityId?: StringFieldUpdateOperationsInput | string
+    reporterId?: NullableStringFieldUpdateOperationsInput | string | null
+    reporterName?: NullableStringFieldUpdateOperationsInput | string | null
+    reportType?: StringFieldUpdateOperationsInput | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    moderatorId?: NullableStringFieldUpdateOperationsInput | string | null
+    moderatorNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    actionTaken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type ReportUncheckedUpdateManyInput = {
+    reportedType?: StringFieldUpdateOperationsInput | string
+    reportedEntityId?: StringFieldUpdateOperationsInput | string
+    reporterId?: NullableStringFieldUpdateOperationsInput | string | null
+    reporterName?: NullableStringFieldUpdateOperationsInput | string | null
+    reportType?: StringFieldUpdateOperationsInput | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    moderatorId?: NullableStringFieldUpdateOperationsInput | string | null
+    moderatorNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    actionTaken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type CallSessionCreateInput = {
+    id?: string
+    mode?: $Enums.CallMode
+    status?: $Enums.CallStatus
+    startedAt?: Date | string
+    answeredAt?: Date | string | null
+    endedAt?: Date | string | null
+    duration?: number | null
+    metadata?: InputJsonValue | null
+    conversation: ConversationCreateNestedOneWithoutCallSessionsInput
+    initiator: UserCreateNestedOneWithoutInitiatedCallsInput
+    participants?: CallParticipantCreateNestedManyWithoutCallSessionInput
+    transcriptions?: TranscriptionCreateNestedManyWithoutCallSessionInput
+  }
+
+  export type CallSessionUncheckedCreateInput = {
+    id?: string
+    conversationId: string
+    mode?: $Enums.CallMode
+    status?: $Enums.CallStatus
+    initiatorId: string
+    startedAt?: Date | string
+    answeredAt?: Date | string | null
+    endedAt?: Date | string | null
+    duration?: number | null
+    metadata?: InputJsonValue | null
+    participants?: CallParticipantUncheckedCreateNestedManyWithoutCallSessionInput
+    transcriptions?: TranscriptionUncheckedCreateNestedManyWithoutCallSessionInput
+  }
+
+  export type CallSessionUpdateInput = {
+    mode?: EnumCallModeFieldUpdateOperationsInput | $Enums.CallMode
+    status?: EnumCallStatusFieldUpdateOperationsInput | $Enums.CallStatus
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    answeredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableIntFieldUpdateOperationsInput | number | null
+    metadata?: InputJsonValue | InputJsonValue | null
+    conversation?: ConversationUpdateOneRequiredWithoutCallSessionsNestedInput
+    initiator?: UserUpdateOneRequiredWithoutInitiatedCallsNestedInput
+    participants?: CallParticipantUpdateManyWithoutCallSessionNestedInput
+    transcriptions?: TranscriptionUpdateManyWithoutCallSessionNestedInput
+  }
+
+  export type CallSessionUncheckedUpdateInput = {
+    conversationId?: StringFieldUpdateOperationsInput | string
+    mode?: EnumCallModeFieldUpdateOperationsInput | $Enums.CallMode
+    status?: EnumCallStatusFieldUpdateOperationsInput | $Enums.CallStatus
+    initiatorId?: StringFieldUpdateOperationsInput | string
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    answeredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableIntFieldUpdateOperationsInput | number | null
+    metadata?: InputJsonValue | InputJsonValue | null
+    participants?: CallParticipantUncheckedUpdateManyWithoutCallSessionNestedInput
+    transcriptions?: TranscriptionUncheckedUpdateManyWithoutCallSessionNestedInput
+  }
+
+  export type CallSessionCreateManyInput = {
+    id?: string
+    conversationId: string
+    mode?: $Enums.CallMode
+    status?: $Enums.CallStatus
+    initiatorId: string
+    startedAt?: Date | string
+    answeredAt?: Date | string | null
+    endedAt?: Date | string | null
+    duration?: number | null
+    metadata?: InputJsonValue | null
+  }
+
+  export type CallSessionUpdateManyMutationInput = {
+    mode?: EnumCallModeFieldUpdateOperationsInput | $Enums.CallMode
+    status?: EnumCallStatusFieldUpdateOperationsInput | $Enums.CallStatus
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    answeredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableIntFieldUpdateOperationsInput | number | null
+    metadata?: InputJsonValue | InputJsonValue | null
+  }
+
+  export type CallSessionUncheckedUpdateManyInput = {
+    conversationId?: StringFieldUpdateOperationsInput | string
+    mode?: EnumCallModeFieldUpdateOperationsInput | $Enums.CallMode
+    status?: EnumCallStatusFieldUpdateOperationsInput | $Enums.CallStatus
+    initiatorId?: StringFieldUpdateOperationsInput | string
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    answeredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableIntFieldUpdateOperationsInput | number | null
+    metadata?: InputJsonValue | InputJsonValue | null
+  }
+
+  export type CallParticipantCreateInput = {
+    id?: string
+    anonymousId?: string | null
+    role?: $Enums.ParticipantRole
+    joinedAt?: Date | string
+    leftAt?: Date | string | null
+    isAudioEnabled?: boolean
+    isVideoEnabled?: boolean
+    connectionQuality?: InputJsonValue | null
+    callSession: CallSessionCreateNestedOneWithoutParticipantsInput
+    user?: UserCreateNestedOneWithoutCallParticipationsInput
+  }
+
+  export type CallParticipantUncheckedCreateInput = {
+    id?: string
+    callSessionId: string
+    userId?: string | null
+    anonymousId?: string | null
+    role?: $Enums.ParticipantRole
+    joinedAt?: Date | string
+    leftAt?: Date | string | null
+    isAudioEnabled?: boolean
+    isVideoEnabled?: boolean
+    connectionQuality?: InputJsonValue | null
+  }
+
+  export type CallParticipantUpdateInput = {
+    anonymousId?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumParticipantRoleFieldUpdateOperationsInput | $Enums.ParticipantRole
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isAudioEnabled?: BoolFieldUpdateOperationsInput | boolean
+    isVideoEnabled?: BoolFieldUpdateOperationsInput | boolean
+    connectionQuality?: InputJsonValue | InputJsonValue | null
+    callSession?: CallSessionUpdateOneRequiredWithoutParticipantsNestedInput
+    user?: UserUpdateOneWithoutCallParticipationsNestedInput
+  }
+
+  export type CallParticipantUncheckedUpdateInput = {
+    callSessionId?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    anonymousId?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumParticipantRoleFieldUpdateOperationsInput | $Enums.ParticipantRole
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isAudioEnabled?: BoolFieldUpdateOperationsInput | boolean
+    isVideoEnabled?: BoolFieldUpdateOperationsInput | boolean
+    connectionQuality?: InputJsonValue | InputJsonValue | null
+  }
+
+  export type CallParticipantCreateManyInput = {
+    id?: string
+    callSessionId: string
+    userId?: string | null
+    anonymousId?: string | null
+    role?: $Enums.ParticipantRole
+    joinedAt?: Date | string
+    leftAt?: Date | string | null
+    isAudioEnabled?: boolean
+    isVideoEnabled?: boolean
+    connectionQuality?: InputJsonValue | null
+  }
+
+  export type CallParticipantUpdateManyMutationInput = {
+    anonymousId?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumParticipantRoleFieldUpdateOperationsInput | $Enums.ParticipantRole
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isAudioEnabled?: BoolFieldUpdateOperationsInput | boolean
+    isVideoEnabled?: BoolFieldUpdateOperationsInput | boolean
+    connectionQuality?: InputJsonValue | InputJsonValue | null
+  }
+
+  export type CallParticipantUncheckedUpdateManyInput = {
+    callSessionId?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    anonymousId?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumParticipantRoleFieldUpdateOperationsInput | $Enums.ParticipantRole
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isAudioEnabled?: BoolFieldUpdateOperationsInput | boolean
+    isVideoEnabled?: BoolFieldUpdateOperationsInput | boolean
+    connectionQuality?: InputJsonValue | InputJsonValue | null
+  }
+
+  export type TranscriptionCreateInput = {
+    id?: string
+    participantId: string
+    source: $Enums.TranscriptionSource
+    text: string
+    language: string
+    confidence?: number | null
+    timestamp?: Date | string
+    offsetMs?: number | null
+    callSession: CallSessionCreateNestedOneWithoutTranscriptionsInput
+    translations?: TranslationCallCreateNestedManyWithoutTranscriptionInput
+  }
+
+  export type TranscriptionUncheckedCreateInput = {
+    id?: string
+    callSessionId: string
+    participantId: string
+    source: $Enums.TranscriptionSource
+    text: string
+    language: string
+    confidence?: number | null
+    timestamp?: Date | string
+    offsetMs?: number | null
+    translations?: TranslationCallUncheckedCreateNestedManyWithoutTranscriptionInput
+  }
+
+  export type TranscriptionUpdateInput = {
+    participantId?: StringFieldUpdateOperationsInput | string
+    source?: EnumTranscriptionSourceFieldUpdateOperationsInput | $Enums.TranscriptionSource
+    text?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    confidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    offsetMs?: NullableIntFieldUpdateOperationsInput | number | null
+    callSession?: CallSessionUpdateOneRequiredWithoutTranscriptionsNestedInput
+    translations?: TranslationCallUpdateManyWithoutTranscriptionNestedInput
+  }
+
+  export type TranscriptionUncheckedUpdateInput = {
+    callSessionId?: StringFieldUpdateOperationsInput | string
+    participantId?: StringFieldUpdateOperationsInput | string
+    source?: EnumTranscriptionSourceFieldUpdateOperationsInput | $Enums.TranscriptionSource
+    text?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    confidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    offsetMs?: NullableIntFieldUpdateOperationsInput | number | null
+    translations?: TranslationCallUncheckedUpdateManyWithoutTranscriptionNestedInput
+  }
+
+  export type TranscriptionCreateManyInput = {
+    id?: string
+    callSessionId: string
+    participantId: string
+    source: $Enums.TranscriptionSource
+    text: string
+    language: string
+    confidence?: number | null
+    timestamp?: Date | string
+    offsetMs?: number | null
+  }
+
+  export type TranscriptionUpdateManyMutationInput = {
+    participantId?: StringFieldUpdateOperationsInput | string
+    source?: EnumTranscriptionSourceFieldUpdateOperationsInput | $Enums.TranscriptionSource
+    text?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    confidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    offsetMs?: NullableIntFieldUpdateOperationsInput | number | null
+  }
+
+  export type TranscriptionUncheckedUpdateManyInput = {
+    callSessionId?: StringFieldUpdateOperationsInput | string
+    participantId?: StringFieldUpdateOperationsInput | string
+    source?: EnumTranscriptionSourceFieldUpdateOperationsInput | $Enums.TranscriptionSource
+    text?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    confidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    offsetMs?: NullableIntFieldUpdateOperationsInput | number | null
+  }
+
+  export type TranslationCallCreateInput = {
+    id?: string
+    targetLanguage: string
+    translatedText: string
+    confidence?: number | null
+    model?: string | null
+    cached?: boolean
+    createdAt?: Date | string
+    transcription: TranscriptionCreateNestedOneWithoutTranslationsInput
+  }
+
+  export type TranslationCallUncheckedCreateInput = {
+    id?: string
+    transcriptionId: string
+    targetLanguage: string
+    translatedText: string
+    confidence?: number | null
+    model?: string | null
+    cached?: boolean
+    createdAt?: Date | string
+  }
+
+  export type TranslationCallUpdateInput = {
+    targetLanguage?: StringFieldUpdateOperationsInput | string
+    translatedText?: StringFieldUpdateOperationsInput | string
+    confidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    cached?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    transcription?: TranscriptionUpdateOneRequiredWithoutTranslationsNestedInput
+  }
+
+  export type TranslationCallUncheckedUpdateInput = {
+    transcriptionId?: StringFieldUpdateOperationsInput | string
+    targetLanguage?: StringFieldUpdateOperationsInput | string
+    translatedText?: StringFieldUpdateOperationsInput | string
+    confidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    cached?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TranslationCallCreateManyInput = {
+    id?: string
+    transcriptionId: string
+    targetLanguage: string
+    translatedText: string
+    confidence?: number | null
+    model?: string | null
+    cached?: boolean
+    createdAt?: Date | string
+  }
+
+  export type TranslationCallUpdateManyMutationInput = {
+    targetLanguage?: StringFieldUpdateOperationsInput | string
+    translatedText?: StringFieldUpdateOperationsInput | string
+    confidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    cached?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TranslationCallUncheckedUpdateManyInput = {
+    transcriptionId?: StringFieldUpdateOperationsInput | string
+    targetLanguage?: StringFieldUpdateOperationsInput | string
+    translatedText?: StringFieldUpdateOperationsInput | string
+    confidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    cached?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -35085,15 +42387,22 @@ export namespace Prisma {
     isSet?: boolean
   }
 
-  export type IntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+  export type BoolNullableFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel> | null
+    not?: NestedBoolNullableFilter<$PrismaModel> | boolean | null
+    isSet?: boolean
+  }
+
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
     lt?: number | IntFieldRefInput<$PrismaModel>
     lte?: number | IntFieldRefInput<$PrismaModel>
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+    isSet?: boolean
   }
 
   export type CommunityListRelationFilter = {
@@ -35197,6 +42506,18 @@ export namespace Prisma {
     none?: TrackingLinkClickWhereInput
   }
 
+  export type CallSessionListRelationFilter = {
+    every?: CallSessionWhereInput
+    some?: CallSessionWhereInput
+    none?: CallSessionWhereInput
+  }
+
+  export type CallParticipantListRelationFilter = {
+    every?: CallParticipantWhereInput
+    some?: CallParticipantWhereInput
+    none?: CallParticipantWhereInput
+  }
+
   export type CommunityOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -35258,6 +42579,14 @@ export namespace Prisma {
   }
 
   export type TrackingLinkClickOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type CallSessionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type CallParticipantOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -35462,20 +42791,30 @@ export namespace Prisma {
     isSet?: boolean
   }
 
-  export type IntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+  export type BoolNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel> | null
+    not?: NestedBoolNullableWithAggregatesFilter<$PrismaModel> | boolean | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedBoolNullableFilter<$PrismaModel>
+    _max?: NestedBoolNullableFilter<$PrismaModel>
+    isSet?: boolean
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
     lt?: number | IntFieldRefInput<$PrismaModel>
     lte?: number | IntFieldRefInput<$PrismaModel>
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+    isSet?: boolean
   }
 
   export type AnonymousParticipantListRelationFilter = {
@@ -35602,16 +42941,15 @@ export namespace Prisma {
     isActive?: SortOrder
   }
 
-  export type IntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
     lt?: number | IntFieldRefInput<$PrismaModel>
     lte?: number | IntFieldRefInput<$PrismaModel>
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
-    isSet?: boolean
+    not?: NestedIntFilter<$PrismaModel> | number
   }
 
   export type StringNullableListFilter<$PrismaModel = never> = {
@@ -35721,21 +43059,20 @@ export namespace Prisma {
     currentUniqueSessions?: SortOrder
   }
 
-  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
     lt?: number | IntFieldRefInput<$PrismaModel>
     lte?: number | IntFieldRefInput<$PrismaModel>
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
-    isSet?: boolean
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
   }
 
   export type ConversationShareLinkScalarRelationFilter = {
@@ -36001,6 +43338,10 @@ export namespace Prisma {
     thumbnailPath?: SortOrder
     thumbnailUrl?: SortOrder
     duration?: SortOrder
+    bitrate?: SortOrder
+    sampleRate?: SortOrder
+    codec?: SortOrder
+    channels?: SortOrder
     uploadedBy?: SortOrder
     isAnonymous?: SortOrder
     createdAt?: SortOrder
@@ -36011,6 +43352,9 @@ export namespace Prisma {
     width?: SortOrder
     height?: SortOrder
     duration?: SortOrder
+    bitrate?: SortOrder
+    sampleRate?: SortOrder
+    channels?: SortOrder
   }
 
   export type MessageAttachmentMaxOrderByAggregateInput = {
@@ -36027,6 +43371,10 @@ export namespace Prisma {
     thumbnailPath?: SortOrder
     thumbnailUrl?: SortOrder
     duration?: SortOrder
+    bitrate?: SortOrder
+    sampleRate?: SortOrder
+    codec?: SortOrder
+    channels?: SortOrder
     uploadedBy?: SortOrder
     isAnonymous?: SortOrder
     createdAt?: SortOrder
@@ -36046,6 +43394,10 @@ export namespace Prisma {
     thumbnailPath?: SortOrder
     thumbnailUrl?: SortOrder
     duration?: SortOrder
+    bitrate?: SortOrder
+    sampleRate?: SortOrder
+    codec?: SortOrder
+    channels?: SortOrder
     uploadedBy?: SortOrder
     isAnonymous?: SortOrder
     createdAt?: SortOrder
@@ -36056,6 +43408,9 @@ export namespace Prisma {
     width?: SortOrder
     height?: SortOrder
     duration?: SortOrder
+    bitrate?: SortOrder
+    sampleRate?: SortOrder
+    channels?: SortOrder
   }
 
   export type MessageStatusMessageId_userIdCompoundUniqueInput = {
@@ -36727,6 +44082,351 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
+  export type ReportCountOrderByAggregateInput = {
+    id?: SortOrder
+    reportedType?: SortOrder
+    reportedEntityId?: SortOrder
+    reporterId?: SortOrder
+    reporterName?: SortOrder
+    reportType?: SortOrder
+    reason?: SortOrder
+    status?: SortOrder
+    moderatorId?: SortOrder
+    moderatorNotes?: SortOrder
+    actionTaken?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    resolvedAt?: SortOrder
+  }
+
+  export type ReportMaxOrderByAggregateInput = {
+    id?: SortOrder
+    reportedType?: SortOrder
+    reportedEntityId?: SortOrder
+    reporterId?: SortOrder
+    reporterName?: SortOrder
+    reportType?: SortOrder
+    reason?: SortOrder
+    status?: SortOrder
+    moderatorId?: SortOrder
+    moderatorNotes?: SortOrder
+    actionTaken?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    resolvedAt?: SortOrder
+  }
+
+  export type ReportMinOrderByAggregateInput = {
+    id?: SortOrder
+    reportedType?: SortOrder
+    reportedEntityId?: SortOrder
+    reporterId?: SortOrder
+    reporterName?: SortOrder
+    reportType?: SortOrder
+    reason?: SortOrder
+    status?: SortOrder
+    moderatorId?: SortOrder
+    moderatorNotes?: SortOrder
+    actionTaken?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    resolvedAt?: SortOrder
+  }
+
+  export type EnumCallModeFilter<$PrismaModel = never> = {
+    equals?: $Enums.CallMode | EnumCallModeFieldRefInput<$PrismaModel>
+    in?: $Enums.CallMode[] | ListEnumCallModeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.CallMode[] | ListEnumCallModeFieldRefInput<$PrismaModel>
+    not?: NestedEnumCallModeFilter<$PrismaModel> | $Enums.CallMode
+  }
+
+  export type EnumCallStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.CallStatus | EnumCallStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.CallStatus[] | ListEnumCallStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.CallStatus[] | ListEnumCallStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumCallStatusFilter<$PrismaModel> | $Enums.CallStatus
+  }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    isSet?: boolean
+  }
+
+  export type TranscriptionListRelationFilter = {
+    every?: TranscriptionWhereInput
+    some?: TranscriptionWhereInput
+    none?: TranscriptionWhereInput
+  }
+
+  export type TranscriptionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type CallSessionCountOrderByAggregateInput = {
+    id?: SortOrder
+    conversationId?: SortOrder
+    mode?: SortOrder
+    status?: SortOrder
+    initiatorId?: SortOrder
+    startedAt?: SortOrder
+    answeredAt?: SortOrder
+    endedAt?: SortOrder
+    duration?: SortOrder
+    metadata?: SortOrder
+  }
+
+  export type CallSessionAvgOrderByAggregateInput = {
+    duration?: SortOrder
+  }
+
+  export type CallSessionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    conversationId?: SortOrder
+    mode?: SortOrder
+    status?: SortOrder
+    initiatorId?: SortOrder
+    startedAt?: SortOrder
+    answeredAt?: SortOrder
+    endedAt?: SortOrder
+    duration?: SortOrder
+  }
+
+  export type CallSessionMinOrderByAggregateInput = {
+    id?: SortOrder
+    conversationId?: SortOrder
+    mode?: SortOrder
+    status?: SortOrder
+    initiatorId?: SortOrder
+    startedAt?: SortOrder
+    answeredAt?: SortOrder
+    endedAt?: SortOrder
+    duration?: SortOrder
+  }
+
+  export type CallSessionSumOrderByAggregateInput = {
+    duration?: SortOrder
+  }
+
+  export type EnumCallModeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.CallMode | EnumCallModeFieldRefInput<$PrismaModel>
+    in?: $Enums.CallMode[] | ListEnumCallModeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.CallMode[] | ListEnumCallModeFieldRefInput<$PrismaModel>
+    not?: NestedEnumCallModeWithAggregatesFilter<$PrismaModel> | $Enums.CallMode
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumCallModeFilter<$PrismaModel>
+    _max?: NestedEnumCallModeFilter<$PrismaModel>
+  }
+
+  export type EnumCallStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.CallStatus | EnumCallStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.CallStatus[] | ListEnumCallStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.CallStatus[] | ListEnumCallStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumCallStatusWithAggregatesFilter<$PrismaModel> | $Enums.CallStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumCallStatusFilter<$PrismaModel>
+    _max?: NestedEnumCallStatusFilter<$PrismaModel>
+  }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
+    isSet?: boolean
+  }
+
+  export type EnumParticipantRoleFilter<$PrismaModel = never> = {
+    equals?: $Enums.ParticipantRole | EnumParticipantRoleFieldRefInput<$PrismaModel>
+    in?: $Enums.ParticipantRole[] | ListEnumParticipantRoleFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ParticipantRole[] | ListEnumParticipantRoleFieldRefInput<$PrismaModel>
+    not?: NestedEnumParticipantRoleFilter<$PrismaModel> | $Enums.ParticipantRole
+  }
+
+  export type CallSessionScalarRelationFilter = {
+    is?: CallSessionWhereInput
+    isNot?: CallSessionWhereInput
+  }
+
+  export type CallParticipantCountOrderByAggregateInput = {
+    id?: SortOrder
+    callSessionId?: SortOrder
+    userId?: SortOrder
+    anonymousId?: SortOrder
+    role?: SortOrder
+    joinedAt?: SortOrder
+    leftAt?: SortOrder
+    isAudioEnabled?: SortOrder
+    isVideoEnabled?: SortOrder
+    connectionQuality?: SortOrder
+  }
+
+  export type CallParticipantMaxOrderByAggregateInput = {
+    id?: SortOrder
+    callSessionId?: SortOrder
+    userId?: SortOrder
+    anonymousId?: SortOrder
+    role?: SortOrder
+    joinedAt?: SortOrder
+    leftAt?: SortOrder
+    isAudioEnabled?: SortOrder
+    isVideoEnabled?: SortOrder
+  }
+
+  export type CallParticipantMinOrderByAggregateInput = {
+    id?: SortOrder
+    callSessionId?: SortOrder
+    userId?: SortOrder
+    anonymousId?: SortOrder
+    role?: SortOrder
+    joinedAt?: SortOrder
+    leftAt?: SortOrder
+    isAudioEnabled?: SortOrder
+    isVideoEnabled?: SortOrder
+  }
+
+  export type EnumParticipantRoleWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ParticipantRole | EnumParticipantRoleFieldRefInput<$PrismaModel>
+    in?: $Enums.ParticipantRole[] | ListEnumParticipantRoleFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ParticipantRole[] | ListEnumParticipantRoleFieldRefInput<$PrismaModel>
+    not?: NestedEnumParticipantRoleWithAggregatesFilter<$PrismaModel> | $Enums.ParticipantRole
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumParticipantRoleFilter<$PrismaModel>
+    _max?: NestedEnumParticipantRoleFilter<$PrismaModel>
+  }
+
+  export type EnumTranscriptionSourceFilter<$PrismaModel = never> = {
+    equals?: $Enums.TranscriptionSource | EnumTranscriptionSourceFieldRefInput<$PrismaModel>
+    in?: $Enums.TranscriptionSource[] | ListEnumTranscriptionSourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TranscriptionSource[] | ListEnumTranscriptionSourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumTranscriptionSourceFilter<$PrismaModel> | $Enums.TranscriptionSource
+  }
+
+  export type TranslationCallListRelationFilter = {
+    every?: TranslationCallWhereInput
+    some?: TranslationCallWhereInput
+    none?: TranslationCallWhereInput
+  }
+
+  export type TranslationCallOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type TranscriptionCountOrderByAggregateInput = {
+    id?: SortOrder
+    callSessionId?: SortOrder
+    participantId?: SortOrder
+    source?: SortOrder
+    text?: SortOrder
+    language?: SortOrder
+    confidence?: SortOrder
+    timestamp?: SortOrder
+    offsetMs?: SortOrder
+  }
+
+  export type TranscriptionAvgOrderByAggregateInput = {
+    confidence?: SortOrder
+    offsetMs?: SortOrder
+  }
+
+  export type TranscriptionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    callSessionId?: SortOrder
+    participantId?: SortOrder
+    source?: SortOrder
+    text?: SortOrder
+    language?: SortOrder
+    confidence?: SortOrder
+    timestamp?: SortOrder
+    offsetMs?: SortOrder
+  }
+
+  export type TranscriptionMinOrderByAggregateInput = {
+    id?: SortOrder
+    callSessionId?: SortOrder
+    participantId?: SortOrder
+    source?: SortOrder
+    text?: SortOrder
+    language?: SortOrder
+    confidence?: SortOrder
+    timestamp?: SortOrder
+    offsetMs?: SortOrder
+  }
+
+  export type TranscriptionSumOrderByAggregateInput = {
+    confidence?: SortOrder
+    offsetMs?: SortOrder
+  }
+
+  export type EnumTranscriptionSourceWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.TranscriptionSource | EnumTranscriptionSourceFieldRefInput<$PrismaModel>
+    in?: $Enums.TranscriptionSource[] | ListEnumTranscriptionSourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TranscriptionSource[] | ListEnumTranscriptionSourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumTranscriptionSourceWithAggregatesFilter<$PrismaModel> | $Enums.TranscriptionSource
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumTranscriptionSourceFilter<$PrismaModel>
+    _max?: NestedEnumTranscriptionSourceFilter<$PrismaModel>
+  }
+
+  export type TranscriptionScalarRelationFilter = {
+    is?: TranscriptionWhereInput
+    isNot?: TranscriptionWhereInput
+  }
+
+  export type TranslationCallCountOrderByAggregateInput = {
+    id?: SortOrder
+    transcriptionId?: SortOrder
+    targetLanguage?: SortOrder
+    translatedText?: SortOrder
+    confidence?: SortOrder
+    model?: SortOrder
+    cached?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type TranslationCallAvgOrderByAggregateInput = {
+    confidence?: SortOrder
+  }
+
+  export type TranslationCallMaxOrderByAggregateInput = {
+    id?: SortOrder
+    transcriptionId?: SortOrder
+    targetLanguage?: SortOrder
+    translatedText?: SortOrder
+    confidence?: SortOrder
+    model?: SortOrder
+    cached?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type TranslationCallMinOrderByAggregateInput = {
+    id?: SortOrder
+    transcriptionId?: SortOrder
+    targetLanguage?: SortOrder
+    translatedText?: SortOrder
+    confidence?: SortOrder
+    model?: SortOrder
+    cached?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type TranslationCallSumOrderByAggregateInput = {
+    confidence?: SortOrder
+  }
+
   export type CommunityCreateNestedManyWithoutCreatorInput = {
     create?: XOR<CommunityCreateWithoutCreatorInput, CommunityUncheckedCreateWithoutCreatorInput> | CommunityCreateWithoutCreatorInput[] | CommunityUncheckedCreateWithoutCreatorInput[]
     connectOrCreate?: CommunityCreateOrConnectWithoutCreatorInput | CommunityCreateOrConnectWithoutCreatorInput[]
@@ -36857,6 +44557,20 @@ export namespace Prisma {
     connectOrCreate?: TrackingLinkClickCreateOrConnectWithoutUserInput | TrackingLinkClickCreateOrConnectWithoutUserInput[]
     createMany?: TrackingLinkClickCreateManyUserInputEnvelope
     connect?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+  }
+
+  export type CallSessionCreateNestedManyWithoutInitiatorInput = {
+    create?: XOR<CallSessionCreateWithoutInitiatorInput, CallSessionUncheckedCreateWithoutInitiatorInput> | CallSessionCreateWithoutInitiatorInput[] | CallSessionUncheckedCreateWithoutInitiatorInput[]
+    connectOrCreate?: CallSessionCreateOrConnectWithoutInitiatorInput | CallSessionCreateOrConnectWithoutInitiatorInput[]
+    createMany?: CallSessionCreateManyInitiatorInputEnvelope
+    connect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+  }
+
+  export type CallParticipantCreateNestedManyWithoutUserInput = {
+    create?: XOR<CallParticipantCreateWithoutUserInput, CallParticipantUncheckedCreateWithoutUserInput> | CallParticipantCreateWithoutUserInput[] | CallParticipantUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: CallParticipantCreateOrConnectWithoutUserInput | CallParticipantCreateOrConnectWithoutUserInput[]
+    createMany?: CallParticipantCreateManyUserInputEnvelope
+    connect?: CallParticipantWhereUniqueInput | CallParticipantWhereUniqueInput[]
   }
 
   export type CommunityUncheckedCreateNestedManyWithoutCreatorInput = {
@@ -36991,6 +44705,20 @@ export namespace Prisma {
     connect?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
   }
 
+  export type CallSessionUncheckedCreateNestedManyWithoutInitiatorInput = {
+    create?: XOR<CallSessionCreateWithoutInitiatorInput, CallSessionUncheckedCreateWithoutInitiatorInput> | CallSessionCreateWithoutInitiatorInput[] | CallSessionUncheckedCreateWithoutInitiatorInput[]
+    connectOrCreate?: CallSessionCreateOrConnectWithoutInitiatorInput | CallSessionCreateOrConnectWithoutInitiatorInput[]
+    createMany?: CallSessionCreateManyInitiatorInputEnvelope
+    connect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+  }
+
+  export type CallParticipantUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<CallParticipantCreateWithoutUserInput, CallParticipantUncheckedCreateWithoutUserInput> | CallParticipantCreateWithoutUserInput[] | CallParticipantUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: CallParticipantCreateOrConnectWithoutUserInput | CallParticipantCreateOrConnectWithoutUserInput[]
+    createMany?: CallParticipantCreateManyUserInputEnvelope
+    connect?: CallParticipantWhereUniqueInput | CallParticipantWhereUniqueInput[]
+  }
+
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
@@ -37013,12 +44741,18 @@ export namespace Prisma {
     unset?: boolean
   }
 
-  export type IntFieldUpdateOperationsInput = {
-    set?: number
+  export type NullableBoolFieldUpdateOperationsInput = {
+    set?: boolean | null
+    unset?: boolean
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
     increment?: number
     decrement?: number
     multiply?: number
     divide?: number
+    unset?: boolean
   }
 
   export type CommunityUpdateManyWithoutCreatorNestedInput = {
@@ -37283,6 +45017,34 @@ export namespace Prisma {
     deleteMany?: TrackingLinkClickScalarWhereInput | TrackingLinkClickScalarWhereInput[]
   }
 
+  export type CallSessionUpdateManyWithoutInitiatorNestedInput = {
+    create?: XOR<CallSessionCreateWithoutInitiatorInput, CallSessionUncheckedCreateWithoutInitiatorInput> | CallSessionCreateWithoutInitiatorInput[] | CallSessionUncheckedCreateWithoutInitiatorInput[]
+    connectOrCreate?: CallSessionCreateOrConnectWithoutInitiatorInput | CallSessionCreateOrConnectWithoutInitiatorInput[]
+    upsert?: CallSessionUpsertWithWhereUniqueWithoutInitiatorInput | CallSessionUpsertWithWhereUniqueWithoutInitiatorInput[]
+    createMany?: CallSessionCreateManyInitiatorInputEnvelope
+    set?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+    disconnect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+    delete?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+    connect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+    update?: CallSessionUpdateWithWhereUniqueWithoutInitiatorInput | CallSessionUpdateWithWhereUniqueWithoutInitiatorInput[]
+    updateMany?: CallSessionUpdateManyWithWhereWithoutInitiatorInput | CallSessionUpdateManyWithWhereWithoutInitiatorInput[]
+    deleteMany?: CallSessionScalarWhereInput | CallSessionScalarWhereInput[]
+  }
+
+  export type CallParticipantUpdateManyWithoutUserNestedInput = {
+    create?: XOR<CallParticipantCreateWithoutUserInput, CallParticipantUncheckedCreateWithoutUserInput> | CallParticipantCreateWithoutUserInput[] | CallParticipantUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: CallParticipantCreateOrConnectWithoutUserInput | CallParticipantCreateOrConnectWithoutUserInput[]
+    upsert?: CallParticipantUpsertWithWhereUniqueWithoutUserInput | CallParticipantUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: CallParticipantCreateManyUserInputEnvelope
+    set?: CallParticipantWhereUniqueInput | CallParticipantWhereUniqueInput[]
+    disconnect?: CallParticipantWhereUniqueInput | CallParticipantWhereUniqueInput[]
+    delete?: CallParticipantWhereUniqueInput | CallParticipantWhereUniqueInput[]
+    connect?: CallParticipantWhereUniqueInput | CallParticipantWhereUniqueInput[]
+    update?: CallParticipantUpdateWithWhereUniqueWithoutUserInput | CallParticipantUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: CallParticipantUpdateManyWithWhereWithoutUserInput | CallParticipantUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: CallParticipantScalarWhereInput | CallParticipantScalarWhereInput[]
+  }
+
   export type CommunityUncheckedUpdateManyWithoutCreatorNestedInput = {
     create?: XOR<CommunityCreateWithoutCreatorInput, CommunityUncheckedCreateWithoutCreatorInput> | CommunityCreateWithoutCreatorInput[] | CommunityUncheckedCreateWithoutCreatorInput[]
     connectOrCreate?: CommunityCreateOrConnectWithoutCreatorInput | CommunityCreateOrConnectWithoutCreatorInput[]
@@ -37545,6 +45307,34 @@ export namespace Prisma {
     deleteMany?: TrackingLinkClickScalarWhereInput | TrackingLinkClickScalarWhereInput[]
   }
 
+  export type CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput = {
+    create?: XOR<CallSessionCreateWithoutInitiatorInput, CallSessionUncheckedCreateWithoutInitiatorInput> | CallSessionCreateWithoutInitiatorInput[] | CallSessionUncheckedCreateWithoutInitiatorInput[]
+    connectOrCreate?: CallSessionCreateOrConnectWithoutInitiatorInput | CallSessionCreateOrConnectWithoutInitiatorInput[]
+    upsert?: CallSessionUpsertWithWhereUniqueWithoutInitiatorInput | CallSessionUpsertWithWhereUniqueWithoutInitiatorInput[]
+    createMany?: CallSessionCreateManyInitiatorInputEnvelope
+    set?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+    disconnect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+    delete?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+    connect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+    update?: CallSessionUpdateWithWhereUniqueWithoutInitiatorInput | CallSessionUpdateWithWhereUniqueWithoutInitiatorInput[]
+    updateMany?: CallSessionUpdateManyWithWhereWithoutInitiatorInput | CallSessionUpdateManyWithWhereWithoutInitiatorInput[]
+    deleteMany?: CallSessionScalarWhereInput | CallSessionScalarWhereInput[]
+  }
+
+  export type CallParticipantUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<CallParticipantCreateWithoutUserInput, CallParticipantUncheckedCreateWithoutUserInput> | CallParticipantCreateWithoutUserInput[] | CallParticipantUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: CallParticipantCreateOrConnectWithoutUserInput | CallParticipantCreateOrConnectWithoutUserInput[]
+    upsert?: CallParticipantUpsertWithWhereUniqueWithoutUserInput | CallParticipantUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: CallParticipantCreateManyUserInputEnvelope
+    set?: CallParticipantWhereUniqueInput | CallParticipantWhereUniqueInput[]
+    disconnect?: CallParticipantWhereUniqueInput | CallParticipantWhereUniqueInput[]
+    delete?: CallParticipantWhereUniqueInput | CallParticipantWhereUniqueInput[]
+    connect?: CallParticipantWhereUniqueInput | CallParticipantWhereUniqueInput[]
+    update?: CallParticipantUpdateWithWhereUniqueWithoutUserInput | CallParticipantUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: CallParticipantUpdateManyWithWhereWithoutUserInput | CallParticipantUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: CallParticipantScalarWhereInput | CallParticipantScalarWhereInput[]
+  }
+
   export type AnonymousParticipantCreateNestedManyWithoutConversationInput = {
     create?: XOR<AnonymousParticipantCreateWithoutConversationInput, AnonymousParticipantUncheckedCreateWithoutConversationInput> | AnonymousParticipantCreateWithoutConversationInput[] | AnonymousParticipantUncheckedCreateWithoutConversationInput[]
     connectOrCreate?: AnonymousParticipantCreateOrConnectWithoutConversationInput | AnonymousParticipantCreateOrConnectWithoutConversationInput[]
@@ -37593,6 +45383,13 @@ export namespace Prisma {
     connect?: TypingIndicatorWhereUniqueInput | TypingIndicatorWhereUniqueInput[]
   }
 
+  export type CallSessionCreateNestedManyWithoutConversationInput = {
+    create?: XOR<CallSessionCreateWithoutConversationInput, CallSessionUncheckedCreateWithoutConversationInput> | CallSessionCreateWithoutConversationInput[] | CallSessionUncheckedCreateWithoutConversationInput[]
+    connectOrCreate?: CallSessionCreateOrConnectWithoutConversationInput | CallSessionCreateOrConnectWithoutConversationInput[]
+    createMany?: CallSessionCreateManyConversationInputEnvelope
+    connect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+  }
+
   export type AnonymousParticipantUncheckedCreateNestedManyWithoutConversationInput = {
     create?: XOR<AnonymousParticipantCreateWithoutConversationInput, AnonymousParticipantUncheckedCreateWithoutConversationInput> | AnonymousParticipantCreateWithoutConversationInput[] | AnonymousParticipantUncheckedCreateWithoutConversationInput[]
     connectOrCreate?: AnonymousParticipantCreateOrConnectWithoutConversationInput | AnonymousParticipantCreateOrConnectWithoutConversationInput[]
@@ -37633,6 +45430,13 @@ export namespace Prisma {
     connectOrCreate?: TypingIndicatorCreateOrConnectWithoutConversationInput | TypingIndicatorCreateOrConnectWithoutConversationInput[]
     createMany?: TypingIndicatorCreateManyConversationInputEnvelope
     connect?: TypingIndicatorWhereUniqueInput | TypingIndicatorWhereUniqueInput[]
+  }
+
+  export type CallSessionUncheckedCreateNestedManyWithoutConversationInput = {
+    create?: XOR<CallSessionCreateWithoutConversationInput, CallSessionUncheckedCreateWithoutConversationInput> | CallSessionCreateWithoutConversationInput[] | CallSessionUncheckedCreateWithoutConversationInput[]
+    connectOrCreate?: CallSessionCreateOrConnectWithoutConversationInput | CallSessionCreateOrConnectWithoutConversationInput[]
+    createMany?: CallSessionCreateManyConversationInputEnvelope
+    connect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
   }
 
   export type AnonymousParticipantUpdateManyWithoutConversationNestedInput = {
@@ -37729,6 +45533,20 @@ export namespace Prisma {
     deleteMany?: TypingIndicatorScalarWhereInput | TypingIndicatorScalarWhereInput[]
   }
 
+  export type CallSessionUpdateManyWithoutConversationNestedInput = {
+    create?: XOR<CallSessionCreateWithoutConversationInput, CallSessionUncheckedCreateWithoutConversationInput> | CallSessionCreateWithoutConversationInput[] | CallSessionUncheckedCreateWithoutConversationInput[]
+    connectOrCreate?: CallSessionCreateOrConnectWithoutConversationInput | CallSessionCreateOrConnectWithoutConversationInput[]
+    upsert?: CallSessionUpsertWithWhereUniqueWithoutConversationInput | CallSessionUpsertWithWhereUniqueWithoutConversationInput[]
+    createMany?: CallSessionCreateManyConversationInputEnvelope
+    set?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+    disconnect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+    delete?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+    connect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+    update?: CallSessionUpdateWithWhereUniqueWithoutConversationInput | CallSessionUpdateWithWhereUniqueWithoutConversationInput[]
+    updateMany?: CallSessionUpdateManyWithWhereWithoutConversationInput | CallSessionUpdateManyWithWhereWithoutConversationInput[]
+    deleteMany?: CallSessionScalarWhereInput | CallSessionScalarWhereInput[]
+  }
+
   export type AnonymousParticipantUncheckedUpdateManyWithoutConversationNestedInput = {
     create?: XOR<AnonymousParticipantCreateWithoutConversationInput, AnonymousParticipantUncheckedCreateWithoutConversationInput> | AnonymousParticipantCreateWithoutConversationInput[] | AnonymousParticipantUncheckedCreateWithoutConversationInput[]
     connectOrCreate?: AnonymousParticipantCreateOrConnectWithoutConversationInput | AnonymousParticipantCreateOrConnectWithoutConversationInput[]
@@ -37813,6 +45631,20 @@ export namespace Prisma {
     deleteMany?: TypingIndicatorScalarWhereInput | TypingIndicatorScalarWhereInput[]
   }
 
+  export type CallSessionUncheckedUpdateManyWithoutConversationNestedInput = {
+    create?: XOR<CallSessionCreateWithoutConversationInput, CallSessionUncheckedCreateWithoutConversationInput> | CallSessionCreateWithoutConversationInput[] | CallSessionUncheckedCreateWithoutConversationInput[]
+    connectOrCreate?: CallSessionCreateOrConnectWithoutConversationInput | CallSessionCreateOrConnectWithoutConversationInput[]
+    upsert?: CallSessionUpsertWithWhereUniqueWithoutConversationInput | CallSessionUpsertWithWhereUniqueWithoutConversationInput[]
+    createMany?: CallSessionCreateManyConversationInputEnvelope
+    set?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+    disconnect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+    delete?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+    connect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+    update?: CallSessionUpdateWithWhereUniqueWithoutConversationInput | CallSessionUpdateWithWhereUniqueWithoutConversationInput[]
+    updateMany?: CallSessionUpdateManyWithWhereWithoutConversationInput | CallSessionUpdateManyWithWhereWithoutConversationInput[]
+    deleteMany?: CallSessionScalarWhereInput | CallSessionScalarWhereInput[]
+  }
+
   export type UserCreateNestedOneWithoutConversationsInput = {
     create?: XOR<UserCreateWithoutConversationsInput, UserUncheckedCreateWithoutConversationsInput>
     connectOrCreate?: UserCreateOrConnectWithoutConversationsInput
@@ -37879,13 +45711,12 @@ export namespace Prisma {
     connect?: AnonymousParticipantWhereUniqueInput | AnonymousParticipantWhereUniqueInput[]
   }
 
-  export type NullableIntFieldUpdateOperationsInput = {
-    set?: number | null
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
     increment?: number
     decrement?: number
     multiply?: number
     divide?: number
-    unset?: boolean
   }
 
   export type ConversationShareLinkUpdateallowedCountriesInput = {
@@ -38996,6 +46827,234 @@ export namespace Prisma {
     update?: XOR<XOR<AnonymousParticipantUpdateToOneWithWhereWithoutTrackingLinkClicksInput, AnonymousParticipantUpdateWithoutTrackingLinkClicksInput>, AnonymousParticipantUncheckedUpdateWithoutTrackingLinkClicksInput>
   }
 
+  export type ConversationCreateNestedOneWithoutCallSessionsInput = {
+    create?: XOR<ConversationCreateWithoutCallSessionsInput, ConversationUncheckedCreateWithoutCallSessionsInput>
+    connectOrCreate?: ConversationCreateOrConnectWithoutCallSessionsInput
+    connect?: ConversationWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutInitiatedCallsInput = {
+    create?: XOR<UserCreateWithoutInitiatedCallsInput, UserUncheckedCreateWithoutInitiatedCallsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutInitiatedCallsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type CallParticipantCreateNestedManyWithoutCallSessionInput = {
+    create?: XOR<CallParticipantCreateWithoutCallSessionInput, CallParticipantUncheckedCreateWithoutCallSessionInput> | CallParticipantCreateWithoutCallSessionInput[] | CallParticipantUncheckedCreateWithoutCallSessionInput[]
+    connectOrCreate?: CallParticipantCreateOrConnectWithoutCallSessionInput | CallParticipantCreateOrConnectWithoutCallSessionInput[]
+    createMany?: CallParticipantCreateManyCallSessionInputEnvelope
+    connect?: CallParticipantWhereUniqueInput | CallParticipantWhereUniqueInput[]
+  }
+
+  export type TranscriptionCreateNestedManyWithoutCallSessionInput = {
+    create?: XOR<TranscriptionCreateWithoutCallSessionInput, TranscriptionUncheckedCreateWithoutCallSessionInput> | TranscriptionCreateWithoutCallSessionInput[] | TranscriptionUncheckedCreateWithoutCallSessionInput[]
+    connectOrCreate?: TranscriptionCreateOrConnectWithoutCallSessionInput | TranscriptionCreateOrConnectWithoutCallSessionInput[]
+    createMany?: TranscriptionCreateManyCallSessionInputEnvelope
+    connect?: TranscriptionWhereUniqueInput | TranscriptionWhereUniqueInput[]
+  }
+
+  export type CallParticipantUncheckedCreateNestedManyWithoutCallSessionInput = {
+    create?: XOR<CallParticipantCreateWithoutCallSessionInput, CallParticipantUncheckedCreateWithoutCallSessionInput> | CallParticipantCreateWithoutCallSessionInput[] | CallParticipantUncheckedCreateWithoutCallSessionInput[]
+    connectOrCreate?: CallParticipantCreateOrConnectWithoutCallSessionInput | CallParticipantCreateOrConnectWithoutCallSessionInput[]
+    createMany?: CallParticipantCreateManyCallSessionInputEnvelope
+    connect?: CallParticipantWhereUniqueInput | CallParticipantWhereUniqueInput[]
+  }
+
+  export type TranscriptionUncheckedCreateNestedManyWithoutCallSessionInput = {
+    create?: XOR<TranscriptionCreateWithoutCallSessionInput, TranscriptionUncheckedCreateWithoutCallSessionInput> | TranscriptionCreateWithoutCallSessionInput[] | TranscriptionUncheckedCreateWithoutCallSessionInput[]
+    connectOrCreate?: TranscriptionCreateOrConnectWithoutCallSessionInput | TranscriptionCreateOrConnectWithoutCallSessionInput[]
+    createMany?: TranscriptionCreateManyCallSessionInputEnvelope
+    connect?: TranscriptionWhereUniqueInput | TranscriptionWhereUniqueInput[]
+  }
+
+  export type EnumCallModeFieldUpdateOperationsInput = {
+    set?: $Enums.CallMode
+  }
+
+  export type EnumCallStatusFieldUpdateOperationsInput = {
+    set?: $Enums.CallStatus
+  }
+
+  export type ConversationUpdateOneRequiredWithoutCallSessionsNestedInput = {
+    create?: XOR<ConversationCreateWithoutCallSessionsInput, ConversationUncheckedCreateWithoutCallSessionsInput>
+    connectOrCreate?: ConversationCreateOrConnectWithoutCallSessionsInput
+    upsert?: ConversationUpsertWithoutCallSessionsInput
+    connect?: ConversationWhereUniqueInput
+    update?: XOR<XOR<ConversationUpdateToOneWithWhereWithoutCallSessionsInput, ConversationUpdateWithoutCallSessionsInput>, ConversationUncheckedUpdateWithoutCallSessionsInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutInitiatedCallsNestedInput = {
+    create?: XOR<UserCreateWithoutInitiatedCallsInput, UserUncheckedCreateWithoutInitiatedCallsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutInitiatedCallsInput
+    upsert?: UserUpsertWithoutInitiatedCallsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutInitiatedCallsInput, UserUpdateWithoutInitiatedCallsInput>, UserUncheckedUpdateWithoutInitiatedCallsInput>
+  }
+
+  export type CallParticipantUpdateManyWithoutCallSessionNestedInput = {
+    create?: XOR<CallParticipantCreateWithoutCallSessionInput, CallParticipantUncheckedCreateWithoutCallSessionInput> | CallParticipantCreateWithoutCallSessionInput[] | CallParticipantUncheckedCreateWithoutCallSessionInput[]
+    connectOrCreate?: CallParticipantCreateOrConnectWithoutCallSessionInput | CallParticipantCreateOrConnectWithoutCallSessionInput[]
+    upsert?: CallParticipantUpsertWithWhereUniqueWithoutCallSessionInput | CallParticipantUpsertWithWhereUniqueWithoutCallSessionInput[]
+    createMany?: CallParticipantCreateManyCallSessionInputEnvelope
+    set?: CallParticipantWhereUniqueInput | CallParticipantWhereUniqueInput[]
+    disconnect?: CallParticipantWhereUniqueInput | CallParticipantWhereUniqueInput[]
+    delete?: CallParticipantWhereUniqueInput | CallParticipantWhereUniqueInput[]
+    connect?: CallParticipantWhereUniqueInput | CallParticipantWhereUniqueInput[]
+    update?: CallParticipantUpdateWithWhereUniqueWithoutCallSessionInput | CallParticipantUpdateWithWhereUniqueWithoutCallSessionInput[]
+    updateMany?: CallParticipantUpdateManyWithWhereWithoutCallSessionInput | CallParticipantUpdateManyWithWhereWithoutCallSessionInput[]
+    deleteMany?: CallParticipantScalarWhereInput | CallParticipantScalarWhereInput[]
+  }
+
+  export type TranscriptionUpdateManyWithoutCallSessionNestedInput = {
+    create?: XOR<TranscriptionCreateWithoutCallSessionInput, TranscriptionUncheckedCreateWithoutCallSessionInput> | TranscriptionCreateWithoutCallSessionInput[] | TranscriptionUncheckedCreateWithoutCallSessionInput[]
+    connectOrCreate?: TranscriptionCreateOrConnectWithoutCallSessionInput | TranscriptionCreateOrConnectWithoutCallSessionInput[]
+    upsert?: TranscriptionUpsertWithWhereUniqueWithoutCallSessionInput | TranscriptionUpsertWithWhereUniqueWithoutCallSessionInput[]
+    createMany?: TranscriptionCreateManyCallSessionInputEnvelope
+    set?: TranscriptionWhereUniqueInput | TranscriptionWhereUniqueInput[]
+    disconnect?: TranscriptionWhereUniqueInput | TranscriptionWhereUniqueInput[]
+    delete?: TranscriptionWhereUniqueInput | TranscriptionWhereUniqueInput[]
+    connect?: TranscriptionWhereUniqueInput | TranscriptionWhereUniqueInput[]
+    update?: TranscriptionUpdateWithWhereUniqueWithoutCallSessionInput | TranscriptionUpdateWithWhereUniqueWithoutCallSessionInput[]
+    updateMany?: TranscriptionUpdateManyWithWhereWithoutCallSessionInput | TranscriptionUpdateManyWithWhereWithoutCallSessionInput[]
+    deleteMany?: TranscriptionScalarWhereInput | TranscriptionScalarWhereInput[]
+  }
+
+  export type CallParticipantUncheckedUpdateManyWithoutCallSessionNestedInput = {
+    create?: XOR<CallParticipantCreateWithoutCallSessionInput, CallParticipantUncheckedCreateWithoutCallSessionInput> | CallParticipantCreateWithoutCallSessionInput[] | CallParticipantUncheckedCreateWithoutCallSessionInput[]
+    connectOrCreate?: CallParticipantCreateOrConnectWithoutCallSessionInput | CallParticipantCreateOrConnectWithoutCallSessionInput[]
+    upsert?: CallParticipantUpsertWithWhereUniqueWithoutCallSessionInput | CallParticipantUpsertWithWhereUniqueWithoutCallSessionInput[]
+    createMany?: CallParticipantCreateManyCallSessionInputEnvelope
+    set?: CallParticipantWhereUniqueInput | CallParticipantWhereUniqueInput[]
+    disconnect?: CallParticipantWhereUniqueInput | CallParticipantWhereUniqueInput[]
+    delete?: CallParticipantWhereUniqueInput | CallParticipantWhereUniqueInput[]
+    connect?: CallParticipantWhereUniqueInput | CallParticipantWhereUniqueInput[]
+    update?: CallParticipantUpdateWithWhereUniqueWithoutCallSessionInput | CallParticipantUpdateWithWhereUniqueWithoutCallSessionInput[]
+    updateMany?: CallParticipantUpdateManyWithWhereWithoutCallSessionInput | CallParticipantUpdateManyWithWhereWithoutCallSessionInput[]
+    deleteMany?: CallParticipantScalarWhereInput | CallParticipantScalarWhereInput[]
+  }
+
+  export type TranscriptionUncheckedUpdateManyWithoutCallSessionNestedInput = {
+    create?: XOR<TranscriptionCreateWithoutCallSessionInput, TranscriptionUncheckedCreateWithoutCallSessionInput> | TranscriptionCreateWithoutCallSessionInput[] | TranscriptionUncheckedCreateWithoutCallSessionInput[]
+    connectOrCreate?: TranscriptionCreateOrConnectWithoutCallSessionInput | TranscriptionCreateOrConnectWithoutCallSessionInput[]
+    upsert?: TranscriptionUpsertWithWhereUniqueWithoutCallSessionInput | TranscriptionUpsertWithWhereUniqueWithoutCallSessionInput[]
+    createMany?: TranscriptionCreateManyCallSessionInputEnvelope
+    set?: TranscriptionWhereUniqueInput | TranscriptionWhereUniqueInput[]
+    disconnect?: TranscriptionWhereUniqueInput | TranscriptionWhereUniqueInput[]
+    delete?: TranscriptionWhereUniqueInput | TranscriptionWhereUniqueInput[]
+    connect?: TranscriptionWhereUniqueInput | TranscriptionWhereUniqueInput[]
+    update?: TranscriptionUpdateWithWhereUniqueWithoutCallSessionInput | TranscriptionUpdateWithWhereUniqueWithoutCallSessionInput[]
+    updateMany?: TranscriptionUpdateManyWithWhereWithoutCallSessionInput | TranscriptionUpdateManyWithWhereWithoutCallSessionInput[]
+    deleteMany?: TranscriptionScalarWhereInput | TranscriptionScalarWhereInput[]
+  }
+
+  export type CallSessionCreateNestedOneWithoutParticipantsInput = {
+    create?: XOR<CallSessionCreateWithoutParticipantsInput, CallSessionUncheckedCreateWithoutParticipantsInput>
+    connectOrCreate?: CallSessionCreateOrConnectWithoutParticipantsInput
+    connect?: CallSessionWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutCallParticipationsInput = {
+    create?: XOR<UserCreateWithoutCallParticipationsInput, UserUncheckedCreateWithoutCallParticipationsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCallParticipationsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type EnumParticipantRoleFieldUpdateOperationsInput = {
+    set?: $Enums.ParticipantRole
+  }
+
+  export type CallSessionUpdateOneRequiredWithoutParticipantsNestedInput = {
+    create?: XOR<CallSessionCreateWithoutParticipantsInput, CallSessionUncheckedCreateWithoutParticipantsInput>
+    connectOrCreate?: CallSessionCreateOrConnectWithoutParticipantsInput
+    upsert?: CallSessionUpsertWithoutParticipantsInput
+    connect?: CallSessionWhereUniqueInput
+    update?: XOR<XOR<CallSessionUpdateToOneWithWhereWithoutParticipantsInput, CallSessionUpdateWithoutParticipantsInput>, CallSessionUncheckedUpdateWithoutParticipantsInput>
+  }
+
+  export type UserUpdateOneWithoutCallParticipationsNestedInput = {
+    create?: XOR<UserCreateWithoutCallParticipationsInput, UserUncheckedCreateWithoutCallParticipationsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCallParticipationsInput
+    upsert?: UserUpsertWithoutCallParticipationsInput
+    disconnect?: boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCallParticipationsInput, UserUpdateWithoutCallParticipationsInput>, UserUncheckedUpdateWithoutCallParticipationsInput>
+  }
+
+  export type CallSessionCreateNestedOneWithoutTranscriptionsInput = {
+    create?: XOR<CallSessionCreateWithoutTranscriptionsInput, CallSessionUncheckedCreateWithoutTranscriptionsInput>
+    connectOrCreate?: CallSessionCreateOrConnectWithoutTranscriptionsInput
+    connect?: CallSessionWhereUniqueInput
+  }
+
+  export type TranslationCallCreateNestedManyWithoutTranscriptionInput = {
+    create?: XOR<TranslationCallCreateWithoutTranscriptionInput, TranslationCallUncheckedCreateWithoutTranscriptionInput> | TranslationCallCreateWithoutTranscriptionInput[] | TranslationCallUncheckedCreateWithoutTranscriptionInput[]
+    connectOrCreate?: TranslationCallCreateOrConnectWithoutTranscriptionInput | TranslationCallCreateOrConnectWithoutTranscriptionInput[]
+    createMany?: TranslationCallCreateManyTranscriptionInputEnvelope
+    connect?: TranslationCallWhereUniqueInput | TranslationCallWhereUniqueInput[]
+  }
+
+  export type TranslationCallUncheckedCreateNestedManyWithoutTranscriptionInput = {
+    create?: XOR<TranslationCallCreateWithoutTranscriptionInput, TranslationCallUncheckedCreateWithoutTranscriptionInput> | TranslationCallCreateWithoutTranscriptionInput[] | TranslationCallUncheckedCreateWithoutTranscriptionInput[]
+    connectOrCreate?: TranslationCallCreateOrConnectWithoutTranscriptionInput | TranslationCallCreateOrConnectWithoutTranscriptionInput[]
+    createMany?: TranslationCallCreateManyTranscriptionInputEnvelope
+    connect?: TranslationCallWhereUniqueInput | TranslationCallWhereUniqueInput[]
+  }
+
+  export type EnumTranscriptionSourceFieldUpdateOperationsInput = {
+    set?: $Enums.TranscriptionSource
+  }
+
+  export type CallSessionUpdateOneRequiredWithoutTranscriptionsNestedInput = {
+    create?: XOR<CallSessionCreateWithoutTranscriptionsInput, CallSessionUncheckedCreateWithoutTranscriptionsInput>
+    connectOrCreate?: CallSessionCreateOrConnectWithoutTranscriptionsInput
+    upsert?: CallSessionUpsertWithoutTranscriptionsInput
+    connect?: CallSessionWhereUniqueInput
+    update?: XOR<XOR<CallSessionUpdateToOneWithWhereWithoutTranscriptionsInput, CallSessionUpdateWithoutTranscriptionsInput>, CallSessionUncheckedUpdateWithoutTranscriptionsInput>
+  }
+
+  export type TranslationCallUpdateManyWithoutTranscriptionNestedInput = {
+    create?: XOR<TranslationCallCreateWithoutTranscriptionInput, TranslationCallUncheckedCreateWithoutTranscriptionInput> | TranslationCallCreateWithoutTranscriptionInput[] | TranslationCallUncheckedCreateWithoutTranscriptionInput[]
+    connectOrCreate?: TranslationCallCreateOrConnectWithoutTranscriptionInput | TranslationCallCreateOrConnectWithoutTranscriptionInput[]
+    upsert?: TranslationCallUpsertWithWhereUniqueWithoutTranscriptionInput | TranslationCallUpsertWithWhereUniqueWithoutTranscriptionInput[]
+    createMany?: TranslationCallCreateManyTranscriptionInputEnvelope
+    set?: TranslationCallWhereUniqueInput | TranslationCallWhereUniqueInput[]
+    disconnect?: TranslationCallWhereUniqueInput | TranslationCallWhereUniqueInput[]
+    delete?: TranslationCallWhereUniqueInput | TranslationCallWhereUniqueInput[]
+    connect?: TranslationCallWhereUniqueInput | TranslationCallWhereUniqueInput[]
+    update?: TranslationCallUpdateWithWhereUniqueWithoutTranscriptionInput | TranslationCallUpdateWithWhereUniqueWithoutTranscriptionInput[]
+    updateMany?: TranslationCallUpdateManyWithWhereWithoutTranscriptionInput | TranslationCallUpdateManyWithWhereWithoutTranscriptionInput[]
+    deleteMany?: TranslationCallScalarWhereInput | TranslationCallScalarWhereInput[]
+  }
+
+  export type TranslationCallUncheckedUpdateManyWithoutTranscriptionNestedInput = {
+    create?: XOR<TranslationCallCreateWithoutTranscriptionInput, TranslationCallUncheckedCreateWithoutTranscriptionInput> | TranslationCallCreateWithoutTranscriptionInput[] | TranslationCallUncheckedCreateWithoutTranscriptionInput[]
+    connectOrCreate?: TranslationCallCreateOrConnectWithoutTranscriptionInput | TranslationCallCreateOrConnectWithoutTranscriptionInput[]
+    upsert?: TranslationCallUpsertWithWhereUniqueWithoutTranscriptionInput | TranslationCallUpsertWithWhereUniqueWithoutTranscriptionInput[]
+    createMany?: TranslationCallCreateManyTranscriptionInputEnvelope
+    set?: TranslationCallWhereUniqueInput | TranslationCallWhereUniqueInput[]
+    disconnect?: TranslationCallWhereUniqueInput | TranslationCallWhereUniqueInput[]
+    delete?: TranslationCallWhereUniqueInput | TranslationCallWhereUniqueInput[]
+    connect?: TranslationCallWhereUniqueInput | TranslationCallWhereUniqueInput[]
+    update?: TranslationCallUpdateWithWhereUniqueWithoutTranscriptionInput | TranslationCallUpdateWithWhereUniqueWithoutTranscriptionInput[]
+    updateMany?: TranslationCallUpdateManyWithWhereWithoutTranscriptionInput | TranslationCallUpdateManyWithWhereWithoutTranscriptionInput[]
+    deleteMany?: TranslationCallScalarWhereInput | TranslationCallScalarWhereInput[]
+  }
+
+  export type TranscriptionCreateNestedOneWithoutTranslationsInput = {
+    create?: XOR<TranscriptionCreateWithoutTranslationsInput, TranscriptionUncheckedCreateWithoutTranslationsInput>
+    connectOrCreate?: TranscriptionCreateOrConnectWithoutTranslationsInput
+    connect?: TranscriptionWhereUniqueInput
+  }
+
+  export type TranscriptionUpdateOneRequiredWithoutTranslationsNestedInput = {
+    create?: XOR<TranscriptionCreateWithoutTranslationsInput, TranscriptionUncheckedCreateWithoutTranslationsInput>
+    connectOrCreate?: TranscriptionCreateOrConnectWithoutTranslationsInput
+    upsert?: TranscriptionUpsertWithoutTranslationsInput
+    connect?: TranscriptionWhereUniqueInput
+    update?: XOR<XOR<TranscriptionUpdateToOneWithWhereWithoutTranslationsInput, TranscriptionUpdateWithoutTranslationsInput>, TranscriptionUncheckedUpdateWithoutTranslationsInput>
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -39053,15 +47112,22 @@ export namespace Prisma {
     isSet?: boolean
   }
 
-  export type NestedIntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+  export type NestedBoolNullableFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel> | null
+    not?: NestedBoolNullableFilter<$PrismaModel> | boolean | null
+    isSet?: boolean
+  }
+
+  export type NestedIntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
     lt?: number | IntFieldRefInput<$PrismaModel>
     lte?: number | IntFieldRefInput<$PrismaModel>
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+    isSet?: boolean
   }
 
   export type NestedStringWithAggregatesFilter<$PrismaModel = never> = {
@@ -39081,6 +47147,17 @@ export namespace Prisma {
     _max?: NestedStringFilter<$PrismaModel>
   }
 
+  export type NestedIntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
+
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -39096,18 +47173,6 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
-    isSet?: boolean
-  }
-
-  export type NestedIntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
     isSet?: boolean
   }
 
@@ -39148,31 +47213,13 @@ export namespace Prisma {
     isSet?: boolean
   }
 
-  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
-  }
-
-  export type NestedFloatFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatFilter<$PrismaModel> | number
+  export type NestedBoolNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel> | null
+    not?: NestedBoolNullableWithAggregatesFilter<$PrismaModel> | boolean | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedBoolNullableFilter<$PrismaModel>
+    _max?: NestedBoolNullableFilter<$PrismaModel>
+    isSet?: boolean
   }
 
   export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -39204,6 +47251,33 @@ export namespace Prisma {
     isSet?: boolean
   }
 
+  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type NestedFloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
   export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel> | null
     in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
@@ -39219,6 +47293,86 @@ export namespace Prisma {
     _min?: NestedFloatNullableFilter<$PrismaModel>
     _max?: NestedFloatNullableFilter<$PrismaModel>
     isSet?: boolean
+  }
+
+  export type NestedEnumCallModeFilter<$PrismaModel = never> = {
+    equals?: $Enums.CallMode | EnumCallModeFieldRefInput<$PrismaModel>
+    in?: $Enums.CallMode[] | ListEnumCallModeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.CallMode[] | ListEnumCallModeFieldRefInput<$PrismaModel>
+    not?: NestedEnumCallModeFilter<$PrismaModel> | $Enums.CallMode
+  }
+
+  export type NestedEnumCallStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.CallStatus | EnumCallStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.CallStatus[] | ListEnumCallStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.CallStatus[] | ListEnumCallStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumCallStatusFilter<$PrismaModel> | $Enums.CallStatus
+  }
+
+  export type NestedEnumCallModeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.CallMode | EnumCallModeFieldRefInput<$PrismaModel>
+    in?: $Enums.CallMode[] | ListEnumCallModeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.CallMode[] | ListEnumCallModeFieldRefInput<$PrismaModel>
+    not?: NestedEnumCallModeWithAggregatesFilter<$PrismaModel> | $Enums.CallMode
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumCallModeFilter<$PrismaModel>
+    _max?: NestedEnumCallModeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumCallStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.CallStatus | EnumCallStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.CallStatus[] | ListEnumCallStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.CallStatus[] | ListEnumCallStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumCallStatusWithAggregatesFilter<$PrismaModel> | $Enums.CallStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumCallStatusFilter<$PrismaModel>
+    _max?: NestedEnumCallStatusFilter<$PrismaModel>
+  }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    isSet?: boolean
+  }
+
+  export type NestedEnumParticipantRoleFilter<$PrismaModel = never> = {
+    equals?: $Enums.ParticipantRole | EnumParticipantRoleFieldRefInput<$PrismaModel>
+    in?: $Enums.ParticipantRole[] | ListEnumParticipantRoleFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ParticipantRole[] | ListEnumParticipantRoleFieldRefInput<$PrismaModel>
+    not?: NestedEnumParticipantRoleFilter<$PrismaModel> | $Enums.ParticipantRole
+  }
+
+  export type NestedEnumParticipantRoleWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ParticipantRole | EnumParticipantRoleFieldRefInput<$PrismaModel>
+    in?: $Enums.ParticipantRole[] | ListEnumParticipantRoleFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ParticipantRole[] | ListEnumParticipantRoleFieldRefInput<$PrismaModel>
+    not?: NestedEnumParticipantRoleWithAggregatesFilter<$PrismaModel> | $Enums.ParticipantRole
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumParticipantRoleFilter<$PrismaModel>
+    _max?: NestedEnumParticipantRoleFilter<$PrismaModel>
+  }
+
+  export type NestedEnumTranscriptionSourceFilter<$PrismaModel = never> = {
+    equals?: $Enums.TranscriptionSource | EnumTranscriptionSourceFieldRefInput<$PrismaModel>
+    in?: $Enums.TranscriptionSource[] | ListEnumTranscriptionSourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TranscriptionSource[] | ListEnumTranscriptionSourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumTranscriptionSourceFilter<$PrismaModel> | $Enums.TranscriptionSource
+  }
+
+  export type NestedEnumTranscriptionSourceWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.TranscriptionSource | EnumTranscriptionSourceFieldRefInput<$PrismaModel>
+    in?: $Enums.TranscriptionSource[] | ListEnumTranscriptionSourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TranscriptionSource[] | ListEnumTranscriptionSourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumTranscriptionSourceWithAggregatesFilter<$PrismaModel> | $Enums.TranscriptionSource
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumTranscriptionSourceFilter<$PrismaModel>
+    _max?: NestedEnumTranscriptionSourceFilter<$PrismaModel>
   }
 
   export type CommunityCreateWithoutCreatorInput = {
@@ -39890,6 +48044,76 @@ export namespace Prisma {
     data: TrackingLinkClickCreateManyUserInput | TrackingLinkClickCreateManyUserInput[]
   }
 
+  export type CallSessionCreateWithoutInitiatorInput = {
+    id?: string
+    mode?: $Enums.CallMode
+    status?: $Enums.CallStatus
+    startedAt?: Date | string
+    answeredAt?: Date | string | null
+    endedAt?: Date | string | null
+    duration?: number | null
+    metadata?: InputJsonValue | null
+    conversation: ConversationCreateNestedOneWithoutCallSessionsInput
+    participants?: CallParticipantCreateNestedManyWithoutCallSessionInput
+    transcriptions?: TranscriptionCreateNestedManyWithoutCallSessionInput
+  }
+
+  export type CallSessionUncheckedCreateWithoutInitiatorInput = {
+    id?: string
+    conversationId: string
+    mode?: $Enums.CallMode
+    status?: $Enums.CallStatus
+    startedAt?: Date | string
+    answeredAt?: Date | string | null
+    endedAt?: Date | string | null
+    duration?: number | null
+    metadata?: InputJsonValue | null
+    participants?: CallParticipantUncheckedCreateNestedManyWithoutCallSessionInput
+    transcriptions?: TranscriptionUncheckedCreateNestedManyWithoutCallSessionInput
+  }
+
+  export type CallSessionCreateOrConnectWithoutInitiatorInput = {
+    where: CallSessionWhereUniqueInput
+    create: XOR<CallSessionCreateWithoutInitiatorInput, CallSessionUncheckedCreateWithoutInitiatorInput>
+  }
+
+  export type CallSessionCreateManyInitiatorInputEnvelope = {
+    data: CallSessionCreateManyInitiatorInput | CallSessionCreateManyInitiatorInput[]
+  }
+
+  export type CallParticipantCreateWithoutUserInput = {
+    id?: string
+    anonymousId?: string | null
+    role?: $Enums.ParticipantRole
+    joinedAt?: Date | string
+    leftAt?: Date | string | null
+    isAudioEnabled?: boolean
+    isVideoEnabled?: boolean
+    connectionQuality?: InputJsonValue | null
+    callSession: CallSessionCreateNestedOneWithoutParticipantsInput
+  }
+
+  export type CallParticipantUncheckedCreateWithoutUserInput = {
+    id?: string
+    callSessionId: string
+    anonymousId?: string | null
+    role?: $Enums.ParticipantRole
+    joinedAt?: Date | string
+    leftAt?: Date | string | null
+    isAudioEnabled?: boolean
+    isVideoEnabled?: boolean
+    connectionQuality?: InputJsonValue | null
+  }
+
+  export type CallParticipantCreateOrConnectWithoutUserInput = {
+    where: CallParticipantWhereUniqueInput
+    create: XOR<CallParticipantCreateWithoutUserInput, CallParticipantUncheckedCreateWithoutUserInput>
+  }
+
+  export type CallParticipantCreateManyUserInputEnvelope = {
+    data: CallParticipantCreateManyUserInput | CallParticipantCreateManyUserInput[]
+  }
+
   export type CommunityUpsertWithWhereUniqueWithoutCreatorInput = {
     where: CommunityWhereUniqueInput
     update: XOR<CommunityUpdateWithoutCreatorInput, CommunityUncheckedUpdateWithoutCreatorInput>
@@ -40495,6 +48719,70 @@ export namespace Prisma {
     clickedAt?: DateTimeFilter<"TrackingLinkClick"> | Date | string
   }
 
+  export type CallSessionUpsertWithWhereUniqueWithoutInitiatorInput = {
+    where: CallSessionWhereUniqueInput
+    update: XOR<CallSessionUpdateWithoutInitiatorInput, CallSessionUncheckedUpdateWithoutInitiatorInput>
+    create: XOR<CallSessionCreateWithoutInitiatorInput, CallSessionUncheckedCreateWithoutInitiatorInput>
+  }
+
+  export type CallSessionUpdateWithWhereUniqueWithoutInitiatorInput = {
+    where: CallSessionWhereUniqueInput
+    data: XOR<CallSessionUpdateWithoutInitiatorInput, CallSessionUncheckedUpdateWithoutInitiatorInput>
+  }
+
+  export type CallSessionUpdateManyWithWhereWithoutInitiatorInput = {
+    where: CallSessionScalarWhereInput
+    data: XOR<CallSessionUpdateManyMutationInput, CallSessionUncheckedUpdateManyWithoutInitiatorInput>
+  }
+
+  export type CallSessionScalarWhereInput = {
+    AND?: CallSessionScalarWhereInput | CallSessionScalarWhereInput[]
+    OR?: CallSessionScalarWhereInput[]
+    NOT?: CallSessionScalarWhereInput | CallSessionScalarWhereInput[]
+    id?: StringFilter<"CallSession"> | string
+    conversationId?: StringFilter<"CallSession"> | string
+    mode?: EnumCallModeFilter<"CallSession"> | $Enums.CallMode
+    status?: EnumCallStatusFilter<"CallSession"> | $Enums.CallStatus
+    initiatorId?: StringFilter<"CallSession"> | string
+    startedAt?: DateTimeFilter<"CallSession"> | Date | string
+    answeredAt?: DateTimeNullableFilter<"CallSession"> | Date | string | null
+    endedAt?: DateTimeNullableFilter<"CallSession"> | Date | string | null
+    duration?: IntNullableFilter<"CallSession"> | number | null
+    metadata?: JsonNullableFilter<"CallSession">
+  }
+
+  export type CallParticipantUpsertWithWhereUniqueWithoutUserInput = {
+    where: CallParticipantWhereUniqueInput
+    update: XOR<CallParticipantUpdateWithoutUserInput, CallParticipantUncheckedUpdateWithoutUserInput>
+    create: XOR<CallParticipantCreateWithoutUserInput, CallParticipantUncheckedCreateWithoutUserInput>
+  }
+
+  export type CallParticipantUpdateWithWhereUniqueWithoutUserInput = {
+    where: CallParticipantWhereUniqueInput
+    data: XOR<CallParticipantUpdateWithoutUserInput, CallParticipantUncheckedUpdateWithoutUserInput>
+  }
+
+  export type CallParticipantUpdateManyWithWhereWithoutUserInput = {
+    where: CallParticipantScalarWhereInput
+    data: XOR<CallParticipantUpdateManyMutationInput, CallParticipantUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type CallParticipantScalarWhereInput = {
+    AND?: CallParticipantScalarWhereInput | CallParticipantScalarWhereInput[]
+    OR?: CallParticipantScalarWhereInput[]
+    NOT?: CallParticipantScalarWhereInput | CallParticipantScalarWhereInput[]
+    id?: StringFilter<"CallParticipant"> | string
+    callSessionId?: StringFilter<"CallParticipant"> | string
+    userId?: StringNullableFilter<"CallParticipant"> | string | null
+    anonymousId?: StringNullableFilter<"CallParticipant"> | string | null
+    role?: EnumParticipantRoleFilter<"CallParticipant"> | $Enums.ParticipantRole
+    joinedAt?: DateTimeFilter<"CallParticipant"> | Date | string
+    leftAt?: DateTimeNullableFilter<"CallParticipant"> | Date | string | null
+    isAudioEnabled?: BoolFilter<"CallParticipant"> | boolean
+    isVideoEnabled?: BoolFilter<"CallParticipant"> | boolean
+    connectionQuality?: JsonNullableFilter<"CallParticipant">
+  }
+
   export type AnonymousParticipantCreateWithoutConversationInput = {
     id?: string
     firstName: string
@@ -40804,6 +49092,43 @@ export namespace Prisma {
     data: TypingIndicatorCreateManyConversationInput | TypingIndicatorCreateManyConversationInput[]
   }
 
+  export type CallSessionCreateWithoutConversationInput = {
+    id?: string
+    mode?: $Enums.CallMode
+    status?: $Enums.CallStatus
+    startedAt?: Date | string
+    answeredAt?: Date | string | null
+    endedAt?: Date | string | null
+    duration?: number | null
+    metadata?: InputJsonValue | null
+    initiator: UserCreateNestedOneWithoutInitiatedCallsInput
+    participants?: CallParticipantCreateNestedManyWithoutCallSessionInput
+    transcriptions?: TranscriptionCreateNestedManyWithoutCallSessionInput
+  }
+
+  export type CallSessionUncheckedCreateWithoutConversationInput = {
+    id?: string
+    mode?: $Enums.CallMode
+    status?: $Enums.CallStatus
+    initiatorId: string
+    startedAt?: Date | string
+    answeredAt?: Date | string | null
+    endedAt?: Date | string | null
+    duration?: number | null
+    metadata?: InputJsonValue | null
+    participants?: CallParticipantUncheckedCreateNestedManyWithoutCallSessionInput
+    transcriptions?: TranscriptionUncheckedCreateNestedManyWithoutCallSessionInput
+  }
+
+  export type CallSessionCreateOrConnectWithoutConversationInput = {
+    where: CallSessionWhereUniqueInput
+    create: XOR<CallSessionCreateWithoutConversationInput, CallSessionUncheckedCreateWithoutConversationInput>
+  }
+
+  export type CallSessionCreateManyConversationInputEnvelope = {
+    data: CallSessionCreateManyConversationInput | CallSessionCreateManyConversationInput[]
+  }
+
   export type AnonymousParticipantUpsertWithWhereUniqueWithoutConversationInput = {
     where: AnonymousParticipantWhereUniqueInput
     update: XOR<AnonymousParticipantUpdateWithoutConversationInput, AnonymousParticipantUncheckedUpdateWithoutConversationInput>
@@ -40962,6 +49287,22 @@ export namespace Prisma {
     data: XOR<TypingIndicatorUpdateManyMutationInput, TypingIndicatorUncheckedUpdateManyWithoutConversationInput>
   }
 
+  export type CallSessionUpsertWithWhereUniqueWithoutConversationInput = {
+    where: CallSessionWhereUniqueInput
+    update: XOR<CallSessionUpdateWithoutConversationInput, CallSessionUncheckedUpdateWithoutConversationInput>
+    create: XOR<CallSessionCreateWithoutConversationInput, CallSessionUncheckedCreateWithoutConversationInput>
+  }
+
+  export type CallSessionUpdateWithWhereUniqueWithoutConversationInput = {
+    where: CallSessionWhereUniqueInput
+    data: XOR<CallSessionUpdateWithoutConversationInput, CallSessionUncheckedUpdateWithoutConversationInput>
+  }
+
+  export type CallSessionUpdateManyWithWhereWithoutConversationInput = {
+    where: CallSessionScalarWhereInput
+    data: XOR<CallSessionUpdateManyMutationInput, CallSessionUncheckedUpdateManyWithoutConversationInput>
+  }
+
   export type UserCreateWithoutConversationsInput = {
     id?: string
     username: string
@@ -40986,17 +49327,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -41017,6 +49358,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutConversationsInput = {
@@ -41043,17 +49386,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -41074,6 +49417,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutConversationsInput = {
@@ -41100,6 +49445,7 @@ export namespace Prisma {
     community?: CommunityCreateNestedOneWithoutConversationInput
     messages?: MessageCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
+    callSessions?: CallSessionCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUncheckedCreateWithoutMembersInput = {
@@ -41121,6 +49467,7 @@ export namespace Prisma {
     shareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput
     messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
+    callSessions?: CallSessionUncheckedCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationCreateOrConnectWithoutMembersInput = {
@@ -41162,17 +49509,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -41193,6 +49540,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutConversationsInput = {
@@ -41218,17 +49567,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -41249,6 +49598,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ConversationUpsertWithoutMembersInput = {
@@ -41280,6 +49631,7 @@ export namespace Prisma {
     community?: CommunityUpdateOneWithoutConversationNestedInput
     messages?: MessageUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
+    callSessions?: CallSessionUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationUncheckedUpdateWithoutMembersInput = {
@@ -41300,6 +49652,7 @@ export namespace Prisma {
     shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
     messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
+    callSessions?: CallSessionUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type AnonymousParticipantCreateWithoutShareLinkInput = {
@@ -41387,17 +49740,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -41418,6 +49771,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCreatedShareLinksInput = {
@@ -41444,17 +49799,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -41475,6 +49830,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCreatedShareLinksInput = {
@@ -41501,6 +49858,7 @@ export namespace Prisma {
     community?: CommunityCreateNestedOneWithoutConversationInput
     messages?: MessageCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
+    callSessions?: CallSessionCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUncheckedCreateWithoutShareLinksInput = {
@@ -41522,6 +49880,7 @@ export namespace Prisma {
     preferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutConversationInput
     messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
+    callSessions?: CallSessionUncheckedCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationCreateOrConnectWithoutShareLinksInput = {
@@ -41579,17 +49938,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -41610,6 +49969,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedShareLinksInput = {
@@ -41635,17 +49996,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -41666,6 +50027,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ConversationUpsertWithoutShareLinksInput = {
@@ -41697,6 +50060,7 @@ export namespace Prisma {
     community?: CommunityUpdateOneWithoutConversationNestedInput
     messages?: MessageUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
+    callSessions?: CallSessionUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationUncheckedUpdateWithoutShareLinksInput = {
@@ -41717,6 +50081,7 @@ export namespace Prisma {
     preferences?: ConversationPreferenceUncheckedUpdateManyWithoutConversationNestedInput
     messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
+    callSessions?: CallSessionUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationShareLinkCreateWithoutAnonymousParticipantsInput = {
@@ -41801,6 +50166,7 @@ export namespace Prisma {
     community?: CommunityCreateNestedOneWithoutConversationInput
     messages?: MessageCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
+    callSessions?: CallSessionCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUncheckedCreateWithoutAnonymousParticipantsInput = {
@@ -41822,6 +50188,7 @@ export namespace Prisma {
     shareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput
     messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
+    callSessions?: CallSessionUncheckedCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationCreateOrConnectWithoutAnonymousParticipantsInput = {
@@ -42050,6 +50417,7 @@ export namespace Prisma {
     community?: CommunityUpdateOneWithoutConversationNestedInput
     messages?: MessageUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
+    callSessions?: CallSessionUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationUncheckedUpdateWithoutAnonymousParticipantsInput = {
@@ -42070,6 +50438,7 @@ export namespace Prisma {
     shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
     messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
+    callSessions?: CallSessionUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type MessageUpsertWithWhereUniqueWithoutAnonymousSenderInput = {
@@ -42216,6 +50585,10 @@ export namespace Prisma {
     thumbnailPath?: string | null
     thumbnailUrl?: string | null
     duration?: number | null
+    bitrate?: number | null
+    sampleRate?: number | null
+    codec?: string | null
+    channels?: number | null
     uploadedBy: string
     isAnonymous?: boolean
     createdAt?: Date | string
@@ -42234,6 +50607,10 @@ export namespace Prisma {
     thumbnailPath?: string | null
     thumbnailUrl?: string | null
     duration?: number | null
+    bitrate?: number | null
+    sampleRate?: number | null
+    codec?: string | null
+    channels?: number | null
     uploadedBy: string
     isAnonymous?: boolean
     createdAt?: Date | string
@@ -42458,17 +50835,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -42489,6 +50866,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSentMessagesInput = {
@@ -42515,17 +50894,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -42546,6 +50925,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSentMessagesInput = {
@@ -42572,6 +50953,7 @@ export namespace Prisma {
     shareLinks?: ConversationShareLinkCreateNestedManyWithoutConversationInput
     community?: CommunityCreateNestedOneWithoutConversationInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
+    callSessions?: CallSessionCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUncheckedCreateWithoutMessagesInput = {
@@ -42593,6 +50975,7 @@ export namespace Prisma {
     preferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutConversationInput
     shareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
+    callSessions?: CallSessionUncheckedCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationCreateOrConnectWithoutMessagesInput = {
@@ -42697,6 +51080,10 @@ export namespace Prisma {
     thumbnailPath?: StringNullableFilter<"MessageAttachment"> | string | null
     thumbnailUrl?: StringNullableFilter<"MessageAttachment"> | string | null
     duration?: IntNullableFilter<"MessageAttachment"> | number | null
+    bitrate?: IntNullableFilter<"MessageAttachment"> | number | null
+    sampleRate?: IntNullableFilter<"MessageAttachment"> | number | null
+    codec?: StringNullableFilter<"MessageAttachment"> | string | null
+    channels?: IntNullableFilter<"MessageAttachment"> | number | null
     uploadedBy?: StringFilter<"MessageAttachment"> | string
     isAnonymous?: BoolFilter<"MessageAttachment"> | boolean
     createdAt?: DateTimeFilter<"MessageAttachment"> | Date | string
@@ -42882,17 +51269,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -42913,6 +51300,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSentMessagesInput = {
@@ -42938,17 +51327,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -42969,6 +51358,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ConversationUpsertWithoutMessagesInput = {
@@ -43000,6 +51391,7 @@ export namespace Prisma {
     shareLinks?: ConversationShareLinkUpdateManyWithoutConversationNestedInput
     community?: CommunityUpdateOneWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
+    callSessions?: CallSessionUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationUncheckedUpdateWithoutMessagesInput = {
@@ -43020,6 +51412,7 @@ export namespace Prisma {
     preferences?: ConversationPreferenceUncheckedUpdateManyWithoutConversationNestedInput
     shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
+    callSessions?: CallSessionUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type MessageCreateWithoutTranslationsInput = {
@@ -43250,17 +51643,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -43281,6 +51674,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutMessageStatusInput = {
@@ -43307,17 +51702,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -43338,6 +51733,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutMessageStatusInput = {
@@ -43477,17 +51874,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -43508,6 +51905,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutMessageStatusInput = {
@@ -43533,17 +51932,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -43564,6 +51963,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type MessageUpsertWithoutStatusInput = {
@@ -43745,17 +52146,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -43776,6 +52177,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutReactionsInput = {
@@ -43802,17 +52205,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -43833,6 +52236,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutReactionsInput = {
@@ -43984,17 +52389,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -44015,6 +52420,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReactionsInput = {
@@ -44040,17 +52447,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -44071,6 +52478,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type AnonymousParticipantUpsertWithoutReactionsInput = {
@@ -44158,17 +52567,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -44189,6 +52598,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutReceivedFriendRequestsInput = {
@@ -44215,17 +52626,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -44246,6 +52657,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutReceivedFriendRequestsInput = {
@@ -44277,17 +52690,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -44308,6 +52721,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSentFriendRequestsInput = {
@@ -44334,17 +52749,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -44365,6 +52780,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSentFriendRequestsInput = {
@@ -44406,17 +52823,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -44437,6 +52854,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReceivedFriendRequestsInput = {
@@ -44462,17 +52881,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -44493,6 +52912,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutSentFriendRequestsInput = {
@@ -44529,17 +52950,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -44560,6 +52981,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSentFriendRequestsInput = {
@@ -44585,17 +53008,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -44616,6 +53039,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutTypingIndicatorsInput = {
@@ -44642,17 +53067,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -44673,6 +53098,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTypingIndicatorsInput = {
@@ -44699,17 +53126,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -44730,6 +53157,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTypingIndicatorsInput = {
@@ -44756,6 +53185,7 @@ export namespace Prisma {
     shareLinks?: ConversationShareLinkCreateNestedManyWithoutConversationInput
     community?: CommunityCreateNestedOneWithoutConversationInput
     messages?: MessageCreateNestedManyWithoutConversationInput
+    callSessions?: CallSessionCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUncheckedCreateWithoutTypingIndicatorsInput = {
@@ -44777,6 +53207,7 @@ export namespace Prisma {
     preferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutConversationInput
     shareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput
     messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
+    callSessions?: CallSessionUncheckedCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationCreateOrConnectWithoutTypingIndicatorsInput = {
@@ -44818,17 +53249,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -44849,6 +53280,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTypingIndicatorsInput = {
@@ -44874,17 +53307,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -44905,6 +53338,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ConversationUpsertWithoutTypingIndicatorsInput = {
@@ -44936,6 +53371,7 @@ export namespace Prisma {
     shareLinks?: ConversationShareLinkUpdateManyWithoutConversationNestedInput
     community?: CommunityUpdateOneWithoutConversationNestedInput
     messages?: MessageUpdateManyWithoutConversationNestedInput
+    callSessions?: CallSessionUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationUncheckedUpdateWithoutTypingIndicatorsInput = {
@@ -44956,6 +53392,7 @@ export namespace Prisma {
     preferences?: ConversationPreferenceUncheckedUpdateManyWithoutConversationNestedInput
     shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
     messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
+    callSessions?: CallSessionUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type UserCreateWithoutNotificationsInput = {
@@ -44982,17 +53419,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -45013,6 +53450,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -45039,17 +53478,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -45070,6 +53509,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -45111,17 +53552,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -45142,6 +53583,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -45167,17 +53610,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -45198,6 +53641,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type CommunityMemberCreateWithoutCommunityInput = {
@@ -45247,17 +53692,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
@@ -45278,6 +53723,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCreatedCommunitiesInput = {
@@ -45304,17 +53751,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
@@ -45335,6 +53782,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCreatedCommunitiesInput = {
@@ -45361,6 +53810,7 @@ export namespace Prisma {
     shareLinks?: ConversationShareLinkCreateNestedManyWithoutConversationInput
     messages?: MessageCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
+    callSessions?: CallSessionCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUncheckedCreateWithoutCommunityInput = {
@@ -45382,6 +53832,7 @@ export namespace Prisma {
     shareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput
     messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
+    callSessions?: CallSessionUncheckedCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationCreateOrConnectWithoutCommunityInput = {
@@ -45443,17 +53894,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
@@ -45474,6 +53925,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedCommunitiesInput = {
@@ -45499,17 +53952,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
@@ -45530,6 +53983,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ConversationUpsertWithWhereUniqueWithoutCommunityInput = {
@@ -45591,17 +54046,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -45622,6 +54077,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCommunityMembershipsInput = {
@@ -45648,17 +54105,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -45679,6 +54136,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCommunityMembershipsInput = {
@@ -45751,17 +54210,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -45782,6 +54241,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCommunityMembershipsInput = {
@@ -45807,17 +54268,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -45838,6 +54299,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type CommunityUpsertWithoutMembersInput = {
@@ -45899,17 +54362,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -45930,6 +54393,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutStatsInput = {
@@ -45956,17 +54421,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -45987,6 +54452,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutStatsInput = {
@@ -46028,17 +54495,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -46059,6 +54526,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutStatsInput = {
@@ -46084,17 +54553,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -46115,6 +54584,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutPreferencesInput = {
@@ -46141,17 +54612,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -46172,6 +54643,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutPreferencesInput = {
@@ -46198,17 +54671,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -46229,6 +54702,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutPreferencesInput = {
@@ -46270,17 +54745,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -46301,6 +54776,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPreferencesInput = {
@@ -46326,17 +54803,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -46357,6 +54834,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutConversationPreferencesInput = {
@@ -46383,17 +54862,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -46414,6 +54893,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutConversationPreferencesInput = {
@@ -46440,17 +54921,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -46471,6 +54952,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutConversationPreferencesInput = {
@@ -46497,6 +54980,7 @@ export namespace Prisma {
     community?: CommunityCreateNestedOneWithoutConversationInput
     messages?: MessageCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
+    callSessions?: CallSessionCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUncheckedCreateWithoutPreferencesInput = {
@@ -46518,6 +55002,7 @@ export namespace Prisma {
     shareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput
     messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
+    callSessions?: CallSessionUncheckedCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationCreateOrConnectWithoutPreferencesInput = {
@@ -46559,17 +55044,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -46590,6 +55075,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutConversationPreferencesInput = {
@@ -46615,17 +55102,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -46646,6 +55133,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ConversationUpsertWithoutPreferencesInput = {
@@ -46677,6 +55166,7 @@ export namespace Prisma {
     community?: CommunityUpdateOneWithoutConversationNestedInput
     messages?: MessageUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
+    callSessions?: CallSessionUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationUncheckedUpdateWithoutPreferencesInput = {
@@ -46697,6 +55187,7 @@ export namespace Prisma {
     shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
     messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
+    callSessions?: CallSessionUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type UserCreateWithoutCreatedAffiliateTokensInput = {
@@ -46723,17 +55214,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -46754,6 +55245,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCreatedAffiliateTokensInput = {
@@ -46780,17 +55273,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -46811,6 +55304,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCreatedAffiliateTokensInput = {
@@ -46879,17 +55374,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -46910,6 +55405,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedAffiliateTokensInput = {
@@ -46935,17 +55432,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -46966,6 +55463,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type AffiliateRelationUpsertWithWhereUniqueWithoutAffiliateTokenInput = {
@@ -47039,17 +55538,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -47070,6 +55569,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAffiliateRelationsInput = {
@@ -47096,17 +55597,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -47127,6 +55628,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAffiliateRelationsInput = {
@@ -47158,17 +55661,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -47189,6 +55692,8 @@ export namespace Prisma {
     affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
     createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutReferredRelationsInput = {
@@ -47215,17 +55720,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -47246,6 +55751,8 @@ export namespace Prisma {
     affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
     createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutReferredRelationsInput = {
@@ -47322,17 +55829,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -47353,6 +55860,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAffiliateRelationsInput = {
@@ -47378,17 +55887,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -47409,6 +55918,8 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutReferredRelationsInput = {
@@ -47445,17 +55956,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -47476,6 +55987,8 @@ export namespace Prisma {
     affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
     createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReferredRelationsInput = {
@@ -47501,17 +56014,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -47532,6 +56045,8 @@ export namespace Prisma {
     affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
     createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type TrackingLinkClickCreateWithoutTrackingLinkInput = {
@@ -47603,17 +56118,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -47634,6 +56149,8 @@ export namespace Prisma {
     affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCreatedTrackingLinksInput = {
@@ -47660,17 +56177,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -47691,6 +56208,8 @@ export namespace Prisma {
     affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCreatedTrackingLinksInput = {
@@ -47748,17 +56267,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -47779,6 +56298,8 @@ export namespace Prisma {
     affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedTrackingLinksInput = {
@@ -47804,17 +56325,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -47835,6 +56356,8 @@ export namespace Prisma {
     affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type TrackingLinkCreateWithoutClicksInput = {
@@ -47902,17 +56425,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
@@ -47933,6 +56456,8 @@ export namespace Prisma {
     affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
+    initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTrackingLinkClicksInput = {
@@ -47959,17 +56484,17 @@ export namespace Prisma {
     role?: string
     isActive?: boolean
     deactivatedAt?: Date | string | null
-    emailVerified?: boolean
+    emailVerified?: boolean | null
     emailVerifiedAt?: Date | string | null
-    phoneVerified?: boolean
+    phoneVerified?: boolean | null
     phoneVerifiedAt?: Date | string | null
-    twoFactorEnabled?: boolean
-    failedLoginAttempts?: number
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
     lockedUntil?: Date | string | null
-    lastPasswordChange?: Date | string
+    lastPasswordChange?: Date | string | null
     deletedAt?: Date | string | null
     deletedBy?: string | null
-    profileCompletionRate?: number
+    profileCompletionRate?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
@@ -47990,6 +56515,8 @@ export namespace Prisma {
     affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
     createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
+    initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTrackingLinkClicksInput = {
@@ -48133,17 +56660,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
@@ -48164,6 +56691,8 @@ export namespace Prisma {
     affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
+    initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTrackingLinkClicksInput = {
@@ -48189,17 +56718,17 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastPasswordChange?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    profileCompletionRate?: IntFieldUpdateOperationsInput | number
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
@@ -48220,6 +56749,8 @@ export namespace Prisma {
     affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
     createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type AnonymousParticipantUpsertWithoutTrackingLinkClicksInput = {
@@ -48281,6 +56812,982 @@ export namespace Prisma {
     leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sentMessages?: MessageUncheckedUpdateManyWithoutAnonymousSenderNestedInput
     reactions?: ReactionUncheckedUpdateManyWithoutAnonymousUserNestedInput
+  }
+
+  export type ConversationCreateWithoutCallSessionsInput = {
+    id?: string
+    identifier: string
+    type: string
+    title?: string | null
+    description?: string | null
+    image?: string | null
+    avatar?: string | null
+    isActive?: boolean
+    isArchived?: boolean
+    lastMessageAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    anonymousParticipants?: AnonymousParticipantCreateNestedManyWithoutConversationInput
+    members?: ConversationMemberCreateNestedManyWithoutConversationInput
+    preferences?: ConversationPreferenceCreateNestedManyWithoutConversationInput
+    shareLinks?: ConversationShareLinkCreateNestedManyWithoutConversationInput
+    community?: CommunityCreateNestedOneWithoutConversationInput
+    messages?: MessageCreateNestedManyWithoutConversationInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
+  }
+
+  export type ConversationUncheckedCreateWithoutCallSessionsInput = {
+    id?: string
+    identifier: string
+    type: string
+    title?: string | null
+    description?: string | null
+    image?: string | null
+    avatar?: string | null
+    communityId?: string | null
+    isActive?: boolean
+    isArchived?: boolean
+    lastMessageAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    anonymousParticipants?: AnonymousParticipantUncheckedCreateNestedManyWithoutConversationInput
+    members?: ConversationMemberUncheckedCreateNestedManyWithoutConversationInput
+    preferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutConversationInput
+    shareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput
+    messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
+  }
+
+  export type ConversationCreateOrConnectWithoutCallSessionsInput = {
+    where: ConversationWhereUniqueInput
+    create: XOR<ConversationCreateWithoutCallSessionsInput, ConversationUncheckedCreateWithoutCallSessionsInput>
+  }
+
+  export type UserCreateWithoutInitiatedCallsInput = {
+    id?: string
+    username: string
+    firstName: string
+    lastName: string
+    bio?: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
+    avatar?: string | null
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    reactions?: ReactionCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceCreateNestedManyWithoutUserInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
+    callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutInitiatedCallsInput = {
+    id?: string
+    username: string
+    firstName: string
+    lastName: string
+    bio?: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
+    avatar?: string | null
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    reactions?: ReactionUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
+    callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutInitiatedCallsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutInitiatedCallsInput, UserUncheckedCreateWithoutInitiatedCallsInput>
+  }
+
+  export type CallParticipantCreateWithoutCallSessionInput = {
+    id?: string
+    anonymousId?: string | null
+    role?: $Enums.ParticipantRole
+    joinedAt?: Date | string
+    leftAt?: Date | string | null
+    isAudioEnabled?: boolean
+    isVideoEnabled?: boolean
+    connectionQuality?: InputJsonValue | null
+    user?: UserCreateNestedOneWithoutCallParticipationsInput
+  }
+
+  export type CallParticipantUncheckedCreateWithoutCallSessionInput = {
+    id?: string
+    userId?: string | null
+    anonymousId?: string | null
+    role?: $Enums.ParticipantRole
+    joinedAt?: Date | string
+    leftAt?: Date | string | null
+    isAudioEnabled?: boolean
+    isVideoEnabled?: boolean
+    connectionQuality?: InputJsonValue | null
+  }
+
+  export type CallParticipantCreateOrConnectWithoutCallSessionInput = {
+    where: CallParticipantWhereUniqueInput
+    create: XOR<CallParticipantCreateWithoutCallSessionInput, CallParticipantUncheckedCreateWithoutCallSessionInput>
+  }
+
+  export type CallParticipantCreateManyCallSessionInputEnvelope = {
+    data: CallParticipantCreateManyCallSessionInput | CallParticipantCreateManyCallSessionInput[]
+  }
+
+  export type TranscriptionCreateWithoutCallSessionInput = {
+    id?: string
+    participantId: string
+    source: $Enums.TranscriptionSource
+    text: string
+    language: string
+    confidence?: number | null
+    timestamp?: Date | string
+    offsetMs?: number | null
+    translations?: TranslationCallCreateNestedManyWithoutTranscriptionInput
+  }
+
+  export type TranscriptionUncheckedCreateWithoutCallSessionInput = {
+    id?: string
+    participantId: string
+    source: $Enums.TranscriptionSource
+    text: string
+    language: string
+    confidence?: number | null
+    timestamp?: Date | string
+    offsetMs?: number | null
+    translations?: TranslationCallUncheckedCreateNestedManyWithoutTranscriptionInput
+  }
+
+  export type TranscriptionCreateOrConnectWithoutCallSessionInput = {
+    where: TranscriptionWhereUniqueInput
+    create: XOR<TranscriptionCreateWithoutCallSessionInput, TranscriptionUncheckedCreateWithoutCallSessionInput>
+  }
+
+  export type TranscriptionCreateManyCallSessionInputEnvelope = {
+    data: TranscriptionCreateManyCallSessionInput | TranscriptionCreateManyCallSessionInput[]
+  }
+
+  export type ConversationUpsertWithoutCallSessionsInput = {
+    update: XOR<ConversationUpdateWithoutCallSessionsInput, ConversationUncheckedUpdateWithoutCallSessionsInput>
+    create: XOR<ConversationCreateWithoutCallSessionsInput, ConversationUncheckedCreateWithoutCallSessionsInput>
+    where?: ConversationWhereInput
+  }
+
+  export type ConversationUpdateToOneWithWhereWithoutCallSessionsInput = {
+    where?: ConversationWhereInput
+    data: XOR<ConversationUpdateWithoutCallSessionsInput, ConversationUncheckedUpdateWithoutCallSessionsInput>
+  }
+
+  export type ConversationUpdateWithoutCallSessionsInput = {
+    identifier?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    anonymousParticipants?: AnonymousParticipantUpdateManyWithoutConversationNestedInput
+    members?: ConversationMemberUpdateManyWithoutConversationNestedInput
+    preferences?: ConversationPreferenceUpdateManyWithoutConversationNestedInput
+    shareLinks?: ConversationShareLinkUpdateManyWithoutConversationNestedInput
+    community?: CommunityUpdateOneWithoutConversationNestedInput
+    messages?: MessageUpdateManyWithoutConversationNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
+  }
+
+  export type ConversationUncheckedUpdateWithoutCallSessionsInput = {
+    identifier?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    communityId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    anonymousParticipants?: AnonymousParticipantUncheckedUpdateManyWithoutConversationNestedInput
+    members?: ConversationMemberUncheckedUpdateManyWithoutConversationNestedInput
+    preferences?: ConversationPreferenceUncheckedUpdateManyWithoutConversationNestedInput
+    shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
+    messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
+  }
+
+  export type UserUpsertWithoutInitiatedCallsInput = {
+    update: XOR<UserUpdateWithoutInitiatedCallsInput, UserUncheckedUpdateWithoutInitiatedCallsInput>
+    create: XOR<UserCreateWithoutInitiatedCallsInput, UserUncheckedCreateWithoutInitiatedCallsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutInitiatedCallsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutInitiatedCallsInput, UserUncheckedUpdateWithoutInitiatedCallsInput>
+  }
+
+  export type UserUpdateWithoutInitiatedCallsInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    systemLanguage?: StringFieldUpdateOperationsInput | string
+    regionalLanguage?: StringFieldUpdateOperationsInput | string
+    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
+    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
+    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
+    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
+    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
+    role?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    reactions?: ReactionUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
+    callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutInitiatedCallsInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    systemLanguage?: StringFieldUpdateOperationsInput | string
+    regionalLanguage?: StringFieldUpdateOperationsInput | string
+    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
+    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
+    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
+    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
+    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
+    role?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    reactions?: ReactionUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
+    callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type CallParticipantUpsertWithWhereUniqueWithoutCallSessionInput = {
+    where: CallParticipantWhereUniqueInput
+    update: XOR<CallParticipantUpdateWithoutCallSessionInput, CallParticipantUncheckedUpdateWithoutCallSessionInput>
+    create: XOR<CallParticipantCreateWithoutCallSessionInput, CallParticipantUncheckedCreateWithoutCallSessionInput>
+  }
+
+  export type CallParticipantUpdateWithWhereUniqueWithoutCallSessionInput = {
+    where: CallParticipantWhereUniqueInput
+    data: XOR<CallParticipantUpdateWithoutCallSessionInput, CallParticipantUncheckedUpdateWithoutCallSessionInput>
+  }
+
+  export type CallParticipantUpdateManyWithWhereWithoutCallSessionInput = {
+    where: CallParticipantScalarWhereInput
+    data: XOR<CallParticipantUpdateManyMutationInput, CallParticipantUncheckedUpdateManyWithoutCallSessionInput>
+  }
+
+  export type TranscriptionUpsertWithWhereUniqueWithoutCallSessionInput = {
+    where: TranscriptionWhereUniqueInput
+    update: XOR<TranscriptionUpdateWithoutCallSessionInput, TranscriptionUncheckedUpdateWithoutCallSessionInput>
+    create: XOR<TranscriptionCreateWithoutCallSessionInput, TranscriptionUncheckedCreateWithoutCallSessionInput>
+  }
+
+  export type TranscriptionUpdateWithWhereUniqueWithoutCallSessionInput = {
+    where: TranscriptionWhereUniqueInput
+    data: XOR<TranscriptionUpdateWithoutCallSessionInput, TranscriptionUncheckedUpdateWithoutCallSessionInput>
+  }
+
+  export type TranscriptionUpdateManyWithWhereWithoutCallSessionInput = {
+    where: TranscriptionScalarWhereInput
+    data: XOR<TranscriptionUpdateManyMutationInput, TranscriptionUncheckedUpdateManyWithoutCallSessionInput>
+  }
+
+  export type TranscriptionScalarWhereInput = {
+    AND?: TranscriptionScalarWhereInput | TranscriptionScalarWhereInput[]
+    OR?: TranscriptionScalarWhereInput[]
+    NOT?: TranscriptionScalarWhereInput | TranscriptionScalarWhereInput[]
+    id?: StringFilter<"Transcription"> | string
+    callSessionId?: StringFilter<"Transcription"> | string
+    participantId?: StringFilter<"Transcription"> | string
+    source?: EnumTranscriptionSourceFilter<"Transcription"> | $Enums.TranscriptionSource
+    text?: StringFilter<"Transcription"> | string
+    language?: StringFilter<"Transcription"> | string
+    confidence?: FloatNullableFilter<"Transcription"> | number | null
+    timestamp?: DateTimeFilter<"Transcription"> | Date | string
+    offsetMs?: IntNullableFilter<"Transcription"> | number | null
+  }
+
+  export type CallSessionCreateWithoutParticipantsInput = {
+    id?: string
+    mode?: $Enums.CallMode
+    status?: $Enums.CallStatus
+    startedAt?: Date | string
+    answeredAt?: Date | string | null
+    endedAt?: Date | string | null
+    duration?: number | null
+    metadata?: InputJsonValue | null
+    conversation: ConversationCreateNestedOneWithoutCallSessionsInput
+    initiator: UserCreateNestedOneWithoutInitiatedCallsInput
+    transcriptions?: TranscriptionCreateNestedManyWithoutCallSessionInput
+  }
+
+  export type CallSessionUncheckedCreateWithoutParticipantsInput = {
+    id?: string
+    conversationId: string
+    mode?: $Enums.CallMode
+    status?: $Enums.CallStatus
+    initiatorId: string
+    startedAt?: Date | string
+    answeredAt?: Date | string | null
+    endedAt?: Date | string | null
+    duration?: number | null
+    metadata?: InputJsonValue | null
+    transcriptions?: TranscriptionUncheckedCreateNestedManyWithoutCallSessionInput
+  }
+
+  export type CallSessionCreateOrConnectWithoutParticipantsInput = {
+    where: CallSessionWhereUniqueInput
+    create: XOR<CallSessionCreateWithoutParticipantsInput, CallSessionUncheckedCreateWithoutParticipantsInput>
+  }
+
+  export type UserCreateWithoutCallParticipationsInput = {
+    id?: string
+    username: string
+    firstName: string
+    lastName: string
+    bio?: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
+    avatar?: string | null
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    reactions?: ReactionCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceCreateNestedManyWithoutUserInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
+  }
+
+  export type UserUncheckedCreateWithoutCallParticipationsInput = {
+    id?: string
+    username: string
+    firstName: string
+    lastName: string
+    bio?: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
+    avatar?: string | null
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    reactions?: ReactionUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
+  }
+
+  export type UserCreateOrConnectWithoutCallParticipationsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutCallParticipationsInput, UserUncheckedCreateWithoutCallParticipationsInput>
+  }
+
+  export type CallSessionUpsertWithoutParticipantsInput = {
+    update: XOR<CallSessionUpdateWithoutParticipantsInput, CallSessionUncheckedUpdateWithoutParticipantsInput>
+    create: XOR<CallSessionCreateWithoutParticipantsInput, CallSessionUncheckedCreateWithoutParticipantsInput>
+    where?: CallSessionWhereInput
+  }
+
+  export type CallSessionUpdateToOneWithWhereWithoutParticipantsInput = {
+    where?: CallSessionWhereInput
+    data: XOR<CallSessionUpdateWithoutParticipantsInput, CallSessionUncheckedUpdateWithoutParticipantsInput>
+  }
+
+  export type CallSessionUpdateWithoutParticipantsInput = {
+    mode?: EnumCallModeFieldUpdateOperationsInput | $Enums.CallMode
+    status?: EnumCallStatusFieldUpdateOperationsInput | $Enums.CallStatus
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    answeredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableIntFieldUpdateOperationsInput | number | null
+    metadata?: InputJsonValue | InputJsonValue | null
+    conversation?: ConversationUpdateOneRequiredWithoutCallSessionsNestedInput
+    initiator?: UserUpdateOneRequiredWithoutInitiatedCallsNestedInput
+    transcriptions?: TranscriptionUpdateManyWithoutCallSessionNestedInput
+  }
+
+  export type CallSessionUncheckedUpdateWithoutParticipantsInput = {
+    conversationId?: StringFieldUpdateOperationsInput | string
+    mode?: EnumCallModeFieldUpdateOperationsInput | $Enums.CallMode
+    status?: EnumCallStatusFieldUpdateOperationsInput | $Enums.CallStatus
+    initiatorId?: StringFieldUpdateOperationsInput | string
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    answeredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableIntFieldUpdateOperationsInput | number | null
+    metadata?: InputJsonValue | InputJsonValue | null
+    transcriptions?: TranscriptionUncheckedUpdateManyWithoutCallSessionNestedInput
+  }
+
+  export type UserUpsertWithoutCallParticipationsInput = {
+    update: XOR<UserUpdateWithoutCallParticipationsInput, UserUncheckedUpdateWithoutCallParticipationsInput>
+    create: XOR<UserCreateWithoutCallParticipationsInput, UserUncheckedCreateWithoutCallParticipationsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutCallParticipationsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutCallParticipationsInput, UserUncheckedUpdateWithoutCallParticipationsInput>
+  }
+
+  export type UserUpdateWithoutCallParticipationsInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    systemLanguage?: StringFieldUpdateOperationsInput | string
+    regionalLanguage?: StringFieldUpdateOperationsInput | string
+    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
+    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
+    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
+    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
+    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
+    role?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    reactions?: ReactionUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutCallParticipationsInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    systemLanguage?: StringFieldUpdateOperationsInput | string
+    regionalLanguage?: StringFieldUpdateOperationsInput | string
+    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
+    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
+    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
+    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
+    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
+    role?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    reactions?: ReactionUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
+  }
+
+  export type CallSessionCreateWithoutTranscriptionsInput = {
+    id?: string
+    mode?: $Enums.CallMode
+    status?: $Enums.CallStatus
+    startedAt?: Date | string
+    answeredAt?: Date | string | null
+    endedAt?: Date | string | null
+    duration?: number | null
+    metadata?: InputJsonValue | null
+    conversation: ConversationCreateNestedOneWithoutCallSessionsInput
+    initiator: UserCreateNestedOneWithoutInitiatedCallsInput
+    participants?: CallParticipantCreateNestedManyWithoutCallSessionInput
+  }
+
+  export type CallSessionUncheckedCreateWithoutTranscriptionsInput = {
+    id?: string
+    conversationId: string
+    mode?: $Enums.CallMode
+    status?: $Enums.CallStatus
+    initiatorId: string
+    startedAt?: Date | string
+    answeredAt?: Date | string | null
+    endedAt?: Date | string | null
+    duration?: number | null
+    metadata?: InputJsonValue | null
+    participants?: CallParticipantUncheckedCreateNestedManyWithoutCallSessionInput
+  }
+
+  export type CallSessionCreateOrConnectWithoutTranscriptionsInput = {
+    where: CallSessionWhereUniqueInput
+    create: XOR<CallSessionCreateWithoutTranscriptionsInput, CallSessionUncheckedCreateWithoutTranscriptionsInput>
+  }
+
+  export type TranslationCallCreateWithoutTranscriptionInput = {
+    id?: string
+    targetLanguage: string
+    translatedText: string
+    confidence?: number | null
+    model?: string | null
+    cached?: boolean
+    createdAt?: Date | string
+  }
+
+  export type TranslationCallUncheckedCreateWithoutTranscriptionInput = {
+    id?: string
+    targetLanguage: string
+    translatedText: string
+    confidence?: number | null
+    model?: string | null
+    cached?: boolean
+    createdAt?: Date | string
+  }
+
+  export type TranslationCallCreateOrConnectWithoutTranscriptionInput = {
+    where: TranslationCallWhereUniqueInput
+    create: XOR<TranslationCallCreateWithoutTranscriptionInput, TranslationCallUncheckedCreateWithoutTranscriptionInput>
+  }
+
+  export type TranslationCallCreateManyTranscriptionInputEnvelope = {
+    data: TranslationCallCreateManyTranscriptionInput | TranslationCallCreateManyTranscriptionInput[]
+  }
+
+  export type CallSessionUpsertWithoutTranscriptionsInput = {
+    update: XOR<CallSessionUpdateWithoutTranscriptionsInput, CallSessionUncheckedUpdateWithoutTranscriptionsInput>
+    create: XOR<CallSessionCreateWithoutTranscriptionsInput, CallSessionUncheckedCreateWithoutTranscriptionsInput>
+    where?: CallSessionWhereInput
+  }
+
+  export type CallSessionUpdateToOneWithWhereWithoutTranscriptionsInput = {
+    where?: CallSessionWhereInput
+    data: XOR<CallSessionUpdateWithoutTranscriptionsInput, CallSessionUncheckedUpdateWithoutTranscriptionsInput>
+  }
+
+  export type CallSessionUpdateWithoutTranscriptionsInput = {
+    mode?: EnumCallModeFieldUpdateOperationsInput | $Enums.CallMode
+    status?: EnumCallStatusFieldUpdateOperationsInput | $Enums.CallStatus
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    answeredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableIntFieldUpdateOperationsInput | number | null
+    metadata?: InputJsonValue | InputJsonValue | null
+    conversation?: ConversationUpdateOneRequiredWithoutCallSessionsNestedInput
+    initiator?: UserUpdateOneRequiredWithoutInitiatedCallsNestedInput
+    participants?: CallParticipantUpdateManyWithoutCallSessionNestedInput
+  }
+
+  export type CallSessionUncheckedUpdateWithoutTranscriptionsInput = {
+    conversationId?: StringFieldUpdateOperationsInput | string
+    mode?: EnumCallModeFieldUpdateOperationsInput | $Enums.CallMode
+    status?: EnumCallStatusFieldUpdateOperationsInput | $Enums.CallStatus
+    initiatorId?: StringFieldUpdateOperationsInput | string
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    answeredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableIntFieldUpdateOperationsInput | number | null
+    metadata?: InputJsonValue | InputJsonValue | null
+    participants?: CallParticipantUncheckedUpdateManyWithoutCallSessionNestedInput
+  }
+
+  export type TranslationCallUpsertWithWhereUniqueWithoutTranscriptionInput = {
+    where: TranslationCallWhereUniqueInput
+    update: XOR<TranslationCallUpdateWithoutTranscriptionInput, TranslationCallUncheckedUpdateWithoutTranscriptionInput>
+    create: XOR<TranslationCallCreateWithoutTranscriptionInput, TranslationCallUncheckedCreateWithoutTranscriptionInput>
+  }
+
+  export type TranslationCallUpdateWithWhereUniqueWithoutTranscriptionInput = {
+    where: TranslationCallWhereUniqueInput
+    data: XOR<TranslationCallUpdateWithoutTranscriptionInput, TranslationCallUncheckedUpdateWithoutTranscriptionInput>
+  }
+
+  export type TranslationCallUpdateManyWithWhereWithoutTranscriptionInput = {
+    where: TranslationCallScalarWhereInput
+    data: XOR<TranslationCallUpdateManyMutationInput, TranslationCallUncheckedUpdateManyWithoutTranscriptionInput>
+  }
+
+  export type TranslationCallScalarWhereInput = {
+    AND?: TranslationCallScalarWhereInput | TranslationCallScalarWhereInput[]
+    OR?: TranslationCallScalarWhereInput[]
+    NOT?: TranslationCallScalarWhereInput | TranslationCallScalarWhereInput[]
+    id?: StringFilter<"TranslationCall"> | string
+    transcriptionId?: StringFilter<"TranslationCall"> | string
+    targetLanguage?: StringFilter<"TranslationCall"> | string
+    translatedText?: StringFilter<"TranslationCall"> | string
+    confidence?: FloatNullableFilter<"TranslationCall"> | number | null
+    model?: StringNullableFilter<"TranslationCall"> | string | null
+    cached?: BoolFilter<"TranslationCall"> | boolean
+    createdAt?: DateTimeFilter<"TranslationCall"> | Date | string
+  }
+
+  export type TranscriptionCreateWithoutTranslationsInput = {
+    id?: string
+    participantId: string
+    source: $Enums.TranscriptionSource
+    text: string
+    language: string
+    confidence?: number | null
+    timestamp?: Date | string
+    offsetMs?: number | null
+    callSession: CallSessionCreateNestedOneWithoutTranscriptionsInput
+  }
+
+  export type TranscriptionUncheckedCreateWithoutTranslationsInput = {
+    id?: string
+    callSessionId: string
+    participantId: string
+    source: $Enums.TranscriptionSource
+    text: string
+    language: string
+    confidence?: number | null
+    timestamp?: Date | string
+    offsetMs?: number | null
+  }
+
+  export type TranscriptionCreateOrConnectWithoutTranslationsInput = {
+    where: TranscriptionWhereUniqueInput
+    create: XOR<TranscriptionCreateWithoutTranslationsInput, TranscriptionUncheckedCreateWithoutTranslationsInput>
+  }
+
+  export type TranscriptionUpsertWithoutTranslationsInput = {
+    update: XOR<TranscriptionUpdateWithoutTranslationsInput, TranscriptionUncheckedUpdateWithoutTranslationsInput>
+    create: XOR<TranscriptionCreateWithoutTranslationsInput, TranscriptionUncheckedCreateWithoutTranslationsInput>
+    where?: TranscriptionWhereInput
+  }
+
+  export type TranscriptionUpdateToOneWithWhereWithoutTranslationsInput = {
+    where?: TranscriptionWhereInput
+    data: XOR<TranscriptionUpdateWithoutTranslationsInput, TranscriptionUncheckedUpdateWithoutTranslationsInput>
+  }
+
+  export type TranscriptionUpdateWithoutTranslationsInput = {
+    participantId?: StringFieldUpdateOperationsInput | string
+    source?: EnumTranscriptionSourceFieldUpdateOperationsInput | $Enums.TranscriptionSource
+    text?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    confidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    offsetMs?: NullableIntFieldUpdateOperationsInput | number | null
+    callSession?: CallSessionUpdateOneRequiredWithoutTranscriptionsNestedInput
+  }
+
+  export type TranscriptionUncheckedUpdateWithoutTranslationsInput = {
+    callSessionId?: StringFieldUpdateOperationsInput | string
+    participantId?: StringFieldUpdateOperationsInput | string
+    source?: EnumTranscriptionSourceFieldUpdateOperationsInput | $Enums.TranscriptionSource
+    text?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    confidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    offsetMs?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type CommunityCreateManyCreatorInput = {
@@ -48500,6 +58007,30 @@ export namespace Prisma {
     referrer?: string | null
     deviceFingerprint?: string | null
     clickedAt?: Date | string
+  }
+
+  export type CallSessionCreateManyInitiatorInput = {
+    id?: string
+    conversationId: string
+    mode?: $Enums.CallMode
+    status?: $Enums.CallStatus
+    startedAt?: Date | string
+    answeredAt?: Date | string | null
+    endedAt?: Date | string | null
+    duration?: number | null
+    metadata?: InputJsonValue | null
+  }
+
+  export type CallParticipantCreateManyUserInput = {
+    id?: string
+    callSessionId: string
+    anonymousId?: string | null
+    role?: $Enums.ParticipantRole
+    joinedAt?: Date | string
+    leftAt?: Date | string | null
+    isAudioEnabled?: boolean
+    isVideoEnabled?: boolean
+    connectionQuality?: InputJsonValue | null
   }
 
   export type CommunityUpdateWithoutCreatorInput = {
@@ -49127,6 +58658,76 @@ export namespace Prisma {
     clickedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type CallSessionUpdateWithoutInitiatorInput = {
+    mode?: EnumCallModeFieldUpdateOperationsInput | $Enums.CallMode
+    status?: EnumCallStatusFieldUpdateOperationsInput | $Enums.CallStatus
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    answeredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableIntFieldUpdateOperationsInput | number | null
+    metadata?: InputJsonValue | InputJsonValue | null
+    conversation?: ConversationUpdateOneRequiredWithoutCallSessionsNestedInput
+    participants?: CallParticipantUpdateManyWithoutCallSessionNestedInput
+    transcriptions?: TranscriptionUpdateManyWithoutCallSessionNestedInput
+  }
+
+  export type CallSessionUncheckedUpdateWithoutInitiatorInput = {
+    conversationId?: StringFieldUpdateOperationsInput | string
+    mode?: EnumCallModeFieldUpdateOperationsInput | $Enums.CallMode
+    status?: EnumCallStatusFieldUpdateOperationsInput | $Enums.CallStatus
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    answeredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableIntFieldUpdateOperationsInput | number | null
+    metadata?: InputJsonValue | InputJsonValue | null
+    participants?: CallParticipantUncheckedUpdateManyWithoutCallSessionNestedInput
+    transcriptions?: TranscriptionUncheckedUpdateManyWithoutCallSessionNestedInput
+  }
+
+  export type CallSessionUncheckedUpdateManyWithoutInitiatorInput = {
+    conversationId?: StringFieldUpdateOperationsInput | string
+    mode?: EnumCallModeFieldUpdateOperationsInput | $Enums.CallMode
+    status?: EnumCallStatusFieldUpdateOperationsInput | $Enums.CallStatus
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    answeredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableIntFieldUpdateOperationsInput | number | null
+    metadata?: InputJsonValue | InputJsonValue | null
+  }
+
+  export type CallParticipantUpdateWithoutUserInput = {
+    anonymousId?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumParticipantRoleFieldUpdateOperationsInput | $Enums.ParticipantRole
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isAudioEnabled?: BoolFieldUpdateOperationsInput | boolean
+    isVideoEnabled?: BoolFieldUpdateOperationsInput | boolean
+    connectionQuality?: InputJsonValue | InputJsonValue | null
+    callSession?: CallSessionUpdateOneRequiredWithoutParticipantsNestedInput
+  }
+
+  export type CallParticipantUncheckedUpdateWithoutUserInput = {
+    callSessionId?: StringFieldUpdateOperationsInput | string
+    anonymousId?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumParticipantRoleFieldUpdateOperationsInput | $Enums.ParticipantRole
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isAudioEnabled?: BoolFieldUpdateOperationsInput | boolean
+    isVideoEnabled?: BoolFieldUpdateOperationsInput | boolean
+    connectionQuality?: InputJsonValue | InputJsonValue | null
+  }
+
+  export type CallParticipantUncheckedUpdateManyWithoutUserInput = {
+    callSessionId?: StringFieldUpdateOperationsInput | string
+    anonymousId?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumParticipantRoleFieldUpdateOperationsInput | $Enums.ParticipantRole
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isAudioEnabled?: BoolFieldUpdateOperationsInput | boolean
+    isVideoEnabled?: BoolFieldUpdateOperationsInput | boolean
+    connectionQuality?: InputJsonValue | InputJsonValue | null
+  }
+
   export type AnonymousParticipantCreateManyConversationInput = {
     id?: string
     shareLinkId: string
@@ -49227,6 +58828,18 @@ export namespace Prisma {
     isTyping?: boolean
     startedAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type CallSessionCreateManyConversationInput = {
+    id?: string
+    mode?: $Enums.CallMode
+    status?: $Enums.CallStatus
+    initiatorId: string
+    startedAt?: Date | string
+    answeredAt?: Date | string | null
+    endedAt?: Date | string | null
+    duration?: number | null
+    metadata?: InputJsonValue | null
   }
 
   export type AnonymousParticipantUpdateWithoutConversationInput = {
@@ -49535,6 +59148,43 @@ export namespace Prisma {
     isTyping?: BoolFieldUpdateOperationsInput | boolean
     startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CallSessionUpdateWithoutConversationInput = {
+    mode?: EnumCallModeFieldUpdateOperationsInput | $Enums.CallMode
+    status?: EnumCallStatusFieldUpdateOperationsInput | $Enums.CallStatus
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    answeredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableIntFieldUpdateOperationsInput | number | null
+    metadata?: InputJsonValue | InputJsonValue | null
+    initiator?: UserUpdateOneRequiredWithoutInitiatedCallsNestedInput
+    participants?: CallParticipantUpdateManyWithoutCallSessionNestedInput
+    transcriptions?: TranscriptionUpdateManyWithoutCallSessionNestedInput
+  }
+
+  export type CallSessionUncheckedUpdateWithoutConversationInput = {
+    mode?: EnumCallModeFieldUpdateOperationsInput | $Enums.CallMode
+    status?: EnumCallStatusFieldUpdateOperationsInput | $Enums.CallStatus
+    initiatorId?: StringFieldUpdateOperationsInput | string
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    answeredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableIntFieldUpdateOperationsInput | number | null
+    metadata?: InputJsonValue | InputJsonValue | null
+    participants?: CallParticipantUncheckedUpdateManyWithoutCallSessionNestedInput
+    transcriptions?: TranscriptionUncheckedUpdateManyWithoutCallSessionNestedInput
+  }
+
+  export type CallSessionUncheckedUpdateManyWithoutConversationInput = {
+    mode?: EnumCallModeFieldUpdateOperationsInput | $Enums.CallMode
+    status?: EnumCallStatusFieldUpdateOperationsInput | $Enums.CallStatus
+    initiatorId?: StringFieldUpdateOperationsInput | string
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    answeredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableIntFieldUpdateOperationsInput | number | null
+    metadata?: InputJsonValue | InputJsonValue | null
   }
 
   export type AnonymousParticipantCreateManyShareLinkInput = {
@@ -49848,6 +59498,10 @@ export namespace Prisma {
     thumbnailPath?: string | null
     thumbnailUrl?: string | null
     duration?: number | null
+    bitrate?: number | null
+    sampleRate?: number | null
+    codec?: string | null
+    channels?: number | null
     uploadedBy: string
     isAnonymous?: boolean
     createdAt?: Date | string
@@ -49965,6 +59619,10 @@ export namespace Prisma {
     thumbnailPath?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    bitrate?: NullableIntFieldUpdateOperationsInput | number | null
+    sampleRate?: NullableIntFieldUpdateOperationsInput | number | null
+    codec?: NullableStringFieldUpdateOperationsInput | string | null
+    channels?: NullableIntFieldUpdateOperationsInput | number | null
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -49982,6 +59640,10 @@ export namespace Prisma {
     thumbnailPath?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    bitrate?: NullableIntFieldUpdateOperationsInput | number | null
+    sampleRate?: NullableIntFieldUpdateOperationsInput | number | null
+    codec?: NullableStringFieldUpdateOperationsInput | string | null
+    channels?: NullableIntFieldUpdateOperationsInput | number | null
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -49999,6 +59661,10 @@ export namespace Prisma {
     thumbnailPath?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    bitrate?: NullableIntFieldUpdateOperationsInput | number | null
+    sampleRate?: NullableIntFieldUpdateOperationsInput | number | null
+    codec?: NullableStringFieldUpdateOperationsInput | string | null
+    channels?: NullableIntFieldUpdateOperationsInput | number | null
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -50143,6 +59809,7 @@ export namespace Prisma {
     shareLinks?: ConversationShareLinkUpdateManyWithoutConversationNestedInput
     messages?: MessageUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
+    callSessions?: CallSessionUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationUncheckedUpdateWithoutCommunityInput = {
@@ -50163,6 +59830,7 @@ export namespace Prisma {
     shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
     messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
+    callSessions?: CallSessionUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationUncheckedUpdateManyWithoutCommunityInput = {
@@ -50279,6 +59947,131 @@ export namespace Prisma {
     referrer?: NullableStringFieldUpdateOperationsInput | string | null
     deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
     clickedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CallParticipantCreateManyCallSessionInput = {
+    id?: string
+    userId?: string | null
+    anonymousId?: string | null
+    role?: $Enums.ParticipantRole
+    joinedAt?: Date | string
+    leftAt?: Date | string | null
+    isAudioEnabled?: boolean
+    isVideoEnabled?: boolean
+    connectionQuality?: InputJsonValue | null
+  }
+
+  export type TranscriptionCreateManyCallSessionInput = {
+    id?: string
+    participantId: string
+    source: $Enums.TranscriptionSource
+    text: string
+    language: string
+    confidence?: number | null
+    timestamp?: Date | string
+    offsetMs?: number | null
+  }
+
+  export type CallParticipantUpdateWithoutCallSessionInput = {
+    anonymousId?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumParticipantRoleFieldUpdateOperationsInput | $Enums.ParticipantRole
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isAudioEnabled?: BoolFieldUpdateOperationsInput | boolean
+    isVideoEnabled?: BoolFieldUpdateOperationsInput | boolean
+    connectionQuality?: InputJsonValue | InputJsonValue | null
+    user?: UserUpdateOneWithoutCallParticipationsNestedInput
+  }
+
+  export type CallParticipantUncheckedUpdateWithoutCallSessionInput = {
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    anonymousId?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumParticipantRoleFieldUpdateOperationsInput | $Enums.ParticipantRole
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isAudioEnabled?: BoolFieldUpdateOperationsInput | boolean
+    isVideoEnabled?: BoolFieldUpdateOperationsInput | boolean
+    connectionQuality?: InputJsonValue | InputJsonValue | null
+  }
+
+  export type CallParticipantUncheckedUpdateManyWithoutCallSessionInput = {
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    anonymousId?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumParticipantRoleFieldUpdateOperationsInput | $Enums.ParticipantRole
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isAudioEnabled?: BoolFieldUpdateOperationsInput | boolean
+    isVideoEnabled?: BoolFieldUpdateOperationsInput | boolean
+    connectionQuality?: InputJsonValue | InputJsonValue | null
+  }
+
+  export type TranscriptionUpdateWithoutCallSessionInput = {
+    participantId?: StringFieldUpdateOperationsInput | string
+    source?: EnumTranscriptionSourceFieldUpdateOperationsInput | $Enums.TranscriptionSource
+    text?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    confidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    offsetMs?: NullableIntFieldUpdateOperationsInput | number | null
+    translations?: TranslationCallUpdateManyWithoutTranscriptionNestedInput
+  }
+
+  export type TranscriptionUncheckedUpdateWithoutCallSessionInput = {
+    participantId?: StringFieldUpdateOperationsInput | string
+    source?: EnumTranscriptionSourceFieldUpdateOperationsInput | $Enums.TranscriptionSource
+    text?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    confidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    offsetMs?: NullableIntFieldUpdateOperationsInput | number | null
+    translations?: TranslationCallUncheckedUpdateManyWithoutTranscriptionNestedInput
+  }
+
+  export type TranscriptionUncheckedUpdateManyWithoutCallSessionInput = {
+    participantId?: StringFieldUpdateOperationsInput | string
+    source?: EnumTranscriptionSourceFieldUpdateOperationsInput | $Enums.TranscriptionSource
+    text?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    confidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    offsetMs?: NullableIntFieldUpdateOperationsInput | number | null
+  }
+
+  export type TranslationCallCreateManyTranscriptionInput = {
+    id?: string
+    targetLanguage: string
+    translatedText: string
+    confidence?: number | null
+    model?: string | null
+    cached?: boolean
+    createdAt?: Date | string
+  }
+
+  export type TranslationCallUpdateWithoutTranscriptionInput = {
+    targetLanguage?: StringFieldUpdateOperationsInput | string
+    translatedText?: StringFieldUpdateOperationsInput | string
+    confidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    cached?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TranslationCallUncheckedUpdateWithoutTranscriptionInput = {
+    targetLanguage?: StringFieldUpdateOperationsInput | string
+    translatedText?: StringFieldUpdateOperationsInput | string
+    confidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    cached?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TranslationCallUncheckedUpdateManyWithoutTranscriptionInput = {
+    targetLanguage?: StringFieldUpdateOperationsInput | string
+    translatedText?: StringFieldUpdateOperationsInput | string
+    confidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    cached?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 

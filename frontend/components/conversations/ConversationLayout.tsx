@@ -46,6 +46,11 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   // ID unique pour cette instance du composant
   const instanceId = useMemo(() => `layout-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, []);
 
+  // CRITIQUE: Mémoiser les choix de langues pour éviter re-renders de MessageComposer
+  const languageChoices = useMemo(() => {
+    return user ? getUserLanguageChoices(user) : [];
+  }, [user?.systemLanguage, user?.regionalLanguage, user?.customDestinationLanguage]);
+
   // Hook de pagination pour les conversations
   const {
     conversations: paginatedConversations,
@@ -99,6 +104,32 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   
   // État pour les attachments
   const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
+  const [attachmentMimeTypes, setAttachmentMimeTypes] = useState<string[]>([]);
+
+  // Ref pour stocker les valeurs précédentes d'attachments
+  const prevAttachmentIdsRef = useRef<string>('[]');
+  const prevMimeTypesRef = useRef<string>('[]');
+
+  // Callback mémorisé pour les changements d'attachments
+  // FIX: Mémoiser ce callback pour éviter les boucles infinies dans MessageComposer
+  const handleAttachmentsChange = useCallback((ids: string[], mimeTypes: string[]) => {
+    // Comparer par valeur sérialisée pour éviter les updates inutiles
+    const idsString = JSON.stringify(ids);
+    const mimeTypesString = JSON.stringify(mimeTypes);
+
+    // CRITIQUE: Ne mettre à jour QUE si les valeurs ont vraiment changé
+    if (idsString !== prevAttachmentIdsRef.current) {
+      console.log('🔄 [ConversationLayout] Mise à jour attachmentIds:', ids);
+      setAttachmentIds(ids);
+      prevAttachmentIdsRef.current = idsString;
+    }
+
+    if (mimeTypesString !== prevMimeTypesRef.current) {
+      console.log('🔄 [ConversationLayout] Mise à jour mimeTypes:', mimeTypes);
+      setAttachmentMimeTypes(mimeTypes);
+      prevMimeTypesRef.current = mimeTypesString;
+    }
+  }, []); // Pas de dépendances - les setState et refs sont stables
 
   // Référence pour le textarea du MessageComposer
   const messageComposerRef = useRef<{ focus: () => void; blur: () => void; clearAttachments?: () => void }>(null);
@@ -201,11 +232,18 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       username,
       isTyping,
       typingConversationId,
+      selectedConversationId: selectedConversationIdRef.current,
       currentUserId: user?.id,
-      willIgnore: !user || userId === user.id
+      willIgnore: !user || userId === user.id || typingConversationId !== selectedConversationIdRef.current
     });
 
     if (!user || userId === user.id) return; // Ignorer nos propres événements
+
+    // FIX: Filtrer les événements typing par conversation
+    if (typingConversationId !== selectedConversationIdRef.current) {
+      console.log('[ConversationLayout] 🚫 Événement de frappe ignoré (autre conversation)');
+      return;
+    }
 
     console.log('[ConversationLayout] ✅ Traitement événement de frappe (pas ignoré)');
 
@@ -274,23 +312,66 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     onNewMessage: useCallback((message: any) => {
       // Utiliser la ref au lieu de selectedConversation?.id
       const currentConvId = selectedConversationIdRef.current;
+
+      // FILTRAGE SIMPLIFIÉ: Le backend envoie maintenant TOUJOURS l'ObjectId normalisé
+      // Plus besoin de triple comparaison ni de getCurrentConversationIdentifier()
+      const normalizedConvId = meeshySocketIOService.getCurrentConversationId();
+
+      // Comparer avec l'ObjectId normalisé reçu lors du CONVERSATION_JOINED
+      const isForCurrentConversation = message.conversationId === normalizedConvId;
+
       console.log(`[ConversationLayout-${instanceId}] 🔥 NOUVEAU MESSAGE VIA WEBSOCKET:`, {
         messageId: message.id,
         content: message.content?.substring(0, 50),
         senderId: message.senderId,
-        conversationId: message.conversationId,
+        messageConvId: message.conversationId,
         selectedConversationId: currentConvId,
-        shouldAdd: message.conversationId === currentConvId
+        normalizedConvId: normalizedConvId,
+        shouldAdd: isForCurrentConversation
       });
 
-      // Ajouter seulement si c'est pour la conversation actuelle
-      if (message.conversationId === currentConvId) {
+      // Mettre à jour la liste des conversations pour refléter le nouveau message
+      // CORRECTION: Faire AVANT le filtrage pour que TOUS les messages mettent à jour la liste
+      setConversations(prevConversations => {
+        const conversationIndex = prevConversations.findIndex(c => c.id === message.conversationId);
+
+        if (conversationIndex === -1) {
+          // Conversation non trouvée dans la liste, ne rien faire
+          console.log(`[ConversationLayout-${instanceId}] Conversation ${message.conversationId} non trouvée dans la liste`);
+          return prevConversations;
+        }
+
+        // Créer une copie de la conversation avec les informations mises à jour
+        const updatedConversation = {
+          ...prevConversations[conversationIndex],
+          lastMessage: message,
+          lastActivityAt: message.createdAt || new Date()
+        };
+
+        // Retirer la conversation de sa position actuelle
+        const updatedConversations = prevConversations.filter((_, index) => index !== conversationIndex);
+
+        // Ajouter la conversation mise à jour en première position
+        const newConversations = [updatedConversation, ...updatedConversations];
+
+        console.log(`[ConversationLayout-${instanceId}] 📋 Liste des conversations mise à jour:`, {
+          conversationId: message.conversationId,
+          previousPosition: conversationIndex,
+          newPosition: 0,
+          lastMessagePreview: message.content?.substring(0, 30)
+        });
+
+        return newConversations;
+      });
+
+      // Ajouter le message à la vue seulement si c'est pour la conversation actuelle
+      if (isForCurrentConversation) {
         const wasAdded = addMessage(message);
-        console.log(`[ConversationLayout-${instanceId}] Message ajouté:`, wasAdded);
+        console.log(`[ConversationLayout-${instanceId}] Message ajouté à la vue:`, wasAdded);
       } else {
-        console.log(`[ConversationLayout-${instanceId}] Message ignoré (autre conversation)`);
+        console.log(`[ConversationLayout-${instanceId}] Message ignoré pour la vue (autre conversation)`);
       }
-    }, [addMessage, instanceId]),
+    }, [addMessage, instanceId, setConversations]),
     onTranslation: useCallback((messageId: string, translations: any[]) => {
       console.log('🌐 [ConversationLayoutV2] Traductions reçues pour message:', messageId, translations);
       
@@ -361,15 +442,19 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       });
       
       // Ajouter les nouvelles langues à la liste des langues utilisées
-      const newLanguages = translations
-        .map(t => t.targetLanguage || t.language)
-        .filter((lang): lang is string => Boolean(lang) && !usedLanguages.includes(lang));
-      
-      if (newLanguages.length > 0) {
-        console.log('📝 [ConversationLayoutV2] Ajout nouvelles langues utilisées:', newLanguages);
-        setUsedLanguages(prev => [...prev, ...newLanguages]);
-      }
-      
+      // Utiliser une fonction de mise à jour pour éviter la dépendance à usedLanguages
+      setUsedLanguages(prev => {
+        const newLanguages = translations
+          .map(t => t.targetLanguage || t.language)
+          .filter((lang): lang is string => Boolean(lang) && !prev.includes(lang));
+
+        if (newLanguages.length > 0) {
+          console.log('📝 [ConversationLayoutV2] Ajout nouvelles langues utilisées:', newLanguages);
+          return [...prev, ...newLanguages];
+        }
+        return prev;
+      });
+
       // Supprimer l'état de traduction en cours pour toutes les langues reçues
       translations.forEach(translation => {
         const targetLang = translation.targetLanguage || translation.language;
@@ -377,7 +462,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
           removeTranslatingState(messageId, targetLang);
         }
       });
-    }, [updateMessage, removeTranslatingState, usedLanguages])
+    }, [updateMessage, removeTranslatingState])
   });
 
   // Détection du mobile
@@ -429,10 +514,9 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   // Le chargement des conversations est maintenant géré par le hook useConversationsPagination
   // Cette fonction n'est plus nécessaire mais gardée pour compatibilité
   const loadConversations = useCallback(async () => {
-    if (!user) return;
     console.log('[ConversationLayout] Rafraîchissement des conversations via hook de pagination');
     refreshConversations();
-  }, [refreshConversations]); // Retirer user des dépendances
+  }, [refreshConversations]);
 
   // Chargement des participants
   const loadParticipants = useCallback(async (conversationId: string) => {
@@ -605,6 +689,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
   // Start video call
   const handleStartCall = useCallback(() => {
+    console.log('🎥🎥🎥 [ConversationLayout] handleStartCall CLICKED 🎥🎥🎥');
     logger.debug('[ConversationLayout]', '🎥 handleStartCall called', {
       hasConversation: !!selectedConversation,
       conversationId: selectedConversation?.id,
@@ -612,19 +697,28 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     });
 
     if (!selectedConversation) {
+      console.error('❌ [ConversationLayout] No conversation selected');
       logger.warn('[ConversationLayout]', 'Cannot start call: no conversation selected');
+      toast.error('Please select a conversation first');
       return;
     }
 
     if (selectedConversation.type !== 'direct') {
+      console.error('❌ [ConversationLayout] Not a direct conversation');
       toast.error('Video calls are only available for direct conversations');
       logger.warn('[ConversationLayout]', 'Cannot start call: not a direct conversation');
       return;
     }
 
+    console.log('✅ [ConversationLayout] Starting video call for conversation:', selectedConversation.id);
     logger.info('[ConversationLayout]', 'Starting video call - conversationId: ' + selectedConversation.id);
 
     const socket = meeshySocketIOService.getSocket();
+    console.log('🔌 [ConversationLayout] Socket status:', {
+      hasSocket: !!socket,
+      isConnected: socket?.connected,
+      socketId: socket?.id
+    });
     logger.debug('[ConversationLayout]', '🔌 Socket status', {
       hasSocket: !!socket,
       isConnected: socket?.connected,
@@ -632,12 +726,14 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     });
 
     if (!socket) {
+      console.error('❌ [ConversationLayout] No socket connection available');
       toast.error('Connection error. Please try again.');
       logger.error('[ConversationLayout]', 'Cannot start call: no socket connection');
       return;
     }
 
     if (!socket.connected) {
+      console.error('❌ [ConversationLayout] Socket not connected');
       toast.error('Socket not connected. Please wait...');
       logger.error('[ConversationLayout]', 'Cannot start call: socket not connected');
       return;
@@ -652,11 +748,13 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       },
     };
 
+    console.log('📤 [ConversationLayout] Emitting call:initiate event:', callData);
     logger.info('[ConversationLayout]', '📤 Emitting call:initiate', callData);
 
     // Emit call:initiate event
     (socket as any).emit('call:initiate', callData);
 
+    console.log('✅ [ConversationLayout] call:initiate event sent successfully');
     toast.success('Starting call...');
   }, [selectedConversation]);
 
@@ -817,31 +915,33 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     
     // Sauvegarder les attachments avant de les effacer
     const currentAttachmentIds = [...attachmentIds];
-    
+    const currentAttachmentMimeTypes = [...attachmentMimeTypes];
+
     try {
       // Arrêter immédiatement l'indicateur de frappe lors de l'envoi
       if (isTyping) {
         stopTyping();
         setIsTyping(false);
       }
-      
+
       // Nettoyer le timeout de frappe
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
         typingTimeoutRef.current = null;
       }
-      
+
       // Envoyer avec ou sans attachments
       if (hasAttachments && sendMessageWithAttachmentsViaSocket) {
         console.log('[ConversationLayout] 📎 Envoi avec attachments:', currentAttachmentIds);
-        await sendMessageWithAttachmentsViaSocket(content, currentAttachmentIds, selectedLanguage, replyToId);
+        await sendMessageWithAttachmentsViaSocket(content, currentAttachmentIds, currentAttachmentMimeTypes, selectedLanguage, replyToId);
       } else {
         await sendMessageViaSocket(content, selectedLanguage, replyToId);
       }
-      
+
       console.log('[ConversationLayout] Message envoyé avec succès - en attente du retour serveur');
       setNewMessage('');
       setAttachmentIds([]); // Réinitialiser les attachments
+      setAttachmentMimeTypes([]); // Réinitialiser les MIME types
 
       // Clear les attachments du composer
       if (messageComposerRef.current && messageComposerRef.current.clearAttachments) {
@@ -867,7 +967,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       // Restaurer les attachments en cas d'erreur
       setAttachmentIds(currentAttachmentIds);
     }
-  }, [newMessage, selectedConversation?.id, sendMessageViaSocket, sendMessageWithAttachmentsViaSocket, selectedLanguage, user, attachmentIds, isTyping, stopTyping]);
+  }, [newMessage, selectedConversation?.id, sendMessageViaSocket, sendMessageWithAttachmentsViaSocket, selectedLanguage, user, attachmentIds, attachmentMimeTypes, isTyping, stopTyping]);
 
   // Gestion de la saisie avec indicateurs de frappe
   const handleTyping = useCallback((value: string) => {
@@ -979,9 +1079,12 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       
       // Envoyer avec ou sans attachments
       if (failedMsg.attachmentIds.length > 0 && sendMessageWithAttachmentsViaSocket) {
+        // TODO: Ajouter mimeTypes dans FailedMessage store
+        const mimeTypes: string[] = []; // Pour l'instant, tableau vide (sera déterminé côté serveur)
         success = await sendMessageWithAttachmentsViaSocket(
           failedMsg.content,
           failedMsg.attachmentIds,
+          mimeTypes,
           failedMsg.originalLanguage,
           failedMsg.replyToId
         );
@@ -1132,7 +1235,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     <>
       {/* Mode mobile avec conversation ouverte - Layout plein écran */}
       {isMobile && selectedConversation ? (
-        <div className="fixed inset-0 z-50 flex flex-col bg-white dark:bg-gray-950">
+        <div className="fixed inset-0 z-50 flex flex-col bg-white dark:bg-gray-950 overflow-hidden">
           {/* Header de conversation */}
           <header className="flex-shrink-0 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 shadow-md border-b-2 border-gray-200 dark:border-gray-700">
             <ConversationHeader
@@ -1147,6 +1250,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               onParticipantAdded={() => {}}
               onLinkCreated={() => {}}
               onStartCall={handleStartCall}
+              onOpenGallery={() => setGalleryOpen(true)}
               t={t}
               showBackButton={!!selectedConversationId}
             />
@@ -1158,8 +1262,8 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
             )}
           </header>
 
-          {/* Zone des messages scrollable */}
-          <div ref={messagesScrollRef} className="flex-1 overflow-y-auto overflow-x-hidden bg-transparent pb-24">
+          {/* Zone des messages scrollable avec padding pour le composer */}
+          <div ref={messagesScrollRef} className="flex-1 overflow-y-auto overflow-x-hidden bg-transparent pb-4 min-h-0">
             <ConversationMessages
               messages={messages}
               translatedMessages={messages as any}
@@ -1182,13 +1286,14 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               onImageClick={handleImageClick}
               onLoadMore={loadMore}
               t={t}
+              tCommon={tCommon}
               reverseOrder={true}
             />
           </div>
 
-          {/* Zone de saisie fixe */}
-          <div 
-            className="fixed bottom-0 left-0 right-0 bg-white/98 dark:bg-gray-950/98 backdrop-blur-xl border-t-2 border-gray-200 dark:border-gray-700 shadow-2xl p-4 z-[100]"
+          {/* Zone de saisie dans le flux au lieu de fixed */}
+          <div
+            className="flex-shrink-0 bg-white/98 dark:bg-gray-950/98 backdrop-blur-xl border-t-2 border-gray-200 dark:border-gray-700 shadow-2xl p-4"
             style={{
               paddingBottom: 'max(1rem, env(safe-area-inset-bottom))',
             }}
@@ -1201,7 +1306,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                 onRestore={handleRestoreFailedMessage}
               />
             )}
-            
+
             <MessageComposer
               ref={messageComposerRef}
               value={newMessage}
@@ -1211,8 +1316,8 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               onLanguageChange={setSelectedLanguage}
               placeholder={t('conversationLayout.writeMessage')}
               onKeyPress={handleKeyPress}
-              choices={getUserLanguageChoices(user)}
-              onAttachmentsChange={setAttachmentIds}
+              choices={languageChoices}
+              onAttachmentsChange={handleAttachmentsChange}
               token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
               userRole={user.role}
             />
@@ -1232,20 +1337,17 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       ) : (
         /* Mode desktop ou mobile sans conversation */
         <div className={cn(
-          "flex flex-col bg-gradient-to-br from-blue-50 to-indigo-100",
-          isMobile ? "min-h-screen" : "h-screen overflow-hidden"
+          "flex flex-col bg-gradient-to-br from-blue-50 to-indigo-100 overflow-hidden",
+          isMobile ? "min-h-screen" : "h-screen"
         )}>
-          <div className={cn(
-            isMobile ? "flex-shrink-0" : "flex-1 overflow-hidden"
-          )}>
-            <DashboardLayout 
-              title={t('conversationLayout.conversations.title')} 
-              hideHeaderOnMobile={false}
-              className="!bg-none !bg-transparent !h-full !min-h-0 !max-w-none !px-0"
-            >
-            <div 
+          <DashboardLayout
+            title={t('conversationLayout.conversations.title')}
+            hideHeaderOnMobile={false}
+            className="!bg-none !bg-transparent !h-full !min-h-0 !max-w-none !px-0 !overflow-hidden flex-1"
+          >
+            <div
               className={cn(
-                "flex bg-transparent conversation-layout relative z-10 w-full",
+                "flex bg-transparent conversation-layout relative z-10 w-full h-full overflow-hidden",
                 isMobile ? 'h-[calc(100vh-4rem)]' : 'h-full'
               )}
               role="application"
@@ -1295,7 +1397,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         >
           
           {selectedConversation ? (
-            <div className="flex flex-col w-full h-full bg-white dark:bg-gray-950 shadow-xl">
+            <div className="flex flex-col w-full h-full bg-white dark:bg-gray-950 shadow-xl overflow-hidden">
               {/* Header de conversation */}
               <header className="flex-shrink-0 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 shadow-md border-b-2 border-gray-200 dark:border-gray-700 relative z-10" role="banner">
                 <ConversationHeader
@@ -1310,6 +1412,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                   onParticipantAdded={() => {}}
                   onLinkCreated={() => {}}
                   onStartCall={handleStartCall}
+                  onOpenGallery={() => setGalleryOpen(true)}
                   t={t}
                   showBackButton={!!selectedConversationId}
                 />
@@ -1321,7 +1424,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                 )}
               </header>
 
-              {/* Zone des messages */}
+              {/* Zone des messages avec min-h-0 pour éviter débordement */}
               <div
                 ref={messagesScrollRef}
                 className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-900/50 dark:to-gray-950"
@@ -1351,11 +1454,12 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                   onImageClick={handleImageClick}
                   onLoadMore={loadMore}
                   t={t}
+                  tCommon={tCommon}
                   reverseOrder={true}
                 />
               </div>
 
-              {/* Zone de composition - Desktop - Position relative dans le flux */}
+              {/* Zone de composition - Desktop - flex-shrink-0 pour hauteur fixe */}
               <div className="flex-shrink-0 bg-white/98 dark:bg-gray-950/98 backdrop-blur-xl border-t-2 border-gray-200 dark:border-gray-700 shadow-2xl p-6">
                 {/* Bannière des messages en échec */}
                 {selectedConversation?.id && (
@@ -1365,7 +1469,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                     onRestore={handleRestoreFailedMessage}
                   />
                 )}
-                  
+
                   <MessageComposer
                     ref={messageComposerRef}
                     value={newMessage}
@@ -1375,8 +1479,8 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                     onLanguageChange={setSelectedLanguage}
                     placeholder={t('conversationLayout.writeMessage')}
                     onKeyPress={handleKeyPress}
-                    choices={getUserLanguageChoices(user)}
-                    onAttachmentsChange={setAttachmentIds}
+                    choices={languageChoices}
+                    onAttachmentsChange={handleAttachmentsChange}
                     token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
                     userRole={user.role}
                   />
@@ -1420,8 +1524,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               }}
             />
             </DashboardLayout>
-          </div>
-
         </div>
       )}
       

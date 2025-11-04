@@ -117,23 +117,34 @@ export function useFixRadixZIndex() {
 export function useFixTranslationPopoverZIndex() {
   useEffect(() => {
     const fixTranslationPopovers = () => {
-      // Cibler spécifiquement les popovers de traduction
-      const translationPopovers = document.querySelectorAll('.bubble-message [data-radix-popover-content]');
-      
-      translationPopovers.forEach((element) => {
-        const htmlElement = element as HTMLElement;
-        htmlElement.style.zIndex = Z_INDEX.MAX.toString();
-        htmlElement.style.position = 'fixed'; // S'assurer que le positionnement est correct
-        
-        // Ajouter une classe pour identification
-        htmlElement.classList.add('translation-popover');
-      });
+      try {
+        // Cibler spécifiquement les popovers de traduction
+        const translationPopovers = document.querySelectorAll('.bubble-message [data-radix-popover-content]');
 
-      // Aussi forcer les wrappers
-      const translationWrappers = document.querySelectorAll('.bubble-message [data-radix-popper-content-wrapper]');
-      translationWrappers.forEach((element) => {
-        (element as HTMLElement).style.zIndex = Z_INDEX.MAX.toString();
-      });
+        translationPopovers.forEach((element) => {
+          const htmlElement = element as HTMLElement;
+          // Vérifier que l'élément est toujours dans le DOM
+          if (htmlElement.isConnected) {
+            htmlElement.style.zIndex = Z_INDEX.MAX.toString();
+            htmlElement.style.position = 'fixed'; // S'assurer que le positionnement est correct
+
+            // Ajouter une classe pour identification
+            htmlElement.classList.add('translation-popover');
+          }
+        });
+
+        // Aussi forcer les wrappers
+        const translationWrappers = document.querySelectorAll('.bubble-message [data-radix-popper-content-wrapper]');
+        translationWrappers.forEach((element) => {
+          const htmlElement = element as HTMLElement;
+          if (htmlElement.isConnected) {
+            htmlElement.style.zIndex = Z_INDEX.MAX.toString();
+          }
+        });
+      } catch (error) {
+        // Silencieusement ignorer les erreurs de manipulation DOM
+        console.debug('Error fixing translation popover z-index:', error);
+      }
     };
 
     // Fixer immédiatement
@@ -141,20 +152,29 @@ export function useFixTranslationPopoverZIndex() {
 
     // Observer spécifiquement les changements dans les messages
     const observer = new MutationObserver(() => {
-      setTimeout(fixTranslationPopovers, 10);
+      requestAnimationFrame(fixTranslationPopovers);
     });
 
-    // Observer les containers de messages
-    const messageContainers = document.querySelectorAll('.bubble-message');
-    messageContainers.forEach(container => {
-      observer.observe(container, {
+    // Observer le document body au lieu des containers individuels
+    // Plus fiable et évite les problèmes avec les éléments démontés
+    try {
+      observer.observe(document.body, {
         childList: true,
-        subtree: true
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['data-state']
       });
-    });
+    } catch (error) {
+      console.debug('Error setting up MutationObserver:', error);
+    }
 
     return () => {
-      observer.disconnect();
+      try {
+        observer.disconnect();
+      } catch (error) {
+        // Ignorer les erreurs de déconnexion
+        console.debug('Error disconnecting observer:', error);
+      }
     };
   }, []);
 }

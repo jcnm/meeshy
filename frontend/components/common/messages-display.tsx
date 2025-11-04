@@ -327,7 +327,7 @@ export function MessagesDisplay({
   }
 
   return (
-    <div className={`${className} bubble-message-container flex flex-col gap-4 pb-6 max-w-full overflow-visible`}>
+    <div className={`${className} bubble-message-container flex flex-col gap-2 pb-6 max-w-full overflow-visible`}>
       {displayMessages.map((message) => {
         const state = messageDisplayStates[message.id] || {
           currentDisplayLanguage: message.originalLanguage,

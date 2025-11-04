@@ -9,6 +9,7 @@ const joinAnonymousSchema = z.object({
   lastName: z.string().min(1, 'Le nom est requis').max(50),
   username: z.string().optional(),
   email: z.string().email().optional().or(z.literal('')),
+  birthday: z.string().datetime().optional().or(z.literal('')),
   language: z.string().default('fr'),
   deviceFingerprint: z.string().optional()
 });
@@ -173,7 +174,16 @@ export async function anonymousRoutes(fastify: FastifyInstance) {
         }
       }
 
-      // 4. Vérifier si l'email est requis
+      // 4. Vérifier si un compte est requis (bloque l'accès anonyme)
+      if (shareLink.requireAccount) {
+        return reply.status(403).send({
+          success: false,
+          message: 'Un compte est requis pour rejoindre cette conversation',
+          requiresAccount: true
+        });
+      }
+
+      // 5. Vérifier si l'email est requis
       if (shareLink.requireEmail && (!body.email || body.email.trim() === '')) {
         return reply.status(400).send({
           success: false,
@@ -181,7 +191,15 @@ export async function anonymousRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // 5. Vérifier si l'username est requis et générer le username
+      // 6. Vérifier si la date de naissance est requise
+      if (shareLink.requireBirthday && (!body.birthday || body.birthday.trim() === '')) {
+        return reply.status(400).send({
+          success: false,
+          message: 'La date de naissance est obligatoire pour rejoindre cette conversation'
+        });
+      }
+
+      // 7. Vérifier si l'username est requis et générer le username
       let username: string;
       if (shareLink.requireNickname) {
         // Si l'username est requis, il doit être fourni
@@ -296,6 +314,7 @@ export async function anonymousRoutes(fastify: FastifyInstance) {
           lastName: body.lastName,
           username: username,
           email: body.email || null,
+          birthday: body.birthday ? new Date(body.birthday) : null,
           sessionToken: sessionToken,
           ipAddress: clientIP,
           country: country,
@@ -681,8 +700,10 @@ export async function anonymousRoutes(fastify: FastifyInstance) {
           currentUses: shareLink.currentUses,
           maxConcurrentUsers: shareLink.maxConcurrentUsers,
           currentConcurrentUsers: shareLink.currentConcurrentUsers,
+          requireAccount: shareLink.requireAccount,
           requireNickname: shareLink.requireNickname,
           requireEmail: shareLink.requireEmail,
+          requireBirthday: shareLink.requireBirthday,
           allowedLanguages: shareLink.allowedLanguages,
           conversation: shareLink.conversation,
           creator: shareLink.creator,

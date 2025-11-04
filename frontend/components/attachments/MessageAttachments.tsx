@@ -8,6 +8,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Download, File, Image as ImageIcon, FileText, Video, Music, ChevronRight, Grid3X3, X } from 'lucide-react';
 import { Attachment, formatFileSize, getAttachmentType } from '../../shared/types/attachment';
+import { SimpleAudioPlayer } from '@/components/audio/SimpleAudioPlayer';
 import {
   Tooltip,
   TooltipContent,
@@ -26,6 +27,7 @@ import {
 import { useI18n } from '@/hooks/useI18n';
 import { AttachmentService } from '@/services/attachmentService';
 import { toast } from 'sonner';
+import { ImageLightbox } from './ImageLightbox';
 
 interface MessageAttachmentsProps {
   attachments: Attachment[];
@@ -42,19 +44,26 @@ interface MessageAttachmentsProps {
    * Callback appelé après suppression d'un attachment
    */
   onAttachmentDeleted?: (attachmentId: string) => void;
+  /**
+   * Indique si c'est le message de l'utilisateur courant (pour l'alignement)
+   */
+  isOwnMessage?: boolean;
 }
 
-export function MessageAttachments({
+export const MessageAttachments = React.memo(function MessageAttachments({
   attachments,
   onImageClick,
   currentUserId,
   token,
-  onAttachmentDeleted
+  onAttachmentDeleted,
+  isOwnMessage = false
 }: MessageAttachmentsProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [attachmentToDelete, setAttachmentToDelete] = useState<Attachment | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
   const { t } = useI18n('common');
 
   // Handler pour ouvrir la confirmation de suppression
@@ -97,11 +106,17 @@ export function MessageAttachments({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+
   if (!attachments || attachments.length === 0) return null;
 
-  // Séparer les images des autres types
+  // Séparer les images, vidéos, audios et autres types
   const imageAttachments = attachments.filter(att => getAttachmentType(att.mimeType) === 'image');
-  const otherAttachments = attachments.filter(att => getAttachmentType(att.mimeType) !== 'image');
+  const videoAttachments = attachments.filter(att => getAttachmentType(att.mimeType) === 'video');
+  const audioAttachments = attachments.filter(att => getAttachmentType(att.mimeType) === 'audio');
+  const otherAttachments = attachments.filter(att => {
+    const type = getAttachmentType(att.mimeType);
+    return type !== 'image' && type !== 'video' && type !== 'audio';
+  });
 
   // Seuil pour passer en mode multi-lignes : 10+ attachments
   const multiRowThreshold = 10;
@@ -143,55 +158,110 @@ export function MessageAttachments({
 
     // Image attachment - miniature cliquable
     if (type === 'image') {
-      // Déterminer si on doit afficher en grand (moins de 5 images)
-      const shouldDisplayLarge = imageAttachments.length < 5 && imageAttachments.length > 0;
-
       // Handler pour ouvrir la confirmation de suppression
       const handleDeleteClick = (event: React.MouseEvent) => {
         handleOpenDeleteConfirm(attachment, event);
       };
+
+      // Handler pour ouvrir le lightbox immédiatement
+      const handleImageClick = (event: React.MouseEvent) => {
+        // Toujours ouvrir le lightbox immédiatement (un seul clic)
+        const imageIndex = imageAttachments.findIndex(img => img.id === attachment.id);
+        setLightboxImageIndex(imageIndex);
+        setLightboxOpen(true);
+      };
+
+      // Déterminer la taille d'affichage selon le nombre d'images
+      // Responsive: les images s'adaptent à la largeur disponible
+      let sizeClasses = '';
+      let aspectRatioClass = '';
+
+      if (imageAttachments.length === 1 || imageAttachments.length === 2) {
+        // 1-2 images: afficher chaque image à sa taille naturelle
+        sizeClasses = ''; // Pas de contrainte de taille
+        aspectRatioClass = ''; // Pas de ratio forcé
+      } else if (imageAttachments.length <= 4) {
+        // 3-4 images: grid 2x2, taille responsive
+        sizeClasses = isMobile
+          ? 'w-full max-w-[45vw] h-auto max-h-[180px]' // Mobile: 45% viewport width, max 180px hauteur
+          : 'w-full max-w-[200px] h-auto max-h-[200px]'; // Desktop: max 200px
+        aspectRatioClass = 'aspect-square'; // Garder un aspect carré
+      } else {
+        // 5+ images: miniatures, taille responsive
+        sizeClasses = isMobile
+          ? 'w-full max-w-[40vw] h-auto max-h-[160px]'
+          : 'w-full max-w-[176px] h-auto max-h-[176px]';
+        aspectRatioClass = 'aspect-square';
+      }
+
+      // Utiliser l'image originale pour les PNG (problème de thumbnail noir)
+      // Pour les autres formats, utiliser le thumbnail
+      const isPng = attachment.mimeType === 'image/png';
+      const imageUrl = (isPng || imageAttachments.length <= 2)
+        ? attachment.fileUrl
+        : (attachment.thumbnailUrl || attachment.fileUrl);
 
       return (
         <TooltipProvider key={attachment.id}>
           <Tooltip delayDuration={300}>
             <TooltipTrigger asChild>
               <div
-                className="relative group cursor-pointer flex-shrink-0 snap-start"
-                onClick={() => onImageClick?.(attachment.id)}
+                className={`relative group cursor-pointer snap-start ${
+                  imageAttachments.length <= 2 ? (isOwnMessage ? 'ml-auto' : 'mr-auto') : 'flex-shrink-0'
+                }`}
+                onClick={handleImageClick}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleImageClick(e as any);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label={`Ouvrir l'image ${attachment.originalName}`}
               >
-                <div className={`relative bg-gray-100 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden hover:border-blue-400 dark:hover:border-blue-500 transition-all hover:shadow-md dark:hover:shadow-blue-500/20 flex-shrink-0 ${
-                  shouldDisplayLarge
-                    ? isMobile ? 'w-24 h-24' : 'w-32 h-32'  // Taille plus grande pour moins de 5 images
-                    : isMobile ? 'w-14 h-14' : 'w-16 h-16'   // Taille normale pour 5+ images
-                }`}>
+                <div className={`relative bg-gray-100 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden hover:border-blue-400 dark:hover:border-blue-500 transition-all hover:shadow-lg dark:hover:shadow-blue-500/30 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${imageAttachments.length <= 2 ? 'inline-flex items-center justify-center max-h-[320px]' : sizeClasses} ${aspectRatioClass}`}>
                   <img
-                    src={attachment.thumbnailUrl || attachment.fileUrl}
+                    src={imageUrl}
                     alt={attachment.originalName}
-                    className="w-full h-full object-cover"
+                    className={`${
+                      imageAttachments.length <= 2
+                        ? 'max-w-full max-h-[320px] w-auto h-auto object-contain'
+                        : 'w-full h-full object-cover'
+                    }`}
                     loading="lazy"
                     decoding="async"
+                    onError={(e) => {
+                      // Si le thumbnail échoue, essayer l'image originale
+                      if (e.currentTarget.src !== attachment.fileUrl) {
+                        e.currentTarget.src = attachment.fileUrl;
+                      } else {
+                        e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999"%3EImage%3C/text%3E%3C/svg%3E';
+                      }
+                    }}
                   />
 
                   {/* Bouton de suppression (visible si l'utilisateur a les droits) */}
                   {canDelete && (
                     <button
                       onClick={handleDeleteClick}
-                      className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10"
-                      title="Supprimer"
+                      className="!absolute !top-1 !right-1 !w-3 !h-3 !min-w-[12px] !min-h-[12px] !max-w-[12px] !max-h-[12px] rounded-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white flex items-center justify-center transition-opacity shadow-md !z-[100] opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1 !p-0"
+                      title="Supprimer cette image"
+                      aria-label={`Supprimer l'image ${attachment.originalName}`}
                     >
-                      <X className="w-3 h-3" />
+                      <X className="!w-1.5 !h-1.5" />
                     </button>
                   )}
 
-                  {/* Extension badge */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-1 py-0.5">
-                    <div className="text-white text-[9px] font-medium truncate">
+                  {/* Extension badge - affiché pour toutes les images */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 dark:from-black/90 to-transparent px-1.5 py-1" aria-hidden="true">
+                    <div className="text-white text-[10px] font-medium truncate">
                       {extension.toUpperCase()}
                     </div>
                   </div>
                 </div>
-                {/* Size badge */}
-                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-gray-700 dark:bg-gray-600 text-white text-[8px] px-1 py-0.5 rounded-full whitespace-nowrap shadow-sm">
+                {/* Size badge - affiché pour toutes les images */}
+                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-gray-700 dark:bg-gray-600 text-white text-[9px] px-1.5 py-0.5 rounded-full whitespace-nowrap shadow-sm">
                   {formatFileSize(attachment.fileSize)}
                 </div>
               </div>
@@ -210,39 +280,149 @@ export function MessageAttachments({
       );
     }
 
-    // Audio attachment
+    // Audio attachment - Utiliser SimpleAudioPlayer
     if (type === 'audio') {
+      // Proper type conversion
+      const audioAttachment = {
+        id: attachment.id,
+        messageId: attachment.messageId,
+        fileName: attachment.fileName,
+        originalName: attachment.originalName,
+        mimeType: attachment.mimeType,
+        fileSize: attachment.fileSize,
+        fileUrl: attachment.fileUrl,
+        thumbnailUrl: attachment.thumbnailUrl,
+        width: attachment.width,
+        height: attachment.height,
+        duration: attachment.duration,
+        uploadedBy: attachment.uploadedBy,
+        isAnonymous: attachment.isAnonymous,
+        createdAt: attachment.createdAt
+      };
+
       return (
-        <div key={attachment.id} className="col-span-full">
-          <div className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg">
-            <Music className="w-4 h-4 text-green-500 flex-shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">
-                {attachment.originalName}
-              </div>
-              <div className="text-[10px] text-gray-500 dark:text-gray-400">
-                {formatFileSize(attachment.fileSize)}
-              </div>
-            </div>
-            <audio 
-              controls 
-              className="h-8" 
-              src={attachment.fileUrl}
-              preload="metadata"
-            />
-          </div>
-        </div>
+        <SimpleAudioPlayer key={attachment.id} attachment={audioAttachment as any} />
       );
     }
 
-    // Autres types (document, video, text) - icône simple
+    // Video attachment - prévisualisation avec thumbnail et bouton play
+    if (type === 'video') {
+      const videoThumbnail = attachment.thumbnailUrl || attachment.fileUrl;
+
+      // Handler pour ouvrir la confirmation de suppression
+      const handleDeleteClick = (event: React.MouseEvent) => {
+        handleOpenDeleteConfirm(attachment, event);
+      };
+
+      // Handler pour ouvrir la vidéo immédiatement
+      const handleVideoClick = (event: React.MouseEvent) => {
+        // Toujours ouvrir la vidéo immédiatement
+        window.open(attachment.fileUrl, '_blank');
+      };
+
+      return (
+        <TooltipProvider key={attachment.id}>
+          <Tooltip delayDuration={300}>
+            <TooltipTrigger asChild>
+              <div
+                className="relative group cursor-pointer flex-shrink-0 snap-start"
+                onClick={handleVideoClick}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleVideoClick(e as any);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label={`Lire la vidéo ${attachment.originalName}`}
+              >
+                <div className={`relative bg-gray-100 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden hover:border-purple-400 dark:hover:border-purple-500 transition-all hover:shadow-lg dark:hover:shadow-purple-500/30 flex-shrink-0 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 ${
+                  isMobile ? 'w-40 h-32' : 'w-48 h-36'
+                }`}>
+                  {/* Thumbnail vidéo */}
+                  {attachment.thumbnailUrl ? (
+                    <img
+                      src={attachment.thumbnailUrl}
+                      alt={attachment.originalName}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                      onError={(e) => {
+                        // Fallback vers l'icône vidéo si pas de thumbnail
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    // Icône vidéo si pas de thumbnail
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/30 dark:to-violet-900/30">
+                      <Video className="w-12 h-12 text-purple-500 dark:text-purple-400" />
+                    </div>
+                  )}
+
+                  {/* Icône play centrée */}
+                  <div className="absolute inset-0 flex items-center justify-center" aria-hidden="true">
+                    <div className="w-12 h-12 bg-black/60 dark:bg-black/80 rounded-full flex items-center justify-center group-hover:bg-purple-600 dark:group-hover:bg-purple-500 transition-colors shadow-lg">
+                      <div className="w-0 h-0 border-l-[10px] border-l-white border-t-[7px] border-t-transparent border-b-[7px] border-b-transparent ml-1"></div>
+                    </div>
+                  </div>
+
+                  {/* Bouton de suppression */}
+                  {canDelete && (
+                    <button
+                      onClick={handleDeleteClick}
+                      className="!absolute !top-1 !right-1 !w-3 !h-3 !min-w-[12px] !min-h-[12px] !max-w-[12px] !max-h-[12px] rounded-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white flex items-center justify-center transition-opacity shadow-md !z-[100] opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1 !p-0"
+                      title="Supprimer cette vidéo"
+                      aria-label={`Supprimer la vidéo ${attachment.originalName}`}
+                    >
+                      <X className="!w-1.5 !h-1.5" />
+                    </button>
+                  )}
+
+                  {/* Extension badge */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 dark:from-black/90 to-transparent px-1.5 py-1" aria-hidden="true">
+                    <div className="flex items-center justify-between">
+                      <div className="text-white text-[10px] font-medium truncate flex-1">
+                        {extension.toUpperCase()}
+                      </div>
+                      {attachment.duration && (
+                        <div className="text-white text-[10px] font-medium">
+                          {Math.floor(attachment.duration / 60)}:{String(Math.floor(attachment.duration % 60)).padStart(2, '0')}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                {/* Size badge */}
+                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-gray-700 dark:bg-gray-600 text-white text-[9px] px-1.5 py-0.5 rounded-full whitespace-nowrap shadow-sm">
+                  {formatFileSize(attachment.fileSize)}
+                </div>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              <div className="text-xs">
+                <div className="font-medium truncate max-w-[200px]">{attachment.originalName}</div>
+                <div className="text-gray-400 dark:text-gray-500">
+                  {formatFileSize(attachment.fileSize)}
+                  {attachment.duration && ` • ${Math.floor(attachment.duration / 60)}:${String(Math.floor(attachment.duration % 60)).padStart(2, '0')}`}
+                  {attachment.width && attachment.height && ` • ${attachment.width}x${attachment.height}`}
+                </div>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+
+    // Autres types (document, text) - icône simple
     // Handler pour ouvrir la confirmation de suppression
     const handleDeleteClick = (event: React.MouseEvent) => {
       handleOpenDeleteConfirm(attachment, event);
     };
 
-    // Handler pour ouvrir le fichier
-    const handleOpenFile = () => {
+    // Handler pour ouvrir le fichier immédiatement
+    const handleFileClick = (event: React.MouseEvent) => {
+      // Toujours ouvrir le fichier immédiatement
       window.open(attachment.fileUrl, '_blank');
     };
 
@@ -252,9 +432,18 @@ export function MessageAttachments({
           <TooltipTrigger asChild>
             <div
               className="relative group flex-shrink-0 snap-start cursor-pointer"
-              onClick={handleOpenFile}
+              onClick={handleFileClick}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleFileClick(e as any);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label={`Ouvrir le fichier ${attachment.originalName}`}
             >
-              <div className={`relative flex flex-col items-center justify-center bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-400 dark:hover:border-blue-500 transition-all hover:shadow-md dark:hover:shadow-blue-500/20 flex-shrink-0 ${
+              <div className={`relative flex flex-col items-center justify-center bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-400 dark:hover:border-blue-500 transition-all hover:shadow-md dark:hover:shadow-blue-500/20 flex-shrink-0 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
                 isMobile ? 'w-14 h-14' : 'w-16 h-16'
               }`}>
                 <div className="flex flex-col items-center gap-0.5">
@@ -268,14 +457,15 @@ export function MessageAttachments({
                 {canDelete ? (
                   <button
                     onClick={handleDeleteClick}
-                    className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10"
-                    title="Supprimer"
+                    className="!absolute !top-0.5 !right-0.5 !w-3 !h-3 !min-w-[12px] !min-h-[12px] !max-w-[12px] !max-h-[12px] rounded-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white flex items-center justify-center transition-opacity shadow-md !z-[100] opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1 !p-0"
+                    title="Supprimer ce fichier"
+                    aria-label={`Supprimer le fichier ${attachment.originalName}`}
                   >
-                    <X className="w-3 h-3" />
+                    <X className="!w-1.5 !h-1.5" />
                   </button>
                 ) : (
                   /* Download indicator si pas de droits de suppression */
-                  <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute top-1 right-1 transition-opacity opacity-0 group-hover:opacity-100" aria-hidden="true">
                     <Download className="w-3 h-3 text-gray-600 dark:text-gray-400" />
                   </div>
                 )}
@@ -299,31 +489,85 @@ export function MessageAttachments({
     );
   };
 
+  // Déterminer le layout selon le nombre d'images
+  const getImageLayoutClasses = () => {
+    const imageCount = imageAttachments.length;
+
+    if (imageCount === 1 || imageCount === 2) {
+      // 1-2 images : chaque image indépendante, alignée selon l'émetteur
+      return `flex flex-col gap-1 ${isOwnMessage ? 'items-end' : 'items-start'}`;
+    } else if (imageCount <= 4) {
+      // 3-4 images : grid avec alignement selon l'émetteur
+      return `grid grid-cols-2 gap-1 ${isOwnMessage ? 'justify-items-end' : 'justify-items-start'}`;
+    } else {
+      // 5+ images : flex wrap avec alignement selon l'émetteur
+      return `flex flex-wrap gap-1 ${isOwnMessage ? 'justify-end' : 'justify-start'}`;
+    }
+  };
+
+  // Déterminer le layout selon le nombre d'audios
+  const getAudioLayoutClasses = () => {
+    const audioCount = audioAttachments.length;
+    // Grid seulement si plusieurs audios
+    if (audioCount > 1) {
+      return 'grid grid-cols-1 gap-2 w-full';
+    } else {
+      return 'flex flex-col gap-1 w-full';
+    }
+  };
+
   return (
-    <div className="mt-2 p-2 bg-gray-50/50 dark:bg-gray-800/30 rounded-lg border border-gray-200 dark:border-gray-700 max-w-full overflow-hidden">
-      {/* Affichage principal des attachments */}
-      <div className={`flex items-center gap-2 pb-1 ${
-        shouldUseMultiRow
-          ? 'flex-wrap overflow-y-auto max-h-40 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent'
-          : 'overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent snap-x snap-mandatory'
-      }`}>
-        {displayedAttachments.map((attachment, index) => renderAttachment(attachment, index))}
-        
+    <>
+      <div className="mt-2 flex flex-col gap-2 w-full max-w-full overflow-hidden">
+        {/* Affichage des images */}
+        {imageAttachments.length > 0 && (
+          <div className={`${getImageLayoutClasses()} w-full max-w-full ${
+            shouldUseMultiRow && imageAttachments.length > 4
+              ? 'overflow-y-auto max-h-96 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent'
+              : ''
+          }`}>
+            {imageAttachments.map((attachment, index) => renderAttachment(attachment, index))}
+          </div>
+        )}
+
+        {/* Affichage des audios */}
+        {audioAttachments.length > 0 && (
+          <div className={getAudioLayoutClasses()}>
+            {audioAttachments.map((attachment, index) => renderAttachment(attachment, index))}
+          </div>
+        )}
+
+        {/* Affichage des vidéos */}
+        {videoAttachments.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {videoAttachments.map((attachment, index) => renderAttachment(attachment, index))}
+          </div>
+        )}
+
+        {/* Affichage des autres fichiers */}
+        {otherAttachments.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {otherAttachments.map((attachment, index) => renderAttachment(attachment, index))}
+          </div>
+        )}
+
         {/* Bouton d'expansion sur mobile */}
         {shouldShowExpandButton && !isExpanded && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsExpanded(true)}
-            className="flex-shrink-0 h-14 w-14 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 border-2 border-dashed border-gray-300 dark:border-gray-500 rounded-lg"
-          >
-            <div className="flex flex-col items-center gap-1">
-              <Grid3X3 className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-              <span className="text-[9px] text-gray-500 dark:text-gray-400 font-medium">
-                +{attachments.length - multiRowThreshold}
-              </span>
-            </div>
-          </Button>
+          <div className="flex flex-wrap gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsExpanded(true)}
+              className="flex-shrink-0 h-14 w-14 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 border-2 border-dashed border-gray-300 dark:border-gray-500 rounded-lg"
+            >
+              <div className="flex flex-col items-center gap-1">
+                <Grid3X3 className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <span className="text-[9px] text-gray-500 dark:text-gray-400 font-medium">
+                  +{attachments.length - multiRowThreshold}
+                </span>
+              </div>
+            </Button>
+          </div>
         )}
       </div>
 
@@ -341,6 +585,14 @@ export function MessageAttachments({
           </Button>
         </div>
       )}
+
+      {/* Lightbox pour les images */}
+      <ImageLightbox
+        images={imageAttachments}
+        initialIndex={lightboxImageIndex}
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+      />
 
       {/* Dialog de confirmation de suppression */}
       <Dialog open={!!attachmentToDelete} onOpenChange={(open) => !open && handleDeleteCancel()}>
@@ -379,7 +631,7 @@ export function MessageAttachments({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
-}
+});
 

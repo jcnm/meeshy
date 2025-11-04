@@ -8,9 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { 
-  Link2, 
+import {
+  Link2,
   Calendar as CalendarIcon,
   MessageSquare,
   Image,
@@ -18,13 +17,14 @@ import {
   Eye,
   Users,
   Mail,
-  Hash
+  Hash,
+  Shield,
+  Cake
 } from 'lucide-react';
 import { ConversationLink } from '@/types';
 import { useI18n } from '@/hooks/useI18n';
 import { toast } from 'sonner';
 import { buildApiUrl } from '@/lib/config';
-import { cn } from '@/lib/utils';
 import { authManager } from '@/services/auth-manager.service';
 
 interface LinkEditModalProps {
@@ -49,8 +49,10 @@ export function LinkEditModal({ link, isOpen, onClose, onUpdate }: LinkEditModal
     allowAnonymousImages: link.allowAnonymousImages,
     allowAnonymousFiles: link.allowAnonymousFiles,
     allowViewHistory: link.allowViewHistory,
+    requireAccount: link.requireAccount || false,
     requireNickname: link.requireNickname,
-    requireEmail: link.requireEmail
+    requireEmail: link.requireEmail,
+    requireBirthday: link.requireBirthday || false
   });
 
   const handleSubmit = async () => {
@@ -86,15 +88,18 @@ export function LinkEditModal({ link, isOpen, onClose, onUpdate }: LinkEditModal
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl w-[95vw] max-h-[90vh] overflow-y-auto sm:max-w-2xl sm:w-[90vw] sm:max-h-[85vh]">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl w-[95vw] max-h-[90vh] p-0 gap-0 flex flex-col sm:max-w-2xl sm:w-[90vw] sm:max-h-[85vh]">
+        {/* Header fixe */}
+        <DialogHeader className="flex-shrink-0 border-b px-6 py-4">
           <DialogTitle className="flex items-center gap-2">
             <Link2 className="h-5 w-5" />
             {t('edit.title')}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        {/* Contenu scrollable */}
+        <div className="flex-1 overflow-y-auto px-6 py-6">
+          <div className="space-y-6">
           {/* Informations de base */}
           <div className="space-y-4">
             <div>
@@ -144,47 +149,23 @@ export function LinkEditModal({ link, isOpen, onClose, onUpdate }: LinkEditModal
               <div className="flex items-center space-x-3">
                 <CalendarIcon className="h-5 w-5 text-muted-foreground" />
                 <div className="flex-1">
-                  <Label>{t('edit.expiresAt')}</Label>
+                  <Label htmlFor="expiresAt">{t('edit.expiresAt')}</Label>
                   <p className="text-sm text-muted-foreground">{t('edit.expiresAtDescription')}</p>
                 </div>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-[240px] justify-start text-left font-normal",
-                        !formData.expiresAt && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formData.expiresAt ? (
-                        formData.expiresAt.toLocaleDateString('fr-FR', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })
-                      ) : (
-                        <span>{t('edit.selectDate')}</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <div className="p-3">
-                      <Input
-                        type="datetime-local"
-                        value={formData.expiresAt ? formData.expiresAt.toISOString().slice(0, 16) : ''}
-                        onChange={(e) => {
-                          const date = e.target.value ? new Date(e.target.value) : null;
-                          setFormData({ ...formData, expiresAt: date });
-                        }}
-                        min={new Date().toISOString().slice(0, 16)}
-                        className="w-full"
-                      />
-                    </div>
-                  </PopoverContent>
-                </Popover>
+                <div className="relative w-[240px]">
+                  <Input
+                    id="expiresAt"
+                    type="datetime-local"
+                    value={formData.expiresAt ? formData.expiresAt.toISOString().slice(0, 16) : ''}
+                    onChange={(e) => {
+                      const date = e.target.value ? new Date(e.target.value) : null;
+                      setFormData({ ...formData, expiresAt: date });
+                    }}
+                    min={new Date().toISOString().slice(0, 16)}
+                    className="w-full pl-10"
+                  />
+                  <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -204,8 +185,9 @@ export function LinkEditModal({ link, isOpen, onClose, onUpdate }: LinkEditModal
                 </div>
                 <Switch
                   id="allowMessages"
-                  checked={formData.allowAnonymousMessages}
+                  checked={formData.requireAccount ? true : formData.allowAnonymousMessages}
                   onCheckedChange={(checked) => setFormData({ ...formData, allowAnonymousMessages: checked })}
+                  disabled={formData.requireAccount}
                 />
               </div>
 
@@ -219,8 +201,9 @@ export function LinkEditModal({ link, isOpen, onClose, onUpdate }: LinkEditModal
                 </div>
                 <Switch
                   id="allowImages"
-                  checked={formData.allowAnonymousImages}
+                  checked={formData.requireAccount ? true : formData.allowAnonymousImages}
                   onCheckedChange={(checked) => setFormData({ ...formData, allowAnonymousImages: checked })}
+                  disabled={formData.requireAccount}
                 />
               </div>
 
@@ -234,8 +217,9 @@ export function LinkEditModal({ link, isOpen, onClose, onUpdate }: LinkEditModal
                 </div>
                 <Switch
                   id="allowFiles"
-                  checked={formData.allowAnonymousFiles}
+                  checked={formData.requireAccount ? true : formData.allowAnonymousFiles}
                   onCheckedChange={(checked) => setFormData({ ...formData, allowAnonymousFiles: checked })}
+                  disabled={formData.requireAccount}
                 />
               </div>
 
@@ -249,8 +233,9 @@ export function LinkEditModal({ link, isOpen, onClose, onUpdate }: LinkEditModal
                 </div>
                 <Switch
                   id="allowHistory"
-                  checked={formData.allowViewHistory}
+                  checked={formData.requireAccount ? true : formData.allowViewHistory}
                   onCheckedChange={(checked) => setFormData({ ...formData, allowViewHistory: checked })}
+                  disabled={formData.requireAccount}
                 />
               </div>
             </CardContent>
@@ -260,7 +245,28 @@ export function LinkEditModal({ link, isOpen, onClose, onUpdate }: LinkEditModal
           <Card>
             <CardContent className="pt-6 space-y-4">
               <h3 className="font-medium mb-4">{t('edit.requirements')}</h3>
-              
+
+              {/* Require Account - mise en évidence */}
+              <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <Shield className="h-5 w-5 text-blue-600" />
+                    <div>
+                      <Label htmlFor="requireAccount" className="text-blue-900 dark:text-blue-100 font-semibold">
+                        {t('requirements.account')}
+                      </Label>
+                      <p className="text-sm text-blue-700 dark:text-blue-300">{t('requirements.accountDescription')}</p>
+                    </div>
+                  </div>
+                  <Switch
+                    id="requireAccount"
+                    checked={formData.requireAccount}
+                    onCheckedChange={(checked) => setFormData({ ...formData, requireAccount: checked })}
+                    className="data-[state=checked]:bg-blue-600"
+                  />
+                </div>
+              </div>
+
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <Hash className="h-5 w-5 text-muted-foreground" />
@@ -271,8 +277,9 @@ export function LinkEditModal({ link, isOpen, onClose, onUpdate }: LinkEditModal
                 </div>
                 <Switch
                   id="requireNickname"
-                  checked={formData.requireNickname}
+                  checked={formData.requireAccount ? true : formData.requireNickname}
                   onCheckedChange={(checked) => setFormData({ ...formData, requireNickname: checked })}
+                  disabled={formData.requireAccount}
                 />
               </div>
 
@@ -286,15 +293,34 @@ export function LinkEditModal({ link, isOpen, onClose, onUpdate }: LinkEditModal
                 </div>
                 <Switch
                   id="requireEmail"
-                  checked={formData.requireEmail}
+                  checked={formData.requireAccount ? true : formData.requireEmail}
                   onCheckedChange={(checked) => setFormData({ ...formData, requireEmail: checked })}
+                  disabled={formData.requireAccount}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <Cake className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <Label htmlFor="requireBirthday">{t('requirements.birthday')}</Label>
+                    <p className="text-sm text-muted-foreground">{t('requirements.birthdayDescription')}</p>
+                  </div>
+                </div>
+                <Switch
+                  id="requireBirthday"
+                  checked={formData.requireAccount ? true : formData.requireBirthday}
+                  onCheckedChange={(checked) => setFormData({ ...formData, requireBirthday: checked })}
+                  disabled={formData.requireAccount}
                 />
               </div>
             </CardContent>
           </Card>
+          </div>
         </div>
 
-        <DialogFooter>
+        {/* Footer fixe */}
+        <DialogFooter className="flex-shrink-0 border-t px-6 py-4">
           <Button variant="outline" onClick={onClose} disabled={isLoading}>
             {t('actions.cancel')}
           </Button>

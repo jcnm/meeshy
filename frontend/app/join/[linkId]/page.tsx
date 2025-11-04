@@ -58,6 +58,7 @@ interface AnonymousFormData {
   lastName: string;
   username: string; // Renommé depuis nickname
   email: string;
+  birthday: string;
   language: string;
 }
 
@@ -111,6 +112,7 @@ export default function JoinConversationPage() {
     lastName: '',
     username: '', // Renommé depuis nickname
     email: '',
+    birthday: '',
     language: 'fr'
   });
 
@@ -217,6 +219,12 @@ export default function JoinConversationPage() {
       return;
     }
 
+    // Vérifier si la date de naissance est requise
+    if (conversationLink?.requireBirthday && !anonymousForm.birthday.trim()) {
+      toast.error(t('birthdayRequired'));
+      return;
+    }
+
     setIsJoining(true);
     try {
       const response = await fetch(`${buildApiUrl('/anonymous/join')}/${linkId}`, {
@@ -229,6 +237,7 @@ export default function JoinConversationPage() {
           lastName: anonymousForm.lastName.trim(),
           username: anonymousForm.username.trim() || generateUsername(anonymousForm.firstName, anonymousForm.lastName), // Envoyer comme username au backend
           email: anonymousForm.email.trim() || undefined,
+          birthday: anonymousForm.birthday ? new Date(anonymousForm.birthday).toISOString() : undefined,
           language: anonymousForm.language,
           deviceFingerprint: navigator.userAgent // Empreinte basique
         })
@@ -661,27 +670,44 @@ export default function JoinConversationPage() {
                   
                   {!showAnonymousForm ? (
                     <div className="space-y-4">
-                      {/* Options d'accès */}
-                      <div className="grid grid-cols-1 gap-3">
-                        <Button 
-                          size="lg" 
-                          className="w-full"
-                          onClick={() => setShowAnonymousForm(true)}
-                        >
-                          <UserMinus className="h-4 w-4 mr-2" />
-                          {t('joinAnonymously')}
-                        </Button>
-                      </div>
-                      
-                      <div className="relative">
-                        <div className="absolute inset-0 flex items-center">
-                          <span className="w-full border-t" />
+                      {/* Si requireAccount est true, ne pas afficher le bouton Rejoindre anonymement */}
+                      {!conversationLink?.requireAccount && (
+                        <>
+                          {/* Options d'accès */}
+                          <div className="grid grid-cols-1 gap-3">
+                            <Button
+                              size="lg"
+                              className="w-full"
+                              onClick={() => setShowAnonymousForm(true)}
+                            >
+                              <UserMinus className="h-4 w-4 mr-2" />
+                              {t('joinAnonymously')}
+                            </Button>
+                          </div>
+
+                          <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                              <span className="w-full border-t" />
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                              <span className="bg-white dark:bg-gray-800 px-2 text-muted-foreground">{t('orWithAccount')}</span>
+                            </div>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Afficher un message si requireAccount est true */}
+                      {conversationLink?.requireAccount && (
+                        <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg text-center">
+                          <p className="text-sm text-blue-900 dark:text-blue-100 font-medium">
+                            {t('accountRequired')}
+                          </p>
+                          <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                            {t('accountRequiredDescription')}
+                          </p>
                         </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                          <span className="bg-white dark:bg-gray-800 px-2 text-muted-foreground">{t('orWithAccount')}</span>
-                        </div>
-                      </div>
-                      
+                      )}
+
                       <div className="grid grid-cols-2 gap-3">
                         <Dialog open={authMode === 'login'} onOpenChange={(open) => setAuthMode(open ? 'login' : 'welcome')}>
                           <DialogTrigger asChild>
@@ -820,7 +846,26 @@ export default function JoinConversationPage() {
                           </p>
                         </div>
                       )}
-                      
+
+                      {conversationLink.requireBirthday && (
+                        <div className="space-y-2">
+                          <Label htmlFor="birthday">
+                            {t('birthday')} <span className="text-red-500">*</span>
+                          </Label>
+                          <Input
+                            id="birthday"
+                            type="date"
+                            value={anonymousForm.birthday}
+                            onChange={(e) => updateAnonymousForm('birthday', e.target.value)}
+                            required={conversationLink.requireBirthday}
+                            max={new Date().toISOString().split('T')[0]}
+                          />
+                          <p className="text-xs text-red-500">
+                            {t('birthdayRequired')}
+                          </p>
+                        </div>
+                      )}
+
                       <div className="space-y-2">
                         <Label htmlFor="language">{t('spokenLanguage')}</Label>
                         <Select 
@@ -844,14 +889,15 @@ export default function JoinConversationPage() {
                       </div>
                       
                       <div className="flex space-x-3 pt-4">
-                        <Button 
+                        <Button
                           onClick={handleJoinAnonymously}
                           disabled={
-                            isJoining || 
-                            !anonymousForm.firstName.trim() || 
+                            isJoining ||
+                            !anonymousForm.firstName.trim() ||
                             !anonymousForm.lastName.trim() ||
                             (conversationLink.requireNickname && !anonymousForm.username.trim()) ||
-                            (conversationLink.requireEmail && !anonymousForm.email.trim())
+                            (conversationLink.requireEmail && !anonymousForm.email.trim()) ||
+                            (conversationLink.requireBirthday && !anonymousForm.birthday.trim())
                           }
                           size="lg"
                           className="flex-1"
