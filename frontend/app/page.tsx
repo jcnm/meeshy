@@ -55,7 +55,7 @@ function LandingPageContent() {
   const { login } = useAuth();
   const [authMode, setAuthMode] = useState<AuthMode>('welcome');
   const router = useRouter();
-  const { t, locale } = useI18n('landing');
+  const { t, locale, setLocale } = useI18n('landing');
   const { t: tAuth } = useI18n('auth');
   const { t: tCommon } = useI18n('common');
 
@@ -215,8 +215,8 @@ function LandingPageContent() {
             <LanguageSelector
               value={locale}
               onValueChange={(newLocale) => {
-                // Change interface language
-                router.push(`/${newLocale}`);
+                // Change interface language without navigation
+                setLocale(newLocale);
               }}
               interfaceOnly={true}
               className="min-w-[150px]"

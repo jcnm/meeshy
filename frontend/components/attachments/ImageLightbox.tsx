@@ -182,10 +182,10 @@ export function ImageLightbox({ images, initialIndex, isOpen, onClose }: ImageLi
             transition={{ duration: 0.2 }}
             src={currentImage.fileUrl}
             alt={currentImage.originalName}
-            className="max-w-full max-h-full object-contain cursor-zoom-in"
+            className="max-w-full max-h-full object-contain cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
-              handleZoomIn();
+              onClose();
             }}
             draggable={false}
           />

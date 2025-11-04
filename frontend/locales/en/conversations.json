@@ -224,6 +224,14 @@
       "members": "members",
       "private": "Private",
       "public": "Public"
-    }
+    },
+    "attachmentLimit": {
+      "title": "Attachment Limit Reached",
+      "partialMessage": "You currently have {current} attachment(s). You can only add {remaining} more file(s) to reach the limit of {max} attachments per message.",
+      "fullMessage": "You have reached the maximum limit of {max} attachments per message.",
+      "suggestion": "To send your message, please remove some files by clicking the cross (×) on the files you wish to remove.",
+      "current": "Current attachments"
+    },
+    "pasteTooLongTxtCreated": "Text too long: a .txt file has been created automatically"
   }
 }

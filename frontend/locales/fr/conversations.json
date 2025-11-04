@@ -227,7 +227,15 @@
       "members": "membres",
       "private": "Privé",
       "public": "Public"
-    }
+    },
+    "attachmentLimit": {
+      "title": "Limite d'attachements atteinte",
+      "partialMessage": "Vous avez actuellement {current} attachement(s). Vous ne pouvez ajouter que {remaining} fichier(s) supplémentaire(s) pour atteindre la limite de {max} attachements par message.",
+      "fullMessage": "Vous avez atteint la limite maximale de {max} attachements par message.",
+      "suggestion": "Pour envoyer votre message, veuillez supprimer des fichiers en cliquant sur la croix (×) sur les fichiers que vous souhaitez retirer.",
+      "current": "Attachements actuels"
+    },
+    "pasteTooLongTxtCreated": "Texte trop long : un fichier .txt a été créé automatiquement"
   }
 }
 

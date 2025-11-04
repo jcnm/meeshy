@@ -277,7 +277,7 @@ class MeeshyServer {
     // Register multipart plugin for file uploads
     await this.server.register(multipart, {
       limits: {
-        fileSize: 104857600, // 100MB max file size
+        fileSize: 2147483648, // 2GB max file size
         files: 100, // Max 100 files per request
       },
     });
@@ -367,9 +367,9 @@ class MeeshyServer {
       if (error.code === 'FST_REQ_FILE_TOO_LARGE') {
         return reply.code(413).send({
           error: 'File Too Large',
-          message: `File size exceeds the allowed limit of 100 MB. Please reduce the file size.`,
+          message: `File size exceeds the allowed limit of 2 GB. Please reduce the file size.`,
           details: {
-            maxFileSize: '100 MB',
+            maxFileSize: '2 GB',
             limit: 'File size exceeded'
           },
           statusCode: 413,

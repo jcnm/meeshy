@@ -106,28 +106,16 @@ export class AttachmentService {
    * Valide un fichier selon son type et sa taille
    */
   validateFile(file: FileToUpload): { valid: boolean; error?: string } {
-    // Vérifier le MIME type
+    // Accepter tous les types de fichiers - pas de restriction MIME
     const attachmentType = getAttachmentType(file.mimeType);
-    const allAcceptedTypes = [
-      ...ACCEPTED_MIME_TYPES.IMAGE,
-      ...ACCEPTED_MIME_TYPES.DOCUMENT,
-      ...ACCEPTED_MIME_TYPES.AUDIO,
-      ...ACCEPTED_MIME_TYPES.VIDEO,
-      ...ACCEPTED_MIME_TYPES.TEXT,
-      ...ACCEPTED_MIME_TYPES.CODE,
-    ];
 
-    if (!allAcceptedTypes.includes(file.mimeType as any)) {
-      return { valid: false, error: `Type de fichier non accepté: ${file.mimeType}` };
-    }
-
-    // Vérifier la taille
+    // Vérifier la taille (2GB max)
     const sizeLimit = getSizeLimit(attachmentType);
     if (file.size > sizeLimit) {
-      const limitMB = Math.floor(sizeLimit / (1024 * 1024));
-      return { 
-        valid: false, 
-        error: `Fichier trop volumineux. Taille max: ${limitMB}MB` 
+      const limitGB = Math.floor(sizeLimit / (1024 * 1024 * 1024));
+      return {
+        valid: false,
+        error: `Fichier trop volumineux. Taille max: ${limitGB}GB`
       };
     }
 

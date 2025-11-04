@@ -10,6 +10,7 @@ import { type LanguageChoice } from '@/lib/bubble-stream-modules';
 import { useI18n } from '@/hooks/useI18n';
 import { useReplyStore, type ReplyingToMessage } from '@/stores/reply-store';
 import { AttachmentCarousel } from '@/components/attachments/AttachmentCarousel';
+import { AttachmentLimitModal } from '@/components/attachments/AttachmentLimitModal';
 import { useTextAttachmentDetection } from '@/hooks/useTextAttachmentDetection';
 import { AttachmentService } from '@/services/attachmentService';
 import { UploadedAttachmentResponse } from '@/shared/types/attachment';
@@ -73,13 +74,14 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { replyingTo, clearReply } = useReplyStore();
   const [isMobile, setIsMobile] = useState(false);
-  
+
   // États pour les attachments
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploadedAttachments, setUploadedAttachments] = useState<UploadedAttachmentResponse[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{ [key: number]: number }>({});
+  const [showAttachmentLimitModal, setShowAttachmentLimitModal] = useState(false);
 
   // États pour l'enregistrement audio
   const [showAudioRecorder, setShowAudioRecorder] = useState(false);
@@ -279,6 +281,15 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     files.forEach((file, i) => {
       console.log(`  Fichier ${i + 1}:`, file.name, '|', file.type, '|', file.size, 'bytes');
     });
+
+    // Vérifier la limite de 50 attachements par message
+    const currentTotalAttachments = selectedFiles.length + uploadedAttachments.length;
+    const newTotalAttachments = currentTotalAttachments + files.length;
+
+    if (newTotalAttachments > 50) {
+      setShowAttachmentLimitModal(true);
+      return;
+    }
 
     // Valider les fichiers
     const validation = AttachmentService.validateFiles(files);
@@ -747,9 +758,9 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
           title={isRecording ? "Arrêter et démarrer nouvel enregistrement" : "Enregistrer un message vocal"}
         >
           {isRecording ? (
-            <Square className="h-2.5 w-2.5 text-red-600 fill-red-600" />
+            <Square className="h-4 w-4 text-red-600 fill-red-600" />
           ) : (
-            <Mic className={`h-2.5 w-2.5 ${showAudioRecorder ? 'text-blue-600' : 'text-gray-600'}`} />
+            <Mic className={`h-4 w-4 ${showAudioRecorder ? 'text-blue-600' : 'text-gray-600'}`} />
           )}
         </Button>
 
@@ -762,9 +773,9 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
           className="h-5 w-5 p-0 rounded-full hover:bg-gray-100 relative"
         >
           {isUploading ? (
-            <Loader2 className="h-2.5 w-2.5 text-blue-600 animate-spin" />
+            <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
           ) : (
-            <Paperclip className="h-2.5 w-2.5 text-gray-600" />
+            <Paperclip className="h-4 w-4 text-gray-600" />
           )}
           {selectedFiles.length > 0 && (
             <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] rounded-full h-3.5 w-3.5 flex items-center justify-center">
@@ -776,7 +787,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         {/* Localisation */}
         {location && !isUploading && (
           <div className="flex items-center space-x-1">
-            <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
+            <MapPin className="h-4 w-4" />
             <span className="hidden sm:inline">{location}</span>
           </div>
         )}
@@ -804,10 +815,17 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
           </span>
         )}
 
+        {/* Compteur d'attachements : affiché si > 40 attachements (80% de 50) */}
+        {(selectedFiles.length + uploadedAttachments.length) > 40 && (
+          <span className={`hidden sm:inline text-xs ${(selectedFiles.length + uploadedAttachments.length) > 50 ? 'text-red-500' : 'text-orange-500'}`}>
+            {selectedFiles.length + uploadedAttachments.length}/50
+          </span>
+        )}
+
         {/* Bouton d'envoi (agrandi de 50% sur desktop) */}
         <Button
           onClick={handleSendMessage}
-          disabled={(!value.trim() && selectedFiles.length === 0 && uploadedAttachments.length === 0) || value.length > maxMessageLength || !isComposingEnabled || isUploading || isRecording}
+          disabled={(!value.trim() && selectedFiles.length === 0 && uploadedAttachments.length === 0) || value.length > maxMessageLength || !isComposingEnabled || isUploading || isRecording || (selectedFiles.length + uploadedAttachments.length) > 50}
           size="sm"
           className="bg-blue-600 hover:bg-blue-700 text-white h-6 w-6 sm:h-9 sm:w-9 p-0 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
           title={isRecording ? "Arrêtez l'enregistrement avant d'envoyer" : "Envoyer le message"}
@@ -824,6 +842,15 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         className="hidden"
         onChange={handleFileInputChange}
         accept="image/*,video/*,audio/*,application/pdf,text/plain,.doc,.docx,.ppt,.pptx,.md,.sh,.js,.ts,.py,.zip"
+      />
+
+      {/* Modale de limite d'attachements */}
+      <AttachmentLimitModal
+        isOpen={showAttachmentLimitModal}
+        onClose={() => setShowAttachmentLimitModal(false)}
+        currentCount={selectedFiles.length + uploadedAttachments.length}
+        maxCount={50}
+        remainingSlots={50 - (selectedFiles.length + uploadedAttachments.length)}
       />
     </div>
   );

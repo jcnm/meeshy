@@ -159,12 +159,12 @@ export interface UploadMultipleResponse {
  * Limites de taille d'upload par type de fichier (en octets)
  */
 export const UPLOAD_LIMITS = {
-  IMAGE: 52428800, // 50MB
-  DOCUMENT: 104857600, // 100MB
-  AUDIO: 104857600, // 100MB
-  VIDEO: 104857600, // 100MB
-  TEXT: 10485760, // 10MB
-  CODE: 10485760, // 10MB
+  IMAGE: 2147483648, // 2GB
+  DOCUMENT: 2147483648, // 2GB
+  AUDIO: 2147483648, // 2GB
+  VIDEO: 2147483648, // 2GB
+  TEXT: 2147483648, // 2GB
+  CODE: 2147483648, // 2GB
 } as const;
 
 /**

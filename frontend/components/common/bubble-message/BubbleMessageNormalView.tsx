@@ -20,6 +20,7 @@ import {
   MessageCircle,
   Flag
 } from 'lucide-react';
+import { getUserDisplayName } from '@/utils/user-display-name';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -445,11 +446,8 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
           )}>
             {(() => {
               const username = message.anonymousSender?.username || message.sender?.username;
-              const baseName = message.anonymousSender
-                ? (message.anonymousSender.username ||
-                   `${message.anonymousSender.firstName || ''} ${message.anonymousSender.lastName || ''}`.trim() ||
-                   tBubble('anonymous'))
-                : (message.sender?.username || tBubble('anonymous'));
+              const user = message.anonymousSender || message.sender;
+              const displayName = getUserDisplayName(user, tBubble('anonymous'));
 
               const isAnonymous = !!message.anonymousSender;
 
@@ -458,7 +456,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                 return (
                   <span className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
                     <Ghost className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
-                    {baseName}
+                    {displayName}
                   </span>
                 );
               }
@@ -469,11 +467,11 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                   className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  {baseName}
+                  {displayName}
                 </Link>
               ) : (
                 <span className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  {baseName}
+                  {displayName}
                 </span>
               );
             })()}
@@ -592,9 +590,8 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                         <div className="flex items-center gap-1 mb-1">
                           {(() => {
                             const replyUsername = message.replyTo.anonymousSender?.username || message.replyTo.sender?.username;
-                            const replyBaseName = message.replyTo.anonymousSender
-                              ? (message.replyTo.anonymousSender.username || tBubble('anonymous'))
-                              : (message.replyTo.sender?.username || tBubble('unknownUser'));
+                            const replyUser = message.replyTo.anonymousSender || message.replyTo.sender;
+                            const replyDisplayName = getUserDisplayName(replyUser, tBubble('unknownUser'));
 
                             const isReplyAnonymous = !!message.replyTo.anonymousSender;
 
@@ -606,7 +603,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                                   isOwnMessage ? "text-white/90" : "text-gray-700 dark:text-gray-200"
                                 )}>
                                   <Ghost className="h-3 w-3 text-purple-600 dark:text-purple-400" />
-                                  {replyBaseName}
+                                  {replyDisplayName}
                                 </span>
                               );
                             }
@@ -620,14 +617,14 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                                 )}
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                {replyBaseName}
+                                {replyDisplayName}
                               </Link>
                             ) : (
                               <span className={cn(
                                 "text-xs font-semibold truncate",
                                 isOwnMessage ? "text-white/90" : "text-gray-700 dark:text-gray-200"
                               )}>
-                                {replyBaseName}
+                                {replyDisplayName}
                               </span>
                             );
                           })()}

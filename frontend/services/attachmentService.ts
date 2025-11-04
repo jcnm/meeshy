@@ -162,16 +162,7 @@ export class AttachmentService {
    * Valide un fichier avant upload
    */
   static validateFile(file: File): { valid: boolean; error?: string } {
-    // Check if MIME type is supported
-    if (!file.type || !isAcceptedMimeType(file.type)) {
-      // Extract file extension for clearer error message
-      const extension = file.name.split('.').pop()?.toLowerCase() || 'unknown';
-      return {
-        valid: false,
-        error: `.${extension} format not supported. Supported formats: images, videos, audio, PDF, Office docs, .md, .sh, .js, .ts, .py, .zip`,
-      };
-    }
-
+    // Accepter tous les types de fichiers - pas de restriction MIME
     const type = getAttachmentType(file.type);
     const sizeLimit = getSizeLimit(type);
 
