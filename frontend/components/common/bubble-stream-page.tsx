@@ -1625,14 +1625,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                 scrollButtonDirection="up"
                 scrollContainerRef={messagesContainerRef}
               />
-
-              {!hasMore && messages.length > 0 && (
-                <div className="flex justify-center py-4">
-                  <div className="text-sm text-muted-foreground">
-                    {tCommon('messages.allMessagesLoaded')}
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Zone de composition dans le flux */}

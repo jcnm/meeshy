@@ -404,6 +404,15 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
         </div>
       )}
 
+      {/* Message "Tous les messages chargés" - Mode classique (scroll up) */}
+      {scrollDirection === 'up' && !hasMore && !isLoadingMore && messages.length > 0 && (
+        <div className="flex justify-center py-4">
+          <div className="text-sm text-muted-foreground">
+            {(tCommon || t)('messages.allMessagesLoaded')}
+          </div>
+        </div>
+      )}
+
       {/* Messages */}
       <div>
         {/* 
@@ -444,6 +453,15 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
             <span>{(tCommon || t)('messages.loadingOlderMessages')}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Message "Tous les messages chargés" - Mode BubbleStream (scroll down) */}
+      {scrollDirection === 'down' && !hasMore && !isLoadingMore && messages.length > 0 && (
+        <div className="flex justify-center py-4">
+          <div className="text-sm text-muted-foreground">
+            {(tCommon || t)('messages.allMessagesLoaded')}
           </div>
         </div>
       )}
