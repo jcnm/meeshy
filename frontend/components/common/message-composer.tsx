@@ -82,6 +82,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{ [key: number]: number }>({});
   const [showAttachmentLimitModal, setShowAttachmentLimitModal] = useState(false);
+  const [attemptedCount, setAttemptedCount] = useState(0); // Compte incluant les fichiers rejetés
 
   // États pour l'enregistrement audio
   const [showAudioRecorder, setShowAudioRecorder] = useState(false);
@@ -320,7 +321,11 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     const currentTotalAttachments = selectedFiles.length + uploadedAttachments.length;
     const newTotalAttachments = currentTotalAttachments + uniqueFiles.length;
 
+    console.log(`📊 Limite attachements: ${currentTotalAttachments} actuel + ${uniqueFiles.length} nouveau = ${newTotalAttachments}/50`);
+
     if (newTotalAttachments > 50) {
+      console.log(`❌ Limite de 50 attachements dépassée: tentative d'ajouter ${newTotalAttachments} fichiers (max 50)`);
+      setAttemptedCount(newTotalAttachments); // Stocker le nombre tenté pour affichage dans la modale
       setShowAttachmentLimitModal(true);
       return;
     }
@@ -380,7 +385,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       setIsUploading(false);
       console.log('📎 isUploading = false');
     }
-  }, [token]);
+  }, [token, selectedFiles, uploadedAttachments, t]);
 
   // Handlers pour le drag & drop - mémorisés pour éviter les re-créations
   const handleDragEnter = useCallback((e: React.DragEvent) => {
@@ -722,7 +727,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
 
       {/* Carrousel d'attachments - positionné juste après la citation */}
       {((selectedFiles.length > 0 || showAudioRecorder) || showAttachmentLimitModal) && (
-        <div className="relative min-h-[120px]">
+        <div className="relative min-h-[120px] mb-2">
           {(selectedFiles.length > 0 || showAudioRecorder) && (
             <AttachmentCarousel
               files={selectedFiles}
@@ -750,10 +755,13 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
           {showAttachmentLimitModal && (
             <AttachmentLimitModal
               isOpen={showAttachmentLimitModal}
-              onClose={() => setShowAttachmentLimitModal(false)}
-              currentCount={selectedFiles.length + uploadedAttachments.length}
+              onClose={() => {
+                setShowAttachmentLimitModal(false);
+                setAttemptedCount(0);
+              }}
+              currentCount={attemptedCount > 0 ? attemptedCount : selectedFiles.length + uploadedAttachments.length}
               maxCount={50}
-              remainingSlots={50 - (selectedFiles.length + uploadedAttachments.length)}
+              remainingSlots={Math.max(0, 50 - (selectedFiles.length + uploadedAttachments.length))}
             />
           )}
         </div>
