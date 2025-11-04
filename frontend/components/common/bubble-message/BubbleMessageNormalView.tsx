@@ -553,7 +553,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
           {/* Message bubble wrapper with reactions - Seulement si contenu textuel */}
           {message.content && message.content.trim() && (
             <div className={cn(
-              "relative flex max-w-[85%] sm:max-w-[75%] md:max-w-[65%] mb-1 overflow-hidden",
+              "relative flex max-w-[85%] sm:max-w-[75%] md:max-w-[65%] mb-1 overflow-visible",
               isOwnMessage ? "ml-auto" : "mr-auto"
             )}>
               <Card

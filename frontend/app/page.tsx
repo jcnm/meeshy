@@ -37,6 +37,7 @@ import {
 import { LoginForm } from '@/components/auth/login-form';
 import { RegisterForm } from '@/components/auth/register-form';
 import { JoinConversationForm } from '@/components/auth/join-conversation-form';
+import { LanguageSelector } from '@/components/translation/language-selector';
 import { BubbleStreamPage } from '@/components/common';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Header } from '@/components/layout/Header';
@@ -210,57 +211,16 @@ function LandingPageContent() {
               </Button>
             </Link>
             
-            {/* Dialog Join */}
-            <Dialog open={authMode === 'join'} onOpenChange={(open) => setAuthMode(open ? 'join' : 'welcome')}>
-              <DialogTrigger asChild>
-                <Button size="lg" variant="outline" className="flex items-center space-x-2">
-                  <Link2 className="h-5 w-5" />
-                  <span>{anonymousChatLink ? t('hero.resumeOrJoin') : t('hero.joinConversation')}</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>{anonymousChatLink ? tAuth('joinConversation.resumeTitle') : tAuth('joinConversation.title')}</DialogTitle>
-                  <DialogDescription>
-                    {anonymousChatLink 
-                      ? tAuth('joinConversation.resumeDescription')
-                      : tAuth('joinConversation.description')
-                    }
-                  </DialogDescription>
-                </DialogHeader>
-                
-                {/* Si l'utilisateur a une conversation en cours, afficher le bouton de reprise */}
-                {anonymousChatLink && (
-                  <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                    <h4 className="font-medium text-green-800 dark:text-green-200 mb-2">{tAuth('joinConversation.ongoingConversation')}</h4>
-                    <p className="text-sm text-green-700 dark:text-green-300 mb-3">{tAuth('joinConversation.ongoingDescription')}</p>
-                    <Button 
-                      onClick={() => {
-                        setAuthMode('welcome');
-                        router.push(anonymousChatLink);
-                      }}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white"
-                    >
-                      <MessageSquare className="h-4 w-4 mr-2" />
-                      {tAuth('joinConversation.resumeButton')}
-                    </Button>
-                  </div>
-                )}
-                
-                {/* Formulaire pour rejoindre une nouvelle conversation */}
-                <div>
-                  {anonymousChatLink && (
-                    <div className="mb-3">
-                      <h4 className="font-medium text-gray-800 dark:text-gray-100">{tAuth('joinConversation.orJoinNew')}</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{tAuth('joinConversation.newConversationDescription')}</p>
-                    </div>
-                  )}
-                  <JoinConversationForm onSuccess={(linkId: string) => {
-                    router.push(`/join/${linkId}?anonymous=true`);
-                  }} />
-                </div>
-              </DialogContent>
-            </Dialog>
+            {/* Language Selector */}
+            <LanguageSelector
+              value={locale}
+              onValueChange={(newLocale) => {
+                // Change interface language
+                router.push(`/${newLocale}`);
+              }}
+              interfaceOnly={true}
+              className="min-w-[150px]"
+            />
           </div>
         </div>
       </section>
