@@ -55,7 +55,7 @@ function LandingPageContent() {
   const { login } = useAuth();
   const [authMode, setAuthMode] = useState<AuthMode>('welcome');
   const router = useRouter();
-  const { t } = useI18n('landing');
+  const { t, locale } = useI18n('landing');
   const { t: tAuth } = useI18n('auth');
   const { t: tCommon } = useI18n('common');
 
