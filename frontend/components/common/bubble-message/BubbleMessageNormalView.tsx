@@ -399,15 +399,23 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
 
   return (
     <TooltipProvider>
-      {/* Container with avatar on side */}
+      {/* Container with 70/30 grid layout */}
       <motion.div
         id={`message-${message.id}`}
         ref={messageRef}
         className={cn(
-          "bubble-message group/message flex gap-1 sm:gap-1.5 mb-2 px-2 sm:px-4",
-          isOwnMessage ? "flex-row-reverse" : "flex-row"
+          "bubble-message group/message grid grid-cols-10 gap-1 sm:gap-1.5 mb-2 px-2 sm:px-4",
+          isOwnMessage ? "" : ""
         )}
       >
+        {/* Empty space for sent messages (30% = 3 columns) */}
+        {isOwnMessage && <div className="col-span-3" />}
+
+        {/* Message content area (70% = 7 columns) */}
+        <div className={cn(
+          "col-span-7 flex gap-1 sm:gap-1.5",
+          isOwnMessage ? "flex-row-reverse" : "flex-row"
+        )}>
         {/* Avatar on side - cliquable pour voir en grand */}
         <div className="flex-shrink-0 mt-1">
           <Avatar
@@ -488,10 +496,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                 // Si attachments seuls : dans le flux avec les réactions superposées
                 <>
                   <div className={cn(
-                    "relative mb-1",
-                    hasAudioAttachments
-                      ? "w-full max-w-full"
-                      : "max-w-[85%] sm:max-w-[75%]",
+                    "relative mb-1 w-full max-w-full",
                     isOwnMessage ? "ml-auto" : "mr-auto"
                   )}>
                     <MessageAttachments
@@ -529,10 +534,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
               ) : (
                 // Si avec texte : pas de wrapper relative (les réactions sont sur la bulle)
                 <div className={cn(
-                  "mb-1",
-                  hasAudioAttachments
-                    ? "inline-flex max-w-full"
-                    : "inline-flex max-w-[85%] sm:max-w-[75%]",
+                  "mb-1 inline-flex max-w-full",
                   isOwnMessage ? "ml-auto" : "mr-auto"
                 )}>
                   <MessageAttachments
@@ -551,7 +553,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
           {/* Message bubble wrapper with reactions - Seulement si contenu textuel */}
           {message.content && message.content.trim() && (
             <div className={cn(
-              "relative flex max-w-[85%] sm:max-w-[75%] md:max-w-[65%] mb-1 overflow-visible",
+              "relative flex w-full max-w-full mb-1 overflow-visible",
               isOwnMessage ? "ml-auto" : "mr-auto"
             )}>
               <Card
@@ -737,6 +739,10 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
             getLanguageInfo={getLanguageInfo}
           />
         </div>
+        </div>
+
+        {/* Empty space for received messages (30% = 3 columns) */}
+        {!isOwnMessage && <div className="col-span-3" />}
       </motion.div>
     </TooltipProvider>
   );
