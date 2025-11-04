@@ -282,9 +282,31 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       console.log(`  Fichier ${i + 1}:`, file.name, '|', file.type, '|', file.size, 'bytes');
     });
 
+    // Filtrer les doublons basés sur nom, taille et date de modification
+    const existingFileSignatures = selectedFiles.map(f => `${f.name}_${f.size}_${f.lastModified}`);
+    const uniqueFiles = files.filter(file => {
+      const signature = `${file.name}_${file.size}_${file.lastModified}`;
+      return !existingFileSignatures.includes(signature);
+    });
+
+    if (uniqueFiles.length < files.length) {
+      const duplicateCount = files.length - uniqueFiles.length;
+      toast.warning(
+        duplicateCount === 1
+          ? t('attachmentDuplicate.single')
+          : t('attachmentDuplicate.multiple', { count: duplicateCount })
+      );
+      console.log(`⚠️ ${duplicateCount} fichier(s) dupliqué(s) ignoré(s)`);
+    }
+
+    if (uniqueFiles.length === 0) {
+      console.log('❌ Tous les fichiers sont des doublons');
+      return;
+    }
+
     // Vérifier la limite de 50 attachements par message
     const currentTotalAttachments = selectedFiles.length + uploadedAttachments.length;
-    const newTotalAttachments = currentTotalAttachments + files.length;
+    const newTotalAttachments = currentTotalAttachments + uniqueFiles.length;
 
     if (newTotalAttachments > 50) {
       setShowAttachmentLimitModal(true);
@@ -292,7 +314,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     }
 
     // Valider les fichiers
-    const validation = AttachmentService.validateFiles(files);
+    const validation = AttachmentService.validateFiles(uniqueFiles);
     if (!validation.valid) {
       console.error('❌ Validation échouée:', validation.errors);
       // Show toast for each validation error
@@ -305,17 +327,17 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     console.log('✅ Validation réussie');
 
     setSelectedFiles(prev => {
-      const newFiles = [...prev, ...files];
+      const newFiles = [...prev, ...uniqueFiles];
       console.log('📁 selectedFiles mis à jour:', newFiles.length, 'fichiers au total');
       return newFiles;
     });
     setIsUploading(true);
 
-    console.log('📎 Début upload de', files.length, 'fichier(s)');
+    console.log('📎 Début upload de', uniqueFiles.length, 'fichier(s)');
 
     try {
       // Upload les fichiers
-      const response = await AttachmentService.uploadFiles(files, token);
+      const response = await AttachmentService.uploadFiles(uniqueFiles, token);
 
       console.log('📎 Réponse upload:', response);
 
