@@ -25,8 +25,8 @@ export function AttachmentLimitModal({
   if (!isOpen) return null;
 
   return (
-    <div className="absolute inset-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-2 border-orange-500 dark:border-orange-600 rounded-lg animate-in fade-in duration-200">
-      <div className="h-full flex items-stretch">
+    <div className="absolute inset-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-2 border-orange-500 dark:border-orange-600 rounded-lg animate-in fade-in duration-200 min-h-[120px]">
+      <div className="h-full flex items-stretch min-h-[120px]">
         {/* Contenu défilable à gauche */}
         <div className="flex-1 overflow-y-auto p-4">
           <div className="flex items-center gap-2 mb-3">

@@ -687,28 +687,30 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       )}
 
       {/* Carrousel d'attachments - positionné juste après la citation */}
-      {(selectedFiles.length > 0 || showAudioRecorder) && (
-        <div className="relative">
-          <AttachmentCarousel
-            files={selectedFiles}
-            onRemove={handleRemoveFile}
-            uploadProgress={uploadProgress}
-            disabled={isUploading}
-            audioRecorderSlot={
-              showAudioRecorder ? (
-                <AudioRecorderCard
-                  key={audioRecorderKey}
-                  ref={audioRecorderRef}
-                  onRecordingComplete={handleAudioRecordingComplete}
-                  onRecordingStateChange={handleRecordingStateChange}
-                  onRemove={handleRemoveAudioRecording}
-                  onStop={handleBeforeStop}
-                  autoStart={true}
-                  maxDuration={600}
-                />
-              ) : undefined
-            }
-          />
+      {((selectedFiles.length > 0 || showAudioRecorder) || showAttachmentLimitModal) && (
+        <div className="relative min-h-[120px]">
+          {(selectedFiles.length > 0 || showAudioRecorder) && (
+            <AttachmentCarousel
+              files={selectedFiles}
+              onRemove={handleRemoveFile}
+              uploadProgress={uploadProgress}
+              disabled={isUploading}
+              audioRecorderSlot={
+                showAudioRecorder ? (
+                  <AudioRecorderCard
+                    key={audioRecorderKey}
+                    ref={audioRecorderRef}
+                    onRecordingComplete={handleAudioRecordingComplete}
+                    onRecordingStateChange={handleRecordingStateChange}
+                    onRemove={handleRemoveAudioRecording}
+                    onStop={handleBeforeStop}
+                    autoStart={true}
+                    maxDuration={600}
+                  />
+                ) : undefined
+              }
+            />
+          )}
 
           {/* Modale de limite d'attachements - Overlay de la zone d'attachement */}
           {showAttachmentLimitModal && (
