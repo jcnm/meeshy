@@ -809,15 +809,15 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
           disabled={!isComposingEnabled}
           size="sm"
           variant="ghost"
-          className={`h-4 w-4 sm:h-4 sm:w-4 p-0 rounded-full hover:bg-gray-100 relative min-w-0 min-h-0 ${
+          className={`h-[22px] w-[22px] sm:h-[22px] sm:w-[22px] p-0 rounded-full hover:bg-gray-100 relative min-w-0 min-h-0 ${
             isRecording ? 'bg-red-50 hover:bg-red-100' : ''
           }`}
           title={isRecording ? "Arrêter et démarrer nouvel enregistrement" : "Enregistrer un message vocal"}
         >
           {isRecording ? (
-            <Square className="h-4 w-4 sm:h-4 sm:w-4 text-red-600 fill-red-600" />
+            <Square className="h-[22px] w-[22px] sm:h-[22px] sm:w-[22px] text-red-600 fill-red-600" />
           ) : (
-            <Mic className={`h-4 w-4 sm:h-4 sm:w-4 ${showAudioRecorder ? 'text-blue-600' : 'text-gray-600'}`} />
+            <Mic className={`h-[22px] w-[22px] sm:h-[22px] sm:w-[22px] ${showAudioRecorder ? 'text-blue-600' : 'text-gray-600'}`} />
           )}
         </Button>
 
@@ -827,12 +827,12 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
           disabled={!isComposingEnabled || isUploading}
           size="sm"
           variant="ghost"
-          className="h-4 w-4 sm:h-4 sm:w-4 p-0 rounded-full hover:bg-gray-100 relative min-w-0 min-h-0"
+          className="h-[22px] w-[22px] sm:h-[22px] sm:w-[22px] p-0 rounded-full hover:bg-gray-100 relative min-w-0 min-h-0"
         >
           {isUploading ? (
-            <Loader2 className="h-4 w-4 sm:h-4 sm:w-4 text-blue-600 animate-spin" />
+            <Loader2 className="h-[22px] w-[22px] sm:h-[22px] sm:w-[22px] text-blue-600 animate-spin" />
           ) : (
-            <Paperclip className="h-4 w-4 sm:h-4 sm:w-4 text-gray-600" />
+            <Paperclip className="h-[22px] w-[22px] sm:h-[22px] sm:w-[22px] text-gray-600" />
           )}
           {selectedFiles.length > 0 && (
             <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] rounded-full h-3.5 w-3.5 flex items-center justify-center">
@@ -844,7 +844,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         {/* Localisation */}
         {location && !isUploading && (
           <div className="flex items-center space-x-1">
-            <MapPin className="h-4 w-4 sm:h-4 sm:w-4" />
+            <MapPin className="h-[22px] w-[22px] sm:h-[22px] sm:w-[22px]" />
             <span className="hidden sm:inline">{location}</span>
           </div>
         )}
@@ -852,7 +852,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         {/* Indicateur d'upload */}
         {isUploading && (
           <div className="flex items-center space-x-1 text-blue-600 dark:text-blue-400">
-            <Loader2 className="h-4 w-4 sm:h-4 sm:w-4 animate-spin" />
+            <Loader2 className="h-[22px] w-[22px] sm:h-[22px] sm:w-[22px] animate-spin" />
             <span className="hidden sm:inline">
               {selectedFiles.length > 1
                 ? t('uploadingMultiple', { count: selectedFiles.length })

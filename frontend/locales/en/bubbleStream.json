@@ -86,6 +86,7 @@
     "invalidDate": "Invalid date",
     "downgradeToModel": "Downgrade to {model}",
     "close": "Close",
+    "anonymous": "Anonymous",
     "translation": {
       "showOriginal": "Show original",
       "showTranslation": "Show translation",

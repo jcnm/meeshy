@@ -86,6 +86,7 @@
     "invalidDate": "Date invalide",
     "downgradeToModel": "Réduire vers {model}",
     "close": "Fermer",
+    "anonymous": "Anonyme",
     "translation": {
       "showOriginal": "Afficher l'original",
       "showTranslation": "Afficher la traduction",
