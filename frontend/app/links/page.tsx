@@ -424,8 +424,7 @@ export default function LinksPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Main content area - scrollable */}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
       <DashboardLayout title={t('title')} className="!bg-none !bg-transparent !h-auto">
         <div className="relative z-10 max-w-7xl mx-auto space-y-8 pb-8 w-full py-8">
 
@@ -531,15 +530,15 @@ export default function LinksPage() {
               </Button>
             </div>
 
-            {/* Filtres de statut */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('filters.status')}:</span>
-              <div className="flex gap-2">
+            {/* Filtres de statut - Responsive */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+              <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">{t('filters.status')}:</span>
+              <div className="flex gap-2 flex-wrap">
                 <Button
                   size="sm"
                   variant={statusFilter === 'all' ? 'default' : 'outline'}
                   onClick={() => setStatusFilter('all')}
-                  className="h-9 px-4"
+                  className="h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm"
                 >
                   {t('filters.all')}
                 </Button>
@@ -547,28 +546,31 @@ export default function LinksPage() {
                   size="sm"
                   variant={statusFilter === 'active' ? 'default' : 'outline'}
                   onClick={() => setStatusFilter('active')}
-                  className={`h-9 px-4 ${statusFilter === 'active' ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                  className={`h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm ${statusFilter === 'active' ? 'bg-green-600 hover:bg-green-700' : ''}`}
                 >
-                  <CheckCircle className="h-4 w-4 mr-1" />
-                  {t('filters.active')}
+                  <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                  <span className="hidden sm:inline">{t('filters.active')}</span>
+                  <span className="sm:hidden">Actif</span>
                 </Button>
                 <Button
                   size="sm"
                   variant={statusFilter === 'inactive' ? 'default' : 'outline'}
                   onClick={() => setStatusFilter('inactive')}
-                  className={`h-9 px-4 ${statusFilter === 'inactive' ? 'bg-gray-600 hover:bg-gray-700' : ''}`}
+                  className={`h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm ${statusFilter === 'inactive' ? 'bg-gray-600 hover:bg-gray-700' : ''}`}
                 >
-                  <XCircle className="h-4 w-4 mr-1" />
-                  {t('filters.inactive')}
+                  <XCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                  <span className="hidden sm:inline">{t('filters.inactive')}</span>
+                  <span className="sm:hidden">Inactif</span>
                 </Button>
                 <Button
                   size="sm"
                   variant={statusFilter === 'expired' ? 'default' : 'outline'}
                   onClick={() => setStatusFilter('expired')}
-                  className={`h-9 px-4 ${statusFilter === 'expired' ? 'bg-red-600 hover:bg-red-700' : ''}`}
+                  className={`h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm ${statusFilter === 'expired' ? 'bg-red-600 hover:bg-red-700' : ''}`}
                 >
-                  <Clock className="h-4 w-4 mr-1" />
-                  {t('filters.expired') || 'Expired'}
+                  <Clock className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                  <span className="hidden sm:inline">{t('filters.expired') || 'Expired'}</span>
+                  <span className="sm:hidden">Expiré</span>
                 </Button>
               </div>
             </div>
