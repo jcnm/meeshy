@@ -688,26 +688,39 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
 
       {/* Carrousel d'attachments - positionné juste après la citation */}
       {(selectedFiles.length > 0 || showAudioRecorder) && (
-        <AttachmentCarousel
-          files={selectedFiles}
-          onRemove={handleRemoveFile}
-          uploadProgress={uploadProgress}
-          disabled={isUploading}
-          audioRecorderSlot={
-            showAudioRecorder ? (
-              <AudioRecorderCard
-                key={audioRecorderKey}
-                ref={audioRecorderRef}
-                onRecordingComplete={handleAudioRecordingComplete}
-                onRecordingStateChange={handleRecordingStateChange}
-                onRemove={handleRemoveAudioRecording}
-                onStop={handleBeforeStop}
-                autoStart={true}
-                maxDuration={600}
-              />
-            ) : undefined
-          }
-        />
+        <div className="relative">
+          <AttachmentCarousel
+            files={selectedFiles}
+            onRemove={handleRemoveFile}
+            uploadProgress={uploadProgress}
+            disabled={isUploading}
+            audioRecorderSlot={
+              showAudioRecorder ? (
+                <AudioRecorderCard
+                  key={audioRecorderKey}
+                  ref={audioRecorderRef}
+                  onRecordingComplete={handleAudioRecordingComplete}
+                  onRecordingStateChange={handleRecordingStateChange}
+                  onRemove={handleRemoveAudioRecording}
+                  onStop={handleBeforeStop}
+                  autoStart={true}
+                  maxDuration={600}
+                />
+              ) : undefined
+            }
+          />
+
+          {/* Modale de limite d'attachements - Overlay de la zone d'attachement */}
+          {showAttachmentLimitModal && (
+            <AttachmentLimitModal
+              isOpen={showAttachmentLimitModal}
+              onClose={() => setShowAttachmentLimitModal(false)}
+              currentCount={selectedFiles.length + uploadedAttachments.length}
+              maxCount={50}
+              remainingSlots={50 - (selectedFiles.length + uploadedAttachments.length)}
+            />
+          )}
+        </div>
       )}
       
       <Textarea
@@ -842,15 +855,6 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         className="hidden"
         onChange={handleFileInputChange}
         accept="image/*,video/*,audio/*,application/pdf,text/plain,.doc,.docx,.ppt,.pptx,.md,.sh,.js,.ts,.py,.zip"
-      />
-
-      {/* Modale de limite d'attachements */}
-      <AttachmentLimitModal
-        isOpen={showAttachmentLimitModal}
-        onClose={() => setShowAttachmentLimitModal(false)}
-        currentCount={selectedFiles.length + uploadedAttachments.length}
-        maxCount={50}
-        remainingSlots={50 - (selectedFiles.length + uploadedAttachments.length)}
       />
     </div>
   );
