@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import { ArrowLeft, UserPlus, Info, MoreVertical, Link2, Video, Ghost, Share2 } from 'lucide-react';
+import { ArrowLeft, UserPlus, Info, MoreVertical, Link2, Video, Ghost, Share2, Image } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -47,6 +47,7 @@ interface ConversationHeaderProps {
   onParticipantAdded: (userId: string) => void;
   onLinkCreated: (link: any) => void;
   onStartCall?: () => void;
+  onOpenGallery?: () => void;
   t: (key: string) => string;
   showBackButton?: boolean;
 }
@@ -63,6 +64,7 @@ export function ConversationHeader({
   onParticipantAdded,
   onLinkCreated,
   onStartCall,
+  onOpenGallery,
   t,
   showBackButton = false
 }: ConversationHeaderProps) {
@@ -273,6 +275,13 @@ export function ConversationHeader({
               <Info className="h-4 w-4 mr-2" />
               {t('conversationDetails.title')}
             </DropdownMenuItem>
+
+            {onOpenGallery && (
+              <DropdownMenuItem onClick={onOpenGallery}>
+                <Image className="h-4 w-4 mr-2" />
+                {t('conversationHeader.viewImages') || 'Voir les images'}
+              </DropdownMenuItem>
+            )}
 
             <DropdownMenuItem onClick={handleShareConversation}>
               <Share2 className="h-4 w-4 mr-2" />

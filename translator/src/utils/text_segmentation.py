@@ -74,11 +74,12 @@ EMOJI_PATTERN = re.compile(
     flags=re.UNICODE
 )
 
-# Marqueur spécial pour les emojis - Format XML/HTML plus robuste
-# Format: <EMOJI_X/> où X est l'index
-# Les balises XML sont mieux préservées par les tokenizers ML que les underscores
-# Utilisation de balise auto-fermante pour éviter confusion avec HTML réel
-EMOJI_PLACEHOLDER = "<EMOJI_{index}/>"
+# Marqueur spécial pour les emojis - Format ULTRA-ROBUSTE
+# Format: 🔹EMOJI_X🔹 où X est l'index
+# Utilisation de marqueurs Unicode spéciaux qui ne sont JAMAIS traduits par les modèles ML
+# Le caractère 🔹 est rare et facilement détectable, pas confondu avec du texte
+# AMÉLIORATION: Plus résistant que XML/HTML aux modifications du modèle ML
+EMOJI_PLACEHOLDER = "🔹EMOJI_{index}🔹"
 
 # Marqueur pour les sauts de ligne (pour préservation explicite)
 NEWLINE_MARKER = "__NL__"
@@ -135,12 +136,18 @@ class TextSegmenter:
 
     def restore_emojis(self, text: str, emojis_map: Dict[int, str]) -> str:
         """
-        Restaure TOUS les emojis à partir des marqueurs avec vérification
+        Restaure TOUS les emojis à partir des marqueurs
+
+        PRINCIPE SIMPLE:
+        - Remplacer chaque placeholder par son emoji
+        - NE PAS toucher aux emojis (même s'ils sont collés aux mots)
+        - FOCUS: Préservation de la structure verticale
         """
         result = text
         restored_count = 0
         not_found_placeholders = []
 
+        # Restaurer les placeholders
         for index, emoji in emojis_map.items():
             placeholder = EMOJI_PLACEHOLDER.format(index=index)
 
@@ -163,7 +170,7 @@ class TextSegmenter:
                 logger.error(f"    - Index {idx}: {emoji} (placeholder: {placeholder})")
 
         # Vérification finale: s'assurer qu'il ne reste aucun placeholder
-        remaining_placeholders = re.findall(r'<EMOJI_\d+/>', result)
+        remaining_placeholders = re.findall(r'🔹EMOJI_\d+🔹', result)
         if remaining_placeholders:
             logger.error(f"[SEGMENTER] ❌ {len(remaining_placeholders)} placeholders NOT replaced: {remaining_placeholders}")
 
@@ -199,57 +206,57 @@ class TextSegmenter:
 
     def segment_by_sentences_and_lines(self, text: str) -> List[Tuple[str, str]]:
         """
-        Segmente le texte avec priorité aux paragraphes et retours à la ligne :
-        - PRIORITÉ 1: Découper par paragraphes (double \\n ou plus)
-        - PRIORITÉ 2: Préserver chaque retour à la ligne dans un paragraphe
-        - Chaque paragraphe est traduit comme une unité cohérente
-        - Les lignes individuelles au sein d'un paragraphe sont préservées
+        ALGORITHME SIMPLIFIÉ : Découper par retour à la ligne et mémoriser le type de séparateur
+
+        Logique simple :
+        1. Split par \n et capturer les séparateurs
+        2. Chaque ligne devient un segment à traduire
+        3. Détecter les blocs de code (``` ... ```) et les marquer comme non traduisibles
+        4. Mémoriser si après chaque ligne il faut reconstruire avec 1 ou plusieurs \n
 
         Returns:
             Liste de tuples (segment, type)
-            - type: 'paragraph' (paragraphe complet), 'line' (ligne simple), 
-                   'list_item' (élément de liste), 'paragraph_break' (double \\n), 
-                   'empty_line' (ligne vide)
+            - segment: texte de la ligne
+            - type: 'line' (ligne normale), 'separator' (séparateur \n), 'code' (ligne de code non traduisible)
         """
-        # Séparer en paragraphes (par double \n ou plus)
-        # On considère 2+ sauts de ligne comme séparateur de paragraphe
-        paragraphs = re.split(r'\n\s*\n+', text)
-
         segments = []
 
-        for para_idx, paragraph in enumerate(paragraphs):
-            if not paragraph.strip():
+        # Split avec capture pour préserver les \n
+        # Pattern: Split sur \n mais capturer les \n consécutifs
+        parts = re.split(r'(\n+)', text)
+
+        # État pour détecter les blocs de code
+        in_code_block = False
+
+        for i, part in enumerate(parts):
+            if not part:
                 continue
 
-            # Ajouter séparateur de paragraphe sauf pour le premier
-            if para_idx > 0:
-                segments.append(("", "paragraph_break"))
-
-            # Traiter le paragraphe entier comme une unité
-            # Cela permet de préserver le contexte pour une meilleure traduction
-            paragraph = paragraph.strip()
-            
-            # Vérifier si le paragraphe contient des éléments de liste
-            lines = paragraph.split('\n')
-            has_list_items = any(self.is_list_item(line.strip()) for line in lines)
-            
-            if has_list_items:
-                # Si c'est une liste, traiter chaque élément séparément pour préserver la structure
-                for line in lines:
-                    line_stripped = line.strip()
-                    if not line_stripped:
-                        continue
-                    
-                    if self.is_list_item(line_stripped):
-                        segments.append((line, "list_item"))
-                    else:
-                        segments.append((line, "line"))
+            # Les indices impairs sont les séparateurs (\n, \n\n, \n\n\n, etc.)
+            if i % 2 == 1:
+                # C'est un séparateur - mémoriser combien de \n
+                segments.append((part, 'separator'))
             else:
-                # Paragraphe normal sans liste: le traiter comme une unité complète
-                # Cela permet au modèle de mieux comprendre le contexte
-                segments.append((paragraph, "paragraph"))
+                # C'est une ligne de texte (peut être vide)
+                # IMPORTANT: Utiliser rstrip() pour préserver l'indentation à gauche (pour le code)
+                if part.strip():  # Seulement si la ligne contient du texte
+                    stripped = part.strip()
 
-        logger.debug(f"[SEGMENTER] Segmented into {len(segments)} parts (paragraphs and lines)")
+                    # Détecter les délimiteurs de blocs de code (```)
+                    if stripped.startswith('```'):
+                        in_code_block = not in_code_block
+                        # Les lignes ``` elles-mêmes sont du code (non traduisibles)
+                        segments.append((part.rstrip(), 'code'))
+                    elif in_code_block:
+                        # On est dans un bloc de code - ne pas traduire
+                        segments.append((part.rstrip(), 'code'))
+                    else:
+                        # Ligne normale - à traduire
+                        segments.append((part.rstrip(), 'line'))
+                elif part:  # Ligne avec uniquement des espaces
+                    segments.append(('', 'empty_line'))
+
+        logger.debug(f"[SEGMENTER] Segmented into {len(segments)} parts by line breaks")
         return segments
 
     def segment_by_sentences(self, text: str) -> List[str]:
@@ -323,12 +330,18 @@ class TextSegmenter:
             })
             segment_index += 1
 
-        logger.info(f"[SEGMENTER] Text segmented into {len(segments)} parts ({len([s for s in segments if s['type'] in ['line', 'sentence', 'list_item']])} translatable) with {len(emojis_map)} emojis")
+        logger.info(f"[SEGMENTER] Text segmented into {len(segments)} parts ({len([s for s in segments if s['type'] == 'line'])} translatable lines) with {len(emojis_map)} emojis")
         return segments, emojis_map
 
     def reassemble_text(self, translated_segments: List[Dict], emojis_map: Dict[int, str]) -> str:
         """
-        Réassemble les segments traduits en préservant la structure
+        ALGORITHME SIMPLIFIÉ : Réassemble en respectant exactement les séparateurs mémorisés
+
+        Logique simple :
+        1. Pour chaque segment de type 'line' : ajouter le texte traduit
+        2. Pour chaque segment de type 'code' : ajouter le code non traduit
+        3. Pour chaque segment de type 'separator' : ajouter exactement les \n mémorisés
+        4. Restaurer les emojis à la fin
 
         Args:
             translated_segments: Liste de segments avec 'text' et 'type'
@@ -336,32 +349,24 @@ class TextSegmenter:
         """
         result_parts = []
 
-        for i, segment in enumerate(translated_segments):
+        for segment in translated_segments:
             segment_type = segment['type']
             segment_text = segment['text']
 
-            if segment_type == 'paragraph_break':
-                # Ajouter une ligne vide pour créer le double \n
-                result_parts.append('\n\n')
-            elif segment_type == 'paragraph':
-                # Paragraphe complet - préserver les sauts de ligne internes
-                if i > 0 and translated_segments[i-1]['type'] not in ['paragraph_break']:
-                    # Pas le premier élément et pas après un paragraph_break
-                    # Ajouter un saut de ligne avant
-                    result_parts.append('\n')
+            if segment_type == 'separator':
+                # Ajouter exactement le séparateur mémorisé (\n, \n\n, \n\n\n, etc.)
                 result_parts.append(segment_text)
-            elif segment_type in ['line', 'sentence', 'list_item']:
-                # Ajouter le contenu avec saut de ligne
-                if i > 0 and translated_segments[i-1]['type'] not in ['paragraph_break']:
-                    # Pas le premier élément et pas après un paragraph_break
-                    # Ajouter un saut de ligne avant
-                    result_parts.append('\n')
+            elif segment_type in ['line', 'code']:
+                # Ajouter la ligne (traduite si 'line', originale si 'code')
                 result_parts.append(segment_text)
+            elif segment_type == 'empty_line':
+                # Ligne vide - ne rien ajouter (le séparateur suivant gérera les \n)
+                pass
 
         # Joindre toutes les parties
         reassembled = ''.join(result_parts)
 
-        # Restaurer les emojis
+        # Restaurer les emojis avec post-traitement robuste
         final_text = self.restore_emojis(reassembled, emojis_map)
 
         logger.info(f"[SEGMENTER] Text reassembled: {len(final_text)} chars from {len(translated_segments)} segments")

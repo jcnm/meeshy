@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface ResponsiveTabItem {
@@ -23,8 +22,9 @@ interface ResponsiveTabsProps {
 
 /**
  * Composant Tabs responsive :
- * - Desktop/Tablet : Affichage en onglets classiques
- * - Mobile : Affichage en Select dropdown pour économiser l'espace
+ * - Desktop/Tablet : Icône + texte horizontal
+ * - Mobile : Icône au-dessus du texte (colonne verticale)
+ * - Les tabs restent toujours visibles et sélectionnables sur tous les écrans
  */
 export function ResponsiveTabs({
   items,
@@ -36,7 +36,7 @@ export function ResponsiveTabs({
 }: ResponsiveTabsProps) {
   const [internalValue, setInternalValue] = useState(defaultValue || items[0]?.value || '');
   const currentValue = value || internalValue;
-  
+
   const handleValueChange = (newValue: string) => {
     if (!value) {
       setInternalValue(newValue);
@@ -44,53 +44,23 @@ export function ResponsiveTabs({
     onValueChange?.(newValue);
   };
 
-  const currentItem = items.find(item => item.value === currentValue);
-  const mobileHiddenClass = mobileBreakpoint === 'sm' ? 'sm:block' : 
-                           mobileBreakpoint === 'md' ? 'md:block' : 'lg:block';
-  const mobileVisibleClass = mobileBreakpoint === 'sm' ? 'sm:hidden' : 
-                            mobileBreakpoint === 'md' ? 'md:hidden' : 'lg:hidden';
-
   return (
-    <div className={cn("w-full", className)}>
-      {/* Version Mobile : Select dropdown */}
-      <div className={cn("block", mobileVisibleClass, "mb-4")}>
-        <Select value={currentValue} onValueChange={handleValueChange}>
-          <SelectTrigger className="w-full">
-            <SelectValue>
-              <div className="flex items-center gap-2">
-                {currentItem?.icon}
-                <span>{currentItem?.label}</span>
-              </div>
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {items.map((item) => (
-              <SelectItem key={item.value} value={item.value}>
-                <div className="flex items-center gap-2">
-                  {item.icon}
-                  <span>{item.label}</span>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Version Desktop/Tablet : Tabs classiques */}
-      <Tabs 
-        value={currentValue} 
+    <>
+      {/* Tabs visibles sur tous les écrans */}
+      <Tabs
+        value={currentValue}
         onValueChange={handleValueChange}
-        className={cn("w-full", "hidden", mobileHiddenClass)}
+        className={cn("w-full", className)}
       >
-        <TabsList className="grid w-full h-auto" style={{ gridTemplateColumns: `repeat(${items.length}, 1fr)` }}>
+        <TabsList className="grid w-full h-auto p-1.5 bg-gray-100 dark:bg-gray-800" style={{ gridTemplateColumns: `repeat(${items.length}, 1fr)` }}>
           {items.map((item) => (
-            <TabsTrigger 
-              key={item.value} 
-              value={item.value} 
-              className="gap-1 lg:gap-2 text-xs lg:text-sm"
+            <TabsTrigger
+              key={item.value}
+              value={item.value}
+              className="data-[state=active]:bg-blue-500 data-[state=active]:text-white py-2 md:py-3 px-2 md:px-6 rounded-lg font-medium transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2"
             >
               {item.icon}
-              <span className="hidden sm:inline">{item.label}</span>
+              <span className="text-xs md:text-sm">{item.label}</span>
             </TabsTrigger>
           ))}
         </TabsList>
@@ -110,7 +80,7 @@ export function ResponsiveTabs({
           </div>
         ))}
       </div>
-    </div>
+    </>
   );
 }
 
@@ -128,7 +98,7 @@ export function ResponsiveTabsWithContent({
 }: ResponsiveTabsProps & { children?: React.ReactNode }) {
   const [internalValue, setInternalValue] = useState(defaultValue || items[0]?.value || '');
   const currentValue = value || internalValue;
-  
+
   const handleValueChange = (newValue: string) => {
     if (!value) {
       setInternalValue(newValue);
@@ -136,67 +106,27 @@ export function ResponsiveTabsWithContent({
     onValueChange?.(newValue);
   };
 
-  const currentItem = items.find(item => item.value === currentValue);
-  const mobileHiddenClass = mobileBreakpoint === 'sm' ? 'sm:block' : 
-                           mobileBreakpoint === 'md' ? 'md:block' : 'lg:block';
-  const mobileVisibleClass = mobileBreakpoint === 'sm' ? 'sm:hidden' : 
-                            mobileBreakpoint === 'md' ? 'md:hidden' : 'lg:hidden';
-
   return (
-    <div className={cn("w-full", className)}>
-      {/* Version Mobile : Select dropdown */}
-      <div className={cn("block", mobileVisibleClass, "mb-4")}>
-        <Select value={currentValue} onValueChange={handleValueChange}>
-          <SelectTrigger className="w-full">
-            <SelectValue>
-              <div className="flex items-center gap-2">
-                {currentItem?.icon}
-                <span>{currentItem?.label}</span>
-              </div>
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {items.map((item) => (
-              <SelectItem key={item.value} value={item.value}>
-                <div className="flex items-center gap-2">
-                  {item.icon}
-                  <span>{item.label}</span>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+    <Tabs
+      value={currentValue}
+      onValueChange={handleValueChange}
+      className={cn("w-full", className)}
+    >
+      <TabsList className="grid w-full h-auto p-1.5 bg-gray-100 dark:bg-gray-800" style={{ gridTemplateColumns: `repeat(${items.length}, 1fr)` }}>
+        {items.map((item) => (
+          <TabsTrigger
+            key={item.value}
+            value={item.value}
+            className="data-[state=active]:bg-blue-500 data-[state=active]:text-white py-2 md:py-3 px-2 md:px-6 rounded-lg font-medium transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2"
+          >
+            {item.icon}
+            <span className="text-xs md:text-sm">{item.label}</span>
+          </TabsTrigger>
+        ))}
+      </TabsList>
 
-      {/* Version Desktop/Tablet : Tabs classiques */}
-      <Tabs 
-        value={currentValue} 
-        onValueChange={handleValueChange}
-        className={cn("w-full", "hidden", mobileHiddenClass)}
-      >
-        <TabsList className="grid w-full h-auto" style={{ gridTemplateColumns: `repeat(${items.length}, 1fr)` }}>
-          {items.map((item) => (
-            <TabsTrigger 
-              key={item.value} 
-              value={item.value} 
-              className="gap-1 lg:gap-2 text-xs lg:text-sm"
-            >
-              {item.icon}
-              <span className="hidden sm:inline">{item.label}</span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        {/* Utilise les enfants comme TabsContent */}
-        {children}
-      </Tabs>
-
-      {/* Version mobile utilise aussi les TabsContent */}
-      <div className={cn("block", mobileVisibleClass)}>
-        <Tabs value={currentValue} onValueChange={handleValueChange} className="w-full">
-          {children}
-        </Tabs>
-      </div>
-    </div>
+      {/* Utilise les enfants comme TabsContent */}
+      {children}
+    </Tabs>
   );
 }

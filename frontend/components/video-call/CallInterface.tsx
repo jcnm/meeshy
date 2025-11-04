@@ -17,10 +17,14 @@ import { toast } from 'sonner';
 
 interface CallInterfaceProps {
   callId: string;
+  userId: string;  // CRITICAL: Pass userId as prop to avoid race condition
 }
 
-export function CallInterface({ callId }: CallInterfaceProps) {
+export function CallInterface({ callId, userId }: CallInterfaceProps) {
   const { user } = useAuth();
+
+  // IMPORTANT: Call ALL hooks BEFORE any conditional returns to comply with React rules
+  // Hooks must be called in the same order on every render
   const {
     localStream,
     remoteStreams,
@@ -33,26 +37,18 @@ export function CallInterface({ callId }: CallInterfaceProps) {
 
   // Stable error handler to prevent useWebRTCP2P from recreating on every render
   const handleWebRTCError = useCallback((error: Error) => {
-    logger.error('[CallInterface]', 'WebRTC error: ' + error.message);
-    toast.error('Call connection error: ' + error.message);
+    // Defensive: handle cases where error might not be a proper Error object
+    const errorMessage = error?.message || String(error) || 'Unknown WebRTC error';
+    logger.error('[CallInterface]', 'WebRTC error: ' + errorMessage, { error });
+    toast.error('Call connection error: ' + errorMessage);
   }, []);
 
-  // Only call hook if user.id is available, otherwise pass undefined
+  // CRITICAL: Use userId from props (passed by CallManager) to avoid race condition
   const { initializeLocalStream, createOffer, connectionState } = useWebRTCP2P({
     callId,
-    userId: user?.id,
+    userId,  // Use prop instead of user?.id
     onError: handleWebRTCError,
   });
-
-  // Return loading state if user not loaded yet
-  if (!user || !user.id) {
-    logger.warn('[CallInterface]', 'User not loaded yet, waiting...');
-    return (
-      <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
-        <div className="text-white text-lg">Loading call...</div>
-      </div>
-    );
-  }
 
   // Initialize local stream on mount (only once)
   useEffect(() => {
@@ -169,6 +165,17 @@ export function CallInterface({ callId }: CallInterfaceProps) {
     // but we also reset here for immediate UI feedback
     reset();
   };
+
+  // AFTER all hooks have been called, check if user is loaded
+  // This ensures hooks are always called in the same order
+  if (!user || !user.id) {
+    logger.warn('[CallInterface]', 'User not loaded yet, waiting...');
+    return (
+      <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
+        <div className="text-white text-lg">Loading call...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 bg-black">

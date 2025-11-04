@@ -5,12 +5,11 @@
 
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
 import { useCallStore } from '@/stores/call-store';
 import { useAuth } from '@/hooks/use-auth';
-import { useWebRTCP2P } from '@/hooks/use-webrtc-p2p';
 import { CallNotification } from './CallNotification';
 import { CallInterface } from './CallInterface';
 import { logger } from '@/utils/logger';
@@ -23,6 +22,8 @@ import type {
   CallMediaToggleEvent,
   CallError,
 } from '@shared/types/video-call';
+
+const CALL_TIMEOUT_MS = 30000; // 30 seconds
 
 export function CallManager() {
   const router = useRouter();
@@ -41,19 +42,67 @@ export function CallManager() {
   } = useCallStore();
 
   const [incomingCall, setIncomingCall] = useState<CallInitiatedEvent | null>(null);
+  const callTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  /**
+   * Clear call timeout
+   */
+  const clearCallTimeout = useCallback(() => {
+    if (callTimeoutRef.current) {
+      clearTimeout(callTimeoutRef.current);
+      callTimeoutRef.current = null;
+      logger.debug('[CallManager]', 'Call timeout cleared');
+    }
+  }, []);
+
+  /**
+   * Start call timeout - auto-cleanup after 30s if no one joins
+   */
+  const startCallTimeout = useCallback((callId: string) => {
+    // Clear any existing timeout
+    clearCallTimeout();
+
+    // Start new timeout
+    callTimeoutRef.current = setTimeout(() => {
+      const { currentCall } = useCallStore.getState();
+
+      // Only cleanup if call is still in 'initiated' state (no one joined)
+      if (currentCall?.id === callId && currentCall?.status === 'initiated') {
+        logger.warn('[CallManager]', `Call timeout - no answer after ${CALL_TIMEOUT_MS/1000}s`);
+
+        // Emit leave event to server
+        const socket = meeshySocketIOService.getSocket();
+        if (socket) {
+          (socket as any).emit('call:leave', { callId });
+        }
+
+        // Reset local state
+        reset();
+        setIncomingCall(null);
+
+        toast.info('Call ended - no answer');
+      }
+    }, CALL_TIMEOUT_MS);
+
+    logger.debug('[CallManager]', `Call timeout started - ${CALL_TIMEOUT_MS/1000}s`);
+  }, [clearCallTimeout, reset]);
 
   /**
    * Handle incoming call
    */
   const handleIncomingCall = useCallback(async (event: CallInitiatedEvent) => {
     console.log('🚨🚨🚨 [CallManager] INCOMING CALL RECEIVED 🚨🚨🚨', event);
+    console.log('🚨 [CallManager] User state:', { hasUser: !!user, userId: user?.id });
 
     // Wait for user to be loaded
     if (!user) {
+      console.error('❌ [CallManager] User not loaded yet - ignoring call:initiated');
       logger.warn('[CallManager]', 'User not loaded yet - ignoring call:initiated');
+      toast.error('Cannot receive call: User not loaded');
       return;
     }
 
+    console.log('✅ [CallManager] User loaded, processing call');
     logger.info('[CallManager]', 'Incoming call - callId: ' + event.callId, {
       callId: event.callId,
       initiatorId: event.initiator.userId,
@@ -88,14 +137,20 @@ export function CallManager() {
       // Set call as active - CallInterface will initialize local stream
       setInCall(true);
 
+      // Start timeout to auto-cleanup if no one joins
+      startCallTimeout(event.callId);
+
       toast.success('Call started - waiting for participants...');
     } else {
       // I am being called - show notification
       logger.info('[CallManager]', 'Incoming call from ' + event.initiator.username);
       setIncomingCall(event);
+
+      // Start timeout for incoming call too
+      startCallTimeout(event.callId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, setCurrentCall, setInCall, isInCall, currentCall]);
+  }, [user?.id, setCurrentCall, setInCall, isInCall, currentCall, startCallTimeout]);
 
   /**
    * Handle participant joined
@@ -103,6 +158,9 @@ export function CallManager() {
   const handleParticipantJoined = useCallback(
     (event: CallParticipantJoinedEvent) => {
       logger.info('[CallManager]', 'Participant joined - callId: ' + event.callId + ', participantId: ' + event.participant.id);
+
+      // Clear timeout since someone joined
+      clearCallTimeout();
 
       // Add participant to call
       addParticipant(event.participant);
@@ -121,7 +179,7 @@ export function CallManager() {
 
       toast.success(`${event.participant.username || 'Someone'} joined the call`);
     },
-    [addParticipant, setCurrentCall]
+    [addParticipant, setCurrentCall, clearCallTimeout]
   );
 
   /**
@@ -150,6 +208,9 @@ export function CallManager() {
     (event: CallEndedEvent) => {
       logger.info('[CallManager]', 'Call ended - callId: ' + event.callId + ', duration: ' + event.duration);
 
+      // Clear timeout
+      clearCallTimeout();
+
       // Reset call state - CallInterface will handle WebRTC cleanup
       reset();
 
@@ -158,7 +219,7 @@ export function CallManager() {
 
       toast.info('Call ended');
     },
-    [reset]
+    [reset, clearCallTimeout]
   );
 
   /**
@@ -186,8 +247,10 @@ export function CallManager() {
    * Handle call error
    */
   const handleCallError = useCallback((error: CallError) => {
-    logger.error('[CallManager]', 'Call error: ' + error.message);
-    toast.error(error.message || 'Call error occurred');
+    // Defensive: handle cases where error might not have proper structure
+    const errorMessage = error?.message || String(error) || 'Call error occurred';
+    logger.error('[CallManager]', 'Call error: ' + errorMessage, { error });
+    toast.error(errorMessage);
   }, []);
 
   /**
@@ -199,6 +262,9 @@ export function CallManager() {
     logger.debug('[CallManager]', 'Accepting call - callId: ' + incomingCall.callId);
 
     try {
+      // Clear timeout since we're accepting
+      clearCallTimeout();
+
       // Stop ringtone immediately
       import('@/utils/ringtone').then(({ stopRingtone }) => {
         stopRingtone();
@@ -241,7 +307,7 @@ export function CallManager() {
       toast.error('Failed to join call');
       setIncomingCall(null);
     }
-  }, [incomingCall, setCurrentCall, setInCall]);
+  }, [incomingCall, setCurrentCall, setInCall, clearCallTimeout]);
 
   /**
    * Reject incoming call
@@ -250,6 +316,9 @@ export function CallManager() {
     if (!incomingCall) return;
 
     logger.debug('[CallManager]', 'Rejecting call - callId: ' + incomingCall.callId);
+
+    // Clear timeout since we're rejecting
+    clearCallTimeout();
 
     // Stop ringtone immediately
     import('@/utils/ringtone').then(({ stopRingtone }) => {
@@ -268,7 +337,7 @@ export function CallManager() {
     setIncomingCall(null);
 
     toast.info('Call declined');
-  }, [incomingCall]);
+  }, [incomingCall, clearCallTimeout]);
 
   /**
    * Setup Socket.IO listeners
@@ -279,6 +348,12 @@ export function CallManager() {
     let checkInterval: NodeJS.Timeout;
 
     const setupListeners = () => {
+      // Wait for user to be loaded before setting up listeners
+      if (!user || !user.id) {
+        logger.warn('[CallManager]', 'User not loaded yet, waiting before setting up listeners...');
+        return false;
+      }
+
       const socket = meeshySocketIOService.getSocket();
 
       if (!socket) {
@@ -293,7 +368,8 @@ export function CallManager() {
 
       console.log('🎧 [CallManager] Setting up Socket.IO call listeners', {
         socketId: socket.id,
-        connected: socket.connected
+        connected: socket.connected,
+        userId: user.id
       });
       logger.info('[CallManager]', 'Setting up Socket.IO listeners', {
         socketId: socket.id
@@ -352,6 +428,7 @@ export function CallManager() {
       }
     };
   }, [
+    user,
     handleIncomingCall,
     handleParticipantJoined,
     handleParticipantLeft,
@@ -365,13 +442,16 @@ export function CallManager() {
    */
   useEffect(() => {
     return () => {
+      // Clear timeout on unmount
+      clearCallTimeout();
+
       if (isInCall) {
         logger.debug('[CallManager]', 'Cleaning up on unmount');
         reset();
         // CallInterface will handle WebRTC cleanup
       }
     };
-  }, [isInCall, reset]);
+  }, [isInCall, reset, clearCallTimeout]);
 
   return (
     <>
@@ -385,7 +465,9 @@ export function CallManager() {
       )}
 
       {/* Active Call Interface */}
-      {isInCall && currentCall && <CallInterface callId={currentCall.id} />}
+      {isInCall && currentCall && user?.id && (
+        <CallInterface callId={currentCall.id} userId={user.id} />
+      )}
     </>
   );
 }

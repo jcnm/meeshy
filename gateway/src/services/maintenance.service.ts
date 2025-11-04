@@ -35,11 +35,12 @@ export class MaintenanceService {
   async startMaintenanceTasks(): Promise<void> {
     logger.info('🚀 Démarrage des tâches de maintenance...');
 
-    // Tâche de maintenance pour l'état en ligne/hors ligne (toutes les minutes)
+    // OPTIMISATION: Tâche de maintenance pour l'état en ligne/hors ligne (toutes les 15 secondes)
+    // Ancien: 60000ms (60s) -> Nouveau: 15000ms (15s) = 4x plus rapide
     this.maintenanceInterval = setInterval(async () => {
-      logger.info('🔄 Exécution de la tâche de maintenance automatique...');
+      logger.debug('🔄 Exécution de la tâche de maintenance automatique...');
       await this.updateOfflineUsers();
-    }, 60000); // Vérifier toutes les minutes
+    }, 15000); // Vérifier toutes les 15 secondes (4x plus rapide)
 
     // Tâche de nettoyage journalier (toutes les heures, mais ne s'exécute qu'une fois par jour)
     this.dailyCleanupInterval = setInterval(async () => {
@@ -49,7 +50,7 @@ export class MaintenanceService {
     // Exécuter immédiatement le nettoyage journalier au démarrage
     await this.runDailyCleanup();
 
-    logger.info('✅ Tâches de maintenance démarrées (intervalle: 60s pour statuts, 1h pour nettoyage journalier)');
+    logger.info('✅ Tâches de maintenance démarrées (intervalle: 15s pour statuts, 1h pour nettoyage journalier)');
   }
 
   /**

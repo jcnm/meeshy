@@ -22,6 +22,12 @@
       "indefinitely": "indefinitely"
     },
     "searchPlaceholder": "Search links...",
+    "filters": {
+      "status": "Status",
+      "all": "All",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
     "tabs": {
       "shareLinks": "Share Links",
       "trackingLinks": "Tracked Links",
@@ -68,9 +74,12 @@
       "linkName": "Link name",
       "linkUrl": "Link URL",
       "description": "Description",
+      "invitationMessage": "Invitation message",
       "conversation": "Conversation",
       "creator": "Created by",
       "created": "Created",
+      "createdAt": "Created on",
+      "expiresAt": "Expires on",
       "lastUpdated": "Last updated",
       "expires": "Expires",
       "dates": "Dates",
@@ -79,7 +88,9 @@
       "totalParticipants": "Total participants",
       "activeUsers": "Active users",
       "permissions": "Permissions",
-      "languages": "Allowed languages"
+      "languages": "Allowed languages",
+      "viewMore": "View more details",
+      "requirements": "Requirements"
     },
     "edit": {
       "title": "Edit Link",
@@ -108,10 +119,15 @@
       "viewHistoryDescription": "Allow viewing conversation history"
     },
     "requirements": {
+      "account": "Account Required",
+      "accountDescription": "Visitors must sign in with a verified account. Automatically enables all permissions and requirements.",
       "nickname": "Nickname",
       "nicknameDescription": "Require a nickname to join",
+      "name": "Name required",
       "email": "Email",
-      "emailDescription": "Require an email to join"
+      "emailDescription": "Require an email to join",
+      "birthday": "Birthday",
+      "birthdayDescription": "Require a birthday to join"
     },
     "confirm": {
       "delete": "Are you sure you want to delete this link?"

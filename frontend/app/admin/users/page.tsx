@@ -100,6 +100,13 @@ export default function AdminUsersPage() {
     }
   }, [currentPage, pageSize, debouncedSearch, roleFilter, statusFilter]);
 
+  // Réinitialiser la page à 1 quand les filtres changent (AVANT le chargement)
+  useEffect(() => {
+    if (!isInitialLoad) {
+      setCurrentPage(1);
+    }
+  }, [debouncedSearch, roleFilter, statusFilter, isInitialLoad]);
+
   // Charger les données uniquement quand nécessaire
   useEffect(() => {
     console.log('[Admin Users] Chargement avec filtres:', {
@@ -109,20 +116,10 @@ export default function AdminUsersPage() {
       roleFilter,
       statusFilter
     });
-    loadUsersData(false); // Ne pas montrer le loader lors des filtres
+    // Utiliser le loader seulement pour le premier chargement
+    loadUsersData(isInitialLoad);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, pageSize, debouncedSearch, roleFilter, statusFilter]);
-
-  // Réinitialiser la page à 1 quand les filtres changent
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [debouncedSearch, roleFilter, statusFilter]);
-
-  // Chargement initial avec loader
-  useEffect(() => {
-    loadUsersData(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [currentPage, pageSize, debouncedSearch, roleFilter, statusFilter, isInitialLoad]);
 
   const handleFilter = () => {
     setCurrentPage(1);
@@ -130,10 +127,10 @@ export default function AdminUsersPage() {
   };
 
   const handlePageSizeChange = (newSize: number) => {
-    console.log('[Admin Users] Changement de pageSize:', newSize);
-    setPageSize(newSize);
+    console.log('[Admin Users] Changement de pageSize:', { ancien: pageSize, nouveau: newSize });
     setCurrentPage(1);
-    // Le useEffect se chargera du rechargement
+    setPageSize(newSize);
+    // Le useEffect avec les dépendances correctes se chargera du rechargement
   };
 
   const handlePreviousPage = () => {
@@ -223,8 +220,8 @@ export default function AdminUsersPage() {
               <span className="hidden sm:inline">Retour</span>
             </Button>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Gestion des utilisateurs</h1>
-              <p className="text-sm text-gray-600 hidden sm:block">Administration des comptes utilisateurs</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">Gestion des utilisateurs</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400 hidden sm:block">Administration des comptes utilisateurs</p>
             </div>
           </div>
           <div className="flex space-x-2">
@@ -252,7 +249,7 @@ export default function AdminUsersPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">Total</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Total</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-xl sm:text-2xl font-bold">{stats.totalUsers}</div>
@@ -262,11 +259,11 @@ export default function AdminUsersPage() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">Actifs</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Actifs</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xl sm:text-2xl font-bold text-green-600">{stats.activeUsers}</div>
-              <Badge variant="outline" className="mt-1 text-xs text-green-600">
+              <div className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">{stats.activeUsers}</div>
+              <Badge variant="outline" className="mt-1 text-xs text-green-600 dark:text-green-400">
                 {stats.totalUsers > 0 ? Math.round((stats.activeUsers / stats.totalUsers) * 100) : 0}%
               </Badge>
             </CardContent>
@@ -274,21 +271,21 @@ export default function AdminUsersPage() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">Nouveaux</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Nouveaux</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xl sm:text-2xl font-bold text-blue-600">{stats.newUsers}</div>
+              <div className="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.newUsers}</div>
               <Badge variant="outline" className="mt-1 text-xs">7 jours</Badge>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">Admins</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Admins</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xl sm:text-2xl font-bold text-purple-600">{stats.adminUsers}</div>
-              <Badge variant="outline" className="mt-1 text-xs text-purple-600">
+              <div className="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.adminUsers}</div>
+              <Badge variant="outline" className="mt-1 text-xs text-purple-600 dark:text-purple-400">
                 {stats.totalUsers > 0 ? Math.round((stats.adminUsers / stats.totalUsers) * 100) : 0}%
               </Badge>
             </CardContent>
@@ -306,7 +303,7 @@ export default function AdminUsersPage() {
             {/* Filtres intégrés dans l'en-tête */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
               <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" />
                 <Input
                   placeholder="Rechercher par nom, email..."
                   className="pl-8 text-sm"
@@ -316,7 +313,7 @@ export default function AdminUsersPage() {
                 />
               </div>
               <select
-                className="w-full p-2 border rounded-md text-sm bg-white"
+                className="w-full p-2 border dark:border-gray-700 rounded-md text-sm bg-white dark:bg-gray-800 dark:text-gray-200"
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value)}
               >
@@ -329,7 +326,7 @@ export default function AdminUsersPage() {
                 <option value="BIGBOSS">Super Admin</option>
               </select>
               <select
-                className="w-full p-2 border rounded-md text-sm bg-white"
+                className="w-full p-2 border dark:border-gray-700 rounded-md text-sm bg-white dark:bg-gray-800 dark:text-gray-200"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
@@ -338,7 +335,7 @@ export default function AdminUsersPage() {
                 <option value="inactive">Inactif</option>
               </select>
               <select
-                className="w-full p-2 border rounded-md text-sm bg-white"
+                className="w-full p-2 border dark:border-gray-700 rounded-md text-sm bg-white dark:bg-gray-800 dark:text-gray-200"
                 value={pageSize}
                 onChange={(e) => handlePageSizeChange(Number(e.target.value))}
                 title="Nombre d'éléments par page"
@@ -365,7 +362,7 @@ export default function AdminUsersPage() {
             {/* Vue Desktop (hidden on mobile) */}
             <div className="hidden lg:block space-y-4">
               {/* En-tête du tableau */}
-              <div className="grid grid-cols-12 gap-4 p-3 bg-gray-50 rounded-lg font-medium text-sm text-gray-700 sticky top-0 z-10">
+              <div className="grid grid-cols-12 gap-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 sticky top-0 z-10">
                 <div className="col-span-3">Utilisateur</div>
                 <div className="col-span-3">Email</div>
                 <div className="col-span-2">Rôle</div>
@@ -376,17 +373,17 @@ export default function AdminUsersPage() {
 
               {/* Lignes du tableau */}
               {users?.map((user) => (
-                <div key={user.id} className="grid grid-cols-12 gap-4 p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+                <div key={user.id} className="grid grid-cols-12 gap-4 p-3 border dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                   <div className="col-span-3 flex items-center space-x-3">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
                       {user.displayName?.charAt(0) || user.username.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0">
-                      <div className="font-medium text-gray-900 truncate">{user.displayName || user.username}</div>
-                      <div className="text-sm text-gray-500 truncate">@{user.username}</div>
+                      <div className="font-medium text-gray-900 dark:text-gray-100 truncate">{user.displayName || user.username}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400 truncate">@{user.username}</div>
                     </div>
                   </div>
-                  <div className="col-span-3 text-sm text-gray-600 truncate flex items-center">
+                  <div className="col-span-3 text-sm text-gray-600 dark:text-gray-400 truncate flex items-center">
                     {user.email}
                   </div>
                   <div className="col-span-2 flex items-center">
@@ -404,7 +401,7 @@ export default function AdminUsersPage() {
                       ) : 'Inactif'}
                     </Badge>
                   </div>
-                  <div className="col-span-2 text-sm text-gray-600 flex items-center">
+                  <div className="col-span-2 text-sm text-gray-600 dark:text-gray-400 flex items-center">
                     {formatDate(user.updatedAt || user.createdAt)}
                   </div>
                   <div className="col-span-1 flex items-center justify-center space-x-2">
@@ -432,18 +429,18 @@ export default function AdminUsersPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
-                          <h3 className="font-medium text-gray-900 truncate">{user.displayName || user.username}</h3>
+                          <h3 className="font-medium text-gray-900 dark:text-gray-100 truncate">{user.displayName || user.username}</h3>
                           <Badge variant={user.isActive ? 'default' : 'secondary'} className="text-xs">
                             {user.isActive ? '✓' : '✗'}
                           </Badge>
                         </div>
-                        <p className="text-sm text-gray-500 truncate">@{user.username}</p>
-                        <p className="text-xs text-gray-500 truncate mt-1">{user.email}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 truncate">@{user.username}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-1">{user.email}</p>
                         <div className="flex items-center justify-between mt-2">
                           <Badge variant={getRoleBadgeVariant(user.role)} className="text-xs">
                             {getRoleLabel(user.role)}
                           </Badge>
-                          <span className="text-xs text-gray-500">{formatDate(user.updatedAt || user.createdAt)}</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">{formatDate(user.updatedAt || user.createdAt)}</span>
                         </div>
                         <div className="mt-3">
                           <Button
@@ -466,16 +463,16 @@ export default function AdminUsersPage() {
             {/* Message si aucun utilisateur */}
             {(!users || users.length === 0) && (
               <div className="text-center py-12">
-                <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun utilisateur trouvé</h3>
-                <p className="text-gray-500">Essayez de modifier vos filtres de recherche</p>
+                <Users className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Aucun utilisateur trouvé</h3>
+                <p className="text-gray-500 dark:text-gray-400">Essayez de modifier vos filtres de recherche</p>
               </div>
             )}
 
             {/* Pagination */}
             {users && users.length > 0 && (
               <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-4">
-                <div className="text-xs sm:text-sm text-gray-600">
+                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                   Page {currentPage} sur {totalPages} • {users.length} utilisateurs affichés
                 </div>
                 <div className="flex space-x-2">
@@ -489,7 +486,7 @@ export default function AdminUsersPage() {
                     <ChevronLeft className="h-4 w-4" />
                     <span className="hidden sm:inline ml-1">Précédent</span>
                   </Button>
-                  <div className="flex items-center px-3 py-2 border rounded-md text-xs sm:text-sm font-medium">
+                  <div className="flex items-center px-3 py-2 border dark:border-gray-700 rounded-md text-xs sm:text-sm font-medium">
                     {currentPage} / {totalPages}
                   </div>
                   <Button

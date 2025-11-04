@@ -88,7 +88,7 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
       case 'medium':
       case 'standard': return t('translation.standard.title');
       case 'premium': return t('translation.premium.title');
-      default: return 'Unknown';
+      default: return t('translation.unknown');
     }
   };
 
@@ -125,7 +125,7 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
       const timestamp = new Date(date);
       return formatDistanceToNow(timestamp, { addSuffix: true, locale: fr });
     } catch {
-      return 'Date invalide';
+      return t('invalidDate');
     }
   };
 
@@ -287,19 +287,128 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
       </div>
 
       {/* Contenu avec tabs */}
-      <Tabs defaultValue="available" className="flex-1 flex flex-col min-h-0">
+      <Tabs defaultValue="generate" className="flex-1 flex flex-col min-h-0">
         <TabsList className="w-full justify-start rounded-none border-b h-8 bg-white dark:bg-gray-800 flex-shrink-0">
-          <TabsTrigger value="available" className="text-xs px-2 py-1 flex-1 max-w-[50%]">
-            <span className="truncate">{t('available')} ({filteredVersions.length})</span>
-          </TabsTrigger>
           <TabsTrigger value="generate" className="text-xs px-2 py-1 flex-1 max-w-[50%]">
             <span className="truncate">{t('generate')} ({filteredMissingLanguages.length})</span>
           </TabsTrigger>
+          <TabsTrigger value="available" className="text-xs px-2 py-1 flex-1 max-w-[50%]">
+            <span className="truncate">{t('available')} ({filteredVersions.length})</span>
+          </TabsTrigger>
         </TabsList>
-        
+
         <div className="flex-1 overflow-y-auto min-h-0">
+          <TabsContent value="generate" className="h-full mt-0">
+            <div className="p-2 space-y-1 max-h-[300px] overflow-y-auto">
+              {filteredMissingLanguages.map((lang) => (
+                <div
+                  key={lang.code}
+                  onClick={() => {
+                    onRequestTranslation(lang.code, 'basic');
+                  }}
+                  className="p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{lang.flag}</span>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium text-sm">{lang.name}</span>
+                        <div className="flex items-center gap-1">
+                          <Zap className="h-3 w-3 text-yellow-500" />
+                          <Badge variant="outline" className="text-xs h-4 px-1.5">
+                            {t('translation.basic.title')}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {t('translation.clickToTranslateWith', { model: t('translation.basic.title') })}
+                      </div>
+                    </div>
+
+                    {/* Actions pour chaque tier - Icônes seulement */}
+                    <div className="flex items-center gap-1">
+                      <TooltipProvider>
+                        {/* Basic tier - déjà actif par défaut */}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 w-7 p-0 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
+                              disabled={translatingLanguages.has(lang.code)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                markLanguageAsTranslating(lang.code);
+                                onRequestTranslation(lang.code, 'basic');
+                              }}
+                            >
+                              <Zap className="h-4 w-4 text-yellow-500" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{t('translateWith')} {t('translation.basic.title')}</p>
+                          </TooltipContent>
+                        </Tooltip>
+
+                        {/* Standard tier */}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 w-7 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                              disabled={translatingLanguages.has(lang.code)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                markLanguageAsTranslating(lang.code);
+                                onRequestTranslation(lang.code, 'medium');
+                              }}
+                            >
+                              <Star className="h-4 w-4 text-blue-500" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{t('translateWith')} {t('translation.standard.title')}</p>
+                          </TooltipContent>
+                        </Tooltip>
+
+                        {/* Premium tier */}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 w-7 p-0 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                              disabled={translatingLanguages.has(lang.code)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                markLanguageAsTranslating(lang.code);
+                                onRequestTranslation(lang.code, 'premium');
+                              }}
+                            >
+                              <Gem className="h-4 w-4 text-purple-500" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{t('translateWith')} {t('translation.premium.title')}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {filteredMissingLanguages.length === 0 && (
+                <div className="text-center py-4 text-gray-500 text-sm">
+                  {t('allLanguagesTranslated')}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
           <TabsContent value="available" className="h-full mt-0">
-            <div className="p-2 space-y-1">
+            <div className="p-2 space-y-1 max-h-[300px] overflow-y-auto">
               {filteredVersions.map((version, index) => {
                 const langInfo = getLanguageInfo(version.language);
                 const isCurrentlyDisplayed = currentDisplayLanguage === version.language;
@@ -393,7 +502,7 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
                                     </Button>
                                   </TooltipTrigger>
                                   <TooltipContent>
-                                    <p>Réduire vers {getModelLabel(getPreviousTier(version.model || 'basic') || '')}</p>
+                                    <p>{t('downgradeToModel', { model: getModelLabel(getPreviousTier(version.model || 'basic') || '') })}</p>
                                   </TooltipContent>
                                 </Tooltip>
                               )}
@@ -427,115 +536,6 @@ export const LanguageSelectionMessageView = memo(function LanguageSelectionMessa
               {filteredVersions.length === 0 && (
                 <div className="text-center py-4 text-gray-500 text-sm">
                   {t('noLanguagesFound')}
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="generate" className="h-full mt-0">
-            <div className="p-2 space-y-1">
-              {filteredMissingLanguages.map((lang) => (
-                <div
-                  key={lang.code}
-                  onClick={() => {
-                    onRequestTranslation(lang.code, 'basic');
-                  }}
-                  className="p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group cursor-pointer"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">{lang.flag}</span>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-sm">{lang.name}</span>
-                        <div className="flex items-center gap-1">
-                          <Zap className="h-3 w-3 text-yellow-500" />
-                          <Badge variant="outline" className="text-xs h-4 px-1.5">
-                            {t('translation.basic.title')}
-                          </Badge>
-                        </div>
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {t('translation.clickToTranslateWith', { model: t('translation.basic.title') })}
-                      </div>
-                    </div>
-                    
-                    {/* Actions pour chaque tier - Icônes seulement */}
-                    <div className="flex items-center gap-1">
-                      <TooltipProvider>
-                        {/* Basic tier - déjà actif par défaut */}
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-7 w-7 p-0 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
-                              disabled={translatingLanguages.has(lang.code)}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                markLanguageAsTranslating(lang.code);
-                                onRequestTranslation(lang.code, 'basic');
-                              }}
-                            >
-                              <Zap className="h-4 w-4 text-yellow-500" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{t('translateWith')} {t('translation.basic.title')}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                        
-                        {/* Standard tier */}
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-7 w-7 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                              disabled={translatingLanguages.has(lang.code)}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                markLanguageAsTranslating(lang.code);
-                                onRequestTranslation(lang.code, 'medium');
-                              }}
-                            >
-                              <Star className="h-4 w-4 text-blue-500" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{t('translateWith')} {t('translation.standard.title')}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                        
-                        {/* Premium tier */}
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-7 w-7 p-0 hover:bg-purple-50 dark:hover:bg-purple-900/20"
-                              disabled={translatingLanguages.has(lang.code)}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                markLanguageAsTranslating(lang.code);
-                                onRequestTranslation(lang.code, 'premium');
-                              }}
-                            >
-                              <Gem className="h-4 w-4 text-purple-500" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{t('translateWith')} {t('translation.premium.title')}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              
-              {filteredMissingLanguages.length === 0 && (
-                <div className="text-center py-4 text-gray-500 text-sm">
-                  {t('allLanguagesTranslated')}
                 </div>
               )}
             </div>

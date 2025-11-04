@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useCallback, useMemo, memo, useEffect, useRef } from 'react';
-import { MessageSquare, Link2, Users, Globe, Search, Plus, Loader2 } from 'lucide-react';
+import { MessageSquare, Link2, Users, Globe, Search, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import type { Conversation, SocketIOUser as User } from '@shared/types';
@@ -34,30 +33,46 @@ interface ConversationItemProps {
   isSelected: boolean;
   currentUser: User;
   onClick: () => void;
+  t: (key: string) => string;
 }
 
 // Composant pour un élément de conversation
-const ConversationItem = memo(function ConversationItem({ 
-  conversation, 
-  isSelected, 
+const ConversationItem = memo(function ConversationItem({
+  conversation,
+  isSelected,
   currentUser,
-  onClick 
+  onClick,
+  t
 }: ConversationItemProps) {
   const getConversationName = useCallback(() => {
     if (conversation.type !== 'direct') {
       return conversation.title || 'Groupe sans nom';
     }
-    
-    // Pour l'instant, utiliser le titre car participants n'a pas de propriété user dans ce contexte
-    // TODO: Charger les détails des participants séparément
+
+    // Pour les conversations directes, extraire le nom de l'autre utilisateur
     const otherParticipant = conversation.participants?.find(p => p.userId !== currentUser?.id);
+
     if (otherParticipant) {
-      // Utiliser le titre de la conversation pour l'instant
-      return conversation.title || 'Conversation privée';
+      // Les participants ont un objet 'user' au runtime même si le type ne le reflète pas
+      const participantUser = (otherParticipant as any).user;
+
+      if (participantUser) {
+        // Utiliser displayName, puis username, puis firstName/lastName
+        const userName = participantUser.displayName ||
+                        participantUser.username ||
+                        (participantUser.firstName && participantUser.lastName
+                          ? `${participantUser.firstName} ${participantUser.lastName}`.trim()
+                          : participantUser.firstName || participantUser.lastName) ||
+                        'Utilisateur';
+
+        return `${userName} ${t('andMe')}`;
+      }
     }
-    
-    return conversation.title || 'Conversation privée';
-  }, [conversation, currentUser]);
+
+    // Fallback sur le titre de la conversation
+    const conversationTitle = conversation.title || 'Conversation privée';
+    return `${conversationTitle} ${t('andMe')}`;
+  }, [conversation, currentUser, t]);
 
   const getConversationAvatar = useCallback(() => {
     const name = getConversationName();
@@ -192,71 +207,31 @@ export function ConversationList({
   isLoadingMore = false,
   onLoadMore
 }: ConversationListProps) {
-  const [activeTab, setActiveTab] = useState<'public' | 'private'>('public');
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   // Référence pour le scroll container
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
 
-  // Filtrage des conversations
-  const { publicConversations, privateConversations } = useMemo(() => {
+  // Filtrage des conversations - toutes les conversations dans une seule liste
+  const filteredConversations = useMemo(() => {
     const filtered = conversations.filter(conv => {
       if (!searchQuery) return true;
       const title = conv.title || '';
       const lastMessage = conv.lastMessage?.content || '';
       const query = searchQuery.toLowerCase();
-      return title.toLowerCase().includes(query) || 
+      return title.toLowerCase().includes(query) ||
              lastMessage.toLowerCase().includes(query);
     });
 
-    const publicConvs = filtered.filter(conv => 
-      conv.visibility === 'public' || conv.type === 'broadcast'
-    );
-    const privateConvs = filtered.filter(conv => 
-      conv.visibility === 'private' || conv.type === 'direct' || conv.type === 'group' || conv.type === 'anonymous'
-    );
-
-    console.log('[ConversationList] Classification des conversations:', {
-      total: filtered.length,
-      public: publicConvs.length,
-      private: privateConvs.length,
-      publicDetails: publicConvs.map(c => ({ id: c.id, type: c.type, visibility: c.visibility, title: c.title })),
-      privateDetails: privateConvs.map(c => ({ id: c.id, type: c.type, visibility: c.visibility, title: c.title }))
+    console.log('[ConversationList] Filtrage des conversations:', {
+      total: conversations.length,
+      filtered: filtered.length,
+      searchQuery
     });
 
-    return {
-      publicConversations: publicConvs,
-      privateConversations: privateConvs
-    };
+    return filtered;
   }, [conversations, searchQuery]);
-
-  const currentConversations = activeTab === 'public' ? publicConversations : privateConversations;
-  
-  // Synchroniser l'onglet avec la conversation sélectionnée AU CHARGEMENT INITIAL seulement
-  useEffect(() => {
-    if (selectedConversation) {
-      const isPublicConversation = selectedConversation.visibility === 'public' || selectedConversation.type === 'broadcast';
-      const requiredTab = isPublicConversation ? 'public' : 'private';
-      
-      // Vérifier si la conversation est dans l'onglet actuel
-      const currentTabConversations = activeTab === 'public' ? publicConversations : privateConversations;
-      const isInCurrentTab = currentTabConversations.some(c => c.id === selectedConversation.id);
-      
-      // Changer d'onglet SEULEMENT si la conversation n'est pas visible dans l'onglet actuel
-      if (!isInCurrentTab) {
-        console.log('[ConversationList] Conversation pas visible dans onglet actuel, switch vers:', {
-          conversationId: selectedConversation.id,
-          conversationType: selectedConversation.type,
-          visibility: selectedConversation.visibility,
-          currentTab: activeTab,
-          requiredTab,
-          isInCurrentTab
-        });
-        setActiveTab(requiredTab);
-      }
-    }
-  }, [selectedConversation?.id, publicConversations, privateConversations]); // Inclure les listes pour la vérification
   
   // Détection du scroll infini avec Intersection Observer
   useEffect(() => {
@@ -304,9 +279,9 @@ export function ConversationList({
               className="h-8 w-8"
               title={t('createNewConversation')}
             >
-              <Plus className="h-4 w-4" />
+              <MessageSquare className="h-4 w-4 text-primary" />
             </Button>
-            
+
             {/* Bouton créer lien */}
             <CreateLinkButton
               onLinkCreated={onLinkCreated}
@@ -315,7 +290,7 @@ export function ConversationList({
               size="icon"
               className="h-8 w-8"
             >
-              <Link2 className="h-4 w-4" />
+              <Link2 className="h-4 w-4 text-primary" />
             </CreateLinkButton>
           </div>
         </div>
@@ -333,23 +308,6 @@ export function ConversationList({
         </div>
       </div>
 
-      {/* Onglets fixes */}
-      <div className="flex-shrink-0 bg-card">
-        <Tabs value={activeTab} onValueChange={(v) => {
-          console.log('[ConversationList] Changement onglet:', { from: activeTab, to: v });
-          setActiveTab(v as 'public' | 'private');
-        }}>
-          <TabsList className="mx-4 mt-2 grid w-[calc(100%-2rem)] grid-cols-2">
-            <TabsTrigger value="public" className="text-xs">
-              {t('public')} ({publicConversations.length})
-            </TabsTrigger>
-            <TabsTrigger value="private" className="text-xs">
-              {t('private')} ({privateConversations.length})
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
-
       {/* Contenu scrollable */}
       <div className="flex-1 min-h-0 overflow-y-auto">
         {isLoading ? (
@@ -359,25 +317,26 @@ export function ConversationList({
               <p className="text-sm text-muted-foreground">{t('loadingConversations')}</p>
             </div>
           </div>
-        ) : currentConversations.length === 0 ? (
+        ) : filteredConversations.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
             <MessageSquare className="h-12 w-12 text-muted-foreground/50 mb-3" />
             <p className="text-sm text-muted-foreground">
-              {searchQuery 
-                ? t(`no${activeTab === 'public' ? 'Public' : 'Private'}ConversationsFound`)
-                : t(`no${activeTab === 'public' ? 'Public' : 'Private'}Conversations`)
+              {searchQuery
+                ? t('noConversationsFound')
+                : t('noConversations')
               }
             </p>
           </div>
         ) : (
           <div className="px-4 py-2 space-y-1">
-            {currentConversations.map((conversation) => (
+            {filteredConversations.map((conversation) => (
               <ConversationItem
                 key={conversation.id}
                 conversation={conversation}
                 isSelected={selectedConversation?.id === conversation.id}
                 currentUser={currentUser}
                 onClick={() => onSelectConversation(conversation)}
+                t={t}
               />
             ))}
             
@@ -409,7 +368,7 @@ export function ConversationList({
           onClick={onCreateConversation}
           className="w-full flex items-center justify-center gap-2 h-11 text-sm font-medium"
         >
-          <Plus className="h-5 w-5" />
+          <MessageSquare className="h-5 w-5" />
           {t('createNewConversation')}
         </Button>
       </div>

@@ -809,28 +809,107 @@ export class CallEventsHandler {
           }
         });
 
-        // Leave all active calls
+        // Leave all active calls (IMPORTANT FIX: force cleanup even on errors)
         for (const participation of activeParticipations) {
           if (participation.callSession.status !== 'ended') {
-            await this.callService.leaveCall({
-              callId: participation.callSessionId,
-              userId
-            });
-
-            // Broadcast to call participants
-            io.to(`call:${participation.callSessionId}`).emit(
-              CALL_EVENTS.PARTICIPANT_LEFT,
-              {
+            try {
+              // Try normal leave flow first
+              await this.callService.leaveCall({
                 callId: participation.callSessionId,
-                participantId: participation.id,
-                mode: participation.callSession.mode
-              } as CallParticipantLeftEvent
-            );
+                userId
+              });
 
-            logger.info('✅ Socket: Auto-left call on disconnect', {
-              callId: participation.callSessionId,
-              userId
-            });
+              // Broadcast to call participants
+              io.to(`call:${participation.callSessionId}`).emit(
+                CALL_EVENTS.PARTICIPANT_LEFT,
+                {
+                  callId: participation.callSessionId,
+                  participantId: participation.id,
+                  mode: participation.callSession.mode
+                } as CallParticipantLeftEvent
+              );
+
+              logger.info('✅ Socket: Auto-left call on disconnect', {
+                callId: participation.callSessionId,
+                userId
+              });
+            } catch (leaveError) {
+              // IMPORTANT FIX: Force cleanup even if leaveCall fails
+              // This prevents zombie calls when DB errors or validation fails
+              logger.error('❌ Socket: Error in leaveCall, forcing direct cleanup', {
+                callId: participation.callSessionId,
+                userId,
+                error: leaveError
+              });
+
+              try {
+                const now = new Date();
+
+                // Force update participant and potentially end call
+                await this.prisma.$transaction(async (tx) => {
+                  // Mark participant as left
+                  await tx.callParticipant.update({
+                    where: { id: participation.id },
+                    data: { leftAt: now }
+                  });
+
+                  // Check if this was the last participant
+                  const remainingParticipants = await tx.callParticipant.count({
+                    where: {
+                      callSessionId: participation.callSessionId,
+                      leftAt: null
+                    }
+                  });
+
+                  // If last participant, force end the call
+                  if (remainingParticipants === 0) {
+                    const call = await tx.callSession.findUnique({
+                      where: { id: participation.callSessionId }
+                    });
+
+                    if (call) {
+                      const duration = Math.floor((now.getTime() - call.startedAt.getTime()) / 1000);
+
+                      await tx.callSession.update({
+                        where: { id: participation.callSessionId },
+                        data: {
+                          status: 'ended',
+                          endedAt: now,
+                          duration
+                        }
+                      });
+
+                      logger.info('✅ Socket: Force-ended call after disconnect error', {
+                        callId: participation.callSessionId,
+                        duration
+                      });
+                    }
+                  }
+                });
+
+                // Still broadcast events even after force cleanup
+                io.to(`call:${participation.callSessionId}`).emit(
+                  CALL_EVENTS.PARTICIPANT_LEFT,
+                  {
+                    callId: participation.callSessionId,
+                    participantId: participation.id,
+                    mode: participation.callSession.mode
+                  } as CallParticipantLeftEvent
+                );
+
+                logger.info('✅ Socket: Force cleanup successful on disconnect', {
+                  callId: participation.callSessionId,
+                  userId
+                });
+              } catch (forceError) {
+                // Even force cleanup failed - log but don't crash
+                logger.error('❌ Socket: Force cleanup also failed', {
+                  callId: participation.callSessionId,
+                  userId,
+                  error: forceError
+                });
+              }
+            }
           }
         }
       } catch (error) {

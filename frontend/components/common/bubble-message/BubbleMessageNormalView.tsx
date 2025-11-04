@@ -20,17 +20,12 @@ import {
   MessageCircle,
   Flag
 } from 'lucide-react';
+import { getUserDisplayName } from '@/utils/user-display-name';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
   Tooltip,
   TooltipContent,
@@ -38,16 +33,11 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { User, BubbleTranslation } from '@shared/types';
@@ -68,6 +58,9 @@ import { CLIENT_EVENTS } from '@shared/types/socketio-events';
 import { useMessageReactions } from '@/hooks/use-message-reactions';
 import { useAuth } from '@/hooks/use-auth';
 import type { BubbleMessage, MessageTranslation, MessageVersion, MessageSender, AnonymousSender } from './types';
+import { MessageActionsBar } from './MessageActionsBar';
+import { getAttachmentType } from '@shared/types/attachment';
+import { LanguageSelectionMessageView } from './LanguageSelectionMessageView';
 
 interface BubbleMessageNormalViewProps {
   message: Omit<Message, 'translations'> & {
@@ -137,8 +130,6 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
   const { t: tReport } = useI18n('reportMessage');
 
   // États locaux (copiés de l'original)
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [translationFilter, setTranslationFilter] = useState('');
   const [hoveredEmoji, setHoveredEmoji] = useState<string | null>(null);
   const [deletedAttachmentIds, setDeletedAttachmentIds] = useState<string[]>([]);
   const messageRef = useRef<HTMLDivElement>(null);
@@ -167,15 +158,24 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
     return message.attachments?.filter(att => !deletedAttachmentIds.includes(att.id)) || [];
   }, [message.attachments, deletedAttachmentIds]);
 
+  // Vérifier si les attachments contiennent des audios
+  const hasAudioAttachments = useMemo(() => {
+    return visibleAttachments.some(att => getAttachmentType(att.mimeType) === 'audio');
+  }, [visibleAttachments]);
+
   // Logique copiée de l'original
   const formatReplyDate = (date: Date | string) => {
     const messageDate = new Date(date);
     const now = new Date();
-    const diffHours = Math.abs(now.getTime() - messageDate.getTime()) / (1000 * 60 * 60);
-    
-    if (diffHours < 1) return tBubble('justNow');
-    if (diffHours < 24) return tBubble('hoursAgo', { hours: Math.floor(diffHours) });
-    if (diffHours < 168) return tBubble('daysAgo', { days: Math.floor(diffHours / 24) });
+    const diffMs = Math.abs(now.getTime() - messageDate.getTime());
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffMinutes < 1) return tBubble('justNow');
+    if (diffMinutes < 60) return tBubble('minutesAgo', { minutes: diffMinutes });
+    if (diffHours < 24) return tBubble('hoursAgo', { hours: diffHours });
+    if (diffDays < 7) return tBubble('daysAgo', { days: diffDays });
     return messageDate.toLocaleDateString();
   };
 
@@ -217,27 +217,8 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
   }, [currentDisplayLanguage, message.replyTo?.id, message.replyTo?.originalLanguage, message.replyTo?.content, message.replyTo?.translations]);
 
   // Handlers (logique copiée et adaptée)
-  const handlePopoverOpenChange = (open: boolean) => {
-    setIsPopoverOpen(open);
-    if (!open) {
-      setTranslationFilter('');
-    }
-  };
-
-  const handleLanguageSwitch = (langCode: string) => {
-    if (onEnterLanguageMode) {
-      // Nouveau système - entrer en mode langue
-      onEnterLanguageMode();
-    } else {
-      // Ancien système - action directe
-      handlePopoverOpenChange(false);
-      onLanguageSwitch?.(message.id, langCode);
-    }
-  };
-
-  const handleForceTranslation = (targetLanguage: string) => {
-    handlePopoverOpenChange(false);
-    onForceTranslation?.(message.id, targetLanguage);
+  const handleForceTranslation = (targetLanguage: string, model?: 'basic' | 'medium' | 'premium') => {
+    onForceTranslation?.(message.id, targetLanguage, model);
   };
 
   const handleEditMessage = async () => {
@@ -412,40 +393,32 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
     return SUPPORTED_LANGUAGES.filter(lang => !translatedLanguages.has(lang.code));
   };
 
-  const filteredVersions = availableVersions.filter(version => {
-    if (!translationFilter.trim()) return true;
-    const langInfo = getLanguageInfo((version as MessageVersion).language);
-    const searchTerm = translationFilter.toLowerCase();
-    return (
-      langInfo.name.toLowerCase().includes(searchTerm) ||
-      langInfo.code.toLowerCase().includes(searchTerm) ||
-      (version as MessageVersion).content.toLowerCase().includes(searchTerm)
-    );
-  });
-
-  const filteredMissingLanguages = getMissingLanguages().filter(lang => {
-    if (!translationFilter.trim()) return true;
-    const searchTerm = translationFilter.toLowerCase();
-    return (
-      lang.name.toLowerCase().includes(searchTerm) ||
-      lang.code.toLowerCase().includes(searchTerm)
-    );
-  });
+  // Plus besoin de filtrage depuis la suppression de la recherche dans le popover
+  const filteredVersions = availableVersions;
+  const filteredMissingLanguages = getMissingLanguages();
 
   return (
     <TooltipProvider>
-      {/* Container with avatar on side */}
-      <motion.div 
+      {/* Container with 70/30 grid layout */}
+      <motion.div
         id={`message-${message.id}`}
         ref={messageRef}
         className={cn(
-          "bubble-message flex gap-1 sm:gap-1.5 mb-4 px-2 sm:px-4",
-          isOwnMessage ? "flex-row-reverse" : "flex-row"
+          "bubble-message group/message grid grid-cols-10 gap-1 sm:gap-1.5 mb-2 px-2 sm:px-4",
+          isOwnMessage ? "" : ""
         )}
       >
+        {/* Empty space for sent messages (30% = 3 columns) */}
+        {isOwnMessage && <div className="col-span-3" />}
+
+        {/* Message content area (70% = 7 columns) */}
+        <div className={cn(
+          "col-span-7 flex gap-1 sm:gap-1.5",
+          isOwnMessage ? "flex-row-reverse" : "flex-row"
+        )}>
         {/* Avatar on side - cliquable pour voir en grand */}
         <div className="flex-shrink-0 mt-1">
-          <Avatar 
+          <Avatar
             className={cn(
               "h-8 w-8 sm:h-9 sm:w-9",
               (message.sender as MessageSender)?.avatar && "cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
@@ -459,9 +432,9 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
               }
             }}
           >
-            <AvatarImage 
-              src={(message.sender as MessageSender)?.avatar} 
-              alt={message.sender?.firstName} 
+            <AvatarImage
+              src={(message.sender as MessageSender)?.avatar}
+              alt={message.sender?.firstName}
             />
             <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xs sm:text-sm font-semibold">
               {getMessageInitials(message)}
@@ -470,7 +443,10 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
         </div>
 
         {/* Message content wrapper */}
-        <div className="flex-1 min-w-0 flex flex-col">
+        <div className={cn(
+          "flex flex-col",
+          isOwnMessage ? "items-end" : "items-start"
+        )}>
           {/* Header: Nom + Date en horizontal au-dessus */}
           <div className={cn(
             "flex items-center gap-1 mb-0.5 px-1",
@@ -478,11 +454,8 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
           )}>
             {(() => {
               const username = message.anonymousSender?.username || message.sender?.username;
-              const baseName = message.anonymousSender
-                ? (message.anonymousSender.username ||
-                   `${message.anonymousSender.firstName || ''} ${message.anonymousSender.lastName || ''}`.trim() ||
-                   tBubble('anonymous'))
-                : (message.sender?.username || tBubble('anonymous'));
+              const user = message.anonymousSender || message.sender;
+              const displayName = getUserDisplayName(user, tBubble('anonymous'));
 
               const isAnonymous = !!message.anonymousSender;
 
@@ -491,7 +464,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                 return (
                   <span className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
                     <Ghost className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
-                    {baseName}
+                    {displayName}
                   </span>
                 );
               }
@@ -502,11 +475,11 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                   className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  {baseName}
+                  {displayName}
                 </Link>
               ) : (
                 <span className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  {baseName}
+                  {displayName}
                 </span>
               );
             })()}
@@ -520,41 +493,48 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
           {message.attachments && message.attachments.length > 0 && (
             <>
               {(!message.content || !message.content.trim()) ? (
-                // Si attachments seuls : wrapper relative pour les réactions
-                <div className={cn(
-                  "relative mb-2 max-w-[85%] sm:max-w-[75%] md:max-w-[65%]",
-                  isOwnMessage ? "ml-auto" : "mr-auto"
-                )}>
-                  <MessageAttachments
-                    attachments={visibleAttachments}
-                    onImageClick={onImageClick}
-                    currentUserId={isAnonymous ? currentAnonymousUserId : currentUser?.id}
-                    token={token || undefined}
-                    onAttachmentDeleted={handleAttachmentDeleted}
-                  />
-                  
-                  {/* Réactions par-dessus les attachments */}
-                  <div 
-                    className={cn(
-                      "absolute -bottom-3 z-[9999]",
-                      isOwnMessage ? "right-2" : "left-2"
-                    )}
-                    style={{ pointerEvents: 'auto' }}
-                  >
-                    <MessageReactions
-                      messageId={message.id}
-                      conversationId={conversationId || message.conversationId}
-                      currentUserId={currentUser?.id || ''}
-                      currentAnonymousUserId={currentAnonymousUserId}
-                      isAnonymous={isAnonymous}
-                      showAddButton={false}
+                // Si attachments seuls : dans le flux avec les réactions superposées
+                <>
+                  <div className={cn(
+                    "relative mb-1 w-full max-w-full",
+                    isOwnMessage ? "ml-auto" : "mr-auto"
+                  )}>
+                    <MessageAttachments
+                      attachments={visibleAttachments}
+                      onImageClick={onImageClick}
+                      currentUserId={isAnonymous ? currentAnonymousUserId : currentUser?.id}
+                      token={token || undefined}
+                      onAttachmentDeleted={handleAttachmentDeleted}
+                      isOwnMessage={isOwnMessage}
                     />
+
+                    {/* Réactions - Superposées en bas des attachments */}
+                    <div
+                      className={cn(
+                        "absolute z-[9999] transition-transform duration-200",
+                        "group-hover/message:-translate-y-4",
+                        isOwnMessage ? "right-0" : "left-0"
+                      )}
+                      style={{
+                        pointerEvents: 'auto',
+                        bottom: '-25px'
+                      }}
+                    >
+                      <MessageReactions
+                        messageId={message.id}
+                        conversationId={conversationId || message.conversationId}
+                        currentUserId={currentUser?.id || ''}
+                        currentAnonymousUserId={currentAnonymousUserId}
+                        isAnonymous={isAnonymous}
+                        showAddButton={false}
+                      />
+                    </div>
                   </div>
-                </div>
+                </>
               ) : (
                 // Si avec texte : pas de wrapper relative (les réactions sont sur la bulle)
                 <div className={cn(
-                  "mb-2 max-w-[85%] sm:max-w-[75%] md:max-w-[65%]",
+                  "mb-1 inline-flex max-w-full",
                   isOwnMessage ? "ml-auto" : "mr-auto"
                 )}>
                   <MessageAttachments
@@ -563,6 +543,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                     currentUserId={isAnonymous ? currentAnonymousUserId : currentUser?.id}
                     token={token || undefined}
                     onAttachmentDeleted={handleAttachmentDeleted}
+                    isOwnMessage={isOwnMessage}
                   />
                 </div>
               )}
@@ -571,16 +552,19 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
 
           {/* Message bubble wrapper with reactions - Seulement si contenu textuel */}
           {message.content && message.content.trim() && (
-            <div className="relative group/message">
-              <Card 
+            <div className={cn(
+              "relative flex w-full max-w-full mb-1 overflow-visible",
+              isOwnMessage ? "ml-auto" : "mr-auto"
+            )}>
+              <Card
                 className={cn(
-                  "relative transition-colors duration-200 border shadow-none max-w-[85%] sm:max-w-[75%] md:max-w-[65%] overflow-visible",
-                  isOwnMessage 
-                    ? 'bg-gradient-to-br from-blue-400 to-blue-500 dark:from-gray-700 dark:to-gray-800 border-blue-400 dark:border-gray-600 text-white ml-auto' 
-                    : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 mr-auto'
+                  "relative transition-colors duration-200 border shadow-none overflow-visible py-0 w-full",
+                  isOwnMessage
+                    ? 'bg-gradient-to-br from-blue-400 to-blue-500 dark:from-gray-700 dark:to-gray-800 border-blue-400 dark:border-gray-600 text-white'
+                    : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
                 )}
               >
-                <CardContent className="p-1 sm:p-2 max-w-full overflow-visible">
+                <CardContent className="p-1 w-full break-words overflow-hidden">
 
                 {/* Message parent si c'est une réponse */}
               {message.replyTo && (
@@ -588,7 +572,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                   initial={{ opacity: 0, y: -3 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="mb-2"
+                  className="mb-1"
                 >
                   <div 
                     onClick={() => {
@@ -603,14 +587,13 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                         : "bg-gray-50/90 dark:bg-gray-700/40 border-blue-400 dark:border-blue-500 hover:bg-gray-100/90 dark:hover:bg-gray-700/60"
                     )}
                   >
-                    <div className="flex items-start justify-between gap-1.5">
+                    <div className="flex items-start justify-between gap-1">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 mb-0.5">
+                        <div className="flex items-center gap-1 mb-1">
                           {(() => {
                             const replyUsername = message.replyTo.anonymousSender?.username || message.replyTo.sender?.username;
-                            const replyBaseName = message.replyTo.anonymousSender
-                              ? (message.replyTo.anonymousSender.username || tBubble('anonymous'))
-                              : (message.replyTo.sender?.username || tBubble('unknownUser'));
+                            const replyUser = message.replyTo.anonymousSender || message.replyTo.sender;
+                            const replyDisplayName = getUserDisplayName(replyUser, tBubble('unknownUser'));
 
                             const isReplyAnonymous = !!message.replyTo.anonymousSender;
 
@@ -622,7 +605,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                                   isOwnMessage ? "text-white/90" : "text-gray-700 dark:text-gray-200"
                                 )}>
                                   <Ghost className="h-3 w-3 text-purple-600 dark:text-purple-400" />
-                                  {replyBaseName}
+                                  {replyDisplayName}
                                 </span>
                               );
                             }
@@ -636,14 +619,14 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                                 )}
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                {replyBaseName}
+                                {replyDisplayName}
                               </Link>
                             ) : (
                               <span className={cn(
                                 "text-xs font-semibold truncate",
                                 isOwnMessage ? "text-white/90" : "text-gray-700 dark:text-gray-200"
                               )}>
-                                {replyBaseName}
+                                {replyDisplayName}
                               </span>
                             );
                           })()}
@@ -671,7 +654,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
               )}
 
               {/* Contenu principal */}
-              <div className="mb-2" style={{ position: 'relative', zIndex: 1 }}>
+              <div className="mb-0" style={{ position: 'relative', zIndex: 1 }}>
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
                     key={`content-${message.id}-${currentDisplayLanguage}-${displayContent.substring(0, 10)}`}
@@ -685,17 +668,17 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                       content={displayContent}
                       className={cn(
                         "leading-relaxed text-sm sm:text-base break-words",
-                        isOwnMessage 
-                          ? "text-white" 
+                        isOwnMessage
+                          ? "text-white"
                           : "text-gray-800 dark:text-gray-100"
                       )}
                       linkClassName={cn(
-                        "relative z-10",
+                        "relative z-10 break-all",
                         isOwnMessage
                           ? "text-white hover:text-white/90 decoration-white/40 hover:decoration-white/70"
                           : "text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 decoration-blue-500/30 hover:decoration-blue-500/60"
                       )}
-                      textClassName="whitespace-pre-wrap"
+                      textClassName="whitespace-pre-wrap break-words"
                       enableTracking={true}
                       onLinkClick={(url, isTracking) => {
                         console.log(`Link clicked: ${url} (tracking: ${isTracking})`);
@@ -704,403 +687,20 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                   </motion.div>
                 </AnimatePresence>
               </div>
-
-              {/* Footer: Actions Bar */}
-              <div className="flex items-center justify-between gap-2">
-                {/* Left: Language Badge + Translation Actions */}
-                <div className="flex items-center gap-1.5">
-                  {translationError && (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className={cn(
-                          "flex items-center",
-                          isOwnMessage ? "text-red-200" : "text-red-500"
-                        )}>
-                          <AlertTriangle className="h-3 w-3" />
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {translationError}
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
-
-                  {/* Bouton drapeau - Affichage du texte original */}
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={cn(
-                          "h-6 w-6 p-0 rounded-full transition-colors",
-                          currentDisplayLanguage === (message.originalLanguage || 'fr')
-                            ? isOwnMessage 
-                              ? "bg-white/20 text-white"
-                              : "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
-                            : isOwnMessage
-                              ? "text-white/70 hover:text-white hover:bg-white/20"
-                              : "text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
-                        )}
-                        onClick={() => {
-                          // Alterner entre le texte original et la langue de base de l'utilisateur
-                          if (onLanguageSwitch) {
-                            const targetLang = currentDisplayLanguage === (message.originalLanguage || 'fr') 
-                              ? userLanguage // Basculer vers la langue de l'utilisateur
-                              : (message.originalLanguage || 'fr'); // Revenir au texte original
-                            onLanguageSwitch(message.id, targetLang);
-                          }
-                        }}
-                        aria-label={currentDisplayLanguage === (message.originalLanguage || 'fr') ? tBubble('showInUserLanguage') : tBubble('showOriginal')}
-                      >
-                        <span className="text-sm">{getLanguageInfo(message.originalLanguage || 'fr').flag}</span>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{currentDisplayLanguage === (message.originalLanguage || 'fr') ? tBubble('showInUserLanguage') : tBubble('showOriginal')}</p>
-                    </TooltipContent>
-                  </Tooltip>
-
-                  {/* Bouton traduction - Sélection de langue avec badge animé */}
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="relative">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className={cn(
-                            "h-6 w-6 p-0 rounded-full transition-colors",
-                            isOwnMessage 
-                              ? "text-white/70 hover:text-white hover:bg-white/20" 
-                              : "text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/30"
-                          )}
-                          onClick={() => {
-                            if (onEnterLanguageMode) {
-                              onEnterLanguageMode();
-                            } else {
-                              handlePopoverOpenChange(true);
-                            }
-                          }}
-                          aria-label={tBubble('translate')}
-                        >
-                          <Languages className="h-3.5 w-3.5" />
-                        </Button>
-                        
-                        {/* Badge animé du nombre de traductions */}
-                        {message.translations && message.translations.length > 0 && (
-                          <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                            className={cn(
-                              "absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm",
-                              isOwnMessage 
-                                ? "bg-white text-blue-600" 
-                                : "bg-blue-600 text-white"
-                            )}
-                          >
-                            {message.translations.length}
-                          </motion.div>
-                        )}
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{tBubble('translate')} ({message.translations?.length || 0})</p>
-                    </TooltipContent>
-                  </Tooltip>
-
-                  {/* Popover de traduction (seulement si ancien système) */}
-                  <Popover open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>
-                    <PopoverTrigger asChild>
-                      <div style={{ display: 'none' }} />
-                    </PopoverTrigger>
-                    
-                    {/* Popover de traduction (seulement si ancien système) */}
-                    {!onEnterLanguageMode && (
-                      <PopoverContent 
-                        className={cn("w-96 p-0 overflow-hidden", Z_CLASSES.TRANSLATION_POPOVER)}
-                        side="top"
-                        align="start"
-                        sideOffset={8}
-                        collisionPadding={16}
-                      >
-                        <div className="flex flex-col max-h-[400px]">
-                          {/* Header avec recherche */}
-                          <div className="p-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Languages className="h-4 w-4 text-blue-600" />
-                              <span className="font-medium text-sm">{tBubble('selectLanguage')}</span>
-                              {isTranslating && <Loader2 className="h-3 w-3 animate-spin text-blue-600" />}
-                            </div>
-                            
-                            <div className="relative">
-                              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
-                              <Input
-                                type="text"
-                                placeholder={tBubble('searchLanguage')}
-                                value={translationFilter}
-                                onChange={(e) => setTranslationFilter(e.target.value)}
-                                className="pl-7 h-8 text-xs"
-                              />
-                            </div>
-                          </div>
-
-                          {/* Contenu avec scroll */}
-                          <div className="flex-1 overflow-y-auto">
-                            <Tabs defaultValue="available" className="w-full">
-                              <TabsList className="w-full justify-start rounded-none border-b h-9">
-                                <TabsTrigger value="available" className="text-xs">
-                                  {tBubble('available')} ({filteredVersions.length})
-                                </TabsTrigger>
-                                <TabsTrigger value="generate" className="text-xs">
-                                  {tBubble('generate')} ({filteredMissingLanguages.length})
-                                </TabsTrigger>
-                              </TabsList>
-                              
-                              <TabsContent value="available" className="mt-0">
-                                <div className="p-2 space-y-1">
-                                  {filteredVersions.map((version: any, index) => {
-                                    const langInfo = getLanguageInfo(version.language);
-                                    const isCurrentlyDisplayed = currentDisplayLanguage === version.language;
-                                    
-                                    return (
-                                      <div
-                                        key={`${version.language}-${index}`}
-                                        onClick={() => handleLanguageSwitch(version.language)}
-                                        className={cn(
-                                          "flex items-start gap-2 p-2 rounded-md cursor-pointer transition-colors text-left group",
-                                          isCurrentlyDisplayed
-                                            ? "bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700"
-                                            : "hover:bg-gray-50 dark:hover:bg-gray-700"
-                                        )}
-                                      >
-                                        <span className="text-lg mt-0.5">{langInfo.flag}</span>
-                                        <div className="flex-1 min-w-0">
-                                          <div className="flex items-center gap-2 mb-1">
-                                            <span className="font-medium text-sm">{langInfo.name}</span>
-                                            <Badge variant="outline" className="text-xs h-4 px-1">
-                                              {version.language.toUpperCase()}
-                                            </Badge>
-                                            {version.isOriginal && (
-                                              <Badge variant="secondary" className="text-xs h-4 px-1">
-                                                {tBubble('original')}
-                                              </Badge>
-                                            )}
-                                            {isCurrentlyDisplayed && (
-                                              <CheckCircle2 className="h-3 w-3 text-blue-600" />
-                                            )}
-                                          </div>
-                                          <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 leading-snug">
-                                            {version.content}
-                                          </p>
-                                          {!version.isOriginal && (
-                                            <div className="flex items-center gap-2 mt-1">
-                                              <span className="text-[10px] text-gray-500">
-                                                {tBubble('modelUsed')}: {version.model}
-                                              </span>
-                                              <div className="flex items-center text-[10px] text-gray-500">
-                                                <span className="mr-1">{tBubble('confidence')}:</span>
-                                                <div className="flex">
-                                                  {[...Array(5)].map((_, i) => (
-                                                    <span key={i} className={cn(
-                                                      "text-[8px]",
-                                                      i < Math.round(version.confidence * 5) ? "text-yellow-400" : "text-gray-300"
-                                                    )}>★</span>
-                                                  ))}
-                                                </div>
-                                              </div>
-                                            </div>
-                                          )}
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
-                                  
-                                  {filteredVersions.length === 0 && (
-                                    <div className="text-center py-4 text-gray-500 text-sm">
-                                      {tBubble('noLanguagesFound')}
-                                    </div>
-                                  )}
-                                </div>
-                              </TabsContent>
-
-                              <TabsContent value="generate" className="mt-0">
-                                <div className="p-2 space-y-1">
-                                  {filteredMissingLanguages.map((lang) => (
-                                    <div
-                                      key={lang.code}
-                                      onClick={() => handleForceTranslation(lang.code)}
-                                      className="flex items-center gap-2 p-2 rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                                    >
-                                      <span className="text-lg">{lang.flag}</span>
-                                      <div className="flex-1">
-                                        <div className="flex items-center gap-2">
-                                          <span className="font-medium text-sm">{lang.name}</span>
-                                          <Badge variant="outline" className="text-xs h-4 px-1">
-                                            {lang.code.toUpperCase()}
-                                          </Badge>
-                                        </div>
-                                        <span className="text-xs text-gray-500">{tBubble('clickToTranslate')}</span>
-                                      </div>
-                                      <ArrowUp className="h-3 w-3 text-gray-400 group-hover:text-blue-600 transition-colors" />
-                                    </div>
-                                  ))}
-                                  
-                                  {filteredMissingLanguages.length === 0 && (
-                                    <div className="text-center py-4 text-gray-500 text-sm">
-                                      {tBubble('allLanguagesTranslated')}
-                                    </div>
-                                  )}
-                                </div>
-                              </TabsContent>
-                            </Tabs>
-                          </div>
-                        </div>
-                      </PopoverContent>
-                    )}
-                  </Popover>
-
-                  {/* Bouton de réponse */}
-                  {onReplyMessage && (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onReplyMessage(message)}
-                          aria-label={tBubble('replyToMessage')}
-                          className={cn(
-                            "h-7 w-7 p-0 rounded-full transition-colors",
-                            isOwnMessage 
-                              ? "text-white/70 hover:text-white hover:bg-white/20" 
-                              : "text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/30"
-                          )}
-                        >
-                          <MessageCircle className="h-3.5 w-3.5" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{tBubble('replyToMessage')}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
-
-                  {/* Bouton réaction */}
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleReactionClick}
-                        className={cn(
-                          "h-7 w-7 p-0 rounded-full transition-colors",
-                          isOwnMessage 
-                            ? "text-white/70 hover:text-white hover:bg-white/20" 
-                            : "text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
-                        )}
-                        aria-label={tBubble('addReaction')}
-                      >
-                        <Smile className="h-3.5 w-3.5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{tBubble('addReaction')}</p>
-                    </TooltipContent>
-                  </Tooltip>
-
-                  {/* Bouton copier */}
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleCopyMessage}
-                        className={cn(
-                          "h-7 w-7 p-0 rounded-full transition-colors",
-                          isOwnMessage
-                            ? "text-white/70 hover:text-white hover:bg-white/20"
-                            : "text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
-                        )}
-                        aria-label={tBubble('copyMessage')}
-                      >
-                        <Copy className="h-3.5 w-3.5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{tBubble('copyMessage')}</p>
-                    </TooltipContent>
-                  </Tooltip>
-
-                  {/* Bouton signaler */}
-                  {canReportMessage() && (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={handleReportMessage}
-                          className={cn(
-                            "h-7 w-7 p-0 rounded-full transition-colors",
-                            "text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-800"
-                          )}
-                          aria-label={tReport('reportMessage')}
-                        >
-                          <Flag className="h-3.5 w-3.5" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{tReport('reportMessage')}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
-                </div>
-
-                {/* Right: Options Menu - Appears on hover/touch */}
-                {canModifyMessage() && (
-                  <div className="opacity-0 group-hover/message:opacity-100 active:opacity-100 transition-opacity duration-200">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className={cn(
-                            "h-7 w-7 p-0 rounded-full transition-colors",
-                            isOwnMessage 
-                              ? "text-white/70 hover:text-white hover:bg-white/20" 
-                              : "text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
-                          )}
-                        >
-                          <MoreHorizontal className="h-3.5 w-3.5" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem onClick={handleEditMessage}>
-                          <Edit className="h-4 w-4 mr-2" />
-                          <span>{tBubble('edit')}</span>
-                        </DropdownMenuItem>
-                        {canDeleteMessage() && (
-                          <DropdownMenuItem
-                            onClick={handleDeleteMessage}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/30"
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            <span>{tBubble('delete')}</span>
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                )}
-              </div>
             </CardContent>
           </Card>
 
-          {/* Message Reactions - Position selon l'expéditeur - Attachées au texte */}
-          <div 
+          {/* Réactions - Superposées en bas de la bulle de message */}
+          <div
             className={cn(
-              "absolute -bottom-3 z-[9999]",
-              isOwnMessage ? "right-2" : "left-2"
+              "absolute z-[9999] transition-transform duration-200",
+              "group-hover/message:-translate-y-4",
+              isOwnMessage ? "right-0" : "left-0"
             )}
-            style={{ pointerEvents: 'auto' }}
+            style={{
+              pointerEvents: 'auto',
+              bottom: '-25px'
+            }}
           >
             <MessageReactions
               messageId={message.id}
@@ -1114,110 +714,35 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
         </div>
           )}
 
-          {/* Si attachments seuls (pas de texte) - Boutons d'action seulement */}
-          {(!message.content || !message.content.trim()) && message.attachments && message.attachments.length > 0 && (
-            <div className={cn(
-              "flex items-center gap-1.5 max-w-[85%] sm:max-w-[75%] md:max-w-[65%]",
-              isOwnMessage ? "ml-auto justify-end" : "mr-auto justify-start"
-            )}>
-              {/* Bouton de réponse */}
-              {onReplyMessage && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onReplyMessage(message)}
-                      aria-label={tBubble('replyToMessage')}
-                      className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-blue-600 hover:bg-blue-50"
-                    >
-                      <MessageCircle className="h-3.5 w-3.5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{tBubble('replyToMessage')}</p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-
-              {/* Bouton réaction */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleReactionClick}
-                    className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                    aria-label={tBubble('addReaction')}
-                  >
-                    <Smile className="h-3.5 w-3.5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{tBubble('addReaction')}</p>
-                </TooltipContent>
-              </Tooltip>
-
-              {/* Bouton copier le lien */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleCopyMessageLink}
-                    className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                    aria-label={tBubble('copyLink') || 'Copier le lien'}
-                  >
-                    <Copy className="h-3.5 w-3.5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{tBubble('copyLink') || 'Copier le lien'}</p>
-                </TooltipContent>
-              </Tooltip>
-
-              {/* Bouton signaler */}
-              {canReportMessage() && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleReportMessage}
-                      className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-800"
-                      aria-label={tReport('reportMessage')}
-                    >
-                      <Flag className="h-3.5 w-3.5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{tReport('reportMessage')}</p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-
-              {/* Bouton supprimer (seulement si permissions) */}
-              {canDeleteMessage() && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleDeleteMessage}
-                      className="h-7 w-7 p-0 rounded-full transition-colors text-gray-500 hover:text-red-600 hover:bg-red-50"
-                      aria-label={tBubble('delete')}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{tBubble('delete')}</p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-            </div>
-          )}
+          {/* Actions Bar */}
+          <MessageActionsBar
+            message={message}
+            isOwnMessage={isOwnMessage}
+            canReportMessage={canReportMessage()}
+            canEditMessage={canModifyMessage()}
+            canDeleteMessage={canDeleteMessage()}
+            onReply={onReplyMessage ? () => onReplyMessage(message) : undefined}
+            onReaction={handleReactionClick}
+            onCopy={handleCopyMessage}
+            onReport={canReportMessage() ? handleReportMessage : undefined}
+            onEdit={canModifyMessage() ? handleEditMessage : undefined}
+            onDelete={canDeleteMessage() ? handleDeleteMessage : undefined}
+            t={tBubble}
+            tReport={tReport}
+            translationError={translationError}
+            currentDisplayLanguage={currentDisplayLanguage}
+            originalLanguage={message.originalLanguage || 'fr'}
+            userLanguage={userLanguage}
+            availableVersions={availableVersions}
+            onLanguageSwitch={onLanguageSwitch ? (lang: string) => onLanguageSwitch(message.id, lang) : () => {}}
+            onEnterLanguageMode={onEnterLanguageMode}
+            getLanguageInfo={getLanguageInfo}
+          />
         </div>
+        </div>
+
+        {/* Empty space for received messages (30% = 3 columns) */}
+        {!isOwnMessage && <div className="col-span-3" />}
       </motion.div>
     </TooltipProvider>
   );

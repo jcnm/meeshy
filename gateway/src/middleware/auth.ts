@@ -11,6 +11,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { PrismaClient } from '../../shared/prisma/client';
 import type { AuthenticationContext, AuthenticationType } from '../../shared/types';
 import jwt from 'jsonwebtoken';
+import { StatusService } from '../services/status.service';
 
 // ===== TYPES UNIFIÉS =====
 
@@ -85,7 +86,10 @@ export interface UnifiedAuthRequest extends FastifyRequest {
 // ===== SERVICE D'AUTHENTIFICATION =====
 
 export class AuthMiddleware {
-  constructor(private prisma: PrismaClient) {}
+  constructor(
+    private prisma: PrismaClient,
+    private statusService?: StatusService
+  ) {}
 
   /**
    * Crée le contexte d'authentification unifié
@@ -143,12 +147,19 @@ export class AuthMiddleware {
           useCustomDestination: true,
           isOnline: true,
           lastActiveAt: true,
-          isActive: true
+          isActive: true,
+          createdAt: true,
+          updatedAt: true
         }
       });
 
       if (!user || !user.isActive) {
         throw new Error('User not found or inactive');
+      }
+
+      // NOUVEAU: Mettre à jour lastActiveAt avec throttling (asynchrone, ne bloque pas)
+      if (this.statusService) {
+        this.statusService.updateUserLastActive(user.id);
       }
 
       // Déterminer la langue principale
@@ -213,6 +224,11 @@ export class AuthMiddleware {
 
       if (!anonymousParticipant || !anonymousParticipant.isActive) {
         throw new Error('Anonymous participant not found or inactive');
+      }
+
+      // NOUVEAU: Mettre à jour lastActiveAt avec throttling (asynchrone, ne bloque pas)
+      if (this.statusService) {
+        this.statusService.updateAnonymousLastActive(anonymousParticipant.id);
       }
 
       // Utiliser les permissions du shareLink et du participant
@@ -286,13 +302,14 @@ export class AuthMiddleware {
  * Créer le middleware d'authentification unifié pour Fastify
  */
 export function createUnifiedAuthMiddleware(
-  prisma: PrismaClient, 
-  options: { 
+  prisma: PrismaClient,
+  options: {
     requireAuth?: boolean;
     allowAnonymous?: boolean;
+    statusService?: StatusService;
   } = {}
 ) {
-  const authMiddleware = new AuthMiddleware(prisma);
+  const authMiddleware = new AuthMiddleware(prisma, options.statusService);
   
   return async function unifiedAuth(request: FastifyRequest, reply: FastifyReply) {
     try {

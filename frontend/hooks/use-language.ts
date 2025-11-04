@@ -47,12 +47,12 @@ export function useLanguage(): UseLanguageReturn {
   const [browserLanguages, setBrowserLanguages] = useState<string[]>([]);
 
   // Noms de langues traduits
-  const translatedLanguages = useMemo(() => 
+  const translatedLanguages = useMemo(() =>
     INTERFACE_LANGUAGES.map(lang => ({
       code: lang.code,
       name: lang.name,
       nativeName: lang.name,
-      translatedName: t(lang.code) || lang.name // Utilise la traduction ou fallback vers le nom anglais
+      translatedName: t(`languageNames.${lang.code}`) || lang.name // Utilise la traduction ou fallback vers le nom anglais
     })), [t]
   );
 

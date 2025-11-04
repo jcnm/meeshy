@@ -23,11 +23,12 @@ const MAX_LINK_NAME_LENGTH = 32;
 
 /**
  * Génère un nom de lien basé sur le canal de diffusion et les destinataires
- * Format attendu: "Lien LinkedIn - 7j" ou "Lien Famille - 30j"
- * Ne contient PAS le titre de la conversation pour rester concis
+ * Format attendu: "Lien LinkedIn (Titre conversation) - 7j"
+ * Contient le titre de la conversation entre parenthèses
  */
 export function generateLinkName(options: LinkNameOptions): string {
   const {
+    conversationTitle,
     language = 'fr',
     durationDays,
     maxParticipants,
@@ -38,58 +39,24 @@ export function generateLinkName(options: LinkNameOptions): string {
 
   // Déterminer le type de canal/destinataires
   const channelType = getChannelType(maxParticipants, maxUses, isPublic, language, sharingContext);
-  
+
   // Déterminer la durée courte
   const shortDuration = getShortDuration(durationDays, language);
 
-  // Construire le nom selon la langue
-  let linkName: string;
-  
-  switch (language) {
-    case 'fr':
-      linkName = `${channelType} - ${shortDuration}`;
-      break;
-    
-    case 'en':
-      linkName = `${channelType} - ${shortDuration}`;
-      break;
-    
-    case 'es':
-      linkName = `${channelType} - ${shortDuration}`;
-      break;
-    
-    case 'de':
-      linkName = `${channelType} - ${shortDuration}`;
-      break;
-    
-    case 'it':
-      linkName = `${channelType} - ${shortDuration}`;
-      break;
-    
-    case 'pt':
-      linkName = `${channelType} - ${shortDuration}`;
-      break;
-    
-    case 'zh':
-      linkName = `${channelType} - ${shortDuration}`;
-      break;
-    
-    case 'ja':
-      linkName = `${channelType} - ${shortDuration}`;
-      break;
-    
-    case 'ar':
-      linkName = `${channelType} - ${shortDuration}`;
-      break;
-    
-    default:
-      linkName = `${channelType} - ${shortDuration}`;
-      break;
+  // Tronquer le titre de la conversation si trop long
+  const maxTitleLength = 20;
+  let truncatedTitle = conversationTitle;
+  if (conversationTitle.length > maxTitleLength) {
+    truncatedTitle = conversationTitle.substring(0, maxTitleLength - 3) + '...';
   }
 
-  // S'assurer que le résultat ne dépasse pas 32 caractères
-  if (linkName.length > MAX_LINK_NAME_LENGTH) {
-    return linkName.substring(0, MAX_LINK_NAME_LENGTH - 3) + '...';
+  // Construire le nom avec le titre de la conversation entre parenthèses
+  const linkName = `${channelType} (${truncatedTitle}) - ${shortDuration}`;
+
+  // S'assurer que le résultat ne dépasse pas 60 caractères (augmenté pour inclure le titre)
+  const MAX_TOTAL_LENGTH = 60;
+  if (linkName.length > MAX_TOTAL_LENGTH) {
+    return linkName.substring(0, MAX_TOTAL_LENGTH - 3) + '...';
   }
 
   return linkName;
@@ -256,6 +223,24 @@ function getSharingContextName(context: string, language: string): string {
 }
 
 /**
+ * Retourne le mot "Lien" traduit selon la langue
+ */
+function getLinkWord(language: string): string {
+  const translations: Record<string, string> = {
+    fr: 'Lien',
+    en: 'Link',
+    es: 'Enlace',
+    de: 'Link',
+    it: 'Link',
+    pt: 'Link',
+    zh: '链接',
+    ja: 'リンク',
+    ar: 'رابط'
+  };
+  return translations[language] || translations['en'];
+}
+
+/**
  * Retourne le type de canal/destinataires selon les limites et le contexte de partage
  */
 function getChannelType(
@@ -269,130 +254,9 @@ function getChannelType(
   if (sharingContext) {
     return getSharingContextName(sharingContext, language);
   }
-  
-  const hasLimit = maxParticipants || maxUses;
-  
-  switch (language) {
-    case 'fr':
-      if (!hasLimit || isPublic) {
-        return 'Canal public';
-      }
-      if (maxParticipants) {
-        return `Lien ${maxParticipants} pers.`;
-      }
-      if (maxUses) {
-        return `Lien ${maxUses} util.`;
-      }
-      return 'Canal public';
-    
-    case 'en':
-      if (!hasLimit || isPublic) {
-        return 'Public channel';
-      }
-      if (maxParticipants) {
-        return `Link ${maxParticipants} people`;
-      }
-      if (maxUses) {
-        return `Link ${maxUses} uses`;
-      }
-      return 'Public channel';
-    
-    case 'es':
-      if (!hasLimit || isPublic) {
-        return 'Canal público';
-      }
-      if (maxParticipants) {
-        return `Enlace ${maxParticipants} pers.`;
-      }
-      if (maxUses) {
-        return `Enlace ${maxUses} usos`;
-      }
-      return 'Canal público';
-    
-    case 'de':
-      if (!hasLimit || isPublic) {
-        return 'Öffentlicher Kanal';
-      }
-      if (maxParticipants) {
-        return `Link ${maxParticipants} Pers.`;
-      }
-      if (maxUses) {
-        return `Link ${maxUses} Verw.`;
-      }
-      return 'Öffentlicher Kanal';
-    
-    case 'it':
-      if (!hasLimit || isPublic) {
-        return 'Canale pubblico';
-      }
-      if (maxParticipants) {
-        return `Link ${maxParticipants} pers.`;
-      }
-      if (maxUses) {
-        return `Link ${maxUses} usi`;
-      }
-      return 'Canale pubblico';
-    
-    case 'pt':
-      if (!hasLimit || isPublic) {
-        return 'Canal público';
-      }
-      if (maxParticipants) {
-        return `Link ${maxParticipants} pess.`;
-      }
-      if (maxUses) {
-        return `Link ${maxUses} usos`;
-      }
-      return 'Canal público';
-    
-    case 'zh':
-      if (!hasLimit || isPublic) {
-        return '公开频道';
-      }
-      if (maxParticipants) {
-        return `链接 ${maxParticipants}人`;
-      }
-      if (maxUses) {
-        return `链接 ${maxUses}次`;
-      }
-      return '公开频道';
-    
-    case 'ja':
-      if (!hasLimit || isPublic) {
-        return '公開チャンネル';
-      }
-      if (maxParticipants) {
-        return `リンク ${maxParticipants}名`;
-      }
-      if (maxUses) {
-        return `リンク ${maxUses}回`;
-      }
-      return '公開チャンネル';
-    
-    case 'ar':
-      if (!hasLimit || isPublic) {
-        return 'قناة عامة';
-      }
-      if (maxParticipants) {
-        return `رابط ${maxParticipants} شخص`;
-      }
-      if (maxUses) {
-        return `رابط ${maxUses} استخدام`;
-      }
-      return 'قناة عامة';
-    
-    default:
-      if (!hasLimit || isPublic) {
-        return 'Public channel';
-      }
-      if (maxParticipants) {
-        return `Link ${maxParticipants} people`;
-      }
-      if (maxUses) {
-        return `Link ${maxUses} uses`;
-      }
-      return 'Public channel';
-  }
+
+  // Pour les liens rapides sans contexte, retourner simplement "Lien" traduit
+  return getLinkWord(language);
 }
 
 /**

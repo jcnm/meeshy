@@ -117,10 +117,13 @@ export default function SettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">{t('loadingSettings')}</p>
+          <div className="relative">
+            <div className="animate-spin rounded-full h-20 w-20 border-4 border-gray-200 border-t-blue-600 mx-auto"></div>
+            <SettingsIcon className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-8 w-8 text-blue-600" />
+          </div>
+          <p className="mt-6 text-gray-600 dark:text-gray-400 font-medium">{t('loadingSettings')}</p>
         </div>
       </div>
     );
@@ -131,45 +134,49 @@ export default function SettingsPage() {
   }
 
   return (
-    <DashboardLayout title={t('title')} className="!h-auto flex flex-col !max-w-none">
-      {/* Hero Section */}
-      <section className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b dark:border-gray-700 shadow-sm -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
-        <div className="w-full py-6 lg:py-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4">
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
-                <SettingsIcon className="h-6 w-6 text-white" />
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+      {/* Main content area */}
+      <DashboardLayout title={t('title')} className="!bg-none !bg-transparent !h-auto">
+        <div className="relative z-10 max-w-7xl mx-auto space-y-8 pb-8 w-full py-8">
+
+          {/* Hero Section avec style moderne */}
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 p-8 md:p-12 text-white shadow-2xl">
+            <div className="absolute inset-0 bg-black/10"></div>
+            <div className="relative z-10">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="p-4 bg-white/20 backdrop-blur-sm rounded-2xl">
+                  <SettingsIcon className="h-10 w-10" />
+                </div>
+                <div className="flex-1">
+                  <h1 className="text-4xl md:text-5xl font-bold mb-2">{t('title')}</h1>
+                  <p className="text-lg md:text-xl text-blue-100">
+                    {t('pageTitle', { username: currentUser?.username })}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">
-                  {t('title')}
-                </h1>
-                <p className="text-gray-600 dark:text-gray-400 mt-1">
-                  {t('pageTitle', { username: currentUser?.username })}
-                </p>
-              </div>
+              <p className="text-base md:text-lg text-blue-100 max-w-3xl leading-relaxed">
+                {t('subtitle') || 'Gérez vos préférences de compte, de langue et de confidentialité'}
+              </p>
             </div>
+            {/* Decorative elements */}
+            <div className="absolute -right-12 -bottom-12 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+            <div className="absolute -left-12 -top-12 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl"></div>
           </div>
-          <p className="text-gray-600 dark:text-gray-400 text-lg">
-            {t('subtitle') || 'Gérez vos préférences de compte, de langue et de confidentialité'}
-          </p>
-        </div>
-      </section>
 
-      {/* Settings Content */}
-      <section className="py-6 lg:py-8 flex-1">
-        <div className="w-full">
-          <CompleteUserSettings 
-            user={currentUser}
-            onUserUpdate={handleUserUpdate}
-          />
+          {/* Settings Content avec Card moderne */}
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border-2 border-gray-200 dark:border-gray-800 overflow-hidden">
+            <CompleteUserSettings
+              user={currentUser}
+              onUserUpdate={handleUserUpdate}
+            />
+          </div>
         </div>
-      </section>
+      </DashboardLayout>
 
-      {/* Footer pleine largeur */}
-      <div className="-mx-4 sm:-mx-6 lg:-mx-8 mt-auto">
+      {/* Footer */}
+      <div className="relative z-20 mt-auto">
         <Footer />
       </div>
-    </DashboardLayout>
+    </div>
   );
 }

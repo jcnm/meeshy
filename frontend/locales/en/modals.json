@@ -383,17 +383,27 @@
         "requireEmail": {
           "label": "Require email",
           "description": "Participants must provide an email to join"
+        },
+        "requireBirthday": {
+          "label": "Birthday required",
+          "description": "Guests must provide their birth date to join"
         }
       },
       "allowedLanguages": {
         "title": "Allowed languages",
         "description": "Select which languages can be used in this conversation",
         "allowLanguage": "Allow {language}",
-        "allowAllLanguages": "Allow all languages"
+        "allowAllLanguages": "Allow all languages",
+        "allowAllLanguagesHint": "Select no language to allow all languages"
       },
       "linkDetails": {
         "title": "Link details",
         "description": "Configure the sharing link information",
+        "requireAccount": {
+          "label": "Account required",
+          "description": "Only users with an account can join this conversation. Disables anonymous access.",
+          "info": "When this option is enabled, only authenticated users with an account can join. This completely disables anonymous access and automatically enforces all other requirements (email, birth date)."
+        },
         "linkName": "Link name",
         "linkNameInfo": "A friendly name to identify this link",
         "linkNamePlaceholder": "Ex: Team invitation, Partner access...",
@@ -466,8 +476,10 @@
       "languages": "Languages",
       "sendPermissions": "Send permissions",
       "authRequirements": "Authentication requirements",
+      "accountRequired": "Account required",
       "email": "Email",
       "nickname": "Nickname",
+      "birthday": "Birth date",
       "userLimits": "User limits",
       "maxSessions": "Max sessions",
       "maxConcurrent": "Max concurrent",
@@ -512,6 +524,41 @@
           "backHome": "Back to home",
           "createNew": "Create new conversation"
         }
+      }
+    },
+    "quickLinkModal": {
+      "title": "Create a quick share link",
+      "description": "Configure your secure share link with optimal default settings",
+      "steps": {
+        "config": "Configuration",
+        "summary": "Summary"
+      },
+      "secureConfig": {
+        "title": "Secure configuration",
+        "description": "This link uses optimal security settings to protect your conversation",
+        "tooltip": "The created link will require an authenticated account with email and birth date. All sharing permissions will be enabled for authenticated members. The link will expire in 7 days.",
+        "accountRequired": "Account required",
+        "emailRequired": "Email required",
+        "birthdayRequired": "Birthday required",
+        "allPermissions": "All permissions"
+      },
+      "linkTitle": {
+        "label": "Link title",
+        "placeholder": "Ex: Team invitation, Partner access...",
+        "hint": "This title will appear in your share links list"
+      },
+      "welcomeMessage": {
+        "label": "Welcome message",
+        "placeholder": "Welcome! Feel free to introduce yourself...",
+        "hint": "This message will be displayed to guests when they join via this link"
+      },
+      "expirationNote": "The link will automatically expire in 7 days",
+      "actions": {
+        "cancel": "Cancel",
+        "next": "Next",
+        "back": "Back",
+        "create": "Create link",
+        "creating": "Creating..."
       }
     }
   }

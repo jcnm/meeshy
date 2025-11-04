@@ -37,6 +37,7 @@ interface ConversationMessagesProps {
   onImageClick?: (attachmentId: string) => void;
   onLoadMore?: () => void;
   t: (key: string) => string;
+  tCommon?: (key: string) => string; // Traductions du namespace common
   reverseOrder?: boolean; // true = récent en haut (BubbleStream), false = ancien en haut (Conversations)
   scrollDirection?: 'up' | 'down'; // Direction du scroll pour charger plus: 'up' = haut (défaut), 'down' = bas
   scrollButtonDirection?: 'up' | 'down'; // Direction du bouton scroll: 'up' = ArrowUp (BubbleStream), 'down' = ArrowDown (Conversations)
@@ -67,6 +68,7 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
   onImageClick,
   onLoadMore,
   t,
+  tCommon,
   reverseOrder = false,
   scrollDirection = 'up', // Par défaut: scroll vers le haut (comportement classique messagerie)
   scrollButtonDirection = 'down', // Par défaut: ArrowDown pour Conversations (descendre vers récent)
@@ -397,7 +399,16 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
         <div className="flex justify-center py-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
-            <span>{t('common:messages.loadingOlderMessages')}</span>
+            <span>{(tCommon || t)('messages.loadingOlderMessages')}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Message "Tous les messages chargés" - Mode classique (scroll up) */}
+      {scrollDirection === 'up' && !hasMore && !isLoadingMore && messages.length > 0 && (
+        <div className="flex justify-center py-4">
+          <div className="text-sm text-muted-foreground">
+            {(tCommon || t)('messages.allMessagesLoaded')}
           </div>
         </div>
       )}
@@ -420,10 +431,7 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
           emptyStateMessage={t('noMessages')}
           emptyStateDescription={t('noMessagesDescription')}
           reverseOrder={reverseOrder}
-          className={cn(
-            "space-y-3",
-            isMobile && "space-y-'2"
-          )}
+          className="space-y-0.5"
           onEditMessage={onEditMessage}
           onDeleteMessage={onDeleteMessage}
           conversationId={conversationId}
@@ -444,7 +452,16 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
         <div className="flex justify-center py-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
-            <span>{t('common:messages.loadingOlderMessages')}</span>
+            <span>{(tCommon || t)('messages.loadingOlderMessages')}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Message "Tous les messages chargés" - Mode BubbleStream (scroll down) */}
+      {scrollDirection === 'down' && !hasMore && !isLoadingMore && messages.length > 0 && (
+        <div className="flex justify-center py-4">
+          <div className="text-sm text-muted-foreground">
+            {(tCommon || t)('messages.allMessagesLoaded')}
           </div>
         </div>
       )}
@@ -475,14 +492,6 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
       {/* Bouton flottant pour scroller - Direction adaptée au contexte */}
       {(() => {
         const shouldRender = showScrollButton && !isLoadingMessages && messages.length > 0;
-        console.log('[ConversationMessages] 🎯 Bouton scroll render check:', {
-          showScrollButton,
-          isLoadingMessages,
-          messagesCount: messages.length,
-          shouldRender,
-          scrollDirection,
-          scrollButtonDirection
-        });
         return shouldRender ? (
           <Button
             onClick={handleScrollButtonClick}

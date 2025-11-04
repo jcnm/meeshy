@@ -151,8 +151,12 @@ model ConversationShareLink {
   allowAnonymousFiles    Boolean   @default(false)
   allowAnonymousImages   Boolean   @default(true)
   allowViewHistory       Boolean   @default(true)
+  /// Si true, seuls les utilisateurs avec compte peuvent rejoindre (bloque l'accès anonyme)
+  requireAccount         Boolean   @default(false)
   requireNickname        Boolean   @default(true)
   requireEmail           Boolean   @default(false)
+  /// Si true, demande la date de naissance pour vérifier l'âge minimum
+  requireBirthday        Boolean   @default(false)
   allowedCountries       String[]  @default([])
   allowedLanguages       String[]  @default([])
   allowedIpRanges        String[]  @default([])
@@ -173,6 +177,7 @@ model AnonymousParticipant {
   lastName          String
   username          String
   email             String?
+  birthday          DateTime?
   sessionToken      String    @unique
   ipAddress         String?
   country           String?
@@ -266,13 +271,19 @@ model MessageAttachment {
   thumbnailUrl  String?
 
   // Métadonnées spécifiques audio/vidéo
-  duration Int? // Durée en secondes
+  duration   Int? // Durée en secondes
+  bitrate    Int? // Débit en bps (bits per second)
+  sampleRate Int? // Fréquence d'échantillonnage en Hz (ex: 44100, 48000)
+  codec      String? // Codec audio/vidéo (ex: "opus", "aac", "vorbis", "h264")
+  channels   Int? // Nombre de canaux audio (1: mono, 2: stereo)
 
   // Métadonnées générales
   uploadedBy  String  @db.ObjectId // ID utilisateur ou anonyme
   isAnonymous Boolean @default(false)
 
   createdAt DateTime @default(now())
+  /// Attachment metadata
+  metadata  Json? // JSON blob for additional metadata
 
   message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
 
@@ -608,10 +619,10 @@ model CallSession {
   conversationId String       @db.ObjectId
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
-  /// Call mode: 'p2p' for 2 participants, 'sfu' for 3+
+  /// Call mode: p2p for 2 participants, sfu for 3+
   mode CallMode @default(p2p)
 
-  /// Call status: 'initiated', 'ringing', 'active', 'ended'
+  /// Call status: initiated, ringing, active, ended
   status CallStatus @default(initiated)
 
   /// User who initiated the call
@@ -653,7 +664,7 @@ model CallParticipant {
   /// Anonymous participant ID (from AnonymousParticipant model)
   anonymousId String?
 
-  /// Participant role: 'initiator', 'participant'
+  /// Participant role: initiator or participant
   role ParticipantRole @default(participant)
 
   /// Timestamps
@@ -683,7 +694,7 @@ model Transcription {
   /// Participant who spoke
   participantId String @db.ObjectId
 
-  /// Transcription source: 'client' (Web Speech API/Whisper.js) or 'server' (faster-whisper)
+  /// Transcription source: client (Web Speech API/Whisper.js) or server (faster-whisper)
   source TranscriptionSource
 
   /// Transcribed text

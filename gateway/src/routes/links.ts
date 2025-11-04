@@ -23,8 +23,10 @@ const createLinkSchema = z.object({
   allowAnonymousFiles: z.boolean().optional(),
   allowAnonymousImages: z.boolean().optional(),
   allowViewHistory: z.boolean().optional(),
+  requireAccount: z.boolean().optional(),
   requireNickname: z.boolean().optional(),
   requireEmail: z.boolean().optional(),
+  requireBirthday: z.boolean().optional(),
   allowedCountries: z.array(z.string()).optional(),
   allowedLanguages: z.array(z.string()).optional(),
   allowedIpRanges: z.array(z.string()).optional(),
@@ -48,8 +50,10 @@ const updateLinkSchema = z.object({
   allowAnonymousFiles: z.boolean().optional(),
   allowAnonymousImages: z.boolean().optional(),
   allowViewHistory: z.boolean().optional(),
+  requireAccount: z.boolean().optional(),
   requireNickname: z.boolean().optional(),
   requireEmail: z.boolean().optional(),
+  requireBirthday: z.boolean().optional(),
   allowedCountries: z.array(z.string()).optional(),
   allowedLanguages: z.array(z.string()).optional(),
   allowedIpRanges: z.array(z.string()).optional()
@@ -475,8 +479,10 @@ export async function linksRoutes(fastify: FastifyInstance) {
           allowAnonymousFiles: body.allowAnonymousFiles ?? false,
           allowAnonymousImages: body.allowAnonymousImages ?? true,
           allowViewHistory: body.allowViewHistory ?? true,
+          requireAccount: body.requireAccount ?? false,
           requireNickname: body.requireNickname ?? true,
           requireEmail: body.requireEmail ?? false,
+          requireBirthday: body.requireBirthday ?? false,
           allowedCountries: body.allowedCountries ?? [],
           allowedLanguages: body.allowedLanguages ?? [],
           allowedIpRanges: body.allowedIpRanges ?? [],
@@ -1728,8 +1734,10 @@ export async function linksRoutes(fastify: FastifyInstance) {
           allowAnonymousFiles: body.allowAnonymousFiles,
           allowAnonymousImages: body.allowAnonymousImages,
           allowViewHistory: body.allowViewHistory,
+          requireAccount: body.requireAccount,
           requireNickname: body.requireNickname,
           requireEmail: body.requireEmail,
+          requireBirthday: body.requireBirthday,
           allowedCountries: body.allowedCountries,
           allowedLanguages: body.allowedLanguages,
           allowedIpRanges: body.allowedIpRanges
@@ -1823,8 +1831,10 @@ export async function linksRoutes(fastify: FastifyInstance) {
       if (body.allowAnonymousFiles !== undefined) updateData.allowAnonymousFiles = body.allowAnonymousFiles;
       if (body.allowAnonymousImages !== undefined) updateData.allowAnonymousImages = body.allowAnonymousImages;
       if (body.allowViewHistory !== undefined) updateData.allowViewHistory = body.allowViewHistory;
+      if (body.requireAccount !== undefined) updateData.requireAccount = body.requireAccount;
       if (body.requireNickname !== undefined) updateData.requireNickname = body.requireNickname;
       if (body.requireEmail !== undefined) updateData.requireEmail = body.requireEmail;
+      if (body.requireBirthday !== undefined) updateData.requireBirthday = body.requireBirthday;
       if (body.allowedCountries !== undefined) updateData.allowedCountries = body.allowedCountries;
       if (body.allowedLanguages !== undefined) updateData.allowedLanguages = body.allowedLanguages;
       if (body.allowedIpRanges !== undefined) updateData.allowedIpRanges = body.allowedIpRanges;

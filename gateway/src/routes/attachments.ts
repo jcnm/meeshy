@@ -40,7 +40,7 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
         const userId = authContext.userId;
         const isAnonymous = authContext.isAnonymous;
 
-        // Récupérer les fichiers uploadés
+        // Récupérer les fichiers uploadés et leurs métadonnées
         console.log('[AttachmentRoutes] 📥 Starting file parsing...');
         const parts = request.parts();
         const files: Array<{
@@ -49,9 +49,12 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
           mimeType: string;
           size: number;
         }> = [];
+        const metadataMap: Map<number, any> = new Map();
 
+        let fileIndex = 0;
         for await (const part of parts) {
-          console.log('[AttachmentRoutes] 📦 Part received:', { type: part.type, filename: part.type === 'file' ? part.filename : 'N/A' });
+          console.log('[AttachmentRoutes] 📦 Part received:', { type: part.type, filename: part.type === 'file' ? part.filename : 'N/A', fieldname: part.fieldname });
+
           if (part.type === 'file') {
             const buffer = await part.toBuffer();
             console.log('[AttachmentRoutes] 📄 File buffered:', { filename: part.filename, size: buffer.length });
@@ -61,6 +64,18 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
               mimeType: part.mimetype,
               size: buffer.length,
             });
+            fileIndex++;
+          } else if (part.type === 'field' && part.fieldname.startsWith('metadata_')) {
+            // Récupérer les métadonnées pour un fichier spécifique
+            const index = parseInt(part.fieldname.replace('metadata_', ''), 10);
+            const metadataValue = await part.value;
+            try {
+              const metadata = JSON.parse(metadataValue as string);
+              metadataMap.set(index, metadata);
+              console.log('[AttachmentRoutes] 📋 Métadonnées reçues pour fichier', index, ':', metadata);
+            } catch (error) {
+              console.warn('[AttachmentRoutes] ⚠️ Impossible de parser les métadonnées:', error);
+            }
           }
         }
 
@@ -113,13 +128,16 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
         console.log('[AttachmentRoutes] 📤 Uploading files:', {
           count: files.length,
           files: files.map(f => ({ name: f.filename, size: f.size, type: f.mimeType })),
+          hasMetadata: metadataMap.size > 0,
         });
 
-        // Upload tous les fichiers
+        // Upload tous les fichiers avec métadonnées si fournies
         const results = await attachmentService.uploadMultiple(
           files,
           userId,
-          isAnonymous
+          isAnonymous,
+          undefined, // messageId
+          metadataMap.size > 0 ? metadataMap : undefined
         );
 
         console.log('[AttachmentRoutes] ✅ Upload results:', {
@@ -346,20 +364,59 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
           '.pdf': 'application/pdf',
           '.txt': 'text/plain',
           '.mp4': 'video/mp4',
+          '.webm': 'audio/webm', // Support WebM audio
+          '.ogg': 'audio/ogg',
           '.mp3': 'audio/mpeg',
+          '.wav': 'audio/wav',
+          '.m4a': 'audio/mp4',
         };
         const mimeType = mimeTypes[ext] || 'application/octet-stream';
 
-        // Définir les headers appropriés
+        // Obtenir les informations du fichier pour les Range requests
+        const fileStats = await stat(filePath);
+        const fileSize = fileStats.size;
+
+        // Support des Range requests pour audio/vidéo (seeking)
+        const isMediaFile = mimeType.startsWith('audio/') || mimeType.startsWith('video/');
+        if (isMediaFile) {
+          reply.header('Accept-Ranges', 'bytes');
+
+          const range = request.headers.range;
+          if (range) {
+            // Parse le header Range (ex: "bytes=0-1024")
+            const parts = range.replace(/bytes=/, "").split("-");
+            const start = parseInt(parts[0], 10);
+            const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+            const chunkSize = (end - start) + 1;
+
+            // Définir les headers pour partial content
+            reply.code(206); // Partial Content
+            reply.header('Content-Range', `bytes ${start}-${end}/${fileSize}`);
+            reply.header('Content-Length', chunkSize);
+            reply.header('Content-Type', mimeType);
+
+            // Headers CORS
+            reply.header('Cross-Origin-Resource-Policy', 'cross-origin');
+            reply.header('Access-Control-Allow-Origin', '*');
+            reply.header('Cache-Control', 'public, max-age=31536000, immutable');
+
+            // Stream la partie demandée
+            const stream = createReadStream(filePath, { start, end });
+            return reply.send(stream);
+          }
+        }
+
+        // Définir les headers appropriés (requête sans Range)
         reply.header('Content-Type', mimeType);
+        reply.header('Content-Length', fileSize);
         reply.header('Content-Disposition', 'inline');
-        
+
         // Headers CORS/CORP pour permettre le chargement cross-origin
         reply.header('Cross-Origin-Resource-Policy', 'cross-origin');
         reply.header('Access-Control-Allow-Origin', '*');
         reply.header('Cache-Control', 'public, max-age=31536000, immutable');
 
-        // Stream le fichier
+        // Stream le fichier complet
         const stream = createReadStream(filePath);
         return reply.send(stream);
       } catch (error: any) {

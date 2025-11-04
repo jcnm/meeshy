@@ -90,6 +90,10 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
   };
 
   const validateUsername = (username: string) => {
+    // Validation: longueur minimale de 4 caractères
+    if (username.length < 4) {
+      return false;
+    }
     // Validation: uniquement lettres, chiffres, tirets et underscores
     const usernameRegex = /^[a-zA-Z0-9_-]+$/;
     return usernameRegex.test(username);
@@ -111,11 +115,6 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
       
       if (formData.password !== confirmPassword) {
         toast.error(t('register.validation.passwordMismatch'));
-        return;
-      }
-      
-      if (formData.password.length < 6) {
-        toast.error(t('register.validation.passwordTooShort'));
         return;
       }
     }

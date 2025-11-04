@@ -5,11 +5,15 @@
   "inviteContact": "Inviter un contact",
   "contactsFound": "{count} contact trouvé",
   "contactsFound_plural": "{count} contacts trouvés",
+  "loading": "Chargement des contacts...",
   "stats": {
     "totalContacts": "Total contacts",
     "online": "En ligne",
+    "offline": "Hors ligne",
     "connected": "Connectés",
+    "connections": "Connexions",
     "pending": "En attente",
+    "refused": "Refusés",
     "affiliates": "Affiliés"
   },
   "tabs": {
@@ -26,6 +30,7 @@
     "rejected": "Refusé"
   },
   "actions": {
+    "menu": "Menu d'actions",
     "message": "Message",
     "sendMessage": "Envoyer un message",
     "call": "Appeler",

@@ -42,6 +42,8 @@ import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import type { TrackingLink } from '@shared/types/tracking-link';
 import { useI18n } from '@/hooks/useI18n';
+import { ExpandableLinkCard } from '@/components/links/expandable-link-card';
+import { ExpandableTrackingLinkCard } from '@/components/links/expandable-tracking-link-card';
 
 // Extended type for ConversationLink with all fields from Prisma
 interface ConversationLink {
@@ -76,9 +78,7 @@ interface ConversationLink {
     avatar?: string;
   };
 }
-import { LinkDetailsModal } from '@/components/links/link-details-modal';
 import { LinkEditModal } from '@/components/links/link-edit-modal';
-import { TrackingLinkDetailsModal } from '@/components/links/tracking-link-details-modal';
 import { CreateLinkButton } from '@/components/links/create-link-button';
 import { CreateLinkModalV2 } from '@/components/conversations/create-link-modal';
 import { CreateTrackingLinkModal } from '@/components/links/create-tracking-link-modal';
@@ -99,11 +99,9 @@ export default function LinksPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [mainTab, setMainTab] = useState<'shareLinks' | 'trackingLinks'>('shareLinks');
-  const [selectedTab, setSelectedTab] = useState('active');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'expired'>('all');
   const [selectedLink, setSelectedLink] = useState<ConversationLink | null>(null);
   const [selectedTrackingLink, setSelectedTrackingLink] = useState<TrackingLink | null>(null);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [showTrackingDetailsModal, setShowTrackingDetailsModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCreateConversationModal, setShowCreateConversationModal] = useState(false);
   const [showCreateLinkModal, setShowCreateLinkModal] = useState(false);
@@ -216,21 +214,45 @@ export default function LinksPage() {
     }
   }, [links, trackingLinks, mainTab]);
 
-  // Filtrer les liens
-  const filteredLinks = links.filter(link => {
-    const matchesSearch = link.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         link.conversation.title?.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    if (selectedTab === 'active') {
-      return matchesSearch && link.isActive && (!link.expiresAt || new Date(link.expiresAt) > new Date());
-    } else if (selectedTab === 'expired') {
-      return matchesSearch && link.expiresAt && new Date(link.expiresAt) <= new Date();
-    } else if (selectedTab === 'disabled') {
-      return matchesSearch && !link.isActive;
-    }
-    
-    return matchesSearch;
-  });
+  // Filtrer les liens de partage
+  const filteredLinks = useMemo(() => {
+    return links.filter(link => {
+      const matchesSearch = link.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           link.conversation.title?.toLowerCase().includes(searchQuery.toLowerCase());
+
+      let matchesStatus = true;
+      if (statusFilter === 'active') {
+        matchesStatus = link.isActive;
+      } else if (statusFilter === 'inactive') {
+        matchesStatus = !link.isActive;
+      } else if (statusFilter === 'expired') {
+        // Un lien est expiré si expiresAt existe et est dans le passé
+        matchesStatus = link.expiresAt ? new Date(link.expiresAt) < new Date() : false;
+      }
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [links, searchQuery, statusFilter]);
+
+  // Filtrer les liens de tracking
+  const filteredTrackingLinks = useMemo(() => {
+    return trackingLinks.filter(link => {
+      const matchesSearch = link.originalUrl.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           link.shortUrl.toLowerCase().includes(searchQuery.toLowerCase());
+
+      let matchesStatus = true;
+      if (statusFilter === 'active') {
+        matchesStatus = link.isActive;
+      } else if (statusFilter === 'inactive') {
+        matchesStatus = !link.isActive;
+      } else if (statusFilter === 'expired') {
+        // Un lien est expiré si expiresAt existe et est dans le passé
+        matchesStatus = link.expiresAt ? new Date(link.expiresAt) < new Date() : false;
+      }
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [trackingLinks, searchQuery, statusFilter]);
 
   // Copier le lien
   const handleCopyLink = async (linkId: string) => {
@@ -402,10 +424,9 @@ export default function LinksPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Main content area - scrollable */}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
       <DashboardLayout title={t('title')} className="!bg-none !bg-transparent !h-auto">
-        <div className="relative z-10 space-y-8 pb-8 py-8">
+        <div className="relative z-10 max-w-7xl mx-auto space-y-8 pb-8 w-full py-8">
 
         {/* Hero Section */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 p-8 md:p-12 text-white shadow-2xl">
@@ -435,78 +456,123 @@ export default function LinksPage() {
                 <TabsTrigger
                   value="shareLinks"
                   id="shared"
-                  className="data-[state=active]:bg-blue-500 data-[state=active]:text-white py-3 px-6 rounded-lg font-medium transition-all"
+                  className="data-[state=active]:bg-blue-500 data-[state=active]:text-white py-2 md:py-3 px-2 md:px-6 rounded-lg font-medium transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2"
                 >
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  {t('tabs.shareLinks')}
+                  <MessageSquare className="h-4 w-4" />
+                  <span className="text-xs md:text-sm">{t('tabs.shareLinks')}</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="trackingLinks"
                   id="tracked"
-                  className="data-[state=active]:bg-purple-500 data-[state=active]:text-white py-3 px-6 rounded-lg font-medium transition-all"
+                  className="data-[state=active]:bg-purple-500 data-[state=active]:text-white py-2 md:py-3 px-2 md:px-6 rounded-lg font-medium transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2"
                 >
-                  <BarChart className="h-4 w-4 mr-2" />
-                  {t('tabs.trackingLinks')}
+                  <BarChart className="h-4 w-4" />
+                  <span className="text-xs md:text-sm">{t('tabs.trackingLinks')}</span>
                 </TabsTrigger>
               </TabsList>
             </Tabs>
 
-            {/* Stats in 2x2 grid */}
-            <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">{t('stats.totalLinks')}</p>
-                <p className="text-2xl font-bold text-foreground">{stats.total}</p>
+            {/* Stats in 2x2 grid - Responsive */}
+            <div className="grid grid-cols-2 gap-2 sm:gap-4 p-3 sm:p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+              <div className="space-y-0.5 sm:space-y-1">
+                <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{t('stats.totalLinks')}</p>
+                <p className="text-xl sm:text-2xl font-bold text-foreground">{stats.total}</p>
               </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">{t('tracking.stats.activeLinks')}</p>
-                <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.active}</p>
+              <div className="space-y-0.5 sm:space-y-1">
+                <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{t('tracking.stats.activeLinks')}</p>
+                <p className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">{stats.active}</p>
               </div>
               {mainTab === 'shareLinks' ? (
                 <>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-muted-foreground">{t('stats.uses')}</p>
-                    <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{stats.totalUses}</p>
+                  <div className="space-y-0.5 sm:space-y-1">
+                    <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{t('stats.uses')}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-orange-600 dark:text-orange-400">{stats.totalUses}</p>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-muted-foreground">{t('details.activeUsers')}</p>
-                    <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.totalActiveUsers}</p>
+                  <div className="space-y-0.5 sm:space-y-1">
+                    <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{t('details.activeUsers')}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.totalActiveUsers}</p>
                   </div>
                 </>
               ) : (
                 <>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-muted-foreground">{t('tracking.stats.totalClicks')}</p>
-                    <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{stats.totalClicks}</p>
+                  <div className="space-y-0.5 sm:space-y-1">
+                    <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{t('tracking.stats.totalClicks')}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-orange-600 dark:text-orange-400">{stats.totalClicks}</p>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-muted-foreground">{t('tracking.stats.uniqueClicks')}</p>
-                    <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.uniqueClicks}</p>
+                  <div className="space-y-0.5 sm:space-y-1">
+                    <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{t('tracking.stats.uniqueClicks')}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.uniqueClicks}</p>
                   </div>
                 </>
               )}
             </div>
 
             {/* Search and Actions */}
-            <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                 <Input
                   type="text"
                   placeholder={t('searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 h-12 text-base border-2 focus:border-primary"
+                  className="pl-9 sm:pl-10 h-10 sm:h-12 text-sm sm:text-base border-2 focus:border-primary"
                 />
               </div>
 
               <Button
                 onClick={() => mainTab === 'shareLinks' ? setShowCreateLinkModal(true) : setShowCreateTrackingLinkModal(true)}
                 variant="default"
-                className="h-12 rounded-xl px-6 font-semibold shadow-md hover:shadow-lg transition-all bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                className="h-10 sm:h-12 rounded-xl px-4 sm:px-6 text-sm sm:text-base font-semibold shadow-md hover:shadow-lg transition-all bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
               >
-                <Plus className="h-5 w-5 mr-2" />
-                <span>{t('createLink')}</span>
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
+                <span className="truncate">{t('createLink')}</span>
               </Button>
+            </div>
+
+            {/* Filtres de statut - Responsive */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+              <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">{t('filters.status')}:</span>
+              <div className="flex gap-2 flex-wrap">
+                <Button
+                  size="sm"
+                  variant={statusFilter === 'all' ? 'default' : 'outline'}
+                  onClick={() => setStatusFilter('all')}
+                  className="h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm"
+                >
+                  {t('filters.all')}
+                </Button>
+                <Button
+                  size="sm"
+                  variant={statusFilter === 'active' ? 'default' : 'outline'}
+                  onClick={() => setStatusFilter('active')}
+                  className={`h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm ${statusFilter === 'active' ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                >
+                  <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                  <span className="hidden sm:inline">{t('filters.active')}</span>
+                  <span className="sm:hidden">Actif</span>
+                </Button>
+                <Button
+                  size="sm"
+                  variant={statusFilter === 'inactive' ? 'default' : 'outline'}
+                  onClick={() => setStatusFilter('inactive')}
+                  className={`h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm ${statusFilter === 'inactive' ? 'bg-gray-600 hover:bg-gray-700' : ''}`}
+                >
+                  <XCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                  <span className="hidden sm:inline">{t('filters.inactive')}</span>
+                  <span className="sm:hidden">Inactif</span>
+                </Button>
+                <Button
+                  size="sm"
+                  variant={statusFilter === 'expired' ? 'default' : 'outline'}
+                  onClick={() => setStatusFilter('expired')}
+                  className={`h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm ${statusFilter === 'expired' ? 'bg-red-600 hover:bg-red-700' : ''}`}
+                >
+                  <Clock className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                  <span className="hidden sm:inline">{t('filters.expired') || 'Expired'}</span>
+                  <span className="sm:hidden">Expiré</span>
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -548,163 +614,18 @@ export default function LinksPage() {
             ) : (
               <div className="grid gap-6">
                 {filteredLinks.map((link) => (
-                  <Card key={link.id} className="relative border-2 hover:border-primary/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950">
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
-                    
-                    <CardHeader className="relative z-10 pb-4">
-                      <div className="flex items-start justify-between gap-3 md:gap-4">
-                        <div className="flex-1 min-w-0 space-y-2">
-                          <div className="flex items-start gap-3">
-                            <div className="p-2.5 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl flex-shrink-0">
-                              <Link2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <CardTitle className="text-lg md:text-xl font-bold break-words">
-                                <a
-                                  href={`/join/${link.linkId}`}
-                                  className="text-foreground hover:text-primary transition-colors"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    router.push(`/join/${link.linkId}`);
-                                  }}
-                                >
-                                  {link.name || t('unnamedLink')}
-                                </a>
-                              </CardTitle>
-                            </div>
-                          </div>
-                          <CardDescription className="flex items-start gap-2 text-sm">
-                            <MessageSquare className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                            <a 
-                              href={`/conversations/${link.conversationId}`}
-                              className="text-primary hover:underline font-medium break-all"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                router.push(`/conversations/${link.conversationId}`);
-                              }}
-                            >
-                              {link.conversation.title}
-                            </a>
-                          </CardDescription>
-                        </div>
-                        
-                        <div className="flex flex-col sm:flex-row items-end sm:items-start gap-2 flex-shrink-0">
-                          <Badge 
-                            variant={link.isActive ? 'default' : 'secondary'}
-                            className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-semibold flex-shrink-0 whitespace-nowrap ${
-                              link.isActive 
-                                ? 'bg-green-500 hover:bg-green-600' 
-                                : 'bg-gray-400 hover:bg-gray-500'
-                            }`}
-                          >
-                            {link.isActive ? t('status.active') : t('status.inactive')}
-                          </Badge>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="relative z-20 h-9 w-9 p-0 flex-shrink-0 hover:bg-gray-200 dark:hover:bg-gray-700">
-                                <MoreVertical className="h-5 w-5" />
-                                <span className="sr-only">{t('actions.menu')}</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56 z-[100]">
-                              <DropdownMenuItem onClick={() => handleCopyLink(link.linkId)} className="py-3">
-                                <Copy className="h-4 w-4 mr-3" />
-                                <span className="font-medium">{t('actions.copy')}</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => {
-                                setSelectedLink(link);
-                                setShowDetailsModal(true);
-                              }} className="py-3">
-                                <Eye className="h-4 w-4 mr-3" />
-                                <span className="font-medium">{t('actions.viewDetails')}</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => {
-                                setSelectedLink(link);
-                                setShowEditModal(true);
-                              }} className="py-3">
-                                <Edit className="h-4 w-4 mr-3" />
-                                <span className="font-medium">{t('actions.edit')}</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleToggleActive(link)} className="py-3">
-                                {link.isActive ? (
-                                  <>
-                                    <XCircle className="h-4 w-4 mr-3" />
-                                    <span className="font-medium">{t('actions.disable')}</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <CheckCircle className="h-4 w-4 mr-3" />
-                                    <span className="font-medium">{t('actions.enable')}</span>
-                                  </>
-                                )}
-                              </DropdownMenuItem>
-                              {link.expiresAt && (
-                                <DropdownMenuItem onClick={() => handleExtendDuration(link, 7)} className="py-3">
-                                  <RefreshCw className="h-4 w-4 mr-3" />
-                                  <span className="font-medium">{t('actions.extend7Days')}</span>
-                                </DropdownMenuItem>
-                              )}
-                              <DropdownMenuItem 
-                                onClick={() => handleDeleteLink(link)}
-                                className="text-red-600 py-3 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/20"
-                              >
-                                <Trash2 className="h-4 w-4 mr-3" />
-                                <span className="font-medium">{t('actions.delete')}</span>
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    
-                    <CardContent className="relative z-10 pt-4 border-t">
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                              <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                            </div>
-                            <span className="text-sm font-medium">{t('stats.uses')}</span>
-                          </div>
-                          <p className="text-lg font-bold text-foreground pl-8">
-                            {link.currentUses} / {link.maxUses || '∞'}
-                          </p>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <div className="p-1.5 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                              <Activity className="h-4 w-4 text-green-600 dark:text-green-400" />
-                            </div>
-                            <span className="text-sm font-medium">{t('stats.active')}</span>
-                          </div>
-                          <p className="text-lg font-bold text-foreground pl-8">{link.currentConcurrentUsers}</p>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <div className="p-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                              <Calendar className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                            </div>
-                            <span className="text-sm font-medium">{t('stats.created')}</span>
-                          </div>
-                          <p className="text-sm font-semibold text-foreground pl-8">{formatDate(link.createdAt)}</p>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <div className="p-1.5 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-                              <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                            </div>
-                            <span className="text-sm font-medium">{t('stats.expires')}</span>
-                          </div>
-                          <p className="text-sm font-semibold text-foreground pl-8">
-                            {link.expiresAt ? getTimeRemaining(link.expiresAt) : t('status.never')}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <ExpandableLinkCard
+                    key={link.id}
+                    link={link}
+                    onCopy={() => handleCopyLink(link.linkId)}
+                    onEdit={() => {
+                      setSelectedLink(link);
+                      setShowEditModal(true);
+                    }}
+                    onToggle={() => handleToggleActive(link)}
+                    onExtend={(days) => handleExtendDuration(link, days)}
+                    onDelete={() => handleDeleteLink(link)}
+                  />
                 ))}
               </div>
             )}
@@ -746,144 +667,15 @@ export default function LinksPage() {
               </Card>
             ) : (
               <div className="grid gap-6">
-                {trackingLinks
-                  .filter(link => 
-                    link.originalUrl.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    link.shortUrl.toLowerCase().includes(searchQuery.toLowerCase())
-                  )
-                  .map((link) => (
-                    <Card key={link.id} className="relative border-2 hover:border-purple-500/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950">
-                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
-                      
-                      <CardHeader className="relative z-10 pb-4">
-                        <div className="flex items-start justify-between gap-3 md:gap-4">
-                          <div className="flex-1 min-w-0 space-y-2">
-                            <div className="flex items-start gap-3">
-                              <div className="p-2.5 bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 rounded-xl flex-shrink-0">
-                                <Link2 className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <CardTitle className="text-lg md:text-xl font-bold break-words">
-                                  <button
-                                    onClick={() => router.push(`/links/tracked/${link.token}`)}
-                                    className="text-foreground hover:text-primary transition-colors cursor-pointer text-left"
-                                  >
-                                    {link.shortUrl.startsWith('/')
-                                      ? `${typeof window !== 'undefined' ? window.location.origin : ''}${link.shortUrl}`
-                                      : link.shortUrl}
-                                  </button>
-                                </CardTitle>
-                              </div>
-                            </div>
-                            <CardDescription className="flex items-start gap-2 text-sm">
-                              <ExternalLink className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                              <a 
-                                href={link.originalUrl} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-primary hover:underline font-medium break-all"
-                              >
-                                {link.originalUrl}
-                              </a>
-                            </CardDescription>
-                          </div>
-                          
-                          <div className="flex flex-col sm:flex-row items-end sm:items-start gap-2 flex-shrink-0">
-                            <Badge 
-                              variant={link.isActive ? 'default' : 'secondary'}
-                              className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-semibold flex-shrink-0 whitespace-nowrap ${
-                                link.isActive 
-                                  ? 'bg-green-500 hover:bg-green-600' 
-                                  : 'bg-gray-400 hover:bg-gray-500'
-                              }`}
-                            >
-                              {link.isActive ? t('status.active') : t('status.inactive')}
-                            </Badge>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="relative z-20 h-9 w-9 p-0 flex-shrink-0 hover:bg-gray-200 dark:hover:bg-gray-700">
-                                  <MoreVertical className="h-5 w-5" />
-                                  <span className="sr-only">{t('actions.menu')}</span>
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-56 z-[100]">
-                                <DropdownMenuItem onClick={() => handleCopyTrackingLink(link.shortUrl)} className="py-3">
-                                  <Copy className="h-4 w-4 mr-3" />
-                                  <span className="font-medium">{t('tracking.actions.copyShortUrl')}</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => {
-                                  setSelectedTrackingLink(link);
-                                  setShowTrackingDetailsModal(true);
-                                }} className="py-3">
-                                  <BarChart className="h-4 w-4 mr-3" />
-                                  <span className="font-medium">{t('tracking.actions.viewStats')}</span>
-                                </DropdownMenuItem>
-                                {link.isActive && (
-                                  <DropdownMenuItem onClick={() => handleToggleTrackingLink(link)} className="py-3">
-                                    <XCircle className="h-4 w-4 mr-3" />
-                                    <span className="font-medium">{t('tracking.actions.deactivate')}</span>
-                                  </DropdownMenuItem>
-                                )}
-                                <DropdownMenuItem 
-                                  onClick={() => handleDeleteTrackingLink(link)}
-                                  className="text-red-600 py-3"
-                                >
-                                  <Trash2 className="h-4 w-4 mr-3" />
-                                  <span className="font-medium">{t('actions.delete')}</span>
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      
-                      <CardContent className="relative z-10 pt-4 border-t">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                                <MousePointerClick className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                              </div>
-                              <span className="text-sm font-medium">{t('stats.totalClicks')}</span>
-                            </div>
-                            <p className="text-lg font-bold text-foreground pl-8">{link.totalClicks}</p>
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <div className="p-1.5 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                                <Users className="h-4 w-4 text-green-600 dark:text-green-400" />
-                              </div>
-                              <span className="text-sm font-medium">{t('stats.uniqueClicks')}</span>
-                            </div>
-                            <p className="text-lg font-bold text-foreground pl-8">{link.uniqueClicks}</p>
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <div className="p-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                                <Calendar className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                              </div>
-                              <span className="text-sm font-medium">{t('stats.created')}</span>
-                            </div>
-                            <p className="text-sm font-semibold text-foreground pl-8">{formatDate(link.createdAt)}</p>
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <div className="p-1.5 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-                                <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                              </div>
-                              <span className="text-sm font-medium">{t('stats.lastClicked')}</span>
-                            </div>
-                            <p className="text-sm font-semibold text-foreground pl-8">
-                              {link.lastClickedAt ? formatDate(link.lastClickedAt) : t('stats.never')}
-                            </p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                {filteredTrackingLinks.map((link) => (
+                  <ExpandableTrackingLinkCard
+                    key={link.id}
+                    link={link}
+                    onCopy={() => handleCopyTrackingLink(link.shortUrl)}
+                    onToggle={() => handleToggleTrackingLink(link)}
+                    onDelete={() => handleDeleteTrackingLink(link)}
+                  />
+                ))}
               </div>
             )}
           </div>
@@ -891,39 +683,17 @@ export default function LinksPage() {
 
         {/* Modales */}
         {selectedLink && (
-          <>
-            <LinkDetailsModal
-              link={selectedLink}
-              isOpen={showDetailsModal}
-              onClose={() => {
-                setShowDetailsModal(false);
-                setSelectedLink(null);
-              }}
-            />
-            <LinkEditModal
-              link={selectedLink}
-              isOpen={showEditModal}
-              onClose={() => {
-                setShowEditModal(false);
-                setSelectedLink(null);
-              }}
-              onUpdate={() => {
-                loadLinks();
-                setShowEditModal(false);
-                setSelectedLink(null);
-              }}
-            />
-          </>
-        )}
-
-        {/* Tracking Link Details Modal */}
-        {selectedTrackingLink && (
-          <TrackingLinkDetailsModal
-            link={selectedTrackingLink}
-            isOpen={showTrackingDetailsModal}
+          <LinkEditModal
+            link={selectedLink}
+            isOpen={showEditModal}
             onClose={() => {
-              setShowTrackingDetailsModal(false);
-              setSelectedTrackingLink(null);
+              setShowEditModal(false);
+              setSelectedLink(null);
+            }}
+            onUpdate={() => {
+              loadLinks();
+              setShowEditModal(false);
+              setSelectedLink(null);
             }}
           />
         )}

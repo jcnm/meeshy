@@ -53,11 +53,11 @@ export function LanguageFlagSelector({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "justify-center h-7 w-7 sm:h-8 sm:w-8 px-0 border-gray-200 hover:border-blue-300",
+            "justify-center h-4 w-4 sm:h-4 sm:w-4 px-0 border-gray-200 hover:border-blue-300 min-w-0 min-h-0",
             className
           )}
         >
-          <span className="text-lg sm:text-xl">
+          <span className="text-xs sm:text-sm leading-none">
             {selectedLanguage?.flag || '🌐'}
           </span>
         </Button>
