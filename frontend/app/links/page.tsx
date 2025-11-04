@@ -473,61 +473,61 @@ export default function LinksPage() {
               </TabsList>
             </Tabs>
 
-            {/* Stats in 2x2 grid */}
-            <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">{t('stats.totalLinks')}</p>
-                <p className="text-2xl font-bold text-foreground">{stats.total}</p>
+            {/* Stats in 2x2 grid - Responsive */}
+            <div className="grid grid-cols-2 gap-2 sm:gap-4 p-3 sm:p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+              <div className="space-y-0.5 sm:space-y-1">
+                <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{t('stats.totalLinks')}</p>
+                <p className="text-xl sm:text-2xl font-bold text-foreground">{stats.total}</p>
               </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">{t('tracking.stats.activeLinks')}</p>
-                <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.active}</p>
+              <div className="space-y-0.5 sm:space-y-1">
+                <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{t('tracking.stats.activeLinks')}</p>
+                <p className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">{stats.active}</p>
               </div>
               {mainTab === 'shareLinks' ? (
                 <>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-muted-foreground">{t('stats.uses')}</p>
-                    <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{stats.totalUses}</p>
+                  <div className="space-y-0.5 sm:space-y-1">
+                    <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{t('stats.uses')}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-orange-600 dark:text-orange-400">{stats.totalUses}</p>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-muted-foreground">{t('details.activeUsers')}</p>
-                    <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.totalActiveUsers}</p>
+                  <div className="space-y-0.5 sm:space-y-1">
+                    <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{t('details.activeUsers')}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.totalActiveUsers}</p>
                   </div>
                 </>
               ) : (
                 <>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-muted-foreground">{t('tracking.stats.totalClicks')}</p>
-                    <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{stats.totalClicks}</p>
+                  <div className="space-y-0.5 sm:space-y-1">
+                    <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{t('tracking.stats.totalClicks')}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-orange-600 dark:text-orange-400">{stats.totalClicks}</p>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-muted-foreground">{t('tracking.stats.uniqueClicks')}</p>
-                    <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.uniqueClicks}</p>
+                  <div className="space-y-0.5 sm:space-y-1">
+                    <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{t('tracking.stats.uniqueClicks')}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.uniqueClicks}</p>
                   </div>
                 </>
               )}
             </div>
 
             {/* Search and Actions */}
-            <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                 <Input
                   type="text"
                   placeholder={t('searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 h-12 text-base border-2 focus:border-primary"
+                  className="pl-9 sm:pl-10 h-10 sm:h-12 text-sm sm:text-base border-2 focus:border-primary"
                 />
               </div>
 
               <Button
                 onClick={() => mainTab === 'shareLinks' ? setShowCreateLinkModal(true) : setShowCreateTrackingLinkModal(true)}
                 variant="default"
-                className="h-12 rounded-xl px-6 font-semibold shadow-md hover:shadow-lg transition-all bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                className="h-10 sm:h-12 rounded-xl px-4 sm:px-6 text-sm sm:text-base font-semibold shadow-md hover:shadow-lg transition-all bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
               >
-                <Plus className="h-5 w-5 mr-2" />
-                <span>{t('createLink')}</span>
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
+                <span className="truncate">{t('createLink')}</span>
               </Button>
             </div>
 
