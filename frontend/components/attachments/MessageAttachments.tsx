@@ -9,6 +9,8 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { Download, File, Image as ImageIcon, FileText, Video, Music, ChevronRight, Grid3X3, X } from 'lucide-react';
 import { Attachment, formatFileSize, getAttachmentType } from '../../shared/types/attachment';
 import { SimpleAudioPlayer } from '@/components/audio/SimpleAudioPlayer';
+import { VideoPlayer } from '@/components/video/VideoPlayer';
+import { VideoLightbox } from '@/components/video/VideoLightbox';
 import {
   Tooltip,
   TooltipContent,
@@ -64,6 +66,8 @@ export const MessageAttachments = React.memo(function MessageAttachments({
   const [isDeleting, setIsDeleting] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
+  const [videoLightboxOpen, setVideoLightboxOpen] = useState(false);
+  const [videoLightboxIndex, setVideoLightboxIndex] = useState(0);
   const { t } = useI18n('common');
 
   // Handler pour ouvrir la confirmation de suppression
@@ -245,11 +249,11 @@ export const MessageAttachments = React.memo(function MessageAttachments({
                   {canDelete && (
                     <button
                       onClick={handleDeleteClick}
-                      className="!absolute !top-1 !right-1 !w-3 !h-3 !min-w-[12px] !min-h-[12px] !max-w-[12px] !max-h-[12px] rounded-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white flex items-center justify-center transition-opacity shadow-md !z-[100] opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1 !p-0"
+                      className="!absolute !top-1 !right-1 !w-[22px] !h-[22px] !min-w-[22px] !min-h-[22px] !max-w-[22px] !max-h-[22px] rounded-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white flex items-center justify-center transition-opacity shadow-md !z-[100] opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1 !p-0"
                       title="Supprimer cette image"
                       aria-label={`Supprimer l'image ${attachment.originalName}`}
                     >
-                      <X className="!w-1.5 !h-1.5" />
+                      <X className="!w-[11px] !h-[11px]" />
                     </button>
                   )}
 
@@ -305,112 +309,55 @@ export const MessageAttachments = React.memo(function MessageAttachments({
       );
     }
 
-    // Video attachment - prévisualisation avec thumbnail et bouton play
+    // Video attachment - lecteur vidéo intégré
     if (type === 'video') {
-      const videoThumbnail = attachment.thumbnailUrl || attachment.fileUrl;
-
-      // Handler pour ouvrir la confirmation de suppression
-      const handleDeleteClick = (event: React.MouseEvent) => {
-        handleOpenDeleteConfirm(attachment, event);
+      // Handler pour ouvrir le lightbox vidéo
+      const handleOpenVideoLightbox = () => {
+        const videoIndex = videoAttachments.findIndex(vid => vid.id === attachment.id);
+        setVideoLightboxIndex(videoIndex);
+        setVideoLightboxOpen(true);
       };
 
-      // Handler pour ouvrir la vidéo immédiatement
-      const handleVideoClick = (event: React.MouseEvent) => {
-        // Toujours ouvrir la vidéo immédiatement
-        window.open(attachment.fileUrl, '_blank');
+      // Convertir l'attachment en format compatible avec VideoPlayer
+      const videoAttachment = {
+        id: attachment.id,
+        messageId: attachment.messageId,
+        fileName: attachment.fileName,
+        originalName: attachment.originalName,
+        mimeType: attachment.mimeType,
+        fileSize: attachment.fileSize,
+        fileUrl: attachment.fileUrl,
+        thumbnailUrl: attachment.thumbnailUrl,
+        width: attachment.width,
+        height: attachment.height,
+        duration: attachment.duration,
+        codec: attachment.codec,
+        uploadedBy: attachment.uploadedBy,
+        isAnonymous: attachment.isAnonymous,
+        createdAt: attachment.createdAt
       };
 
       return (
-        <TooltipProvider key={attachment.id}>
-          <Tooltip delayDuration={300}>
-            <TooltipTrigger asChild>
-              <div
-                className="relative group cursor-pointer flex-shrink-0 snap-start"
-                onClick={handleVideoClick}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    handleVideoClick(e as any);
-                  }
-                }}
-                role="button"
-                tabIndex={0}
-                aria-label={`Lire la vidéo ${attachment.originalName}`}
-              >
-                <div className={`relative bg-gray-100 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden hover:border-purple-400 dark:hover:border-purple-500 transition-all hover:shadow-lg dark:hover:shadow-purple-500/30 flex-shrink-0 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 ${
-                  isMobile ? 'w-40 h-32' : 'w-48 h-36'
-                }`}>
-                  {/* Thumbnail vidéo */}
-                  {attachment.thumbnailUrl ? (
-                    <img
-                      src={attachment.thumbnailUrl}
-                      alt={attachment.originalName}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                      decoding="async"
-                      onError={(e) => {
-                        // Fallback vers l'icône vidéo si pas de thumbnail
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  ) : (
-                    // Icône vidéo si pas de thumbnail
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/30 dark:to-violet-900/30">
-                      <Video className="w-12 h-12 text-purple-500 dark:text-purple-400" />
-                    </div>
-                  )}
-
-                  {/* Icône play centrée */}
-                  <div className="absolute inset-0 flex items-center justify-center" aria-hidden="true">
-                    <div className="w-12 h-12 bg-black/60 dark:bg-black/80 rounded-full flex items-center justify-center group-hover:bg-purple-600 dark:group-hover:bg-purple-500 transition-colors shadow-lg">
-                      <div className="w-0 h-0 border-l-[10px] border-l-white border-t-[7px] border-t-transparent border-b-[7px] border-b-transparent ml-1"></div>
-                    </div>
-                  </div>
-
-                  {/* Bouton de suppression */}
-                  {canDelete && (
-                    <button
-                      onClick={handleDeleteClick}
-                      className="!absolute !top-1 !right-1 !w-3 !h-3 !min-w-[12px] !min-h-[12px] !max-w-[12px] !max-h-[12px] rounded-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white flex items-center justify-center transition-opacity shadow-md !z-[100] opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1 !p-0"
-                      title="Supprimer cette vidéo"
-                      aria-label={`Supprimer la vidéo ${attachment.originalName}`}
-                    >
-                      <X className="!w-1.5 !h-1.5" />
-                    </button>
-                  )}
-
-                  {/* Extension badge */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 dark:from-black/90 to-transparent px-1.5 py-1" aria-hidden="true">
-                    <div className="flex items-center justify-between">
-                      <div className="text-white text-[10px] font-medium truncate flex-1">
-                        {extension.toUpperCase()}
-                      </div>
-                      {attachment.duration && (
-                        <div className="text-white text-[10px] font-medium">
-                          {Math.floor(attachment.duration / 60)}:{String(Math.floor(attachment.duration % 60)).padStart(2, '0')}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                {/* Size badge */}
-                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-gray-700 dark:bg-gray-600 text-white text-[9px] px-1.5 py-0.5 rounded-full whitespace-nowrap shadow-sm">
-                  {formatFileSize(attachment.fileSize)}
-                </div>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="top">
-              <div className="text-xs">
-                <div className="font-medium truncate max-w-[200px]">{attachment.originalName}</div>
-                <div className="text-gray-400 dark:text-gray-500">
-                  {formatFileSize(attachment.fileSize)}
-                  {attachment.duration && ` • ${Math.floor(attachment.duration / 60)}:${String(Math.floor(attachment.duration % 60)).padStart(2, '0')}`}
-                  {attachment.width && attachment.height && ` • ${attachment.width}x${attachment.height}`}
-                </div>
-              </div>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <div key={attachment.id} className="relative">
+          <VideoPlayer
+            attachment={videoAttachment as any}
+            onOpenLightbox={handleOpenVideoLightbox}
+          />
+          {/* Bouton de suppression */}
+          {canDelete && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenDeleteConfirm(attachment, e);
+              }}
+              className="absolute top-2 right-2 w-[43px] h-[43px] rounded-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white flex items-center justify-center transition-all shadow-md z-10 opacity-0 hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500"
+              title="Supprimer cette vidéo"
+              aria-label={`Supprimer la vidéo ${attachment.originalName}`}
+            >
+              <X className="w-[22px] h-[22px]" />
+            </button>
+          )}
+        </div>
       );
     }
 
@@ -457,11 +404,11 @@ export const MessageAttachments = React.memo(function MessageAttachments({
                 {canDelete ? (
                   <button
                     onClick={handleDeleteClick}
-                    className="!absolute !top-0.5 !right-0.5 !w-3 !h-3 !min-w-[12px] !min-h-[12px] !max-w-[12px] !max-h-[12px] rounded-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white flex items-center justify-center transition-opacity shadow-md !z-[100] opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1 !p-0"
+                    className="!absolute !top-0.5 !right-0.5 !w-[22px] !h-[22px] !min-w-[22px] !min-h-[22px] !max-w-[22px] !max-h-[22px] rounded-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white flex items-center justify-center transition-opacity shadow-md !z-[100] opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1 !p-0"
                     title="Supprimer ce fichier"
                     aria-label={`Supprimer le fichier ${attachment.originalName}`}
                   >
-                    <X className="!w-1.5 !h-1.5" />
+                    <X className="!w-[11px] !h-[11px]" />
                   </button>
                 ) : (
                   /* Download indicator si pas de droits de suppression */
@@ -592,6 +539,14 @@ export const MessageAttachments = React.memo(function MessageAttachments({
         initialIndex={lightboxImageIndex}
         isOpen={lightboxOpen}
         onClose={() => setLightboxOpen(false)}
+      />
+
+      {/* Lightbox pour les vidéos */}
+      <VideoLightbox
+        videos={videoAttachments}
+        initialIndex={videoLightboxIndex}
+        isOpen={videoLightboxOpen}
+        onClose={() => setVideoLightboxOpen(false)}
       />
 
       {/* Dialog de confirmation de suppression */}

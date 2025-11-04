@@ -491,9 +491,9 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
                       e.stopPropagation();
                       onRemove(index);
                     }}
-                    className="!absolute !-top-0.5 !-right-0.5 !w-3 !h-3 !min-w-[12px] !min-h-[12px] !max-w-[12px] !max-h-[12px] sm:!w-4 sm:!h-4 sm:!min-w-[16px] sm:!min-h-[16px] sm:!max-w-[16px] sm:!max-h-[16px] bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md !z-[100] !p-0"
+                    className="!absolute !-top-0.5 !-right-0.5 !w-[22px] !h-[22px] !min-w-[22px] !min-h-[22px] !max-w-[22px] !max-h-[22px] sm:!w-[29px] sm:!h-[29px] sm:!min-w-[29px] sm:!min-h-[29px] sm:!max-w-[29px] sm:!max-h-[29px] bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md !z-[100] !p-0"
                   >
-                    <X className="!w-1.5 !h-1.5 sm:!w-2 sm:!h-2" />
+                    <X className="!w-[11px] !h-[11px] sm:!w-[14px] sm:!h-[14px]" />
                   </button>
                 )}
               </div>
