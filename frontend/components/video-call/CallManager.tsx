@@ -197,12 +197,17 @@ export function CallManager() {
     (event: CallParticipantLeftEvent) => {
       logger.info('[CallManager]', 'Participant left - callId: ' + event.callId + ', participantId: ' + event.participantId);
 
-      // Remove participant from call
-      removeParticipant(event.participantId);
+      // Use userId for WebRTC cleanup (peer connections and streams are tracked by userId)
+      const userIdForCleanup = event.userId || event.anonymousId;
 
-      // Remove their stream and peer connection
-      removeRemoteStream(event.participantId);
-      removePeerConnection(event.participantId);
+      if (userIdForCleanup) {
+        // Remove their stream and peer connection (tracked by userId)
+        removeRemoteStream(userIdForCleanup);
+        removePeerConnection(userIdForCleanup);
+      }
+
+      // Remove participant from call (tracked by database participantId)
+      removeParticipant(event.participantId);
 
       toast.info('Participant left the call');
     },

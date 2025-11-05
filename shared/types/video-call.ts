@@ -206,14 +206,35 @@ export interface ConnectionQualityStats {
 // ===== WEBRTC SIGNALING =====
 
 /**
- * Signal WebRTC (SDP ou ICE candidate)
+ * Base properties for all WebRTC signals
  */
-export interface WebRTCSignal {
-  readonly type: 'offer' | 'answer' | 'ice-candidate';
+interface WebRTCSignalBase {
   readonly from: string;                  // userId ou anonymousId
   readonly to: string;                    // userId ou anonymousId
-  readonly signal: RTCSessionDescriptionInit | RTCIceCandidateInit;
 }
+
+/**
+ * Signal WebRTC pour Offer/Answer (contient SDP)
+ */
+export interface WebRTCOfferAnswerSignal extends WebRTCSignalBase {
+  readonly type: 'offer' | 'answer';
+  readonly sdp: string;                   // Session Description Protocol
+}
+
+/**
+ * Signal WebRTC pour ICE Candidate
+ */
+export interface WebRTCIceCandidateSignal extends WebRTCSignalBase {
+  readonly type: 'ice-candidate';
+  readonly candidate: string;             // ICE candidate string
+  readonly sdpMLineIndex?: number;        // Media line index
+  readonly sdpMid?: string;               // Media stream ID
+}
+
+/**
+ * Union type for all WebRTC signals
+ */
+export type WebRTCSignal = WebRTCOfferAnswerSignal | WebRTCIceCandidateSignal;
 
 // ===== TRANSCRIPTION (Phase 2A/2B) =====
 
@@ -347,8 +368,10 @@ export interface CallParticipantJoinedEvent {
  */
 export interface CallParticipantLeftEvent {
   readonly callId: string;
-  readonly participantId: string;
-  readonly mode: CallMode;              // Peut changer (SFU→P2P)
+  readonly participantId: string;         // Database participant ID
+  readonly userId?: string;               // User ID (for removing WebRTC connections)
+  readonly anonymousId?: string;          // Anonymous ID (for guest users)
+  readonly mode: CallMode;                // Peut changer (SFU→P2P)
 }
 
 /**

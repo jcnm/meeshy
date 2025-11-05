@@ -381,6 +381,8 @@ export class CallEventsHandler {
         const leftEvent: CallParticipantLeftEvent = {
           callId: callSession.id,
           participantId: participant.id,
+          userId: participant.userId,
+          anonymousId: participant.anonymousId,
           mode: callSession.mode
         };
 
