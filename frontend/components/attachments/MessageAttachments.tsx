@@ -16,6 +16,8 @@ import { PDFLightbox } from '@/components/pdf/PDFLightbox';
 import { MarkdownViewer } from '@/components/markdown/MarkdownViewer';
 import { MarkdownLightbox } from '@/components/markdown/MarkdownLightbox';
 import { TextViewer } from '@/components/text/TextViewer';
+import { PPTXViewer } from '@/components/pptx/PPTXViewer';
+import { PPTXLightbox } from '@/components/pptx/PPTXLightbox';
 import {
   Tooltip,
   TooltipContent,
@@ -77,6 +79,8 @@ export const MessageAttachments = React.memo(function MessageAttachments({
   const [pdfLightboxAttachment, setPdfLightboxAttachment] = useState<Attachment | null>(null);
   const [markdownLightboxOpen, setMarkdownLightboxOpen] = useState(false);
   const [markdownLightboxAttachment, setMarkdownLightboxAttachment] = useState<Attachment | null>(null);
+  const [pptxLightboxOpen, setPptxLightboxOpen] = useState(false);
+  const [pptxLightboxAttachment, setPptxLightboxAttachment] = useState<Attachment | null>(null);
   const { t } = useI18n('common');
 
   // Handler pour ouvrir la confirmation de suppression
@@ -122,11 +126,17 @@ export const MessageAttachments = React.memo(function MessageAttachments({
 
   if (!attachments || attachments.length === 0) return null;
 
-  // Séparer les images, vidéos, audios, PDFs, markdown, texte et autres types
+  // Séparer les images, vidéos, audios, PDFs, PPTX, markdown, texte et autres types
   const imageAttachments = attachments.filter(att => getAttachmentType(att.mimeType) === 'image');
   const videoAttachments = attachments.filter(att => getAttachmentType(att.mimeType) === 'video');
   const audioAttachments = attachments.filter(att => getAttachmentType(att.mimeType) === 'audio');
   const pdfAttachments = attachments.filter(att => att.mimeType === 'application/pdf');
+  const pptxAttachments = attachments.filter(att =>
+    att.mimeType === 'application/vnd.ms-powerpoint' ||
+    att.mimeType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' ||
+    att.originalName.toLowerCase().endsWith('.ppt') ||
+    att.originalName.toLowerCase().endsWith('.pptx')
+  );
   const markdownAttachments = attachments.filter(att =>
     att.mimeType === 'text/markdown' ||
     att.mimeType === 'text/x-markdown' ||
@@ -142,11 +152,15 @@ export const MessageAttachments = React.memo(function MessageAttachments({
   const otherAttachments = attachments.filter(att => {
     const type = getAttachmentType(att.mimeType);
     const isPdf = att.mimeType === 'application/pdf';
+    const isPptx = att.mimeType === 'application/vnd.ms-powerpoint' ||
+                   att.mimeType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' ||
+                   att.originalName.toLowerCase().endsWith('.ppt') ||
+                   att.originalName.toLowerCase().endsWith('.pptx');
     const isMarkdown = att.mimeType === 'text/markdown' ||
                       att.mimeType === 'text/x-markdown' ||
                       att.originalName.toLowerCase().endsWith('.md');
     const isText = (type === 'text' || type === 'code') && !isMarkdown;
-    return type !== 'image' && type !== 'video' && type !== 'audio' && !isPdf && !isMarkdown && !isText;
+    return type !== 'image' && type !== 'video' && type !== 'audio' && !isPdf && !isPptx && !isMarkdown && !isText;
   });
 
   // Seuil pour passer en mode multi-lignes : 10+ attachments
@@ -426,6 +440,49 @@ export const MessageAttachments = React.memo(function MessageAttachments({
       );
     }
 
+    // PPTX attachment - lecteur PowerPoint intégré
+    if (
+      attachment.mimeType === 'application/vnd.ms-powerpoint' ||
+      attachment.mimeType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' ||
+      attachment.originalName.toLowerCase().endsWith('.ppt') ||
+      attachment.originalName.toLowerCase().endsWith('.pptx')
+    ) {
+      const pptxAttachment = {
+        id: attachment.id,
+        messageId: attachment.messageId,
+        fileName: attachment.fileName,
+        originalName: attachment.originalName,
+        mimeType: attachment.mimeType,
+        fileSize: attachment.fileSize,
+        fileUrl: attachment.fileUrl,
+        thumbnailUrl: attachment.thumbnailUrl,
+        uploadedBy: attachment.uploadedBy,
+        isAnonymous: attachment.isAnonymous,
+        createdAt: attachment.createdAt
+      };
+
+      // Handler pour ouvrir le lightbox PPTX
+      const handleOpenPptxLightbox = () => {
+        setPptxLightboxAttachment(attachment);
+        setPptxLightboxOpen(true);
+      };
+
+      // Handler pour supprimer le PPTX
+      const handleDeletePptx = () => {
+        handleOpenDeleteConfirm(attachment, {} as React.MouseEvent);
+      };
+
+      return (
+        <PPTXViewer
+          key={attachment.id}
+          attachment={pptxAttachment as any}
+          onOpenLightbox={handleOpenPptxLightbox}
+          onDelete={canDelete ? handleDeletePptx : undefined}
+          canDelete={canDelete}
+        />
+      );
+    }
+
     // Markdown attachment - lecteur markdown intégré
     if (
       attachment.mimeType === 'text/markdown' ||
@@ -645,6 +702,13 @@ export const MessageAttachments = React.memo(function MessageAttachments({
           </div>
         )}
 
+        {/* Affichage des PPTX */}
+        {pptxAttachments.length > 0 && (
+          <div className="flex flex-col gap-2 w-full">
+            {pptxAttachments.map((attachment, index) => renderAttachment(attachment, index))}
+          </div>
+        )}
+
         {/* Affichage des fichiers Markdown */}
         {markdownAttachments.length > 0 && (
           <div className="flex flex-col gap-2 w-full">
@@ -729,6 +793,13 @@ export const MessageAttachments = React.memo(function MessageAttachments({
         attachment={markdownLightboxAttachment as any}
         isOpen={markdownLightboxOpen}
         onClose={() => setMarkdownLightboxOpen(false)}
+      />
+
+      {/* Lightbox pour les présentations PPTX */}
+      <PPTXLightbox
+        attachment={pptxLightboxAttachment as any}
+        isOpen={pptxLightboxOpen}
+        onClose={() => setPptxLightboxOpen(false)}
       />
 
       {/* Dialog de confirmation de suppression */}
