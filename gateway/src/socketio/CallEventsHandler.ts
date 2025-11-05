@@ -381,10 +381,19 @@ export class CallEventsHandler {
         const leftEvent: CallParticipantLeftEvent = {
           callId: callSession.id,
           participantId: participant.id,
-          userId: participant.userId,
-          anonymousId: participant.anonymousId,
+          userId: participant.userId || undefined,
+          anonymousId: participant.anonymousId || undefined,
           mode: callSession.mode
         };
+
+        logger.info('📤 Broadcasting call:participant-left event', {
+          callId: data.callId,
+          participantId: participant.id,
+          userId: participant.userId,
+          anonymousId: participant.anonymousId,
+          remainingParticipants: callSession.participants.filter(p => !p.leftAt).length,
+          roomName: `call:${data.callId}`
+        });
 
         // Broadcast to remaining call participants
         io.to(`call:${data.callId}`).emit(

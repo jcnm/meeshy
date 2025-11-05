@@ -195,15 +195,25 @@ export function CallManager() {
    */
   const handleParticipantLeft = useCallback(
     (event: CallParticipantLeftEvent) => {
-      logger.info('[CallManager]', 'Participant left - callId: ' + event.callId + ', participantId: ' + event.participantId);
+      console.log('📞 [CallManager] 🚨 PARTICIPANT LEFT EVENT RECEIVED 🚨', event);
+      logger.info('[CallManager]', 'Participant left - callId: ' + event.callId + ', participantId: ' + event.participantId, {
+        userId: event.userId,
+        anonymousId: event.anonymousId,
+        mode: event.mode
+      });
 
       // Use userId for WebRTC cleanup (peer connections and streams are tracked by userId)
       const userIdForCleanup = event.userId || event.anonymousId;
 
+      console.log('🔍 [CallManager] User ID for cleanup:', userIdForCleanup);
+
       if (userIdForCleanup) {
+        console.log('🧹 [CallManager] Removing remote stream and peer connection for:', userIdForCleanup);
         // Remove their stream and peer connection (tracked by userId)
         removeRemoteStream(userIdForCleanup);
         removePeerConnection(userIdForCleanup);
+      } else {
+        console.warn('⚠️ [CallManager] No userId or anonymousId for cleanup!', event);
       }
 
       // Remove participant from call (tracked by database participantId)
