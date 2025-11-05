@@ -98,7 +98,24 @@ export function VideoCallInterface({ callId }: VideoCallInterfaceProps) {
 
     const init = async () => {
       try {
-        await initializeLocalStream();
+        // SAFARI FIX: Check for pre-authorized stream first
+        const preauthorizedStream = (window as any).__preauthorizedMediaStream;
+
+        if (preauthorizedStream) {
+          logger.info('[VideoCallInterface]', '✅ Using pre-authorized media stream (Safari-compatible)');
+          console.log('✅ [VideoCallInterface] Using pre-authorized media stream');
+
+          // Use the pre-authorized stream directly
+          const { setLocalStream } = useCallStore.getState();
+          setLocalStream(preauthorizedStream);
+
+          // Clean up the global reference
+          delete (window as any).__preauthorizedMediaStream;
+        } else {
+          logger.debug('[VideoCallInterface]', 'No pre-authorized stream, requesting permissions now');
+          console.log('🎤📹 [VideoCallInterface] No pre-authorized stream, requesting permissions...');
+          await initializeLocalStream();
+        }
       } catch (error) {
         if (mounted) {
           logger.error('[VideoCallInterface]', 'Failed to initialize local stream: ' + (error?.message || 'Unknown error'));

@@ -688,7 +688,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   }, [isMobile, selectedConversationId, localSelectedConversationId, router, instanceId]);
 
   // Start video call
-  const handleStartCall = useCallback(() => {
+  const handleStartCall = useCallback(async () => {
     console.log('🎥🎥🎥 [ConversationLayout] handleStartCall CLICKED 🎥🎥🎥');
     logger.debug('[ConversationLayout]', '🎥 handleStartCall called', {
       hasConversation: !!selectedConversation,
@@ -713,49 +713,108 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     console.log('✅ [ConversationLayout] Starting video call for conversation:', selectedConversation.id);
     logger.info('[ConversationLayout]', 'Starting video call - conversationId: ' + selectedConversation.id);
 
-    const socket = meeshySocketIOService.getSocket();
-    console.log('🔌 [ConversationLayout] Socket status:', {
-      hasSocket: !!socket,
-      isConnected: socket?.connected,
-      socketId: socket?.id
-    });
-    logger.debug('[ConversationLayout]', '🔌 Socket status', {
-      hasSocket: !!socket,
-      isConnected: socket?.connected,
-      socketId: socket?.id
-    });
+    // SAFARI FIX: Request media permissions IMMEDIATELY in user gesture context
+    // Safari blocks getUserMedia() if not called synchronously from user interaction
+    console.log('🎤📹 [ConversationLayout] Requesting media permissions (Safari-compatible)...');
+    logger.debug('[ConversationLayout]', 'Requesting media permissions in click handler for Safari compatibility');
 
-    if (!socket) {
-      console.error('❌ [ConversationLayout] No socket connection available');
-      toast.error('Connection error. Please try again.');
-      logger.error('[ConversationLayout]', 'Cannot start call: no socket connection');
-      return;
+    try {
+      // Request permissions synchronously in the click handler
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+        video: {
+          width: { ideal: 640, max: 1280 },
+          height: { ideal: 480, max: 720 },
+          frameRate: { ideal: 24, max: 30 },
+          facingMode: 'user',
+        },
+      });
+
+      console.log('✅ [ConversationLayout] Media permissions granted!', {
+        audioTracks: stream.getAudioTracks().length,
+        videoTracks: stream.getVideoTracks().length,
+      });
+      logger.info('[ConversationLayout]', 'Media permissions granted', {
+        audioTracks: stream.getAudioTracks().length,
+        videoTracks: stream.getVideoTracks().length,
+      });
+
+      // Store the stream temporarily - it will be used by CallInterface
+      (window as any).__preauthorizedMediaStream = stream;
+
+      // Continue with call initiation
+      const socket = meeshySocketIOService.getSocket();
+      console.log('🔌 [ConversationLayout] Socket status:', {
+        hasSocket: !!socket,
+        isConnected: socket?.connected,
+        socketId: socket?.id
+      });
+      logger.debug('[ConversationLayout]', '🔌 Socket status', {
+        hasSocket: !!socket,
+        isConnected: socket?.connected,
+        socketId: socket?.id
+      });
+
+      if (!socket) {
+        console.error('❌ [ConversationLayout] No socket connection available');
+        toast.error('Connection error. Please try again.');
+        logger.error('[ConversationLayout]', 'Cannot start call: no socket connection');
+
+        // Clean up stream
+        stream.getTracks().forEach(track => track.stop());
+        delete (window as any).__preauthorizedMediaStream;
+        return;
+      }
+
+      if (!socket.connected) {
+        console.error('❌ [ConversationLayout] Socket not connected');
+        toast.error('Socket not connected. Please wait...');
+        logger.error('[ConversationLayout]', 'Cannot start call: socket not connected');
+
+        // Clean up stream
+        stream.getTracks().forEach(track => track.stop());
+        delete (window as any).__preauthorizedMediaStream;
+        return;
+      }
+
+      const callData = {
+        conversationId: selectedConversation.id,
+        type: 'video',
+        settings: {
+          audioEnabled: true,
+          videoEnabled: true,
+        },
+      };
+
+      console.log('📤 [ConversationLayout] Emitting call:initiate event:', callData);
+      logger.info('[ConversationLayout]', '📤 Emitting call:initiate', callData);
+
+      // Emit call:initiate event
+      (socket as any).emit('call:initiate', callData);
+
+      console.log('✅ [ConversationLayout] call:initiate event sent successfully');
+      toast.success('Starting call...');
+    } catch (error: any) {
+      console.error('❌ [ConversationLayout] Media permission denied or error:', error);
+      logger.error('[ConversationLayout]', 'Failed to get media permissions', { error });
+
+      // Provide user-friendly error messages
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        toast.error('Camera/microphone permission denied. Please allow access in your browser settings.');
+      } else if (error.name === 'NotFoundError') {
+        toast.error('No camera or microphone found. Please connect a device.');
+      } else if (error.name === 'NotReadableError') {
+        toast.error('Camera/microphone is already in use by another application.');
+      } else {
+        toast.error('Failed to access camera/microphone: ' + error.message);
+      }
+
+      return; // Don't proceed with call if permissions failed
     }
-
-    if (!socket.connected) {
-      console.error('❌ [ConversationLayout] Socket not connected');
-      toast.error('Socket not connected. Please wait...');
-      logger.error('[ConversationLayout]', 'Cannot start call: socket not connected');
-      return;
-    }
-
-    const callData = {
-      conversationId: selectedConversation.id,
-      type: 'video',
-      settings: {
-        audioEnabled: true,
-        videoEnabled: true,
-      },
-    };
-
-    console.log('📤 [ConversationLayout] Emitting call:initiate event:', callData);
-    logger.info('[ConversationLayout]', '📤 Emitting call:initiate', callData);
-
-    // Emit call:initiate event
-    (socket as any).emit('call:initiate', callData);
-
-    console.log('✅ [ConversationLayout] call:initiate event sent successfully');
-    toast.success('Starting call...');
   }, [selectedConversation]);
 
   // Gérer la réponse à un message
