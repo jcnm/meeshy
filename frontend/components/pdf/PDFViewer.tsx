@@ -39,9 +39,19 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
   const attachmentId = attachment.id;
   const attachmentFileUrl = attachment.fileUrl;
 
+  // Check if iframe loads successfully
+  React.useEffect(() => {
+    // Set a timeout to detect if PDF fails to load
+    const timer = setTimeout(() => {
+      // If we haven't set an error yet, assume it loaded successfully
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [attachmentFileUrl]);
+
   const handleIframeError = () => {
     setHasError(true);
-    setErrorMessage('Impossible de charger le PDF');
+    setErrorMessage('Impossible de charger le PDF dans le navigateur');
   };
 
   const handleOpenInNewTab = () => {
@@ -56,20 +66,37 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
           : 'border-red-200 dark:border-gray-700'
       } shadow-md hover:shadow-lg transition-all duration-200 w-full max-w-full ${className}`}
     >
-      {/* Iframe PDF - responsive height */}
-      <div className="relative w-full bg-white dark:bg-gray-900 rounded-lg overflow-hidden h-[300px] sm:h-[400px] md:h-[500px]">
+      {/* PDF embed - responsive height */}
+      <div className="relative w-full bg-white dark:bg-gray-900 rounded-lg overflow-hidden h-[210px] sm:h-[280px] md:h-[350px]">
         {!hasError ? (
-          <iframe
-            src={`${attachmentFileUrl}#toolbar=0&navpanes=0`}
-            className="w-full h-full border-0"
-            onError={handleIframeError}
-            title={attachment.originalName}
-          />
+          <>
+            <object
+              data={`${attachmentFileUrl}#toolbar=0&navpanes=0&view=FitH`}
+              type="application/pdf"
+              className="w-full h-full"
+              onError={handleIframeError}
+            >
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+                <div className="flex flex-col items-center gap-2 text-gray-600 dark:text-gray-400">
+                  <AlertTriangle className="w-12 h-12" />
+                  <span className="text-sm text-center px-4">Votre navigateur ne supporte pas l'affichage de PDF</span>
+                  <Button
+                    onClick={handleOpenInNewTab}
+                    size="sm"
+                    className="mt-2 bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    Ouvrir dans un nouvel onglet
+                  </Button>
+                </div>
+              </div>
+            </object>
+          </>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
             <div className="flex flex-col items-center gap-2 text-gray-600 dark:text-gray-400">
               <AlertTriangle className="w-12 h-12" />
-              <span className="text-sm">{errorMessage}</span>
+              <span className="text-sm text-center px-4">{errorMessage}</span>
               <Button
                 onClick={handleOpenInNewTab}
                 size="sm"

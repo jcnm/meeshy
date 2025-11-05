@@ -1,13 +1,9 @@
 'use client';
 
-import React from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import React, { useEffect } from 'react';
 import { X, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
 
 interface PDFLightboxProps {
@@ -17,55 +13,128 @@ interface PDFLightboxProps {
 }
 
 /**
- * PDF Lightbox - Full screen PDF viewer
+ * PDF Lightbox - Fullscreen PDF viewer matching ImageLightbox pattern
  */
 export const PDFLightbox: React.FC<PDFLightboxProps> = ({
   attachment,
   isOpen,
   onClose
 }) => {
-  if (!attachment) return null;
+  // Keyboard navigation
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  // Prevent body scroll when lightbox is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  if (!isOpen || !attachment) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-7xl w-full h-[90vh] p-0 gap-0">
-        <DialogTitle className="sr-only">{attachment.originalName}</DialogTitle>
-
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b dark:border-gray-700 bg-white dark:bg-gray-900">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            <h3 className="text-lg font-semibold truncate">{attachment.originalName}</h3>
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[9999] bg-black/95 dark:bg-black/98 backdrop-blur-sm"
+        onClick={onClose}
+      >
+        {/* Header bar */}
+        <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-3 sm:p-4 bg-gradient-to-b from-black/50 to-transparent">
+          <div className="flex flex-col text-white min-w-0 flex-1 mr-4">
+            <span className="font-medium text-xs sm:text-sm md:text-base truncate">
+              {attachment.originalName}
+            </span>
+            <span className="text-[10px] sm:text-xs text-gray-300">
+              PDF Document
+            </span>
           </div>
 
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <a
-              href={attachment.fileUrl}
-              download={attachment.originalName}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
-              title="Télécharger"
-            >
-              <Download className="w-5 h-5" />
-            </a>
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             <Button
-              onClick={onClose}
               variant="ghost"
-              size="sm"
-              className="w-8 h-8 p-0"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                const link = document.createElement('a');
+                link.href = attachment.fileUrl;
+                link.download = attachment.originalName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }}
+              className="text-white hover:bg-white/10 w-8 h-8 sm:w-10 sm:h-10"
+              aria-label="Télécharger le PDF"
             >
-              <X className="w-5 h-5" />
+              <Download className="w-4 h-4 sm:w-5 sm:h-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                onClose();
+              }}
+              className="text-white hover:bg-white/10 w-8 h-8 sm:w-10 sm:h-10"
+              aria-label="Fermer"
+            >
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
           </div>
         </div>
 
         {/* PDF Viewer */}
-        <div className="flex-1 bg-gray-100 dark:bg-gray-800">
-          <iframe
-            src={`${attachment.fileUrl}#toolbar=1&navpanes=1`}
-            className="w-full h-full border-0"
-            title={attachment.originalName}
-          />
+        <div
+          className="absolute inset-0 flex items-center justify-center pt-16 pb-4 px-2 sm:px-4"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="w-full h-full bg-white dark:bg-gray-900 rounded-lg overflow-hidden shadow-2xl">
+            <object
+              data={`${attachment.fileUrl}#toolbar=1&navpanes=1&view=FitH`}
+              type="application/pdf"
+              className="w-full h-full"
+            >
+              <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                <div className="text-center p-4">
+                  <p className="mb-4">Impossible d'afficher le PDF dans le navigateur</p>
+                  <a
+                    href={attachment.fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
+                  >
+                    Ouvrir dans un nouvel onglet
+                  </a>
+                </div>
+              </div>
+            </object>
+          </div>
         </div>
-      </DialogContent>
-    </Dialog>
+
+        {/* Instructions (desktop only) */}
+        <div className="hidden md:block absolute bottom-4 left-1/2 -translate-x-1/2 text-white/60 text-xs text-center">
+          <p>Appuyez sur Échap pour fermer</p>
+        </div>
+      </motion.div>
+    </AnimatePresence>
   );
 };

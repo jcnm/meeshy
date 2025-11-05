@@ -1,13 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { X, Download, Eye, Code } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
 
 interface MarkdownLightboxProps {
@@ -17,7 +13,7 @@ interface MarkdownLightboxProps {
 }
 
 /**
- * Markdown Lightbox - Full screen Markdown viewer
+ * Markdown Lightbox - Fullscreen Markdown viewer matching ImageLightbox pattern
  */
 export const MarkdownLightbox: React.FC<MarkdownLightboxProps> = ({
   attachment,
@@ -29,6 +25,7 @@ export const MarkdownLightbox: React.FC<MarkdownLightboxProps> = ({
   const [hasError, setHasError] = useState(false);
   const [showRaw, setShowRaw] = useState(false);
 
+  // Fetch content when opening
   useEffect(() => {
     if (!attachment || !isOpen) return;
 
@@ -55,7 +52,34 @@ export const MarkdownLightbox: React.FC<MarkdownLightboxProps> = ({
     fetchContent();
   }, [attachment, isOpen]);
 
-  // Simple markdown to HTML conversion (same as inline viewer)
+  // Keyboard navigation
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  // Prevent body scroll when lightbox is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  // Simple markdown to HTML conversion
   const renderMarkdown = (md: string): string => {
     let html = md;
 
@@ -93,80 +117,115 @@ export const MarkdownLightbox: React.FC<MarkdownLightboxProps> = ({
     setShowRaw(!showRaw);
   };
 
-  if (!attachment) return null;
+  if (!isOpen || !attachment) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-7xl w-full h-[90vh] p-0 gap-0">
-        <DialogTitle className="sr-only">{attachment.originalName}</DialogTitle>
-
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b dark:border-gray-700 bg-white dark:bg-gray-900">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            <h3 className="text-lg font-semibold truncate">{attachment.originalName}</h3>
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[9999] bg-black/95 dark:bg-black/98 backdrop-blur-sm"
+        onClick={onClose}
+      >
+        {/* Header bar */}
+        <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-3 sm:p-4 bg-gradient-to-b from-black/50 to-transparent">
+          <div className="flex flex-col text-white min-w-0 flex-1 mr-4">
+            <span className="font-medium text-xs sm:text-sm md:text-base truncate">
+              {attachment.originalName}
+            </span>
+            <span className="text-[10px] sm:text-xs text-gray-300">
+              Markdown Document
+            </span>
           </div>
 
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             {/* Toggle raw/formatted view */}
             <Button
-              onClick={toggleRawMode}
               variant="ghost"
-              size="sm"
-              className="w-8 h-8 p-0"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleRawMode();
+              }}
+              className="text-white hover:bg-white/10 w-8 h-8 sm:w-10 sm:h-10"
               title={showRaw ? 'Vue formatée' : 'Vue brute'}
               disabled={isLoading || hasError}
             >
               {showRaw ? (
-                <Eye className="w-5 h-5" />
+                <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
               ) : (
-                <Code className="w-5 h-5" />
+                <Code className="w-4 h-4 sm:w-5 sm:h-5" />
               )}
             </Button>
 
-            {/* Download button */}
-            <a
-              href={attachment.fileUrl}
-              download={attachment.originalName}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
-              title="Télécharger"
-            >
-              <Download className="w-5 h-5" />
-            </a>
-
-            {/* Close button */}
             <Button
-              onClick={onClose}
               variant="ghost"
-              size="sm"
-              className="w-8 h-8 p-0"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                const link = document.createElement('a');
+                link.href = attachment.fileUrl;
+                link.download = attachment.originalName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }}
+              className="text-white hover:bg-white/10 w-8 h-8 sm:w-10 sm:h-10"
+              aria-label="Télécharger le fichier Markdown"
             >
-              <X className="w-5 h-5" />
+              <Download className="w-4 h-4 sm:w-5 sm:h-5" />
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                onClose();
+              }}
+              className="text-white hover:bg-white/10 w-8 h-8 sm:w-10 sm:h-10"
+              aria-label="Fermer"
+            >
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
           </div>
         </div>
 
         {/* Markdown Viewer */}
-        <div className="flex-1 bg-gray-100 dark:bg-gray-800 overflow-auto p-6">
-          {isLoading ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />
+        <div
+          className="absolute inset-0 flex items-center justify-center pt-16 pb-4 px-2 sm:px-4"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="w-full h-full bg-white dark:bg-gray-900 rounded-lg overflow-hidden shadow-2xl">
+            <div className="w-full h-full overflow-auto p-4 sm:p-6">
+              {isLoading ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : hasError ? (
+                <div className="flex items-center justify-center h-full text-gray-600 dark:text-gray-400">
+                  <span>Impossible de charger le fichier</span>
+                </div>
+              ) : showRaw ? (
+                <pre className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap font-mono">
+                  {content}
+                </pre>
+              ) : (
+                <div
+                  className="prose prose-sm dark:prose-invert max-w-none text-gray-800 dark:text-gray-200"
+                  dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
+                />
+              )}
             </div>
-          ) : hasError ? (
-            <div className="flex items-center justify-center h-full text-gray-600 dark:text-gray-400">
-              <span>Impossible de charger le fichier</span>
-            </div>
-          ) : showRaw ? (
-            <pre className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap font-mono">
-              {content}
-            </pre>
-          ) : (
-            <div
-              className="prose prose-sm dark:prose-invert max-w-none text-gray-800 dark:text-gray-200"
-              dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
-            />
-          )}
+          </div>
         </div>
-      </DialogContent>
-    </Dialog>
+
+        {/* Instructions (desktop only) */}
+        <div className="hidden md:block absolute bottom-4 left-1/2 -translate-x-1/2 text-white/60 text-xs text-center">
+          <p>Appuyez sur Échap pour fermer</p>
+        </div>
+      </motion.div>
+    </AnimatePresence>
   );
 };
