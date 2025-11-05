@@ -369,7 +369,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       } shadow-md hover:shadow-lg transition-all duration-200 w-full max-w-full min-w-0 overflow-hidden ${className}`}
     >
       {/* Élément vidéo - adapts to video aspect ratio */}
-      <div className="relative w-full max-w-full bg-black rounded-lg overflow-hidden" style={{ aspectRatio: attachment.width && attachment.height ? `${attachment.width}/${attachment.height}` : '16/9' }}>
+      <div className="relative w-full max-w-full min-w-0 bg-black rounded-lg overflow-hidden" style={{ aspectRatio: attachment.width && attachment.height ? `${attachment.width}/${attachment.height}` : '16/9' }}>
         <video
           ref={videoRef}
           onLoadedMetadata={handleLoadedMetadata}

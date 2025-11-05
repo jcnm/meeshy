@@ -681,7 +681,7 @@ export const MessageAttachments = React.memo(function MessageAttachments({
 
   return (
     <>
-      <div className="mt-2 flex flex-col gap-2 w-full max-w-full overflow-hidden">
+      <div className="mt-2 flex flex-col gap-2 w-full max-w-full min-w-0 overflow-hidden">
         {/* Affichage des images */}
         {imageAttachments.length > 0 && (
           <div className={`${getImageLayoutClasses()} w-full max-w-full ${
@@ -702,35 +702,35 @@ export const MessageAttachments = React.memo(function MessageAttachments({
 
         {/* Affichage des vidéos */}
         {videoAttachments.length > 0 && (
-          <div className="flex flex-col gap-2 w-full">
+          <div className="flex flex-col gap-2 w-full min-w-0">
             {videoAttachments.map((attachment, index) => renderAttachment(attachment, index))}
           </div>
         )}
 
         {/* Affichage des PDFs */}
         {pdfAttachments.length > 0 && (
-          <div className="flex flex-col gap-2 w-full">
+          <div className="flex flex-col gap-2 w-full min-w-0">
             {pdfAttachments.map((attachment, index) => renderAttachment(attachment, index))}
           </div>
         )}
 
         {/* Affichage des PPTX */}
         {pptxAttachments.length > 0 && (
-          <div className="flex flex-col gap-2 w-full">
+          <div className="flex flex-col gap-2 w-full min-w-0">
             {pptxAttachments.map((attachment, index) => renderAttachment(attachment, index))}
           </div>
         )}
 
         {/* Affichage des fichiers Markdown */}
         {markdownAttachments.length > 0 && (
-          <div className="flex flex-col gap-2 w-full">
+          <div className="flex flex-col gap-2 w-full min-w-0">
             {markdownAttachments.map((attachment, index) => renderAttachment(attachment, index))}
           </div>
         )}
 
         {/* Affichage des fichiers Texte/Code */}
         {textAttachments.length > 0 && (
-          <div className="flex flex-col gap-2 w-full">
+          <div className="flex flex-col gap-2 w-full min-w-0">
             {textAttachments.map((attachment, index) => renderAttachment(attachment, index))}
           </div>
         )}

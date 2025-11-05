@@ -147,26 +147,31 @@ export const TextViewer: React.FC<TextViewerProps> = ({
             </div>
 
             {/* Content with syntax highlighting */}
-            <SyntaxHighlighter
-              language={language}
-              style={isDark ? vscDarkPlus : vs}
-              showLineNumbers={false}
-              wrapLines={wordWrap}
-              wrapLongLines={wordWrap}
-              customStyle={{
-                margin: 0,
-                padding: '1rem',
-                fontSize: '0.75rem',
-                maxHeight: 'calc(100% - 40px)',
-              }}
-              codeTagProps={{
-                style: {
-                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-                }
-              }}
-            >
-              {content}
-            </SyntaxHighlighter>
+            <div className="w-full max-w-full overflow-x-auto">
+              <SyntaxHighlighter
+                language={language}
+                style={isDark ? vscDarkPlus : vs}
+                showLineNumbers={false}
+                wrapLines={wordWrap}
+                wrapLongLines={wordWrap}
+                customStyle={{
+                  margin: 0,
+                  padding: '1rem',
+                  fontSize: '0.75rem',
+                  maxHeight: 'calc(100% - 40px)',
+                  maxWidth: '100%',
+                  width: '100%',
+                }}
+                codeTagProps={{
+                  style: {
+                    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                    maxWidth: '100%',
+                  }
+                }}
+              >
+                {content}
+              </SyntaxHighlighter>
+            </div>
           </div>
         )}
       </div>
