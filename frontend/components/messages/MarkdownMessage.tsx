@@ -15,6 +15,7 @@ import {
   recordTrackingLinkClick,
   generateDeviceFingerprint,
 } from '@/lib/utils/link-parser';
+import { MermaidDiagram } from '@/components/markdown/MermaidDiagram';
 
 interface MarkdownMessageProps {
   content: string;
@@ -104,11 +105,22 @@ export const MarkdownMessage: React.FC<MarkdownMessageProps> = ({
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw, rehypeSanitize]}
         components={{
-          // Custom code block rendering with syntax highlighting
+          // Custom code block rendering with syntax highlighting and Mermaid support
           code({ node, inline, className, children, ...props }: any) {
             const match = /language-(\w+)/.exec(className || '');
             const language = match ? match[1] : '';
 
+            // Mermaid diagrams
+            if (!inline && language === 'mermaid') {
+              return (
+                <MermaidDiagram
+                  chart={String(children).replace(/\n$/, '')}
+                  className="my-4"
+                />
+              );
+            }
+
+            // Syntax highlighted code blocks
             return !inline && language ? (
               <SyntaxHighlighter
                 style={isDark ? vscDarkPlus : vs}

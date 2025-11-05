@@ -12,6 +12,7 @@ import { X, Download, Eye, Code } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
+import { MermaidDiagram } from '@/components/markdown/MermaidDiagram';
 
 interface MarkdownLightboxProps {
   attachment: UploadedAttachmentResponse | null;
@@ -193,6 +194,17 @@ export const MarkdownLightbox: React.FC<MarkdownLightboxProps> = ({
                       code({ node, inline, className, children, ...props }: any) {
                         const match = /language-(\w+)/.exec(className || '');
                         const language = match ? match[1] : '';
+
+                        // Mermaid diagrams
+                        if (!inline && language === 'mermaid') {
+                          return (
+                            <MermaidDiagram
+                              chart={String(children).replace(/\n$/, '')}
+                              className="my-4"
+                            />
+                          );
+                        }
+
                         return !inline && language ? (
                           <SyntaxHighlighter
                             style={vscDarkPlus}

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
+import { MermaidDiagram } from '@/components/markdown/MermaidDiagram';
 
 interface MarkdownViewerProps {
   attachment: UploadedAttachmentResponse;
@@ -114,6 +115,17 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
                 code({ node, inline, className, children, ...props }: any) {
                   const match = /language-(\w+)/.exec(className || '');
                   const language = match ? match[1] : '';
+
+                  // Mermaid diagrams
+                  if (!inline && language === 'mermaid') {
+                    return (
+                      <MermaidDiagram
+                        chart={String(children).replace(/\n$/, '')}
+                        className="my-4"
+                      />
+                    );
+                  }
+
                   return !inline && language ? (
                     <SyntaxHighlighter
                       style={isDark ? vscDarkPlus : vs}
