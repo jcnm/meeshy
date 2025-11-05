@@ -690,7 +690,7 @@ export const MessageAttachments = React.memo(function MessageAttachments({
 
         {/* Affichage des vidéos */}
         {videoAttachments.length > 0 && (
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-col gap-2 w-full">
             {videoAttachments.map((attachment, index) => renderAttachment(attachment, index))}
           </div>
         )}
