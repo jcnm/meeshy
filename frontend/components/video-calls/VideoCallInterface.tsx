@@ -9,9 +9,13 @@ import React, { useEffect, useCallback, useState } from 'react';
 import { useCallStore } from '@/stores/call-store';
 import { useAuth } from '@/hooks/use-auth';
 import { useWebRTCP2P } from '@/hooks/use-webrtc-p2p';
+import { useAudioEffects } from '@/hooks/use-audio-effects';
+import { useCallQuality } from '@/hooks/use-call-quality';
 import { VideoStream } from './VideoStream';
 import { CallControls } from './CallControls';
 import { CallStatusIndicator } from './CallStatusIndicator';
+import { AudioEffectsPanel } from './AudioEffectsPanel';
+import { ConnectionQualityBadge } from './ConnectionQualityBadge';
 import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
 import { logger } from '@/utils/logger';
 import { toast } from 'sonner';
@@ -37,6 +41,8 @@ export function VideoCallInterface({ callId }: VideoCallInterfaceProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [callDuration, setCallDuration] = useState(0);
+  const [showAudioEffects, setShowAudioEffects] = useState(false);
+  const [showStats, setShowStats] = useState(false);
 
   // Stable error handler
   const handleWebRTCError = useCallback((error: Error) => {
@@ -50,6 +56,32 @@ export function VideoCallInterface({ callId }: VideoCallInterfaceProps) {
     userId: user?.id,
     onError: handleWebRTCError,
   });
+
+  // Initialize audio effects
+  const {
+    outputStream: processedAudioStream,
+    effectsState,
+    toggleEffect,
+    updateEffectParams,
+    availableBackSounds,
+  } = useAudioEffects({
+    inputStream: localStream,
+  });
+
+  // Get active peer connection for quality monitoring
+  const activePeerConnection = React.useMemo(() => {
+    const peerConnections = useCallStore.getState().peerConnections;
+    return peerConnections.size > 0 ? Array.from(peerConnections.values())[0] : null;
+  }, []);
+
+  // Monitor call quality
+  const { qualityStats } = useCallQuality({
+    peerConnection: activePeerConnection,
+    updateInterval: 2000,
+  });
+
+  // Check if any audio effect is active
+  const audioEffectsActive = Object.values(effectsState).some(effect => effect.enabled);
 
   // Return loading state if user not loaded
   if (!user || !user.id) {
@@ -259,6 +291,23 @@ export function VideoCallInterface({ callId }: VideoCallInterfaceProps) {
         participantName={remoteParticipant?.username || 'Unknown'}
       />
 
+      {/* Connection Quality Badge */}
+      <div className="absolute top-4 right-4">
+        <ConnectionQualityBadge stats={qualityStats} showAlways={showStats} />
+      </div>
+
+      {/* Audio Effects Panel (Sliding from bottom) */}
+      {showAudioEffects && (
+        <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 w-full max-w-4xl px-4 z-40">
+          <AudioEffectsPanel
+            effectsState={effectsState}
+            onToggleEffect={toggleEffect}
+            onUpdateParams={updateEffectParams}
+            availableBackSounds={availableBackSounds}
+          />
+        </div>
+      )}
+
       {/* Remote Video - Full Screen */}
       <div className="absolute inset-0">
         {remoteStreams.size > 0 ? (
@@ -324,7 +373,11 @@ export function VideoCallInterface({ callId }: VideoCallInterfaceProps) {
         onToggleAudio={handleToggleAudio}
         onToggleVideo={handleToggleVideo}
         onSwitchCamera={handleSwitchCamera}
+        onToggleAudioEffects={() => setShowAudioEffects(!showAudioEffects)}
+        onToggleStats={() => setShowStats(!showStats)}
         onHangUp={handleHangUp}
+        audioEffectsActive={audioEffectsActive}
+        showStats={showStats}
       />
 
       {/* Call Duration & Participant Count */}

@@ -104,6 +104,105 @@ export interface CallControls {
   screenShareEnabled: boolean;
 }
 
+// ===== AUDIO EFFECTS =====
+
+/**
+ * Types d'effets audio disponibles
+ */
+export type AudioEffectType = 'voice-coder' | 'baby-voice' | 'demon-voice' | 'back-sound';
+
+/**
+ * Mode de loop pour le back sound
+ */
+export type LoopMode = 'N_TIMES' | 'N_MINUTES';
+
+/**
+ * Paramètres pour l'effet Voice Coder (auto-tune)
+ */
+export interface VoiceCoderParams {
+  readonly pitch: number;           // -12 à +12 semitones
+  readonly harmonization: boolean;  // Ajouter harmonies
+  readonly strength: number;        // 0-100%, intensité correction
+}
+
+/**
+ * Paramètres pour l'effet Baby Voice
+ */
+export interface BabyVoiceParams {
+  readonly pitch: number;           // +6 à +12 semitones
+  readonly formant: number;         // 1.2-1.5x shift formantique
+  readonly breathiness: number;     // 0-100%, ajout de souffle
+}
+
+/**
+ * Paramètres pour l'effet Demon Voice
+ */
+export interface DemonVoiceParams {
+  readonly pitch: number;           // -8 à -12 semitones
+  readonly distortion: number;      // 0-100%, saturation
+  readonly reverb: number;          // 0-100%, echo cathedral
+}
+
+/**
+ * Paramètres pour l'effet Back Sound Code
+ */
+export interface BackSoundParams {
+  readonly soundFile: string;       // Nom du fichier son
+  readonly volume: number;          // 0-100%
+  readonly loopMode: LoopMode;      // Mode de loop
+  readonly loopValue: number;       // Nombre de fois ou minutes
+}
+
+/**
+ * Union des paramètres d'effets audio
+ */
+export type AudioEffectParams =
+  | VoiceCoderParams
+  | BabyVoiceParams
+  | DemonVoiceParams
+  | BackSoundParams;
+
+/**
+ * Configuration d'un effet audio
+ */
+export interface AudioEffect {
+  readonly type: AudioEffectType;
+  readonly enabled: boolean;
+  readonly params: AudioEffectParams;
+}
+
+/**
+ * État des effets audio
+ */
+export interface AudioEffectsState {
+  readonly voiceCoder: AudioEffect & { params: VoiceCoderParams };
+  readonly babyVoice: AudioEffect & { params: BabyVoiceParams };
+  readonly demonVoice: AudioEffect & { params: DemonVoiceParams };
+  readonly backSound: AudioEffect & { params: BackSoundParams };
+}
+
+// ===== CONNECTION QUALITY =====
+
+/**
+ * Niveau de qualité de connexion
+ */
+export type ConnectionQualityLevel = 'excellent' | 'good' | 'fair' | 'poor';
+
+/**
+ * Statistiques de qualité de connexion en temps réel
+ */
+export interface ConnectionQualityStats {
+  readonly level: ConnectionQualityLevel;
+  readonly packetLoss: number;      // Pourcentage (0-100)
+  readonly rtt: number;             // Round-trip time en ms
+  readonly bitrate: {
+    readonly audio: number;         // kbps
+    readonly video: number;         // kbps
+  };
+  readonly jitter: number;          // ms
+  readonly timestamp: Date;
+}
+
 // ===== WEBRTC SIGNALING =====
 
 /**
