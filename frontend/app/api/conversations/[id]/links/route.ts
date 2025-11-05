@@ -1,0 +1,16 @@
+/**
+ * BFF API Route: /api/conversations/:id/links
+ * Proxies conversation share links requests to the backend gateway
+ */
+
+import { NextRequest } from 'next/server';
+import { proxyToGateway } from '@/lib/bff-proxy';
+
+interface RouteContext {
+  params: Promise<{ id: string }>;
+}
+
+export async function GET(request: NextRequest, context: RouteContext) {
+  const { id } = await context.params;
+  return proxyToGateway(request, `/api/conversations/${id}/links`);
+}

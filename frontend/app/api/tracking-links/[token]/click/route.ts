@@ -1,0 +1,16 @@
+/**
+ * BFF API Route: /api/tracking-links/:token/click
+ * Proxies tracking link click logging to the backend gateway
+ */
+
+import { NextRequest } from 'next/server';
+import { proxyToGateway } from '@/lib/bff-proxy';
+
+interface RouteContext {
+  params: Promise<{ token: string }>;
+}
+
+export async function POST(request: NextRequest, context: RouteContext) {
+  const { token } = await context.params;
+  return proxyToGateway(request, `/api/tracking-links/${token}/click`);
+}
