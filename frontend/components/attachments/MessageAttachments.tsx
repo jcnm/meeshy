@@ -12,6 +12,7 @@ import { SimpleAudioPlayer } from '@/components/audio/SimpleAudioPlayer';
 import { VideoPlayer } from '@/components/video/VideoPlayer';
 import { VideoLightbox } from '@/components/video/VideoLightbox';
 import { PDFViewer } from '@/components/pdf/PDFViewer';
+import { PDFLightbox } from '@/components/pdf/PDFLightbox';
 import { MarkdownViewer } from '@/components/markdown/MarkdownViewer';
 import { TextViewer } from '@/components/text/TextViewer';
 import {
@@ -71,6 +72,8 @@ export const MessageAttachments = React.memo(function MessageAttachments({
   const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
   const [videoLightboxOpen, setVideoLightboxOpen] = useState(false);
   const [videoLightboxIndex, setVideoLightboxIndex] = useState(0);
+  const [pdfLightboxOpen, setPdfLightboxOpen] = useState(false);
+  const [pdfLightboxIndex, setPdfLightboxIndex] = useState(0);
   const { t } = useI18n('common');
 
   // Handler pour ouvrir la confirmation de suppression
@@ -384,6 +387,13 @@ export const MessageAttachments = React.memo(function MessageAttachments({
 
     // PDF attachment - lecteur PDF intégré
     if (attachment.mimeType === 'application/pdf') {
+      // Handler pour ouvrir le lightbox PDF
+      const handleOpenPdfLightbox = () => {
+        const pdfIndex = pdfAttachments.findIndex(pdf => pdf.id === attachment.id);
+        setPdfLightboxIndex(pdfIndex);
+        setPdfLightboxOpen(true);
+      };
+
       const pdfAttachment = {
         id: attachment.id,
         messageId: attachment.messageId,
@@ -400,7 +410,10 @@ export const MessageAttachments = React.memo(function MessageAttachments({
 
       return (
         <div key={attachment.id} className="relative">
-          <PDFViewer attachment={pdfAttachment as any} />
+          <PDFViewer
+            attachment={pdfAttachment as any}
+            onOpenLightbox={handleOpenPdfLightbox}
+          />
           {/* Bouton de suppression */}
           {canDelete && (
             <button
@@ -707,6 +720,14 @@ export const MessageAttachments = React.memo(function MessageAttachments({
         initialIndex={videoLightboxIndex}
         isOpen={videoLightboxOpen}
         onClose={() => setVideoLightboxOpen(false)}
+      />
+
+      {/* Lightbox pour les PDFs */}
+      <PDFLightbox
+        pdfs={pdfAttachments}
+        initialIndex={pdfLightboxIndex}
+        isOpen={pdfLightboxOpen}
+        onClose={() => setPdfLightboxOpen(false)}
       />
 
       {/* Dialog de confirmation de suppression */}
