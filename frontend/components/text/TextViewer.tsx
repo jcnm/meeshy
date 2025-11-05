@@ -118,7 +118,7 @@ export const TextViewer: React.FC<TextViewerProps> = ({
         hasError
           ? 'border-red-300 dark:border-red-700'
           : 'border-blue-200 dark:border-gray-700'
-      } shadow-md hover:shadow-lg transition-all duration-200 w-full max-w-full min-w-0 overflow-hidden ${className}`}
+      } shadow-md hover:shadow-lg transition-all duration-200 w-full sm:max-w-2xl min-w-0 overflow-hidden ${className}`}
     >
       {/* Content area - responsive height matching PDF/PPTX */}
       <div className="relative w-full h-[210px] sm:h-[280px] md:h-[350px] bg-gray-50 dark:bg-gray-900 rounded-lg overflow-auto border border-gray-200 dark:border-gray-700">

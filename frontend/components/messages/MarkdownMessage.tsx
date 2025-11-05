@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
@@ -8,10 +8,19 @@ import rehypeSanitize from 'rehype-sanitize';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus, vs } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTheme } from 'next-themes';
+import { ExternalLink, Link2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import {
+  parseMessageLinks,
+  recordTrackingLinkClick,
+  generateDeviceFingerprint,
+} from '@/lib/utils/link-parser';
 
 interface MarkdownMessageProps {
   content: string;
   className?: string;
+  enableTracking?: boolean;
+  onLinkClick?: (url: string, isTracking: boolean) => void;
 }
 
 /**
@@ -22,16 +31,75 @@ interface MarkdownMessageProps {
  * - Auto-detects language from code fences
  * - Dark mode support
  * - Inline code highlighting
+ * - Tracking link support
  */
 export const MarkdownMessage: React.FC<MarkdownMessageProps> = ({
   content,
-  className = ''
+  className = '',
+  enableTracking = true,
+  onLinkClick
 }) => {
   const { theme, resolvedTheme } = useTheme();
   const isDark = theme === 'dark' || resolvedTheme === 'dark';
 
+  // Handle link clicks with tracking support
+  const handleLinkClick = useCallback(
+    async (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+      // Parse the link to check if it's a tracking link
+      const parsedParts = parseMessageLinks(href);
+      const linkPart = parsedParts.find(part => part.type !== 'text');
+
+      if (!linkPart) {
+        // Regular link, open in new tab
+        return;
+      }
+
+      const isTracking = linkPart.type === 'tracking-link' || linkPart.type === 'mshy-link';
+
+      // If it's a tracking link and tracking is enabled
+      if (isTracking && enableTracking && linkPart.token) {
+        e.preventDefault();
+
+        try {
+          const deviceFingerprint = generateDeviceFingerprint();
+          const result = await recordTrackingLinkClick(linkPart.token, {
+            referrer: document.referrer,
+            deviceFingerprint,
+          });
+
+          if (result.success && result.originalUrl) {
+            const newWindow = window.open(result.originalUrl, '_blank', 'noopener,noreferrer');
+            if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+              window.location.href = result.originalUrl;
+            }
+          } else {
+            const fallbackUrl = linkPart.type === 'mshy-link' ? linkPart.trackingUrl! : href;
+            const newWindow = window.open(fallbackUrl, '_blank', 'noopener,noreferrer');
+            if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+              window.location.href = fallbackUrl;
+            }
+          }
+        } catch (error) {
+          console.error('Error handling tracking link click:', error);
+          const fallbackUrl = linkPart.type === 'mshy-link' ? linkPart.trackingUrl! : href;
+          const newWindow = window.open(fallbackUrl, '_blank', 'noopener,noreferrer');
+          if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+            window.location.href = fallbackUrl;
+          }
+        }
+      }
+
+      // Call the callback if provided
+      if (onLinkClick) {
+        const url = linkPart.type === 'tracking-link' || linkPart.type === 'mshy-link' ? linkPart.trackingUrl! : href;
+        onLinkClick(url, isTracking);
+      }
+    },
+    [enableTracking, onLinkClick]
+  );
+
   return (
-    <div className={`markdown-message ${className}`}>
+    <div className={cn('markdown-message leading-relaxed', className)}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw, rehypeSanitize]}
@@ -61,17 +129,38 @@ export const MarkdownMessage: React.FC<MarkdownMessageProps> = ({
               </code>
             );
           },
-          // Custom link rendering
+          // Custom link rendering with tracking support
           a({ node, children, href, ...props }: any) {
+            // Parse the URL to check if it's a tracking link
+            const parsedParts = parseMessageLinks(href || '');
+            const linkPart = parsedParts.find(part => part.type !== 'text');
+            const isTracking = linkPart && (linkPart.type === 'tracking-link' || linkPart.type === 'mshy-link');
+            const isMshyLink = linkPart && linkPart.type === 'mshy-link';
+
             return (
               <a
                 href={href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 dark:text-blue-400 hover:underline"
+                onClick={(e) => handleLinkClick(e, href || '')}
+                className={cn(
+                  'inline-flex items-center gap-1 underline transition-colors cursor-pointer',
+                  isTracking
+                    ? 'text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 decoration-blue-500/30 hover:decoration-blue-500/60'
+                    : 'text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300'
+                )}
                 {...props}
               >
-                {children}
+                {isTracking ? (
+                  <Link2 className="h-3 w-3 flex-shrink-0 inline" />
+                ) : (
+                  <ExternalLink className="h-3 w-3 flex-shrink-0 inline" />
+                )}
+                {isMshyLink ? (
+                  <span className="font-mono text-xs">{children}</span>
+                ) : (
+                  children
+                )}
               </a>
             );
           },

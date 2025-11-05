@@ -64,7 +64,7 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
         hasError
           ? 'border-red-300 dark:border-red-700'
           : 'border-red-200 dark:border-gray-700'
-      } shadow-md hover:shadow-lg transition-all duration-200 w-full max-w-full min-w-0 overflow-hidden ${className}`}
+      } shadow-md hover:shadow-lg transition-all duration-200 w-full sm:max-w-2xl min-w-0 overflow-hidden ${className}`}
     >
       {/* PDF embed - responsive height */}
       <div className="relative w-full bg-white dark:bg-gray-900 rounded-lg overflow-hidden h-[210px] sm:h-[280px] md:h-[350px]">

@@ -49,7 +49,7 @@ import { useI18n } from '@/hooks/useI18n';
 import { getMessageInitials } from '@/lib/avatar-utils';
 import { cn } from '@/lib/utils';
 import { useFixTranslationPopoverZIndex } from '@/hooks/use-fix-z-index';
-import { MessageWithLinks } from '@/components/chat/message-with-links';
+import { MarkdownMessage } from '@/components/messages/MarkdownMessage';
 import { MessageAttachments } from '@/components/attachments/MessageAttachments';
 import { MessageReactions } from '@/components/common/message-reactions';
 import { EmojiPicker } from '@/components/common/emoji-picker';
@@ -664,21 +664,14 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                     transition={{ duration: 0.2 }}
                     style={{ position: 'relative', zIndex: 1 }}
                   >
-                    <MessageWithLinks
+                    <MarkdownMessage
                       content={displayContent}
                       className={cn(
-                        "leading-relaxed text-sm sm:text-base break-words",
+                        "text-sm sm:text-base break-words",
                         isOwnMessage
-                          ? "text-white"
+                          ? "text-white [&_a]:text-white [&_a:hover]:text-white/90 [&_a]:decoration-white/40 [&_a:hover]:decoration-white/70 [&_code]:bg-white/10 [&_code]:text-white/90 [&_pre]:bg-white/10"
                           : "text-gray-800 dark:text-gray-100"
                       )}
-                      linkClassName={cn(
-                        "relative z-10 break-all",
-                        isOwnMessage
-                          ? "text-white hover:text-white/90 decoration-white/40 hover:decoration-white/70"
-                          : "text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 decoration-blue-500/30 hover:decoration-blue-500/60"
-                      )}
-                      textClassName="whitespace-pre-wrap break-words"
                       enableTracking={true}
                       onLinkClick={(url, isTracking) => {
                         console.log(`Link clicked: ${url} (tracking: ${isTracking})`);
