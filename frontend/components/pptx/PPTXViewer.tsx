@@ -53,7 +53,7 @@ export const PPTXViewer: React.FC<PPTXViewerProps> = ({
         hasError
           ? 'border-red-300 dark:border-red-700'
           : 'border-orange-200 dark:border-gray-700'
-      } shadow-md hover:shadow-lg transition-all duration-200 w-full max-w-full ${className}`}
+      } shadow-md hover:shadow-lg transition-all duration-200 w-full min-w-0 ${className}`}
     >
       {/* PPTX iframe - responsive height */}
       <div className="relative w-full bg-white dark:bg-gray-900 rounded-lg overflow-hidden h-[210px] sm:h-[280px] md:h-[350px]">

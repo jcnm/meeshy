@@ -366,7 +366,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         hasError
           ? 'border-red-300 dark:border-red-700'
           : 'border-purple-200 dark:border-gray-700'
-      } shadow-md hover:shadow-lg transition-all duration-200 w-full max-w-full ${className}`}
+      } shadow-md hover:shadow-lg transition-all duration-200 w-full min-w-0 ${className}`}
     >
       {/* Élément vidéo */}
       <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden">
