@@ -374,10 +374,7 @@ export class CallEventsHandler {
           userId
         });
 
-        // Leave call room
-        socket.leave(`call:${data.callId}`);
-
-        // Prepare event data
+        // Prepare event data BEFORE leaving room
         const leftEvent: CallParticipantLeftEvent = {
           callId: callSession.id,
           participantId: participant.id,
@@ -386,20 +383,29 @@ export class CallEventsHandler {
           mode: callSession.mode
         };
 
+        // Get all sockets in the room for debugging
+        const socketsInRoom = await io.in(`call:${data.callId}`).fetchSockets();
+
         logger.info('📤 Broadcasting call:participant-left event', {
           callId: data.callId,
           participantId: participant.id,
           userId: participant.userId,
           anonymousId: participant.anonymousId,
           remainingParticipants: callSession.participants.filter(p => !p.leftAt).length,
-          roomName: `call:${data.callId}`
+          roomName: `call:${data.callId}`,
+          socketsInRoom: socketsInRoom.length,
+          socketIds: socketsInRoom.map(s => s.id),
+          leavingSocketId: socket.id
         });
 
-        // Broadcast to remaining call participants
+        // IMPORTANT: Broadcast BEFORE leaving room to ensure message delivery
         io.to(`call:${data.callId}`).emit(
           CALL_EVENTS.PARTICIPANT_LEFT,
           leftEvent
         );
+
+        // Leave call room AFTER broadcasting
+        socket.leave(`call:${data.callId}`);
 
         // If call ended, broadcast to BOTH call room AND conversation room
         if (callSession.status === 'ended') {
