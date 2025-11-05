@@ -104,29 +104,15 @@ export const PDFLightbox: React.FC<PDFLightboxProps> = ({
 
         {/* PDF Viewer */}
         <div
-          className="absolute inset-0 flex items-center justify-center pt-16 pb-4 px-2 sm:px-4"
+          className="absolute inset-0 flex items-center justify-center pt-14 sm:pt-16 pb-2 sm:pb-4 px-2 sm:px-4"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="w-full h-full bg-white dark:bg-gray-900 rounded-lg overflow-hidden shadow-2xl">
-            <object
-              data={`${attachment.fileUrl}#toolbar=1&navpanes=1&view=FitH`}
-              type="application/pdf"
-              className="w-full h-full"
-            >
-              <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
-                <div className="text-center p-4">
-                  <p className="mb-4">Impossible d'afficher le PDF dans le navigateur</p>
-                  <a
-                    href={attachment.fileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
-                  >
-                    Ouvrir dans un nouvel onglet
-                  </a>
-                </div>
-              </div>
-            </object>
+          <div className="w-full h-full bg-white dark:bg-gray-900 overflow-hidden shadow-2xl">
+            <iframe
+              src={`${attachment.fileUrl}#toolbar=1&navpanes=1&view=FitH`}
+              className="w-full h-full border-0"
+              title={attachment.originalName}
+            />
           </div>
         </div>
 

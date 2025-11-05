@@ -69,29 +69,11 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
       {/* PDF embed - responsive height */}
       <div className="relative w-full bg-white dark:bg-gray-900 rounded-lg overflow-hidden h-[210px] sm:h-[280px] md:h-[350px]">
         {!hasError ? (
-          <>
-            <object
-              data={`${attachmentFileUrl}#toolbar=0&navpanes=0&view=FitH`}
-              type="application/pdf"
-              className="w-full h-full"
-              onError={handleIframeError}
-            >
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-                <div className="flex flex-col items-center gap-2 text-gray-600 dark:text-gray-400">
-                  <AlertTriangle className="w-12 h-12" />
-                  <span className="text-sm text-center px-4">Votre navigateur ne supporte pas l'affichage de PDF</span>
-                  <Button
-                    onClick={handleOpenInNewTab}
-                    size="sm"
-                    className="mt-2 bg-red-600 hover:bg-red-700 text-white"
-                  >
-                    <FileText className="w-4 h-4 mr-2" />
-                    Ouvrir dans un nouvel onglet
-                  </Button>
-                </div>
-              </div>
-            </object>
-          </>
+          <iframe
+            src={`${attachmentFileUrl}#toolbar=0&navpanes=0&view=FitH`}
+            className="w-full h-full border-0"
+            title={attachment.originalName}
+          />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
             <div className="flex flex-col items-center gap-2 text-gray-600 dark:text-gray-400">

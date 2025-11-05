@@ -107,10 +107,10 @@ export const PPTXLightbox: React.FC<PPTXLightboxProps> = ({
 
         {/* PPTX Viewer */}
         <div
-          className="absolute inset-0 flex items-center justify-center pt-16 pb-4 px-2 sm:px-4"
+          className="absolute inset-0 flex items-center justify-center pt-14 sm:pt-16 pb-2 sm:pb-4 px-2 sm:px-4"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="w-full h-full bg-white dark:bg-gray-900 rounded-lg overflow-hidden shadow-2xl">
+          <div className="w-full h-full bg-white dark:bg-gray-900 overflow-hidden shadow-2xl">
             <iframe
               src={officeViewerUrl}
               className="w-full h-full border-0"
