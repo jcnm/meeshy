@@ -16,6 +16,7 @@ import { PDFLightbox } from '@/components/pdf/PDFLightbox';
 import { MarkdownViewer } from '@/components/markdown/MarkdownViewer';
 import { MarkdownLightbox } from '@/components/markdown/MarkdownLightbox';
 import { TextViewer } from '@/components/text/TextViewer';
+import { TextLightbox } from '@/components/text/TextLightbox';
 import { PPTXViewer } from '@/components/pptx/PPTXViewer';
 import { PPTXLightbox } from '@/components/pptx/PPTXLightbox';
 import {
@@ -79,6 +80,8 @@ export const MessageAttachments = React.memo(function MessageAttachments({
   const [pdfLightboxAttachment, setPdfLightboxAttachment] = useState<Attachment | null>(null);
   const [markdownLightboxOpen, setMarkdownLightboxOpen] = useState(false);
   const [markdownLightboxAttachment, setMarkdownLightboxAttachment] = useState<Attachment | null>(null);
+  const [textLightboxOpen, setTextLightboxOpen] = useState(false);
+  const [textLightboxAttachment, setTextLightboxAttachment] = useState<Attachment | null>(null);
   const [pptxLightboxOpen, setPptxLightboxOpen] = useState(false);
   const [pptxLightboxAttachment, setPptxLightboxAttachment] = useState<Attachment | null>(null);
   const { t } = useI18n('common');
@@ -544,9 +547,18 @@ export const MessageAttachments = React.memo(function MessageAttachments({
         createdAt: attachment.createdAt
       };
 
+      // Handler pour ouvrir le lightbox Text
+      const handleOpenTextLightbox = () => {
+        setTextLightboxAttachment(attachment);
+        setTextLightboxOpen(true);
+      };
+
       return (
         <div key={attachment.id} className="relative">
-          <TextViewer attachment={textAttachment as any} />
+          <TextViewer
+            attachment={textAttachment as any}
+            onOpenLightbox={handleOpenTextLightbox}
+          />
           {/* Bouton de suppression */}
           {canDelete && (
             <button
@@ -793,6 +805,13 @@ export const MessageAttachments = React.memo(function MessageAttachments({
         attachment={markdownLightboxAttachment as any}
         isOpen={markdownLightboxOpen}
         onClose={() => setMarkdownLightboxOpen(false)}
+      />
+
+      {/* Lightbox pour les fichiers texte/code */}
+      <TextLightbox
+        attachment={textLightboxAttachment as any}
+        isOpen={textLightboxOpen}
+        onClose={() => setTextLightboxOpen(false)}
       />
 
       {/* Lightbox pour les présentations PPTX */}

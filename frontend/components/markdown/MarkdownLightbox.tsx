@@ -2,6 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 import { X, Download, Eye, Code } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -79,40 +83,6 @@ export const MarkdownLightbox: React.FC<MarkdownLightboxProps> = ({
       document.body.style.overflow = '';
     };
   }, [isOpen]);
-
-  // Simple markdown to HTML conversion
-  const renderMarkdown = (md: string): string => {
-    let html = md;
-
-    // Code blocks
-    html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre class="bg-gray-100 dark:bg-gray-800 p-3 rounded-md overflow-x-auto my-4"><code>$2</code></pre>');
-
-    // Inline code
-    html = html.replace(/`([^`]+)`/g, '<code class="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-sm">$1</code>');
-
-    // Headers
-    html = html.replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>');
-    html = html.replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold mt-4 mb-2">$1</h2>');
-    html = html.replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mt-4 mb-2">$1</h1>');
-
-    // Bold
-    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-    // Italic
-    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-
-    // Links
-    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">$1</a>');
-
-    // Lists
-    html = html.replace(/^\* (.*$)/gim, '<li class="ml-4">$1</li>');
-    html = html.replace(/^- (.*$)/gim, '<li class="ml-4">$1</li>');
-
-    // Line breaks
-    html = html.replace(/\n/g, '<br/>');
-
-    return html;
-  };
 
   const toggleRawMode = () => {
     setShowRaw(!showRaw);
@@ -213,10 +183,14 @@ export const MarkdownLightbox: React.FC<MarkdownLightboxProps> = ({
                   {content}
                 </pre>
               ) : (
-                <div
-                  className="prose prose-sm dark:prose-invert max-w-none text-gray-800 dark:text-gray-200"
-                  dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
-                />
+                <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none text-gray-800 dark:text-gray-200">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    rehypePlugins={[rehypeRaw, rehypeSanitize]}
+                  >
+                    {content}
+                  </ReactMarkdown>
+                </div>
               )}
             </div>
           </div>
