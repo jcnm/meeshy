@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -52,7 +53,7 @@ export const PPTXLightbox: React.FC<PPTXLightboxProps> = ({
   // Microsoft Office Online viewer URL
   const officeViewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(attachment.fileUrl)}`;
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
@@ -125,6 +126,7 @@ export const PPTXLightbox: React.FC<PPTXLightboxProps> = ({
           <p>Appuyez sur Échap pour fermer</p>
         </div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };

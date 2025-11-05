@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -49,7 +50,7 @@ export const PDFLightbox: React.FC<PDFLightboxProps> = ({
 
   if (!isOpen || !attachment) return null;
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
@@ -121,6 +122,7 @@ export const PDFLightbox: React.FC<PDFLightboxProps> = ({
           <p>Appuyez sur Échap pour fermer</p>
         </div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
