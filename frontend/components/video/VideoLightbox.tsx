@@ -49,6 +49,13 @@ export function VideoLightbox({
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
 
+  // Update currentIndex when initialIndex changes (when clicking different video)
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentIndex(initialIndex);
+    }
+  }, [initialIndex, isOpen]);
+
   // Reset état quand on change de vidéo
   useEffect(() => {
     setIsPlaying(false);

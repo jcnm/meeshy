@@ -115,8 +115,8 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
           : 'border-green-200 dark:border-gray-700'
       } shadow-md hover:shadow-lg transition-all duration-200 w-full max-w-full ${className}`}
     >
-      {/* Content area - responsive height */}
-      <div className="relative w-full max-h-[210px] sm:max-h-[280px] md:max-h-[350px] bg-white dark:bg-gray-900 rounded-lg overflow-auto p-4 border border-gray-200 dark:border-gray-700">
+      {/* Content area - responsive height matching PDF/PPTX */}
+      <div className="relative w-full h-[210px] sm:h-[280px] md:h-[350px] bg-white dark:bg-gray-900 rounded-lg overflow-auto p-4 border border-gray-200 dark:border-gray-700">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <div className="w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />

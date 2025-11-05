@@ -24,6 +24,13 @@ export function ImageLightbox({ images, initialIndex, isOpen, onClose }: ImageLi
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
 
+  // Update currentIndex when initialIndex changes (when clicking different image)
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentIndex(initialIndex);
+    }
+  }, [initialIndex, isOpen]);
+
   // Reset zoom et rotation quand on change d'image
   useEffect(() => {
     setZoom(1);
