@@ -156,17 +156,25 @@ export class CallEventsHandler {
           }))
         };
 
-        // Emit to initiator (confirmation)
+        // Emit to initiator (confirmation) - direct socket emit
+        logger.info('📤 Sending call:initiated to initiator (direct)', {
+          callId: callSession.id,
+          initiatorSocketId: socket.id,
+          initiatorUserId: userId
+        });
         socket.emit(CALL_EVENTS.INITIATED, initiatedEvent);
 
-        // Broadcast to all conversation members
+        // ALSO broadcast to conversation room to ensure initiator receives it
         const roomName = `conversation_${data.conversationId}`;
         const socketsInRoom = await io.in(roomName).fetchSockets();
+        const initiatorInRoom = socketsInRoom.find(s => s.id === socket.id);
 
-        logger.info('📡 Broadcasting call:initiated', {
+        logger.info('📡 Broadcasting call:initiated to conversation room', {
           roomName,
           socketsCount: socketsInRoom.length,
-          socketIds: socketsInRoom.map(s => s.id)
+          socketIds: socketsInRoom.map(s => s.id),
+          initiatorSocketId: socket.id,
+          initiatorInConversationRoom: !!initiatorInRoom
         });
 
         io.to(roomName).emit(

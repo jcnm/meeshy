@@ -378,6 +378,7 @@ export function CallManager() {
   useEffect(() => {
     let isSubscribed = true;
     let checkInterval: NodeJS.Timeout;
+    let debugListenerRef: ((eventName: string, ...args: any[]) => void) | null = null;
 
     const setupListeners = () => {
       // Wait for user to be loaded before setting up listeners
@@ -415,6 +416,14 @@ export function CallManager() {
       (socket as any).off('call:media-toggled', handleMediaToggle);
       (socket as any).off('call:error', handleCallError);
 
+      // DEBUG: Add catch-all listener to see ALL socket events
+      debugListenerRef = (eventName: string, ...args: any[]) => {
+        if (eventName.startsWith('call:')) {
+          console.log(`🔔 [CallManager] Socket event received: ${eventName}`, args);
+        }
+      };
+      (socket as any).onAny(debugListenerRef);
+
       // Listen for call events
       (socket as any).on('call:initiated', handleIncomingCall);
       (socket as any).on('call:participant-joined', handleParticipantJoined);
@@ -423,8 +432,15 @@ export function CallManager() {
       (socket as any).on('call:media-toggled', handleMediaToggle);
       (socket as any).on('call:error', handleCallError);
 
-      console.log('✅ [CallManager] All call listeners registered');
-      logger.info('[CallManager]', '✅ All call listeners registered');
+      console.log('✅ [CallManager] All call listeners registered', {
+        socketId: socket.id,
+        userId: user.id,
+        listenerCount: (socket as any).listenerCount('call:initiated')
+      });
+      logger.info('[CallManager]', '✅ All call listeners registered', {
+        socketId: socket.id,
+        userId: user.id
+      });
 
       return true;
     };
@@ -451,6 +467,9 @@ export function CallManager() {
       const socket = meeshySocketIOService.getSocket();
       if (socket) {
         logger.debug('[CallManager]', 'Cleaning up Socket.IO listeners');
+        if (debugListenerRef) {
+          (socket as any).offAny(debugListenerRef);
+        }
         (socket as any).off('call:initiated', handleIncomingCall);
         (socket as any).off('call:participant-joined', handleParticipantJoined);
         (socket as any).off('call:participant-left', handleParticipantLeft);
