@@ -718,9 +718,11 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     console.log('🎤📹 [ConversationLayout] Requesting media permissions (Safari-compatible)...');
     logger.debug('[ConversationLayout]', 'Requesting media permissions in click handler for Safari compatibility');
 
+    let stream: MediaStream | null = null;
+
     try {
       // Request permissions synchronously in the click handler
-      const stream = await navigator.mediaDevices.getUserMedia({
+      stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
@@ -798,9 +800,44 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
       console.log('✅ [ConversationLayout] call:initiate event sent successfully');
       toast.success('Starting call...');
+
+      // Set up cleanup listener for errors
+      // If call:error arrives within 2 seconds, cleanup the stream
+      const errorCleanupTimeout = setTimeout(() => {
+        // Remove error listener after 2 seconds (call should start by then)
+        (socket as any).off('call:error', errorCleanupHandler);
+      }, 2000);
+
+      const errorCleanupHandler = (error: any) => {
+        console.error('❌ [ConversationLayout] Call error received, cleaning up stream');
+        logger.error('[ConversationLayout]', 'Call error, cleaning up pre-authorized stream', { error });
+
+        // Clean up the pre-authorized stream
+        const preauthorizedStream = (window as any).__preauthorizedMediaStream;
+        if (preauthorizedStream) {
+          preauthorizedStream.getTracks().forEach((track: MediaStreamTrack) => {
+            track.stop();
+            console.log('🛑 [ConversationLayout] Stopped track:', track.kind);
+          });
+          delete (window as any).__preauthorizedMediaStream;
+        }
+
+        // Clear timeout
+        clearTimeout(errorCleanupTimeout);
+      };
+
+      // Listen for call:error for cleanup
+      (socket as any).once('call:error', errorCleanupHandler);
+
     } catch (error: any) {
       console.error('❌ [ConversationLayout] Media permission denied or error:', error);
       logger.error('[ConversationLayout]', 'Failed to get media permissions', { error });
+
+      // Clean up stream if it was created
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        delete (window as any).__preauthorizedMediaStream;
+      }
 
       // Provide user-friendly error messages
       if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
