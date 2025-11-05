@@ -153,18 +153,25 @@ export function CallInterface({ callId, userId }: CallInterfaceProps) {
     }
   };
 
-  const handleHangUp = () => {
+  const handleHangUp = useCallback(() => {
     logger.debug('[CallInterface]', 'Hanging up - callId: ' + callId);
+
+    // Check if we're still in a call before leaving
+    const { currentCall, isInCall } = useCallStore.getState();
+    if (!isInCall || !currentCall) {
+      logger.debug('[CallInterface]', 'Already left the call, skipping hangup');
+      return;
+    }
 
     const socket = meeshySocketIOService.getSocket();
     if (socket) {
       (socket as any).emit('call:leave', { callId });
     }
 
-    // Reset will be handled by CallManager after receiving call:ended event
-    // but we also reset here for immediate UI feedback
+    // Reset immediately for instant UI feedback
+    // CallManager will handle cleanup when receiving call:ended event
     reset();
-  };
+  }, [callId, reset]);
 
   // AFTER all hooks have been called, check if user is loaded
   // This ensures hooks are always called in the same order

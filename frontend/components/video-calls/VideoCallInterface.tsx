@@ -210,13 +210,24 @@ export function VideoCallInterface({ callId }: VideoCallInterfaceProps) {
     }
   };
 
-  const handleHangUp = () => {
+  const handleHangUp = useCallback(() => {
+    logger.debug('[VideoCallInterface]', 'Hanging up - callId: ' + callId);
+
+    // Check if we're still in a call before leaving
+    const { currentCall, isInCall } = useCallStore.getState();
+    if (!isInCall || !currentCall) {
+      logger.debug('[VideoCallInterface]', 'Already left the call, skipping hangup');
+      return;
+    }
+
     const socket = meeshySocketIOService.getSocket();
     if (socket) {
       (socket as any).emit('call:leave', { callId });
     }
+
+    // Reset immediately for instant UI feedback
     reset();
-  };
+  }, [callId, reset]);
 
   // Draggable local video handlers
   const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {

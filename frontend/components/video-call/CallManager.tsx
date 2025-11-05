@@ -64,10 +64,18 @@ export function CallManager() {
 
     // Start new timeout
     callTimeoutRef.current = setTimeout(() => {
-      const { currentCall } = useCallStore.getState();
+      const { currentCall, isInCall } = useCallStore.getState();
 
-      // Only cleanup if call is still in 'initiated' state (no one joined)
-      if (currentCall?.id === callId && currentCall?.status === 'initiated') {
+      // Only cleanup if:
+      // 1. Still in a call
+      // 2. Same call ID
+      // 3. Call is still in 'initiated' state (no one joined)
+      if (!isInCall || !currentCall || currentCall.id !== callId) {
+        logger.debug('[CallManager]', 'Call already ended, skipping timeout cleanup');
+        return;
+      }
+
+      if (currentCall.status === 'initiated') {
         logger.warn('[CallManager]', `Call timeout - no answer after ${CALL_TIMEOUT_MS/1000}s`);
 
         // Emit leave event to server
@@ -249,6 +257,15 @@ export function CallManager() {
   const handleCallError = useCallback((error: CallError) => {
     // Defensive: handle cases where error might not have proper structure
     const errorMessage = error?.message || String(error) || 'Call error occurred';
+
+    // Ignore "You are not in this call" error - it's a normal state after leaving
+    // This happens when events arrive after user has already left the call
+    if (errorMessage.includes('You are not in this call') ||
+        errorMessage.includes('not in this call')) {
+      logger.debug('[CallManager]', 'Ignoring expected error after leaving call: ' + errorMessage);
+      return;
+    }
+
     logger.error('[CallManager]', 'Call error: ' + errorMessage, { error });
     toast.error(errorMessage);
   }, []);
