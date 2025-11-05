@@ -12,7 +12,9 @@ import { SimpleAudioPlayer } from '@/components/audio/SimpleAudioPlayer';
 import { VideoPlayer } from '@/components/video/VideoPlayer';
 import { VideoLightbox } from '@/components/video/VideoLightbox';
 import { PDFViewer } from '@/components/pdf/PDFViewer';
+import { PDFLightbox } from '@/components/pdf/PDFLightbox';
 import { MarkdownViewer } from '@/components/markdown/MarkdownViewer';
+import { MarkdownLightbox } from '@/components/markdown/MarkdownLightbox';
 import { TextViewer } from '@/components/text/TextViewer';
 import {
   Tooltip,
@@ -71,6 +73,10 @@ export const MessageAttachments = React.memo(function MessageAttachments({
   const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
   const [videoLightboxOpen, setVideoLightboxOpen] = useState(false);
   const [videoLightboxIndex, setVideoLightboxIndex] = useState(0);
+  const [pdfLightboxOpen, setPdfLightboxOpen] = useState(false);
+  const [pdfLightboxAttachment, setPdfLightboxAttachment] = useState<Attachment | null>(null);
+  const [markdownLightboxOpen, setMarkdownLightboxOpen] = useState(false);
+  const [markdownLightboxAttachment, setMarkdownLightboxAttachment] = useState<Attachment | null>(null);
   const { t } = useI18n('common');
 
   // Handler pour ouvrir la confirmation de suppression
@@ -398,24 +404,25 @@ export const MessageAttachments = React.memo(function MessageAttachments({
         createdAt: attachment.createdAt
       };
 
+      // Handler pour ouvrir le lightbox PDF
+      const handleOpenPdfLightbox = () => {
+        setPdfLightboxAttachment(attachment);
+        setPdfLightboxOpen(true);
+      };
+
+      // Handler pour supprimer le PDF
+      const handleDeletePdf = () => {
+        handleOpenDeleteConfirm(attachment, {} as React.MouseEvent);
+      };
+
       return (
-        <div key={attachment.id} className="relative">
-          <PDFViewer attachment={pdfAttachment as any} />
-          {/* Bouton de suppression */}
-          {canDelete && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleOpenDeleteConfirm(attachment, e);
-              }}
-              className="absolute top-2 right-2 w-[43px] h-[43px] rounded-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white flex items-center justify-center transition-all shadow-md z-10 opacity-0 hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500"
-              title="Supprimer ce PDF"
-              aria-label={`Supprimer le PDF ${attachment.originalName}`}
-            >
-              <X className="w-[22px] h-[22px]" />
-            </button>
-          )}
-        </div>
+        <PDFViewer
+          key={attachment.id}
+          attachment={pdfAttachment as any}
+          onOpenLightbox={handleOpenPdfLightbox}
+          onDelete={canDelete ? handleDeletePdf : undefined}
+          canDelete={canDelete}
+        />
       );
     }
 
@@ -439,24 +446,25 @@ export const MessageAttachments = React.memo(function MessageAttachments({
         createdAt: attachment.createdAt
       };
 
+      // Handler pour ouvrir le lightbox Markdown
+      const handleOpenMarkdownLightbox = () => {
+        setMarkdownLightboxAttachment(attachment);
+        setMarkdownLightboxOpen(true);
+      };
+
+      // Handler pour supprimer le Markdown
+      const handleDeleteMarkdown = () => {
+        handleOpenDeleteConfirm(attachment, {} as React.MouseEvent);
+      };
+
       return (
-        <div key={attachment.id} className="relative">
-          <MarkdownViewer attachment={markdownAttachment as any} />
-          {/* Bouton de suppression */}
-          {canDelete && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleOpenDeleteConfirm(attachment, e);
-              }}
-              className="absolute top-2 right-2 w-[43px] h-[43px] rounded-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white flex items-center justify-center transition-all shadow-md z-10 opacity-0 hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500"
-              title="Supprimer ce fichier markdown"
-              aria-label={`Supprimer le fichier ${attachment.originalName}`}
-            >
-              <X className="w-[22px] h-[22px]" />
-            </button>
-          )}
-        </div>
+        <MarkdownViewer
+          key={attachment.id}
+          attachment={markdownAttachment as any}
+          onOpenLightbox={handleOpenMarkdownLightbox}
+          onDelete={canDelete ? handleDeleteMarkdown : undefined}
+          canDelete={canDelete}
+        />
       );
     }
 
@@ -707,6 +715,20 @@ export const MessageAttachments = React.memo(function MessageAttachments({
         initialIndex={videoLightboxIndex}
         isOpen={videoLightboxOpen}
         onClose={() => setVideoLightboxOpen(false)}
+      />
+
+      {/* Lightbox pour les PDFs */}
+      <PDFLightbox
+        attachment={pdfLightboxAttachment as any}
+        isOpen={pdfLightboxOpen}
+        onClose={() => setPdfLightboxOpen(false)}
+      />
+
+      {/* Lightbox pour les fichiers Markdown */}
+      <MarkdownLightbox
+        attachment={markdownLightboxAttachment as any}
+        isOpen={markdownLightboxOpen}
+        onClose={() => setMarkdownLightboxOpen(false)}
       />
 
       {/* Dialog de confirmation de suppression */}

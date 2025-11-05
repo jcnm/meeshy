@@ -8,7 +8,7 @@ import {
   FileText,
   Code,
   Eye,
-  EyeOff
+  X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
@@ -17,6 +17,8 @@ interface MarkdownViewerProps {
   attachment: UploadedAttachmentResponse;
   className?: string;
   onOpenLightbox?: () => void;
+  onDelete?: () => void;
+  canDelete?: boolean;
 }
 
 /**
@@ -30,7 +32,9 @@ interface MarkdownViewerProps {
 export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
   attachment,
   className = '',
-  onOpenLightbox
+  onOpenLightbox,
+  onDelete,
+  canDelete = false
 }) => {
   const [content, setContent] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
@@ -109,10 +113,10 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
         hasError
           ? 'border-red-300 dark:border-red-700'
           : 'border-green-200 dark:border-gray-700'
-      } shadow-md hover:shadow-lg transition-all duration-200 w-full sm:max-w-2xl ${className}`}
+      } shadow-md hover:shadow-lg transition-all duration-200 w-full max-w-full ${className}`}
     >
-      {/* Content area */}
-      <div className="relative w-full max-h-[500px] bg-white dark:bg-gray-900 rounded-lg overflow-auto p-4 border border-gray-200 dark:border-gray-700">
+      {/* Content area - responsive height */}
+      <div className="relative w-full max-h-[300px] sm:max-h-[400px] md:max-h-[500px] bg-white dark:bg-gray-900 rounded-lg overflow-auto p-4 border border-gray-200 dark:border-gray-700">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <div className="w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />
@@ -132,17 +136,33 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
             dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
           />
         )}
+
+        {/* Delete button */}
+        {canDelete && onDelete && (
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            size="sm"
+            variant="destructive"
+            className="absolute top-2 right-2 w-8 h-8 p-0 opacity-0 hover:opacity-100 focus-visible:opacity-100 transition-opacity"
+            title="Supprimer ce fichier Markdown"
+          >
+            <X className="w-4 h-4" />
+          </Button>
+        )}
       </div>
 
       {/* Contrôles */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
           {/* Bouton toggle raw/formatted */}
           <Button
             onClick={toggleRawMode}
             size="sm"
             variant="ghost"
-            className="w-8 h-8 p-0"
+            className="w-8 h-8 p-0 flex-shrink-0"
             title={showRaw ? 'Vue formatée' : 'Vue brute'}
             disabled={isLoading || hasError}
           >
@@ -154,13 +174,13 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
           </Button>
 
           {/* Info fichier */}
-          <div className="text-xs text-gray-600 dark:text-gray-300 flex items-center gap-1">
-            <FileText className="w-3 h-3" />
-            <span className="font-medium">{attachment.originalName}</span>
+          <div className="text-xs text-gray-600 dark:text-gray-300 flex items-center gap-1 truncate">
+            <FileText className="w-3 h-3 flex-shrink-0" />
+            <span className="font-medium truncate">{attachment.originalName}</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           {/* Bouton plein écran / lightbox */}
           {onOpenLightbox && (
             <Button

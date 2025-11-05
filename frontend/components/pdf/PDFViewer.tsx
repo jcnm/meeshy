@@ -5,9 +5,7 @@ import {
   Download,
   AlertTriangle,
   Maximize,
-  Minimize,
-  ZoomIn,
-  ZoomOut,
+  X,
   FileText
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -17,6 +15,8 @@ interface PDFViewerProps {
   attachment: UploadedAttachmentResponse;
   className?: string;
   onOpenLightbox?: () => void;
+  onDelete?: () => void;
+  canDelete?: boolean;
 }
 
 /**
@@ -29,11 +29,12 @@ interface PDFViewerProps {
 export const PDFViewer: React.FC<PDFViewerProps> = ({
   attachment,
   className = '',
-  onOpenLightbox
+  onOpenLightbox,
+  onDelete,
+  canDelete = false
 }) => {
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [isExpanded, setIsExpanded] = useState(false);
 
   const attachmentId = attachment.id;
   const attachmentFileUrl = attachment.fileUrl;
@@ -41,10 +42,6 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
   const handleIframeError = () => {
     setHasError(true);
     setErrorMessage('Impossible de charger le PDF');
-  };
-
-  const toggleExpanded = () => {
-    setIsExpanded(!isExpanded);
   };
 
   const handleOpenInNewTab = () => {
@@ -57,12 +54,10 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
         hasError
           ? 'border-red-300 dark:border-red-700'
           : 'border-red-200 dark:border-gray-700'
-      } shadow-md hover:shadow-lg transition-all duration-200 w-full sm:max-w-2xl ${className}`}
+      } shadow-md hover:shadow-lg transition-all duration-200 w-full max-w-full ${className}`}
     >
-      {/* Iframe PDF */}
-      <div className={`relative w-full bg-white dark:bg-gray-900 rounded-lg overflow-hidden transition-all duration-300 ${
-        isExpanded ? 'h-[600px]' : 'h-[400px]'
-      }`}>
+      {/* Iframe PDF - responsive height */}
+      <div className="relative w-full bg-white dark:bg-gray-900 rounded-lg overflow-hidden h-[300px] sm:h-[400px] md:h-[500px]">
         {!hasError ? (
           <iframe
             src={`${attachmentFileUrl}#toolbar=0&navpanes=0`}
@@ -89,37 +84,38 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
 
         {/* Overlay info */}
         {!hasError && (
-          <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-            {attachment.originalName}
+          <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded max-w-[calc(100%-4rem)]">
+            <span className="truncate block">{attachment.originalName}</span>
           </div>
+        )}
+
+        {/* Delete button */}
+        {canDelete && onDelete && (
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            size="sm"
+            variant="destructive"
+            className="absolute top-2 right-2 w-8 h-8 p-0 opacity-0 hover:opacity-100 focus-visible:opacity-100 transition-opacity"
+            title="Supprimer ce PDF"
+          >
+            <X className="w-4 h-4" />
+          </Button>
         )}
       </div>
 
       {/* Contrôles */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          {/* Bouton expand/collapse */}
-          <Button
-            onClick={toggleExpanded}
-            size="sm"
-            variant="ghost"
-            className="w-8 h-8 p-0"
-            title={isExpanded ? 'Réduire' : 'Agrandir'}
-          >
-            {isExpanded ? (
-              <ZoomOut className="w-4 h-4" />
-            ) : (
-              <ZoomIn className="w-4 h-4" />
-            )}
-          </Button>
-
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
           {/* Info fichier */}
-          <div className="text-xs text-gray-600 dark:text-gray-300">
+          <div className="text-xs text-gray-600 dark:text-gray-300 truncate">
             <span className="font-medium">{attachment.originalName}</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           {/* Bouton plein écran / lightbox */}
           {onOpenLightbox && (
             <Button
