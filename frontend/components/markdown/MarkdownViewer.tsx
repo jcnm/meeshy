@@ -5,6 +5,9 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus, vs } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { useTheme } from 'next-themes';
 import {
   Download,
   AlertTriangle,
@@ -45,8 +48,10 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [showRaw, setShowRaw] = useState(false);
+  const { theme, resolvedTheme } = useTheme();
 
   const attachmentFileUrl = attachment.fileUrl;
+  const isDark = theme === 'dark' || resolvedTheme === 'dark';
 
   useEffect(() => {
     const fetchContent = async () => {
@@ -105,6 +110,28 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeRaw, rehypeSanitize]}
+              components={{
+                code({ node, inline, className, children, ...props }: any) {
+                  const match = /language-(\w+)/.exec(className || '');
+                  const language = match ? match[1] : '';
+                  return !inline && language ? (
+                    <SyntaxHighlighter
+                      style={isDark ? vscDarkPlus : vs}
+                      language={language}
+                      PreTag="div"
+                      className="rounded-md my-2 text-xs"
+                      showLineNumbers={true}
+                      {...props}
+                    >
+                      {String(children).replace(/\n$/, '')}
+                    </SyntaxHighlighter>
+                  ) : (
+                    <code className="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-sm font-mono" {...props}>
+                      {children}
+                    </code>
+                  );
+                }
+              }}
             >
               {content}
             </ReactMarkdown>

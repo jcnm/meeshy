@@ -5,6 +5,8 @@ import { createPortal } from 'react-dom';
 import { X, Download, Copy, Check, WrapText, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
 import { toast } from 'sonner';
 
@@ -85,13 +87,71 @@ export const TextLightbox: React.FC<TextLightboxProps> = ({
 
   if (!isOpen || !attachment) return null;
 
-  // Get file extension for syntax highlighting hint
+  // Get file extension and map to language for syntax highlighting
   const getFileExtension = () => {
     const parts = attachment.originalName.split('.');
     return parts.length > 1 ? parts[parts.length - 1].toLowerCase() : 'txt';
   };
 
+  const getLanguageFromExtension = (ext: string): string => {
+    const languageMap: { [key: string]: string } = {
+      // JavaScript/TypeScript
+      'js': 'javascript',
+      'jsx': 'jsx',
+      'ts': 'typescript',
+      'tsx': 'tsx',
+      'mjs': 'javascript',
+      'cjs': 'javascript',
+      // Python
+      'py': 'python',
+      'pyw': 'python',
+      // C/C++
+      'c': 'c',
+      'h': 'c',
+      'cpp': 'cpp',
+      'cc': 'cpp',
+      'cxx': 'cpp',
+      'hpp': 'cpp',
+      'hxx': 'cpp',
+      // Java/Kotlin/Scala
+      'java': 'java',
+      'kt': 'kotlin',
+      'kts': 'kotlin',
+      'scala': 'scala',
+      // Web
+      'html': 'html',
+      'htm': 'html',
+      'css': 'css',
+      'scss': 'scss',
+      'sass': 'sass',
+      'less': 'less',
+      // Shell/Bash
+      'sh': 'bash',
+      'bash': 'bash',
+      'zsh': 'bash',
+      // Other languages
+      'go': 'go',
+      'rs': 'rust',
+      'rb': 'ruby',
+      'php': 'php',
+      'swift': 'swift',
+      'sql': 'sql',
+      'json': 'json',
+      'xml': 'xml',
+      'yaml': 'yaml',
+      'yml': 'yaml',
+      'md': 'markdown',
+      'r': 'r',
+      'lua': 'lua',
+      'dart': 'dart',
+      'dockerfile': 'docker',
+    };
+
+    return languageMap[ext] || 'text';
+  };
+
   const extension = getFileExtension();
+  const language = getLanguageFromExtension(extension);
 
   const handleCopy = async () => {
     try {
@@ -204,7 +264,7 @@ export const TextLightbox: React.FC<TextLightboxProps> = ({
           className="absolute inset-0 flex items-start justify-center pt-14 sm:pt-16 pb-2 sm:pb-4 px-2 sm:px-4"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="w-full h-full bg-gray-900 overflow-auto shadow-2xl">
+          <div className="w-full h-full bg-[#1e1e1e] overflow-auto shadow-2xl">
             {isLoading ? (
               <div className="flex items-center justify-center h-full">
                 <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
@@ -215,13 +275,27 @@ export const TextLightbox: React.FC<TextLightboxProps> = ({
                 <span className="text-lg">Impossible de charger le fichier</span>
               </div>
             ) : (
-              <pre
-                className={`p-4 sm:p-6 text-xs sm:text-sm text-gray-100 font-mono ${
-                  wordWrap ? 'whitespace-pre-wrap break-words' : 'whitespace-pre'
-                }`}
+              <SyntaxHighlighter
+                language={language}
+                style={vscDarkPlus}
+                showLineNumbers={true}
+                wrapLines={wordWrap}
+                wrapLongLines={wordWrap}
+                customStyle={{
+                  margin: 0,
+                  padding: '1.5rem',
+                  background: '#1e1e1e',
+                  fontSize: '0.875rem',
+                  height: '100%',
+                }}
+                codeTagProps={{
+                  style: {
+                    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                  }
+                }}
               >
                 {content}
-              </pre>
+              </SyntaxHighlighter>
             )}
           </div>
         </div>

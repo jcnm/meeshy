@@ -11,6 +11,9 @@ import {
   WrapText
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus, vs } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { useTheme } from 'next-themes';
 import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
 import { toast } from 'sonner';
 
@@ -40,8 +43,10 @@ export const TextViewer: React.FC<TextViewerProps> = ({
   const [errorMessage, setErrorMessage] = useState('');
   const [isCopied, setIsCopied] = useState(false);
   const [wordWrap, setWordWrap] = useState(true);
+  const { theme, resolvedTheme } = useTheme();
 
   const attachmentFileUrl = attachment.fileUrl;
+  const isDark = theme === 'dark' || resolvedTheme === 'dark';
 
   useEffect(() => {
     const fetchContent = async () => {
@@ -84,13 +89,28 @@ export const TextViewer: React.FC<TextViewerProps> = ({
     setWordWrap(!wordWrap);
   };
 
-  // Detect file type by extension for syntax highlighting hint
+  // Map file extension to language for syntax highlighting
   const getFileExtension = () => {
     const parts = attachment.originalName.split('.');
     return parts.length > 1 ? parts[parts.length - 1].toLowerCase() : 'txt';
   };
 
+  const getLanguageFromExtension = (ext: string): string => {
+    const languageMap: { [key: string]: string } = {
+      'js': 'javascript', 'jsx': 'jsx', 'ts': 'typescript', 'tsx': 'tsx',
+      'py': 'python', 'c': 'c', 'h': 'c', 'cpp': 'cpp', 'cc': 'cpp',
+      'java': 'java', 'kt': 'kotlin', 'scala': 'scala',
+      'html': 'html', 'css': 'css', 'scss': 'scss', 'sass': 'sass',
+      'sh': 'bash', 'bash': 'bash', 'go': 'go', 'rs': 'rust',
+      'rb': 'ruby', 'php': 'php', 'swift': 'swift', 'sql': 'sql',
+      'json': 'json', 'xml': 'xml', 'yaml': 'yaml', 'yml': 'yaml',
+      'md': 'markdown', 'r': 'r', 'lua': 'lua', 'dart': 'dart',
+    };
+    return languageMap[ext] || 'text';
+  };
+
   const extension = getFileExtension();
+  const language = getLanguageFromExtension(extension);
 
   return (
     <div
@@ -112,9 +132,9 @@ export const TextViewer: React.FC<TextViewerProps> = ({
             <span className="text-sm">{errorMessage}</span>
           </div>
         ) : (
-          <div className="relative">
+          <div className="relative overflow-hidden">
             {/* File type badge */}
-            <div className="sticky top-0 left-0 right-0 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-3 py-1.5 flex items-center justify-between">
+            <div className="sticky top-0 left-0 right-0 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-3 py-1.5 flex items-center justify-between z-10">
               <div className="flex items-center gap-2">
                 <FileText className="w-3 h-3 text-gray-500" />
                 <span className="text-xs font-mono text-gray-600 dark:text-gray-400">
@@ -126,14 +146,27 @@ export const TextViewer: React.FC<TextViewerProps> = ({
               </div>
             </div>
 
-            {/* Content */}
-            <pre
-              className={`p-4 text-sm text-gray-800 dark:text-gray-200 font-mono ${
-                wordWrap ? 'whitespace-pre-wrap break-words' : 'whitespace-pre'
-              }`}
+            {/* Content with syntax highlighting */}
+            <SyntaxHighlighter
+              language={language}
+              style={isDark ? vscDarkPlus : vs}
+              showLineNumbers={false}
+              wrapLines={wordWrap}
+              wrapLongLines={wordWrap}
+              customStyle={{
+                margin: 0,
+                padding: '1rem',
+                fontSize: '0.75rem',
+                maxHeight: 'calc(100% - 40px)',
+              }}
+              codeTagProps={{
+                style: {
+                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                }
+              }}
             >
               {content}
-            </pre>
+            </SyntaxHighlighter>
           </div>
         )}
       </div>
