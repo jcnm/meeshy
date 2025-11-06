@@ -325,11 +325,10 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
     }
   }, [conversationId, message.id, tBubble]);
 
-  // Logique de permissions (copiée)
-  const isOwnMessage = currentUser && (
-    message.senderId === currentUser.id || 
-    message.anonymousSenderId === currentUser.id
-  );
+  // Logique de permissions - FIXED: Utiliser currentAnonymousUserId pour les anonymes
+  const isOwnMessage = isAnonymous
+    ? (currentAnonymousUserId && message.anonymousSenderId === currentAnonymousUserId)
+    : (currentUser && message.senderId === currentUser.id);
   
   const canModifyMessage = () => {
     // Si le parent a fourni onEnterEditMode, c'est qu'on peut éditer
