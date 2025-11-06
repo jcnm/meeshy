@@ -83,7 +83,10 @@
       "share": "Share",
       "linkCopied": "Link copied!",
       "linkCopyError": "Error copying link",
-      "viewImages": "View images"
+      "viewImages": "View images",
+      "changeImage": "Change image",
+      "imageUpdated": "Conversation image updated",
+      "imageUploadError": "Error uploading image"
     },
     "conversationUI": {
       "participants": "Participants",
@@ -139,7 +142,26 @@
       "descriptionUpdated": "Description updated successfully",
       "addDescription": "Click to add a description...",
       "noDescription": "No description",
-      "editDescription": "Edit description"
+      "editDescription": "Edit description",
+      "clickToChangeImage": "Click to change image",
+      "imageUpdated": "Conversation image updated",
+      "imageUploadError": "Error uploading image"
+    },
+    "conversationImage": {
+      "title": "Change conversation image",
+      "selectImage": "Select an image",
+      "selectImageDescription": "Choose an image to represent this conversation",
+      "chooseFile": "Choose a file",
+      "fileRequirements": "JPEG, PNG or WebP - Max 5MB",
+      "zoom": "Zoom",
+      "rotation": "Rotation",
+      "instructions": "Use your mouse to move the image, sliders to zoom and rotate.",
+      "reset": "Reset",
+      "changeImage": "Change image",
+      "cancel": "Cancel",
+      "uploading": "Uploading...",
+      "processing": "Processing...",
+      "save": "Save"
     },
     "typingIndicator": {
       "typing": "Typing...",
