@@ -1656,8 +1656,8 @@ export class MeeshySocketIOManager {
 
       // FIXED: Gérer les utilisateurs anonymes
       if (connectedUser.isAnonymous) {
-        // Récupérer depuis AnonymousUser
-        const dbAnonymousUser = await this.prisma.anonymousUser.findUnique({
+        // Récupérer depuis AnonymousParticipant
+        const dbAnonymousUser = await (this.prisma as any).anonymousParticipant.findUnique({
           where: { id: userId },
           select: {
             id: true,
@@ -1740,8 +1740,8 @@ export class MeeshySocketIOManager {
 
       // FIXED: Gérer les utilisateurs anonymes
       if (connectedUser.isAnonymous) {
-        // Récupérer depuis AnonymousUser
-        const dbAnonymousUser = await this.prisma.anonymousUser.findUnique({
+        // Récupérer depuis AnonymousParticipant
+        const dbAnonymousUser = await (this.prisma as any).anonymousParticipant.findUnique({
           where: { id: userId },
           select: {
             id: true,

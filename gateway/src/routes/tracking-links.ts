@@ -446,19 +446,19 @@ export async function trackingLinksRoutes(fastify: FastifyInstance) {
       }
 
       // Pagination parameters
-      const limit = Math.min(parseInt(request.query.limit || '20', 10), 50); // Max 50
-      const offset = parseInt(request.query.offset || '0', 10);
+      const limit = Math.min(parseInt((request.query as any).limit || '20', 10), 50); // Max 50
+      const offset = parseInt((request.query as any).offset || '0', 10);
 
       const userId = request.authContext.registeredUser!.id;
 
       // Get total count for pagination
       const totalCount = await fastify.prisma.trackingLink.count({
-        where: { userId }
+        where: { createdBy: userId }
       });
 
       // Get tracking links with pagination
       const links = await fastify.prisma.trackingLink.findMany({
-        where: { userId },
+        where: { createdBy: userId },
         orderBy: { createdAt: 'desc' },
         skip: offset,
         take: limit

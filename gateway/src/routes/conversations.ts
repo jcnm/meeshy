@@ -1002,8 +1002,8 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         if (message.replyTo) {
           adaptedReplyTo = {
             ...message.replyTo,
-            originalLanguage: message.replyTo.originalLanguage || 'fr', // Garantir une langue par défaut
-            translations: message.replyTo.translations // Garder toutes les traductions
+            originalLanguage: message.replyTo.originalLanguage || 'fr' // Garantir une langue par défaut
+            // Note: translations non chargées dans replyTo pour optimisation
           };
         }
 
@@ -1022,14 +1022,23 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
         try {
           // Optimisation : Créer les status seulement si pas déjà marqué comme lu
-          // On utilise createMany avec skipDuplicates pour éviter les erreurs
-          await prisma.messageStatus.createMany({
-            data: messageIds.map(messageId => ({
-              messageId,
-              userId
-            })),
-            skipDuplicates: true // Ignorer les doublons au lieu de vérifier d'abord
-          });
+          // On utilise createMany pour créer les statuts de lecture
+          // Note: On ignore les erreurs de duplication car certains messages peuvent déjà être lus
+          for (const messageId of messageIds) {
+            try {
+              await prisma.messageStatus.create({
+                data: {
+                  messageId,
+                  userId
+                }
+              });
+            } catch (err) {
+              // Ignorer les erreurs de duplication (message déjà lu)
+              if ((err as any)?.code !== 'P2002') {
+                console.warn('[GATEWAY] Error creating message status:', err);
+              }
+            }
+          }
         } catch (error) {
           console.warn('[GATEWAY] Error marking messages as read:', error);
         }
