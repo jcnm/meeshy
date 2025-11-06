@@ -142,12 +142,50 @@ export class WebRTCService {
 
   /**
    * Get user media (camera + microphone)
+   * iOS Safari compatible with fallbacks and proper error handling
    */
   async getLocalStream(constraints?: MediaStreamConstraints): Promise<MediaStream> {
     try {
       logger.debug('[WebRTCService] Requesting user media', { constraints });
 
+      // CRITICAL: Check if getUserMedia is available
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        // Check if we're in a secure context
+        const isSecure = window.isSecureContext;
+        const protocol = window.location.protocol;
+
+        logger.error('[WebRTCService] getUserMedia not available', {
+          hasMediaDevices: !!navigator.mediaDevices,
+          isSecureContext: isSecure,
+          protocol
+        });
+
+        // Provide helpful error message
+        if (!isSecure || protocol === 'http:') {
+          const err = new Error(
+            'Camera/microphone access requires HTTPS. ' +
+            'Please access the app via https:// instead of http://'
+          );
+          this.config.onError?.(err);
+          throw err;
+        }
+
+        const err = new Error(
+          'Your browser does not support camera/microphone access. ' +
+          'Please update to the latest version of Safari or use a different browser.'
+        );
+        this.config.onError?.(err);
+        throw err;
+      }
+
       const mediaConstraints = constraints || DEFAULT_MEDIA_CONSTRAINTS;
+
+      // iOS Safari specific: Log constraints for debugging
+      logger.debug('[WebRTCService] iOS getUserMedia constraints', {
+        constraints: mediaConstraints,
+        userAgent: navigator.userAgent,
+        isSecureContext: window.isSecureContext
+      });
 
       // Request permissions
       this.localStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
@@ -161,20 +199,49 @@ export class WebRTCService {
     } catch (error) {
       logger.error('[WebRTCService] Failed to get user media', { error });
 
-      // Handle specific errors
+      // Handle specific errors with user-friendly messages
       if (error instanceof DOMException) {
         if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-          const err = new Error('Camera/microphone permission denied');
+          const err = new Error(
+            'Camera/microphone permission denied. ' +
+            'Please allow access in Safari settings: Settings > Safari > Camera & Microphone'
+          );
           this.config.onError?.(err);
           throw err;
         } else if (error.name === 'NotFoundError') {
-          const err = new Error('No camera/microphone found');
+          const err = new Error(
+            'No camera or microphone found on your device. ' +
+            'Please check your device hardware.'
+          );
+          this.config.onError?.(err);
+          throw err;
+        } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+          const err = new Error(
+            'Camera/microphone is already in use by another app. ' +
+            'Please close other apps using the camera/microphone.'
+          );
+          this.config.onError?.(err);
+          throw err;
+        } else if (error.name === 'OverconstrainedError') {
+          const err = new Error(
+            'Your device does not support the requested video/audio quality. ' +
+            'Please try again.'
+          );
+          this.config.onError?.(err);
+          throw err;
+        } else if (error.name === 'TypeError') {
+          const err = new Error(
+            'Invalid media constraints. Please try again or contact support.'
+          );
           this.config.onError?.(err);
           throw err;
         }
       }
 
-      const err = error instanceof Error ? error : new Error('Failed to access media devices');
+      // Generic error
+      const err = error instanceof Error
+        ? error
+        : new Error('Failed to access camera/microphone. Please check your device permissions.');
       this.config.onError?.(err);
       throw err;
     }
