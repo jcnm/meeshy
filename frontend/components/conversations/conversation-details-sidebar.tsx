@@ -29,6 +29,7 @@ import {
 import { cn } from '@/lib/utils';
 import type { Conversation, User, Message } from '@shared/types';
 import { conversationsService } from '@/services/conversations.service';
+import { userPreferencesService } from '@/services/user-preferences.service';
 import { getLanguageDisplayName, getLanguageFlag } from '@/utils/language-utils';
 import { toast } from 'sonner';
 import { ConversationLinksSection } from './conversation-links-section';
@@ -40,46 +41,85 @@ import { ConversationImageUploadDialog } from './conversation-image-upload-dialo
 import { AttachmentService } from '@/services/attachmentService';
 import { X as XIcon, Plus, Tag as TagIcon } from 'lucide-react';
 
-// Tags Manager Component
+// Tags Manager Component (User-specific)
 interface TagsManagerProps {
   conversationId: string;
-  tags: readonly string[];
-  isAdmin: boolean;
-  onTagsUpdated: (tags: string[]) => Promise<void>;
+  onTagsUpdated?: () => void;
 }
 
-function TagsManager({ conversationId, tags, isAdmin, onTagsUpdated }: TagsManagerProps) {
+function TagsManager({ conversationId, onTagsUpdated }: TagsManagerProps) {
   const [newTag, setNewTag] = useState('');
   const [isAdding, setIsAdding] = useState(false);
-  const [localTags, setLocalTags] = useState<string[]>([...tags]);
+  const [localTags, setLocalTags] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Load user's tags for this conversation
   useEffect(() => {
-    setLocalTags([...tags]);
-  }, [tags]);
+    const loadTags = async () => {
+      try {
+        setIsLoading(true);
+        const prefs = await userPreferencesService.getPreferences(conversationId);
+        setLocalTags(prefs?.tags ? [...prefs.tags] : []);
+      } catch (error) {
+        console.error('Error loading tags:', error);
+        setLocalTags([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadTags();
+  }, [conversationId]);
 
   const handleAddTag = async () => {
     const trimmedTag = newTag.trim();
     if (!trimmedTag) return;
 
-    // Vérifier si le tag existe déjà
+    // Check if tag already exists
     if (localTags.includes(trimmedTag)) {
       toast.error('Ce tag existe déjà');
       return;
     }
 
-    const updatedTags = [...localTags, trimmedTag];
-    setLocalTags(updatedTags);
-    setNewTag('');
-    setIsAdding(false);
+    try {
+      // Optimistically update UI
+      const updatedTags = [...localTags, trimmedTag];
+      setLocalTags(updatedTags);
+      setNewTag('');
+      setIsAdding(false);
 
-    await onTagsUpdated(updatedTags);
+      // Update preferences
+      await userPreferencesService.updateTags(conversationId, updatedTags);
+      toast.success('Tag ajouté');
+      onTagsUpdated?.();
+    } catch (error) {
+      console.error('Error adding tag:', error);
+      toast.error('Erreur lors de l\'ajout du tag');
+      // Revert optimistic update
+      setLocalTags(localTags);
+    }
   };
 
   const handleRemoveTag = async (tagToRemove: string) => {
-    const updatedTags = localTags.filter(t => t !== tagToRemove);
-    setLocalTags(updatedTags);
-    await onTagsUpdated(updatedTags);
+    try {
+      // Optimistically update UI
+      const updatedTags = localTags.filter(t => t !== tagToRemove);
+      setLocalTags(updatedTags);
+
+      // Update preferences
+      await userPreferencesService.updateTags(conversationId, updatedTags);
+      toast.success('Tag supprimé');
+      onTagsUpdated?.();
+    } catch (error) {
+      console.error('Error removing tag:', error);
+      toast.error('Erreur lors de la suppression du tag');
+      // Revert optimistic update
+      setLocalTags([...localTags, tagToRemove]);
+    }
   };
+
+  if (isLoading) {
+    return <div className="text-xs text-muted-foreground italic">Chargement...</div>;
+  }
 
   return (
     <div className="space-y-2">
@@ -93,78 +133,74 @@ function TagsManager({ conversationId, tags, isAdmin, onTagsUpdated }: TagsManag
           >
             <TagIcon className="h-3 w-3" />
             <span>{tag}</span>
-            {isAdmin && (
-              <button
-                onClick={() => handleRemoveTag(tag)}
-                className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
-                aria-label={`Remove tag ${tag}`}
-              >
-                <XIcon className="h-3 w-3" />
-              </button>
-            )}
+            <button
+              onClick={() => handleRemoveTag(tag)}
+              className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+              aria-label={`Supprimer le tag ${tag}`}
+            >
+              <XIcon className="h-3 w-3" />
+            </button>
           </Badge>
         ))}
 
         {localTags.length === 0 && !isAdding && (
           <p className="text-xs text-muted-foreground italic">
-            {isAdmin ? 'Cliquez sur + pour ajouter des tags' : 'Aucun tag'}
+            Cliquez sur + pour ajouter vos tags personnels
           </p>
         )}
       </div>
 
       {/* Add new tag */}
-      {isAdmin && (
-        <div className="flex items-center gap-2">
-          {isAdding ? (
-            <>
-              <Input
-                type="text"
-                placeholder="Nouveau tag..."
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleAddTag();
-                  } else if (e.key === 'Escape') {
-                    setIsAdding(false);
-                    setNewTag('');
-                  }
-                }}
-                className="flex-1 h-8 text-sm"
-                autoFocus
-              />
-              <Button
-                size="sm"
-                onClick={handleAddTag}
-                className="h-8 w-8 p-0"
-              >
-                <Check className="h-4 w-4" />
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => {
+      <div className="flex items-center gap-2">
+        {isAdding ? (
+          <>
+            <Input
+              type="text"
+              placeholder="Nouveau tag..."
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleAddTag();
+                } else if (e.key === 'Escape') {
                   setIsAdding(false);
                   setNewTag('');
-                }}
-                className="h-8 w-8 p-0"
-              >
-                <XIcon className="h-4 w-4" />
-              </Button>
-            </>
-          ) : (
+                }
+              }}
+              className="flex-1 h-8 text-sm"
+              autoFocus
+            />
             <Button
               size="sm"
-              variant="outline"
-              onClick={() => setIsAdding(true)}
-              className="h-8 px-3 text-xs"
+              onClick={handleAddTag}
+              className="h-8 w-8 p-0"
             >
-              <Plus className="h-3 w-3 mr-1" />
-              Ajouter un tag
+              <Check className="h-4 w-4" />
             </Button>
-          )}
-        </div>
-      )}
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setIsAdding(false);
+                setNewTag('');
+              }}
+              className="h-8 w-8 p-0"
+            >
+              <XIcon className="h-4 w-4" />
+            </Button>
+          </>
+        ) : (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setIsAdding(true)}
+            className="h-8 px-3 text-xs"
+          >
+            <Plus className="h-3 w-3 mr-1" />
+            Ajouter un tag
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
@@ -700,28 +736,15 @@ export function ConversationDetailsSidebar({
                   )}
                 </div>
 
-                {/* Tags Section */}
+                {/* Tags Section (Personal) */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-muted-foreground">
-                    Tags
+                    Tags personnels
                   </label>
-                  <TagsManager
-                    conversationId={conversation.id}
-                    tags={conversation.tags || []}
-                    isAdmin={isAdmin}
-                    onTagsUpdated={async (newTags) => {
-                      try {
-                        await conversationsService.updateConversation(conversation.id, {
-                          tags: newTags
-                        });
-                        toast.success('Tags mis à jour');
-                        window.location.reload();
-                      } catch (error) {
-                        console.error('Erreur lors de la mise à jour des tags:', error);
-                        toast.error('Erreur lors de la mise à jour des tags');
-                      }
-                    }}
-                  />
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Organisez vos conversations avec vos propres tags
+                  </p>
+                  <TagsManager conversationId={conversation.id} />
                 </div>
               </>
             )}

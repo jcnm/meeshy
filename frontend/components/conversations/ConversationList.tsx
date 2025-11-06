@@ -159,24 +159,7 @@ const ConversationItem = memo(function ConversationItem({
 
       {/* Contenu */}
       <div className="flex-1 min-w-0">
-        {/* Tags - displayed above title in tiny text */}
-        {conversation.tags && conversation.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-1">
-            {conversation.tags.slice(0, 3).map((tag) => (
-              <span
-                key={tag}
-                className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium"
-              >
-                {tag}
-              </span>
-            ))}
-            {conversation.tags.length > 3 && (
-              <span className="text-[10px] text-muted-foreground">
-                +{conversation.tags.length - 3}
-              </span>
-            )}
-          </div>
-        )}
+        {/* TODO: Display user-specific tags from preferences */}
 
         <div className="flex items-start justify-between gap-2">
           <h3 className="font-semibold text-sm truncate">
@@ -240,13 +223,12 @@ export function ConversationList({
       if (!searchQuery) return true;
       const title = conv.title || '';
       const lastMessage = conv.lastMessage?.content || '';
-      const tags = conv.tags || [];
       const query = searchQuery.toLowerCase();
 
-      // Search in title, last message, AND tags
+      // Search in title and last message
+      // TODO: Add search by user-specific tags from preferences
       return title.toLowerCase().includes(query) ||
-             lastMessage.toLowerCase().includes(query) ||
-             tags.some(tag => tag.toLowerCase().includes(query));
+             lastMessage.toLowerCase().includes(query);
     });
 
     console.log('[ConversationList] Filtrage des conversations:', {
