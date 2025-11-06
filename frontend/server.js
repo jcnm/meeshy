@@ -7,6 +7,8 @@ const path = require('path');
 const dev = process.env.NODE_ENV !== 'production';
 const hostname = process.env.HOSTNAME || 'localhost';
 const port = parseInt(process.env.PORT || '3100', 10);
+const localIp = process.env.LOCAL_IP || '192.168.1.39'; // IP locale pour accès réseau
+const domain = process.env.DOMAIN || 'localhost'; // Domaine local personnalisé
 
 // Créer l'app Next.js
 const app = next({ dev, hostname, port });
@@ -36,7 +38,10 @@ app.prepare().then(() => {
     })
     .listen(port, '0.0.0.0', () => {
       console.log(`> ✅ Ready on https://${hostname}:${port}`);
-      console.log(`> 📱 Access from iPhone: https://192.168.1.39:${port}`);
+      console.log(`> 📱 Access from network: https://${localIp}:${port}`);
       console.log(`> 💻 Access locally: https://localhost:${port}`);
+      if (domain !== 'localhost') {
+        console.log(`> 🌐 Custom domain: https://${domain}:${port}`);
+      }
     });
 });
