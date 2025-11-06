@@ -819,10 +819,37 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       }, 2000);
 
       const errorCleanupHandler = (error: any) => {
-        console.error('❌ [ConversationLayout] Call error received, cleaning up stream');
-        logger.error('[ConversationLayout]', 'Call error, cleaning up pre-authorized stream', { error });
+        console.error('❌ [ConversationLayout] Call error received:', error);
+        logger.error('[ConversationLayout]', 'Call error received', { error });
 
-        // Clean up the pre-authorized stream
+        // Check if error is "call already active"
+        const errorMessage = error?.message || String(error) || '';
+        const isCallAlreadyActive = errorMessage.includes('A call is already active') ||
+                                     errorMessage.includes('CALL_ALREADY_ACTIVE');
+
+        if (isCallAlreadyActive) {
+          console.log('🔄 [ConversationLayout] Call already active - forcing cleanup and retry');
+          toast.info('Cleaning up previous call...');
+
+          // Force leave any existing calls in the conversation
+          (socket as any).emit('call:force-leave', {
+            conversationId: selectedConversation.id
+          });
+
+          // Wait 500ms then retry
+          setTimeout(() => {
+            console.log('🔄 [ConversationLayout] Retrying call initiation after cleanup');
+            (socket as any).emit('call:initiate', callData);
+            toast.success('Retrying call...');
+          }, 500);
+
+          // Keep the stream for retry - don't clean it up
+          // Clear timeout but keep listener for retry attempt
+          clearTimeout(errorCleanupTimeout);
+          return;
+        }
+
+        // For other errors, clean up the pre-authorized stream
         const preauthorizedStream = (window as any).__preauthorizedMediaStream;
         if (preauthorizedStream) {
           preauthorizedStream.getTracks().forEach((track: MediaStreamTrack) => {

@@ -462,6 +462,106 @@ export class CallEventsHandler {
     });
 
     /**
+     * call:force-leave - Force cleanup of any active calls in a conversation
+     * This is used when "call already active" error occurs to cleanup stale calls
+     */
+    socket.on('call:force-leave', async (data: { conversationId: string }) => {
+      try {
+        const userId = getUserId(socket.id);
+        if (!userId) {
+          socket.emit(CALL_EVENTS.ERROR, {
+            code: 'NOT_AUTHENTICATED',
+            message: 'User not authenticated'
+          } as CallError);
+          return;
+        }
+
+        logger.info('📞 Socket: call:force-leave', {
+          socketId: socket.id,
+          userId,
+          conversationId: data.conversationId
+        });
+
+        // Find any active calls in this conversation
+        const activeCalls = await this.prisma.callSession.findMany({
+          where: {
+            conversationId: data.conversationId,
+            status: { in: ['initiated', 'ringing', 'active'] }
+          },
+          include: {
+            participants: true
+          }
+        });
+
+        // Force leave each active call where user is a participant
+        for (const call of activeCalls) {
+          const participant = call.participants.find(
+            (p) => p.userId === userId && !p.leftAt
+          );
+
+          if (participant) {
+            logger.info('🔄 Force leaving call', {
+              callId: call.id,
+              userId,
+              participantId: participant.id
+            });
+
+            try {
+              // Leave the call
+              const callSession = await this.callService.leaveCall({
+                callId: call.id,
+                userId
+              });
+
+              // Broadcast participant left event
+              const leftEvent: CallParticipantLeftEvent = {
+                callId: callSession.id,
+                participantId: participant.id,
+                userId: participant.userId || undefined,
+                anonymousId: participant.anonymousId || undefined,
+                mode: callSession.mode
+              };
+
+              io.to(`call:${call.id}`).emit(
+                CALL_EVENTS.PARTICIPANT_LEFT,
+                leftEvent
+              );
+
+              // Leave the room
+              socket.leave(`call:${call.id}`);
+
+              // If call ended, broadcast ended event
+              if (callSession.status === 'ended') {
+                const endedEvent: CallEndedEvent = {
+                  callId: callSession.id,
+                  duration: callSession.duration || 0,
+                  endedBy: userId
+                };
+
+                io.to(`call:${call.id}`).emit(CALL_EVENTS.ENDED, endedEvent);
+                io.to(`conversation_${callSession.conversationId}`).emit(CALL_EVENTS.ENDED, endedEvent);
+              }
+            } catch (leaveError) {
+              logger.error('❌ Error force leaving call', { callId: call.id, error: leaveError });
+            }
+          }
+        }
+
+        logger.info('✅ Force cleanup completed', {
+          conversationId: data.conversationId,
+          userId,
+          callsProcessed: activeCalls.length
+        });
+      } catch (error: any) {
+        logger.error('❌ Socket: Error force leaving calls', error);
+        socket.emit(CALL_EVENTS.ERROR, {
+          code: 'FORCE_LEAVE_ERROR',
+          message: error.message || 'Failed to force leave calls'
+        } as CallError);
+      }
+    });
+
+    /**
      * call:signal - WebRTC signaling (SDP offer/answer, ICE candidates)
      * CVE-001: Added WebRTC signal validation with size limits
      * CVE-002: Added rate limiting (100 req/10s)
