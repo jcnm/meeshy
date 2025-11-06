@@ -11,7 +11,7 @@ import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
 import { useCallStore } from '@/stores/call-store';
 import { useAuth } from '@/hooks/use-auth';
 import { CallNotification } from './CallNotification';
-import { CallInterface } from './CallInterface';
+import { VideoCallInterface } from '@/components/video-calls/VideoCallInterface';
 import { logger } from '@/utils/logger';
 import { toast } from 'sonner';
 import type {
@@ -517,7 +517,7 @@ export function CallManager() {
 
       {/* Active Call Interface */}
       {isInCall && currentCall && user?.id && (
-        <CallInterface callId={currentCall.id} userId={user.id} />
+        <VideoCallInterface callId={currentCall.id} />
       )}
     </>
   );
