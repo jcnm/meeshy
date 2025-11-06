@@ -108,17 +108,15 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Cleanup du typing indicator au démontage
+  // Cleanup du typing timeout au démontage
+  // NOTE: Typing stopTyping is handled by parent components
   useEffect(() => {
     return () => {
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
-      if (conversationId) {
-        meeshySocketIOService.stopTyping(conversationId);
-      }
     };
-  }, [conversationId]);
+  }, []);
 
   // Gestion du collage de texte trop long : créer un .txt UTF-8 et ne pas remplir le textarea
   useEffect(() => {
@@ -629,22 +627,15 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   // Auto-resize du textarea comme dans BubbleStreamPage - mémorisé
   const handleTextareaChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
+
+    // IMPORTANT: Call onChange first so parent can manage typing
+    // Parent components like BubbleStreamPage and ConversationLayout
+    // handle typing events via their onChange callback
     onChange(newValue);
 
-    // Émettre l'événement typing si conversationId est fourni
-    if (conversationId && newValue.trim().length > 0) {
-      meeshySocketIOService.startTyping(conversationId);
-
-      // Clear le timeout précédent
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-
-      // Programmer stopTyping après 3 secondes d'inactivité
-      typingTimeoutRef.current = setTimeout(() => {
-        meeshySocketIOService.stopTyping(conversationId);
-      }, 3000);
-    }
+    // NOTE: Typing events are managed by parent components via onChange
+    // The conversationId prop is kept for potential future use but
+    // typing is NOT emitted here to avoid duplication with parent handlers
 
     // Auto-resize textarea avec gestion améliorée des retours à la ligne
     if (textareaRef.current && textareaRef.current.style) {
