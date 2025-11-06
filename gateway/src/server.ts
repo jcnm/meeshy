@@ -1,9 +1,9 @@
 /**
  * Meeshy Fastify Gateway Server
- * 
+ *
  * A clean, professional WebSocket + REST API gateway for translation services
  * Architecture: Frontend (WebSocket/REST) ↔ Gateway (Fastify) ↔ Translation Service (ZMQ)
- * 
+ *
  * @version 1.0.0
  * @author Meeshy Team
  */
@@ -19,6 +19,8 @@ import sensible from '@fastify/sensible'; // Ajout pour httpErrors
 import multipart from '@fastify/multipart';
 import { PrismaClient } from '../shared/prisma/client';
 import winston from 'winston';
+import * as fs from 'fs';
+import * as path from 'path';
 import { TranslationService } from './services/TranslationService';
 import { MessagingService } from './services/MessagingService';
 import { StatusService } from './services/status.service';
@@ -237,10 +239,42 @@ class MeeshyServer {
   private callCleanupService: CallCleanupService;
 
   constructor() {
-    this.server = fastify({
-      logger: false, // We use Winston instead
-      disableRequestLogging: !config.isDev
-    });
+    // Check if HTTPS mode is enabled
+    const useHttps = process.env.USE_HTTPS === 'true';
+
+    if (useHttps) {
+      // HTTPS mode - load SSL certificates
+      const certPath = path.join(__dirname, '..', '..', 'frontend', '.cert');
+      const keyPath = path.join(certPath, 'localhost-key.pem');
+      const certFilePath = path.join(certPath, 'localhost.pem');
+
+      if (!fs.existsSync(keyPath) || !fs.existsSync(certFilePath)) {
+        logger.error('❌ SSL certificates not found for HTTPS mode!');
+        logger.error(`   Expected certificates at: ${certPath}`);
+        logger.error('   The frontend certificates will be used for the gateway.');
+        logger.error('   Ensure frontend/.cert/ contains the certificates.');
+        process.exit(1);
+      }
+
+      this.server = fastify({
+        logger: false, // We use Winston instead
+        disableRequestLogging: !config.isDev,
+        https: {
+          key: fs.readFileSync(keyPath),
+          cert: fs.readFileSync(certFilePath),
+        },
+      });
+
+      logger.info('🔒 Gateway starting in HTTPS mode');
+    } else {
+      // HTTP mode (default)
+      this.server = fastify({
+        logger: false, // We use Winston instead
+        disableRequestLogging: !config.isDev
+      });
+
+      logger.info('🌐 Gateway starting in HTTP mode');
+    }
     
     this.prisma = new PrismaClient({
       log: config.isDev ? ['query', 'info', 'warn', 'error'] : ['error', 'warn']
@@ -668,23 +702,58 @@ class MeeshyServer {
   private displayStartupBanner(): void {
     const dbStatus = config.databaseUrl ? 'Connected' : 'Not configured'.padEnd(48);
     const translateUrl = `tcp://0.0.0.0:${(process.env.ZMQ_TRANSLATOR_PORT || '5555').padEnd(37)}`;
-    const banner = `
-╔══════════════════════════════════════════════════════════════════╗
-║                       🌍 MEESHY GATEWAY 🌍                       ║
-╠══════════════════════════════════════════════════════════════════╣
-║  Environment: ${config.nodeEnv.padEnd(48)}   ║
-║  Port:        ${config.port.toString().padEnd(48)}   ║
-║  Database:    ${dbStatus}                                          ║
-║  Translator:  ${translateUrl}║
-╠══════════════════════════════════════════════════════════════════╣
-║  📡 WebSocket:    wss://gate.meeshy.me/socket.io/${' '.repeat(11)}  ║
-║  🏥 Health:       https://gate.meeshy.me/health${' '.repeat(15)} ║
-║  📖 Info:         https://gate.meeshy.me/info${' '.repeat(17)} ║
-║  🔄 Translate:    https://ml.meeshy.me/translate${' '.repeat(12)} ║
-╚══════════════════════════════════════════════════════════════════╝
-    `.trim();
-    
-    console.log(`[GATEWAY] ${banner}`);
+    const useHttps = process.env.USE_HTTPS === 'true';
+    const localIp = process.env.LOCAL_IP || '192.168.1.39';
+    const domain = process.env.DOMAIN || 'localhost';
+    const protocol = useHttps ? 'https' : 'http';
+    const wsProtocol = useHttps ? 'wss' : 'ws';
+
+
+    if (useHttps) {
+      logger.info(`🔒 Gateway running in HTTPS mode`);
+      logger.info(`📱 Network access: ${protocol}://${localIp}:${config.port}`);
+      if (domain !== 'localhost') {
+        logger.info(`🌐 Custom domain: ${protocol}://${domain}:${config.port}`);
+        const banner = `
+    ╔══════════════════════════════════════════════════════════════════╗
+    ║                       🌍 MEESHY GATEWAY 🌍                       ║
+    ╠══════════════════════════════════════════════════════════════════╣
+    ║  Environment: ${config.nodeEnv.padEnd(48)}   ║
+    ║  Port:        ${config.port.toString().padEnd(48)}   ║
+    ║  Database:    ${dbStatus}                                          ║
+    ║  Translator:  ${translateUrl}║
+    ╠══════════════════════════════════════════════════════════════════╣
+    ║  📡 WebSocket:    ${wsProtocol}://localhost:${config.port}/socket.io/${' '.repeat(20 - wsProtocol.length - config.port.toString().length)} ║
+    ║  🏥 Health:       ${protocol}://localhost:${config.port}/health${' '.repeat(24 - protocol.length - config.port.toString().length)} ║
+    ║  📖 Info:         ${protocol}://localhost:${config.port}/info${' '.repeat(26 - protocol.length - config.port.toString().length)} ║
+    ║  📱 Network:      ${protocol}://${localIp}:${config.port}${' '.repeat(38 - protocol.length - localIp.length - config.port.toString().length)} ║
+    ╚══════════════════════════════════════════════════════════════════╝
+        `.trim();
+        console.log(`[GATEWAY] ${banner}`);
+        logger.info(`🔌 WebSocket: ${wsProtocol}://localhost:${config.port}`);
+      }else{
+        logger.info(`🌐 Local access only (no custom domain configured)`);
+
+        const banner = `
+    ╔══════════════════════════════════════════════════════════════════╗
+    ║                       🌍 MEESHY GATEWAY 🌍                       ║
+    ╠══════════════════════════════════════════════════════════════════╣
+    ║  Environment: ${config.nodeEnv.padEnd(48)}   ║
+    ║  Port:        ${config.port.toString().padEnd(48)}   ║
+    ║  Database:    ${dbStatus}                                          ║
+    ║  Translator:  ${translateUrl}║
+    ╠══════════════════════════════════════════════════════════════════╣
+    ║  📡 WebSocket:    ${wsProtocol}://gate.${domain}:${config.port}/socket.io/${' '.repeat(20 - wsProtocol.length - config.port.toString().length)} ║
+    ║  🏥 Health:       ${protocol}://gate.${domain}:${config.port}/health${' '.repeat(24 - protocol.length - config.port.toString().length)} ║
+    ║  📖 Info:         ${protocol}://gate.${domain}:${config.port}/info${' '.repeat(26 - protocol.length - config.port.toString().length)} ║
+    ║  📱 Network:      ${protocol}://${localIp}:${config.port}${' '.repeat(38 - protocol.length - localIp.length - config.port.toString().length)} ║
+    ╚══════════════════════════════════════════════════════════════════╝
+        `.trim();
+        console.log(`[GATEWAY] ${banner}`);
+        logger.info(`🔌 WebSocket: ${wsProtocol}://gate.${domain}:${config.port}`);
+      }
+      
+    }
   }
 
 

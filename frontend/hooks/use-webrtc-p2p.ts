@@ -73,11 +73,15 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
               return;
             }
 
+            // Convert RTCIceCandidate to proper signal format
+            const candidateInit = candidate.toJSON();
             const signal: WebRTCSignal = {
               type: 'ice-candidate',
               from: userId,
               to: participantId,
-              signal: candidate.toJSON(),
+              candidate: candidateInit.candidate || '',
+              sdpMLineIndex: candidateInit.sdpMLineIndex,
+              sdpMid: candidateInit.sdpMid,
             };
 
             socket.emit('call:signal', {
@@ -256,7 +260,7 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
           type: 'offer',
           from: userId,
           to: targetUserId,
-          signal: offer,
+          sdp: offer.sdp || '',
         };
 
         socket.emit('call:signal', {
@@ -325,7 +329,7 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
           type: 'answer',
           from: userId,
           to: fromUserId,
-          signal: answer,
+          sdp: answer.sdp || '',
         };
 
         socket.emit('call:signal', {
@@ -495,15 +499,22 @@ export function useWebRTCP2P({ callId, userId, onError }: UseWebRTCP2POptions) {
 
       switch (signal.type) {
         case 'offer':
-          handleOffer(signal.signal as RTCSessionDescriptionInit, signal.from);
+          // Convert flat signal to RTCSessionDescriptionInit
+          handleOffer({ type: 'offer', sdp: signal.sdp }, signal.from);
           break;
 
         case 'answer':
-          handleAnswer(signal.signal as RTCSessionDescriptionInit, signal.from);
+          // Convert flat signal to RTCSessionDescriptionInit
+          handleAnswer({ type: 'answer', sdp: signal.sdp }, signal.from);
           break;
 
         case 'ice-candidate':
-          handleIceCandidate(signal.signal as RTCIceCandidateInit, signal.from);
+          // Convert flat signal to RTCIceCandidateInit
+          handleIceCandidate({
+            candidate: signal.candidate,
+            sdpMLineIndex: signal.sdpMLineIndex,
+            sdpMid: signal.sdpMid,
+          }, signal.from);
           break;
 
         default:

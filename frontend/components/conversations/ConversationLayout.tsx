@@ -222,7 +222,8 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     removeMessage
   } = useConversationMessages(selectedConversation?.id || null, user!, {
     limit: 20,
-    enabled: !!selectedConversation?.id
+    enabled: !!selectedConversation?.id,
+    containerRef: messagesScrollRef // Pass container ref to hook to avoid warnings
   });
 
     // Callback pour gérer les événements de frappe
@@ -309,7 +310,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       removeMessage(messageId);
       toast.info(tCommon('messages.messageDeletedByOther'));
     }, [removeMessage, tCommon]),
-    onNewMessage: useCallback((message: any) => {
+    onNewMessage: useCallback(async (message: any) => {
       // Utiliser la ref au lieu de selectedConversation?.id
       const currentConvId = selectedConversationIdRef.current;
 
@@ -336,8 +337,16 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         const conversationIndex = prevConversations.findIndex(c => c.id === message.conversationId);
 
         if (conversationIndex === -1) {
-          // Conversation non trouvée dans la liste, ne rien faire
-          console.log(`[ConversationLayout-${instanceId}] Conversation ${message.conversationId} non trouvée dans la liste`);
+          // Conversation non trouvée dans la liste
+          console.log(`[ConversationLayout-${instanceId}] ⚠️ Conversation ${message.conversationId} non trouvée dans la liste - refresh nécessaire`);
+
+          // Déclencher un refresh asynchrone de la liste pour inclure cette conversation
+          // Utiliser setTimeout pour ne pas bloquer le traitement du message
+          setTimeout(() => {
+            console.log(`[ConversationLayout-${instanceId}] 🔄 Rafraîchissement de la liste des conversations...`);
+            refreshConversations();
+          }, 100);
+
           return prevConversations;
         }
 
@@ -345,6 +354,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         const updatedConversation = {
           ...prevConversations[conversationIndex],
           lastMessage: message,
+          lastMessageAt: message.createdAt || new Date(),
           lastActivityAt: message.createdAt || new Date()
         };
 
@@ -371,7 +381,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       } else {
         console.log(`[ConversationLayout-${instanceId}] Message ignoré pour la vue (autre conversation)`);
       }
-    }, [addMessage, instanceId, setConversations]),
+    }, [addMessage, instanceId, setConversations, refreshConversations]),
     onTranslation: useCallback((messageId: string, translations: any[]) => {
       console.log('🌐 [ConversationLayoutV2] Traductions reçues pour message:', messageId, translations);
       
@@ -688,7 +698,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   }, [isMobile, selectedConversationId, localSelectedConversationId, router, instanceId]);
 
   // Start video call
-  const handleStartCall = useCallback(() => {
+  const handleStartCall = useCallback(async () => {
     console.log('🎥🎥🎥 [ConversationLayout] handleStartCall CLICKED 🎥🎥🎥');
     logger.debug('[ConversationLayout]', '🎥 handleStartCall called', {
       hasConversation: !!selectedConversation,
@@ -713,49 +723,145 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     console.log('✅ [ConversationLayout] Starting video call for conversation:', selectedConversation.id);
     logger.info('[ConversationLayout]', 'Starting video call - conversationId: ' + selectedConversation.id);
 
-    const socket = meeshySocketIOService.getSocket();
-    console.log('🔌 [ConversationLayout] Socket status:', {
-      hasSocket: !!socket,
-      isConnected: socket?.connected,
-      socketId: socket?.id
-    });
-    logger.debug('[ConversationLayout]', '🔌 Socket status', {
-      hasSocket: !!socket,
-      isConnected: socket?.connected,
-      socketId: socket?.id
-    });
+    // SAFARI FIX: Request media permissions IMMEDIATELY in user gesture context
+    // Safari blocks getUserMedia() if not called synchronously from user interaction
+    console.log('🎤📹 [ConversationLayout] Requesting media permissions (Safari-compatible)...');
+    logger.debug('[ConversationLayout]', 'Requesting media permissions in click handler for Safari compatibility');
 
-    if (!socket) {
-      console.error('❌ [ConversationLayout] No socket connection available');
-      toast.error('Connection error. Please try again.');
-      logger.error('[ConversationLayout]', 'Cannot start call: no socket connection');
-      return;
+    let stream: MediaStream | null = null;
+
+    try {
+      // Request permissions synchronously in the click handler
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+        video: {
+          width: { ideal: 640, max: 1280 },
+          height: { ideal: 480, max: 720 },
+          frameRate: { ideal: 24, max: 30 },
+          facingMode: 'user',
+        },
+      });
+
+      console.log('✅ [ConversationLayout] Media permissions granted!', {
+        audioTracks: stream.getAudioTracks().length,
+        videoTracks: stream.getVideoTracks().length,
+      });
+      logger.info('[ConversationLayout]', 'Media permissions granted', {
+        audioTracks: stream.getAudioTracks().length,
+        videoTracks: stream.getVideoTracks().length,
+      });
+
+      // Store the stream temporarily - it will be used by CallInterface
+      (window as any).__preauthorizedMediaStream = stream;
+
+      // Continue with call initiation
+      const socket = meeshySocketIOService.getSocket();
+      console.log('🔌 [ConversationLayout] Socket status:', {
+        hasSocket: !!socket,
+        isConnected: socket?.connected,
+        socketId: socket?.id
+      });
+      logger.debug('[ConversationLayout]', '🔌 Socket status', {
+        hasSocket: !!socket,
+        isConnected: socket?.connected,
+        socketId: socket?.id
+      });
+
+      if (!socket) {
+        console.error('❌ [ConversationLayout] No socket connection available');
+        toast.error('Connection error. Please try again.');
+        logger.error('[ConversationLayout]', 'Cannot start call: no socket connection');
+
+        // Clean up stream
+        stream.getTracks().forEach(track => track.stop());
+        delete (window as any).__preauthorizedMediaStream;
+        return;
+      }
+
+      if (!socket.connected) {
+        console.error('❌ [ConversationLayout] Socket not connected');
+        toast.error('Socket not connected. Please wait...');
+        logger.error('[ConversationLayout]', 'Cannot start call: socket not connected');
+
+        // Clean up stream
+        stream.getTracks().forEach(track => track.stop());
+        delete (window as any).__preauthorizedMediaStream;
+        return;
+      }
+
+      const callData = {
+        conversationId: selectedConversation.id,
+        type: 'video',
+        settings: {
+          audioEnabled: true,
+          videoEnabled: true,
+        },
+      };
+
+      console.log('📤 [ConversationLayout] Emitting call:initiate event:', callData);
+      logger.info('[ConversationLayout]', '📤 Emitting call:initiate', callData);
+
+      // Emit call:initiate event
+      (socket as any).emit('call:initiate', callData);
+
+      console.log('✅ [ConversationLayout] call:initiate event sent successfully');
+      toast.success('Starting call...');
+
+      // Set up cleanup listener for errors
+      // If call:error arrives within 2 seconds, cleanup the stream
+      const errorCleanupTimeout = setTimeout(() => {
+        // Remove error listener after 2 seconds (call should start by then)
+        (socket as any).off('call:error', errorCleanupHandler);
+      }, 2000);
+
+      const errorCleanupHandler = (error: any) => {
+        console.error('❌ [ConversationLayout] Call error received, cleaning up stream');
+        logger.error('[ConversationLayout]', 'Call error, cleaning up pre-authorized stream', { error });
+
+        // Clean up the pre-authorized stream
+        const preauthorizedStream = (window as any).__preauthorizedMediaStream;
+        if (preauthorizedStream) {
+          preauthorizedStream.getTracks().forEach((track: MediaStreamTrack) => {
+            track.stop();
+            console.log('🛑 [ConversationLayout] Stopped track:', track.kind);
+          });
+          delete (window as any).__preauthorizedMediaStream;
+        }
+
+        // Clear timeout
+        clearTimeout(errorCleanupTimeout);
+      };
+
+      // Listen for call:error for cleanup
+      (socket as any).once('call:error', errorCleanupHandler);
+
+    } catch (error: any) {
+      console.error('❌ [ConversationLayout] Media permission denied or error:', error);
+      logger.error('[ConversationLayout]', 'Failed to get media permissions', { error });
+
+      // Clean up stream if it was created
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        delete (window as any).__preauthorizedMediaStream;
+      }
+
+      // Provide user-friendly error messages
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        toast.error('Camera/microphone permission denied. Please allow access in your browser settings.');
+      } else if (error.name === 'NotFoundError') {
+        toast.error('No camera or microphone found. Please connect a device.');
+      } else if (error.name === 'NotReadableError') {
+        toast.error('Camera/microphone is already in use by another application.');
+      } else {
+        toast.error('Failed to access camera/microphone: ' + error.message);
+      }
+
+      return; // Don't proceed with call if permissions failed
     }
-
-    if (!socket.connected) {
-      console.error('❌ [ConversationLayout] Socket not connected');
-      toast.error('Socket not connected. Please wait...');
-      logger.error('[ConversationLayout]', 'Cannot start call: socket not connected');
-      return;
-    }
-
-    const callData = {
-      conversationId: selectedConversation.id,
-      type: 'video',
-      settings: {
-        audioEnabled: true,
-        videoEnabled: true,
-      },
-    };
-
-    console.log('📤 [ConversationLayout] Emitting call:initiate event:', callData);
-    logger.info('[ConversationLayout]', '📤 Emitting call:initiate', callData);
-
-    // Emit call:initiate event
-    (socket as any).emit('call:initiate', callData);
-
-    console.log('✅ [ConversationLayout] call:initiate event sent successfully');
-    toast.success('Starting call...');
   }, [selectedConversation]);
 
   // Gérer la réponse à un message
@@ -1275,6 +1381,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               hasMore={hasMore}
               isMobile={isMobile}
               conversationType={(selectedConversation.type as any) === 'anonymous' ? 'direct' : (selectedConversation.type as any) === 'broadcast' ? 'public' : selectedConversation.type as any}
+              scrollContainerRef={messagesScrollRef}
               userRole={user.role as UserRoleEnum}
               conversationId={selectedConversation.id}
               addTranslatingState={addTranslatingState}
@@ -1443,6 +1550,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                   hasMore={hasMore}
                   isMobile={false}
                   conversationType={(selectedConversation.type as any) === 'anonymous' ? 'direct' : (selectedConversation.type as any) === 'broadcast' ? 'public' : selectedConversation.type as any}
+                  scrollContainerRef={messagesScrollRef}
                   userRole={user.role as UserRoleEnum}
                   conversationId={selectedConversation.id}
                   addTranslatingState={addTranslatingState}

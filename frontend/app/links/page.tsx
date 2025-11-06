@@ -62,6 +62,7 @@ interface ConversationLink {
   allowAnonymousMessages: boolean;
   allowAnonymousFiles: boolean;
   allowAnonymousImages: boolean;
+  requireAccount?: boolean; // Ajouté
   createdAt: string;
   conversation: {
     id: string;
@@ -97,6 +98,7 @@ export default function LinksPage() {
   const [links, setLinks] = useState<ConversationLink[]>([]);
   const [trackingLinks, setTrackingLinks] = useState<TrackingLink[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [mainTab, setMainTab] = useState<'shareLinks' | 'trackingLinks'>('shareLinks');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'expired'>('all');
@@ -106,6 +108,13 @@ export default function LinksPage() {
   const [showCreateConversationModal, setShowCreateConversationModal] = useState(false);
   const [showCreateLinkModal, setShowCreateLinkModal] = useState(false);
   const [showCreateTrackingLinkModal, setShowCreateTrackingLinkModal] = useState(false);
+
+  // Pagination state
+  const [shareLinksOffset, setShareLinksOffset] = useState(0);
+  const [trackingLinksOffset, setTrackingLinksOffset] = useState(0);
+  const [hasMoreShareLinks, setHasMoreShareLinks] = useState(false);
+  const [hasMoreTrackingLinks, setHasMoreTrackingLinks] = useState(false);
+  const LINKS_PER_PAGE = 20;
 
   // Synchroniser l'onglet avec le hash de l'URL
   useEffect(() => {
@@ -136,43 +145,92 @@ export default function LinksPage() {
   };
 
   // Charger les liens de partage
-  const loadLinks = async () => {
+  const loadLinks = async (append: boolean = false) => {
     try {
-      setIsLoading(true);
-      const token = authManager.getAuthToken();
+      if (append) {
+        setIsLoadingMore(true);
+      } else {
+        setIsLoading(true);
+      }
 
-      // Charger les liens de partage
-      const shareLinksResponse = await fetch(buildApiUrl('/api/links/my-links'), {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const token = authManager.getAuthToken();
+      const offset = append ? shareLinksOffset : 0;
+
+      // Charger les liens de partage avec pagination
+      const shareLinksResponse = await fetch(
+        buildApiUrl(`/api/links/my-links?limit=${LINKS_PER_PAGE}&offset=${offset}`),
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
 
       if (shareLinksResponse.ok) {
         const data = await shareLinksResponse.json();
-        setLinks(data.data || []);
+        if (append) {
+          setLinks(prev => [...prev, ...(data.data || [])]);
+        } else {
+          setLinks(data.data || []);
+        }
+        setHasMoreShareLinks(data.pagination?.hasMore || false);
+        setShareLinksOffset(offset + (data.data?.length || 0));
       } else {
         toast.error(t('errors.loadFailed'));
       }
 
       // Charger aussi les liens trackés
-      await loadTrackingLinks();
+      if (!append) {
+        await loadTrackingLinks(false);
+      }
     } catch (error) {
       console.error('Erreur lors du chargement des liens:', error);
       toast.error(t('errors.loadFailed'));
     } finally {
       setIsLoading(false);
+      setIsLoadingMore(false);
     }
   };
 
   // Charger uniquement les liens trackés
-  const loadTrackingLinks = async () => {
+  const loadTrackingLinks = async (append: boolean = false) => {
     try {
-      const trackingLinksData = await getUserTrackingLinks();
-      console.log('[Links Page] Tracking links chargés:', trackingLinksData.length, trackingLinksData);
-      setTrackingLinks(trackingLinksData);
+      if (append) {
+        setIsLoadingMore(true);
+      }
+
+      const token = authManager.getAuthToken();
+      const offset = append ? trackingLinksOffset : 0;
+
+      const response = await fetch(
+        buildApiUrl(`/api/tracking-links/user/me?limit=${LINKS_PER_PAGE}&offset=${offset}`),
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('[Links Page] Tracking links chargés:', data);
+        if (append) {
+          setTrackingLinks(prev => [...prev, ...(data.data?.trackingLinks || [])]);
+        } else {
+          setTrackingLinks(data.data?.trackingLinks || []);
+        }
+        setHasMoreTrackingLinks(data.pagination?.hasMore || false);
+        setTrackingLinksOffset(offset + (data.data?.trackingLinks?.length || 0));
+      }
     } catch (error) {
       console.error('[Links Page] Erreur lors du chargement des liens trackés:', error);
       // Ne pas afficher d'erreur si c'est juste les liens trackés qui échouent
-      setTrackingLinks([]); // S'assurer que trackingLinks est un tableau vide en cas d'erreur
+      if (!append) {
+        setTrackingLinks([]); // S'assurer que trackingLinks est un tableau vide en cas d'erreur
+      }
+    } finally {
+      if (append) {
+        setIsLoadingMore(false);
+      }
     }
   };
 
@@ -612,22 +670,48 @@ export default function LinksPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid gap-6">
-                {filteredLinks.map((link) => (
-                  <ExpandableLinkCard
-                    key={link.id}
-                    link={link}
-                    onCopy={() => handleCopyLink(link.linkId)}
-                    onEdit={() => {
-                      setSelectedLink(link);
-                      setShowEditModal(true);
-                    }}
-                    onToggle={() => handleToggleActive(link)}
-                    onExtend={(days) => handleExtendDuration(link, days)}
-                    onDelete={() => handleDeleteLink(link)}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="grid gap-6">
+                  {filteredLinks.map((link) => (
+                    <ExpandableLinkCard
+                      key={link.id}
+                      link={link}
+                      onCopy={() => handleCopyLink(link.linkId)}
+                      onEdit={() => {
+                        setSelectedLink(link);
+                        setShowEditModal(true);
+                      }}
+                      onToggle={() => handleToggleActive(link)}
+                      onExtend={(days) => handleExtendDuration(link, days)}
+                      onDelete={() => handleDeleteLink(link)}
+                    />
+                  ))}
+                </div>
+
+                {/* Bouton Charger Plus */}
+                {hasMoreShareLinks && !searchQuery && statusFilter === 'all' && (
+                  <div className="flex justify-center mt-6">
+                    <Button
+                      onClick={() => loadLinks(true)}
+                      disabled={isLoadingMore}
+                      variant="outline"
+                      className="px-8 py-6 text-base font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
+                    >
+                      {isLoadingMore ? (
+                        <>
+                          <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+                          {t('loadingMore')}
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="h-5 w-5 mr-2" />
+                          {t('loadMore')}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         ) : (
@@ -666,17 +750,43 @@ export default function LinksPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid gap-6">
-                {filteredTrackingLinks.map((link) => (
-                  <ExpandableTrackingLinkCard
-                    key={link.id}
-                    link={link}
-                    onCopy={() => handleCopyTrackingLink(link.shortUrl)}
-                    onToggle={() => handleToggleTrackingLink(link)}
-                    onDelete={() => handleDeleteTrackingLink(link)}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="grid gap-6">
+                  {filteredTrackingLinks.map((link) => (
+                    <ExpandableTrackingLinkCard
+                      key={link.id}
+                      link={link}
+                      onCopy={() => handleCopyTrackingLink(link.shortUrl)}
+                      onToggle={() => handleToggleTrackingLink(link)}
+                      onDelete={() => handleDeleteTrackingLink(link)}
+                    />
+                  ))}
+                </div>
+
+                {/* Bouton Charger Plus */}
+                {hasMoreTrackingLinks && !searchQuery && statusFilter === 'all' && (
+                  <div className="flex justify-center mt-6">
+                    <Button
+                      onClick={() => loadTrackingLinks(true)}
+                      disabled={isLoadingMore}
+                      variant="outline"
+                      className="px-8 py-6 text-base font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
+                    >
+                      {isLoadingMore ? (
+                        <>
+                          <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+                          {t('loadingMore')}
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="h-5 w-5 mr-2" />
+                          {t('loadMore')}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}

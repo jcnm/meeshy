@@ -6,7 +6,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Mic, MicOff, Video, VideoOff, PhoneOff, SwitchCamera, Volume2, VolumeX } from 'lucide-react';
+import { Mic, MicOff, Video, VideoOff, PhoneOff, SwitchCamera, Volume2, VolumeX, Sparkles, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { logger } from '@/utils/logger';
@@ -17,7 +17,11 @@ interface CallControlsProps {
   onToggleAudio: () => void;
   onToggleVideo: () => void;
   onSwitchCamera?: () => void;
+  onToggleAudioEffects?: () => void;
+  onToggleStats?: () => void;
   onHangUp: () => void;
+  audioEffectsActive?: boolean;
+  showStats?: boolean;
 }
 
 export function CallControls({
@@ -26,7 +30,11 @@ export function CallControls({
   onToggleAudio,
   onToggleVideo,
   onSwitchCamera,
+  onToggleAudioEffects,
+  onToggleStats,
   onHangUp,
+  audioEffectsActive = false,
+  showStats = false,
 }: CallControlsProps) {
   const [speakerEnabled, setSpeakerEnabled] = useState(true);
 
@@ -146,6 +154,44 @@ export function CallControls({
           <VolumeX className="w-5 h-5 md:w-6 md:h-6" />
         )}
       </Button>
+
+      {/* Audio Effects Toggle */}
+      {onToggleAudioEffects && (
+        <Button
+          size="icon"
+          variant="default"
+          onClick={onToggleAudioEffects}
+          className={cn(
+            'w-12 h-12 md:w-14 md:h-14 rounded-full transition-all touch-manipulation',
+            audioEffectsActive
+              ? 'bg-purple-600 hover:bg-purple-700 text-white'
+              : 'bg-gray-700 hover:bg-gray-600 text-white'
+          )}
+          aria-label="Toggle audio effects"
+          title="Audio Effects"
+        >
+          <Sparkles className="w-5 h-5 md:w-6 md:h-6" />
+        </Button>
+      )}
+
+      {/* Stats Toggle */}
+      {onToggleStats && (
+        <Button
+          size="icon"
+          variant="default"
+          onClick={onToggleStats}
+          className={cn(
+            'w-12 h-12 md:w-14 md:h-14 rounded-full transition-all touch-manipulation',
+            showStats
+              ? 'bg-blue-600 hover:bg-blue-700 text-white'
+              : 'bg-gray-700 hover:bg-gray-600 text-white'
+          )}
+          aria-label="Toggle connection stats"
+          title="Connection Stats"
+        >
+          <BarChart3 className="w-5 h-5 md:w-6 md:h-6" />
+        </Button>
+      )}
 
       {/* Hang Up */}
       <Button

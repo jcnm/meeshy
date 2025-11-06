@@ -1891,7 +1891,7 @@ export async function linksRoutes(fastify: FastifyInstance) {
   });
 
   // Route pour obtenir tous les liens créés par l'utilisateur
-  fastify.get('/links/my-links', {
+  fastify.get<{ Querystring: { limit?: string; offset?: string } }>('/links/my-links', {
     onRequest: [authRequired]
   }, async (request: UnifiedAuthRequest, reply: FastifyReply) => {
     try {
@@ -1902,6 +1902,17 @@ export async function linksRoutes(fastify: FastifyInstance) {
           error: 'Utilisateur non autorisé'
         });
       }
+
+      // Pagination parameters
+      const limit = Math.min(parseInt(request.query.limit || '20', 10), 50); // Max 50
+      const offset = parseInt(request.query.offset || '0', 10);
+
+      // Get total count for pagination info
+      const totalCount = await fastify.prisma.conversationShareLink.count({
+        where: {
+          createdBy: authContext.registeredUser.id
+        }
+      });
 
       const links = await fastify.prisma.conversationShareLink.findMany({
         where: {
@@ -1924,7 +1935,9 @@ export async function linksRoutes(fastify: FastifyInstance) {
         },
         orderBy: {
           createdAt: 'desc'
-        }
+        },
+        skip: offset,
+        take: limit
       });
 
       // Transformer les données pour inclure les statistiques et les liens
@@ -1954,7 +1967,13 @@ export async function linksRoutes(fastify: FastifyInstance) {
 
       return reply.send({
         success: true,
-        data: transformedLinks
+        data: transformedLinks,
+        pagination: {
+          limit,
+          offset,
+          total: totalCount,
+          hasMore: offset + links.length < totalCount
+        }
       });
 
     } catch (error) {

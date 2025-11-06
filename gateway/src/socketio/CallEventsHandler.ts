@@ -156,17 +156,25 @@ export class CallEventsHandler {
           }))
         };
 
-        // Emit to initiator (confirmation)
+        // Emit to initiator (confirmation) - direct socket emit
+        logger.info('📤 Sending call:initiated to initiator (direct)', {
+          callId: callSession.id,
+          initiatorSocketId: socket.id,
+          initiatorUserId: userId
+        });
         socket.emit(CALL_EVENTS.INITIATED, initiatedEvent);
 
-        // Broadcast to all conversation members
+        // ALSO broadcast to conversation room to ensure initiator receives it
         const roomName = `conversation_${data.conversationId}`;
         const socketsInRoom = await io.in(roomName).fetchSockets();
+        const initiatorInRoom = socketsInRoom.find(s => s.id === socket.id);
 
-        logger.info('📡 Broadcasting call:initiated', {
+        logger.info('📡 Broadcasting call:initiated to conversation room', {
           roomName,
           socketsCount: socketsInRoom.length,
-          socketIds: socketsInRoom.map(s => s.id)
+          socketIds: socketsInRoom.map(s => s.id),
+          initiatorSocketId: socket.id,
+          initiatorInConversationRoom: !!initiatorInRoom
         });
 
         io.to(roomName).emit(
@@ -374,21 +382,38 @@ export class CallEventsHandler {
           userId
         });
 
-        // Leave call room
-        socket.leave(`call:${data.callId}`);
-
-        // Prepare event data
+        // Prepare event data BEFORE leaving room
         const leftEvent: CallParticipantLeftEvent = {
           callId: callSession.id,
           participantId: participant.id,
+          userId: participant.userId || undefined,
+          anonymousId: participant.anonymousId || undefined,
           mode: callSession.mode
         };
 
-        // Broadcast to remaining call participants
+        // Get all sockets in the room for debugging
+        const socketsInRoom = await io.in(`call:${data.callId}`).fetchSockets();
+
+        logger.info('📤 Broadcasting call:participant-left event', {
+          callId: data.callId,
+          participantId: participant.id,
+          userId: participant.userId,
+          anonymousId: participant.anonymousId,
+          remainingParticipants: callSession.participants.filter(p => !p.leftAt).length,
+          roomName: `call:${data.callId}`,
+          socketsInRoom: socketsInRoom.length,
+          socketIds: socketsInRoom.map(s => s.id),
+          leavingSocketId: socket.id
+        });
+
+        // IMPORTANT: Broadcast BEFORE leaving room to ensure message delivery
         io.to(`call:${data.callId}`).emit(
           CALL_EVENTS.PARTICIPANT_LEFT,
           leftEvent
         );
+
+        // Leave call room AFTER broadcasting
+        socket.leave(`call:${data.callId}`);
 
         // If call ended, broadcast to BOTH call room AND conversation room
         if (callSession.status === 'ended') {

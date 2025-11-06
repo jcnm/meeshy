@@ -1135,30 +1135,36 @@ export class MeeshySocketIOManager {
 
   private async _joinUserConversations(socket: any, userId: string, isAnonymous: boolean) {
     try {
+      console.log(`📊 [JOIN_CONVERSATIONS] Début pour userId: ${userId} (anonyme: ${isAnonymous})`);
+
       let conversations: any[] = [];
-      
+
       if (isAnonymous) {
         // Conversations pour participants anonymes
         conversations = await this.prisma.anonymousParticipant.findMany({
           where: { id: userId },
           select: { conversationId: true }
         });
+        console.log(`📊 [JOIN_CONVERSATIONS] Trouvé ${conversations.length} conversations pour utilisateur anonyme ${userId}`);
       } else {
         // Conversations pour utilisateurs authentifiés
         conversations = await this.prisma.conversationMember.findMany({
           where: { userId: userId, isActive: true },
           select: { conversationId: true }
         });
+        console.log(`📊 [JOIN_CONVERSATIONS] Trouvé ${conversations.length} conversations pour utilisateur ${userId}`);
       }
-      
+
       // Rejoindre les rooms Socket.IO
       for (const conv of conversations) {
         socket.join(`conversation_${conv.conversationId}`);
-        console.log(`👥 Utilisateur ${userId} rejoint conversation ${conv.conversationId}`);
+        console.log(`👥 [JOIN_CONVERSATIONS] Utilisateur ${userId} rejoint conversation_${conv.conversationId}`);
       }
-      
+
+      console.log(`✅ [JOIN_CONVERSATIONS] Terminé - ${conversations.length} rooms rejointes pour ${userId}`);
+
     } catch (error) {
-      console.error(`❌ Erreur jointure conversations: ${error}`);
+      console.error(`❌ [JOIN_CONVERSATIONS] Erreur jointure conversations pour ${userId}:`, error);
     }
   }
 
@@ -1638,28 +1644,60 @@ export class MeeshySocketIOManager {
     try {
       // Normaliser l'ID de conversation
       const normalizedId = await this.normalizeConversationId(data.conversationId);
-      
-      // Récupérer les informations utilisateur depuis la base de données
-      const dbUser = await this.prisma.user.findUnique({
-        where: { id: userId },
-        select: { 
-          id: true, 
-          username: true,
-          firstName: true,
-          lastName: true,
-          displayName: true
-        }
-      });
 
-      if (!dbUser) {
-        console.warn('⚠️ [TYPING] Utilisateur non trouvé:', userId);
+      // Récupérer l'utilisateur depuis connectedUsers (contient déjà isAnonymous)
+      const connectedUser = this.connectedUsers.get(userId);
+      if (!connectedUser) {
+        console.warn('⚠️ [TYPING] Utilisateur non connecté:', userId);
         return;
       }
 
-      // Construire le nom d'affichage
-      const displayName = dbUser.displayName || 
-                         `${dbUser.firstName || ''} ${dbUser.lastName || ''}`.trim() || 
-                         dbUser.username;
+      let displayName: string;
+
+      // FIXED: Gérer les utilisateurs anonymes
+      if (connectedUser.isAnonymous) {
+        // Récupérer depuis AnonymousUser
+        const dbAnonymousUser = await this.prisma.anonymousUser.findUnique({
+          where: { id: userId },
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true
+          }
+        });
+
+        if (!dbAnonymousUser) {
+          console.warn('⚠️ [TYPING] Utilisateur anonyme non trouvé:', userId);
+          return;
+        }
+
+        // Construire le nom d'affichage pour anonyme
+        displayName = `${dbAnonymousUser.firstName || ''} ${dbAnonymousUser.lastName || ''}`.trim() ||
+                      dbAnonymousUser.username;
+      } else {
+        // Récupérer depuis User
+        const dbUser = await this.prisma.user.findUnique({
+          where: { id: userId },
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            displayName: true
+          }
+        });
+
+        if (!dbUser) {
+          console.warn('⚠️ [TYPING] Utilisateur non trouvé:', userId);
+          return;
+        }
+
+        // Construire le nom d'affichage
+        displayName = dbUser.displayName ||
+                     `${dbUser.firstName || ''} ${dbUser.lastName || ''}`.trim() ||
+                     dbUser.username;
+      }
 
       const typingEvent: TypingEvent = {
         userId: userId,
@@ -1669,12 +1707,12 @@ export class MeeshySocketIOManager {
       };
 
       const room = `conversation_${normalizedId}`;
-      
-      console.log(`⌨️ [TYPING] ${displayName} commence à taper dans ${room} (original: ${data.conversationId})`);
-      
+
+      console.log(`⌨️ [TYPING] ${displayName} ${connectedUser.isAnonymous ? '(anonyme)' : ''} commence à taper dans ${room} (original: ${data.conversationId})`);
+
       // Émettre vers tous les autres utilisateurs de la conversation (sauf l'émetteur)
       socket.to(room).emit(SERVER_EVENTS.TYPING_START, typingEvent);
-      
+
     } catch (error) {
       console.error('❌ [TYPING] Erreur handleTypingStart:', error);
     }
@@ -1690,28 +1728,60 @@ export class MeeshySocketIOManager {
     try {
       // Normaliser l'ID de conversation
       const normalizedId = await this.normalizeConversationId(data.conversationId);
-      
-      // Récupérer les informations utilisateur depuis la base de données
-      const dbUser = await this.prisma.user.findUnique({
-        where: { id: userId },
-        select: { 
-          id: true, 
-          username: true,
-          firstName: true,
-          lastName: true,
-          displayName: true
-        }
-      });
 
-      if (!dbUser) {
-        console.warn('⚠️ [TYPING] Utilisateur non trouvé:', userId);
+      // Récupérer l'utilisateur depuis connectedUsers (contient déjà isAnonymous)
+      const connectedUser = this.connectedUsers.get(userId);
+      if (!connectedUser) {
+        console.warn('⚠️ [TYPING] Utilisateur non connecté:', userId);
         return;
       }
 
-      // Construire le nom d'affichage
-      const displayName = dbUser.displayName || 
-                         `${dbUser.firstName || ''} ${dbUser.lastName || ''}`.trim() || 
-                         dbUser.username;
+      let displayName: string;
+
+      // FIXED: Gérer les utilisateurs anonymes
+      if (connectedUser.isAnonymous) {
+        // Récupérer depuis AnonymousUser
+        const dbAnonymousUser = await this.prisma.anonymousUser.findUnique({
+          where: { id: userId },
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true
+          }
+        });
+
+        if (!dbAnonymousUser) {
+          console.warn('⚠️ [TYPING] Utilisateur anonyme non trouvé:', userId);
+          return;
+        }
+
+        // Construire le nom d'affichage pour anonyme
+        displayName = `${dbAnonymousUser.firstName || ''} ${dbAnonymousUser.lastName || ''}`.trim() ||
+                      dbAnonymousUser.username;
+      } else {
+        // Récupérer depuis User
+        const dbUser = await this.prisma.user.findUnique({
+          where: { id: userId },
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            displayName: true
+          }
+        });
+
+        if (!dbUser) {
+          console.warn('⚠️ [TYPING] Utilisateur non trouvé:', userId);
+          return;
+        }
+
+        // Construire le nom d'affichage
+        displayName = dbUser.displayName ||
+                     `${dbUser.firstName || ''} ${dbUser.lastName || ''}`.trim() ||
+                     dbUser.username;
+      }
 
       const typingEvent: TypingEvent = {
         userId: userId,
@@ -1721,12 +1791,12 @@ export class MeeshySocketIOManager {
       };
 
       const room = `conversation_${normalizedId}`;
-      
-      console.log(`⌨️ [TYPING] ${displayName} arrête de taper dans ${room} (original: ${data.conversationId})`);
-      
+
+      console.log(`⌨️ [TYPING] ${displayName} ${connectedUser.isAnonymous ? '(anonyme)' : ''} arrête de taper dans ${room} (original: ${data.conversationId})`);
+
       // Émettre vers tous les autres utilisateurs de la conversation (sauf l'émetteur)
       socket.to(room).emit(SERVER_EVENTS.TYPING_STOP, typingEvent);
-      
+
     } catch (error) {
       console.error('❌ [TYPING] Erreur handleTypingStop:', error);
     }

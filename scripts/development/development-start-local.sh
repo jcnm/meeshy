@@ -15,6 +15,9 @@ NC='\033[0m' # No Color
 
 # Parse les arguments
 START_CONTAINERS=false
+USE_HTTPS=false
+LOCAL_IP=""
+LOCAL_DOMAIN=""
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -22,15 +25,47 @@ while [[ $# -gt 0 ]]; do
       START_CONTAINERS=true
       shift
       ;;
+    --https|--secure)
+      USE_HTTPS=true
+      shift
+      ;;
+    --ip)
+      LOCAL_IP="$2"
+      shift 2
+      ;;
+    --domain)
+      LOCAL_DOMAIN="$2"
+      shift 2
+      ;;
     -h|--help)
       echo "Usage: $0 [OPTIONS]"
       echo ""
       echo "Options:"
       echo "  --with-containers    Démarre aussi les conteneurs Docker (MongoDB, Redis)"
+      echo "  --https, --secure   Démarre le frontend en mode HTTPS (requis pour iOS Safari)"
+      echo "  --ip <IP>           Définit l'adresse IP locale (ex: 192.168.1.39)"
+      echo "  --domain <DOMAIN>   Définit le domaine local personnalisé (ex: app.localhost.home)"
       echo "  -h, --help          Affiche cette aide"
       echo ""
-      echo "Par défaut, seuls les services natifs (Node.js, Python) sont démarrés."
+      echo "Par défaut, seuls les services natifs (Node.js, Python) sont démarrés en HTTP."
       echo "Les conteneurs Docker doivent être déjà en cours d'exécution."
+      echo ""
+      echo "Configuration réseau:"
+      echo "  Variables d'environnement: LOCAL_IP et DOMAIN"
+      echo "  Peuvent être définies dans .env ou via les options --ip et --domain"
+      echo ""
+      echo "Mode HTTPS:"
+      echo "  Le mode HTTPS est nécessaire pour tester les appels vidéo sur iPhone Safari."
+      echo "  Vous devez d'abord générer des certificats SSL avec mkcert:"
+      echo "    cd frontend"
+      echo "    mkdir .cert"
+      echo "    mkcert -key-file .cert/localhost-key.pem -cert-file .cert/localhost.pem \\"
+      echo "           <VOTRE_IP> localhost local ::1 127.0.0.1 '*.localhost.home'"
+      echo ""
+      echo "Exemples:"
+      echo "  $0 --https --ip 192.168.1.39"
+      echo "  $0 --https --domain app.localhost.home"
+      echo "  $0 --https --ip 192.168.1.39 --domain app.localhost.home"
       echo ""
       echo "Pour démarrer les conteneurs manuellement:"
       echo "  docker-compose -f docker-compose.local.yml up -d"
@@ -49,16 +84,47 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 PROJECT_DIR="$PROJECT_ROOT"  # Alias pour compatibilité
 
+# Détecter l'IP locale automatiquement si non fournie
+if [ -z "$LOCAL_IP" ]; then
+  # Essayer de détecter l'IP locale automatiquement
+  if command -v ip &> /dev/null; then
+    # Linux
+    LOCAL_IP=$(ip route get 1 2>/dev/null | awk '{print $7; exit}')
+  elif command -v ifconfig &> /dev/null; then
+    # macOS / BSD
+    LOCAL_IP=$(ifconfig | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}' | head -n 1)
+  fi
+
+  # Si détection échouée, utiliser une valeur par défaut
+  if [ -z "$LOCAL_IP" ]; then
+    LOCAL_IP="192.168.1.39"
+  fi
+fi
+
+# Définir le domaine par défaut
+if [ -z "$LOCAL_DOMAIN" ]; then
+  LOCAL_DOMAIN="localhost"
+fi
+
 echo -e "${CYAN}════════════════════════════════════════════════════════════════${NC}"
 echo -e "${CYAN}🚀 MEESHY - DÉMARRAGE ENVIRONNEMENT DE DÉVELOPPEMENT LOCAL${NC}"
 echo -e "${CYAN}════════════════════════════════════════════════════════════════${NC}"
 echo ""
 if [ "$START_CONTAINERS" = true ]; then
-  echo -e "${YELLOW}   Mode: Services natifs + Conteneurs Docker${NC}"
+  echo -e "${YELLOW}   Infrastructure: Services natifs + Conteneurs Docker${NC}"
 else
-  echo -e "${YELLOW}   Mode: Services natifs uniquement${NC}"
+  echo -e "${YELLOW}   Infrastructure: Services natifs uniquement${NC}"
+fi
+if [ "$USE_HTTPS" = true ]; then
+  echo -e "${GREEN}   Protocole: HTTPS (Sécurisé - Compatible iOS Safari) 🔒${NC}"
+else
+  echo -e "${YELLOW}   Protocole: HTTP (Non sécurisé - Desktop uniquement)${NC}"
 fi
 echo -e "${BLUE}📁 Répertoire du projet: ${PROJECT_ROOT}${NC}"
+echo -e "${BLUE}🌐 IP locale détectée: ${LOCAL_IP}${NC}"
+if [ "$LOCAL_DOMAIN" != "localhost" ]; then
+  echo -e "${BLUE}🏠 Domaine personnalisé: ${LOCAL_DOMAIN}${NC}"
+fi
 echo ""
 
 cd "$PROJECT_ROOT"
@@ -228,11 +294,36 @@ echo ""
 # Créer les fichiers .env.local
 echo -e "${BLUE}📝 Configuration des variables d'environnement...${NC}"
 
+# Déterminer les URLs selon le mode HTTPS
+if [ "$USE_HTTPS" = true ]; then
+  FRONTEND_PROTOCOL="https"
+  FRONTEND_WS_PROTOCOL="wss"
+  FRONTEND_URL="https://${LOCAL_IP}:3100"
+  GATEWAY_PROTOCOL="https"
+  GATEWAY_URL="https://${LOCAL_IP}:3000"
+  GATEWAY_WS_URL="wss://${LOCAL_IP}:3000"
+  CORS_ORIGINS="https://${LOCAL_IP}:3100,https://${LOCAL_IP}:3000,https://${LOCAL_IP}:3100,https://${LOCAL_IP}:3000,https://127.0.0.1:3100,https://127.0.0.1:3000"
+  echo -e "${GREEN}   Mode HTTPS activé - URLs configurées pour HTTPS/WSS${NC}"
+else
+  FRONTEND_PROTOCOL="http"
+  FRONTEND_WS_PROTOCOL="ws"
+  FRONTEND_URL="http://${LOCAL_IP}:3100"
+  GATEWAY_PROTOCOL="http"
+  GATEWAY_URL="http://${LOCAL_IP}:3000"
+  GATEWAY_WS_URL="ws://${LOCAL_IP}:3000"
+  CORS_ORIGINS="http://localhost:3100,http://localhost:3000,http://${LOCAL_IP}:3100,http://${LOCAL_IP}:3000,http://127.0.0.1:3100,http://127.0.0.1:3000"
+fi
+
 # .env racine
-cat > .env << 'EOF'
+cat > .env << EOF
 # Configuration locale de développement
 NODE_ENV=development
 LOG_LEVEL=debug
+
+# Configuration réseau
+LOCAL_IP=${LOCAL_IP}
+DOMAIN=${LOCAL_DOMAIN}
+USE_HTTPS=${USE_HTTPS}
 
 # Base de données MongoDB (sans authentification pour développement local)
 DATABASE_URL=mongodb://localhost:27017/meeshy?replicaSet=rs0&directConnection=true
@@ -245,28 +336,32 @@ JWT_SECRET=dev-secret-key-change-in-production-12345678
 
 # Services URLs
 TRANSLATOR_URL=http://localhost:8000
-GATEWAY_URL=http://localhost:3000
-FRONTEND_URL=http://localhost:3100
-DOMAINE=localhost
+GATEWAY_URL=${GATEWAY_URL}
+FRONTEND_URL=${FRONTEND_URL}
+DOMAINE=${LOCAL_DOMAIN}
 # CORS
-CORS_ORIGINS=http://localhost:3100,http://localhost:3000
+CORS_ORIGINS=${CORS_ORIGINS}
 EOF
 echo -e "${GREEN}✅ .env créé${NC}"
 
 # .env Frontend
-cat > frontend/.env << 'EOF'
+cat > frontend/.env << EOF
 NODE_ENV=development
 
+# Configuration réseau
+LOCAL_IP=${LOCAL_IP}
+DOMAIN=${LOCAL_DOMAIN}
+
 # Public URLs (accessibles côté client)
-NEXT_PUBLIC_API_URL=http://localhost:3000
-NEXT_PUBLIC_WS_URL=ws://localhost:3000
-NEXT_PUBLIC_BACKEND_URL=http://localhost:3000
+NEXT_PUBLIC_API_URL=${GATEWAY_URL}
+NEXT_PUBLIC_WS_URL=${GATEWAY_WS_URL}
+NEXT_PUBLIC_BACKEND_URL=${GATEWAY_URL}
 NEXT_PUBLIC_TRANSLATION_URL=http://localhost:8000
-NEXT_PUBLIC_FRONTEND_URL=http://localhost:3100
+NEXT_PUBLIC_FRONTEND_URL=${FRONTEND_URL}
 
 # Server-side URLs
-API_URL=http://localhost:3000
-BACKEND_URL=http://localhost:3000
+API_URL=${GATEWAY_URL}
+BACKEND_URL=${GATEWAY_URL}
 TRANSLATION_URL=http://localhost:8000
 
 # Base de données MongoDB (sans authentification pour développement local)
@@ -275,9 +370,14 @@ EOF
 echo -e "${GREEN}✅ frontend/.env créé${NC}"
 
 # .env Gateway
-cat > gateway/.env << 'EOF'
+cat > gateway/.env << EOF
 NODE_ENV=development
 LOG_LEVEL=debug
+
+# HTTPS Configuration
+USE_HTTPS=${USE_HTTPS}
+LOCAL_IP=${LOCAL_IP}
+DOMAIN=${DOMAIN}
 
 # Base de données (sans authentification pour développement local)
 DATABASE_URL=mongodb://localhost:27017/meeshy?replicaSet=rs0&directConnection=true
@@ -302,7 +402,7 @@ PORT=3000
 HOST=0.0.0.0
 
 # CORS
-CORS_ORIGINS=http://localhost:3100,http://localhost:3000
+CORS_ORIGINS=${CORS_ORIGINS}
 EOF
 echo -e "${GREEN}✅ gateway/.env créé${NC}"
 
@@ -452,10 +552,31 @@ sleep 5
 
 # 3. Démarrer le Frontend
 echo -e "${CYAN}═══════════════════════════════════════${NC}"
-echo -e "${CYAN}🎨 Démarrage du Frontend (Port 3100)${NC}"
+if [ "$USE_HTTPS" = true ]; then
+  echo -e "${CYAN}🎨 Démarrage du Frontend HTTPS (Port 3100)${NC}"
+  echo -e "${CYAN}   🔒 Mode sécurisé activé${NC}"
+
+  # Vérifier que les certificats existent
+  if [ ! -f "frontend/.cert/localhost-key.pem" ] || [ ! -f "frontend/.cert/localhost.pem" ]; then
+    echo -e "${RED}❌ Certificats SSL non trouvés !${NC}"
+    echo -e "${YELLOW}   Générez-les avec mkcert:${NC}"
+    echo -e "${BLUE}   cd frontend${NC}"
+    echo -e "${BLUE}   mkdir -p .cert${NC}"
+    echo -e "${BLUE}   mkcert -key-file .cert/localhost-key.pem -cert-file .cert/localhost.pem \\${NC}"
+    echo -e "${BLUE}          192.168.10.1 localhost local ::1 127.0.0.1 '*.localhost.home'${NC}"
+    exit 1
+  fi
+  echo -e "${GREEN}   ✅ Certificats SSL trouvés${NC}"
+else
+  echo -e "${CYAN}🎨 Démarrage du Frontend HTTP (Port 3100)${NC}"
+fi
 echo -e "${CYAN}═══════════════════════════════════════${NC}"
 cd frontend
-pnpm run dev > frontend.log 2>&1 &
+if [ "$USE_HTTPS" = true ]; then
+  pnpm run dev:https > frontend.log 2>&1 &
+else
+  pnpm run dev > frontend.log 2>&1 &
+fi
 FRONTEND_PID=$!
 cd ..
 echo -e "${GREEN}✅ Frontend démarré (PID: $FRONTEND_PID)${NC}"
@@ -471,7 +592,21 @@ echo ""
 echo -e "${CYAN}📊 INFORMATIONS DES SERVICES${NC}"
 echo -e "${CYAN}════════════════════════════════════════════════════════════${NC}"
 echo ""
-echo -e "${PURPLE}🌐 Frontend:${NC}     ${BLUE}http://localhost:3100${NC}"
+if [ "$USE_HTTPS" = true ]; then
+  echo -e "${PURPLE}🌐 Frontend:${NC}     ${GREEN}https://localhost:3100 🔒${NC}"
+  echo -e "${PURPLE}   📱 Network:${NC}   ${GREEN}https://${LOCAL_IP}:3100${NC}"
+  if [ "$LOCAL_DOMAIN" != "localhost" ]; then
+    echo -e "${PURPLE}   🏠 Domain:${NC}    ${GREEN}https://${LOCAL_DOMAIN}:3100${NC}"
+  fi
+  echo -e "${GREEN}   Mode HTTPS activé - Compatible iOS Safari !${NC}"
+else
+  echo -e "${PURPLE}🌐 Frontend:${NC}     ${BLUE}http://localhost:3100${NC}"
+  echo -e "${PURPLE}   📱 Network:${NC}   ${BLUE}http://${LOCAL_IP}:3100${NC}"
+  if [ "$LOCAL_DOMAIN" != "localhost" ]; then
+    echo -e "${PURPLE}   🏠 Domain:${NC}    ${BLUE}http://${LOCAL_DOMAIN}:3100${NC}"
+  fi
+  echo -e "${YELLOW}   ⚠️  HTTP uniquement - getUserMedia ne fonctionnera pas sur iOS${NC}"
+fi
 echo -e "${PURPLE}🚀 Gateway API:${NC}  ${BLUE}http://localhost:3000${NC}"
 echo -e "${PURPLE}🔤 Translator:${NC}   ${BLUE}http://localhost:8000${NC}"
 echo -e "${PURPLE}🗄️  MongoDB:${NC}     ${BLUE}mongodb://localhost:27017${NC}"

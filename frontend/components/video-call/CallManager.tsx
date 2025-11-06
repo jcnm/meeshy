@@ -64,10 +64,18 @@ export function CallManager() {
 
     // Start new timeout
     callTimeoutRef.current = setTimeout(() => {
-      const { currentCall } = useCallStore.getState();
+      const { currentCall, isInCall } = useCallStore.getState();
 
-      // Only cleanup if call is still in 'initiated' state (no one joined)
-      if (currentCall?.id === callId && currentCall?.status === 'initiated') {
+      // Only cleanup if:
+      // 1. Still in a call
+      // 2. Same call ID
+      // 3. Call is still in 'initiated' state (no one joined)
+      if (!isInCall || !currentCall || currentCall.id !== callId) {
+        logger.debug('[CallManager]', 'Call already ended, skipping timeout cleanup');
+        return;
+      }
+
+      if (currentCall.status === 'initiated') {
         logger.warn('[CallManager]', `Call timeout - no answer after ${CALL_TIMEOUT_MS/1000}s`);
 
         // Emit leave event to server
@@ -187,14 +195,29 @@ export function CallManager() {
    */
   const handleParticipantLeft = useCallback(
     (event: CallParticipantLeftEvent) => {
-      logger.info('[CallManager]', 'Participant left - callId: ' + event.callId + ', participantId: ' + event.participantId);
+      console.log('📞 [CallManager] 🚨 PARTICIPANT LEFT EVENT RECEIVED 🚨', event);
+      logger.info('[CallManager]', 'Participant left - callId: ' + event.callId + ', participantId: ' + event.participantId, {
+        userId: event.userId,
+        anonymousId: event.anonymousId,
+        mode: event.mode
+      });
 
-      // Remove participant from call
+      // Use userId for WebRTC cleanup (peer connections and streams are tracked by userId)
+      const userIdForCleanup = event.userId || event.anonymousId;
+
+      console.log('🔍 [CallManager] User ID for cleanup:', userIdForCleanup);
+
+      if (userIdForCleanup) {
+        console.log('🧹 [CallManager] Removing remote stream and peer connection for:', userIdForCleanup);
+        // Remove their stream and peer connection (tracked by userId)
+        removeRemoteStream(userIdForCleanup);
+        removePeerConnection(userIdForCleanup);
+      } else {
+        console.warn('⚠️ [CallManager] No userId or anonymousId for cleanup!', event);
+      }
+
+      // Remove participant from call (tracked by database participantId)
       removeParticipant(event.participantId);
-
-      // Remove their stream and peer connection
-      removeRemoteStream(event.participantId);
-      removePeerConnection(event.participantId);
 
       toast.info('Participant left the call');
     },
@@ -249,6 +272,15 @@ export function CallManager() {
   const handleCallError = useCallback((error: CallError) => {
     // Defensive: handle cases where error might not have proper structure
     const errorMessage = error?.message || String(error) || 'Call error occurred';
+
+    // Ignore "You are not in this call" error - it's a normal state after leaving
+    // This happens when events arrive after user has already left the call
+    if (errorMessage.includes('You are not in this call') ||
+        errorMessage.includes('not in this call')) {
+      logger.debug('[CallManager]', 'Ignoring expected error after leaving call: ' + errorMessage);
+      return;
+    }
+
     logger.error('[CallManager]', 'Call error: ' + errorMessage, { error });
     toast.error(errorMessage);
   }, []);
@@ -346,6 +378,7 @@ export function CallManager() {
   useEffect(() => {
     let isSubscribed = true;
     let checkInterval: NodeJS.Timeout;
+    let debugListenerRef: ((eventName: string, ...args: any[]) => void) | null = null;
 
     const setupListeners = () => {
       // Wait for user to be loaded before setting up listeners
@@ -383,6 +416,14 @@ export function CallManager() {
       (socket as any).off('call:media-toggled', handleMediaToggle);
       (socket as any).off('call:error', handleCallError);
 
+      // DEBUG: Add catch-all listener to see ALL socket events
+      debugListenerRef = (eventName: string, ...args: any[]) => {
+        if (eventName.startsWith('call:')) {
+          console.log(`🔔 [CallManager] Socket event received: ${eventName}`, args);
+        }
+      };
+      (socket as any).onAny(debugListenerRef);
+
       // Listen for call events
       (socket as any).on('call:initiated', handleIncomingCall);
       (socket as any).on('call:participant-joined', handleParticipantJoined);
@@ -391,8 +432,15 @@ export function CallManager() {
       (socket as any).on('call:media-toggled', handleMediaToggle);
       (socket as any).on('call:error', handleCallError);
 
-      console.log('✅ [CallManager] All call listeners registered');
-      logger.info('[CallManager]', '✅ All call listeners registered');
+      console.log('✅ [CallManager] All call listeners registered', {
+        socketId: socket.id,
+        userId: user.id,
+        listenersRegistered: true
+      });
+      logger.info('[CallManager]', '✅ All call listeners registered', {
+        socketId: socket.id,
+        userId: user.id
+      });
 
       return true;
     };
@@ -419,6 +467,9 @@ export function CallManager() {
       const socket = meeshySocketIOService.getSocket();
       if (socket) {
         logger.debug('[CallManager]', 'Cleaning up Socket.IO listeners');
+        if (debugListenerRef) {
+          (socket as any).offAny(debugListenerRef);
+        }
         (socket as any).off('call:initiated', handleIncomingCall);
         (socket as any).off('call:participant-joined', handleParticipantJoined);
         (socket as any).off('call:participant-left', handleParticipantLeft);
