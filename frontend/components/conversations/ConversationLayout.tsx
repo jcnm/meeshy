@@ -98,6 +98,49 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   // États modaux et UI
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
+  // Resize handler for conversation list (desktop only)
+  const [conversationListWidth, setConversationListWidth] = useState(() => {
+    if (typeof window === 'undefined') return 384; // Default 96*4 (lg:w-96)
+    const saved = localStorage.getItem('conversationListWidth');
+    return saved ? parseInt(saved, 10) : 384;
+  });
+  const [isResizing, setIsResizing] = useState(false);
+  const resizeRef = useRef<HTMLDivElement>(null);
+
+  // Save width to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('conversationListWidth', conversationListWidth.toString());
+  }, [conversationListWidth]);
+
+  // Handle resize
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isResizing) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const newWidth = e.clientX;
+      // Constrain between 280px (min) and 600px (max)
+      const constrainedWidth = Math.max(280, Math.min(600, newWidth));
+      setConversationListWidth(constrainedWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing]);
   const [isMobile, setIsMobile] = useState(false);
   const [showConversationList, setShowConversationList] = useState(true);
   const [newMessage, setNewMessage] = useState('');
@@ -1486,19 +1529,22 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
             >
         {/* Liste des conversations - Sidebar gauche - Toujours visible en desktop, masquée en mobile si conversation sélectionnée */}
         {(!isMobile || !selectedConversationId) && (
-          <aside 
-            className={cn(
-              "flex-shrink-0 bg-white dark:bg-gray-950 border-r-2 border-gray-200 dark:border-gray-800 transition-all duration-300 shadow-lg",
-              isMobile ? (
-                showConversationList 
-                  ? "fixed top-16 left-0 right-0 bottom-0 z-40 w-full" 
-                  : "hidden"
-              ) : "relative w-80 lg:w-96 h-full"
-            )}
-            role="complementary"
-            aria-label={t('conversationLayout.conversationsList')}
-          >
-          <ConversationList
+          <>
+            <aside
+              ref={resizeRef}
+              style={!isMobile ? { width: `${conversationListWidth}px` } : undefined}
+              className={cn(
+                "flex-shrink-0 bg-white dark:bg-gray-950 border-r-2 border-gray-200 dark:border-gray-800 shadow-lg",
+                isMobile ? (
+                  showConversationList
+                    ? "fixed top-16 left-0 right-0 bottom-0 z-40 w-full"
+                    : "hidden"
+                ) : "relative h-full"
+              )}
+              role="complementary"
+              aria-label={t('conversationLayout.conversationsList')}
+            >
+            <ConversationList
             conversations={conversations}
             selectedConversation={selectedConversation}
             currentUser={user}
@@ -1515,6 +1561,29 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
             tSearch={(key: string) => t(`search.${key}`)}
           />
           </aside>
+
+          {/* Resize handle - Desktop only */}
+          {!isMobile && (
+            <div
+              onMouseDown={handleMouseDown}
+              className={cn(
+                "w-1 hover:w-2 bg-transparent hover:bg-primary/20 cursor-col-resize transition-all relative group",
+                isResizing && "w-2 bg-primary/30"
+              )}
+              style={{
+                userSelect: 'none',
+                touchAction: 'none',
+              }}
+            >
+              <div className="absolute inset-y-0 -left-1 -right-1" />
+              {/* Visual indicator */}
+              <div className={cn(
+                "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-8 rounded-full bg-muted-foreground/20 opacity-0 group-hover:opacity-100 transition-opacity",
+                isResizing && "opacity-100 bg-primary/50"
+              )} />
+            </div>
+          )}
+          </>
         )}
 
         {/* Zone de conversation principale - Desktop uniquement */}

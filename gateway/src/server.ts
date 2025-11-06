@@ -40,6 +40,7 @@ import { reportRoutes } from './routes/admin/reports';
 // import { messagesAdminRoutes } from './routes/admin/messages';
 import { userRoutes } from './routes/users';
 import userPreferencesRoutes from './routes/user-preferences';
+import conversationPreferencesRoutes from './routes/conversation-preferences';
 import { translationRoutes } from './routes/translation-non-blocking';
 import { translationRoutes as translationBlockingRoutes } from './routes/translation';
 import { maintenanceRoutes } from './routes/maintenance';
@@ -608,7 +609,10 @@ class MeeshyServer {
     
     // Register user preferences routes with /api prefix
     await this.server.register(userPreferencesRoutes, { prefix: '/api' });
-    
+
+    // Register conversation preferences routes with /api prefix
+    await this.server.register(conversationPreferencesRoutes, { prefix: '/api' });
+
     // Register affiliate routes
     await this.server.register(affiliateRoutes, { prefix: '/api' });
 

@@ -79,6 +79,8 @@ model User {
   trackingLinkClicks          TrackingLinkClick[]      @relation("TrackingLinkClickUser")
   initiatedCalls              CallSession[]            @relation("CallInitiator")
   callParticipations          CallParticipant[]        @relation("CallParticipants")
+  conversationPrefs           UserConversationPreferences[]
+  conversationCategories      UserConversationCategory[]
 }
 
 /// Conversation entre utilisateurs (direct, group, public, global)
@@ -107,6 +109,7 @@ model Conversation {
   messages              Message[]
   typingIndicators      TypingIndicator[]
   callSessions          CallSession[]
+  userPreferences       UserConversationPreferences[]
 }
 
 /// Appartenance d'un utilisateur à une conversation
@@ -777,4 +780,79 @@ enum ParticipantRole {
 enum TranscriptionSource {
   client  // Client-side (Web Speech API or Whisper.js)
   server  // Server-side (faster-whisper)
+}
+
+/// User-specific conversation preferences (personal settings per conversation)
+model UserConversationPreferences {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String    @db.ObjectId
+  conversationId    String    @db.ObjectId
+
+  /// Pin conversation to top
+  isPinned          Boolean   @default(false)
+
+  /// Mute notifications for this conversation
+  isMuted           Boolean   @default(false)
+
+  /// Archive conversation (hide from main list)
+  isArchived        Boolean   @default(false)
+
+  /// Personal tags for this conversation
+  tags              String[]  @default([])
+
+  /// Assigned category ID
+  categoryId        String?   @db.ObjectId
+
+  /// Order within category (for manual sorting)
+  orderInCategory   Int?
+
+  /// Custom display name override
+  customName        String?
+
+  /// Emoji reaction on conversation
+  reaction          String?
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation      Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  category          UserConversationCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, conversationId])
+  @@index([userId])
+  @@index([conversationId])
+  @@index([categoryId])
+  @@map("user_conversation_preferences")
+}
+
+/// User-defined categories for organizing conversations
+model UserConversationCategory {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String    @db.ObjectId
+
+  /// Category name
+  name        String
+
+  /// Color hex code (optional)
+  color       String?
+
+  /// Icon name/emoji (optional)
+  icon        String?
+
+  /// Display order
+  order       Int       @default(0)
+
+  /// Accordion expanded state
+  isExpanded  Boolean   @default(true)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversations UserConversationPreferences[]
+
+  @@index([userId])
+  @@index([userId, order])
+  @@map("user_conversation_categories")
 }
