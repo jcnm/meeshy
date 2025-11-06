@@ -1135,30 +1135,36 @@ export class MeeshySocketIOManager {
 
   private async _joinUserConversations(socket: any, userId: string, isAnonymous: boolean) {
     try {
+      console.log(`📊 [JOIN_CONVERSATIONS] Début pour userId: ${userId} (anonyme: ${isAnonymous})`);
+
       let conversations: any[] = [];
-      
+
       if (isAnonymous) {
         // Conversations pour participants anonymes
         conversations = await this.prisma.anonymousParticipant.findMany({
           where: { id: userId },
           select: { conversationId: true }
         });
+        console.log(`📊 [JOIN_CONVERSATIONS] Trouvé ${conversations.length} conversations pour utilisateur anonyme ${userId}`);
       } else {
         // Conversations pour utilisateurs authentifiés
         conversations = await this.prisma.conversationMember.findMany({
           where: { userId: userId, isActive: true },
           select: { conversationId: true }
         });
+        console.log(`📊 [JOIN_CONVERSATIONS] Trouvé ${conversations.length} conversations pour utilisateur ${userId}`);
       }
-      
+
       // Rejoindre les rooms Socket.IO
       for (const conv of conversations) {
         socket.join(`conversation_${conv.conversationId}`);
-        console.log(`👥 Utilisateur ${userId} rejoint conversation ${conv.conversationId}`);
+        console.log(`👥 [JOIN_CONVERSATIONS] Utilisateur ${userId} rejoint conversation_${conv.conversationId}`);
       }
-      
+
+      console.log(`✅ [JOIN_CONVERSATIONS] Terminé - ${conversations.length} rooms rejointes pour ${userId}`);
+
     } catch (error) {
-      console.error(`❌ Erreur jointure conversations: ${error}`);
+      console.error(`❌ [JOIN_CONVERSATIONS] Erreur jointure conversations pour ${userId}:`, error);
     }
   }
 

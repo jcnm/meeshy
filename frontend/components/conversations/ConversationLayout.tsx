@@ -310,7 +310,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       removeMessage(messageId);
       toast.info(tCommon('messages.messageDeletedByOther'));
     }, [removeMessage, tCommon]),
-    onNewMessage: useCallback((message: any) => {
+    onNewMessage: useCallback(async (message: any) => {
       // Utiliser la ref au lieu de selectedConversation?.id
       const currentConvId = selectedConversationIdRef.current;
 
@@ -337,8 +337,16 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         const conversationIndex = prevConversations.findIndex(c => c.id === message.conversationId);
 
         if (conversationIndex === -1) {
-          // Conversation non trouvée dans la liste, ne rien faire
-          console.log(`[ConversationLayout-${instanceId}] Conversation ${message.conversationId} non trouvée dans la liste`);
+          // Conversation non trouvée dans la liste
+          console.log(`[ConversationLayout-${instanceId}] ⚠️ Conversation ${message.conversationId} non trouvée dans la liste - refresh nécessaire`);
+
+          // Déclencher un refresh asynchrone de la liste pour inclure cette conversation
+          // Utiliser setTimeout pour ne pas bloquer le traitement du message
+          setTimeout(() => {
+            console.log(`[ConversationLayout-${instanceId}] 🔄 Rafraîchissement de la liste des conversations...`);
+            refreshConversations();
+          }, 100);
+
           return prevConversations;
         }
 
@@ -346,6 +354,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         const updatedConversation = {
           ...prevConversations[conversationIndex],
           lastMessage: message,
+          lastMessageAt: message.createdAt || new Date(),
           lastActivityAt: message.createdAt || new Date()
         };
 
@@ -372,7 +381,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       } else {
         console.log(`[ConversationLayout-${instanceId}] Message ignoré pour la vue (autre conversation)`);
       }
-    }, [addMessage, instanceId, setConversations]),
+    }, [addMessage, instanceId, setConversations, refreshConversations]),
     onTranslation: useCallback((messageId: string, translations: any[]) => {
       console.log('🌐 [ConversationLayoutV2] Traductions reçues pour message:', messageId, translations);
       
