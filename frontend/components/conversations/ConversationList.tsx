@@ -8,9 +8,10 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import type { Conversation, SocketIOUser as User } from '@shared/types';
-import type { UserConversationPreferences } from '@/types/user-preferences';
+import type { UserConversationPreferences, UserConversationCategory } from '@/types/user-preferences';
 import { CreateLinkButton } from './create-link-button';
 import { userPreferencesService } from '@/services/user-preferences.service';
+import { CommunityCarousel, type CommunityFilter } from './CommunityCarousel';
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -223,10 +224,29 @@ export function ConversationList({
   const [searchQuery, setSearchQuery] = useState('');
   const [preferencesMap, setPreferencesMap] = useState<Map<string, UserConversationPreferences>>(new Map());
   const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
+  const [categories, setCategories] = useState<UserConversationCategory[]>([]);
+  const [selectedFilter, setSelectedFilter] = useState<CommunityFilter>({ type: 'all' });
 
   // Référence pour le scroll container
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
+
+  // Charger les catégories utilisateur
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const cats = await userPreferencesService.getCategories();
+        const sortedCats = cats.sort((a, b) => {
+          if (a.order !== b.order) return a.order - b.order;
+          return a.name.localeCompare(b.name);
+        });
+        setCategories(sortedCats);
+      } catch (error) {
+        console.error('Error loading categories:', error);
+      }
+    };
+    loadCategories();
+  }, []);
 
   // Charger les préférences utilisateur pour toutes les conversations
   useEffect(() => {
@@ -255,17 +275,38 @@ export function ConversationList({
 
   // Filtrage et tri des conversations - épinglées en haut
   const filteredConversations = useMemo(() => {
-    const filtered = conversations.filter(conv => {
-      if (!searchQuery) return true;
-      const title = conv.title || '';
-      const lastMessage = conv.lastMessage?.content || '';
-      const query = searchQuery.toLowerCase();
+    // Filtrer selon le filtre sélectionné (all/category/archived)
+    let filtered = conversations.filter(conv => {
+      const prefs = preferencesMap.get(conv.id);
+      const isArchived = prefs?.isArchived || false;
 
-      // Search in title and last message
-      // TODO: Add search by user-specific tags from preferences
-      return title.toLowerCase().includes(query) ||
-             lastMessage.toLowerCase().includes(query);
+      // Filtrer selon le type de filtre
+      if (selectedFilter.type === 'all') {
+        // "All" affiche toutes les conversations sauf archivées
+        return !isArchived;
+      } else if (selectedFilter.type === 'archived') {
+        // "Archived" affiche uniquement les archivées
+        return isArchived;
+      } else if (selectedFilter.type === 'category') {
+        // Filtrer par catégorie, exclure les archivées
+        return !isArchived && prefs?.categoryId === selectedFilter.categoryId;
+      }
+      return true;
     });
+
+    // Filtrer par recherche
+    if (searchQuery) {
+      filtered = filtered.filter(conv => {
+        const title = conv.title || '';
+        const lastMessage = conv.lastMessage?.content || '';
+        const query = searchQuery.toLowerCase();
+
+        // Search in title and last message
+        // TODO: Add search by user-specific tags from preferences
+        return title.toLowerCase().includes(query) ||
+               lastMessage.toLowerCase().includes(query);
+      });
+    }
 
     // Trier les conversations : épinglées en haut, puis par ordre de dernier message
     const sorted = filtered.sort((a, b) => {
@@ -288,11 +329,13 @@ export function ConversationList({
       total: conversations.length,
       filtered: sorted.length,
       searchQuery,
-      pinnedCount: sorted.filter(c => preferencesMap.get(c.id)?.isPinned).length
+      selectedFilter,
+      pinnedCount: sorted.filter(c => preferencesMap.get(c.id)?.isPinned).length,
+      archivedCount: conversations.filter(c => preferencesMap.get(c.id)?.isArchived).length
     });
 
     return sorted;
-  }, [conversations, searchQuery, preferencesMap]);
+  }, [conversations, searchQuery, preferencesMap, selectedFilter]);
   
   // Détection du scroll infini avec Intersection Observer
   useEffect(() => {
@@ -368,6 +411,16 @@ export function ConversationList({
           />
         </div>
       </div>
+
+      {/* Community Carousel */}
+      <CommunityCarousel
+        conversations={conversations}
+        categories={categories}
+        selectedFilter={selectedFilter}
+        onFilterChange={setSelectedFilter}
+        t={(key: string) => t(key)}
+        preferencesMap={preferencesMap}
+      />
 
       {/* Contenu scrollable */}
       <div className="flex-1 min-h-0 overflow-y-auto">

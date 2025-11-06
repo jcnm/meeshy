@@ -129,18 +129,33 @@ export function ConversationHeader({
       try {
         setIsLoadingPreferences(true);
         const prefs = await userPreferencesService.getPreferences(conversation.id);
+        console.log('[ConversationHeader] Loaded preferences:', { conversationId: conversation.id, prefs });
         if (prefs) {
           setIsPinned(prefs.isPinned);
           setIsMuted(prefs.isMuted);
           setIsArchived(prefs.isArchived);
+        } else {
+          // Réinitialiser à false si pas de préférences
+          setIsPinned(false);
+          setIsMuted(false);
+          setIsArchived(false);
         }
       } catch (error) {
         console.error('Error loading preferences:', error);
+        // En cas d'erreur, réinitialiser
+        setIsPinned(false);
+        setIsMuted(false);
+        setIsArchived(false);
       } finally {
         setIsLoadingPreferences(false);
       }
     };
     loadPreferences();
+
+    // Recharger les préférences toutes les 2 secondes pour refléter les changements
+    const intervalId = setInterval(loadPreferences, 2000);
+
+    return () => clearInterval(intervalId);
   }, [conversation.id]);
 
   // Helper pour obtenir le rôle de l'utilisateur
