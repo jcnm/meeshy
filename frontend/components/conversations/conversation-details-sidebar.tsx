@@ -60,6 +60,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 // Tags Manager Component (User-specific) - Improved UX with autocomplete
 interface TagsManagerProps {
@@ -73,7 +82,7 @@ function TagsManager({ conversationId, onTagsUpdated }: TagsManagerProps) {
   const [allUserTags, setAllUserTags] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Load user's tags for this conversation AND all user tags
   useEffect(() => {
@@ -115,7 +124,7 @@ function TagsManager({ conversationId, onTagsUpdated }: TagsManagerProps) {
       const updatedTags = [...localTags, trimmedTag];
       setLocalTags(updatedTags);
       setSearchQuery('');
-      setIsPopoverOpen(false);
+      setIsDropdownOpen(false);
 
       // Update preferences
       await userPreferencesService.updateTags(conversationId, updatedTags);
@@ -198,9 +207,9 @@ function TagsManager({ conversationId, onTagsUpdated }: TagsManagerProps) {
         )}
       </div>
 
-      {/* Search/Add tag with autocomplete */}
-      <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-        <PopoverTrigger asChild>
+      {/* Search/Add tag with dropdown */}
+      <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+        <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
             size="sm"
@@ -209,8 +218,8 @@ function TagsManager({ conversationId, onTagsUpdated }: TagsManagerProps) {
             <TagIcon className="h-4 w-4 mr-2" />
             <span className="text-muted-foreground">{t('conversationDetails.searchOrAddTag')}</span>
           </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-full p-0" align="start">
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-[300px] p-0" align="start">
           <Command>
             <CommandInput
               placeholder={t('conversationDetails.searchTag')}
@@ -231,7 +240,9 @@ function TagsManager({ conversationId, onTagsUpdated }: TagsManagerProps) {
                     </Button>
                   </div>
                 ) : (
-                  t('conversationDetails.noTagsFound')
+                  <div className="p-2 text-sm text-muted-foreground text-center">
+                    {t('conversationDetails.noTagsFound')}
+                  </div>
                 )}
               </CommandEmpty>
               <CommandGroup heading={t('conversationDetails.availableTags')}>
@@ -260,8 +271,8 @@ function TagsManager({ conversationId, onTagsUpdated }: TagsManagerProps) {
               </CommandGroup>
             </CommandList>
           </Command>
-        </PopoverContent>
-      </Popover>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }
@@ -278,7 +289,7 @@ function CategorySelector({ conversationId, onCategoryUpdated }: CategorySelecto
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Load categories and current selection
   useEffect(() => {
@@ -307,7 +318,7 @@ function CategorySelector({ conversationId, onCategoryUpdated }: CategorySelecto
     try {
       setSelectedCategoryId(categoryId);
       setSearchQuery('');
-      setIsPopoverOpen(false);
+      setIsDropdownOpen(false);
 
       await userPreferencesService.updateCategory(conversationId, categoryId);
       toast.success(t(categoryId ? 'conversationDetails.categoryAssigned' : 'conversationDetails.categoryRemoved'));
@@ -365,9 +376,9 @@ function CategorySelector({ conversationId, onCategoryUpdated }: CategorySelecto
         </div>
       )}
 
-      {/* Select/Create category with autocomplete */}
-      <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-        <PopoverTrigger asChild>
+      {/* Select/Create category with dropdown */}
+      <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+        <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
             size="sm"
@@ -378,8 +389,8 @@ function CategorySelector({ conversationId, onCategoryUpdated }: CategorySelecto
               {t(selectedCategory ? 'conversationDetails.changeCategory' : 'conversationDetails.assignToCategory')}
             </span>
           </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-full p-0" align="start">
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-[300px] p-0" align="start">
           <Command>
             <CommandInput
               placeholder={t('conversationDetails.searchCategory')}
@@ -400,7 +411,9 @@ function CategorySelector({ conversationId, onCategoryUpdated }: CategorySelecto
                     </Button>
                   </div>
                 ) : (
-                  t('conversationDetails.noCategoryFound')
+                  <div className="p-2 text-sm text-muted-foreground text-center">
+                    {t('conversationDetails.noCategoryFound')}
+                  </div>
                 )}
               </CommandEmpty>
               <CommandGroup heading={t('conversationDetails.availableCategories')}>
@@ -426,8 +439,8 @@ function CategorySelector({ conversationId, onCategoryUpdated }: CategorySelecto
               </CommandGroup>
             </CommandList>
           </Command>
-        </PopoverContent>
-      </Popover>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }
