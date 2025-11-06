@@ -11,6 +11,11 @@ import { Attachment, formatFileSize, getAttachmentType } from '../../shared/type
 import { SimpleAudioPlayer } from '@/components/audio/SimpleAudioPlayer';
 import { VideoPlayer } from '@/components/video/VideoPlayer';
 import { VideoLightbox } from '@/components/video/VideoLightbox';
+import { PDFViewer } from '@/components/pdf/PDFViewer';
+import { PDFLightbox } from '@/components/pdf/PDFLightbox';
+import { MarkdownViewer } from '@/components/markdown/MarkdownViewer';
+import { TextViewer } from '@/components/text/TextViewer';
+import { TextLightbox } from '@/components/text/TextLightbox';
 import {
   Tooltip,
   TooltipContent,
@@ -68,6 +73,10 @@ export const MessageAttachments = React.memo(function MessageAttachments({
   const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
   const [videoLightboxOpen, setVideoLightboxOpen] = useState(false);
   const [videoLightboxIndex, setVideoLightboxIndex] = useState(0);
+  const [pdfLightboxOpen, setPdfLightboxOpen] = useState(false);
+  const [pdfLightboxIndex, setPdfLightboxIndex] = useState(0);
+  const [textLightboxOpen, setTextLightboxOpen] = useState(false);
+  const [textLightboxIndex, setTextLightboxIndex] = useState(0);
   const { t } = useI18n('common');
 
   // Handler pour ouvrir la confirmation de suppression
@@ -113,13 +122,31 @@ export const MessageAttachments = React.memo(function MessageAttachments({
 
   if (!attachments || attachments.length === 0) return null;
 
-  // Séparer les images, vidéos, audios et autres types
+  // Séparer les images, vidéos, audios, PDFs, markdown, texte et autres types
   const imageAttachments = attachments.filter(att => getAttachmentType(att.mimeType) === 'image');
   const videoAttachments = attachments.filter(att => getAttachmentType(att.mimeType) === 'video');
   const audioAttachments = attachments.filter(att => getAttachmentType(att.mimeType) === 'audio');
+  const pdfAttachments = attachments.filter(att => att.mimeType === 'application/pdf');
+  const markdownAttachments = attachments.filter(att =>
+    att.mimeType === 'text/markdown' ||
+    att.mimeType === 'text/x-markdown' ||
+    att.originalName.toLowerCase().endsWith('.md')
+  );
+  const textAttachments = attachments.filter(att => {
+    const type = getAttachmentType(att.mimeType);
+    return (type === 'text' || type === 'code') &&
+           att.mimeType !== 'text/markdown' &&
+           att.mimeType !== 'text/x-markdown' &&
+           !att.originalName.toLowerCase().endsWith('.md');
+  });
   const otherAttachments = attachments.filter(att => {
     const type = getAttachmentType(att.mimeType);
-    return type !== 'image' && type !== 'video' && type !== 'audio';
+    const isPdf = att.mimeType === 'application/pdf';
+    const isMarkdown = att.mimeType === 'text/markdown' ||
+                      att.mimeType === 'text/x-markdown' ||
+                      att.originalName.toLowerCase().endsWith('.md');
+    const isText = (type === 'text' || type === 'code') && !isMarkdown;
+    return type !== 'image' && type !== 'video' && type !== 'audio' && !isPdf && !isMarkdown && !isText;
   });
 
   // Seuil pour passer en mode multi-lignes : 10+ attachments
@@ -361,6 +388,144 @@ export const MessageAttachments = React.memo(function MessageAttachments({
       );
     }
 
+    // PDF attachment - lecteur PDF intégré
+    if (attachment.mimeType === 'application/pdf') {
+      // Handler pour ouvrir le lightbox PDF
+      const handleOpenPdfLightbox = () => {
+        const pdfIndex = pdfAttachments.findIndex(pdf => pdf.id === attachment.id);
+        setPdfLightboxIndex(pdfIndex);
+        setPdfLightboxOpen(true);
+      };
+
+      const pdfAttachment = {
+        id: attachment.id,
+        messageId: attachment.messageId,
+        fileName: attachment.fileName,
+        originalName: attachment.originalName,
+        mimeType: attachment.mimeType,
+        fileSize: attachment.fileSize,
+        fileUrl: attachment.fileUrl,
+        thumbnailUrl: attachment.thumbnailUrl,
+        uploadedBy: attachment.uploadedBy,
+        isAnonymous: attachment.isAnonymous,
+        createdAt: attachment.createdAt
+      };
+
+      return (
+        <div key={attachment.id} className="relative">
+          <PDFViewer
+            attachment={pdfAttachment as any}
+            onOpenLightbox={handleOpenPdfLightbox}
+          />
+          {/* Bouton de suppression */}
+          {canDelete && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenDeleteConfirm(attachment, e);
+              }}
+              className="absolute top-2 right-2 w-[43px] h-[43px] rounded-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white flex items-center justify-center transition-all shadow-md z-10 opacity-0 hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500"
+              title="Supprimer ce PDF"
+              aria-label={`Supprimer le PDF ${attachment.originalName}`}
+            >
+              <X className="w-[22px] h-[22px]" />
+            </button>
+          )}
+        </div>
+      );
+    }
+
+    // Markdown attachment - lecteur markdown intégré
+    if (
+      attachment.mimeType === 'text/markdown' ||
+      attachment.mimeType === 'text/x-markdown' ||
+      attachment.originalName.toLowerCase().endsWith('.md')
+    ) {
+      const markdownAttachment = {
+        id: attachment.id,
+        messageId: attachment.messageId,
+        fileName: attachment.fileName,
+        originalName: attachment.originalName,
+        mimeType: attachment.mimeType,
+        fileSize: attachment.fileSize,
+        fileUrl: attachment.fileUrl,
+        thumbnailUrl: attachment.thumbnailUrl,
+        uploadedBy: attachment.uploadedBy,
+        isAnonymous: attachment.isAnonymous,
+        createdAt: attachment.createdAt
+      };
+
+      return (
+        <div key={attachment.id} className="relative">
+          <MarkdownViewer attachment={markdownAttachment as any} />
+          {/* Bouton de suppression */}
+          {canDelete && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenDeleteConfirm(attachment, e);
+              }}
+              className="absolute top-2 right-2 w-[43px] h-[43px] rounded-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white flex items-center justify-center transition-all shadow-md z-10 opacity-0 hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500"
+              title="Supprimer ce fichier markdown"
+              aria-label={`Supprimer le fichier ${attachment.originalName}`}
+            >
+              <X className="w-[22px] h-[22px]" />
+            </button>
+          )}
+        </div>
+      );
+    }
+
+    // Text/Code attachment - lecteur texte intégré
+    if ((type === 'text' || type === 'code') &&
+        attachment.mimeType !== 'text/markdown' &&
+        attachment.mimeType !== 'text/x-markdown' &&
+        !attachment.originalName.toLowerCase().endsWith('.md')) {
+      // Handler pour ouvrir le lightbox texte
+      const handleOpenTextLightbox = () => {
+        const textIndex = textAttachments.findIndex(txt => txt.id === attachment.id);
+        setTextLightboxIndex(textIndex);
+        setTextLightboxOpen(true);
+      };
+
+      const textAttachment = {
+        id: attachment.id,
+        messageId: attachment.messageId,
+        fileName: attachment.fileName,
+        originalName: attachment.originalName,
+        mimeType: attachment.mimeType,
+        fileSize: attachment.fileSize,
+        fileUrl: attachment.fileUrl,
+        thumbnailUrl: attachment.thumbnailUrl,
+        uploadedBy: attachment.uploadedBy,
+        isAnonymous: attachment.isAnonymous,
+        createdAt: attachment.createdAt
+      };
+
+      return (
+        <div key={attachment.id} className="relative">
+          <TextViewer
+            attachment={textAttachment as any}
+            onOpenLightbox={handleOpenTextLightbox}
+          />
+          {/* Bouton de suppression */}
+          {canDelete && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenDeleteConfirm(attachment, e);
+              }}
+              className="absolute top-2 right-2 w-[43px] h-[43px] rounded-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white flex items-center justify-center transition-all shadow-md z-10 opacity-0 hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500"
+              title="Supprimer ce fichier texte"
+              aria-label={`Supprimer le fichier ${attachment.originalName}`}
+            >
+              <X className="w-[22px] h-[22px]" />
+            </button>
+          )}
+        </div>
+      );
+    }
+
     // Autres types (document, text) - icône simple
     // Handler pour ouvrir la confirmation de suppression
     const handleDeleteClick = (event: React.MouseEvent) => {
@@ -491,6 +656,27 @@ export const MessageAttachments = React.memo(function MessageAttachments({
           </div>
         )}
 
+        {/* Affichage des PDFs */}
+        {pdfAttachments.length > 0 && (
+          <div className="flex flex-col gap-2 w-full">
+            {pdfAttachments.map((attachment, index) => renderAttachment(attachment, index))}
+          </div>
+        )}
+
+        {/* Affichage des fichiers Markdown */}
+        {markdownAttachments.length > 0 && (
+          <div className="flex flex-col gap-2 w-full">
+            {markdownAttachments.map((attachment, index) => renderAttachment(attachment, index))}
+          </div>
+        )}
+
+        {/* Affichage des fichiers Texte/Code */}
+        {textAttachments.length > 0 && (
+          <div className="flex flex-col gap-2 w-full">
+            {textAttachments.map((attachment, index) => renderAttachment(attachment, index))}
+          </div>
+        )}
+
         {/* Affichage des autres fichiers */}
         {otherAttachments.length > 0 && (
           <div className="flex flex-wrap gap-1">
@@ -547,6 +733,22 @@ export const MessageAttachments = React.memo(function MessageAttachments({
         initialIndex={videoLightboxIndex}
         isOpen={videoLightboxOpen}
         onClose={() => setVideoLightboxOpen(false)}
+      />
+
+      {/* Lightbox pour les PDFs */}
+      <PDFLightbox
+        pdfs={pdfAttachments}
+        initialIndex={pdfLightboxIndex}
+        isOpen={pdfLightboxOpen}
+        onClose={() => setPdfLightboxOpen(false)}
+      />
+
+      {/* Lightbox pour les fichiers texte */}
+      <TextLightbox
+        textFiles={textAttachments}
+        initialIndex={textLightboxIndex}
+        isOpen={textLightboxOpen}
+        onClose={() => setTextLightboxOpen(false)}
       />
 
       {/* Dialog de confirmation de suppression */}

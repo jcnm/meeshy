@@ -1,0 +1,191 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import {
+  Download,
+  AlertTriangle,
+  Maximize,
+  FileText,
+  Code,
+  Eye,
+  EyeOff
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
+
+interface MarkdownViewerProps {
+  attachment: UploadedAttachmentResponse;
+  className?: string;
+  onOpenLightbox?: () => void;
+}
+
+/**
+ * Lecteur MARKDOWN avec affichage formaté et mode raw
+ * - Affichage du contenu markdown
+ * - Basculer entre vue formatée et raw
+ * - Bouton plein écran
+ * - Bouton télécharger
+ * - Gestion d'erreurs
+ */
+export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
+  attachment,
+  className = '',
+  onOpenLightbox
+}) => {
+  const [content, setContent] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [showRaw, setShowRaw] = useState(false);
+
+  const attachmentFileUrl = attachment.fileUrl;
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        setIsLoading(true);
+        setHasError(false);
+
+        const response = await fetch(attachmentFileUrl);
+        if (!response.ok) {
+          throw new Error('Erreur de chargement');
+        }
+
+        const text = await response.text();
+        setContent(text);
+      } catch (error) {
+        console.error('Erreur chargement markdown:', error);
+        setHasError(true);
+        setErrorMessage('Impossible de charger le fichier');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchContent();
+  }, [attachmentFileUrl]);
+
+  // Simple markdown to HTML conversion (basic)
+  const renderMarkdown = (md: string): string => {
+    let html = md;
+
+    // Code blocks
+    html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre class="bg-gray-100 dark:bg-gray-800 p-3 rounded-md overflow-x-auto"><code>$2</code></pre>');
+
+    // Inline code
+    html = html.replace(/`([^`]+)`/g, '<code class="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-sm">$1</code>');
+
+    // Headers
+    html = html.replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>');
+    html = html.replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold mt-4 mb-2">$1</h2>');
+    html = html.replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mt-4 mb-2">$1</h1>');
+
+    // Bold
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+    // Italic
+    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+    // Links
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">$1</a>');
+
+    // Lists
+    html = html.replace(/^\* (.*$)/gim, '<li class="ml-4">$1</li>');
+    html = html.replace(/^- (.*$)/gim, '<li class="ml-4">$1</li>');
+
+    // Line breaks
+    html = html.replace(/\n/g, '<br/>');
+
+    return html;
+  };
+
+  const toggleRawMode = () => {
+    setShowRaw(!showRaw);
+  };
+
+  return (
+    <div
+      className={`flex flex-col gap-2 p-3 bg-gradient-to-br from-green-50 to-teal-50 dark:from-gray-800 dark:to-gray-900 rounded-lg border ${
+        hasError
+          ? 'border-red-300 dark:border-red-700'
+          : 'border-green-200 dark:border-gray-700'
+      } shadow-md hover:shadow-lg transition-all duration-200 w-full sm:max-w-2xl ${className}`}
+    >
+      {/* Content area */}
+      <div className="relative w-full max-h-[500px] bg-white dark:bg-gray-900 rounded-lg overflow-auto p-4 border border-gray-200 dark:border-gray-700">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : hasError ? (
+          <div className="flex flex-col items-center justify-center py-12 gap-2 text-gray-600 dark:text-gray-400">
+            <AlertTriangle className="w-12 h-12" />
+            <span className="text-sm">{errorMessage}</span>
+          </div>
+        ) : showRaw ? (
+          <pre className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap font-mono">
+            {content}
+          </pre>
+        ) : (
+          <div
+            className="prose prose-sm dark:prose-invert max-w-none text-gray-800 dark:text-gray-200"
+            dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
+          />
+        )}
+      </div>
+
+      {/* Contrôles */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          {/* Bouton toggle raw/formatted */}
+          <Button
+            onClick={toggleRawMode}
+            size="sm"
+            variant="ghost"
+            className="w-8 h-8 p-0"
+            title={showRaw ? 'Vue formatée' : 'Vue brute'}
+            disabled={isLoading || hasError}
+          >
+            {showRaw ? (
+              <Eye className="w-4 h-4" />
+            ) : (
+              <Code className="w-4 h-4" />
+            )}
+          </Button>
+
+          {/* Info fichier */}
+          <div className="text-xs text-gray-600 dark:text-gray-300 flex items-center gap-1">
+            <FileText className="w-3 h-3" />
+            <span className="font-medium">{attachment.originalName}</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Bouton plein écran / lightbox */}
+          {onOpenLightbox && (
+            <Button
+              onClick={onOpenLightbox}
+              size="sm"
+              variant="ghost"
+              className="w-8 h-8 p-0"
+              title="Ouvrir en plein écran"
+            >
+              <Maximize className="w-4 h-4" />
+            </Button>
+          )}
+
+          {/* Bouton télécharger */}
+          <a
+            href={attachment.fileUrl}
+            download={attachment.originalName}
+            className="flex-shrink-0 p-1.5 hover:bg-white/50 dark:hover:bg-gray-700/50 rounded-full transition-all duration-200"
+            title="Télécharger"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Download className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+};
