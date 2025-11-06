@@ -88,15 +88,6 @@ export function VideoCallInterface({ callId }: VideoCallInterfaceProps) {
   // Check if any audio effect is active
   const audioEffectsActive = Object.values(effectsState).some(effect => effect.enabled);
 
-  // Return loading state if user not loaded
-  if (!user || !user.id) {
-    return (
-      <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
-        <div className="text-white text-lg">Loading call...</div>
-      </div>
-    );
-  }
-
   // Initialize local stream on mount
   useEffect(() => {
     let mounted = true;
@@ -378,7 +369,7 @@ export function VideoCallInterface({ callId }: VideoCallInterfaceProps) {
 
   // Get remote participant info
   const remoteParticipant = currentCall?.participants?.find(
-    p => (p.userId || p.anonymousId) !== user.id && !p.leftAt
+    p => (p.userId || p.anonymousId) !== user?.id && !p.leftAt
   );
 
   // Toggle fullscreen for a participant
@@ -390,6 +381,15 @@ export function VideoCallInterface({ callId }: VideoCallInterfaceProps) {
   const displayParticipant = fullscreenParticipantId
     ? Array.from(remoteStreams.entries()).find(([id]) => id === fullscreenParticipantId)
     : Array.from(remoteStreams.entries())[0];
+
+  // IMPORTANT: Early return AFTER all hooks to comply with React Rules of Hooks
+  if (!user || !user.id) {
+    return (
+      <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
+        <div className="text-white text-lg">Loading call...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 bg-black">
