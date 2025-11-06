@@ -1,67 +1,71 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
-import { Archive, Users, MessageSquare, Grid3x3 } from 'lucide-react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
+import { Archive, Users, MessageSquare, Grid3x3, Heart } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import type { Conversation, SocketIOUser as User } from '@shared/types';
-import type { UserConversationCategory } from '@/types/user-preferences';
+import type { Conversation } from '@shared/types';
+import type { UserConversationPreferences } from '@/types/user-preferences';
+import { communitiesService, type Community } from '@/services/communities.service';
 
 interface CommunityCarouselProps {
   conversations: Conversation[];
-  categories: UserConversationCategory[];
   selectedFilter: CommunityFilter;
   onFilterChange: (filter: CommunityFilter) => void;
   t: (key: string) => string;
   preferencesMap?: Map<string, UserConversationPreferences>;
 }
 
-interface UserConversationPreferences {
-  id: string;
-  userId: string;
-  conversationId: string;
-  isPinned: boolean;
-  isMuted: boolean;
-  isArchived: boolean;
-  tags: string[];
-  categoryId: string | null;
-  orderInCategory: number | null;
-  customName: string | null;
-  reaction: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export type CommunityFilter =
   | { type: 'all' }
-  | { type: 'category'; categoryId: string }
-  | { type: 'archived' };
+  | { type: 'archived' }
+  | { type: 'reacted' }
+  | { type: 'community'; communityId: string }
+  | { type: 'category'; categoryId: string };
 
 interface CardData {
   id: string;
-  type: 'all' | 'category' | 'archived';
+  type: 'all' | 'archived' | 'reacted' | 'community';
   title: string;
   image?: string;
   memberCount?: number;
   conversationCount: number;
-  categoryId?: string;
+  communityId?: string;
 }
 
 export function CommunityCarousel({
   conversations,
-  categories,
   selectedFilter,
   onFilterChange,
   t,
   preferencesMap = new Map()
 }: CommunityCarouselProps) {
+  const [communities, setCommunities] = useState<Community[]>([]);
+  const [isLoadingCommunities, setIsLoadingCommunities] = useState(true);
+
+  // Charger les communautés de l'utilisateur
+  useEffect(() => {
+    const loadCommunities = async () => {
+      try {
+        setIsLoadingCommunities(true);
+        const response = await communitiesService.getCommunities();
+        setCommunities(response.data || []);
+      } catch (error) {
+        console.error('Error loading communities:', error);
+      } finally {
+        setIsLoadingCommunities(false);
+      }
+    };
+    loadCommunities();
+  }, []);
+
   // Calculer les données des cartes
   const cards = useMemo((): CardData[] => {
     const result: CardData[] = [];
 
-    // Carte "All" - toutes les conversations sauf archivées
+    // Carte "All" - toutes les conversations non archivées
     const nonArchivedCount = conversations.filter(c => {
       const prefs = preferencesMap.get(c.id);
       return !(prefs?.isArchived || false);
@@ -74,22 +78,39 @@ export function CommunityCarousel({
       conversationCount: nonArchivedCount
     });
 
-    // Cartes des catégories
-    categories.forEach(category => {
-      const categoryConversations = conversations.filter(c => {
+    // Cartes des communautés
+    communities.forEach(community => {
+      const communityConversations = conversations.filter(c => {
         const prefs = preferencesMap.get(c.id);
-        return prefs?.categoryId === category.id && !(prefs?.isArchived || false);
+        const isArchived = prefs?.isArchived || false;
+        return c.communityId === community.id && !isArchived;
       });
 
       result.push({
-        id: category.id,
-        type: 'category',
-        title: category.name,
-        image: category.icon,
-        conversationCount: categoryConversations.length,
-        categoryId: category.id
+        id: community.id,
+        type: 'community',
+        title: community.name,
+        image: community.avatar,
+        memberCount: community._count?.members,
+        conversationCount: communityConversations.length,
+        communityId: community.id
       });
     });
+
+    // Carte "Reacted" - conversations avec réaction
+    const reactedCount = conversations.filter(c => {
+      const prefs = preferencesMap.get(c.id);
+      return prefs?.reaction && !(prefs?.isArchived || false);
+    }).length;
+
+    if (reactedCount > 0) {
+      result.push({
+        id: 'reacted',
+        type: 'reacted',
+        title: t('conversationsList.reacted') || 'Favorites',
+        conversationCount: reactedCount
+      });
+    }
 
     // Carte "Archived" - conversations archivées
     const archivedCount = conversations.filter(c => {
@@ -105,26 +126,39 @@ export function CommunityCarousel({
     });
 
     return result;
-  }, [conversations, categories, t, preferencesMap]);
+  }, [conversations, communities, t, preferencesMap]);
 
   const handleCardClick = useCallback((card: CardData) => {
     if (card.type === 'all') {
       onFilterChange({ type: 'all' });
-    } else if (card.type === 'category' && card.categoryId) {
-      onFilterChange({ type: 'category', categoryId: card.categoryId });
     } else if (card.type === 'archived') {
       onFilterChange({ type: 'archived' });
+    } else if (card.type === 'reacted') {
+      onFilterChange({ type: 'reacted' });
+    } else if (card.type === 'community' && card.communityId) {
+      onFilterChange({ type: 'community', communityId: card.communityId });
     }
   }, [onFilterChange]);
 
   const isSelected = useCallback((card: CardData): boolean => {
     if (selectedFilter.type === 'all' && card.type === 'all') return true;
     if (selectedFilter.type === 'archived' && card.type === 'archived') return true;
-    if (selectedFilter.type === 'category' && card.type === 'category') {
-      return selectedFilter.categoryId === card.categoryId;
+    if (selectedFilter.type === 'reacted' && card.type === 'reacted') return true;
+    if (selectedFilter.type === 'community' && card.type === 'community') {
+      return selectedFilter.communityId === card.communityId;
     }
     return false;
   }, [selectedFilter]);
+
+  if (isLoadingCommunities) {
+    return (
+      <div className="w-full py-3 px-2 border-b border-border bg-background/50">
+        <div className="flex items-center justify-center h-24">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full py-3 px-2 border-b border-border bg-background/50">
@@ -155,12 +189,14 @@ function CommunityCard({ card, isSelected, onClick }: CommunityCardProps) {
   const getCardIcon = () => {
     if (card.type === 'all') return <Grid3x3 className="h-8 w-8" />;
     if (card.type === 'archived') return <Archive className="h-8 w-8" />;
+    if (card.type === 'reacted') return <Heart className="h-8 w-8" />;
     return <Users className="h-8 w-8" />;
   };
 
   const getCardGradient = () => {
     if (card.type === 'all') return 'from-primary/20 to-primary/10';
     if (card.type === 'archived') return 'from-muted to-muted/50';
+    if (card.type === 'reacted') return 'from-pink-500/20 to-red-500/10';
     return 'from-blue-500/20 to-purple-500/10';
   };
 
@@ -184,7 +220,7 @@ function CommunityCard({ card, isSelected, onClick }: CommunityCardProps) {
         {card.image ? (
           <Avatar className="w-full h-full rounded-none">
             <AvatarImage src={card.image} className="object-cover" />
-            <AvatarFallback className="rounded-none">
+            <AvatarFallback className="rounded-none bg-transparent">
               {getCardIcon()}
             </AvatarFallback>
           </Avatar>
