@@ -62,15 +62,28 @@ export function AudioEffectsPanel({
   return (
     <div
       className={cn(
-        'bg-black/80 backdrop-blur-md rounded-lg p-4 max-h-[80vh] overflow-y-auto',
+        'bg-gradient-to-br from-gray-900/95 via-black/95 to-purple-900/95',
+        'backdrop-blur-xl rounded-2xl p-6 max-h-[85vh] overflow-y-auto',
+        'border border-white/10 shadow-2xl',
+        'animate-in slide-in-from-bottom duration-300',
         className
       )}
     >
-      <h3 className="text-white text-lg font-semibold mb-4">Audio Effects</h3>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+            <span className="text-2xl">🎭</span>
+          </div>
+          <div>
+            <h3 className="text-white text-xl font-bold">Audio Effects</h3>
+            <p className="text-gray-400 text-xs">Transform your voice in real-time</p>
+          </div>
+        </div>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Voice Coder Effect */}
-        <Card className="bg-gray-900/90 border-gray-700 p-4">
+        <Card className="bg-gradient-to-br from-blue-900/40 to-blue-800/20 border-blue-500/30 p-5 hover:border-blue-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <span className="text-2xl">🎵</span>
@@ -127,7 +140,7 @@ export function AudioEffectsPanel({
         </Card>
 
         {/* Baby Voice Effect */}
-        <Card className="bg-gray-900/90 border-gray-700 p-4">
+        <Card className="bg-gradient-to-br from-pink-900/40 to-pink-800/20 border-pink-500/30 p-5 hover:border-pink-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-pink-500/20">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <span className="text-2xl">👶</span>
@@ -188,7 +201,7 @@ export function AudioEffectsPanel({
         </Card>
 
         {/* Demon Voice Effect */}
-        <Card className="bg-gray-900/90 border-gray-700 p-4">
+        <Card className="bg-gradient-to-br from-red-900/40 to-red-800/20 border-red-500/30 p-5 hover:border-red-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-red-500/20">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <span className="text-2xl">😈</span>
@@ -249,7 +262,7 @@ export function AudioEffectsPanel({
         </Card>
 
         {/* Back Sound Effect */}
-        <Card className="bg-gray-900/90 border-gray-700 p-4">
+        <Card className="bg-gradient-to-br from-green-900/40 to-green-800/20 border-green-500/30 p-5 hover:border-green-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-green-500/20">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <span className="text-2xl">🎶</span>
