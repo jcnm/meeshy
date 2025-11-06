@@ -1470,10 +1470,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         </div>
       ) : (
         /* Mode desktop ou mobile sans conversation */
-        <div className={cn(
-          "flex flex-col bg-gradient-to-br from-blue-50 to-indigo-100 overflow-hidden",
-          isMobile ? "min-h-screen" : "h-screen"
-        )}>
+        <div className="flex flex-col bg-gradient-to-br from-blue-50 to-indigo-100 overflow-hidden h-screen">
           <DashboardLayout
             title={t('conversationLayout.conversations.title')}
             hideHeaderOnMobile={false}
@@ -1622,7 +1619,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               </div>
             </div>
           ) : (
-            <div className="flex-1 flex items-center justify-center p-4 h-full bg-white dark:bg-gray-950">
+            <div className="flex-1 flex items-center justify-center p-4 bg-white dark:bg-gray-950 overflow-hidden">
               <ConversationEmptyState
                 conversationsCount={conversations.length}
                 onCreateConversation={() => setIsCreateModalOpen(true)}

@@ -1,7 +1,7 @@
 'use client';
 
-import { useCallback, useState } from 'react';
-import { ArrowLeft, UserPlus, Info, MoreVertical, Link2, Video, Ghost, Share2, Image } from 'lucide-react';
+import { useCallback, useState, useEffect } from 'react';
+import { ArrowLeft, UserPlus, Info, MoreVertical, Link2, Video, Ghost, Share2, Image, Pin, Bell, BellOff, Archive, ArchiveRestore } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -32,10 +32,52 @@ import { toast } from 'sonner';
 import { ConversationImageUploadDialog } from './conversation-image-upload-dialog';
 import { AttachmentService } from '@/services/attachmentService';
 import { conversationsService } from '@/services/conversations.service';
+import { userPreferencesService } from '@/services/user-preferences.service';
 
 // Helper pour détecter si un utilisateur est anonyme
 function isAnonymousUser(user: any): user is AnonymousParticipant {
   return user && ('sessionToken' in user || 'shareLinkId' in user);
+}
+
+// Helper pour calculer le statut de l'utilisateur basé sur la dernière activité
+type UserStatus = 'online' | 'away' | 'offline';
+function getUserStatus(user: User | null | undefined): UserStatus {
+  if (!user) return 'offline';
+
+  // Si l'utilisateur a une propriété isOnline explicite et elle est false, retourner offline
+  if (user.isOnline === false) return 'offline';
+
+  // Sinon, calculer basé sur lastActiveAt
+  const lastActiveAt = user.lastActiveAt ? new Date(user.lastActiveAt) : null;
+  if (!lastActiveAt) {
+    // Si pas de lastActiveAt mais isOnline est true, considérer comme online
+    return user.isOnline ? 'online' : 'offline';
+  }
+
+  const now = Date.now();
+  const lastActive = lastActiveAt.getTime();
+  const minutesAgo = (now - lastActive) / (1000 * 60);
+
+  // Vert : actif dans les dernières 5 minutes
+  if (minutesAgo < 5) return 'online';
+
+  // Orange : absent depuis 5-30 minutes
+  if (minutesAgo < 30) return 'away';
+
+  // Gris : hors ligne depuis plus de 30 minutes
+  return 'offline';
+}
+
+// Helper pour obtenir la couleur de l'indicateur de statut
+function getStatusColor(status: UserStatus): string {
+  switch (status) {
+    case 'online':
+      return 'bg-green-500';
+    case 'away':
+      return 'bg-orange-500';
+    case 'offline':
+      return 'bg-gray-400';
+  }
 }
 
 interface ConversationHeaderProps {
@@ -74,6 +116,32 @@ export function ConversationHeader({
   // État pour la gestion de l'upload d'image
   const [isImageUploadDialogOpen, setIsImageUploadDialogOpen] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+  // État pour les préférences utilisateur
+  const [isPinned, setIsPinned] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isArchived, setIsArchived] = useState(false);
+  const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
+
+  // Charger les préférences utilisateur
+  useEffect(() => {
+    const loadPreferences = async () => {
+      try {
+        setIsLoadingPreferences(true);
+        const prefs = await userPreferencesService.getPreferences(conversation.id);
+        if (prefs) {
+          setIsPinned(prefs.isPinned);
+          setIsMuted(prefs.isMuted);
+          setIsArchived(prefs.isArchived);
+        }
+      } catch (error) {
+        console.error('Error loading preferences:', error);
+      } finally {
+        setIsLoadingPreferences(false);
+      }
+    };
+    loadPreferences();
+  }, [conversation.id]);
 
   // Helper pour obtenir le rôle de l'utilisateur
   const getCurrentUserRole = useCallback((): UserRoleEnum => {
@@ -117,7 +185,8 @@ export function ConversationHeader({
       const otherParticipant = conversationParticipants.find(p => p.userId !== currentUser?.id);
       return otherParticipant?.user?.avatar;
     }
-    return undefined;
+    // Pour les conversations de groupe/public/global, retourner l'image de la conversation
+    return conversation.image || conversation.avatar;
   }, [conversation, currentUser, conversationParticipants]);
 
   // Helper pour vérifier si l'utilisateur peut utiliser les appels vidéo
@@ -193,6 +262,55 @@ export function ConversationHeader({
     return false;
   }, [conversation, currentUser, conversationParticipants]);
 
+  // Obtenir le statut de l'autre participant pour les conversations directes
+  const getOtherParticipantStatus = useCallback((): UserStatus => {
+    if (conversation.type === 'direct') {
+      const otherParticipant = conversationParticipants.find(p => p.userId !== currentUser?.id);
+      return getUserStatus(otherParticipant?.user);
+    }
+    return 'online'; // Pour les conversations de groupe, toujours afficher comme online
+  }, [conversation.type, conversationParticipants, currentUser?.id]);
+
+  // Handlers pour les préférences utilisateur
+  const handleTogglePin = useCallback(async () => {
+    try {
+      const newPinnedState = !isPinned;
+      setIsPinned(newPinnedState);
+      await userPreferencesService.togglePin(conversation.id, newPinnedState);
+      toast.success(newPinnedState ? 'Conversation épinglée' : 'Conversation désépinglée');
+    } catch (error) {
+      console.error('Error toggling pin:', error);
+      setIsPinned(!isPinned); // Revert on error
+      toast.error('Erreur lors de l\'épinglage');
+    }
+  }, [conversation.id, isPinned]);
+
+  const handleToggleMute = useCallback(async () => {
+    try {
+      const newMutedState = !isMuted;
+      setIsMuted(newMutedState);
+      await userPreferencesService.toggleMute(conversation.id, newMutedState);
+      toast.success(newMutedState ? 'Notifications désactivées' : 'Notifications activées');
+    } catch (error) {
+      console.error('Error toggling mute:', error);
+      setIsMuted(!isMuted); // Revert on error
+      toast.error('Erreur lors du changement des notifications');
+    }
+  }, [conversation.id, isMuted]);
+
+  const handleToggleArchive = useCallback(async () => {
+    try {
+      const newArchivedState = !isArchived;
+      setIsArchived(newArchivedState);
+      await userPreferencesService.toggleArchive(conversation.id, newArchivedState);
+      toast.success(newArchivedState ? 'Conversation archivée' : 'Conversation désarchivée');
+    } catch (error) {
+      console.error('Error toggling archive:', error);
+      setIsArchived(!isArchived); // Revert on error
+      toast.error('Erreur lors de l\'archivage');
+    }
+  }, [conversation.id, isArchived]);
+
   // Fonction pour copier le lien de la conversation
   const handleShareConversation = useCallback(async () => {
     const url = `${window.location.origin}/conversations/${conversation.id}`;
@@ -257,7 +375,10 @@ export function ConversationHeader({
                 </AvatarFallback>
               </Avatar>
             )}
-            <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-500 rounded-full border-2 border-background" />
+            {/* Status indicator - Only show for direct conversations */}
+            {conversation.type !== 'direct' && (
+              <div className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 ${getStatusColor('online')} rounded-full border-2 border-background`} />
+            )}
           </div>
         )}
 
@@ -268,16 +389,20 @@ export function ConversationHeader({
             {conversation.type === 'direct' && (
               <div className="relative flex-shrink-0">
                 {isOtherParticipantAnonymous() ? (
-                  <div className="h-6 w-6 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                    <Ghost className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
+                  <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                    <Ghost className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                   </div>
                 ) : (
-                  <Avatar className="h-6 w-6">
-                    <AvatarImage src={getConversationAvatarUrl()} />
-                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
-                      {getConversationAvatar()}
-                    </AvatarFallback>
-                  </Avatar>
+                  <>
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={getConversationAvatarUrl()} />
+                      <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                        {getConversationAvatar()}
+                      </AvatarFallback>
+                    </Avatar>
+                    {/* Accurate status indicator for direct conversations */}
+                    <div className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 ${getStatusColor(getOtherParticipantStatus())} rounded-full border-2 border-background`} />
+                  </>
                 )}
               </div>
             )}
@@ -298,15 +423,23 @@ export function ConversationHeader({
               />
             </div>
           ) : (
-            /* For direct conversations, only show typing indicator if someone is typing */
+            /* For direct conversations, show typing indicator with username */
             <div className="text-sm text-muted-foreground">
-              {typingUsers.filter(u => u.userId !== currentUser.id).length > 0 && (
-                <div className="flex items-center gap-1">
-                  <span className="text-xs">
-                    {t('conversationParticipants.typing') || 'En train d\'écrire...'}
-                  </span>
-                </div>
-              )}
+              {(() => {
+                const otherTypingUsers = typingUsers.filter(u => u.userId !== currentUser.id);
+                if (otherTypingUsers.length > 0) {
+                  const typingUser = otherTypingUsers[0];
+                  const typingUserName = typingUser.username || getConversationName();
+                  return (
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs">
+                        {typingUserName} {t('conversationParticipants.typing') || 'est en train d\'écrire...'}
+                      </span>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
             </div>
           )}
         </div>
@@ -336,18 +469,20 @@ export function ConversationHeader({
           </TooltipProvider>
         )}
 
-        {/* Participants drawer - S'ouvre depuis la gauche */}
-        <ConversationParticipantsDrawer
-          conversationId={conversation.id}
-          participants={conversationParticipants}
-          currentUser={currentUser}
-          isGroup={conversation.type !== 'direct'}
-          conversationType={conversation.type}
-          userConversationRole={getCurrentUserRole()}
-          onParticipantRemoved={onParticipantRemoved}
-          onParticipantAdded={onParticipantAdded}
-          onLinkCreated={onLinkCreated}
-        />
+        {/* Participants drawer - Only for group conversations */}
+        {conversation.type !== 'direct' && (
+          <ConversationParticipantsDrawer
+            conversationId={conversation.id}
+            participants={conversationParticipants}
+            currentUser={currentUser}
+            isGroup={conversation.type !== 'direct'}
+            conversationType={conversation.type}
+            userConversationRole={getCurrentUserRole()}
+            onParticipantRemoved={onParticipantRemoved}
+            onParticipantAdded={onParticipantAdded}
+            onLinkCreated={onLinkCreated}
+          />
+        )}
 
         {/* Bouton de création de lien rapide - seulement pour les conversations de groupe et avec les bons rôles */}
         {conversation.type !== 'direct' && 
@@ -390,6 +525,34 @@ export function ConversationHeader({
                 {t('conversationHeader.viewImages') || 'Voir les images'}
               </DropdownMenuItem>
             )}
+
+            <DropdownMenuSeparator />
+
+            {/* User Preferences */}
+            <DropdownMenuItem onClick={handleTogglePin} disabled={isLoadingPreferences}>
+              <Pin className={cn("h-4 w-4 mr-2", isPinned && "fill-current")} />
+              {isPinned ? 'Désépingler' : 'Épingler'}
+            </DropdownMenuItem>
+
+            <DropdownMenuItem onClick={handleToggleMute} disabled={isLoadingPreferences}>
+              {isMuted ? (
+                <Bell className="h-4 w-4 mr-2" />
+              ) : (
+                <BellOff className="h-4 w-4 mr-2" />
+              )}
+              {isMuted ? 'Activer les notifications' : 'Désactiver les notifications'}
+            </DropdownMenuItem>
+
+            <DropdownMenuItem onClick={handleToggleArchive} disabled={isLoadingPreferences}>
+              {isArchived ? (
+                <ArchiveRestore className="h-4 w-4 mr-2" />
+              ) : (
+                <Archive className="h-4 w-4 mr-2" />
+              )}
+              {isArchived ? 'Désarchiver' : 'Archiver'}
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator />
 
             <DropdownMenuItem onClick={handleShareConversation}>
               <Share2 className="h-4 w-4 mr-2" />

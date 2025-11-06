@@ -81,11 +81,13 @@ const ConversationItem = memo(function ConversationItem({
 
   const getConversationAvatarUrl = useCallback(() => {
     if (conversation.type === 'direct') {
-      // Pour l'instant, pas d'avatar car participants n'a pas de propriété user
-      // TODO: Charger les avatars des participants séparément
-      return undefined;
+      // Pour les conversations directes, retourner l'avatar de l'autre participant
+      const otherParticipant = conversation.participants?.find(p => p.userId !== currentUser?.id);
+      const participantUser = (otherParticipant as any)?.user;
+      return participantUser?.avatar;
     }
-    return undefined;
+    // Pour les conversations de groupe/public/global, retourner l'image de la conversation
+    return conversation.image || conversation.avatar;
   }, [conversation, currentUser]);
 
   const getConversationIcon = useCallback(() => {
@@ -157,6 +159,8 @@ const ConversationItem = memo(function ConversationItem({
 
       {/* Contenu */}
       <div className="flex-1 min-w-0">
+        {/* TODO: Display user-specific tags from preferences */}
+
         <div className="flex items-start justify-between gap-2">
           <h3 className="font-semibold text-sm truncate">
             {getConversationName()}
@@ -220,6 +224,9 @@ export function ConversationList({
       const title = conv.title || '';
       const lastMessage = conv.lastMessage?.content || '';
       const query = searchQuery.toLowerCase();
+
+      // Search in title and last message
+      // TODO: Add search by user-specific tags from preferences
       return title.toLowerCase().includes(query) ||
              lastMessage.toLowerCase().includes(query);
     });
