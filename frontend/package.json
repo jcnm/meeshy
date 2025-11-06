@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3100",
+    "dev:https": "node server.js",
     "prebuild": "pnpm run copy:shared && rm -rf .next && rm shared/schema.prisma 2> /dev/null || true",
     "copy:shared": "echo 'Shared files already copied in Docker context'",
     "build": "next build",
