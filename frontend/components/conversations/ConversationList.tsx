@@ -1,14 +1,16 @@
 'use client';
 
 import { useState, useCallback, useMemo, memo, useEffect, useRef } from 'react';
-import { MessageSquare, Link2, Users, Globe, Search, Loader2 } from 'lucide-react';
+import { MessageSquare, Link2, Users, Globe, Search, Loader2, Pin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import type { Conversation, SocketIOUser as User } from '@shared/types';
+import type { UserConversationPreferences } from '@/types/user-preferences';
 import { CreateLinkButton } from './create-link-button';
+import { userPreferencesService } from '@/services/user-preferences.service';
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -34,6 +36,7 @@ interface ConversationItemProps {
   currentUser: User;
   onClick: () => void;
   t: (key: string) => string;
+  isPinned?: boolean;
 }
 
 // Composant pour un élément de conversation
@@ -42,7 +45,8 @@ const ConversationItem = memo(function ConversationItem({
   isSelected,
   currentUser,
   onClick,
-  t
+  t,
+  isPinned = false
 }: ConversationItemProps) {
   const getConversationName = useCallback(() => {
     if (conversation.type !== 'direct') {
@@ -162,9 +166,14 @@ const ConversationItem = memo(function ConversationItem({
         {/* TODO: Display user-specific tags from preferences */}
 
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold text-sm truncate">
-            {getConversationName()}
-          </h3>
+          <div className="flex items-center gap-1.5 min-w-0">
+            {isPinned && (
+              <Pin className="h-3.5 w-3.5 text-primary flex-shrink-0 fill-current" />
+            )}
+            <h3 className="font-semibold text-sm truncate">
+              {getConversationName()}
+            </h3>
+          </div>
           {conversation.lastMessage && (
             <span className="text-xs text-muted-foreground flex-shrink-0">
               {formatTime(conversation.lastMessage.createdAt)}
@@ -212,12 +221,39 @@ export function ConversationList({
   onLoadMore
 }: ConversationListProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [preferencesMap, setPreferencesMap] = useState<Map<string, UserConversationPreferences>>(new Map());
+  const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
 
   // Référence pour le scroll container
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
 
-  // Filtrage des conversations - toutes les conversations dans une seule liste
+  // Charger les préférences utilisateur pour toutes les conversations
+  useEffect(() => {
+    const loadPreferences = async () => {
+      try {
+        setIsLoadingPreferences(true);
+        const allPrefs = await userPreferencesService.getAllPreferences();
+        const map = new Map<string, UserConversationPreferences>();
+        allPrefs.forEach(pref => {
+          map.set(pref.conversationId, pref);
+        });
+        setPreferencesMap(map);
+      } catch (error) {
+        console.error('Error loading preferences:', error);
+      } finally {
+        setIsLoadingPreferences(false);
+      }
+    };
+    loadPreferences();
+
+    // Recharger les préférences toutes les 2 secondes pour détecter les changements
+    const intervalId = setInterval(loadPreferences, 2000);
+
+    return () => clearInterval(intervalId);
+  }, [conversations.length]); // Recharger quand la liste change
+
+  // Filtrage et tri des conversations - épinglées en haut
   const filteredConversations = useMemo(() => {
     const filtered = conversations.filter(conv => {
       if (!searchQuery) return true;
@@ -231,14 +267,32 @@ export function ConversationList({
              lastMessage.toLowerCase().includes(query);
     });
 
-    console.log('[ConversationList] Filtrage des conversations:', {
-      total: conversations.length,
-      filtered: filtered.length,
-      searchQuery
+    // Trier les conversations : épinglées en haut, puis par ordre de dernier message
+    const sorted = filtered.sort((a, b) => {
+      const aPrefs = preferencesMap.get(a.id);
+      const bPrefs = preferencesMap.get(b.id);
+      const aPinned = aPrefs?.isPinned || false;
+      const bPinned = bPrefs?.isPinned || false;
+
+      // Les conversations épinglées viennent en premier
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+
+      // Pour les conversations du même statut d'épinglage, trier par date de dernier message
+      const aTime = a.lastMessage?.createdAt ? new Date(a.lastMessage.createdAt).getTime() : 0;
+      const bTime = b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt).getTime() : 0;
+      return bTime - aTime;
     });
 
-    return filtered;
-  }, [conversations, searchQuery]);
+    console.log('[ConversationList] Filtrage et tri des conversations:', {
+      total: conversations.length,
+      filtered: sorted.length,
+      searchQuery,
+      pinnedCount: sorted.filter(c => preferencesMap.get(c.id)?.isPinned).length
+    });
+
+    return sorted;
+  }, [conversations, searchQuery, preferencesMap]);
   
   // Détection du scroll infini avec Intersection Observer
   useEffect(() => {
@@ -344,6 +398,7 @@ export function ConversationList({
                 currentUser={currentUser}
                 onClick={() => onSelectConversation(conversation)}
                 t={t}
+                isPinned={preferencesMap.get(conversation.id)?.isPinned || false}
               />
             ))}
             
