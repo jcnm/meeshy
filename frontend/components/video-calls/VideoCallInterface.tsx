@@ -174,6 +174,34 @@ export function VideoCallInterface({ callId }: VideoCallInterfaceProps) {
     });
   }, [currentCall?.participants?.length, currentCall?.initiatorId, user?.id, createOffer]);
 
+  // Cleanup on unmount and page unload
+  useEffect(() => {
+    const cleanup = () => {
+      const { currentCall, isInCall } = useCallStore.getState();
+      if (isInCall && currentCall) {
+        logger.info('[VideoCallInterface]', 'Cleaning up call on unmount/unload - callId: ' + currentCall.id);
+        const socket = meeshySocketIOService.getSocket();
+        if (socket && socket.connected) {
+          (socket as any).emit('call:leave', { callId: currentCall.id });
+        }
+      }
+    };
+
+    // Handle page refresh/close
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      cleanup();
+      // Don't show confirmation dialog - just cleanup
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    // Handle component unmount
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      cleanup();
+    };
+  }, []);
+
   // Handle media toggles
   const handleToggleAudio = () => {
     const newEnabled = !controls.audioEnabled;
