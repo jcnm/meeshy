@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import type { Conversation, SocketIOUser as User } from '@shared/types';
-import type { UserConversationPreferences, UserConversationCategory } from '@/types/user-preferences';
+import type { UserConversationPreferences } from '@/types/user-preferences';
 import { CreateLinkButton } from './create-link-button';
 import { userPreferencesService } from '@/services/user-preferences.service';
 import { CommunityCarousel, type CommunityFilter } from './CommunityCarousel';
@@ -224,29 +224,11 @@ export function ConversationList({
   const [searchQuery, setSearchQuery] = useState('');
   const [preferencesMap, setPreferencesMap] = useState<Map<string, UserConversationPreferences>>(new Map());
   const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
-  const [categories, setCategories] = useState<UserConversationCategory[]>([]);
   const [selectedFilter, setSelectedFilter] = useState<CommunityFilter>({ type: 'all' });
 
   // Référence pour le scroll container
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
-
-  // Charger les catégories utilisateur
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const cats = await userPreferencesService.getCategories();
-        const sortedCats = cats.sort((a, b) => {
-          if (a.order !== b.order) return a.order - b.order;
-          return a.name.localeCompare(b.name);
-        });
-        setCategories(sortedCats);
-      } catch (error) {
-        console.error('Error loading categories:', error);
-      }
-    };
-    loadCategories();
-  }, []);
 
   // Charger les préférences utilisateur pour toutes les conversations
   useEffect(() => {
@@ -275,7 +257,7 @@ export function ConversationList({
 
   // Filtrage et tri des conversations - épinglées en haut
   const filteredConversations = useMemo(() => {
-    // Filtrer selon le filtre sélectionné (all/category/archived)
+    // Filtrer selon le filtre sélectionné (all/community/reacted/archived/category)
     let filtered = conversations.filter(conv => {
       const prefs = preferencesMap.get(conv.id);
       const isArchived = prefs?.isArchived || false;
@@ -287,6 +269,12 @@ export function ConversationList({
       } else if (selectedFilter.type === 'archived') {
         // "Archived" affiche uniquement les archivées
         return isArchived;
+      } else if (selectedFilter.type === 'reacted') {
+        // "Reacted" affiche uniquement les conversations avec réaction (non archivées)
+        return !isArchived && !!prefs?.reaction;
+      } else if (selectedFilter.type === 'community') {
+        // Filtrer par communauté, exclure les archivées
+        return !isArchived && conv.communityId === selectedFilter.communityId;
       } else if (selectedFilter.type === 'category') {
         // Filtrer par catégorie, exclure les archivées
         return !isArchived && prefs?.categoryId === selectedFilter.categoryId;
@@ -415,7 +403,6 @@ export function ConversationList({
       {/* Community Carousel */}
       <CommunityCarousel
         conversations={conversations}
-        categories={categories}
         selectedFilter={selectedFilter}
         onFilterChange={setSelectedFilter}
         t={(key: string) => t(key)}

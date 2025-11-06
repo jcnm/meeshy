@@ -73,7 +73,8 @@
     },
     "conversationsList": {
       "all": "All",
-      "archived": "Archived"
+      "archived": "Archived",
+      "reacted": "Favorites"
     },
     "replyToMessage": "Reply to message",
     "replyingTo": "Replying to",
