@@ -189,7 +189,12 @@
       "categoryCreateError": "Erreur lors de la création",
       "availableCategories": "Catégories disponibles",
       "noCategory": "Aucune catégorie",
-      "noCategoryFound": "Aucune catégorie trouvée"
+      "noCategoryFound": "Aucune catégorie trouvée",
+      "removeCategory": "Retirer la catégorie",
+      "groupConversation": "Conversation de groupe",
+      "conversation": "Conversation",
+      "linkCopied": "Lien de conversation copié !",
+      "copyError": "Erreur lors de la copie"
     },
     "conversationImage": {
       "title": "Changer l'image de la conversation",

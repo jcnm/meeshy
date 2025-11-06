@@ -68,6 +68,7 @@ interface TagsManagerProps {
 }
 
 function TagsManager({ conversationId, onTagsUpdated }: TagsManagerProps) {
+  const { t } = useI18n('conversations');
   const [localTags, setLocalTags] = useState<string[]>([]);
   const [allUserTags, setAllUserTags] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -105,7 +106,7 @@ function TagsManager({ conversationId, onTagsUpdated }: TagsManagerProps) {
 
     // Check if tag already exists
     if (localTags.includes(trimmedTag)) {
-      toast.error('Ce tag existe déjà');
+      toast.error(t('conversationDetails.tagAlreadyExists'));
       return;
     }
 
@@ -118,7 +119,7 @@ function TagsManager({ conversationId, onTagsUpdated }: TagsManagerProps) {
 
       // Update preferences
       await userPreferencesService.updateTags(conversationId, updatedTags);
-      toast.success('Tag ajouté');
+      toast.success(t('conversationDetails.tagAdded'));
 
       // Add to all user tags if new
       if (!allUserTags.includes(trimmedTag)) {
@@ -128,7 +129,7 @@ function TagsManager({ conversationId, onTagsUpdated }: TagsManagerProps) {
       onTagsUpdated?.();
     } catch (error) {
       console.error('Error adding tag:', error);
-      toast.error('Erreur lors de l\'ajout du tag');
+      toast.error(t('conversationDetails.tagAddError'));
       setLocalTags(localTags);
     }
   };
@@ -139,11 +140,11 @@ function TagsManager({ conversationId, onTagsUpdated }: TagsManagerProps) {
       setLocalTags(updatedTags);
 
       await userPreferencesService.updateTags(conversationId, updatedTags);
-      toast.success('Tag supprimé');
+      toast.success(t('conversationDetails.tagRemoved'));
       onTagsUpdated?.();
     } catch (error) {
       console.error('Error removing tag:', error);
-      toast.error('Erreur lors de la suppression du tag');
+      toast.error(t('conversationDetails.tagRemoveError'));
       setLocalTags([...localTags, tagToRemove]);
     }
   };
@@ -159,7 +160,7 @@ function TagsManager({ conversationId, onTagsUpdated }: TagsManagerProps) {
     !allUserTags.some(tag => tag.toLowerCase() === searchQuery.toLowerCase());
 
   if (isLoading) {
-    return <div className="text-xs text-muted-foreground italic">Chargement...</div>;
+    return <div className="text-xs text-muted-foreground italic">{t('common.loading') || 'Chargement...'}</div>;
   }
 
   return (
@@ -192,7 +193,7 @@ function TagsManager({ conversationId, onTagsUpdated }: TagsManagerProps) {
         })}
         {localTags.length === 0 && (
           <p className="text-xs text-muted-foreground italic">
-            Aucun tag
+            {t('conversationDetails.noTags')}
           </p>
         )}
       </div>
@@ -206,13 +207,13 @@ function TagsManager({ conversationId, onTagsUpdated }: TagsManagerProps) {
             className="w-full justify-start text-left font-normal h-9"
           >
             <TagIcon className="h-4 w-4 mr-2" />
-            <span className="text-muted-foreground">Rechercher ou ajouter un tag...</span>
+            <span className="text-muted-foreground">{t('conversationDetails.searchOrAddTag')}</span>
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-full p-0" align="start">
           <Command>
             <CommandInput
-              placeholder="Rechercher un tag..."
+              placeholder={t('conversationDetails.searchTag')}
               value={searchQuery}
               onValueChange={setSearchQuery}
             />
@@ -226,14 +227,14 @@ function TagsManager({ conversationId, onTagsUpdated }: TagsManagerProps) {
                       onClick={() => handleAddTag(searchQuery)}
                     >
                       <Plus className="h-4 w-4 mr-2" />
-                      Créer "{searchQuery}"
+                      {t('conversationDetails.createTag', { tag: searchQuery })}
                     </Button>
                   </div>
                 ) : (
-                  'Aucun tag trouvé'
+                  t('conversationDetails.noTagsFound')
                 )}
               </CommandEmpty>
-              <CommandGroup heading="Tags disponibles">
+              <CommandGroup heading={t('conversationDetails.availableTags')}>
                 {filteredTags.map((tag) => {
                   const colors = getTagColor(tag);
                   return (
@@ -272,6 +273,7 @@ interface CategorySelectorProps {
 }
 
 function CategorySelector({ conversationId, onCategoryUpdated }: CategorySelectorProps) {
+  const { t } = useI18n('conversations');
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -308,11 +310,11 @@ function CategorySelector({ conversationId, onCategoryUpdated }: CategorySelecto
       setIsPopoverOpen(false);
 
       await userPreferencesService.updateCategory(conversationId, categoryId);
-      toast.success(categoryId ? 'Catégorie assignée' : 'Catégorie retirée');
+      toast.success(t(categoryId ? 'conversationDetails.categoryAssigned' : 'conversationDetails.categoryRemoved'));
       onCategoryUpdated?.();
     } catch (error) {
       console.error('Error updating category:', error);
-      toast.error('Erreur lors de la mise à jour');
+      toast.error(t('conversationDetails.categoryUpdateError'));
       setSelectedCategoryId(selectedCategoryId);
     }
   };
@@ -322,10 +324,10 @@ function CategorySelector({ conversationId, onCategoryUpdated }: CategorySelecto
       const newCategory = await userPreferencesService.createCategory({ name });
       setCategories([...categories, newCategory].sort((a, b) => a.order - b.order));
       await handleSelectCategory(newCategory.id);
-      toast.success('Catégorie créée et assignée');
+      toast.success(t('conversationDetails.categoryCreated'));
     } catch (error) {
       console.error('Error creating category:', error);
-      toast.error('Erreur lors de la création');
+      toast.error(t('conversationDetails.categoryCreateError'));
     }
   };
 
@@ -341,7 +343,7 @@ function CategorySelector({ conversationId, onCategoryUpdated }: CategorySelecto
   const selectedCategory = categories.find(c => c.id === selectedCategoryId);
 
   if (isLoading) {
-    return <div className="text-xs text-muted-foreground italic">Chargement...</div>;
+    return <div className="text-xs text-muted-foreground italic">{t('common.loading') || 'Chargement...'}</div>;
   }
 
   return (
@@ -355,7 +357,7 @@ function CategorySelector({ conversationId, onCategoryUpdated }: CategorySelecto
             <button
               onClick={() => handleSelectCategory(null)}
               className="ml-1 hover:opacity-70 rounded-full p-0.5 transition-opacity"
-              aria-label="Retirer la catégorie"
+              aria-label={t('conversationDetails.removeCategory')}
             >
               <XIcon className="h-3 w-3" />
             </button>
@@ -373,14 +375,14 @@ function CategorySelector({ conversationId, onCategoryUpdated }: CategorySelecto
           >
             <Folder className="h-4 w-4 mr-2" />
             <span className="text-muted-foreground">
-              {selectedCategory ? 'Changer de catégorie...' : 'Assigner à une catégorie...'}
+              {t(selectedCategory ? 'conversationDetails.changeCategory' : 'conversationDetails.assignToCategory')}
             </span>
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-full p-0" align="start">
           <Command>
             <CommandInput
-              placeholder="Rechercher une catégorie..."
+              placeholder={t('conversationDetails.searchCategory')}
               value={searchQuery}
               onValueChange={setSearchQuery}
             />
@@ -394,21 +396,21 @@ function CategorySelector({ conversationId, onCategoryUpdated }: CategorySelecto
                       onClick={() => handleCreateCategory(searchQuery)}
                     >
                       <Plus className="h-4 w-4 mr-2" />
-                      Créer "{searchQuery}"
+                      {t('conversationDetails.createCategory', { category: searchQuery })}
                     </Button>
                   </div>
                 ) : (
-                  'Aucune catégorie trouvée'
+                  t('conversationDetails.noCategoryFound')
                 )}
               </CommandEmpty>
-              <CommandGroup heading="Catégories disponibles">
+              <CommandGroup heading={t('conversationDetails.availableCategories')}>
                 {selectedCategory && (
                   <CommandItem
                     onSelect={() => handleSelectCategory(null)}
                     className="cursor-pointer text-muted-foreground"
                   >
                     <XIcon className="h-4 w-4 mr-2" />
-                    Aucune catégorie
+                    {t('conversationDetails.noCategory')}
                   </CommandItem>
                 )}
                 {filteredCategories.map((category) => (
@@ -553,9 +555,9 @@ export function ConversationDetailsSidebar({
 
   const getConversationDisplayName = (conv: Conversation) => {
     if (conv.type !== 'direct') {
-      return conv.title || 'Conversation de groupe';
+      return conv.title || t('conversationDetails.groupConversation');
     }
-    
+
     const otherParticipant = conv.participants?.find(p => p.userId !== currentUser.id);
     if (otherParticipant && otherParticipant.user) {
       // Prioriser le displayName, sinon prénom/nom, sinon username
@@ -564,7 +566,7 @@ export function ConversationDetailsSidebar({
              otherParticipant.user.username;
     }
 
-    return conv.title || 'Conversation';
+    return conv.title || t('conversationDetails.conversation');
   };
 
   // Fonctions pour la gestion des conversations
@@ -677,10 +679,10 @@ export function ConversationDetailsSidebar({
 
     if (result.success) {
       setIsCopied(true);
-      toast.success('Lien de conversation copié !');
+      toast.success(t('conversationDetails.linkCopied'));
       setTimeout(() => setIsCopied(false), 2000);
     } else {
-      toast.error(result.message || 'Erreur lors de la copie');
+      toast.error(result.message || t('conversationDetails.copyError'));
     }
   };
 
@@ -972,7 +974,7 @@ export function ConversationDetailsSidebar({
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <label className="text-sm font-medium text-muted-foreground">
-                    Tags personnels
+                    {t('conversationDetails.personalTags')}
                   </label>
                   <TooltipProvider>
                     <Tooltip>
@@ -981,7 +983,7 @@ export function ConversationDetailsSidebar({
                       </TooltipTrigger>
                       <TooltipContent side="right" className="max-w-xs">
                         <p className="text-xs">
-                          Organisez vos conversations avec vos propres tags. Les couleurs sont automatiques et cohérentes.
+                          {t('conversationDetails.tagsTooltip')}
                         </p>
                       </TooltipContent>
                     </Tooltip>
@@ -994,7 +996,7 @@ export function ConversationDetailsSidebar({
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <label className="text-sm font-medium text-muted-foreground">
-                    Catégorie
+                    {t('conversationDetails.category')}
                   </label>
                   <TooltipProvider>
                     <Tooltip>
@@ -1003,7 +1005,7 @@ export function ConversationDetailsSidebar({
                       </TooltipTrigger>
                       <TooltipContent side="right" className="max-w-xs">
                         <p className="text-xs">
-                          Classez vos conversations dans des catégories personnalisées pour mieux les organiser.
+                          {t('conversationDetails.categoryTooltip')}
                         </p>
                       </TooltipContent>
                     </Tooltip>
