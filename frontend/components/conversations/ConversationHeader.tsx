@@ -1,7 +1,7 @@
 'use client';
 
-import { useCallback, useState } from 'react';
-import { ArrowLeft, UserPlus, Info, MoreVertical, Link2, Video, Ghost, Share2, Image } from 'lucide-react';
+import { useCallback, useState, useEffect } from 'react';
+import { ArrowLeft, UserPlus, Info, MoreVertical, Link2, Video, Ghost, Share2, Image, Pin, Bell, BellOff, Archive, ArchiveRestore } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -32,6 +32,7 @@ import { toast } from 'sonner';
 import { ConversationImageUploadDialog } from './conversation-image-upload-dialog';
 import { AttachmentService } from '@/services/attachmentService';
 import { conversationsService } from '@/services/conversations.service';
+import { userPreferencesService } from '@/services/user-preferences.service';
 
 // Helper pour détecter si un utilisateur est anonyme
 function isAnonymousUser(user: any): user is AnonymousParticipant {
@@ -115,6 +116,32 @@ export function ConversationHeader({
   // État pour la gestion de l'upload d'image
   const [isImageUploadDialogOpen, setIsImageUploadDialogOpen] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+  // État pour les préférences utilisateur
+  const [isPinned, setIsPinned] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isArchived, setIsArchived] = useState(false);
+  const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
+
+  // Charger les préférences utilisateur
+  useEffect(() => {
+    const loadPreferences = async () => {
+      try {
+        setIsLoadingPreferences(true);
+        const prefs = await userPreferencesService.getPreferences(conversation.id);
+        if (prefs) {
+          setIsPinned(prefs.isPinned);
+          setIsMuted(prefs.isMuted);
+          setIsArchived(prefs.isArchived);
+        }
+      } catch (error) {
+        console.error('Error loading preferences:', error);
+      } finally {
+        setIsLoadingPreferences(false);
+      }
+    };
+    loadPreferences();
+  }, [conversation.id]);
 
   // Helper pour obtenir le rôle de l'utilisateur
   const getCurrentUserRole = useCallback((): UserRoleEnum => {
@@ -243,6 +270,46 @@ export function ConversationHeader({
     }
     return 'online'; // Pour les conversations de groupe, toujours afficher comme online
   }, [conversation.type, conversationParticipants, currentUser?.id]);
+
+  // Handlers pour les préférences utilisateur
+  const handleTogglePin = useCallback(async () => {
+    try {
+      const newPinnedState = !isPinned;
+      setIsPinned(newPinnedState);
+      await userPreferencesService.togglePin(conversation.id, newPinnedState);
+      toast.success(newPinnedState ? 'Conversation épinglée' : 'Conversation désépinglée');
+    } catch (error) {
+      console.error('Error toggling pin:', error);
+      setIsPinned(!isPinned); // Revert on error
+      toast.error('Erreur lors de l\'épinglage');
+    }
+  }, [conversation.id, isPinned]);
+
+  const handleToggleMute = useCallback(async () => {
+    try {
+      const newMutedState = !isMuted;
+      setIsMuted(newMutedState);
+      await userPreferencesService.toggleMute(conversation.id, newMutedState);
+      toast.success(newMutedState ? 'Notifications désactivées' : 'Notifications activées');
+    } catch (error) {
+      console.error('Error toggling mute:', error);
+      setIsMuted(!isMuted); // Revert on error
+      toast.error('Erreur lors du changement des notifications');
+    }
+  }, [conversation.id, isMuted]);
+
+  const handleToggleArchive = useCallback(async () => {
+    try {
+      const newArchivedState = !isArchived;
+      setIsArchived(newArchivedState);
+      await userPreferencesService.toggleArchive(conversation.id, newArchivedState);
+      toast.success(newArchivedState ? 'Conversation archivée' : 'Conversation désarchivée');
+    } catch (error) {
+      console.error('Error toggling archive:', error);
+      setIsArchived(!isArchived); // Revert on error
+      toast.error('Erreur lors de l\'archivage');
+    }
+  }, [conversation.id, isArchived]);
 
   // Fonction pour copier le lien de la conversation
   const handleShareConversation = useCallback(async () => {
@@ -458,6 +525,34 @@ export function ConversationHeader({
                 {t('conversationHeader.viewImages') || 'Voir les images'}
               </DropdownMenuItem>
             )}
+
+            <DropdownMenuSeparator />
+
+            {/* User Preferences */}
+            <DropdownMenuItem onClick={handleTogglePin} disabled={isLoadingPreferences}>
+              <Pin className={cn("h-4 w-4 mr-2", isPinned && "fill-current")} />
+              {isPinned ? 'Désépingler' : 'Épingler'}
+            </DropdownMenuItem>
+
+            <DropdownMenuItem onClick={handleToggleMute} disabled={isLoadingPreferences}>
+              {isMuted ? (
+                <Bell className="h-4 w-4 mr-2" />
+              ) : (
+                <BellOff className="h-4 w-4 mr-2" />
+              )}
+              {isMuted ? 'Activer les notifications' : 'Désactiver les notifications'}
+            </DropdownMenuItem>
+
+            <DropdownMenuItem onClick={handleToggleArchive} disabled={isLoadingPreferences}>
+              {isArchived ? (
+                <ArchiveRestore className="h-4 w-4 mr-2" />
+              ) : (
+                <Archive className="h-4 w-4 mr-2" />
+              )}
+              {isArchived ? 'Désarchiver' : 'Archiver'}
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator />
 
             <DropdownMenuItem onClick={handleShareConversation}>
               <Share2 className="h-4 w-4 mr-2" />
