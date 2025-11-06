@@ -1904,8 +1904,8 @@ export async function linksRoutes(fastify: FastifyInstance) {
       }
 
       // Pagination parameters
-      const limit = Math.min(parseInt(request.query.limit || '20', 10), 50); // Max 50
-      const offset = parseInt(request.query.offset || '0', 10);
+      const limit = Math.min(parseInt((request.query as any).limit || '20', 10), 50); // Max 50
+      const offset = parseInt((request.query as any).offset || '0', 10);
 
       // Get total count for pagination info
       const totalCount = await fastify.prisma.conversationShareLink.count({
