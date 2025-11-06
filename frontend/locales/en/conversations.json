@@ -187,7 +187,12 @@
       "categoryCreateError": "Error creating category",
       "availableCategories": "Available categories",
       "noCategory": "No category",
-      "noCategoryFound": "No category found"
+      "noCategoryFound": "No category found",
+      "removeCategory": "Remove category",
+      "groupConversation": "Group conversation",
+      "conversation": "Conversation",
+      "linkCopied": "Conversation link copied!",
+      "copyError": "Error copying"
     },
     "conversationImage": {
       "title": "Change conversation image",
