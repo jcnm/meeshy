@@ -340,6 +340,7 @@ function CategorySelector({ conversationId, onCategoryUpdated }: CategorySelecto
 
   const handleCreateCategory = async (name: string) => {
     try {
+      // Créer la catégorie
       const newCategory = await userPreferencesService.createCategory({ name });
       const updatedCategories = [...categories, newCategory].sort((a, b) => {
         // Trier par order d'abord
@@ -350,8 +351,22 @@ function CategorySelector({ conversationId, onCategoryUpdated }: CategorySelecto
         return a.name.localeCompare(b.name);
       });
       setCategories(updatedCategories);
-      await handleSelectCategory(newCategory.id);
-      toast.success(t('conversationDetails.categoryCreated'));
+
+      // Assigner immédiatement la catégorie à la conversation
+      setSelectedCategoryId(newCategory.id);
+      setSearchQuery('');
+      setIsDropdownOpen(false);
+
+      try {
+        await userPreferencesService.updateCategory(conversationId, newCategory.id);
+        toast.success(t('conversationDetails.categoryCreated'));
+        onCategoryUpdated?.();
+      } catch (updateError) {
+        // Si l'assignation échoue, on retire la catégorie de l'état
+        console.error('Error assigning category after creation:', updateError);
+        setSelectedCategoryId(null);
+        toast.error(t('conversationDetails.categoryUpdateError'));
+      }
     } catch (error) {
       console.error('Error creating category:', error);
       toast.error(t('conversationDetails.categoryCreateError'));
