@@ -23,7 +23,8 @@ import {
   Users,
   Link2,
   Copy,
-  Check
+  Check,
+  Camera
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Conversation, User, Message } from '@shared/types';
@@ -35,6 +36,8 @@ import { CreateLinkButton } from './create-link-button';
 import { UserRoleEnum } from '@shared/types';
 import { useI18n } from '@/hooks/useI18n';
 import { copyToClipboard } from '@/lib/clipboard';
+import { ConversationImageUploadDialog } from './conversation-image-upload-dialog';
+import { AttachmentService } from '@/services/attachmentService';
 
 // Import des composants de la sidebar de BubbleStreamPage
 import {
@@ -70,6 +73,8 @@ export function ConversationDetailsSidebar({
   const [conversationDescription, setConversationDescription] = useState(conversation.description || '');
   const [isLoading, setIsLoading] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [isImageUploadDialogOpen, setIsImageUploadDialogOpen] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   // États pour les statistiques de langues
   const [messageLanguageStats, setMessageLanguageStats] = useState<LanguageStats[]>([]);
@@ -78,10 +83,23 @@ export function ConversationDetailsSidebar({
 
   // Vérifier si l'utilisateur actuel est admin/modérateur de la conversation
   const userMembership = conversation.participants?.find(p => p.userId === currentUser.id);
-  const isAdmin = currentUser.role === UserRoleEnum.ADMIN || 
+  const isAdmin = currentUser.role === UserRoleEnum.ADMIN ||
                   currentUser.role === UserRoleEnum.BIGBOSS ||
                   userMembership?.role === UserRoleEnum.ADMIN ||
                   userMembership?.role === UserRoleEnum.MODERATOR;
+
+  // Vérifier si l'utilisateur peut modifier l'image (modérateur+)
+  const canModifyImage = conversation.type !== 'direct' && (
+    currentUser.role === UserRoleEnum.BIGBOSS ||
+    currentUser.role === UserRoleEnum.ADMIN ||
+    currentUser.role === UserRoleEnum.MODO ||
+    currentUser.role === UserRoleEnum.MODERATOR ||
+    currentUser.role === UserRoleEnum.AUDIT ||
+    currentUser.role === UserRoleEnum.ANALYST ||
+    currentUser.role === UserRoleEnum.CREATOR ||
+    userMembership?.role === UserRoleEnum.MODERATOR ||
+    userMembership?.role === UserRoleEnum.CREATOR
+  );
 
   // Calculer les statistiques de langues des messages et participants (comme dans BubbleStreamPage)
   useEffect(() => {
@@ -265,13 +283,45 @@ export function ConversationDetailsSidebar({
   const handleCopyConversationLink = async () => {
     const conversationUrl = `${window.location.origin}/conversations/${conversation.id}`;
     const result = await copyToClipboard(conversationUrl);
-    
+
     if (result.success) {
       setIsCopied(true);
       toast.success('Lien de conversation copié !');
       setTimeout(() => setIsCopied(false), 2000);
     } else {
       toast.error(result.message || 'Erreur lors de la copie');
+    }
+  };
+
+  // Fonction pour gérer l'upload de l'image de conversation
+  const handleImageUpload = async (file: File) => {
+    setIsUploadingImage(true);
+    try {
+      // Upload du fichier via le service d'attachments
+      const uploadResult = await AttachmentService.uploadFiles([file]);
+
+      if (uploadResult.success && uploadResult.attachments.length > 0) {
+        const imageUrl = uploadResult.attachments[0].url;
+
+        // Mettre à jour la conversation avec la nouvelle image
+        await conversationsService.updateConversation(conversation.id, {
+          image: imageUrl,
+          avatar: imageUrl
+        });
+
+        toast.success(t('conversationDetails.imageUpdated') || 'Image de la conversation mise à jour');
+        setIsImageUploadDialogOpen(false);
+
+        // Recharger la page pour afficher la nouvelle image
+        window.location.reload();
+      } else {
+        throw new Error('Upload failed');
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'upload de l\'image:', error);
+      toast.error(t('conversationDetails.imageUploadError') || 'Erreur lors de l\'upload de l\'image');
+    } finally {
+      setIsUploadingImage(false);
     }
   };
 
@@ -308,12 +358,36 @@ export function ConversationDetailsSidebar({
           <div className="p-4 space-y-6">
             {/* Info principale */}
             <div className="text-center space-y-3">
-              <Avatar className="h-16 w-16 mx-auto ring-2 ring-primary/20">
-                <AvatarImage />
-                <AvatarFallback className="bg-primary/20 text-primary font-bold text-lg">
-                  {getConversationDisplayName(conversation).charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+              {canModifyImage ? (
+                <div className="relative group mx-auto w-fit">
+                  <Avatar
+                    className="h-16 w-16 ring-2 ring-primary/20 cursor-pointer group-hover:ring-primary/50 transition-all"
+                    onClick={() => setIsImageUploadDialogOpen(true)}
+                  >
+                    <AvatarImage src={conversation.image || conversation.avatar} />
+                    <AvatarFallback className="bg-primary/20 text-primary font-bold text-lg">
+                      {getConversationDisplayName(conversation).charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  {/* Overlay avec icône camera au survol */}
+                  <div
+                    className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                    onClick={() => setIsImageUploadDialogOpen(true)}
+                  >
+                    <Camera className="h-6 w-6 text-white" />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {t('conversationDetails.clickToChangeImage') || 'Cliquez pour changer l\'image'}
+                  </p>
+                </div>
+              ) : (
+                <Avatar className="h-16 w-16 mx-auto ring-2 ring-primary/20">
+                  <AvatarImage src={conversation.image || conversation.avatar} />
+                  <AvatarFallback className="bg-primary/20 text-primary font-bold text-lg">
+                    {getConversationDisplayName(conversation).charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              )}
               <div>
                 {isEditingName ? (
                   <div className="flex items-center gap-2 justify-center">
@@ -593,6 +667,15 @@ export function ConversationDetailsSidebar({
             )}
           </div>
         </ScrollArea>
+
+        {/* Dialog pour l'upload d'image de conversation */}
+        <ConversationImageUploadDialog
+          open={isImageUploadDialogOpen}
+          onClose={() => setIsImageUploadDialogOpen(false)}
+          onImageUploaded={handleImageUpload}
+          isUploading={isUploadingImage}
+          conversationTitle={conversation.title || conversation.id}
+        />
       </div>
     </div>
     </>
