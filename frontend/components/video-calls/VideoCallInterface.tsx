@@ -16,6 +16,7 @@ import { CallControls } from './CallControls';
 import { CallStatusIndicator } from './CallStatusIndicator';
 import { AudioEffectsPanel } from './AudioEffectsPanel';
 import { ConnectionQualityBadge } from './ConnectionQualityBadge';
+import { DraggableParticipantOverlay } from './DraggableParticipantOverlay';
 import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
 import { logger } from '@/utils/logger';
 import { toast } from 'sonner';
@@ -43,6 +44,10 @@ export function VideoCallInterface({ callId }: VideoCallInterfaceProps) {
   const [callDuration, setCallDuration] = useState(0);
   const [showAudioEffects, setShowAudioEffects] = useState(false);
   const [showStats, setShowStats] = useState(false);
+
+  // New state for fullscreen mode and disconnected participants
+  const [fullscreenParticipantId, setFullscreenParticipantId] = useState<string | null>(null);
+  const [disconnectedParticipants, setDisconnectedParticipants] = useState<Set<string>>(new Set());
 
   // Stable error handler
   const handleWebRTCError = useCallback((error: Error) => {
@@ -305,10 +310,58 @@ export function VideoCallInterface({ callId }: VideoCallInterfaceProps) {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Listen for participant left events to show disconnected state
+  useEffect(() => {
+    const socket = meeshySocketIOService.getSocket();
+    if (!socket) return;
+
+    const handleParticipantLeft = (event: any) => {
+      if (event.callId !== callId) return;
+
+      const participantId = event.userId || event.anonymousId;
+      if (!participantId) return;
+
+      logger.info('[VideoCallInterface]', 'Participant left event received', { participantId });
+
+      // Mark participant as disconnected
+      setDisconnectedParticipants((prev) => new Set(prev).add(participantId));
+
+      // Remove their stream and peer connection after 2 seconds
+      setTimeout(() => {
+        const { removeRemoteStream, removePeerConnection } = useCallStore.getState();
+        removeRemoteStream(participantId);
+        removePeerConnection(participantId);
+
+        // Remove from disconnected set
+        setDisconnectedParticipants((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(participantId);
+          return newSet;
+        });
+      }, 2000);
+    };
+
+    socket.on('call:participant-left', handleParticipantLeft);
+
+    return () => {
+      socket.off('call:participant-left', handleParticipantLeft);
+    };
+  }, [callId]);
+
   // Get remote participant info
   const remoteParticipant = currentCall?.participants?.find(
     p => (p.userId || p.anonymousId) !== user.id && !p.leftAt
   );
+
+  // Toggle fullscreen for a participant
+  const handleToggleFullscreen = (participantId: string) => {
+    setFullscreenParticipantId((current) => (current === participantId ? null : participantId));
+  };
+
+  // Get the participant to display in fullscreen (or first remote participant by default)
+  const displayParticipant = fullscreenParticipantId
+    ? Array.from(remoteStreams.entries()).find(([id]) => id === fullscreenParticipantId)
+    : Array.from(remoteStreams.entries())[0];
 
   return (
     <div className="fixed inset-0 z-50 bg-black">
@@ -336,21 +389,42 @@ export function VideoCallInterface({ callId }: VideoCallInterfaceProps) {
         </div>
       )}
 
-      {/* Remote Video - Full Screen */}
+      {/* Remote Video - Full Screen (main participant) */}
       <div className="absolute inset-0">
-        {remoteStreams.size > 0 ? (
-          Array.from(remoteStreams.entries()).map(([participantId, stream]) => (
+        {displayParticipant ? (
+          <div
+            className="w-full h-full cursor-pointer"
+            onClick={() => handleToggleFullscreen(displayParticipant[0])}
+          >
             <VideoStream
-              key={participantId}
-              stream={stream}
+              key={displayParticipant[0]}
+              stream={displayParticipant[1]}
               muted={false}
               isLocal={false}
               className="w-full h-full object-cover"
-              participantName={remoteParticipant?.username}
-              isAudioEnabled={remoteParticipant?.isAudioEnabled ?? true}
-              isVideoEnabled={remoteParticipant?.isVideoEnabled ?? true}
+              participantName={
+                currentCall?.participants?.find(
+                  (p) => (p.userId || p.anonymousId) === displayParticipant[0]
+                )?.username
+              }
+              isAudioEnabled={
+                currentCall?.participants?.find(
+                  (p) => (p.userId || p.anonymousId) === displayParticipant[0]
+                )?.isAudioEnabled ?? true
+              }
+              isVideoEnabled={
+                currentCall?.participants?.find(
+                  (p) => (p.userId || p.anonymousId) === displayParticipant[0]
+                )?.isVideoEnabled ?? true
+              }
+              isDisconnected={disconnectedParticipants.has(displayParticipant[0])}
+              onRemove={() => {
+                const { removeRemoteStream, removePeerConnection } = useCallStore.getState();
+                removeRemoteStream(displayParticipant[0]);
+                removePeerConnection(displayParticipant[0]);
+              }}
             />
-          ))
+          </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <div className="text-center text-white">
@@ -367,6 +441,34 @@ export function VideoCallInterface({ callId }: VideoCallInterfaceProps) {
           </div>
         )}
       </div>
+
+      {/* Other Participants - Overlay (draggable) */}
+      {Array.from(remoteStreams.entries())
+        .filter(([id]) => id !== displayParticipant?.[0])
+        .map(([participantId, stream], index) => {
+          const participant = currentCall?.participants?.find(
+            (p) => (p.userId || p.anonymousId) === participantId
+          );
+
+          return (
+            <DraggableParticipantOverlay
+              key={participantId}
+              participantId={participantId}
+              stream={stream}
+              participantName={participant?.username}
+              isAudioEnabled={participant?.isAudioEnabled ?? true}
+              isVideoEnabled={participant?.isVideoEnabled ?? true}
+              isDisconnected={disconnectedParticipants.has(participantId)}
+              initialPosition={{ x: 20 + index * 160, y: 20 }}
+              onDoubleClick={() => handleToggleFullscreen(participantId)}
+              onRemove={() => {
+                const { removeRemoteStream, removePeerConnection } = useCallStore.getState();
+                removeRemoteStream(participantId);
+                removePeerConnection(participantId);
+              }}
+            />
+          );
+        })}
 
       {/* Local Video - Draggable Overlay */}
       <div
