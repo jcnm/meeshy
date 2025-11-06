@@ -36,7 +36,7 @@ app.prepare().then(() => {
     })
     .listen(port, '0.0.0.0', () => {
       console.log(`> ✅ Ready on https://${hostname}:${port}`);
-      console.log(`> 📱 Access from iPhone: https://192.168.10.1:${port}`);
+      console.log(`> 📱 Access from iPhone: https://192.168.1.39:${port}`);
       console.log(`> 💻 Access locally: https://localhost:${port}`);
     });
 });
