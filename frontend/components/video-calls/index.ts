@@ -8,6 +8,10 @@ export { CallControls } from './CallControls';
 export { CallStatusIndicator } from './CallStatusIndicator';
 export { CallErrorBoundary } from './CallErrorBoundary';
 export { PermissionRequest } from './PermissionRequest';
+export { AudioEffectsPanel } from './AudioEffectsPanel';
+export { ConnectionQualityBadge } from './ConnectionQualityBadge';
+export { DraggableParticipantOverlay } from './DraggableParticipantOverlay';
+export { OngoingCallBanner } from './OngoingCallBanner';
 
 // Hooks
 export { useWebRTC } from './hooks/useWebRTC';

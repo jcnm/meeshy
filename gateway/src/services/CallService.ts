@@ -130,17 +130,52 @@ export class CallService {
       throw new Error(`${CALL_ERROR_CODES.NOT_A_PARTICIPANT}: You are not a participant in this conversation`);
     }
 
-    // Check if there's already an active call
+    // IMPROVEMENT: Clean up any zombie calls before initiating new call
+    // This prevents orphan calls from blocking new calls
     const activeCall = await this.prisma.callSession.findFirst({
       where: {
         conversationId,
         status: { in: ['initiated', 'ringing', 'active'] }
+      },
+      include: {
+        participants: true
       }
     });
 
     if (activeCall) {
-      logger.error('❌ Call already active', { conversationId, callId: activeCall.id });
-      throw new Error(`${CALL_ERROR_CODES.CALL_ALREADY_ACTIVE}: A call is already active in this conversation`);
+      // Check if all participants have left (zombie call)
+      const activeParticipants = activeCall.participants.filter(p => !p.leftAt);
+
+      if (activeParticipants.length === 0) {
+        // Zombie call - force cleanup before starting new call
+        logger.warn('⚠️ Found zombie call, cleaning up before new call', {
+          conversationId,
+          zombieCallId: activeCall.id,
+          callStatus: activeCall.status
+        });
+
+        const now = new Date();
+        const duration = Math.floor((now.getTime() - activeCall.startedAt.getTime()) / 1000);
+
+        await this.prisma.callSession.update({
+          where: { id: activeCall.id },
+          data: {
+            status: CallStatus.ended,
+            endedAt: now,
+            duration,
+            metadata: {
+              ...(activeCall.metadata as any),
+              endReason: 'zombie_cleanup'
+            }
+          }
+        });
+
+        logger.info('✅ Zombie call cleaned up', { zombieCallId: activeCall.id });
+      } else {
+        // Real active call with participants
+        logger.error('❌ Call already active', { conversationId, callId: activeCall.id });
+        throw new Error(`${CALL_ERROR_CODES.CALL_ALREADY_ACTIVE}: A call is already active in this conversation`);
+      }
     }
 
     // Create call session with participant in a transaction
