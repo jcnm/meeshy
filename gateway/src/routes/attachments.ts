@@ -332,6 +332,14 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
    */
   fastify.get(
     '/attachments/file/*',
+    {
+      // Use onSend hook to override Helmet's X-Frame-Options header
+      // This allows PDFs and other attachments to be embedded in iframes
+      onSend: async (request, reply, payload) => {
+        reply.header('X-Frame-Options', 'ALLOWALL');
+        return payload;
+      }
+    },
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         // Extraire le chemin du fichier
@@ -400,9 +408,6 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
             reply.header('Access-Control-Allow-Origin', '*');
             reply.header('Cache-Control', 'public, max-age=31536000, immutable');
 
-            // Remove X-Frame-Options to allow iframe embedding from different origins
-            reply.removeHeader('X-Frame-Options');
-
             // Stream la partie demandée
             const stream = createReadStream(filePath, { start, end });
             return reply.send(stream);
@@ -418,10 +423,6 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
         reply.header('Cross-Origin-Resource-Policy', 'cross-origin');
         reply.header('Access-Control-Allow-Origin', '*');
         reply.header('Cache-Control', 'public, max-age=31536000, immutable');
-
-        // Remove X-Frame-Options to allow iframe embedding from different origins
-        // (Helmet sets SAMEORIGIN by default which blocks cross-origin iframes)
-        reply.removeHeader('X-Frame-Options');
 
         // Stream le fichier complet
         const stream = createReadStream(filePath);
