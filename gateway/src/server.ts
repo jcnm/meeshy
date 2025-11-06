@@ -708,31 +708,51 @@ class MeeshyServer {
     const protocol = useHttps ? 'https' : 'http';
     const wsProtocol = useHttps ? 'wss' : 'ws';
 
-    const banner = `
-╔══════════════════════════════════════════════════════════════════╗
-║                       🌍 MEESHY GATEWAY 🌍                       ║
-╠══════════════════════════════════════════════════════════════════╣
-║  Environment: ${config.nodeEnv.padEnd(48)}   ║
-║  Port:        ${config.port.toString().padEnd(48)}   ║
-║  Database:    ${dbStatus}                                          ║
-║  Translator:  ${translateUrl}║
-╠══════════════════════════════════════════════════════════════════╣
-║  📡 WebSocket:    ${wsProtocol}://localhost:${config.port}/socket.io/${' '.repeat(20 - wsProtocol.length - config.port.toString().length)} ║
-║  🏥 Health:       ${protocol}://localhost:${config.port}/health${' '.repeat(24 - protocol.length - config.port.toString().length)} ║
-║  📖 Info:         ${protocol}://localhost:${config.port}/info${' '.repeat(26 - protocol.length - config.port.toString().length)} ║
-║  📱 Network:      ${protocol}://${localIp}:${config.port}${' '.repeat(38 - protocol.length - localIp.length - config.port.toString().length)} ║
-╚══════════════════════════════════════════════════════════════════╝
-    `.trim();
-
-    console.log(`[GATEWAY] ${banner}`);
 
     if (useHttps) {
       logger.info(`🔒 Gateway running in HTTPS mode`);
       logger.info(`📱 Network access: ${protocol}://${localIp}:${config.port}`);
       if (domain !== 'localhost') {
         logger.info(`🌐 Custom domain: ${protocol}://${domain}:${config.port}`);
+        const banner = `
+    ╔══════════════════════════════════════════════════════════════════╗
+    ║                       🌍 MEESHY GATEWAY 🌍                       ║
+    ╠══════════════════════════════════════════════════════════════════╣
+    ║  Environment: ${config.nodeEnv.padEnd(48)}   ║
+    ║  Port:        ${config.port.toString().padEnd(48)}   ║
+    ║  Database:    ${dbStatus}                                          ║
+    ║  Translator:  ${translateUrl}║
+    ╠══════════════════════════════════════════════════════════════════╣
+    ║  📡 WebSocket:    ${wsProtocol}://localhost:${config.port}/socket.io/${' '.repeat(20 - wsProtocol.length - config.port.toString().length)} ║
+    ║  🏥 Health:       ${protocol}://localhost:${config.port}/health${' '.repeat(24 - protocol.length - config.port.toString().length)} ║
+    ║  📖 Info:         ${protocol}://localhost:${config.port}/info${' '.repeat(26 - protocol.length - config.port.toString().length)} ║
+    ║  📱 Network:      ${protocol}://${localIp}:${config.port}${' '.repeat(38 - protocol.length - localIp.length - config.port.toString().length)} ║
+    ╚══════════════════════════════════════════════════════════════════╝
+        `.trim();
+        console.log(`[GATEWAY] ${banner}`);
+        logger.info(`🔌 WebSocket: ${wsProtocol}://localhost:${config.port}`);
+      }else{
+        logger.info(`🌐 Local access only (no custom domain configured)`);
+
+        const banner = `
+    ╔══════════════════════════════════════════════════════════════════╗
+    ║                       🌍 MEESHY GATEWAY 🌍                       ║
+    ╠══════════════════════════════════════════════════════════════════╣
+    ║  Environment: ${config.nodeEnv.padEnd(48)}   ║
+    ║  Port:        ${config.port.toString().padEnd(48)}   ║
+    ║  Database:    ${dbStatus}                                          ║
+    ║  Translator:  ${translateUrl}║
+    ╠══════════════════════════════════════════════════════════════════╣
+    ║  📡 WebSocket:    ${wsProtocol}://gate.${domain}:${config.port}/socket.io/${' '.repeat(20 - wsProtocol.length - config.port.toString().length)} ║
+    ║  🏥 Health:       ${protocol}://gate.${domain}:${config.port}/health${' '.repeat(24 - protocol.length - config.port.toString().length)} ║
+    ║  📖 Info:         ${protocol}://gate.${domain}:${config.port}/info${' '.repeat(26 - protocol.length - config.port.toString().length)} ║
+    ║  📱 Network:      ${protocol}://${localIp}:${config.port}${' '.repeat(38 - protocol.length - localIp.length - config.port.toString().length)} ║
+    ╚══════════════════════════════════════════════════════════════════╝
+        `.trim();
+        console.log(`[GATEWAY] ${banner}`);
+        logger.info(`🔌 WebSocket: ${wsProtocol}://gate.${domain}:${config.port}`);
       }
-      logger.info(`🔌 WebSocket: ${wsProtocol}://localhost:${config.port}`);
+      
     }
   }
 
