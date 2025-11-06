@@ -155,6 +155,16 @@ export type Transcription = $Result.DefaultSelection<Prisma.$TranscriptionPayloa
  * Stores translations of transcriptions
  */
 export type TranslationCall = $Result.DefaultSelection<Prisma.$TranslationCallPayload>
+/**
+ * Model UserConversationPreferences
+ * User-specific conversation preferences (personal settings per conversation)
+ */
+export type UserConversationPreferences = $Result.DefaultSelection<Prisma.$UserConversationPreferencesPayload>
+/**
+ * Model UserConversationCategory
+ * User-defined categories for organizing conversations
+ */
+export type UserConversationCategory = $Result.DefaultSelection<Prisma.$UserConversationCategoryPayload>
 
 /**
  * Enums
@@ -582,6 +592,26 @@ export class PrismaClient<
     * ```
     */
   get translationCall(): Prisma.TranslationCallDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.userConversationPreferences`: Exposes CRUD operations for the **UserConversationPreferences** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more UserConversationPreferences
+    * const userConversationPreferences = await prisma.userConversationPreferences.findMany()
+    * ```
+    */
+  get userConversationPreferences(): Prisma.UserConversationPreferencesDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.userConversationCategory`: Exposes CRUD operations for the **UserConversationCategory** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more UserConversationCategories
+    * const userConversationCategories = await prisma.userConversationCategory.findMany()
+    * ```
+    */
+  get userConversationCategory(): Prisma.UserConversationCategoryDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1049,7 +1079,9 @@ export namespace Prisma {
     CallSession: 'CallSession',
     CallParticipant: 'CallParticipant',
     Transcription: 'Transcription',
-    TranslationCall: 'TranslationCall'
+    TranslationCall: 'TranslationCall',
+    UserConversationPreferences: 'UserConversationPreferences',
+    UserConversationCategory: 'UserConversationCategory'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1068,7 +1100,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "conversation" | "conversationMember" | "conversationShareLink" | "anonymousParticipant" | "message" | "messageTranslation" | "messageAttachment" | "messageStatus" | "reaction" | "friendRequest" | "typingIndicator" | "notification" | "community" | "communityMember" | "userStats" | "userPreference" | "conversationPreference" | "affiliateToken" | "affiliateRelation" | "trackingLink" | "trackingLinkClick" | "adminAuditLog" | "report" | "callSession" | "callParticipant" | "transcription" | "translationCall"
+      modelProps: "user" | "conversation" | "conversationMember" | "conversationShareLink" | "anonymousParticipant" | "message" | "messageTranslation" | "messageAttachment" | "messageStatus" | "reaction" | "friendRequest" | "typingIndicator" | "notification" | "community" | "communityMember" | "userStats" | "userPreference" | "conversationPreference" | "affiliateToken" | "affiliateRelation" | "trackingLink" | "trackingLinkClick" | "adminAuditLog" | "report" | "callSession" | "callParticipant" | "transcription" | "translationCall" | "userConversationPreferences" | "userConversationCategory"
       txIsolationLevel: never
     }
     model: {
@@ -3144,6 +3176,154 @@ export namespace Prisma {
           }
         }
       }
+      UserConversationPreferences: {
+        payload: Prisma.$UserConversationPreferencesPayload<ExtArgs>
+        fields: Prisma.UserConversationPreferencesFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.UserConversationPreferencesFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserConversationPreferencesPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.UserConversationPreferencesFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserConversationPreferencesPayload>
+          }
+          findFirst: {
+            args: Prisma.UserConversationPreferencesFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserConversationPreferencesPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.UserConversationPreferencesFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserConversationPreferencesPayload>
+          }
+          findMany: {
+            args: Prisma.UserConversationPreferencesFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserConversationPreferencesPayload>[]
+          }
+          create: {
+            args: Prisma.UserConversationPreferencesCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserConversationPreferencesPayload>
+          }
+          createMany: {
+            args: Prisma.UserConversationPreferencesCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.UserConversationPreferencesDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserConversationPreferencesPayload>
+          }
+          update: {
+            args: Prisma.UserConversationPreferencesUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserConversationPreferencesPayload>
+          }
+          deleteMany: {
+            args: Prisma.UserConversationPreferencesDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.UserConversationPreferencesUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.UserConversationPreferencesUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserConversationPreferencesPayload>
+          }
+          aggregate: {
+            args: Prisma.UserConversationPreferencesAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateUserConversationPreferences>
+          }
+          groupBy: {
+            args: Prisma.UserConversationPreferencesGroupByArgs<ExtArgs>
+            result: $Utils.Optional<UserConversationPreferencesGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.UserConversationPreferencesFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.UserConversationPreferencesAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.UserConversationPreferencesCountArgs<ExtArgs>
+            result: $Utils.Optional<UserConversationPreferencesCountAggregateOutputType> | number
+          }
+        }
+      }
+      UserConversationCategory: {
+        payload: Prisma.$UserConversationCategoryPayload<ExtArgs>
+        fields: Prisma.UserConversationCategoryFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.UserConversationCategoryFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserConversationCategoryPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.UserConversationCategoryFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserConversationCategoryPayload>
+          }
+          findFirst: {
+            args: Prisma.UserConversationCategoryFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserConversationCategoryPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.UserConversationCategoryFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserConversationCategoryPayload>
+          }
+          findMany: {
+            args: Prisma.UserConversationCategoryFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserConversationCategoryPayload>[]
+          }
+          create: {
+            args: Prisma.UserConversationCategoryCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserConversationCategoryPayload>
+          }
+          createMany: {
+            args: Prisma.UserConversationCategoryCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.UserConversationCategoryDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserConversationCategoryPayload>
+          }
+          update: {
+            args: Prisma.UserConversationCategoryUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserConversationCategoryPayload>
+          }
+          deleteMany: {
+            args: Prisma.UserConversationCategoryDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.UserConversationCategoryUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.UserConversationCategoryUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserConversationCategoryPayload>
+          }
+          aggregate: {
+            args: Prisma.UserConversationCategoryAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateUserConversationCategory>
+          }
+          groupBy: {
+            args: Prisma.UserConversationCategoryGroupByArgs<ExtArgs>
+            result: $Utils.Optional<UserConversationCategoryGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.UserConversationCategoryFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.UserConversationCategoryAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.UserConversationCategoryCountArgs<ExtArgs>
+            result: $Utils.Optional<UserConversationCategoryCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -3251,6 +3431,8 @@ export namespace Prisma {
     callParticipant?: CallParticipantOmit
     transcription?: TranscriptionOmit
     translationCall?: TranslationCallOmit
+    userConversationPreferences?: UserConversationPreferencesOmit
+    userConversationCategory?: UserConversationCategoryOmit
   }
 
   /* Types for Logging */
@@ -3370,6 +3552,8 @@ export namespace Prisma {
     trackingLinkClicks: number
     initiatedCalls: number
     callParticipations: number
+    conversationPrefs: number
+    conversationCategories: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3393,6 +3577,8 @@ export namespace Prisma {
     trackingLinkClicks?: boolean | UserCountOutputTypeCountTrackingLinkClicksArgs
     initiatedCalls?: boolean | UserCountOutputTypeCountInitiatedCallsArgs
     callParticipations?: boolean | UserCountOutputTypeCountCallParticipationsArgs
+    conversationPrefs?: boolean | UserCountOutputTypeCountConversationPrefsArgs
+    conversationCategories?: boolean | UserCountOutputTypeCountConversationCategoriesArgs
   }
 
   // Custom InputTypes
@@ -3546,6 +3732,20 @@ export namespace Prisma {
     where?: CallParticipantWhereInput
   }
 
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountConversationPrefsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserConversationPreferencesWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountConversationCategoriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserConversationCategoryWhereInput
+  }
+
 
   /**
    * Count Type ConversationCountOutputType
@@ -3559,6 +3759,7 @@ export namespace Prisma {
     messages: number
     typingIndicators: number
     callSessions: number
+    userPreferences: number
   }
 
   export type ConversationCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3569,6 +3770,7 @@ export namespace Prisma {
     messages?: boolean | ConversationCountOutputTypeCountMessagesArgs
     typingIndicators?: boolean | ConversationCountOutputTypeCountTypingIndicatorsArgs
     callSessions?: boolean | ConversationCountOutputTypeCountCallSessionsArgs
+    userPreferences?: boolean | ConversationCountOutputTypeCountUserPreferencesArgs
   }
 
   // Custom InputTypes
@@ -3629,6 +3831,13 @@ export namespace Prisma {
    */
   export type ConversationCountOutputTypeCountCallSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: CallSessionWhereInput
+  }
+
+  /**
+   * ConversationCountOutputType without action
+   */
+  export type ConversationCountOutputTypeCountUserPreferencesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserConversationPreferencesWhereInput
   }
 
 
@@ -3958,6 +4167,37 @@ export namespace Prisma {
    */
   export type TranscriptionCountOutputTypeCountTranslationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TranslationCallWhereInput
+  }
+
+
+  /**
+   * Count Type UserConversationCategoryCountOutputType
+   */
+
+  export type UserConversationCategoryCountOutputType = {
+    conversations: number
+  }
+
+  export type UserConversationCategoryCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    conversations?: boolean | UserConversationCategoryCountOutputTypeCountConversationsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * UserConversationCategoryCountOutputType without action
+   */
+  export type UserConversationCategoryCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserConversationCategoryCountOutputType
+     */
+    select?: UserConversationCategoryCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * UserConversationCategoryCountOutputType without action
+   */
+  export type UserConversationCategoryCountOutputTypeCountConversationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserConversationPreferencesWhereInput
   }
 
 
@@ -4436,6 +4676,8 @@ export namespace Prisma {
     trackingLinkClicks?: boolean | User$trackingLinkClicksArgs<ExtArgs>
     initiatedCalls?: boolean | User$initiatedCallsArgs<ExtArgs>
     callParticipations?: boolean | User$callParticipationsArgs<ExtArgs>
+    conversationPrefs?: boolean | User$conversationPrefsArgs<ExtArgs>
+    conversationCategories?: boolean | User$conversationCategoriesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -4503,6 +4745,8 @@ export namespace Prisma {
     trackingLinkClicks?: boolean | User$trackingLinkClicksArgs<ExtArgs>
     initiatedCalls?: boolean | User$initiatedCallsArgs<ExtArgs>
     callParticipations?: boolean | User$callParticipationsArgs<ExtArgs>
+    conversationPrefs?: boolean | User$conversationPrefsArgs<ExtArgs>
+    conversationCategories?: boolean | User$conversationCategoriesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -4530,6 +4774,8 @@ export namespace Prisma {
       trackingLinkClicks: Prisma.$TrackingLinkClickPayload<ExtArgs>[]
       initiatedCalls: Prisma.$CallSessionPayload<ExtArgs>[]
       callParticipations: Prisma.$CallParticipantPayload<ExtArgs>[]
+      conversationPrefs: Prisma.$UserConversationPreferencesPayload<ExtArgs>[]
+      conversationCategories: Prisma.$UserConversationCategoryPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -4955,6 +5201,8 @@ export namespace Prisma {
     trackingLinkClicks<T extends User$trackingLinkClicksArgs<ExtArgs> = {}>(args?: Subset<T, User$trackingLinkClicksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TrackingLinkClickPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     initiatedCalls<T extends User$initiatedCallsArgs<ExtArgs> = {}>(args?: Subset<T, User$initiatedCallsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CallSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     callParticipations<T extends User$callParticipationsArgs<ExtArgs> = {}>(args?: Subset<T, User$callParticipationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CallParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    conversationPrefs<T extends User$conversationPrefsArgs<ExtArgs> = {}>(args?: Subset<T, User$conversationPrefsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserConversationPreferencesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    conversationCategories<T extends User$conversationCategoriesArgs<ExtArgs> = {}>(args?: Subset<T, User$conversationCategoriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserConversationCategoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5889,6 +6137,54 @@ export namespace Prisma {
   }
 
   /**
+   * User.conversationPrefs
+   */
+  export type User$conversationPrefsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserConversationPreferences
+     */
+    select?: UserConversationPreferencesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserConversationPreferences
+     */
+    omit?: UserConversationPreferencesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserConversationPreferencesInclude<ExtArgs> | null
+    where?: UserConversationPreferencesWhereInput
+    orderBy?: UserConversationPreferencesOrderByWithRelationInput | UserConversationPreferencesOrderByWithRelationInput[]
+    cursor?: UserConversationPreferencesWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UserConversationPreferencesScalarFieldEnum | UserConversationPreferencesScalarFieldEnum[]
+  }
+
+  /**
+   * User.conversationCategories
+   */
+  export type User$conversationCategoriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserConversationCategory
+     */
+    select?: UserConversationCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserConversationCategory
+     */
+    omit?: UserConversationCategoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserConversationCategoryInclude<ExtArgs> | null
+    where?: UserConversationCategoryWhereInput
+    orderBy?: UserConversationCategoryOrderByWithRelationInput | UserConversationCategoryOrderByWithRelationInput[]
+    cursor?: UserConversationCategoryWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UserConversationCategoryScalarFieldEnum | UserConversationCategoryScalarFieldEnum[]
+  }
+
+  /**
    * User without action
    */
   export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6143,6 +6439,7 @@ export namespace Prisma {
     messages?: boolean | Conversation$messagesArgs<ExtArgs>
     typingIndicators?: boolean | Conversation$typingIndicatorsArgs<ExtArgs>
     callSessions?: boolean | Conversation$callSessionsArgs<ExtArgs>
+    userPreferences?: boolean | Conversation$userPreferencesArgs<ExtArgs>
     _count?: boolean | ConversationCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["conversation"]>
 
@@ -6174,6 +6471,7 @@ export namespace Prisma {
     messages?: boolean | Conversation$messagesArgs<ExtArgs>
     typingIndicators?: boolean | Conversation$typingIndicatorsArgs<ExtArgs>
     callSessions?: boolean | Conversation$callSessionsArgs<ExtArgs>
+    userPreferences?: boolean | Conversation$userPreferencesArgs<ExtArgs>
     _count?: boolean | ConversationCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -6188,6 +6486,7 @@ export namespace Prisma {
       messages: Prisma.$MessagePayload<ExtArgs>[]
       typingIndicators: Prisma.$TypingIndicatorPayload<ExtArgs>[]
       callSessions: Prisma.$CallSessionPayload<ExtArgs>[]
+      userPreferences: Prisma.$UserConversationPreferencesPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -6580,6 +6879,7 @@ export namespace Prisma {
     messages<T extends Conversation$messagesArgs<ExtArgs> = {}>(args?: Subset<T, Conversation$messagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     typingIndicators<T extends Conversation$typingIndicatorsArgs<ExtArgs> = {}>(args?: Subset<T, Conversation$typingIndicatorsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TypingIndicatorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     callSessions<T extends Conversation$callSessionsArgs<ExtArgs> = {}>(args?: Subset<T, Conversation$callSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CallSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    userPreferences<T extends Conversation$userPreferencesArgs<ExtArgs> = {}>(args?: Subset<T, Conversation$userPreferencesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserConversationPreferencesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -7176,6 +7476,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: CallSessionScalarFieldEnum | CallSessionScalarFieldEnum[]
+  }
+
+  /**
+   * Conversation.userPreferences
+   */
+  export type Conversation$userPreferencesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserConversationPreferences
+     */
+    select?: UserConversationPreferencesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserConversationPreferences
+     */
+    omit?: UserConversationPreferencesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserConversationPreferencesInclude<ExtArgs> | null
+    where?: UserConversationPreferencesWhereInput
+    orderBy?: UserConversationPreferencesOrderByWithRelationInput | UserConversationPreferencesOrderByWithRelationInput[]
+    cursor?: UserConversationPreferencesWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UserConversationPreferencesScalarFieldEnum | UserConversationPreferencesScalarFieldEnum[]
   }
 
   /**
@@ -8332,8 +8656,10 @@ export namespace Prisma {
     allowAnonymousFiles: boolean | null
     allowAnonymousImages: boolean | null
     allowViewHistory: boolean | null
+    requireAccount: boolean | null
     requireNickname: boolean | null
     requireEmail: boolean | null
+    requireBirthday: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -8358,8 +8684,10 @@ export namespace Prisma {
     allowAnonymousFiles: boolean | null
     allowAnonymousImages: boolean | null
     allowViewHistory: boolean | null
+    requireAccount: boolean | null
     requireNickname: boolean | null
     requireEmail: boolean | null
+    requireBirthday: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -8384,8 +8712,10 @@ export namespace Prisma {
     allowAnonymousFiles: number
     allowAnonymousImages: number
     allowViewHistory: number
+    requireAccount: number
     requireNickname: number
     requireEmail: number
+    requireBirthday: number
     allowedCountries: number
     allowedLanguages: number
     allowedIpRanges: number
@@ -8433,8 +8763,10 @@ export namespace Prisma {
     allowAnonymousFiles?: true
     allowAnonymousImages?: true
     allowViewHistory?: true
+    requireAccount?: true
     requireNickname?: true
     requireEmail?: true
+    requireBirthday?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -8459,8 +8791,10 @@ export namespace Prisma {
     allowAnonymousFiles?: true
     allowAnonymousImages?: true
     allowViewHistory?: true
+    requireAccount?: true
     requireNickname?: true
     requireEmail?: true
+    requireBirthday?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -8485,8 +8819,10 @@ export namespace Prisma {
     allowAnonymousFiles?: true
     allowAnonymousImages?: true
     allowViewHistory?: true
+    requireAccount?: true
     requireNickname?: true
     requireEmail?: true
+    requireBirthday?: true
     allowedCountries?: true
     allowedLanguages?: true
     allowedIpRanges?: true
@@ -8601,8 +8937,10 @@ export namespace Prisma {
     allowAnonymousFiles: boolean
     allowAnonymousImages: boolean
     allowViewHistory: boolean
+    requireAccount: boolean
     requireNickname: boolean
     requireEmail: boolean
+    requireBirthday: boolean
     allowedCountries: string[]
     allowedLanguages: string[]
     allowedIpRanges: string[]
@@ -8649,8 +8987,10 @@ export namespace Prisma {
     allowAnonymousFiles?: boolean
     allowAnonymousImages?: boolean
     allowViewHistory?: boolean
+    requireAccount?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    requireBirthday?: boolean
     allowedCountries?: boolean
     allowedLanguages?: boolean
     allowedIpRanges?: boolean
@@ -8684,8 +9024,10 @@ export namespace Prisma {
     allowAnonymousFiles?: boolean
     allowAnonymousImages?: boolean
     allowViewHistory?: boolean
+    requireAccount?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    requireBirthday?: boolean
     allowedCountries?: boolean
     allowedLanguages?: boolean
     allowedIpRanges?: boolean
@@ -8693,7 +9035,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type ConversationShareLinkOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "linkId" | "identifier" | "conversationId" | "createdBy" | "name" | "description" | "maxUses" | "currentUses" | "maxConcurrentUsers" | "currentConcurrentUsers" | "maxUniqueSessions" | "currentUniqueSessions" | "expiresAt" | "isActive" | "allowAnonymousMessages" | "allowAnonymousFiles" | "allowAnonymousImages" | "allowViewHistory" | "requireNickname" | "requireEmail" | "allowedCountries" | "allowedLanguages" | "allowedIpRanges" | "createdAt" | "updatedAt", ExtArgs["result"]["conversationShareLink"]>
+  export type ConversationShareLinkOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "linkId" | "identifier" | "conversationId" | "createdBy" | "name" | "description" | "maxUses" | "currentUses" | "maxConcurrentUsers" | "currentConcurrentUsers" | "maxUniqueSessions" | "currentUniqueSessions" | "expiresAt" | "isActive" | "allowAnonymousMessages" | "allowAnonymousFiles" | "allowAnonymousImages" | "allowViewHistory" | "requireAccount" | "requireNickname" | "requireEmail" | "requireBirthday" | "allowedCountries" | "allowedLanguages" | "allowedIpRanges" | "createdAt" | "updatedAt", ExtArgs["result"]["conversationShareLink"]>
   export type ConversationShareLinkInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     anonymousParticipants?: boolean | ConversationShareLink$anonymousParticipantsArgs<ExtArgs>
     creator?: boolean | UserDefaultArgs<ExtArgs>
@@ -8731,8 +9073,16 @@ export namespace Prisma {
       allowAnonymousFiles: boolean
       allowAnonymousImages: boolean
       allowViewHistory: boolean
+      /**
+       * Si true, seuls les utilisateurs avec compte peuvent rejoindre (bloque l'accès anonyme)
+       */
+      requireAccount: boolean
       requireNickname: boolean
       requireEmail: boolean
+      /**
+       * Si true, demande la date de naissance pour vérifier l'âge minimum
+       */
+      requireBirthday: boolean
       allowedCountries: string[]
       allowedLanguages: string[]
       allowedIpRanges: string[]
@@ -9152,8 +9502,10 @@ export namespace Prisma {
     readonly allowAnonymousFiles: FieldRef<"ConversationShareLink", 'Boolean'>
     readonly allowAnonymousImages: FieldRef<"ConversationShareLink", 'Boolean'>
     readonly allowViewHistory: FieldRef<"ConversationShareLink", 'Boolean'>
+    readonly requireAccount: FieldRef<"ConversationShareLink", 'Boolean'>
     readonly requireNickname: FieldRef<"ConversationShareLink", 'Boolean'>
     readonly requireEmail: FieldRef<"ConversationShareLink", 'Boolean'>
+    readonly requireBirthday: FieldRef<"ConversationShareLink", 'Boolean'>
     readonly allowedCountries: FieldRef<"ConversationShareLink", 'String[]'>
     readonly allowedLanguages: FieldRef<"ConversationShareLink", 'String[]'>
     readonly allowedIpRanges: FieldRef<"ConversationShareLink", 'String[]'>
@@ -9589,6 +9941,7 @@ export namespace Prisma {
     lastName: string | null
     username: string | null
     email: string | null
+    birthday: Date | null
     sessionToken: string | null
     ipAddress: string | null
     country: string | null
@@ -9613,6 +9966,7 @@ export namespace Prisma {
     lastName: string | null
     username: string | null
     email: string | null
+    birthday: Date | null
     sessionToken: string | null
     ipAddress: string | null
     country: string | null
@@ -9637,6 +9991,7 @@ export namespace Prisma {
     lastName: number
     username: number
     email: number
+    birthday: number
     sessionToken: number
     ipAddress: number
     country: number
@@ -9663,6 +10018,7 @@ export namespace Prisma {
     lastName?: true
     username?: true
     email?: true
+    birthday?: true
     sessionToken?: true
     ipAddress?: true
     country?: true
@@ -9687,6 +10043,7 @@ export namespace Prisma {
     lastName?: true
     username?: true
     email?: true
+    birthday?: true
     sessionToken?: true
     ipAddress?: true
     country?: true
@@ -9711,6 +10068,7 @@ export namespace Prisma {
     lastName?: true
     username?: true
     email?: true
+    birthday?: true
     sessionToken?: true
     ipAddress?: true
     country?: true
@@ -9808,6 +10166,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email: string | null
+    birthday: Date | null
     sessionToken: string
     ipAddress: string | null
     country: string | null
@@ -9849,6 +10208,7 @@ export namespace Prisma {
     lastName?: boolean
     username?: boolean
     email?: boolean
+    birthday?: boolean
     sessionToken?: boolean
     ipAddress?: boolean
     country?: boolean
@@ -9881,6 +10241,7 @@ export namespace Prisma {
     lastName?: boolean
     username?: boolean
     email?: boolean
+    birthday?: boolean
     sessionToken?: boolean
     ipAddress?: boolean
     country?: boolean
@@ -9897,7 +10258,7 @@ export namespace Prisma {
     leftAt?: boolean
   }
 
-  export type AnonymousParticipantOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "shareLinkId" | "firstName" | "lastName" | "username" | "email" | "sessionToken" | "ipAddress" | "country" | "language" | "deviceFingerprint" | "isActive" | "isOnline" | "lastActiveAt" | "canSendMessages" | "canSendFiles" | "canSendImages" | "joinedAt" | "lastSeenAt" | "leftAt", ExtArgs["result"]["anonymousParticipant"]>
+  export type AnonymousParticipantOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "shareLinkId" | "firstName" | "lastName" | "username" | "email" | "birthday" | "sessionToken" | "ipAddress" | "country" | "language" | "deviceFingerprint" | "isActive" | "isOnline" | "lastActiveAt" | "canSendMessages" | "canSendFiles" | "canSendImages" | "joinedAt" | "lastSeenAt" | "leftAt", ExtArgs["result"]["anonymousParticipant"]>
   export type AnonymousParticipantInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     shareLink?: boolean | ConversationShareLinkDefaultArgs<ExtArgs>
     conversation?: boolean | ConversationDefaultArgs<ExtArgs>
@@ -9924,6 +10285,7 @@ export namespace Prisma {
       lastName: string
       username: string
       email: string | null
+      birthday: Date | null
       sessionToken: string
       ipAddress: string | null
       country: string | null
@@ -10342,6 +10704,7 @@ export namespace Prisma {
     readonly lastName: FieldRef<"AnonymousParticipant", 'String'>
     readonly username: FieldRef<"AnonymousParticipant", 'String'>
     readonly email: FieldRef<"AnonymousParticipant", 'String'>
+    readonly birthday: FieldRef<"AnonymousParticipant", 'DateTime'>
     readonly sessionToken: FieldRef<"AnonymousParticipant", 'String'>
     readonly ipAddress: FieldRef<"AnonymousParticipant", 'String'>
     readonly country: FieldRef<"AnonymousParticipant", 'String'>
@@ -13303,6 +13666,7 @@ export namespace Prisma {
     uploadedBy: number
     isAnonymous: number
     createdAt: number
+    metadata: number
     _all: number
   }
 
@@ -13394,6 +13758,7 @@ export namespace Prisma {
     uploadedBy?: true
     isAnonymous?: true
     createdAt?: true
+    metadata?: true
     _all?: true
   }
 
@@ -13504,6 +13869,7 @@ export namespace Prisma {
     uploadedBy: string
     isAnonymous: boolean
     createdAt: Date
+    metadata: JsonValue | null
     _count: MessageAttachmentCountAggregateOutputType | null
     _avg: MessageAttachmentAvgAggregateOutputType | null
     _sum: MessageAttachmentSumAggregateOutputType | null
@@ -13546,6 +13912,7 @@ export namespace Prisma {
     uploadedBy?: boolean
     isAnonymous?: boolean
     createdAt?: boolean
+    metadata?: boolean
     message?: boolean | MessageDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["messageAttachment"]>
 
@@ -13572,9 +13939,10 @@ export namespace Prisma {
     uploadedBy?: boolean
     isAnonymous?: boolean
     createdAt?: boolean
+    metadata?: boolean
   }
 
-  export type MessageAttachmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "messageId" | "fileName" | "originalName" | "mimeType" | "fileSize" | "filePath" | "fileUrl" | "width" | "height" | "thumbnailPath" | "thumbnailUrl" | "duration" | "bitrate" | "sampleRate" | "codec" | "channels" | "uploadedBy" | "isAnonymous" | "createdAt", ExtArgs["result"]["messageAttachment"]>
+  export type MessageAttachmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "messageId" | "fileName" | "originalName" | "mimeType" | "fileSize" | "filePath" | "fileUrl" | "width" | "height" | "thumbnailPath" | "thumbnailUrl" | "duration" | "bitrate" | "sampleRate" | "codec" | "channels" | "uploadedBy" | "isAnonymous" | "createdAt" | "metadata", ExtArgs["result"]["messageAttachment"]>
   export type MessageAttachmentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     message?: boolean | MessageDefaultArgs<ExtArgs>
   }
@@ -13605,6 +13973,10 @@ export namespace Prisma {
       uploadedBy: string
       isAnonymous: boolean
       createdAt: Date
+      /**
+       * Attachment metadata
+       */
+      metadata: Prisma.JsonValue | null
     }, ExtArgs["result"]["messageAttachment"]>
     composites: {}
   }
@@ -14018,6 +14390,7 @@ export namespace Prisma {
     readonly uploadedBy: FieldRef<"MessageAttachment", 'String'>
     readonly isAnonymous: FieldRef<"MessageAttachment", 'Boolean'>
     readonly createdAt: FieldRef<"MessageAttachment", 'DateTime'>
+    readonly metadata: FieldRef<"MessageAttachment", 'Json'>
   }
     
 
@@ -31671,11 +32044,11 @@ export namespace Prisma {
       id: string
       conversationId: string
       /**
-       * Call mode: 'p2p' for 2 participants, 'sfu' for 3+
+       * Call mode: p2p for 2 participants, sfu for 3+
        */
       mode: $Enums.CallMode
       /**
-       * Call status: 'initiated', 'ringing', 'active', 'ended'
+       * Call status: initiated, ringing, active, ended
        */
       status: $Enums.CallStatus
       /**
@@ -32778,7 +33151,7 @@ export namespace Prisma {
        */
       anonymousId: string | null
       /**
-       * Participant role: 'initiator', 'participant'
+       * Participant role: initiator or participant
        */
       role: $Enums.ParticipantRole
       /**
@@ -33883,7 +34256,7 @@ export namespace Prisma {
        */
       participantId: string
       /**
-       * Transcription source: 'client' (Web Speech API/Whisper.js) or 'server' (faster-whisper)
+       * Transcription source: client (Web Speech API/Whisper.js) or server (faster-whisper)
        */
       source: $Enums.TranscriptionSource
       /**
@@ -35783,6 +36156,2256 @@ export namespace Prisma {
 
 
   /**
+   * Model UserConversationPreferences
+   */
+
+  export type AggregateUserConversationPreferences = {
+    _count: UserConversationPreferencesCountAggregateOutputType | null
+    _avg: UserConversationPreferencesAvgAggregateOutputType | null
+    _sum: UserConversationPreferencesSumAggregateOutputType | null
+    _min: UserConversationPreferencesMinAggregateOutputType | null
+    _max: UserConversationPreferencesMaxAggregateOutputType | null
+  }
+
+  export type UserConversationPreferencesAvgAggregateOutputType = {
+    orderInCategory: number | null
+  }
+
+  export type UserConversationPreferencesSumAggregateOutputType = {
+    orderInCategory: number | null
+  }
+
+  export type UserConversationPreferencesMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    conversationId: string | null
+    isPinned: boolean | null
+    isMuted: boolean | null
+    isArchived: boolean | null
+    categoryId: string | null
+    orderInCategory: number | null
+    customName: string | null
+    reaction: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UserConversationPreferencesMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    conversationId: string | null
+    isPinned: boolean | null
+    isMuted: boolean | null
+    isArchived: boolean | null
+    categoryId: string | null
+    orderInCategory: number | null
+    customName: string | null
+    reaction: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UserConversationPreferencesCountAggregateOutputType = {
+    id: number
+    userId: number
+    conversationId: number
+    isPinned: number
+    isMuted: number
+    isArchived: number
+    tags: number
+    categoryId: number
+    orderInCategory: number
+    customName: number
+    reaction: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type UserConversationPreferencesAvgAggregateInputType = {
+    orderInCategory?: true
+  }
+
+  export type UserConversationPreferencesSumAggregateInputType = {
+    orderInCategory?: true
+  }
+
+  export type UserConversationPreferencesMinAggregateInputType = {
+    id?: true
+    userId?: true
+    conversationId?: true
+    isPinned?: true
+    isMuted?: true
+    isArchived?: true
+    categoryId?: true
+    orderInCategory?: true
+    customName?: true
+    reaction?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UserConversationPreferencesMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    conversationId?: true
+    isPinned?: true
+    isMuted?: true
+    isArchived?: true
+    categoryId?: true
+    orderInCategory?: true
+    customName?: true
+    reaction?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UserConversationPreferencesCountAggregateInputType = {
+    id?: true
+    userId?: true
+    conversationId?: true
+    isPinned?: true
+    isMuted?: true
+    isArchived?: true
+    tags?: true
+    categoryId?: true
+    orderInCategory?: true
+    customName?: true
+    reaction?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type UserConversationPreferencesAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserConversationPreferences to aggregate.
+     */
+    where?: UserConversationPreferencesWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserConversationPreferences to fetch.
+     */
+    orderBy?: UserConversationPreferencesOrderByWithRelationInput | UserConversationPreferencesOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: UserConversationPreferencesWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserConversationPreferences from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserConversationPreferences.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned UserConversationPreferences
+    **/
+    _count?: true | UserConversationPreferencesCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: UserConversationPreferencesAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: UserConversationPreferencesSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: UserConversationPreferencesMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: UserConversationPreferencesMaxAggregateInputType
+  }
+
+  export type GetUserConversationPreferencesAggregateType<T extends UserConversationPreferencesAggregateArgs> = {
+        [P in keyof T & keyof AggregateUserConversationPreferences]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateUserConversationPreferences[P]>
+      : GetScalarType<T[P], AggregateUserConversationPreferences[P]>
+  }
+
+
+
+
+  export type UserConversationPreferencesGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserConversationPreferencesWhereInput
+    orderBy?: UserConversationPreferencesOrderByWithAggregationInput | UserConversationPreferencesOrderByWithAggregationInput[]
+    by: UserConversationPreferencesScalarFieldEnum[] | UserConversationPreferencesScalarFieldEnum
+    having?: UserConversationPreferencesScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: UserConversationPreferencesCountAggregateInputType | true
+    _avg?: UserConversationPreferencesAvgAggregateInputType
+    _sum?: UserConversationPreferencesSumAggregateInputType
+    _min?: UserConversationPreferencesMinAggregateInputType
+    _max?: UserConversationPreferencesMaxAggregateInputType
+  }
+
+  export type UserConversationPreferencesGroupByOutputType = {
+    id: string
+    userId: string
+    conversationId: string
+    isPinned: boolean
+    isMuted: boolean
+    isArchived: boolean
+    tags: string[]
+    categoryId: string | null
+    orderInCategory: number | null
+    customName: string | null
+    reaction: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: UserConversationPreferencesCountAggregateOutputType | null
+    _avg: UserConversationPreferencesAvgAggregateOutputType | null
+    _sum: UserConversationPreferencesSumAggregateOutputType | null
+    _min: UserConversationPreferencesMinAggregateOutputType | null
+    _max: UserConversationPreferencesMaxAggregateOutputType | null
+  }
+
+  type GetUserConversationPreferencesGroupByPayload<T extends UserConversationPreferencesGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<UserConversationPreferencesGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof UserConversationPreferencesGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], UserConversationPreferencesGroupByOutputType[P]>
+            : GetScalarType<T[P], UserConversationPreferencesGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type UserConversationPreferencesSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    conversationId?: boolean
+    isPinned?: boolean
+    isMuted?: boolean
+    isArchived?: boolean
+    tags?: boolean
+    categoryId?: boolean
+    orderInCategory?: boolean
+    customName?: boolean
+    reaction?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
+    category?: boolean | UserConversationPreferences$categoryArgs<ExtArgs>
+  }, ExtArgs["result"]["userConversationPreferences"]>
+
+
+
+  export type UserConversationPreferencesSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    conversationId?: boolean
+    isPinned?: boolean
+    isMuted?: boolean
+    isArchived?: boolean
+    tags?: boolean
+    categoryId?: boolean
+    orderInCategory?: boolean
+    customName?: boolean
+    reaction?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type UserConversationPreferencesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "conversationId" | "isPinned" | "isMuted" | "isArchived" | "tags" | "categoryId" | "orderInCategory" | "customName" | "reaction" | "createdAt" | "updatedAt", ExtArgs["result"]["userConversationPreferences"]>
+  export type UserConversationPreferencesInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
+    category?: boolean | UserConversationPreferences$categoryArgs<ExtArgs>
+  }
+
+  export type $UserConversationPreferencesPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "UserConversationPreferences"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+      conversation: Prisma.$ConversationPayload<ExtArgs>
+      category: Prisma.$UserConversationCategoryPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      conversationId: string
+      /**
+       * Pin conversation to top
+       */
+      isPinned: boolean
+      /**
+       * Mute notifications for this conversation
+       */
+      isMuted: boolean
+      /**
+       * Archive conversation (hide from main list)
+       */
+      isArchived: boolean
+      /**
+       * Personal tags for this conversation
+       */
+      tags: string[]
+      /**
+       * Assigned category ID
+       */
+      categoryId: string | null
+      /**
+       * Order within category (for manual sorting)
+       */
+      orderInCategory: number | null
+      /**
+       * Custom display name override
+       */
+      customName: string | null
+      /**
+       * Emoji reaction on conversation
+       */
+      reaction: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["userConversationPreferences"]>
+    composites: {}
+  }
+
+  type UserConversationPreferencesGetPayload<S extends boolean | null | undefined | UserConversationPreferencesDefaultArgs> = $Result.GetResult<Prisma.$UserConversationPreferencesPayload, S>
+
+  type UserConversationPreferencesCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<UserConversationPreferencesFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: UserConversationPreferencesCountAggregateInputType | true
+    }
+
+  export interface UserConversationPreferencesDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['UserConversationPreferences'], meta: { name: 'UserConversationPreferences' } }
+    /**
+     * Find zero or one UserConversationPreferences that matches the filter.
+     * @param {UserConversationPreferencesFindUniqueArgs} args - Arguments to find a UserConversationPreferences
+     * @example
+     * // Get one UserConversationPreferences
+     * const userConversationPreferences = await prisma.userConversationPreferences.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends UserConversationPreferencesFindUniqueArgs>(args: SelectSubset<T, UserConversationPreferencesFindUniqueArgs<ExtArgs>>): Prisma__UserConversationPreferencesClient<$Result.GetResult<Prisma.$UserConversationPreferencesPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one UserConversationPreferences that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {UserConversationPreferencesFindUniqueOrThrowArgs} args - Arguments to find a UserConversationPreferences
+     * @example
+     * // Get one UserConversationPreferences
+     * const userConversationPreferences = await prisma.userConversationPreferences.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends UserConversationPreferencesFindUniqueOrThrowArgs>(args: SelectSubset<T, UserConversationPreferencesFindUniqueOrThrowArgs<ExtArgs>>): Prisma__UserConversationPreferencesClient<$Result.GetResult<Prisma.$UserConversationPreferencesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserConversationPreferences that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserConversationPreferencesFindFirstArgs} args - Arguments to find a UserConversationPreferences
+     * @example
+     * // Get one UserConversationPreferences
+     * const userConversationPreferences = await prisma.userConversationPreferences.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends UserConversationPreferencesFindFirstArgs>(args?: SelectSubset<T, UserConversationPreferencesFindFirstArgs<ExtArgs>>): Prisma__UserConversationPreferencesClient<$Result.GetResult<Prisma.$UserConversationPreferencesPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserConversationPreferences that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserConversationPreferencesFindFirstOrThrowArgs} args - Arguments to find a UserConversationPreferences
+     * @example
+     * // Get one UserConversationPreferences
+     * const userConversationPreferences = await prisma.userConversationPreferences.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends UserConversationPreferencesFindFirstOrThrowArgs>(args?: SelectSubset<T, UserConversationPreferencesFindFirstOrThrowArgs<ExtArgs>>): Prisma__UserConversationPreferencesClient<$Result.GetResult<Prisma.$UserConversationPreferencesPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more UserConversationPreferences that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserConversationPreferencesFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all UserConversationPreferences
+     * const userConversationPreferences = await prisma.userConversationPreferences.findMany()
+     * 
+     * // Get first 10 UserConversationPreferences
+     * const userConversationPreferences = await prisma.userConversationPreferences.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const userConversationPreferencesWithIdOnly = await prisma.userConversationPreferences.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends UserConversationPreferencesFindManyArgs>(args?: SelectSubset<T, UserConversationPreferencesFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserConversationPreferencesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a UserConversationPreferences.
+     * @param {UserConversationPreferencesCreateArgs} args - Arguments to create a UserConversationPreferences.
+     * @example
+     * // Create one UserConversationPreferences
+     * const UserConversationPreferences = await prisma.userConversationPreferences.create({
+     *   data: {
+     *     // ... data to create a UserConversationPreferences
+     *   }
+     * })
+     * 
+     */
+    create<T extends UserConversationPreferencesCreateArgs>(args: SelectSubset<T, UserConversationPreferencesCreateArgs<ExtArgs>>): Prisma__UserConversationPreferencesClient<$Result.GetResult<Prisma.$UserConversationPreferencesPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many UserConversationPreferences.
+     * @param {UserConversationPreferencesCreateManyArgs} args - Arguments to create many UserConversationPreferences.
+     * @example
+     * // Create many UserConversationPreferences
+     * const userConversationPreferences = await prisma.userConversationPreferences.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends UserConversationPreferencesCreateManyArgs>(args?: SelectSubset<T, UserConversationPreferencesCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a UserConversationPreferences.
+     * @param {UserConversationPreferencesDeleteArgs} args - Arguments to delete one UserConversationPreferences.
+     * @example
+     * // Delete one UserConversationPreferences
+     * const UserConversationPreferences = await prisma.userConversationPreferences.delete({
+     *   where: {
+     *     // ... filter to delete one UserConversationPreferences
+     *   }
+     * })
+     * 
+     */
+    delete<T extends UserConversationPreferencesDeleteArgs>(args: SelectSubset<T, UserConversationPreferencesDeleteArgs<ExtArgs>>): Prisma__UserConversationPreferencesClient<$Result.GetResult<Prisma.$UserConversationPreferencesPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one UserConversationPreferences.
+     * @param {UserConversationPreferencesUpdateArgs} args - Arguments to update one UserConversationPreferences.
+     * @example
+     * // Update one UserConversationPreferences
+     * const userConversationPreferences = await prisma.userConversationPreferences.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends UserConversationPreferencesUpdateArgs>(args: SelectSubset<T, UserConversationPreferencesUpdateArgs<ExtArgs>>): Prisma__UserConversationPreferencesClient<$Result.GetResult<Prisma.$UserConversationPreferencesPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more UserConversationPreferences.
+     * @param {UserConversationPreferencesDeleteManyArgs} args - Arguments to filter UserConversationPreferences to delete.
+     * @example
+     * // Delete a few UserConversationPreferences
+     * const { count } = await prisma.userConversationPreferences.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends UserConversationPreferencesDeleteManyArgs>(args?: SelectSubset<T, UserConversationPreferencesDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UserConversationPreferences.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserConversationPreferencesUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many UserConversationPreferences
+     * const userConversationPreferences = await prisma.userConversationPreferences.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends UserConversationPreferencesUpdateManyArgs>(args: SelectSubset<T, UserConversationPreferencesUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one UserConversationPreferences.
+     * @param {UserConversationPreferencesUpsertArgs} args - Arguments to update or create a UserConversationPreferences.
+     * @example
+     * // Update or create a UserConversationPreferences
+     * const userConversationPreferences = await prisma.userConversationPreferences.upsert({
+     *   create: {
+     *     // ... data to create a UserConversationPreferences
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the UserConversationPreferences we want to update
+     *   }
+     * })
+     */
+    upsert<T extends UserConversationPreferencesUpsertArgs>(args: SelectSubset<T, UserConversationPreferencesUpsertArgs<ExtArgs>>): Prisma__UserConversationPreferencesClient<$Result.GetResult<Prisma.$UserConversationPreferencesPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more UserConversationPreferences that matches the filter.
+     * @param {UserConversationPreferencesFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const userConversationPreferences = await prisma.userConversationPreferences.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: UserConversationPreferencesFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a UserConversationPreferences.
+     * @param {UserConversationPreferencesAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const userConversationPreferences = await prisma.userConversationPreferences.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: UserConversationPreferencesAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of UserConversationPreferences.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserConversationPreferencesCountArgs} args - Arguments to filter UserConversationPreferences to count.
+     * @example
+     * // Count the number of UserConversationPreferences
+     * const count = await prisma.userConversationPreferences.count({
+     *   where: {
+     *     // ... the filter for the UserConversationPreferences we want to count
+     *   }
+     * })
+    **/
+    count<T extends UserConversationPreferencesCountArgs>(
+      args?: Subset<T, UserConversationPreferencesCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], UserConversationPreferencesCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a UserConversationPreferences.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserConversationPreferencesAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends UserConversationPreferencesAggregateArgs>(args: Subset<T, UserConversationPreferencesAggregateArgs>): Prisma.PrismaPromise<GetUserConversationPreferencesAggregateType<T>>
+
+    /**
+     * Group by UserConversationPreferences.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserConversationPreferencesGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends UserConversationPreferencesGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: UserConversationPreferencesGroupByArgs['orderBy'] }
+        : { orderBy?: UserConversationPreferencesGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, UserConversationPreferencesGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetUserConversationPreferencesGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the UserConversationPreferences model
+   */
+  readonly fields: UserConversationPreferencesFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for UserConversationPreferences.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__UserConversationPreferencesClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    conversation<T extends ConversationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ConversationDefaultArgs<ExtArgs>>): Prisma__ConversationClient<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    category<T extends UserConversationPreferences$categoryArgs<ExtArgs> = {}>(args?: Subset<T, UserConversationPreferences$categoryArgs<ExtArgs>>): Prisma__UserConversationCategoryClient<$Result.GetResult<Prisma.$UserConversationCategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the UserConversationPreferences model
+   */
+  interface UserConversationPreferencesFieldRefs {
+    readonly id: FieldRef<"UserConversationPreferences", 'String'>
+    readonly userId: FieldRef<"UserConversationPreferences", 'String'>
+    readonly conversationId: FieldRef<"UserConversationPreferences", 'String'>
+    readonly isPinned: FieldRef<"UserConversationPreferences", 'Boolean'>
+    readonly isMuted: FieldRef<"UserConversationPreferences", 'Boolean'>
+    readonly isArchived: FieldRef<"UserConversationPreferences", 'Boolean'>
+    readonly tags: FieldRef<"UserConversationPreferences", 'String[]'>
+    readonly categoryId: FieldRef<"UserConversationPreferences", 'String'>
+    readonly orderInCategory: FieldRef<"UserConversationPreferences", 'Int'>
+    readonly customName: FieldRef<"UserConversationPreferences", 'String'>
+    readonly reaction: FieldRef<"UserConversationPreferences", 'String'>
+    readonly createdAt: FieldRef<"UserConversationPreferences", 'DateTime'>
+    readonly updatedAt: FieldRef<"UserConversationPreferences", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * UserConversationPreferences findUnique
+   */
+  export type UserConversationPreferencesFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserConversationPreferences
+     */
+    select?: UserConversationPreferencesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserConversationPreferences
+     */
+    omit?: UserConversationPreferencesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserConversationPreferencesInclude<ExtArgs> | null
+    /**
+     * Filter, which UserConversationPreferences to fetch.
+     */
+    where: UserConversationPreferencesWhereUniqueInput
+  }
+
+  /**
+   * UserConversationPreferences findUniqueOrThrow
+   */
+  export type UserConversationPreferencesFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserConversationPreferences
+     */
+    select?: UserConversationPreferencesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserConversationPreferences
+     */
+    omit?: UserConversationPreferencesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserConversationPreferencesInclude<ExtArgs> | null
+    /**
+     * Filter, which UserConversationPreferences to fetch.
+     */
+    where: UserConversationPreferencesWhereUniqueInput
+  }
+
+  /**
+   * UserConversationPreferences findFirst
+   */
+  export type UserConversationPreferencesFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserConversationPreferences
+     */
+    select?: UserConversationPreferencesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserConversationPreferences
+     */
+    omit?: UserConversationPreferencesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserConversationPreferencesInclude<ExtArgs> | null
+    /**
+     * Filter, which UserConversationPreferences to fetch.
+     */
+    where?: UserConversationPreferencesWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserConversationPreferences to fetch.
+     */
+    orderBy?: UserConversationPreferencesOrderByWithRelationInput | UserConversationPreferencesOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserConversationPreferences.
+     */
+    cursor?: UserConversationPreferencesWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserConversationPreferences from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserConversationPreferences.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserConversationPreferences.
+     */
+    distinct?: UserConversationPreferencesScalarFieldEnum | UserConversationPreferencesScalarFieldEnum[]
+  }
+
+  /**
+   * UserConversationPreferences findFirstOrThrow
+   */
+  export type UserConversationPreferencesFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserConversationPreferences
+     */
+    select?: UserConversationPreferencesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserConversationPreferences
+     */
+    omit?: UserConversationPreferencesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserConversationPreferencesInclude<ExtArgs> | null
+    /**
+     * Filter, which UserConversationPreferences to fetch.
+     */
+    where?: UserConversationPreferencesWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserConversationPreferences to fetch.
+     */
+    orderBy?: UserConversationPreferencesOrderByWithRelationInput | UserConversationPreferencesOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserConversationPreferences.
+     */
+    cursor?: UserConversationPreferencesWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserConversationPreferences from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserConversationPreferences.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserConversationPreferences.
+     */
+    distinct?: UserConversationPreferencesScalarFieldEnum | UserConversationPreferencesScalarFieldEnum[]
+  }
+
+  /**
+   * UserConversationPreferences findMany
+   */
+  export type UserConversationPreferencesFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserConversationPreferences
+     */
+    select?: UserConversationPreferencesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserConversationPreferences
+     */
+    omit?: UserConversationPreferencesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserConversationPreferencesInclude<ExtArgs> | null
+    /**
+     * Filter, which UserConversationPreferences to fetch.
+     */
+    where?: UserConversationPreferencesWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserConversationPreferences to fetch.
+     */
+    orderBy?: UserConversationPreferencesOrderByWithRelationInput | UserConversationPreferencesOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing UserConversationPreferences.
+     */
+    cursor?: UserConversationPreferencesWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserConversationPreferences from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserConversationPreferences.
+     */
+    skip?: number
+    distinct?: UserConversationPreferencesScalarFieldEnum | UserConversationPreferencesScalarFieldEnum[]
+  }
+
+  /**
+   * UserConversationPreferences create
+   */
+  export type UserConversationPreferencesCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserConversationPreferences
+     */
+    select?: UserConversationPreferencesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserConversationPreferences
+     */
+    omit?: UserConversationPreferencesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserConversationPreferencesInclude<ExtArgs> | null
+    /**
+     * The data needed to create a UserConversationPreferences.
+     */
+    data: XOR<UserConversationPreferencesCreateInput, UserConversationPreferencesUncheckedCreateInput>
+  }
+
+  /**
+   * UserConversationPreferences createMany
+   */
+  export type UserConversationPreferencesCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many UserConversationPreferences.
+     */
+    data: UserConversationPreferencesCreateManyInput | UserConversationPreferencesCreateManyInput[]
+  }
+
+  /**
+   * UserConversationPreferences update
+   */
+  export type UserConversationPreferencesUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserConversationPreferences
+     */
+    select?: UserConversationPreferencesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserConversationPreferences
+     */
+    omit?: UserConversationPreferencesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserConversationPreferencesInclude<ExtArgs> | null
+    /**
+     * The data needed to update a UserConversationPreferences.
+     */
+    data: XOR<UserConversationPreferencesUpdateInput, UserConversationPreferencesUncheckedUpdateInput>
+    /**
+     * Choose, which UserConversationPreferences to update.
+     */
+    where: UserConversationPreferencesWhereUniqueInput
+  }
+
+  /**
+   * UserConversationPreferences updateMany
+   */
+  export type UserConversationPreferencesUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update UserConversationPreferences.
+     */
+    data: XOR<UserConversationPreferencesUpdateManyMutationInput, UserConversationPreferencesUncheckedUpdateManyInput>
+    /**
+     * Filter which UserConversationPreferences to update
+     */
+    where?: UserConversationPreferencesWhereInput
+    /**
+     * Limit how many UserConversationPreferences to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserConversationPreferences upsert
+   */
+  export type UserConversationPreferencesUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserConversationPreferences
+     */
+    select?: UserConversationPreferencesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserConversationPreferences
+     */
+    omit?: UserConversationPreferencesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserConversationPreferencesInclude<ExtArgs> | null
+    /**
+     * The filter to search for the UserConversationPreferences to update in case it exists.
+     */
+    where: UserConversationPreferencesWhereUniqueInput
+    /**
+     * In case the UserConversationPreferences found by the `where` argument doesn't exist, create a new UserConversationPreferences with this data.
+     */
+    create: XOR<UserConversationPreferencesCreateInput, UserConversationPreferencesUncheckedCreateInput>
+    /**
+     * In case the UserConversationPreferences was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<UserConversationPreferencesUpdateInput, UserConversationPreferencesUncheckedUpdateInput>
+  }
+
+  /**
+   * UserConversationPreferences delete
+   */
+  export type UserConversationPreferencesDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserConversationPreferences
+     */
+    select?: UserConversationPreferencesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserConversationPreferences
+     */
+    omit?: UserConversationPreferencesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserConversationPreferencesInclude<ExtArgs> | null
+    /**
+     * Filter which UserConversationPreferences to delete.
+     */
+    where: UserConversationPreferencesWhereUniqueInput
+  }
+
+  /**
+   * UserConversationPreferences deleteMany
+   */
+  export type UserConversationPreferencesDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserConversationPreferences to delete
+     */
+    where?: UserConversationPreferencesWhereInput
+    /**
+     * Limit how many UserConversationPreferences to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserConversationPreferences findRaw
+   */
+  export type UserConversationPreferencesFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * UserConversationPreferences aggregateRaw
+   */
+  export type UserConversationPreferencesAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * UserConversationPreferences.category
+   */
+  export type UserConversationPreferences$categoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserConversationCategory
+     */
+    select?: UserConversationCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserConversationCategory
+     */
+    omit?: UserConversationCategoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserConversationCategoryInclude<ExtArgs> | null
+    where?: UserConversationCategoryWhereInput
+  }
+
+  /**
+   * UserConversationPreferences without action
+   */
+  export type UserConversationPreferencesDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserConversationPreferences
+     */
+    select?: UserConversationPreferencesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserConversationPreferences
+     */
+    omit?: UserConversationPreferencesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserConversationPreferencesInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model UserConversationCategory
+   */
+
+  export type AggregateUserConversationCategory = {
+    _count: UserConversationCategoryCountAggregateOutputType | null
+    _avg: UserConversationCategoryAvgAggregateOutputType | null
+    _sum: UserConversationCategorySumAggregateOutputType | null
+    _min: UserConversationCategoryMinAggregateOutputType | null
+    _max: UserConversationCategoryMaxAggregateOutputType | null
+  }
+
+  export type UserConversationCategoryAvgAggregateOutputType = {
+    order: number | null
+  }
+
+  export type UserConversationCategorySumAggregateOutputType = {
+    order: number | null
+  }
+
+  export type UserConversationCategoryMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    name: string | null
+    color: string | null
+    icon: string | null
+    order: number | null
+    isExpanded: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UserConversationCategoryMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    name: string | null
+    color: string | null
+    icon: string | null
+    order: number | null
+    isExpanded: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UserConversationCategoryCountAggregateOutputType = {
+    id: number
+    userId: number
+    name: number
+    color: number
+    icon: number
+    order: number
+    isExpanded: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type UserConversationCategoryAvgAggregateInputType = {
+    order?: true
+  }
+
+  export type UserConversationCategorySumAggregateInputType = {
+    order?: true
+  }
+
+  export type UserConversationCategoryMinAggregateInputType = {
+    id?: true
+    userId?: true
+    name?: true
+    color?: true
+    icon?: true
+    order?: true
+    isExpanded?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UserConversationCategoryMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    name?: true
+    color?: true
+    icon?: true
+    order?: true
+    isExpanded?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UserConversationCategoryCountAggregateInputType = {
+    id?: true
+    userId?: true
+    name?: true
+    color?: true
+    icon?: true
+    order?: true
+    isExpanded?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type UserConversationCategoryAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserConversationCategory to aggregate.
+     */
+    where?: UserConversationCategoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserConversationCategories to fetch.
+     */
+    orderBy?: UserConversationCategoryOrderByWithRelationInput | UserConversationCategoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: UserConversationCategoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserConversationCategories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserConversationCategories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned UserConversationCategories
+    **/
+    _count?: true | UserConversationCategoryCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: UserConversationCategoryAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: UserConversationCategorySumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: UserConversationCategoryMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: UserConversationCategoryMaxAggregateInputType
+  }
+
+  export type GetUserConversationCategoryAggregateType<T extends UserConversationCategoryAggregateArgs> = {
+        [P in keyof T & keyof AggregateUserConversationCategory]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateUserConversationCategory[P]>
+      : GetScalarType<T[P], AggregateUserConversationCategory[P]>
+  }
+
+
+
+
+  export type UserConversationCategoryGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserConversationCategoryWhereInput
+    orderBy?: UserConversationCategoryOrderByWithAggregationInput | UserConversationCategoryOrderByWithAggregationInput[]
+    by: UserConversationCategoryScalarFieldEnum[] | UserConversationCategoryScalarFieldEnum
+    having?: UserConversationCategoryScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: UserConversationCategoryCountAggregateInputType | true
+    _avg?: UserConversationCategoryAvgAggregateInputType
+    _sum?: UserConversationCategorySumAggregateInputType
+    _min?: UserConversationCategoryMinAggregateInputType
+    _max?: UserConversationCategoryMaxAggregateInputType
+  }
+
+  export type UserConversationCategoryGroupByOutputType = {
+    id: string
+    userId: string
+    name: string
+    color: string | null
+    icon: string | null
+    order: number
+    isExpanded: boolean
+    createdAt: Date
+    updatedAt: Date
+    _count: UserConversationCategoryCountAggregateOutputType | null
+    _avg: UserConversationCategoryAvgAggregateOutputType | null
+    _sum: UserConversationCategorySumAggregateOutputType | null
+    _min: UserConversationCategoryMinAggregateOutputType | null
+    _max: UserConversationCategoryMaxAggregateOutputType | null
+  }
+
+  type GetUserConversationCategoryGroupByPayload<T extends UserConversationCategoryGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<UserConversationCategoryGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof UserConversationCategoryGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], UserConversationCategoryGroupByOutputType[P]>
+            : GetScalarType<T[P], UserConversationCategoryGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type UserConversationCategorySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    name?: boolean
+    color?: boolean
+    icon?: boolean
+    order?: boolean
+    isExpanded?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    conversations?: boolean | UserConversationCategory$conversationsArgs<ExtArgs>
+    _count?: boolean | UserConversationCategoryCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["userConversationCategory"]>
+
+
+
+  export type UserConversationCategorySelectScalar = {
+    id?: boolean
+    userId?: boolean
+    name?: boolean
+    color?: boolean
+    icon?: boolean
+    order?: boolean
+    isExpanded?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type UserConversationCategoryOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "name" | "color" | "icon" | "order" | "isExpanded" | "createdAt" | "updatedAt", ExtArgs["result"]["userConversationCategory"]>
+  export type UserConversationCategoryInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    conversations?: boolean | UserConversationCategory$conversationsArgs<ExtArgs>
+    _count?: boolean | UserConversationCategoryCountOutputTypeDefaultArgs<ExtArgs>
+  }
+
+  export type $UserConversationCategoryPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "UserConversationCategory"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+      conversations: Prisma.$UserConversationPreferencesPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      /**
+       * Category name
+       */
+      name: string
+      /**
+       * Color hex code (optional)
+       */
+      color: string | null
+      /**
+       * Icon name/emoji (optional)
+       */
+      icon: string | null
+      /**
+       * Display order
+       */
+      order: number
+      /**
+       * Accordion expanded state
+       */
+      isExpanded: boolean
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["userConversationCategory"]>
+    composites: {}
+  }
+
+  type UserConversationCategoryGetPayload<S extends boolean | null | undefined | UserConversationCategoryDefaultArgs> = $Result.GetResult<Prisma.$UserConversationCategoryPayload, S>
+
+  type UserConversationCategoryCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<UserConversationCategoryFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: UserConversationCategoryCountAggregateInputType | true
+    }
+
+  export interface UserConversationCategoryDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['UserConversationCategory'], meta: { name: 'UserConversationCategory' } }
+    /**
+     * Find zero or one UserConversationCategory that matches the filter.
+     * @param {UserConversationCategoryFindUniqueArgs} args - Arguments to find a UserConversationCategory
+     * @example
+     * // Get one UserConversationCategory
+     * const userConversationCategory = await prisma.userConversationCategory.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends UserConversationCategoryFindUniqueArgs>(args: SelectSubset<T, UserConversationCategoryFindUniqueArgs<ExtArgs>>): Prisma__UserConversationCategoryClient<$Result.GetResult<Prisma.$UserConversationCategoryPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one UserConversationCategory that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {UserConversationCategoryFindUniqueOrThrowArgs} args - Arguments to find a UserConversationCategory
+     * @example
+     * // Get one UserConversationCategory
+     * const userConversationCategory = await prisma.userConversationCategory.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends UserConversationCategoryFindUniqueOrThrowArgs>(args: SelectSubset<T, UserConversationCategoryFindUniqueOrThrowArgs<ExtArgs>>): Prisma__UserConversationCategoryClient<$Result.GetResult<Prisma.$UserConversationCategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserConversationCategory that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserConversationCategoryFindFirstArgs} args - Arguments to find a UserConversationCategory
+     * @example
+     * // Get one UserConversationCategory
+     * const userConversationCategory = await prisma.userConversationCategory.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends UserConversationCategoryFindFirstArgs>(args?: SelectSubset<T, UserConversationCategoryFindFirstArgs<ExtArgs>>): Prisma__UserConversationCategoryClient<$Result.GetResult<Prisma.$UserConversationCategoryPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserConversationCategory that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserConversationCategoryFindFirstOrThrowArgs} args - Arguments to find a UserConversationCategory
+     * @example
+     * // Get one UserConversationCategory
+     * const userConversationCategory = await prisma.userConversationCategory.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends UserConversationCategoryFindFirstOrThrowArgs>(args?: SelectSubset<T, UserConversationCategoryFindFirstOrThrowArgs<ExtArgs>>): Prisma__UserConversationCategoryClient<$Result.GetResult<Prisma.$UserConversationCategoryPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more UserConversationCategories that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserConversationCategoryFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all UserConversationCategories
+     * const userConversationCategories = await prisma.userConversationCategory.findMany()
+     * 
+     * // Get first 10 UserConversationCategories
+     * const userConversationCategories = await prisma.userConversationCategory.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const userConversationCategoryWithIdOnly = await prisma.userConversationCategory.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends UserConversationCategoryFindManyArgs>(args?: SelectSubset<T, UserConversationCategoryFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserConversationCategoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a UserConversationCategory.
+     * @param {UserConversationCategoryCreateArgs} args - Arguments to create a UserConversationCategory.
+     * @example
+     * // Create one UserConversationCategory
+     * const UserConversationCategory = await prisma.userConversationCategory.create({
+     *   data: {
+     *     // ... data to create a UserConversationCategory
+     *   }
+     * })
+     * 
+     */
+    create<T extends UserConversationCategoryCreateArgs>(args: SelectSubset<T, UserConversationCategoryCreateArgs<ExtArgs>>): Prisma__UserConversationCategoryClient<$Result.GetResult<Prisma.$UserConversationCategoryPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many UserConversationCategories.
+     * @param {UserConversationCategoryCreateManyArgs} args - Arguments to create many UserConversationCategories.
+     * @example
+     * // Create many UserConversationCategories
+     * const userConversationCategory = await prisma.userConversationCategory.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends UserConversationCategoryCreateManyArgs>(args?: SelectSubset<T, UserConversationCategoryCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a UserConversationCategory.
+     * @param {UserConversationCategoryDeleteArgs} args - Arguments to delete one UserConversationCategory.
+     * @example
+     * // Delete one UserConversationCategory
+     * const UserConversationCategory = await prisma.userConversationCategory.delete({
+     *   where: {
+     *     // ... filter to delete one UserConversationCategory
+     *   }
+     * })
+     * 
+     */
+    delete<T extends UserConversationCategoryDeleteArgs>(args: SelectSubset<T, UserConversationCategoryDeleteArgs<ExtArgs>>): Prisma__UserConversationCategoryClient<$Result.GetResult<Prisma.$UserConversationCategoryPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one UserConversationCategory.
+     * @param {UserConversationCategoryUpdateArgs} args - Arguments to update one UserConversationCategory.
+     * @example
+     * // Update one UserConversationCategory
+     * const userConversationCategory = await prisma.userConversationCategory.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends UserConversationCategoryUpdateArgs>(args: SelectSubset<T, UserConversationCategoryUpdateArgs<ExtArgs>>): Prisma__UserConversationCategoryClient<$Result.GetResult<Prisma.$UserConversationCategoryPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more UserConversationCategories.
+     * @param {UserConversationCategoryDeleteManyArgs} args - Arguments to filter UserConversationCategories to delete.
+     * @example
+     * // Delete a few UserConversationCategories
+     * const { count } = await prisma.userConversationCategory.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends UserConversationCategoryDeleteManyArgs>(args?: SelectSubset<T, UserConversationCategoryDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UserConversationCategories.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserConversationCategoryUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many UserConversationCategories
+     * const userConversationCategory = await prisma.userConversationCategory.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends UserConversationCategoryUpdateManyArgs>(args: SelectSubset<T, UserConversationCategoryUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one UserConversationCategory.
+     * @param {UserConversationCategoryUpsertArgs} args - Arguments to update or create a UserConversationCategory.
+     * @example
+     * // Update or create a UserConversationCategory
+     * const userConversationCategory = await prisma.userConversationCategory.upsert({
+     *   create: {
+     *     // ... data to create a UserConversationCategory
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the UserConversationCategory we want to update
+     *   }
+     * })
+     */
+    upsert<T extends UserConversationCategoryUpsertArgs>(args: SelectSubset<T, UserConversationCategoryUpsertArgs<ExtArgs>>): Prisma__UserConversationCategoryClient<$Result.GetResult<Prisma.$UserConversationCategoryPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more UserConversationCategories that matches the filter.
+     * @param {UserConversationCategoryFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const userConversationCategory = await prisma.userConversationCategory.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: UserConversationCategoryFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a UserConversationCategory.
+     * @param {UserConversationCategoryAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const userConversationCategory = await prisma.userConversationCategory.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: UserConversationCategoryAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of UserConversationCategories.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserConversationCategoryCountArgs} args - Arguments to filter UserConversationCategories to count.
+     * @example
+     * // Count the number of UserConversationCategories
+     * const count = await prisma.userConversationCategory.count({
+     *   where: {
+     *     // ... the filter for the UserConversationCategories we want to count
+     *   }
+     * })
+    **/
+    count<T extends UserConversationCategoryCountArgs>(
+      args?: Subset<T, UserConversationCategoryCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], UserConversationCategoryCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a UserConversationCategory.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserConversationCategoryAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends UserConversationCategoryAggregateArgs>(args: Subset<T, UserConversationCategoryAggregateArgs>): Prisma.PrismaPromise<GetUserConversationCategoryAggregateType<T>>
+
+    /**
+     * Group by UserConversationCategory.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserConversationCategoryGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends UserConversationCategoryGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: UserConversationCategoryGroupByArgs['orderBy'] }
+        : { orderBy?: UserConversationCategoryGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, UserConversationCategoryGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetUserConversationCategoryGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the UserConversationCategory model
+   */
+  readonly fields: UserConversationCategoryFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for UserConversationCategory.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__UserConversationCategoryClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    conversations<T extends UserConversationCategory$conversationsArgs<ExtArgs> = {}>(args?: Subset<T, UserConversationCategory$conversationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserConversationPreferencesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the UserConversationCategory model
+   */
+  interface UserConversationCategoryFieldRefs {
+    readonly id: FieldRef<"UserConversationCategory", 'String'>
+    readonly userId: FieldRef<"UserConversationCategory", 'String'>
+    readonly name: FieldRef<"UserConversationCategory", 'String'>
+    readonly color: FieldRef<"UserConversationCategory", 'String'>
+    readonly icon: FieldRef<"UserConversationCategory", 'String'>
+    readonly order: FieldRef<"UserConversationCategory", 'Int'>
+    readonly isExpanded: FieldRef<"UserConversationCategory", 'Boolean'>
+    readonly createdAt: FieldRef<"UserConversationCategory", 'DateTime'>
+    readonly updatedAt: FieldRef<"UserConversationCategory", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * UserConversationCategory findUnique
+   */
+  export type UserConversationCategoryFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserConversationCategory
+     */
+    select?: UserConversationCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserConversationCategory
+     */
+    omit?: UserConversationCategoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserConversationCategoryInclude<ExtArgs> | null
+    /**
+     * Filter, which UserConversationCategory to fetch.
+     */
+    where: UserConversationCategoryWhereUniqueInput
+  }
+
+  /**
+   * UserConversationCategory findUniqueOrThrow
+   */
+  export type UserConversationCategoryFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserConversationCategory
+     */
+    select?: UserConversationCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserConversationCategory
+     */
+    omit?: UserConversationCategoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserConversationCategoryInclude<ExtArgs> | null
+    /**
+     * Filter, which UserConversationCategory to fetch.
+     */
+    where: UserConversationCategoryWhereUniqueInput
+  }
+
+  /**
+   * UserConversationCategory findFirst
+   */
+  export type UserConversationCategoryFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserConversationCategory
+     */
+    select?: UserConversationCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserConversationCategory
+     */
+    omit?: UserConversationCategoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserConversationCategoryInclude<ExtArgs> | null
+    /**
+     * Filter, which UserConversationCategory to fetch.
+     */
+    where?: UserConversationCategoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserConversationCategories to fetch.
+     */
+    orderBy?: UserConversationCategoryOrderByWithRelationInput | UserConversationCategoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserConversationCategories.
+     */
+    cursor?: UserConversationCategoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserConversationCategories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserConversationCategories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserConversationCategories.
+     */
+    distinct?: UserConversationCategoryScalarFieldEnum | UserConversationCategoryScalarFieldEnum[]
+  }
+
+  /**
+   * UserConversationCategory findFirstOrThrow
+   */
+  export type UserConversationCategoryFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserConversationCategory
+     */
+    select?: UserConversationCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserConversationCategory
+     */
+    omit?: UserConversationCategoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserConversationCategoryInclude<ExtArgs> | null
+    /**
+     * Filter, which UserConversationCategory to fetch.
+     */
+    where?: UserConversationCategoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserConversationCategories to fetch.
+     */
+    orderBy?: UserConversationCategoryOrderByWithRelationInput | UserConversationCategoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserConversationCategories.
+     */
+    cursor?: UserConversationCategoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserConversationCategories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserConversationCategories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserConversationCategories.
+     */
+    distinct?: UserConversationCategoryScalarFieldEnum | UserConversationCategoryScalarFieldEnum[]
+  }
+
+  /**
+   * UserConversationCategory findMany
+   */
+  export type UserConversationCategoryFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserConversationCategory
+     */
+    select?: UserConversationCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserConversationCategory
+     */
+    omit?: UserConversationCategoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserConversationCategoryInclude<ExtArgs> | null
+    /**
+     * Filter, which UserConversationCategories to fetch.
+     */
+    where?: UserConversationCategoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserConversationCategories to fetch.
+     */
+    orderBy?: UserConversationCategoryOrderByWithRelationInput | UserConversationCategoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing UserConversationCategories.
+     */
+    cursor?: UserConversationCategoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserConversationCategories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserConversationCategories.
+     */
+    skip?: number
+    distinct?: UserConversationCategoryScalarFieldEnum | UserConversationCategoryScalarFieldEnum[]
+  }
+
+  /**
+   * UserConversationCategory create
+   */
+  export type UserConversationCategoryCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserConversationCategory
+     */
+    select?: UserConversationCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserConversationCategory
+     */
+    omit?: UserConversationCategoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserConversationCategoryInclude<ExtArgs> | null
+    /**
+     * The data needed to create a UserConversationCategory.
+     */
+    data: XOR<UserConversationCategoryCreateInput, UserConversationCategoryUncheckedCreateInput>
+  }
+
+  /**
+   * UserConversationCategory createMany
+   */
+  export type UserConversationCategoryCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many UserConversationCategories.
+     */
+    data: UserConversationCategoryCreateManyInput | UserConversationCategoryCreateManyInput[]
+  }
+
+  /**
+   * UserConversationCategory update
+   */
+  export type UserConversationCategoryUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserConversationCategory
+     */
+    select?: UserConversationCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserConversationCategory
+     */
+    omit?: UserConversationCategoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserConversationCategoryInclude<ExtArgs> | null
+    /**
+     * The data needed to update a UserConversationCategory.
+     */
+    data: XOR<UserConversationCategoryUpdateInput, UserConversationCategoryUncheckedUpdateInput>
+    /**
+     * Choose, which UserConversationCategory to update.
+     */
+    where: UserConversationCategoryWhereUniqueInput
+  }
+
+  /**
+   * UserConversationCategory updateMany
+   */
+  export type UserConversationCategoryUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update UserConversationCategories.
+     */
+    data: XOR<UserConversationCategoryUpdateManyMutationInput, UserConversationCategoryUncheckedUpdateManyInput>
+    /**
+     * Filter which UserConversationCategories to update
+     */
+    where?: UserConversationCategoryWhereInput
+    /**
+     * Limit how many UserConversationCategories to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserConversationCategory upsert
+   */
+  export type UserConversationCategoryUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserConversationCategory
+     */
+    select?: UserConversationCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserConversationCategory
+     */
+    omit?: UserConversationCategoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserConversationCategoryInclude<ExtArgs> | null
+    /**
+     * The filter to search for the UserConversationCategory to update in case it exists.
+     */
+    where: UserConversationCategoryWhereUniqueInput
+    /**
+     * In case the UserConversationCategory found by the `where` argument doesn't exist, create a new UserConversationCategory with this data.
+     */
+    create: XOR<UserConversationCategoryCreateInput, UserConversationCategoryUncheckedCreateInput>
+    /**
+     * In case the UserConversationCategory was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<UserConversationCategoryUpdateInput, UserConversationCategoryUncheckedUpdateInput>
+  }
+
+  /**
+   * UserConversationCategory delete
+   */
+  export type UserConversationCategoryDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserConversationCategory
+     */
+    select?: UserConversationCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserConversationCategory
+     */
+    omit?: UserConversationCategoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserConversationCategoryInclude<ExtArgs> | null
+    /**
+     * Filter which UserConversationCategory to delete.
+     */
+    where: UserConversationCategoryWhereUniqueInput
+  }
+
+  /**
+   * UserConversationCategory deleteMany
+   */
+  export type UserConversationCategoryDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserConversationCategories to delete
+     */
+    where?: UserConversationCategoryWhereInput
+    /**
+     * Limit how many UserConversationCategories to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserConversationCategory findRaw
+   */
+  export type UserConversationCategoryFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * UserConversationCategory aggregateRaw
+   */
+  export type UserConversationCategoryAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * UserConversationCategory.conversations
+   */
+  export type UserConversationCategory$conversationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserConversationPreferences
+     */
+    select?: UserConversationPreferencesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserConversationPreferences
+     */
+    omit?: UserConversationPreferencesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserConversationPreferencesInclude<ExtArgs> | null
+    where?: UserConversationPreferencesWhereInput
+    orderBy?: UserConversationPreferencesOrderByWithRelationInput | UserConversationPreferencesOrderByWithRelationInput[]
+    cursor?: UserConversationPreferencesWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UserConversationPreferencesScalarFieldEnum | UserConversationPreferencesScalarFieldEnum[]
+  }
+
+  /**
+   * UserConversationCategory without action
+   */
+  export type UserConversationCategoryDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserConversationCategory
+     */
+    select?: UserConversationCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserConversationCategory
+     */
+    omit?: UserConversationCategoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserConversationCategoryInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -35887,8 +38510,10 @@ export namespace Prisma {
     allowAnonymousFiles: 'allowAnonymousFiles',
     allowAnonymousImages: 'allowAnonymousImages',
     allowViewHistory: 'allowViewHistory',
+    requireAccount: 'requireAccount',
     requireNickname: 'requireNickname',
     requireEmail: 'requireEmail',
+    requireBirthday: 'requireBirthday',
     allowedCountries: 'allowedCountries',
     allowedLanguages: 'allowedLanguages',
     allowedIpRanges: 'allowedIpRanges',
@@ -35907,6 +38532,7 @@ export namespace Prisma {
     lastName: 'lastName',
     username: 'username',
     email: 'email',
+    birthday: 'birthday',
     sessionToken: 'sessionToken',
     ipAddress: 'ipAddress',
     country: 'country',
@@ -35982,7 +38608,8 @@ export namespace Prisma {
     channels: 'channels',
     uploadedBy: 'uploadedBy',
     isAnonymous: 'isAnonymous',
-    createdAt: 'createdAt'
+    createdAt: 'createdAt',
+    metadata: 'metadata'
   };
 
   export type MessageAttachmentScalarFieldEnum = (typeof MessageAttachmentScalarFieldEnum)[keyof typeof MessageAttachmentScalarFieldEnum]
@@ -36305,6 +38932,40 @@ export namespace Prisma {
   export type TranslationCallScalarFieldEnum = (typeof TranslationCallScalarFieldEnum)[keyof typeof TranslationCallScalarFieldEnum]
 
 
+  export const UserConversationPreferencesScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    conversationId: 'conversationId',
+    isPinned: 'isPinned',
+    isMuted: 'isMuted',
+    isArchived: 'isArchived',
+    tags: 'tags',
+    categoryId: 'categoryId',
+    orderInCategory: 'orderInCategory',
+    customName: 'customName',
+    reaction: 'reaction',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type UserConversationPreferencesScalarFieldEnum = (typeof UserConversationPreferencesScalarFieldEnum)[keyof typeof UserConversationPreferencesScalarFieldEnum]
+
+
+  export const UserConversationCategoryScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    name: 'name',
+    color: 'color',
+    icon: 'icon',
+    order: 'order',
+    isExpanded: 'isExpanded',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type UserConversationCategoryScalarFieldEnum = (typeof UserConversationCategoryScalarFieldEnum)[keyof typeof UserConversationCategoryScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -36390,6 +39051,13 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+  /**
    * Reference to a field of type 'CallMode'
    */
   export type EnumCallModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CallMode'>
@@ -36414,13 +39082,6 @@ export namespace Prisma {
    * Reference to a field of type 'CallStatus[]'
    */
   export type ListEnumCallStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CallStatus[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'Json'
-   */
-  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
     
 
 
@@ -36516,6 +39177,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickListRelationFilter
     initiatedCalls?: CallSessionListRelationFilter
     callParticipations?: CallParticipantListRelationFilter
+    conversationPrefs?: UserConversationPreferencesListRelationFilter
+    conversationCategories?: UserConversationCategoryListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -36576,6 +39239,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickOrderByRelationAggregateInput
     initiatedCalls?: CallSessionOrderByRelationAggregateInput
     callParticipations?: CallParticipantOrderByRelationAggregateInput
+    conversationPrefs?: UserConversationPreferencesOrderByRelationAggregateInput
+    conversationCategories?: UserConversationCategoryOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -36639,6 +39304,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickListRelationFilter
     initiatedCalls?: CallSessionListRelationFilter
     callParticipations?: CallParticipantListRelationFilter
+    conversationPrefs?: UserConversationPreferencesListRelationFilter
+    conversationCategories?: UserConversationCategoryListRelationFilter
   }, "id" | "username" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -36752,6 +39419,7 @@ export namespace Prisma {
     messages?: MessageListRelationFilter
     typingIndicators?: TypingIndicatorListRelationFilter
     callSessions?: CallSessionListRelationFilter
+    userPreferences?: UserConversationPreferencesListRelationFilter
   }
 
   export type ConversationOrderByWithRelationInput = {
@@ -36776,6 +39444,7 @@ export namespace Prisma {
     messages?: MessageOrderByRelationAggregateInput
     typingIndicators?: TypingIndicatorOrderByRelationAggregateInput
     callSessions?: CallSessionOrderByRelationAggregateInput
+    userPreferences?: UserConversationPreferencesOrderByRelationAggregateInput
   }
 
   export type ConversationWhereUniqueInput = Prisma.AtLeast<{
@@ -36803,6 +39472,7 @@ export namespace Prisma {
     messages?: MessageListRelationFilter
     typingIndicators?: TypingIndicatorListRelationFilter
     callSessions?: CallSessionListRelationFilter
+    userPreferences?: UserConversationPreferencesListRelationFilter
   }, "id" | "identifier">
 
   export type ConversationOrderByWithAggregationInput = {
@@ -36969,8 +39639,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFilter<"ConversationShareLink"> | boolean
     allowAnonymousImages?: BoolFilter<"ConversationShareLink"> | boolean
     allowViewHistory?: BoolFilter<"ConversationShareLink"> | boolean
+    requireAccount?: BoolFilter<"ConversationShareLink"> | boolean
     requireNickname?: BoolFilter<"ConversationShareLink"> | boolean
     requireEmail?: BoolFilter<"ConversationShareLink"> | boolean
+    requireBirthday?: BoolFilter<"ConversationShareLink"> | boolean
     allowedCountries?: StringNullableListFilter<"ConversationShareLink">
     allowedLanguages?: StringNullableListFilter<"ConversationShareLink">
     allowedIpRanges?: StringNullableListFilter<"ConversationShareLink">
@@ -37001,8 +39673,10 @@ export namespace Prisma {
     allowAnonymousFiles?: SortOrder
     allowAnonymousImages?: SortOrder
     allowViewHistory?: SortOrder
+    requireAccount?: SortOrder
     requireNickname?: SortOrder
     requireEmail?: SortOrder
+    requireBirthday?: SortOrder
     allowedCountries?: SortOrder
     allowedLanguages?: SortOrder
     allowedIpRanges?: SortOrder
@@ -37036,8 +39710,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFilter<"ConversationShareLink"> | boolean
     allowAnonymousImages?: BoolFilter<"ConversationShareLink"> | boolean
     allowViewHistory?: BoolFilter<"ConversationShareLink"> | boolean
+    requireAccount?: BoolFilter<"ConversationShareLink"> | boolean
     requireNickname?: BoolFilter<"ConversationShareLink"> | boolean
     requireEmail?: BoolFilter<"ConversationShareLink"> | boolean
+    requireBirthday?: BoolFilter<"ConversationShareLink"> | boolean
     allowedCountries?: StringNullableListFilter<"ConversationShareLink">
     allowedLanguages?: StringNullableListFilter<"ConversationShareLink">
     allowedIpRanges?: StringNullableListFilter<"ConversationShareLink">
@@ -37068,8 +39744,10 @@ export namespace Prisma {
     allowAnonymousFiles?: SortOrder
     allowAnonymousImages?: SortOrder
     allowViewHistory?: SortOrder
+    requireAccount?: SortOrder
     requireNickname?: SortOrder
     requireEmail?: SortOrder
+    requireBirthday?: SortOrder
     allowedCountries?: SortOrder
     allowedLanguages?: SortOrder
     allowedIpRanges?: SortOrder
@@ -37105,8 +39783,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolWithAggregatesFilter<"ConversationShareLink"> | boolean
     allowAnonymousImages?: BoolWithAggregatesFilter<"ConversationShareLink"> | boolean
     allowViewHistory?: BoolWithAggregatesFilter<"ConversationShareLink"> | boolean
+    requireAccount?: BoolWithAggregatesFilter<"ConversationShareLink"> | boolean
     requireNickname?: BoolWithAggregatesFilter<"ConversationShareLink"> | boolean
     requireEmail?: BoolWithAggregatesFilter<"ConversationShareLink"> | boolean
+    requireBirthday?: BoolWithAggregatesFilter<"ConversationShareLink"> | boolean
     allowedCountries?: StringNullableListFilter<"ConversationShareLink">
     allowedLanguages?: StringNullableListFilter<"ConversationShareLink">
     allowedIpRanges?: StringNullableListFilter<"ConversationShareLink">
@@ -37125,6 +39805,7 @@ export namespace Prisma {
     lastName?: StringFilter<"AnonymousParticipant"> | string
     username?: StringFilter<"AnonymousParticipant"> | string
     email?: StringNullableFilter<"AnonymousParticipant"> | string | null
+    birthday?: DateTimeNullableFilter<"AnonymousParticipant"> | Date | string | null
     sessionToken?: StringFilter<"AnonymousParticipant"> | string
     ipAddress?: StringNullableFilter<"AnonymousParticipant"> | string | null
     country?: StringNullableFilter<"AnonymousParticipant"> | string | null
@@ -37154,6 +39835,7 @@ export namespace Prisma {
     lastName?: SortOrder
     username?: SortOrder
     email?: SortOrder
+    birthday?: SortOrder
     sessionToken?: SortOrder
     ipAddress?: SortOrder
     country?: SortOrder
@@ -37187,6 +39869,7 @@ export namespace Prisma {
     lastName?: StringFilter<"AnonymousParticipant"> | string
     username?: StringFilter<"AnonymousParticipant"> | string
     email?: StringNullableFilter<"AnonymousParticipant"> | string | null
+    birthday?: DateTimeNullableFilter<"AnonymousParticipant"> | Date | string | null
     ipAddress?: StringNullableFilter<"AnonymousParticipant"> | string | null
     country?: StringNullableFilter<"AnonymousParticipant"> | string | null
     language?: StringFilter<"AnonymousParticipant"> | string
@@ -37215,6 +39898,7 @@ export namespace Prisma {
     lastName?: SortOrder
     username?: SortOrder
     email?: SortOrder
+    birthday?: SortOrder
     sessionToken?: SortOrder
     ipAddress?: SortOrder
     country?: SortOrder
@@ -37245,6 +39929,7 @@ export namespace Prisma {
     lastName?: StringWithAggregatesFilter<"AnonymousParticipant"> | string
     username?: StringWithAggregatesFilter<"AnonymousParticipant"> | string
     email?: StringNullableWithAggregatesFilter<"AnonymousParticipant"> | string | null
+    birthday?: DateTimeNullableWithAggregatesFilter<"AnonymousParticipant"> | Date | string | null
     sessionToken?: StringWithAggregatesFilter<"AnonymousParticipant"> | string
     ipAddress?: StringNullableWithAggregatesFilter<"AnonymousParticipant"> | string | null
     country?: StringNullableWithAggregatesFilter<"AnonymousParticipant"> | string | null
@@ -37495,6 +40180,7 @@ export namespace Prisma {
     uploadedBy?: StringFilter<"MessageAttachment"> | string
     isAnonymous?: BoolFilter<"MessageAttachment"> | boolean
     createdAt?: DateTimeFilter<"MessageAttachment"> | Date | string
+    metadata?: JsonNullableFilter<"MessageAttachment">
     message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
   }
 
@@ -37519,6 +40205,7 @@ export namespace Prisma {
     uploadedBy?: SortOrder
     isAnonymous?: SortOrder
     createdAt?: SortOrder
+    metadata?: SortOrder
     message?: MessageOrderByWithRelationInput
   }
 
@@ -37546,6 +40233,7 @@ export namespace Prisma {
     uploadedBy?: StringFilter<"MessageAttachment"> | string
     isAnonymous?: BoolFilter<"MessageAttachment"> | boolean
     createdAt?: DateTimeFilter<"MessageAttachment"> | Date | string
+    metadata?: JsonNullableFilter<"MessageAttachment">
     message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
   }, "id">
 
@@ -37570,6 +40258,7 @@ export namespace Prisma {
     uploadedBy?: SortOrder
     isAnonymous?: SortOrder
     createdAt?: SortOrder
+    metadata?: SortOrder
     _count?: MessageAttachmentCountOrderByAggregateInput
     _avg?: MessageAttachmentAvgOrderByAggregateInput
     _max?: MessageAttachmentMaxOrderByAggregateInput
@@ -37601,6 +40290,7 @@ export namespace Prisma {
     uploadedBy?: StringWithAggregatesFilter<"MessageAttachment"> | string
     isAnonymous?: BoolWithAggregatesFilter<"MessageAttachment"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"MessageAttachment"> | Date | string
+    metadata?: JsonNullableWithAggregatesFilter<"MessageAttachment">
   }
 
   export type MessageStatusWhereInput = {
@@ -39260,6 +41950,190 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"TranslationCall"> | Date | string
   }
 
+  export type UserConversationPreferencesWhereInput = {
+    AND?: UserConversationPreferencesWhereInput | UserConversationPreferencesWhereInput[]
+    OR?: UserConversationPreferencesWhereInput[]
+    NOT?: UserConversationPreferencesWhereInput | UserConversationPreferencesWhereInput[]
+    id?: StringFilter<"UserConversationPreferences"> | string
+    userId?: StringFilter<"UserConversationPreferences"> | string
+    conversationId?: StringFilter<"UserConversationPreferences"> | string
+    isPinned?: BoolFilter<"UserConversationPreferences"> | boolean
+    isMuted?: BoolFilter<"UserConversationPreferences"> | boolean
+    isArchived?: BoolFilter<"UserConversationPreferences"> | boolean
+    tags?: StringNullableListFilter<"UserConversationPreferences">
+    categoryId?: StringNullableFilter<"UserConversationPreferences"> | string | null
+    orderInCategory?: IntNullableFilter<"UserConversationPreferences"> | number | null
+    customName?: StringNullableFilter<"UserConversationPreferences"> | string | null
+    reaction?: StringNullableFilter<"UserConversationPreferences"> | string | null
+    createdAt?: DateTimeFilter<"UserConversationPreferences"> | Date | string
+    updatedAt?: DateTimeFilter<"UserConversationPreferences"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
+    category?: XOR<UserConversationCategoryNullableScalarRelationFilter, UserConversationCategoryWhereInput> | null
+  }
+
+  export type UserConversationPreferencesOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    conversationId?: SortOrder
+    isPinned?: SortOrder
+    isMuted?: SortOrder
+    isArchived?: SortOrder
+    tags?: SortOrder
+    categoryId?: SortOrder
+    orderInCategory?: SortOrder
+    customName?: SortOrder
+    reaction?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+    conversation?: ConversationOrderByWithRelationInput
+    category?: UserConversationCategoryOrderByWithRelationInput
+  }
+
+  export type UserConversationPreferencesWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId_conversationId?: UserConversationPreferencesUserIdConversationIdCompoundUniqueInput
+    AND?: UserConversationPreferencesWhereInput | UserConversationPreferencesWhereInput[]
+    OR?: UserConversationPreferencesWhereInput[]
+    NOT?: UserConversationPreferencesWhereInput | UserConversationPreferencesWhereInput[]
+    userId?: StringFilter<"UserConversationPreferences"> | string
+    conversationId?: StringFilter<"UserConversationPreferences"> | string
+    isPinned?: BoolFilter<"UserConversationPreferences"> | boolean
+    isMuted?: BoolFilter<"UserConversationPreferences"> | boolean
+    isArchived?: BoolFilter<"UserConversationPreferences"> | boolean
+    tags?: StringNullableListFilter<"UserConversationPreferences">
+    categoryId?: StringNullableFilter<"UserConversationPreferences"> | string | null
+    orderInCategory?: IntNullableFilter<"UserConversationPreferences"> | number | null
+    customName?: StringNullableFilter<"UserConversationPreferences"> | string | null
+    reaction?: StringNullableFilter<"UserConversationPreferences"> | string | null
+    createdAt?: DateTimeFilter<"UserConversationPreferences"> | Date | string
+    updatedAt?: DateTimeFilter<"UserConversationPreferences"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
+    category?: XOR<UserConversationCategoryNullableScalarRelationFilter, UserConversationCategoryWhereInput> | null
+  }, "id" | "userId_conversationId">
+
+  export type UserConversationPreferencesOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    conversationId?: SortOrder
+    isPinned?: SortOrder
+    isMuted?: SortOrder
+    isArchived?: SortOrder
+    tags?: SortOrder
+    categoryId?: SortOrder
+    orderInCategory?: SortOrder
+    customName?: SortOrder
+    reaction?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: UserConversationPreferencesCountOrderByAggregateInput
+    _avg?: UserConversationPreferencesAvgOrderByAggregateInput
+    _max?: UserConversationPreferencesMaxOrderByAggregateInput
+    _min?: UserConversationPreferencesMinOrderByAggregateInput
+    _sum?: UserConversationPreferencesSumOrderByAggregateInput
+  }
+
+  export type UserConversationPreferencesScalarWhereWithAggregatesInput = {
+    AND?: UserConversationPreferencesScalarWhereWithAggregatesInput | UserConversationPreferencesScalarWhereWithAggregatesInput[]
+    OR?: UserConversationPreferencesScalarWhereWithAggregatesInput[]
+    NOT?: UserConversationPreferencesScalarWhereWithAggregatesInput | UserConversationPreferencesScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"UserConversationPreferences"> | string
+    userId?: StringWithAggregatesFilter<"UserConversationPreferences"> | string
+    conversationId?: StringWithAggregatesFilter<"UserConversationPreferences"> | string
+    isPinned?: BoolWithAggregatesFilter<"UserConversationPreferences"> | boolean
+    isMuted?: BoolWithAggregatesFilter<"UserConversationPreferences"> | boolean
+    isArchived?: BoolWithAggregatesFilter<"UserConversationPreferences"> | boolean
+    tags?: StringNullableListFilter<"UserConversationPreferences">
+    categoryId?: StringNullableWithAggregatesFilter<"UserConversationPreferences"> | string | null
+    orderInCategory?: IntNullableWithAggregatesFilter<"UserConversationPreferences"> | number | null
+    customName?: StringNullableWithAggregatesFilter<"UserConversationPreferences"> | string | null
+    reaction?: StringNullableWithAggregatesFilter<"UserConversationPreferences"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"UserConversationPreferences"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"UserConversationPreferences"> | Date | string
+  }
+
+  export type UserConversationCategoryWhereInput = {
+    AND?: UserConversationCategoryWhereInput | UserConversationCategoryWhereInput[]
+    OR?: UserConversationCategoryWhereInput[]
+    NOT?: UserConversationCategoryWhereInput | UserConversationCategoryWhereInput[]
+    id?: StringFilter<"UserConversationCategory"> | string
+    userId?: StringFilter<"UserConversationCategory"> | string
+    name?: StringFilter<"UserConversationCategory"> | string
+    color?: StringNullableFilter<"UserConversationCategory"> | string | null
+    icon?: StringNullableFilter<"UserConversationCategory"> | string | null
+    order?: IntFilter<"UserConversationCategory"> | number
+    isExpanded?: BoolFilter<"UserConversationCategory"> | boolean
+    createdAt?: DateTimeFilter<"UserConversationCategory"> | Date | string
+    updatedAt?: DateTimeFilter<"UserConversationCategory"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversations?: UserConversationPreferencesListRelationFilter
+  }
+
+  export type UserConversationCategoryOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    name?: SortOrder
+    color?: SortOrder
+    icon?: SortOrder
+    order?: SortOrder
+    isExpanded?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+    conversations?: UserConversationPreferencesOrderByRelationAggregateInput
+  }
+
+  export type UserConversationCategoryWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: UserConversationCategoryWhereInput | UserConversationCategoryWhereInput[]
+    OR?: UserConversationCategoryWhereInput[]
+    NOT?: UserConversationCategoryWhereInput | UserConversationCategoryWhereInput[]
+    userId?: StringFilter<"UserConversationCategory"> | string
+    name?: StringFilter<"UserConversationCategory"> | string
+    color?: StringNullableFilter<"UserConversationCategory"> | string | null
+    icon?: StringNullableFilter<"UserConversationCategory"> | string | null
+    order?: IntFilter<"UserConversationCategory"> | number
+    isExpanded?: BoolFilter<"UserConversationCategory"> | boolean
+    createdAt?: DateTimeFilter<"UserConversationCategory"> | Date | string
+    updatedAt?: DateTimeFilter<"UserConversationCategory"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversations?: UserConversationPreferencesListRelationFilter
+  }, "id">
+
+  export type UserConversationCategoryOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    name?: SortOrder
+    color?: SortOrder
+    icon?: SortOrder
+    order?: SortOrder
+    isExpanded?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: UserConversationCategoryCountOrderByAggregateInput
+    _avg?: UserConversationCategoryAvgOrderByAggregateInput
+    _max?: UserConversationCategoryMaxOrderByAggregateInput
+    _min?: UserConversationCategoryMinOrderByAggregateInput
+    _sum?: UserConversationCategorySumOrderByAggregateInput
+  }
+
+  export type UserConversationCategoryScalarWhereWithAggregatesInput = {
+    AND?: UserConversationCategoryScalarWhereWithAggregatesInput | UserConversationCategoryScalarWhereWithAggregatesInput[]
+    OR?: UserConversationCategoryScalarWhereWithAggregatesInput[]
+    NOT?: UserConversationCategoryScalarWhereWithAggregatesInput | UserConversationCategoryScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"UserConversationCategory"> | string
+    userId?: StringWithAggregatesFilter<"UserConversationCategory"> | string
+    name?: StringWithAggregatesFilter<"UserConversationCategory"> | string
+    color?: StringNullableWithAggregatesFilter<"UserConversationCategory"> | string | null
+    icon?: StringNullableWithAggregatesFilter<"UserConversationCategory"> | string | null
+    order?: IntWithAggregatesFilter<"UserConversationCategory"> | number
+    isExpanded?: BoolWithAggregatesFilter<"UserConversationCategory"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"UserConversationCategory"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"UserConversationCategory"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     username: string
@@ -39318,6 +42192,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -39378,6 +42254,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesUncheckedCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -39437,6 +42315,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -39496,6 +42376,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUncheckedUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -39634,6 +42516,7 @@ export namespace Prisma {
     messages?: MessageCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
     callSessions?: CallSessionCreateNestedManyWithoutConversationInput
+    userPreferences?: UserConversationPreferencesCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUncheckedCreateInput = {
@@ -39657,6 +42540,7 @@ export namespace Prisma {
     messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutConversationInput
+    userPreferences?: UserConversationPreferencesUncheckedCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUpdateInput = {
@@ -39679,6 +42563,7 @@ export namespace Prisma {
     messages?: MessageUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
     callSessions?: CallSessionUpdateManyWithoutConversationNestedInput
+    userPreferences?: UserConversationPreferencesUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationUncheckedUpdateInput = {
@@ -39701,6 +42586,7 @@ export namespace Prisma {
     messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
     callSessions?: CallSessionUncheckedUpdateManyWithoutConversationNestedInput
+    userPreferences?: UserConversationPreferencesUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationCreateManyInput = {
@@ -39879,8 +42765,10 @@ export namespace Prisma {
     allowAnonymousFiles?: boolean
     allowAnonymousImages?: boolean
     allowViewHistory?: boolean
+    requireAccount?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    requireBirthday?: boolean
     allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
@@ -39911,8 +42799,10 @@ export namespace Prisma {
     allowAnonymousFiles?: boolean
     allowAnonymousImages?: boolean
     allowViewHistory?: boolean
+    requireAccount?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    requireBirthday?: boolean
     allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
@@ -39938,8 +42828,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireAccount?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    requireBirthday?: BoolFieldUpdateOperationsInput | boolean
     allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
@@ -39969,8 +42861,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireAccount?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    requireBirthday?: BoolFieldUpdateOperationsInput | boolean
     allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
@@ -39999,8 +42893,10 @@ export namespace Prisma {
     allowAnonymousFiles?: boolean
     allowAnonymousImages?: boolean
     allowViewHistory?: boolean
+    requireAccount?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    requireBirthday?: boolean
     allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
@@ -40025,8 +42921,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireAccount?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    requireBirthday?: BoolFieldUpdateOperationsInput | boolean
     allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
@@ -40053,8 +42951,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireAccount?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    requireBirthday?: BoolFieldUpdateOperationsInput | boolean
     allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
@@ -40068,6 +42968,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -40097,6 +42998,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -40121,6 +43023,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40149,6 +43052,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40176,6 +43080,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -40197,6 +43102,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40220,6 +43126,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40477,6 +43384,7 @@ export namespace Prisma {
     uploadedBy: string
     isAnonymous?: boolean
     createdAt?: Date | string
+    metadata?: InputJsonValue | null
     message: MessageCreateNestedOneWithoutAttachmentsInput
   }
 
@@ -40501,6 +43409,7 @@ export namespace Prisma {
     uploadedBy: string
     isAnonymous?: boolean
     createdAt?: Date | string
+    metadata?: InputJsonValue | null
   }
 
   export type MessageAttachmentUpdateInput = {
@@ -40522,6 +43431,7 @@ export namespace Prisma {
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: InputJsonValue | InputJsonValue | null
     message?: MessageUpdateOneRequiredWithoutAttachmentsNestedInput
   }
 
@@ -40545,6 +43455,7 @@ export namespace Prisma {
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: InputJsonValue | InputJsonValue | null
   }
 
   export type MessageAttachmentCreateManyInput = {
@@ -40568,6 +43479,7 @@ export namespace Prisma {
     uploadedBy: string
     isAnonymous?: boolean
     createdAt?: Date | string
+    metadata?: InputJsonValue | null
   }
 
   export type MessageAttachmentUpdateManyMutationInput = {
@@ -40589,6 +43501,7 @@ export namespace Prisma {
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: InputJsonValue | InputJsonValue | null
   }
 
   export type MessageAttachmentUncheckedUpdateManyInput = {
@@ -40611,6 +43524,7 @@ export namespace Prisma {
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: InputJsonValue | InputJsonValue | null
   }
 
   export type MessageStatusCreateInput = {
@@ -42328,6 +45242,194 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type UserConversationPreferencesCreateInput = {
+    id?: string
+    isPinned?: boolean
+    isMuted?: boolean
+    isArchived?: boolean
+    tags?: UserConversationPreferencesCreatetagsInput | string[]
+    orderInCategory?: number | null
+    customName?: string | null
+    reaction?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutConversationPrefsInput
+    conversation: ConversationCreateNestedOneWithoutUserPreferencesInput
+    category?: UserConversationCategoryCreateNestedOneWithoutConversationsInput
+  }
+
+  export type UserConversationPreferencesUncheckedCreateInput = {
+    id?: string
+    userId: string
+    conversationId: string
+    isPinned?: boolean
+    isMuted?: boolean
+    isArchived?: boolean
+    tags?: UserConversationPreferencesCreatetagsInput | string[]
+    categoryId?: string | null
+    orderInCategory?: number | null
+    customName?: string | null
+    reaction?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserConversationPreferencesUpdateInput = {
+    isPinned?: BoolFieldUpdateOperationsInput | boolean
+    isMuted?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    tags?: UserConversationPreferencesUpdatetagsInput | string[]
+    orderInCategory?: NullableIntFieldUpdateOperationsInput | number | null
+    customName?: NullableStringFieldUpdateOperationsInput | string | null
+    reaction?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutConversationPrefsNestedInput
+    conversation?: ConversationUpdateOneRequiredWithoutUserPreferencesNestedInput
+    category?: UserConversationCategoryUpdateOneWithoutConversationsNestedInput
+  }
+
+  export type UserConversationPreferencesUncheckedUpdateInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    conversationId?: StringFieldUpdateOperationsInput | string
+    isPinned?: BoolFieldUpdateOperationsInput | boolean
+    isMuted?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    tags?: UserConversationPreferencesUpdatetagsInput | string[]
+    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    orderInCategory?: NullableIntFieldUpdateOperationsInput | number | null
+    customName?: NullableStringFieldUpdateOperationsInput | string | null
+    reaction?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserConversationPreferencesCreateManyInput = {
+    id?: string
+    userId: string
+    conversationId: string
+    isPinned?: boolean
+    isMuted?: boolean
+    isArchived?: boolean
+    tags?: UserConversationPreferencesCreatetagsInput | string[]
+    categoryId?: string | null
+    orderInCategory?: number | null
+    customName?: string | null
+    reaction?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserConversationPreferencesUpdateManyMutationInput = {
+    isPinned?: BoolFieldUpdateOperationsInput | boolean
+    isMuted?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    tags?: UserConversationPreferencesUpdatetagsInput | string[]
+    orderInCategory?: NullableIntFieldUpdateOperationsInput | number | null
+    customName?: NullableStringFieldUpdateOperationsInput | string | null
+    reaction?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserConversationPreferencesUncheckedUpdateManyInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    conversationId?: StringFieldUpdateOperationsInput | string
+    isPinned?: BoolFieldUpdateOperationsInput | boolean
+    isMuted?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    tags?: UserConversationPreferencesUpdatetagsInput | string[]
+    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    orderInCategory?: NullableIntFieldUpdateOperationsInput | number | null
+    customName?: NullableStringFieldUpdateOperationsInput | string | null
+    reaction?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserConversationCategoryCreateInput = {
+    id?: string
+    name: string
+    color?: string | null
+    icon?: string | null
+    order?: number
+    isExpanded?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutConversationCategoriesInput
+    conversations?: UserConversationPreferencesCreateNestedManyWithoutCategoryInput
+  }
+
+  export type UserConversationCategoryUncheckedCreateInput = {
+    id?: string
+    userId: string
+    name: string
+    color?: string | null
+    icon?: string | null
+    order?: number
+    isExpanded?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    conversations?: UserConversationPreferencesUncheckedCreateNestedManyWithoutCategoryInput
+  }
+
+  export type UserConversationCategoryUpdateInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
+    isExpanded?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutConversationCategoriesNestedInput
+    conversations?: UserConversationPreferencesUpdateManyWithoutCategoryNestedInput
+  }
+
+  export type UserConversationCategoryUncheckedUpdateInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
+    isExpanded?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    conversations?: UserConversationPreferencesUncheckedUpdateManyWithoutCategoryNestedInput
+  }
+
+  export type UserConversationCategoryCreateManyInput = {
+    id?: string
+    userId: string
+    name: string
+    color?: string | null
+    icon?: string | null
+    order?: number
+    isExpanded?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserConversationCategoryUpdateManyMutationInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
+    isExpanded?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserConversationCategoryUncheckedUpdateManyInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
+    isExpanded?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -42518,6 +45620,18 @@ export namespace Prisma {
     none?: CallParticipantWhereInput
   }
 
+  export type UserConversationPreferencesListRelationFilter = {
+    every?: UserConversationPreferencesWhereInput
+    some?: UserConversationPreferencesWhereInput
+    none?: UserConversationPreferencesWhereInput
+  }
+
+  export type UserConversationCategoryListRelationFilter = {
+    every?: UserConversationCategoryWhereInput
+    some?: UserConversationCategoryWhereInput
+    none?: UserConversationCategoryWhereInput
+  }
+
   export type CommunityOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -42587,6 +45701,14 @@ export namespace Prisma {
   }
 
   export type CallParticipantOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type UserConversationPreferencesOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type UserConversationCategoryOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -42980,8 +46102,10 @@ export namespace Prisma {
     allowAnonymousFiles?: SortOrder
     allowAnonymousImages?: SortOrder
     allowViewHistory?: SortOrder
+    requireAccount?: SortOrder
     requireNickname?: SortOrder
     requireEmail?: SortOrder
+    requireBirthday?: SortOrder
     allowedCountries?: SortOrder
     allowedLanguages?: SortOrder
     allowedIpRanges?: SortOrder
@@ -43018,8 +46142,10 @@ export namespace Prisma {
     allowAnonymousFiles?: SortOrder
     allowAnonymousImages?: SortOrder
     allowViewHistory?: SortOrder
+    requireAccount?: SortOrder
     requireNickname?: SortOrder
     requireEmail?: SortOrder
+    requireBirthday?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -43044,8 +46170,10 @@ export namespace Prisma {
     allowAnonymousFiles?: SortOrder
     allowAnonymousImages?: SortOrder
     allowViewHistory?: SortOrder
+    requireAccount?: SortOrder
     requireNickname?: SortOrder
     requireEmail?: SortOrder
+    requireBirthday?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -43088,6 +46216,7 @@ export namespace Prisma {
     lastName?: SortOrder
     username?: SortOrder
     email?: SortOrder
+    birthday?: SortOrder
     sessionToken?: SortOrder
     ipAddress?: SortOrder
     country?: SortOrder
@@ -43112,6 +46241,7 @@ export namespace Prisma {
     lastName?: SortOrder
     username?: SortOrder
     email?: SortOrder
+    birthday?: SortOrder
     sessionToken?: SortOrder
     ipAddress?: SortOrder
     country?: SortOrder
@@ -43136,6 +46266,7 @@ export namespace Prisma {
     lastName?: SortOrder
     username?: SortOrder
     email?: SortOrder
+    birthday?: SortOrder
     sessionToken?: SortOrder
     ipAddress?: SortOrder
     country?: SortOrder
@@ -43323,6 +46454,18 @@ export namespace Prisma {
     _max?: NestedFloatNullableFilter<$PrismaModel>
     isSet?: boolean
   }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    isSet?: boolean
+  }
 
   export type MessageAttachmentCountOrderByAggregateInput = {
     id?: SortOrder
@@ -43345,6 +46488,7 @@ export namespace Prisma {
     uploadedBy?: SortOrder
     isAnonymous?: SortOrder
     createdAt?: SortOrder
+    metadata?: SortOrder
   }
 
   export type MessageAttachmentAvgOrderByAggregateInput = {
@@ -43411,6 +46555,21 @@ export namespace Prisma {
     bitrate?: SortOrder
     sampleRate?: SortOrder
     channels?: SortOrder
+  }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
+    isSet?: boolean
   }
 
   export type MessageStatusMessageId_userIdCompoundUniqueInput = {
@@ -44146,18 +47305,6 @@ export namespace Prisma {
     notIn?: $Enums.CallStatus[] | ListEnumCallStatusFieldRefInput<$PrismaModel>
     not?: NestedEnumCallStatusFilter<$PrismaModel> | $Enums.CallStatus
   }
-  export type JsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    isSet?: boolean
-  }
 
   export type TranscriptionListRelationFilter = {
     every?: TranscriptionWhereInput
@@ -44232,21 +47379,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumCallStatusFilter<$PrismaModel>
     _max?: NestedEnumCallStatusFilter<$PrismaModel>
-  }
-  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedJsonNullableFilter<$PrismaModel>
-    _max?: NestedJsonNullableFilter<$PrismaModel>
-    isSet?: boolean
   }
 
   export type EnumParticipantRoleFilter<$PrismaModel = never> = {
@@ -44427,6 +47559,114 @@ export namespace Prisma {
     confidence?: SortOrder
   }
 
+  export type UserConversationCategoryNullableScalarRelationFilter = {
+    is?: UserConversationCategoryWhereInput | null
+    isNot?: UserConversationCategoryWhereInput | null
+  }
+
+  export type UserConversationPreferencesUserIdConversationIdCompoundUniqueInput = {
+    userId: string
+    conversationId: string
+  }
+
+  export type UserConversationPreferencesCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    conversationId?: SortOrder
+    isPinned?: SortOrder
+    isMuted?: SortOrder
+    isArchived?: SortOrder
+    tags?: SortOrder
+    categoryId?: SortOrder
+    orderInCategory?: SortOrder
+    customName?: SortOrder
+    reaction?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserConversationPreferencesAvgOrderByAggregateInput = {
+    orderInCategory?: SortOrder
+  }
+
+  export type UserConversationPreferencesMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    conversationId?: SortOrder
+    isPinned?: SortOrder
+    isMuted?: SortOrder
+    isArchived?: SortOrder
+    categoryId?: SortOrder
+    orderInCategory?: SortOrder
+    customName?: SortOrder
+    reaction?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserConversationPreferencesMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    conversationId?: SortOrder
+    isPinned?: SortOrder
+    isMuted?: SortOrder
+    isArchived?: SortOrder
+    categoryId?: SortOrder
+    orderInCategory?: SortOrder
+    customName?: SortOrder
+    reaction?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserConversationPreferencesSumOrderByAggregateInput = {
+    orderInCategory?: SortOrder
+  }
+
+  export type UserConversationCategoryCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    name?: SortOrder
+    color?: SortOrder
+    icon?: SortOrder
+    order?: SortOrder
+    isExpanded?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserConversationCategoryAvgOrderByAggregateInput = {
+    order?: SortOrder
+  }
+
+  export type UserConversationCategoryMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    name?: SortOrder
+    color?: SortOrder
+    icon?: SortOrder
+    order?: SortOrder
+    isExpanded?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserConversationCategoryMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    name?: SortOrder
+    color?: SortOrder
+    icon?: SortOrder
+    order?: SortOrder
+    isExpanded?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserConversationCategorySumOrderByAggregateInput = {
+    order?: SortOrder
+  }
+
   export type CommunityCreateNestedManyWithoutCreatorInput = {
     create?: XOR<CommunityCreateWithoutCreatorInput, CommunityUncheckedCreateWithoutCreatorInput> | CommunityCreateWithoutCreatorInput[] | CommunityUncheckedCreateWithoutCreatorInput[]
     connectOrCreate?: CommunityCreateOrConnectWithoutCreatorInput | CommunityCreateOrConnectWithoutCreatorInput[]
@@ -44573,6 +47813,20 @@ export namespace Prisma {
     connect?: CallParticipantWhereUniqueInput | CallParticipantWhereUniqueInput[]
   }
 
+  export type UserConversationPreferencesCreateNestedManyWithoutUserInput = {
+    create?: XOR<UserConversationPreferencesCreateWithoutUserInput, UserConversationPreferencesUncheckedCreateWithoutUserInput> | UserConversationPreferencesCreateWithoutUserInput[] | UserConversationPreferencesUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: UserConversationPreferencesCreateOrConnectWithoutUserInput | UserConversationPreferencesCreateOrConnectWithoutUserInput[]
+    createMany?: UserConversationPreferencesCreateManyUserInputEnvelope
+    connect?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+  }
+
+  export type UserConversationCategoryCreateNestedManyWithoutUserInput = {
+    create?: XOR<UserConversationCategoryCreateWithoutUserInput, UserConversationCategoryUncheckedCreateWithoutUserInput> | UserConversationCategoryCreateWithoutUserInput[] | UserConversationCategoryUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: UserConversationCategoryCreateOrConnectWithoutUserInput | UserConversationCategoryCreateOrConnectWithoutUserInput[]
+    createMany?: UserConversationCategoryCreateManyUserInputEnvelope
+    connect?: UserConversationCategoryWhereUniqueInput | UserConversationCategoryWhereUniqueInput[]
+  }
+
   export type CommunityUncheckedCreateNestedManyWithoutCreatorInput = {
     create?: XOR<CommunityCreateWithoutCreatorInput, CommunityUncheckedCreateWithoutCreatorInput> | CommunityCreateWithoutCreatorInput[] | CommunityUncheckedCreateWithoutCreatorInput[]
     connectOrCreate?: CommunityCreateOrConnectWithoutCreatorInput | CommunityCreateOrConnectWithoutCreatorInput[]
@@ -44717,6 +47971,20 @@ export namespace Prisma {
     connectOrCreate?: CallParticipantCreateOrConnectWithoutUserInput | CallParticipantCreateOrConnectWithoutUserInput[]
     createMany?: CallParticipantCreateManyUserInputEnvelope
     connect?: CallParticipantWhereUniqueInput | CallParticipantWhereUniqueInput[]
+  }
+
+  export type UserConversationPreferencesUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<UserConversationPreferencesCreateWithoutUserInput, UserConversationPreferencesUncheckedCreateWithoutUserInput> | UserConversationPreferencesCreateWithoutUserInput[] | UserConversationPreferencesUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: UserConversationPreferencesCreateOrConnectWithoutUserInput | UserConversationPreferencesCreateOrConnectWithoutUserInput[]
+    createMany?: UserConversationPreferencesCreateManyUserInputEnvelope
+    connect?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+  }
+
+  export type UserConversationCategoryUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<UserConversationCategoryCreateWithoutUserInput, UserConversationCategoryUncheckedCreateWithoutUserInput> | UserConversationCategoryCreateWithoutUserInput[] | UserConversationCategoryUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: UserConversationCategoryCreateOrConnectWithoutUserInput | UserConversationCategoryCreateOrConnectWithoutUserInput[]
+    createMany?: UserConversationCategoryCreateManyUserInputEnvelope
+    connect?: UserConversationCategoryWhereUniqueInput | UserConversationCategoryWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -45045,6 +48313,34 @@ export namespace Prisma {
     deleteMany?: CallParticipantScalarWhereInput | CallParticipantScalarWhereInput[]
   }
 
+  export type UserConversationPreferencesUpdateManyWithoutUserNestedInput = {
+    create?: XOR<UserConversationPreferencesCreateWithoutUserInput, UserConversationPreferencesUncheckedCreateWithoutUserInput> | UserConversationPreferencesCreateWithoutUserInput[] | UserConversationPreferencesUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: UserConversationPreferencesCreateOrConnectWithoutUserInput | UserConversationPreferencesCreateOrConnectWithoutUserInput[]
+    upsert?: UserConversationPreferencesUpsertWithWhereUniqueWithoutUserInput | UserConversationPreferencesUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: UserConversationPreferencesCreateManyUserInputEnvelope
+    set?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+    disconnect?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+    delete?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+    connect?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+    update?: UserConversationPreferencesUpdateWithWhereUniqueWithoutUserInput | UserConversationPreferencesUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: UserConversationPreferencesUpdateManyWithWhereWithoutUserInput | UserConversationPreferencesUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: UserConversationPreferencesScalarWhereInput | UserConversationPreferencesScalarWhereInput[]
+  }
+
+  export type UserConversationCategoryUpdateManyWithoutUserNestedInput = {
+    create?: XOR<UserConversationCategoryCreateWithoutUserInput, UserConversationCategoryUncheckedCreateWithoutUserInput> | UserConversationCategoryCreateWithoutUserInput[] | UserConversationCategoryUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: UserConversationCategoryCreateOrConnectWithoutUserInput | UserConversationCategoryCreateOrConnectWithoutUserInput[]
+    upsert?: UserConversationCategoryUpsertWithWhereUniqueWithoutUserInput | UserConversationCategoryUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: UserConversationCategoryCreateManyUserInputEnvelope
+    set?: UserConversationCategoryWhereUniqueInput | UserConversationCategoryWhereUniqueInput[]
+    disconnect?: UserConversationCategoryWhereUniqueInput | UserConversationCategoryWhereUniqueInput[]
+    delete?: UserConversationCategoryWhereUniqueInput | UserConversationCategoryWhereUniqueInput[]
+    connect?: UserConversationCategoryWhereUniqueInput | UserConversationCategoryWhereUniqueInput[]
+    update?: UserConversationCategoryUpdateWithWhereUniqueWithoutUserInput | UserConversationCategoryUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: UserConversationCategoryUpdateManyWithWhereWithoutUserInput | UserConversationCategoryUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: UserConversationCategoryScalarWhereInput | UserConversationCategoryScalarWhereInput[]
+  }
+
   export type CommunityUncheckedUpdateManyWithoutCreatorNestedInput = {
     create?: XOR<CommunityCreateWithoutCreatorInput, CommunityUncheckedCreateWithoutCreatorInput> | CommunityCreateWithoutCreatorInput[] | CommunityUncheckedCreateWithoutCreatorInput[]
     connectOrCreate?: CommunityCreateOrConnectWithoutCreatorInput | CommunityCreateOrConnectWithoutCreatorInput[]
@@ -45335,6 +48631,34 @@ export namespace Prisma {
     deleteMany?: CallParticipantScalarWhereInput | CallParticipantScalarWhereInput[]
   }
 
+  export type UserConversationPreferencesUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<UserConversationPreferencesCreateWithoutUserInput, UserConversationPreferencesUncheckedCreateWithoutUserInput> | UserConversationPreferencesCreateWithoutUserInput[] | UserConversationPreferencesUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: UserConversationPreferencesCreateOrConnectWithoutUserInput | UserConversationPreferencesCreateOrConnectWithoutUserInput[]
+    upsert?: UserConversationPreferencesUpsertWithWhereUniqueWithoutUserInput | UserConversationPreferencesUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: UserConversationPreferencesCreateManyUserInputEnvelope
+    set?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+    disconnect?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+    delete?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+    connect?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+    update?: UserConversationPreferencesUpdateWithWhereUniqueWithoutUserInput | UserConversationPreferencesUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: UserConversationPreferencesUpdateManyWithWhereWithoutUserInput | UserConversationPreferencesUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: UserConversationPreferencesScalarWhereInput | UserConversationPreferencesScalarWhereInput[]
+  }
+
+  export type UserConversationCategoryUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<UserConversationCategoryCreateWithoutUserInput, UserConversationCategoryUncheckedCreateWithoutUserInput> | UserConversationCategoryCreateWithoutUserInput[] | UserConversationCategoryUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: UserConversationCategoryCreateOrConnectWithoutUserInput | UserConversationCategoryCreateOrConnectWithoutUserInput[]
+    upsert?: UserConversationCategoryUpsertWithWhereUniqueWithoutUserInput | UserConversationCategoryUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: UserConversationCategoryCreateManyUserInputEnvelope
+    set?: UserConversationCategoryWhereUniqueInput | UserConversationCategoryWhereUniqueInput[]
+    disconnect?: UserConversationCategoryWhereUniqueInput | UserConversationCategoryWhereUniqueInput[]
+    delete?: UserConversationCategoryWhereUniqueInput | UserConversationCategoryWhereUniqueInput[]
+    connect?: UserConversationCategoryWhereUniqueInput | UserConversationCategoryWhereUniqueInput[]
+    update?: UserConversationCategoryUpdateWithWhereUniqueWithoutUserInput | UserConversationCategoryUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: UserConversationCategoryUpdateManyWithWhereWithoutUserInput | UserConversationCategoryUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: UserConversationCategoryScalarWhereInput | UserConversationCategoryScalarWhereInput[]
+  }
+
   export type AnonymousParticipantCreateNestedManyWithoutConversationInput = {
     create?: XOR<AnonymousParticipantCreateWithoutConversationInput, AnonymousParticipantUncheckedCreateWithoutConversationInput> | AnonymousParticipantCreateWithoutConversationInput[] | AnonymousParticipantUncheckedCreateWithoutConversationInput[]
     connectOrCreate?: AnonymousParticipantCreateOrConnectWithoutConversationInput | AnonymousParticipantCreateOrConnectWithoutConversationInput[]
@@ -45390,6 +48714,13 @@ export namespace Prisma {
     connect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
   }
 
+  export type UserConversationPreferencesCreateNestedManyWithoutConversationInput = {
+    create?: XOR<UserConversationPreferencesCreateWithoutConversationInput, UserConversationPreferencesUncheckedCreateWithoutConversationInput> | UserConversationPreferencesCreateWithoutConversationInput[] | UserConversationPreferencesUncheckedCreateWithoutConversationInput[]
+    connectOrCreate?: UserConversationPreferencesCreateOrConnectWithoutConversationInput | UserConversationPreferencesCreateOrConnectWithoutConversationInput[]
+    createMany?: UserConversationPreferencesCreateManyConversationInputEnvelope
+    connect?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+  }
+
   export type AnonymousParticipantUncheckedCreateNestedManyWithoutConversationInput = {
     create?: XOR<AnonymousParticipantCreateWithoutConversationInput, AnonymousParticipantUncheckedCreateWithoutConversationInput> | AnonymousParticipantCreateWithoutConversationInput[] | AnonymousParticipantUncheckedCreateWithoutConversationInput[]
     connectOrCreate?: AnonymousParticipantCreateOrConnectWithoutConversationInput | AnonymousParticipantCreateOrConnectWithoutConversationInput[]
@@ -45437,6 +48768,13 @@ export namespace Prisma {
     connectOrCreate?: CallSessionCreateOrConnectWithoutConversationInput | CallSessionCreateOrConnectWithoutConversationInput[]
     createMany?: CallSessionCreateManyConversationInputEnvelope
     connect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+  }
+
+  export type UserConversationPreferencesUncheckedCreateNestedManyWithoutConversationInput = {
+    create?: XOR<UserConversationPreferencesCreateWithoutConversationInput, UserConversationPreferencesUncheckedCreateWithoutConversationInput> | UserConversationPreferencesCreateWithoutConversationInput[] | UserConversationPreferencesUncheckedCreateWithoutConversationInput[]
+    connectOrCreate?: UserConversationPreferencesCreateOrConnectWithoutConversationInput | UserConversationPreferencesCreateOrConnectWithoutConversationInput[]
+    createMany?: UserConversationPreferencesCreateManyConversationInputEnvelope
+    connect?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
   }
 
   export type AnonymousParticipantUpdateManyWithoutConversationNestedInput = {
@@ -45547,6 +48885,20 @@ export namespace Prisma {
     deleteMany?: CallSessionScalarWhereInput | CallSessionScalarWhereInput[]
   }
 
+  export type UserConversationPreferencesUpdateManyWithoutConversationNestedInput = {
+    create?: XOR<UserConversationPreferencesCreateWithoutConversationInput, UserConversationPreferencesUncheckedCreateWithoutConversationInput> | UserConversationPreferencesCreateWithoutConversationInput[] | UserConversationPreferencesUncheckedCreateWithoutConversationInput[]
+    connectOrCreate?: UserConversationPreferencesCreateOrConnectWithoutConversationInput | UserConversationPreferencesCreateOrConnectWithoutConversationInput[]
+    upsert?: UserConversationPreferencesUpsertWithWhereUniqueWithoutConversationInput | UserConversationPreferencesUpsertWithWhereUniqueWithoutConversationInput[]
+    createMany?: UserConversationPreferencesCreateManyConversationInputEnvelope
+    set?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+    disconnect?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+    delete?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+    connect?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+    update?: UserConversationPreferencesUpdateWithWhereUniqueWithoutConversationInput | UserConversationPreferencesUpdateWithWhereUniqueWithoutConversationInput[]
+    updateMany?: UserConversationPreferencesUpdateManyWithWhereWithoutConversationInput | UserConversationPreferencesUpdateManyWithWhereWithoutConversationInput[]
+    deleteMany?: UserConversationPreferencesScalarWhereInput | UserConversationPreferencesScalarWhereInput[]
+  }
+
   export type AnonymousParticipantUncheckedUpdateManyWithoutConversationNestedInput = {
     create?: XOR<AnonymousParticipantCreateWithoutConversationInput, AnonymousParticipantUncheckedCreateWithoutConversationInput> | AnonymousParticipantCreateWithoutConversationInput[] | AnonymousParticipantUncheckedCreateWithoutConversationInput[]
     connectOrCreate?: AnonymousParticipantCreateOrConnectWithoutConversationInput | AnonymousParticipantCreateOrConnectWithoutConversationInput[]
@@ -45643,6 +48995,20 @@ export namespace Prisma {
     update?: CallSessionUpdateWithWhereUniqueWithoutConversationInput | CallSessionUpdateWithWhereUniqueWithoutConversationInput[]
     updateMany?: CallSessionUpdateManyWithWhereWithoutConversationInput | CallSessionUpdateManyWithWhereWithoutConversationInput[]
     deleteMany?: CallSessionScalarWhereInput | CallSessionScalarWhereInput[]
+  }
+
+  export type UserConversationPreferencesUncheckedUpdateManyWithoutConversationNestedInput = {
+    create?: XOR<UserConversationPreferencesCreateWithoutConversationInput, UserConversationPreferencesUncheckedCreateWithoutConversationInput> | UserConversationPreferencesCreateWithoutConversationInput[] | UserConversationPreferencesUncheckedCreateWithoutConversationInput[]
+    connectOrCreate?: UserConversationPreferencesCreateOrConnectWithoutConversationInput | UserConversationPreferencesCreateOrConnectWithoutConversationInput[]
+    upsert?: UserConversationPreferencesUpsertWithWhereUniqueWithoutConversationInput | UserConversationPreferencesUpsertWithWhereUniqueWithoutConversationInput[]
+    createMany?: UserConversationPreferencesCreateManyConversationInputEnvelope
+    set?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+    disconnect?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+    delete?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+    connect?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+    update?: UserConversationPreferencesUpdateWithWhereUniqueWithoutConversationInput | UserConversationPreferencesUpdateWithWhereUniqueWithoutConversationInput[]
+    updateMany?: UserConversationPreferencesUpdateManyWithWhereWithoutConversationInput | UserConversationPreferencesUpdateManyWithWhereWithoutConversationInput[]
+    deleteMany?: UserConversationPreferencesScalarWhereInput | UserConversationPreferencesScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutConversationsInput = {
@@ -47055,6 +50421,115 @@ export namespace Prisma {
     update?: XOR<XOR<TranscriptionUpdateToOneWithWhereWithoutTranslationsInput, TranscriptionUpdateWithoutTranslationsInput>, TranscriptionUncheckedUpdateWithoutTranslationsInput>
   }
 
+  export type UserConversationPreferencesCreatetagsInput = {
+    set: string[]
+  }
+
+  export type UserCreateNestedOneWithoutConversationPrefsInput = {
+    create?: XOR<UserCreateWithoutConversationPrefsInput, UserUncheckedCreateWithoutConversationPrefsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutConversationPrefsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type ConversationCreateNestedOneWithoutUserPreferencesInput = {
+    create?: XOR<ConversationCreateWithoutUserPreferencesInput, ConversationUncheckedCreateWithoutUserPreferencesInput>
+    connectOrCreate?: ConversationCreateOrConnectWithoutUserPreferencesInput
+    connect?: ConversationWhereUniqueInput
+  }
+
+  export type UserConversationCategoryCreateNestedOneWithoutConversationsInput = {
+    create?: XOR<UserConversationCategoryCreateWithoutConversationsInput, UserConversationCategoryUncheckedCreateWithoutConversationsInput>
+    connectOrCreate?: UserConversationCategoryCreateOrConnectWithoutConversationsInput
+    connect?: UserConversationCategoryWhereUniqueInput
+  }
+
+  export type UserConversationPreferencesUpdatetagsInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type UserUpdateOneRequiredWithoutConversationPrefsNestedInput = {
+    create?: XOR<UserCreateWithoutConversationPrefsInput, UserUncheckedCreateWithoutConversationPrefsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutConversationPrefsInput
+    upsert?: UserUpsertWithoutConversationPrefsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutConversationPrefsInput, UserUpdateWithoutConversationPrefsInput>, UserUncheckedUpdateWithoutConversationPrefsInput>
+  }
+
+  export type ConversationUpdateOneRequiredWithoutUserPreferencesNestedInput = {
+    create?: XOR<ConversationCreateWithoutUserPreferencesInput, ConversationUncheckedCreateWithoutUserPreferencesInput>
+    connectOrCreate?: ConversationCreateOrConnectWithoutUserPreferencesInput
+    upsert?: ConversationUpsertWithoutUserPreferencesInput
+    connect?: ConversationWhereUniqueInput
+    update?: XOR<XOR<ConversationUpdateToOneWithWhereWithoutUserPreferencesInput, ConversationUpdateWithoutUserPreferencesInput>, ConversationUncheckedUpdateWithoutUserPreferencesInput>
+  }
+
+  export type UserConversationCategoryUpdateOneWithoutConversationsNestedInput = {
+    create?: XOR<UserConversationCategoryCreateWithoutConversationsInput, UserConversationCategoryUncheckedCreateWithoutConversationsInput>
+    connectOrCreate?: UserConversationCategoryCreateOrConnectWithoutConversationsInput
+    upsert?: UserConversationCategoryUpsertWithoutConversationsInput
+    disconnect?: boolean
+    delete?: UserConversationCategoryWhereInput | boolean
+    connect?: UserConversationCategoryWhereUniqueInput
+    update?: XOR<XOR<UserConversationCategoryUpdateToOneWithWhereWithoutConversationsInput, UserConversationCategoryUpdateWithoutConversationsInput>, UserConversationCategoryUncheckedUpdateWithoutConversationsInput>
+  }
+
+  export type UserCreateNestedOneWithoutConversationCategoriesInput = {
+    create?: XOR<UserCreateWithoutConversationCategoriesInput, UserUncheckedCreateWithoutConversationCategoriesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutConversationCategoriesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserConversationPreferencesCreateNestedManyWithoutCategoryInput = {
+    create?: XOR<UserConversationPreferencesCreateWithoutCategoryInput, UserConversationPreferencesUncheckedCreateWithoutCategoryInput> | UserConversationPreferencesCreateWithoutCategoryInput[] | UserConversationPreferencesUncheckedCreateWithoutCategoryInput[]
+    connectOrCreate?: UserConversationPreferencesCreateOrConnectWithoutCategoryInput | UserConversationPreferencesCreateOrConnectWithoutCategoryInput[]
+    createMany?: UserConversationPreferencesCreateManyCategoryInputEnvelope
+    connect?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+  }
+
+  export type UserConversationPreferencesUncheckedCreateNestedManyWithoutCategoryInput = {
+    create?: XOR<UserConversationPreferencesCreateWithoutCategoryInput, UserConversationPreferencesUncheckedCreateWithoutCategoryInput> | UserConversationPreferencesCreateWithoutCategoryInput[] | UserConversationPreferencesUncheckedCreateWithoutCategoryInput[]
+    connectOrCreate?: UserConversationPreferencesCreateOrConnectWithoutCategoryInput | UserConversationPreferencesCreateOrConnectWithoutCategoryInput[]
+    createMany?: UserConversationPreferencesCreateManyCategoryInputEnvelope
+    connect?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+  }
+
+  export type UserUpdateOneRequiredWithoutConversationCategoriesNestedInput = {
+    create?: XOR<UserCreateWithoutConversationCategoriesInput, UserUncheckedCreateWithoutConversationCategoriesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutConversationCategoriesInput
+    upsert?: UserUpsertWithoutConversationCategoriesInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutConversationCategoriesInput, UserUpdateWithoutConversationCategoriesInput>, UserUncheckedUpdateWithoutConversationCategoriesInput>
+  }
+
+  export type UserConversationPreferencesUpdateManyWithoutCategoryNestedInput = {
+    create?: XOR<UserConversationPreferencesCreateWithoutCategoryInput, UserConversationPreferencesUncheckedCreateWithoutCategoryInput> | UserConversationPreferencesCreateWithoutCategoryInput[] | UserConversationPreferencesUncheckedCreateWithoutCategoryInput[]
+    connectOrCreate?: UserConversationPreferencesCreateOrConnectWithoutCategoryInput | UserConversationPreferencesCreateOrConnectWithoutCategoryInput[]
+    upsert?: UserConversationPreferencesUpsertWithWhereUniqueWithoutCategoryInput | UserConversationPreferencesUpsertWithWhereUniqueWithoutCategoryInput[]
+    createMany?: UserConversationPreferencesCreateManyCategoryInputEnvelope
+    set?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+    disconnect?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+    delete?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+    connect?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+    update?: UserConversationPreferencesUpdateWithWhereUniqueWithoutCategoryInput | UserConversationPreferencesUpdateWithWhereUniqueWithoutCategoryInput[]
+    updateMany?: UserConversationPreferencesUpdateManyWithWhereWithoutCategoryInput | UserConversationPreferencesUpdateManyWithWhereWithoutCategoryInput[]
+    deleteMany?: UserConversationPreferencesScalarWhereInput | UserConversationPreferencesScalarWhereInput[]
+  }
+
+  export type UserConversationPreferencesUncheckedUpdateManyWithoutCategoryNestedInput = {
+    create?: XOR<UserConversationPreferencesCreateWithoutCategoryInput, UserConversationPreferencesUncheckedCreateWithoutCategoryInput> | UserConversationPreferencesCreateWithoutCategoryInput[] | UserConversationPreferencesUncheckedCreateWithoutCategoryInput[]
+    connectOrCreate?: UserConversationPreferencesCreateOrConnectWithoutCategoryInput | UserConversationPreferencesCreateOrConnectWithoutCategoryInput[]
+    upsert?: UserConversationPreferencesUpsertWithWhereUniqueWithoutCategoryInput | UserConversationPreferencesUpsertWithWhereUniqueWithoutCategoryInput[]
+    createMany?: UserConversationPreferencesCreateManyCategoryInputEnvelope
+    set?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+    disconnect?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+    delete?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+    connect?: UserConversationPreferencesWhereUniqueInput | UserConversationPreferencesWhereUniqueInput[]
+    update?: UserConversationPreferencesUpdateWithWhereUniqueWithoutCategoryInput | UserConversationPreferencesUpdateWithWhereUniqueWithoutCategoryInput[]
+    updateMany?: UserConversationPreferencesUpdateManyWithWhereWithoutCategoryInput | UserConversationPreferencesUpdateManyWithWhereWithoutCategoryInput[]
+    deleteMany?: UserConversationPreferencesScalarWhereInput | UserConversationPreferencesScalarWhereInput[]
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -47294,6 +50769,18 @@ export namespace Prisma {
     _max?: NestedFloatNullableFilter<$PrismaModel>
     isSet?: boolean
   }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    isSet?: boolean
+  }
 
   export type NestedEnumCallModeFilter<$PrismaModel = never> = {
     equals?: $Enums.CallMode | EnumCallModeFieldRefInput<$PrismaModel>
@@ -47327,18 +50814,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumCallStatusFilter<$PrismaModel>
     _max?: NestedEnumCallStatusFilter<$PrismaModel>
-  }
-  export type NestedJsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<NestedJsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    isSet?: boolean
   }
 
   export type NestedEnumParticipantRoleFilter<$PrismaModel = never> = {
@@ -47523,8 +50998,10 @@ export namespace Prisma {
     allowAnonymousFiles?: boolean
     allowAnonymousImages?: boolean
     allowViewHistory?: boolean
+    requireAccount?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    requireBirthday?: boolean
     allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
@@ -47553,8 +51030,10 @@ export namespace Prisma {
     allowAnonymousFiles?: boolean
     allowAnonymousImages?: boolean
     allowViewHistory?: boolean
+    requireAccount?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    requireBirthday?: boolean
     allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
@@ -48114,6 +51593,78 @@ export namespace Prisma {
     data: CallParticipantCreateManyUserInput | CallParticipantCreateManyUserInput[]
   }
 
+  export type UserConversationPreferencesCreateWithoutUserInput = {
+    id?: string
+    isPinned?: boolean
+    isMuted?: boolean
+    isArchived?: boolean
+    tags?: UserConversationPreferencesCreatetagsInput | string[]
+    orderInCategory?: number | null
+    customName?: string | null
+    reaction?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    conversation: ConversationCreateNestedOneWithoutUserPreferencesInput
+    category?: UserConversationCategoryCreateNestedOneWithoutConversationsInput
+  }
+
+  export type UserConversationPreferencesUncheckedCreateWithoutUserInput = {
+    id?: string
+    conversationId: string
+    isPinned?: boolean
+    isMuted?: boolean
+    isArchived?: boolean
+    tags?: UserConversationPreferencesCreatetagsInput | string[]
+    categoryId?: string | null
+    orderInCategory?: number | null
+    customName?: string | null
+    reaction?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserConversationPreferencesCreateOrConnectWithoutUserInput = {
+    where: UserConversationPreferencesWhereUniqueInput
+    create: XOR<UserConversationPreferencesCreateWithoutUserInput, UserConversationPreferencesUncheckedCreateWithoutUserInput>
+  }
+
+  export type UserConversationPreferencesCreateManyUserInputEnvelope = {
+    data: UserConversationPreferencesCreateManyUserInput | UserConversationPreferencesCreateManyUserInput[]
+  }
+
+  export type UserConversationCategoryCreateWithoutUserInput = {
+    id?: string
+    name: string
+    color?: string | null
+    icon?: string | null
+    order?: number
+    isExpanded?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    conversations?: UserConversationPreferencesCreateNestedManyWithoutCategoryInput
+  }
+
+  export type UserConversationCategoryUncheckedCreateWithoutUserInput = {
+    id?: string
+    name: string
+    color?: string | null
+    icon?: string | null
+    order?: number
+    isExpanded?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    conversations?: UserConversationPreferencesUncheckedCreateNestedManyWithoutCategoryInput
+  }
+
+  export type UserConversationCategoryCreateOrConnectWithoutUserInput = {
+    where: UserConversationCategoryWhereUniqueInput
+    create: XOR<UserConversationCategoryCreateWithoutUserInput, UserConversationCategoryUncheckedCreateWithoutUserInput>
+  }
+
+  export type UserConversationCategoryCreateManyUserInputEnvelope = {
+    data: UserConversationCategoryCreateManyUserInput | UserConversationCategoryCreateManyUserInput[]
+  }
+
   export type CommunityUpsertWithWhereUniqueWithoutCreatorInput = {
     where: CommunityWhereUniqueInput
     update: XOR<CommunityUpdateWithoutCreatorInput, CommunityUncheckedUpdateWithoutCreatorInput>
@@ -48278,8 +51829,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFilter<"ConversationShareLink"> | boolean
     allowAnonymousImages?: BoolFilter<"ConversationShareLink"> | boolean
     allowViewHistory?: BoolFilter<"ConversationShareLink"> | boolean
+    requireAccount?: BoolFilter<"ConversationShareLink"> | boolean
     requireNickname?: BoolFilter<"ConversationShareLink"> | boolean
     requireEmail?: BoolFilter<"ConversationShareLink"> | boolean
+    requireBirthday?: BoolFilter<"ConversationShareLink"> | boolean
     allowedCountries?: StringNullableListFilter<"ConversationShareLink">
     allowedLanguages?: StringNullableListFilter<"ConversationShareLink">
     allowedIpRanges?: StringNullableListFilter<"ConversationShareLink">
@@ -48783,12 +52336,79 @@ export namespace Prisma {
     connectionQuality?: JsonNullableFilter<"CallParticipant">
   }
 
+  export type UserConversationPreferencesUpsertWithWhereUniqueWithoutUserInput = {
+    where: UserConversationPreferencesWhereUniqueInput
+    update: XOR<UserConversationPreferencesUpdateWithoutUserInput, UserConversationPreferencesUncheckedUpdateWithoutUserInput>
+    create: XOR<UserConversationPreferencesCreateWithoutUserInput, UserConversationPreferencesUncheckedCreateWithoutUserInput>
+  }
+
+  export type UserConversationPreferencesUpdateWithWhereUniqueWithoutUserInput = {
+    where: UserConversationPreferencesWhereUniqueInput
+    data: XOR<UserConversationPreferencesUpdateWithoutUserInput, UserConversationPreferencesUncheckedUpdateWithoutUserInput>
+  }
+
+  export type UserConversationPreferencesUpdateManyWithWhereWithoutUserInput = {
+    where: UserConversationPreferencesScalarWhereInput
+    data: XOR<UserConversationPreferencesUpdateManyMutationInput, UserConversationPreferencesUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type UserConversationPreferencesScalarWhereInput = {
+    AND?: UserConversationPreferencesScalarWhereInput | UserConversationPreferencesScalarWhereInput[]
+    OR?: UserConversationPreferencesScalarWhereInput[]
+    NOT?: UserConversationPreferencesScalarWhereInput | UserConversationPreferencesScalarWhereInput[]
+    id?: StringFilter<"UserConversationPreferences"> | string
+    userId?: StringFilter<"UserConversationPreferences"> | string
+    conversationId?: StringFilter<"UserConversationPreferences"> | string
+    isPinned?: BoolFilter<"UserConversationPreferences"> | boolean
+    isMuted?: BoolFilter<"UserConversationPreferences"> | boolean
+    isArchived?: BoolFilter<"UserConversationPreferences"> | boolean
+    tags?: StringNullableListFilter<"UserConversationPreferences">
+    categoryId?: StringNullableFilter<"UserConversationPreferences"> | string | null
+    orderInCategory?: IntNullableFilter<"UserConversationPreferences"> | number | null
+    customName?: StringNullableFilter<"UserConversationPreferences"> | string | null
+    reaction?: StringNullableFilter<"UserConversationPreferences"> | string | null
+    createdAt?: DateTimeFilter<"UserConversationPreferences"> | Date | string
+    updatedAt?: DateTimeFilter<"UserConversationPreferences"> | Date | string
+  }
+
+  export type UserConversationCategoryUpsertWithWhereUniqueWithoutUserInput = {
+    where: UserConversationCategoryWhereUniqueInput
+    update: XOR<UserConversationCategoryUpdateWithoutUserInput, UserConversationCategoryUncheckedUpdateWithoutUserInput>
+    create: XOR<UserConversationCategoryCreateWithoutUserInput, UserConversationCategoryUncheckedCreateWithoutUserInput>
+  }
+
+  export type UserConversationCategoryUpdateWithWhereUniqueWithoutUserInput = {
+    where: UserConversationCategoryWhereUniqueInput
+    data: XOR<UserConversationCategoryUpdateWithoutUserInput, UserConversationCategoryUncheckedUpdateWithoutUserInput>
+  }
+
+  export type UserConversationCategoryUpdateManyWithWhereWithoutUserInput = {
+    where: UserConversationCategoryScalarWhereInput
+    data: XOR<UserConversationCategoryUpdateManyMutationInput, UserConversationCategoryUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type UserConversationCategoryScalarWhereInput = {
+    AND?: UserConversationCategoryScalarWhereInput | UserConversationCategoryScalarWhereInput[]
+    OR?: UserConversationCategoryScalarWhereInput[]
+    NOT?: UserConversationCategoryScalarWhereInput | UserConversationCategoryScalarWhereInput[]
+    id?: StringFilter<"UserConversationCategory"> | string
+    userId?: StringFilter<"UserConversationCategory"> | string
+    name?: StringFilter<"UserConversationCategory"> | string
+    color?: StringNullableFilter<"UserConversationCategory"> | string | null
+    icon?: StringNullableFilter<"UserConversationCategory"> | string | null
+    order?: IntFilter<"UserConversationCategory"> | number
+    isExpanded?: BoolFilter<"UserConversationCategory"> | boolean
+    createdAt?: DateTimeFilter<"UserConversationCategory"> | Date | string
+    updatedAt?: DateTimeFilter<"UserConversationCategory"> | Date | string
+  }
+
   export type AnonymousParticipantCreateWithoutConversationInput = {
     id?: string
     firstName: string
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -48816,6 +52436,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -48934,8 +52555,10 @@ export namespace Prisma {
     allowAnonymousFiles?: boolean
     allowAnonymousImages?: boolean
     allowViewHistory?: boolean
+    requireAccount?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    requireBirthday?: boolean
     allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
@@ -48964,8 +52587,10 @@ export namespace Prisma {
     allowAnonymousFiles?: boolean
     allowAnonymousImages?: boolean
     allowViewHistory?: boolean
+    requireAccount?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    requireBirthday?: boolean
     allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
@@ -49129,6 +52754,45 @@ export namespace Prisma {
     data: CallSessionCreateManyConversationInput | CallSessionCreateManyConversationInput[]
   }
 
+  export type UserConversationPreferencesCreateWithoutConversationInput = {
+    id?: string
+    isPinned?: boolean
+    isMuted?: boolean
+    isArchived?: boolean
+    tags?: UserConversationPreferencesCreatetagsInput | string[]
+    orderInCategory?: number | null
+    customName?: string | null
+    reaction?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutConversationPrefsInput
+    category?: UserConversationCategoryCreateNestedOneWithoutConversationsInput
+  }
+
+  export type UserConversationPreferencesUncheckedCreateWithoutConversationInput = {
+    id?: string
+    userId: string
+    isPinned?: boolean
+    isMuted?: boolean
+    isArchived?: boolean
+    tags?: UserConversationPreferencesCreatetagsInput | string[]
+    categoryId?: string | null
+    orderInCategory?: number | null
+    customName?: string | null
+    reaction?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserConversationPreferencesCreateOrConnectWithoutConversationInput = {
+    where: UserConversationPreferencesWhereUniqueInput
+    create: XOR<UserConversationPreferencesCreateWithoutConversationInput, UserConversationPreferencesUncheckedCreateWithoutConversationInput>
+  }
+
+  export type UserConversationPreferencesCreateManyConversationInputEnvelope = {
+    data: UserConversationPreferencesCreateManyConversationInput | UserConversationPreferencesCreateManyConversationInput[]
+  }
+
   export type AnonymousParticipantUpsertWithWhereUniqueWithoutConversationInput = {
     where: AnonymousParticipantWhereUniqueInput
     update: XOR<AnonymousParticipantUpdateWithoutConversationInput, AnonymousParticipantUncheckedUpdateWithoutConversationInput>
@@ -49156,6 +52820,7 @@ export namespace Prisma {
     lastName?: StringFilter<"AnonymousParticipant"> | string
     username?: StringFilter<"AnonymousParticipant"> | string
     email?: StringNullableFilter<"AnonymousParticipant"> | string | null
+    birthday?: DateTimeNullableFilter<"AnonymousParticipant"> | Date | string | null
     sessionToken?: StringFilter<"AnonymousParticipant"> | string
     ipAddress?: StringNullableFilter<"AnonymousParticipant"> | string | null
     country?: StringNullableFilter<"AnonymousParticipant"> | string | null
@@ -49303,6 +52968,22 @@ export namespace Prisma {
     data: XOR<CallSessionUpdateManyMutationInput, CallSessionUncheckedUpdateManyWithoutConversationInput>
   }
 
+  export type UserConversationPreferencesUpsertWithWhereUniqueWithoutConversationInput = {
+    where: UserConversationPreferencesWhereUniqueInput
+    update: XOR<UserConversationPreferencesUpdateWithoutConversationInput, UserConversationPreferencesUncheckedUpdateWithoutConversationInput>
+    create: XOR<UserConversationPreferencesCreateWithoutConversationInput, UserConversationPreferencesUncheckedCreateWithoutConversationInput>
+  }
+
+  export type UserConversationPreferencesUpdateWithWhereUniqueWithoutConversationInput = {
+    where: UserConversationPreferencesWhereUniqueInput
+    data: XOR<UserConversationPreferencesUpdateWithoutConversationInput, UserConversationPreferencesUncheckedUpdateWithoutConversationInput>
+  }
+
+  export type UserConversationPreferencesUpdateManyWithWhereWithoutConversationInput = {
+    where: UserConversationPreferencesScalarWhereInput
+    data: XOR<UserConversationPreferencesUpdateManyMutationInput, UserConversationPreferencesUncheckedUpdateManyWithoutConversationInput>
+  }
+
   export type UserCreateWithoutConversationsInput = {
     id?: string
     username: string
@@ -49360,6 +53041,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutConversationsInput = {
@@ -49419,6 +53102,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesUncheckedCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutConversationsInput = {
@@ -49446,6 +53131,7 @@ export namespace Prisma {
     messages?: MessageCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
     callSessions?: CallSessionCreateNestedManyWithoutConversationInput
+    userPreferences?: UserConversationPreferencesCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUncheckedCreateWithoutMembersInput = {
@@ -49468,6 +53154,7 @@ export namespace Prisma {
     messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutConversationInput
+    userPreferences?: UserConversationPreferencesUncheckedCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationCreateOrConnectWithoutMembersInput = {
@@ -49542,6 +53229,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutConversationsInput = {
@@ -49600,6 +53289,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUncheckedUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ConversationUpsertWithoutMembersInput = {
@@ -49632,6 +53323,7 @@ export namespace Prisma {
     messages?: MessageUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
     callSessions?: CallSessionUpdateManyWithoutConversationNestedInput
+    userPreferences?: UserConversationPreferencesUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationUncheckedUpdateWithoutMembersInput = {
@@ -49653,6 +53345,7 @@ export namespace Prisma {
     messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
     callSessions?: CallSessionUncheckedUpdateManyWithoutConversationNestedInput
+    userPreferences?: UserConversationPreferencesUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type AnonymousParticipantCreateWithoutShareLinkInput = {
@@ -49661,6 +53354,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -49688,6 +53382,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -49773,6 +53468,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCreatedShareLinksInput = {
@@ -49832,6 +53529,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesUncheckedCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCreatedShareLinksInput = {
@@ -49859,6 +53558,7 @@ export namespace Prisma {
     messages?: MessageCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
     callSessions?: CallSessionCreateNestedManyWithoutConversationInput
+    userPreferences?: UserConversationPreferencesCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUncheckedCreateWithoutShareLinksInput = {
@@ -49881,6 +53581,7 @@ export namespace Prisma {
     messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutConversationInput
+    userPreferences?: UserConversationPreferencesUncheckedCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationCreateOrConnectWithoutShareLinksInput = {
@@ -49971,6 +53672,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedShareLinksInput = {
@@ -50029,6 +53732,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUncheckedUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ConversationUpsertWithoutShareLinksInput = {
@@ -50061,6 +53766,7 @@ export namespace Prisma {
     messages?: MessageUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
     callSessions?: CallSessionUpdateManyWithoutConversationNestedInput
+    userPreferences?: UserConversationPreferencesUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationUncheckedUpdateWithoutShareLinksInput = {
@@ -50082,6 +53788,7 @@ export namespace Prisma {
     messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
     callSessions?: CallSessionUncheckedUpdateManyWithoutConversationNestedInput
+    userPreferences?: UserConversationPreferencesUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationShareLinkCreateWithoutAnonymousParticipantsInput = {
@@ -50102,8 +53809,10 @@ export namespace Prisma {
     allowAnonymousFiles?: boolean
     allowAnonymousImages?: boolean
     allowViewHistory?: boolean
+    requireAccount?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    requireBirthday?: boolean
     allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
@@ -50133,8 +53842,10 @@ export namespace Prisma {
     allowAnonymousFiles?: boolean
     allowAnonymousImages?: boolean
     allowViewHistory?: boolean
+    requireAccount?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    requireBirthday?: boolean
     allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
@@ -50167,6 +53878,7 @@ export namespace Prisma {
     messages?: MessageCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
     callSessions?: CallSessionCreateNestedManyWithoutConversationInput
+    userPreferences?: UserConversationPreferencesCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUncheckedCreateWithoutAnonymousParticipantsInput = {
@@ -50189,6 +53901,7 @@ export namespace Prisma {
     messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutConversationInput
+    userPreferences?: UserConversationPreferencesUncheckedCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationCreateOrConnectWithoutAnonymousParticipantsInput = {
@@ -50349,8 +54062,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireAccount?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    requireBirthday?: BoolFieldUpdateOperationsInput | boolean
     allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
@@ -50379,8 +54094,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireAccount?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    requireBirthday?: BoolFieldUpdateOperationsInput | boolean
     allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
@@ -50418,6 +54135,7 @@ export namespace Prisma {
     messages?: MessageUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
     callSessions?: CallSessionUpdateManyWithoutConversationNestedInput
+    userPreferences?: UserConversationPreferencesUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationUncheckedUpdateWithoutAnonymousParticipantsInput = {
@@ -50439,6 +54157,7 @@ export namespace Prisma {
     messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
     callSessions?: CallSessionUncheckedUpdateManyWithoutConversationNestedInput
+    userPreferences?: UserConversationPreferencesUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type MessageUpsertWithWhereUniqueWithoutAnonymousSenderInput = {
@@ -50592,6 +54311,7 @@ export namespace Prisma {
     uploadedBy: string
     isAnonymous?: boolean
     createdAt?: Date | string
+    metadata?: InputJsonValue | null
   }
 
   export type MessageAttachmentUncheckedCreateWithoutMessageInput = {
@@ -50614,6 +54334,7 @@ export namespace Prisma {
     uploadedBy: string
     isAnonymous?: boolean
     createdAt?: Date | string
+    metadata?: InputJsonValue | null
   }
 
   export type MessageAttachmentCreateOrConnectWithoutMessageInput = {
@@ -50760,6 +54481,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -50788,6 +54510,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -50868,6 +54591,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSentMessagesInput = {
@@ -50927,6 +54652,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesUncheckedCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSentMessagesInput = {
@@ -50954,6 +54681,7 @@ export namespace Prisma {
     community?: CommunityCreateNestedOneWithoutConversationInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
     callSessions?: CallSessionCreateNestedManyWithoutConversationInput
+    userPreferences?: UserConversationPreferencesCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUncheckedCreateWithoutMessagesInput = {
@@ -50976,6 +54704,7 @@ export namespace Prisma {
     shareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutConversationInput
+    userPreferences?: UserConversationPreferencesUncheckedCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationCreateOrConnectWithoutMessagesInput = {
@@ -51087,6 +54816,7 @@ export namespace Prisma {
     uploadedBy?: StringFilter<"MessageAttachment"> | string
     isAnonymous?: BoolFilter<"MessageAttachment"> | boolean
     createdAt?: DateTimeFilter<"MessageAttachment"> | Date | string
+    metadata?: JsonNullableFilter<"MessageAttachment">
   }
 
   export type ReactionUpsertWithWhereUniqueWithoutMessageInput = {
@@ -51190,6 +54920,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -51217,6 +54948,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -51302,6 +55034,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSentMessagesInput = {
@@ -51360,6 +55094,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUncheckedUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ConversationUpsertWithoutMessagesInput = {
@@ -51392,6 +55128,7 @@ export namespace Prisma {
     community?: CommunityUpdateOneWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
     callSessions?: CallSessionUpdateManyWithoutConversationNestedInput
+    userPreferences?: UserConversationPreferencesUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationUncheckedUpdateWithoutMessagesInput = {
@@ -51413,6 +55150,7 @@ export namespace Prisma {
     shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
     callSessions?: CallSessionUncheckedUpdateManyWithoutConversationNestedInput
+    userPreferences?: UserConversationPreferencesUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type MessageCreateWithoutTranslationsInput = {
@@ -51676,6 +55414,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutMessageStatusInput = {
@@ -51735,6 +55475,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesUncheckedCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutMessageStatusInput = {
@@ -51907,6 +55649,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutMessageStatusInput = {
@@ -51965,6 +55709,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUncheckedUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type MessageUpsertWithoutStatusInput = {
@@ -52179,6 +55925,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutReactionsInput = {
@@ -52238,6 +55986,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesUncheckedCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutReactionsInput = {
@@ -52251,6 +56001,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -52279,6 +56030,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -52422,6 +56174,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReactionsInput = {
@@ -52480,6 +56234,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUncheckedUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type AnonymousParticipantUpsertWithoutReactionsInput = {
@@ -52498,6 +56254,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -52525,6 +56282,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -52600,6 +56358,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutReceivedFriendRequestsInput = {
@@ -52659,6 +56419,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesUncheckedCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutReceivedFriendRequestsInput = {
@@ -52723,6 +56485,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSentFriendRequestsInput = {
@@ -52782,6 +56546,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesUncheckedCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSentFriendRequestsInput = {
@@ -52856,6 +56622,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReceivedFriendRequestsInput = {
@@ -52914,6 +56682,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUncheckedUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutSentFriendRequestsInput = {
@@ -52983,6 +56753,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSentFriendRequestsInput = {
@@ -53041,6 +56813,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUncheckedUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutTypingIndicatorsInput = {
@@ -53100,6 +56874,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTypingIndicatorsInput = {
@@ -53159,6 +56935,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesUncheckedCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTypingIndicatorsInput = {
@@ -53186,6 +56964,7 @@ export namespace Prisma {
     community?: CommunityCreateNestedOneWithoutConversationInput
     messages?: MessageCreateNestedManyWithoutConversationInput
     callSessions?: CallSessionCreateNestedManyWithoutConversationInput
+    userPreferences?: UserConversationPreferencesCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUncheckedCreateWithoutTypingIndicatorsInput = {
@@ -53208,6 +56987,7 @@ export namespace Prisma {
     shareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput
     messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutConversationInput
+    userPreferences?: UserConversationPreferencesUncheckedCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationCreateOrConnectWithoutTypingIndicatorsInput = {
@@ -53282,6 +57062,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTypingIndicatorsInput = {
@@ -53340,6 +57122,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUncheckedUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ConversationUpsertWithoutTypingIndicatorsInput = {
@@ -53372,6 +57156,7 @@ export namespace Prisma {
     community?: CommunityUpdateOneWithoutConversationNestedInput
     messages?: MessageUpdateManyWithoutConversationNestedInput
     callSessions?: CallSessionUpdateManyWithoutConversationNestedInput
+    userPreferences?: UserConversationPreferencesUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationUncheckedUpdateWithoutTypingIndicatorsInput = {
@@ -53393,6 +57178,7 @@ export namespace Prisma {
     shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
     messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
     callSessions?: CallSessionUncheckedUpdateManyWithoutConversationNestedInput
+    userPreferences?: UserConversationPreferencesUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type UserCreateWithoutNotificationsInput = {
@@ -53452,6 +57238,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -53511,6 +57299,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesUncheckedCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -53585,6 +57375,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -53643,6 +57435,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUncheckedUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type CommunityMemberCreateWithoutCommunityInput = {
@@ -53725,6 +57519,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCreatedCommunitiesInput = {
@@ -53784,6 +57580,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesUncheckedCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCreatedCommunitiesInput = {
@@ -53811,6 +57609,7 @@ export namespace Prisma {
     messages?: MessageCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
     callSessions?: CallSessionCreateNestedManyWithoutConversationInput
+    userPreferences?: UserConversationPreferencesCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUncheckedCreateWithoutCommunityInput = {
@@ -53833,6 +57632,7 @@ export namespace Prisma {
     messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutConversationInput
+    userPreferences?: UserConversationPreferencesUncheckedCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationCreateOrConnectWithoutCommunityInput = {
@@ -53927,6 +57727,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedCommunitiesInput = {
@@ -53985,6 +57787,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUncheckedUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ConversationUpsertWithWhereUniqueWithoutCommunityInput = {
@@ -54079,6 +57883,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCommunityMembershipsInput = {
@@ -54138,6 +57944,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesUncheckedCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCommunityMembershipsInput = {
@@ -54243,6 +58051,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCommunityMembershipsInput = {
@@ -54301,6 +58111,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUncheckedUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type CommunityUpsertWithoutMembersInput = {
@@ -54395,6 +58207,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutStatsInput = {
@@ -54454,6 +58268,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesUncheckedCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutStatsInput = {
@@ -54528,6 +58344,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutStatsInput = {
@@ -54586,6 +58404,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUncheckedUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutPreferencesInput = {
@@ -54645,6 +58465,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutPreferencesInput = {
@@ -54704,6 +58526,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesUncheckedCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutPreferencesInput = {
@@ -54778,6 +58602,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPreferencesInput = {
@@ -54836,6 +58662,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUncheckedUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutConversationPreferencesInput = {
@@ -54895,6 +58723,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutConversationPreferencesInput = {
@@ -54954,6 +58784,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesUncheckedCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutConversationPreferencesInput = {
@@ -54981,6 +58813,7 @@ export namespace Prisma {
     messages?: MessageCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
     callSessions?: CallSessionCreateNestedManyWithoutConversationInput
+    userPreferences?: UserConversationPreferencesCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUncheckedCreateWithoutPreferencesInput = {
@@ -55003,6 +58836,7 @@ export namespace Prisma {
     messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutConversationInput
+    userPreferences?: UserConversationPreferencesUncheckedCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationCreateOrConnectWithoutPreferencesInput = {
@@ -55077,6 +58911,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutConversationPreferencesInput = {
@@ -55135,6 +58971,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUncheckedUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ConversationUpsertWithoutPreferencesInput = {
@@ -55167,6 +59005,7 @@ export namespace Prisma {
     messages?: MessageUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
     callSessions?: CallSessionUpdateManyWithoutConversationNestedInput
+    userPreferences?: UserConversationPreferencesUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationUncheckedUpdateWithoutPreferencesInput = {
@@ -55188,6 +59027,7 @@ export namespace Prisma {
     messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
     callSessions?: CallSessionUncheckedUpdateManyWithoutConversationNestedInput
+    userPreferences?: UserConversationPreferencesUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type UserCreateWithoutCreatedAffiliateTokensInput = {
@@ -55247,6 +59087,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCreatedAffiliateTokensInput = {
@@ -55306,6 +59148,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesUncheckedCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCreatedAffiliateTokensInput = {
@@ -55407,6 +59251,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedAffiliateTokensInput = {
@@ -55465,6 +59311,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUncheckedUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type AffiliateRelationUpsertWithWhereUniqueWithoutAffiliateTokenInput = {
@@ -55571,6 +59419,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAffiliateRelationsInput = {
@@ -55630,6 +59480,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesUncheckedCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAffiliateRelationsInput = {
@@ -55694,6 +59546,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutReferredRelationsInput = {
@@ -55753,6 +59607,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesUncheckedCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutReferredRelationsInput = {
@@ -55862,6 +59718,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAffiliateRelationsInput = {
@@ -55920,6 +59778,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUncheckedUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutReferredRelationsInput = {
@@ -55989,6 +59849,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReferredRelationsInput = {
@@ -56047,6 +59909,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUncheckedUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type TrackingLinkClickCreateWithoutTrackingLinkInput = {
@@ -56151,6 +60015,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCreatedTrackingLinksInput = {
@@ -56210,6 +60076,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesUncheckedCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCreatedTrackingLinksInput = {
@@ -56300,6 +60168,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedTrackingLinksInput = {
@@ -56358,6 +60228,8 @@ export namespace Prisma {
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUncheckedUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type TrackingLinkCreateWithoutClicksInput = {
@@ -56458,6 +60330,8 @@ export namespace Prisma {
     createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
     initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTrackingLinkClicksInput = {
@@ -56517,6 +60391,8 @@ export namespace Prisma {
     createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
     initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
     callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesUncheckedCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTrackingLinkClicksInput = {
@@ -56530,6 +60406,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -56558,6 +60435,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -56693,6 +60571,8 @@ export namespace Prisma {
     createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
     initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTrackingLinkClicksInput = {
@@ -56751,6 +60631,8 @@ export namespace Prisma {
     createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
     initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
     callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUncheckedUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type AnonymousParticipantUpsertWithoutTrackingLinkClicksInput = {
@@ -56769,6 +60651,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -56796,6 +60679,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -56834,6 +60718,7 @@ export namespace Prisma {
     community?: CommunityCreateNestedOneWithoutConversationInput
     messages?: MessageCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
+    userPreferences?: UserConversationPreferencesCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUncheckedCreateWithoutCallSessionsInput = {
@@ -56856,6 +60741,7 @@ export namespace Prisma {
     shareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput
     messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
+    userPreferences?: UserConversationPreferencesUncheckedCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationCreateOrConnectWithoutCallSessionsInput = {
@@ -56920,6 +60806,8 @@ export namespace Prisma {
     createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
     callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutInitiatedCallsInput = {
@@ -56979,6 +60867,8 @@ export namespace Prisma {
     createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
     callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesUncheckedCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutInitiatedCallsInput = {
@@ -57082,6 +60972,7 @@ export namespace Prisma {
     community?: CommunityUpdateOneWithoutConversationNestedInput
     messages?: MessageUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
+    userPreferences?: UserConversationPreferencesUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationUncheckedUpdateWithoutCallSessionsInput = {
@@ -57103,6 +60994,7 @@ export namespace Prisma {
     shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
     messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
+    userPreferences?: UserConversationPreferencesUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type UserUpsertWithoutInitiatedCallsInput = {
@@ -57172,6 +61064,8 @@ export namespace Prisma {
     createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
     callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutInitiatedCallsInput = {
@@ -57230,6 +61124,8 @@ export namespace Prisma {
     createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
     callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUncheckedUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type CallParticipantUpsertWithWhereUniqueWithoutCallSessionInput = {
@@ -57369,6 +61265,8 @@ export namespace Prisma {
     createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
+    conversationPrefs?: UserConversationPreferencesCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCallParticipationsInput = {
@@ -57428,6 +61326,8 @@ export namespace Prisma {
     createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
     trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
     initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
+    conversationPrefs?: UserConversationPreferencesUncheckedCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCallParticipationsInput = {
@@ -57539,6 +61439,8 @@ export namespace Prisma {
     createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
+    conversationPrefs?: UserConversationPreferencesUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCallParticipationsInput = {
@@ -57597,6 +61499,8 @@ export namespace Prisma {
     createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
     trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
     initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
+    conversationPrefs?: UserConversationPreferencesUncheckedUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type CallSessionCreateWithoutTranscriptionsInput = {
@@ -57790,6 +61694,745 @@ export namespace Prisma {
     offsetMs?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
+  export type UserCreateWithoutConversationPrefsInput = {
+    id?: string
+    username: string
+    firstName: string
+    lastName: string
+    bio?: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
+    avatar?: string | null
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    reactions?: ReactionCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceCreateNestedManyWithoutUserInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutConversationPrefsInput = {
+    id?: string
+    username: string
+    firstName: string
+    lastName: string
+    bio?: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
+    avatar?: string | null
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    reactions?: ReactionUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
+    conversationCategories?: UserConversationCategoryUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutConversationPrefsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutConversationPrefsInput, UserUncheckedCreateWithoutConversationPrefsInput>
+  }
+
+  export type ConversationCreateWithoutUserPreferencesInput = {
+    id?: string
+    identifier: string
+    type: string
+    title?: string | null
+    description?: string | null
+    image?: string | null
+    avatar?: string | null
+    isActive?: boolean
+    isArchived?: boolean
+    lastMessageAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    anonymousParticipants?: AnonymousParticipantCreateNestedManyWithoutConversationInput
+    members?: ConversationMemberCreateNestedManyWithoutConversationInput
+    preferences?: ConversationPreferenceCreateNestedManyWithoutConversationInput
+    shareLinks?: ConversationShareLinkCreateNestedManyWithoutConversationInput
+    community?: CommunityCreateNestedOneWithoutConversationInput
+    messages?: MessageCreateNestedManyWithoutConversationInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
+    callSessions?: CallSessionCreateNestedManyWithoutConversationInput
+  }
+
+  export type ConversationUncheckedCreateWithoutUserPreferencesInput = {
+    id?: string
+    identifier: string
+    type: string
+    title?: string | null
+    description?: string | null
+    image?: string | null
+    avatar?: string | null
+    communityId?: string | null
+    isActive?: boolean
+    isArchived?: boolean
+    lastMessageAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    anonymousParticipants?: AnonymousParticipantUncheckedCreateNestedManyWithoutConversationInput
+    members?: ConversationMemberUncheckedCreateNestedManyWithoutConversationInput
+    preferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutConversationInput
+    shareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput
+    messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
+    callSessions?: CallSessionUncheckedCreateNestedManyWithoutConversationInput
+  }
+
+  export type ConversationCreateOrConnectWithoutUserPreferencesInput = {
+    where: ConversationWhereUniqueInput
+    create: XOR<ConversationCreateWithoutUserPreferencesInput, ConversationUncheckedCreateWithoutUserPreferencesInput>
+  }
+
+  export type UserConversationCategoryCreateWithoutConversationsInput = {
+    id?: string
+    name: string
+    color?: string | null
+    icon?: string | null
+    order?: number
+    isExpanded?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutConversationCategoriesInput
+  }
+
+  export type UserConversationCategoryUncheckedCreateWithoutConversationsInput = {
+    id?: string
+    userId: string
+    name: string
+    color?: string | null
+    icon?: string | null
+    order?: number
+    isExpanded?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserConversationCategoryCreateOrConnectWithoutConversationsInput = {
+    where: UserConversationCategoryWhereUniqueInput
+    create: XOR<UserConversationCategoryCreateWithoutConversationsInput, UserConversationCategoryUncheckedCreateWithoutConversationsInput>
+  }
+
+  export type UserUpsertWithoutConversationPrefsInput = {
+    update: XOR<UserUpdateWithoutConversationPrefsInput, UserUncheckedUpdateWithoutConversationPrefsInput>
+    create: XOR<UserCreateWithoutConversationPrefsInput, UserUncheckedCreateWithoutConversationPrefsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutConversationPrefsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutConversationPrefsInput, UserUncheckedUpdateWithoutConversationPrefsInput>
+  }
+
+  export type UserUpdateWithoutConversationPrefsInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    systemLanguage?: StringFieldUpdateOperationsInput | string
+    regionalLanguage?: StringFieldUpdateOperationsInput | string
+    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
+    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
+    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
+    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
+    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
+    role?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    reactions?: ReactionUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutConversationPrefsInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    systemLanguage?: StringFieldUpdateOperationsInput | string
+    regionalLanguage?: StringFieldUpdateOperationsInput | string
+    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
+    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
+    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
+    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
+    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
+    role?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    reactions?: ReactionUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
+    conversationCategories?: UserConversationCategoryUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type ConversationUpsertWithoutUserPreferencesInput = {
+    update: XOR<ConversationUpdateWithoutUserPreferencesInput, ConversationUncheckedUpdateWithoutUserPreferencesInput>
+    create: XOR<ConversationCreateWithoutUserPreferencesInput, ConversationUncheckedCreateWithoutUserPreferencesInput>
+    where?: ConversationWhereInput
+  }
+
+  export type ConversationUpdateToOneWithWhereWithoutUserPreferencesInput = {
+    where?: ConversationWhereInput
+    data: XOR<ConversationUpdateWithoutUserPreferencesInput, ConversationUncheckedUpdateWithoutUserPreferencesInput>
+  }
+
+  export type ConversationUpdateWithoutUserPreferencesInput = {
+    identifier?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    anonymousParticipants?: AnonymousParticipantUpdateManyWithoutConversationNestedInput
+    members?: ConversationMemberUpdateManyWithoutConversationNestedInput
+    preferences?: ConversationPreferenceUpdateManyWithoutConversationNestedInput
+    shareLinks?: ConversationShareLinkUpdateManyWithoutConversationNestedInput
+    community?: CommunityUpdateOneWithoutConversationNestedInput
+    messages?: MessageUpdateManyWithoutConversationNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
+    callSessions?: CallSessionUpdateManyWithoutConversationNestedInput
+  }
+
+  export type ConversationUncheckedUpdateWithoutUserPreferencesInput = {
+    identifier?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    communityId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    anonymousParticipants?: AnonymousParticipantUncheckedUpdateManyWithoutConversationNestedInput
+    members?: ConversationMemberUncheckedUpdateManyWithoutConversationNestedInput
+    preferences?: ConversationPreferenceUncheckedUpdateManyWithoutConversationNestedInput
+    shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
+    messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
+    callSessions?: CallSessionUncheckedUpdateManyWithoutConversationNestedInput
+  }
+
+  export type UserConversationCategoryUpsertWithoutConversationsInput = {
+    update: XOR<UserConversationCategoryUpdateWithoutConversationsInput, UserConversationCategoryUncheckedUpdateWithoutConversationsInput>
+    create: XOR<UserConversationCategoryCreateWithoutConversationsInput, UserConversationCategoryUncheckedCreateWithoutConversationsInput>
+    where?: UserConversationCategoryWhereInput
+  }
+
+  export type UserConversationCategoryUpdateToOneWithWhereWithoutConversationsInput = {
+    where?: UserConversationCategoryWhereInput
+    data: XOR<UserConversationCategoryUpdateWithoutConversationsInput, UserConversationCategoryUncheckedUpdateWithoutConversationsInput>
+  }
+
+  export type UserConversationCategoryUpdateWithoutConversationsInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
+    isExpanded?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutConversationCategoriesNestedInput
+  }
+
+  export type UserConversationCategoryUncheckedUpdateWithoutConversationsInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
+    isExpanded?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserCreateWithoutConversationCategoriesInput = {
+    id?: string
+    username: string
+    firstName: string
+    lastName: string
+    bio?: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
+    avatar?: string | null
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    reactions?: ReactionCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceCreateNestedManyWithoutUserInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutConversationCategoriesInput = {
+    id?: string
+    username: string
+    firstName: string
+    lastName: string
+    bio?: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
+    avatar?: string | null
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
+    emailVerified?: boolean | null
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    twoFactorEnabled?: boolean | null
+    failedLoginAttempts?: number | null
+    lockedUntil?: Date | string | null
+    lastPasswordChange?: Date | string | null
+    deletedAt?: Date | string | null
+    deletedBy?: string | null
+    profileCompletionRate?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    reactions?: ReactionUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
+    initiatedCalls?: CallSessionUncheckedCreateNestedManyWithoutInitiatorInput
+    callParticipations?: CallParticipantUncheckedCreateNestedManyWithoutUserInput
+    conversationPrefs?: UserConversationPreferencesUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutConversationCategoriesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutConversationCategoriesInput, UserUncheckedCreateWithoutConversationCategoriesInput>
+  }
+
+  export type UserConversationPreferencesCreateWithoutCategoryInput = {
+    id?: string
+    isPinned?: boolean
+    isMuted?: boolean
+    isArchived?: boolean
+    tags?: UserConversationPreferencesCreatetagsInput | string[]
+    orderInCategory?: number | null
+    customName?: string | null
+    reaction?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutConversationPrefsInput
+    conversation: ConversationCreateNestedOneWithoutUserPreferencesInput
+  }
+
+  export type UserConversationPreferencesUncheckedCreateWithoutCategoryInput = {
+    id?: string
+    userId: string
+    conversationId: string
+    isPinned?: boolean
+    isMuted?: boolean
+    isArchived?: boolean
+    tags?: UserConversationPreferencesCreatetagsInput | string[]
+    orderInCategory?: number | null
+    customName?: string | null
+    reaction?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserConversationPreferencesCreateOrConnectWithoutCategoryInput = {
+    where: UserConversationPreferencesWhereUniqueInput
+    create: XOR<UserConversationPreferencesCreateWithoutCategoryInput, UserConversationPreferencesUncheckedCreateWithoutCategoryInput>
+  }
+
+  export type UserConversationPreferencesCreateManyCategoryInputEnvelope = {
+    data: UserConversationPreferencesCreateManyCategoryInput | UserConversationPreferencesCreateManyCategoryInput[]
+  }
+
+  export type UserUpsertWithoutConversationCategoriesInput = {
+    update: XOR<UserUpdateWithoutConversationCategoriesInput, UserUncheckedUpdateWithoutConversationCategoriesInput>
+    create: XOR<UserCreateWithoutConversationCategoriesInput, UserUncheckedCreateWithoutConversationCategoriesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutConversationCategoriesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutConversationCategoriesInput, UserUncheckedUpdateWithoutConversationCategoriesInput>
+  }
+
+  export type UserUpdateWithoutConversationCategoriesInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    systemLanguage?: StringFieldUpdateOperationsInput | string
+    regionalLanguage?: StringFieldUpdateOperationsInput | string
+    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
+    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
+    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
+    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
+    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
+    role?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    reactions?: ReactionUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutConversationCategoriesInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    systemLanguage?: StringFieldUpdateOperationsInput | string
+    regionalLanguage?: StringFieldUpdateOperationsInput | string
+    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
+    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
+    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
+    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
+    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
+    role?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    twoFactorEnabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    failedLoginAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPasswordChange?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    profileCompletionRate?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    reactions?: ReactionUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
+    initiatedCalls?: CallSessionUncheckedUpdateManyWithoutInitiatorNestedInput
+    callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
+    conversationPrefs?: UserConversationPreferencesUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserConversationPreferencesUpsertWithWhereUniqueWithoutCategoryInput = {
+    where: UserConversationPreferencesWhereUniqueInput
+    update: XOR<UserConversationPreferencesUpdateWithoutCategoryInput, UserConversationPreferencesUncheckedUpdateWithoutCategoryInput>
+    create: XOR<UserConversationPreferencesCreateWithoutCategoryInput, UserConversationPreferencesUncheckedCreateWithoutCategoryInput>
+  }
+
+  export type UserConversationPreferencesUpdateWithWhereUniqueWithoutCategoryInput = {
+    where: UserConversationPreferencesWhereUniqueInput
+    data: XOR<UserConversationPreferencesUpdateWithoutCategoryInput, UserConversationPreferencesUncheckedUpdateWithoutCategoryInput>
+  }
+
+  export type UserConversationPreferencesUpdateManyWithWhereWithoutCategoryInput = {
+    where: UserConversationPreferencesScalarWhereInput
+    data: XOR<UserConversationPreferencesUpdateManyMutationInput, UserConversationPreferencesUncheckedUpdateManyWithoutCategoryInput>
+  }
+
   export type CommunityCreateManyCreatorInput = {
     id?: string
     identifier: string
@@ -57854,8 +62497,10 @@ export namespace Prisma {
     allowAnonymousFiles?: boolean
     allowAnonymousImages?: boolean
     allowViewHistory?: boolean
+    requireAccount?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    requireBirthday?: boolean
     allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
@@ -58033,6 +62678,32 @@ export namespace Prisma {
     connectionQuality?: InputJsonValue | null
   }
 
+  export type UserConversationPreferencesCreateManyUserInput = {
+    id?: string
+    conversationId: string
+    isPinned?: boolean
+    isMuted?: boolean
+    isArchived?: boolean
+    tags?: UserConversationPreferencesCreatetagsInput | string[]
+    categoryId?: string | null
+    orderInCategory?: number | null
+    customName?: string | null
+    reaction?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserConversationCategoryCreateManyUserInput = {
+    id?: string
+    name: string
+    color?: string | null
+    icon?: string | null
+    order?: number
+    isExpanded?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type CommunityUpdateWithoutCreatorInput = {
     identifier?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -58177,8 +62848,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireAccount?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    requireBirthday?: BoolFieldUpdateOperationsInput | boolean
     allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
@@ -58206,8 +62879,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireAccount?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    requireBirthday?: BoolFieldUpdateOperationsInput | boolean
     allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
@@ -58234,8 +62909,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireAccount?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    requireBirthday?: BoolFieldUpdateOperationsInput | boolean
     allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
@@ -58728,6 +63405,80 @@ export namespace Prisma {
     connectionQuality?: InputJsonValue | InputJsonValue | null
   }
 
+  export type UserConversationPreferencesUpdateWithoutUserInput = {
+    isPinned?: BoolFieldUpdateOperationsInput | boolean
+    isMuted?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    tags?: UserConversationPreferencesUpdatetagsInput | string[]
+    orderInCategory?: NullableIntFieldUpdateOperationsInput | number | null
+    customName?: NullableStringFieldUpdateOperationsInput | string | null
+    reaction?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    conversation?: ConversationUpdateOneRequiredWithoutUserPreferencesNestedInput
+    category?: UserConversationCategoryUpdateOneWithoutConversationsNestedInput
+  }
+
+  export type UserConversationPreferencesUncheckedUpdateWithoutUserInput = {
+    conversationId?: StringFieldUpdateOperationsInput | string
+    isPinned?: BoolFieldUpdateOperationsInput | boolean
+    isMuted?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    tags?: UserConversationPreferencesUpdatetagsInput | string[]
+    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    orderInCategory?: NullableIntFieldUpdateOperationsInput | number | null
+    customName?: NullableStringFieldUpdateOperationsInput | string | null
+    reaction?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserConversationPreferencesUncheckedUpdateManyWithoutUserInput = {
+    conversationId?: StringFieldUpdateOperationsInput | string
+    isPinned?: BoolFieldUpdateOperationsInput | boolean
+    isMuted?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    tags?: UserConversationPreferencesUpdatetagsInput | string[]
+    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    orderInCategory?: NullableIntFieldUpdateOperationsInput | number | null
+    customName?: NullableStringFieldUpdateOperationsInput | string | null
+    reaction?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserConversationCategoryUpdateWithoutUserInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
+    isExpanded?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    conversations?: UserConversationPreferencesUpdateManyWithoutCategoryNestedInput
+  }
+
+  export type UserConversationCategoryUncheckedUpdateWithoutUserInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
+    isExpanded?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    conversations?: UserConversationPreferencesUncheckedUpdateManyWithoutCategoryNestedInput
+  }
+
+  export type UserConversationCategoryUncheckedUpdateManyWithoutUserInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
+    isExpanded?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type AnonymousParticipantCreateManyConversationInput = {
     id?: string
     shareLinkId: string
@@ -58735,6 +63486,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -58797,8 +63549,10 @@ export namespace Prisma {
     allowAnonymousFiles?: boolean
     allowAnonymousImages?: boolean
     allowViewHistory?: boolean
+    requireAccount?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    requireBirthday?: boolean
     allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
@@ -58842,11 +63596,27 @@ export namespace Prisma {
     metadata?: InputJsonValue | null
   }
 
+  export type UserConversationPreferencesCreateManyConversationInput = {
+    id?: string
+    userId: string
+    isPinned?: boolean
+    isMuted?: boolean
+    isArchived?: boolean
+    tags?: UserConversationPreferencesCreatetagsInput | string[]
+    categoryId?: string | null
+    orderInCategory?: number | null
+    customName?: string | null
+    reaction?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type AnonymousParticipantUpdateWithoutConversationInput = {
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -58873,6 +63643,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -58898,6 +63669,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -59006,8 +63778,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireAccount?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    requireBirthday?: BoolFieldUpdateOperationsInput | boolean
     allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
@@ -59035,8 +63809,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireAccount?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    requireBirthday?: BoolFieldUpdateOperationsInput | boolean
     allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
@@ -59063,8 +63839,10 @@ export namespace Prisma {
     allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireAccount?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    requireBirthday?: BoolFieldUpdateOperationsInput | boolean
     allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
     allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
     allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
@@ -59187,6 +63965,48 @@ export namespace Prisma {
     metadata?: InputJsonValue | InputJsonValue | null
   }
 
+  export type UserConversationPreferencesUpdateWithoutConversationInput = {
+    isPinned?: BoolFieldUpdateOperationsInput | boolean
+    isMuted?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    tags?: UserConversationPreferencesUpdatetagsInput | string[]
+    orderInCategory?: NullableIntFieldUpdateOperationsInput | number | null
+    customName?: NullableStringFieldUpdateOperationsInput | string | null
+    reaction?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutConversationPrefsNestedInput
+    category?: UserConversationCategoryUpdateOneWithoutConversationsNestedInput
+  }
+
+  export type UserConversationPreferencesUncheckedUpdateWithoutConversationInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    isPinned?: BoolFieldUpdateOperationsInput | boolean
+    isMuted?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    tags?: UserConversationPreferencesUpdatetagsInput | string[]
+    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    orderInCategory?: NullableIntFieldUpdateOperationsInput | number | null
+    customName?: NullableStringFieldUpdateOperationsInput | string | null
+    reaction?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserConversationPreferencesUncheckedUpdateManyWithoutConversationInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    isPinned?: BoolFieldUpdateOperationsInput | boolean
+    isMuted?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    tags?: UserConversationPreferencesUpdatetagsInput | string[]
+    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    orderInCategory?: NullableIntFieldUpdateOperationsInput | number | null
+    customName?: NullableStringFieldUpdateOperationsInput | string | null
+    reaction?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type AnonymousParticipantCreateManyShareLinkInput = {
     id?: string
     conversationId: string
@@ -59194,6 +64014,7 @@ export namespace Prisma {
     lastName: string
     username: string
     email?: string | null
+    birthday?: Date | string | null
     sessionToken: string
     ipAddress?: string | null
     country?: string | null
@@ -59215,6 +64036,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -59241,6 +64063,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -59266,6 +64089,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
+    birthday?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
@@ -59505,6 +64329,7 @@ export namespace Prisma {
     uploadedBy: string
     isAnonymous?: boolean
     createdAt?: Date | string
+    metadata?: InputJsonValue | null
   }
 
   export type ReactionCreateManyMessageInput = {
@@ -59626,6 +64451,7 @@ export namespace Prisma {
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: InputJsonValue | InputJsonValue | null
   }
 
   export type MessageAttachmentUncheckedUpdateWithoutMessageInput = {
@@ -59647,6 +64473,7 @@ export namespace Prisma {
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: InputJsonValue | InputJsonValue | null
   }
 
   export type MessageAttachmentUncheckedUpdateManyWithoutMessageInput = {
@@ -59668,6 +64495,7 @@ export namespace Prisma {
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: InputJsonValue | InputJsonValue | null
   }
 
   export type ReactionUpdateWithoutMessageInput = {
@@ -59810,6 +64638,7 @@ export namespace Prisma {
     messages?: MessageUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
     callSessions?: CallSessionUpdateManyWithoutConversationNestedInput
+    userPreferences?: UserConversationPreferencesUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationUncheckedUpdateWithoutCommunityInput = {
@@ -59831,6 +64660,7 @@ export namespace Prisma {
     messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
     callSessions?: CallSessionUncheckedUpdateManyWithoutConversationNestedInput
+    userPreferences?: UserConversationPreferencesUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationUncheckedUpdateManyWithoutCommunityInput = {
@@ -60072,6 +64902,63 @@ export namespace Prisma {
     model?: NullableStringFieldUpdateOperationsInput | string | null
     cached?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserConversationPreferencesCreateManyCategoryInput = {
+    id?: string
+    userId: string
+    conversationId: string
+    isPinned?: boolean
+    isMuted?: boolean
+    isArchived?: boolean
+    tags?: UserConversationPreferencesCreatetagsInput | string[]
+    orderInCategory?: number | null
+    customName?: string | null
+    reaction?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserConversationPreferencesUpdateWithoutCategoryInput = {
+    isPinned?: BoolFieldUpdateOperationsInput | boolean
+    isMuted?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    tags?: UserConversationPreferencesUpdatetagsInput | string[]
+    orderInCategory?: NullableIntFieldUpdateOperationsInput | number | null
+    customName?: NullableStringFieldUpdateOperationsInput | string | null
+    reaction?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutConversationPrefsNestedInput
+    conversation?: ConversationUpdateOneRequiredWithoutUserPreferencesNestedInput
+  }
+
+  export type UserConversationPreferencesUncheckedUpdateWithoutCategoryInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    conversationId?: StringFieldUpdateOperationsInput | string
+    isPinned?: BoolFieldUpdateOperationsInput | boolean
+    isMuted?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    tags?: UserConversationPreferencesUpdatetagsInput | string[]
+    orderInCategory?: NullableIntFieldUpdateOperationsInput | number | null
+    customName?: NullableStringFieldUpdateOperationsInput | string | null
+    reaction?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserConversationPreferencesUncheckedUpdateManyWithoutCategoryInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    conversationId?: StringFieldUpdateOperationsInput | string
+    isPinned?: BoolFieldUpdateOperationsInput | boolean
+    isMuted?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    tags?: UserConversationPreferencesUpdatetagsInput | string[]
+    orderInCategory?: NullableIntFieldUpdateOperationsInput | number | null
+    customName?: NullableStringFieldUpdateOperationsInput | string | null
+    reaction?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 
