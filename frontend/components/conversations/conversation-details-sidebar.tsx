@@ -300,9 +300,17 @@ function CategorySelector({ conversationId, onCategoryUpdated }: CategorySelecto
         const prefs = await userPreferencesService.getPreferences(conversationId);
         setSelectedCategoryId(prefs?.categoryId || null);
 
-        // Load all user categories
+        // Load all user categories and sort by order, then alphabetically
         const cats = await userPreferencesService.getCategories();
-        setCategories(cats);
+        const sortedCats = cats.sort((a, b) => {
+          // Trier par order d'abord
+          if (a.order !== b.order) {
+            return a.order - b.order;
+          }
+          // Si même order, trier alphabétiquement
+          return a.name.localeCompare(b.name);
+        });
+        setCategories(sortedCats);
       } catch (error) {
         console.error('Error loading categories:', error);
         setCategories([]);
@@ -333,7 +341,15 @@ function CategorySelector({ conversationId, onCategoryUpdated }: CategorySelecto
   const handleCreateCategory = async (name: string) => {
     try {
       const newCategory = await userPreferencesService.createCategory({ name });
-      setCategories([...categories, newCategory].sort((a, b) => a.order - b.order));
+      const updatedCategories = [...categories, newCategory].sort((a, b) => {
+        // Trier par order d'abord
+        if (a.order !== b.order) {
+          return a.order - b.order;
+        }
+        // Si même order, trier alphabétiquement
+        return a.name.localeCompare(b.name);
+      });
+      setCategories(updatedCategories);
       await handleSelectCategory(newCategory.id);
       toast.success(t('conversationDetails.categoryCreated'));
     } catch (error) {

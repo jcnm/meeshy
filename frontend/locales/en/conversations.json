@@ -71,6 +71,10 @@
       "noConversationsFound": "No conversations found",
       "shareMessage": "Share a message..."
     },
+    "conversationsList": {
+      "all": "All",
+      "archived": "Archived"
+    },
     "replyToMessage": "Reply to message",
     "replyingTo": "Replying to",
     "unknownUser": "Unknown user",
