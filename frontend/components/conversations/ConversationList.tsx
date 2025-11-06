@@ -313,14 +313,14 @@ export function ConversationList({
       return bTime - aTime;
     });
 
-    console.log('[ConversationList] Filtrage et tri des conversations:', {
-      total: conversations.length,
-      filtered: sorted.length,
-      searchQuery,
-      selectedFilter,
-      pinnedCount: sorted.filter(c => preferencesMap.get(c.id)?.isPinned).length,
-      archivedCount: conversations.filter(c => preferencesMap.get(c.id)?.isArchived).length
-    });
+    // console.log('[ConversationList] Filtrage et tri des conversations:', {
+    //   total: conversations.length,
+    //   filtered: sorted.length,
+    //   searchQuery,
+    //   selectedFilter,
+    //   pinnedCount: sorted.filter(c => preferencesMap.get(c.id)?.isPinned).length,
+    //   archivedCount: conversations.filter(c => preferencesMap.get(c.id)?.isArchived).length
+    // });
 
     return sorted;
   }, [conversations, searchQuery, preferencesMap, selectedFilter]);

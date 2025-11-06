@@ -65,8 +65,14 @@ export function CommunityCarousel({
   const cards = useMemo((): CardData[] => {
     const result: CardData[] = [];
 
+    // Vérifier que conversations est un tableau valide
+    if (!Array.isArray(conversations)) {
+      return result;
+    }
+
     // Carte "All" - toutes les conversations non archivées
     const nonArchivedCount = conversations.filter(c => {
+      if (!c || !c.id) return false;
       const prefs = preferencesMap.get(c.id);
       return !(prefs?.isArchived || false);
     }).length;
@@ -79,26 +85,32 @@ export function CommunityCarousel({
     });
 
     // Cartes des communautés
-    communities.forEach(community => {
-      const communityConversations = conversations.filter(c => {
-        const prefs = preferencesMap.get(c.id);
-        const isArchived = prefs?.isArchived || false;
-        return c.communityId === community.id && !isArchived;
-      });
+    if (Array.isArray(communities)) {
+      communities.forEach(community => {
+        if (!community || !community.id) return;
 
-      result.push({
-        id: community.id,
-        type: 'community',
-        title: community.name,
-        image: community.avatar,
-        memberCount: community._count?.members,
-        conversationCount: communityConversations.length,
-        communityId: community.id
+        const communityConversations = conversations.filter(c => {
+          if (!c || !c.id) return false;
+          const prefs = preferencesMap.get(c.id);
+          const isArchived = prefs?.isArchived || false;
+          return c.communityId === community.id && !isArchived;
+        });
+
+        result.push({
+          id: community.id,
+          type: 'community',
+          title: community.name || 'Community',
+          image: community.avatar,
+          memberCount: community._count?.members,
+          conversationCount: communityConversations.length,
+          communityId: community.id
+        });
       });
-    });
+    }
 
     // Carte "Reacted" - conversations avec réaction
     const reactedCount = conversations.filter(c => {
+      if (!c || !c.id) return false;
       const prefs = preferencesMap.get(c.id);
       return prefs?.reaction && !(prefs?.isArchived || false);
     }).length;
@@ -114,6 +126,7 @@ export function CommunityCarousel({
 
     // Carte "Archived" - conversations archivées
     const archivedCount = conversations.filter(c => {
+      if (!c || !c.id) return false;
       const prefs = preferencesMap.get(c.id);
       return prefs?.isArchived || false;
     }).length;
