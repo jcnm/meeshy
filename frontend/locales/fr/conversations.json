@@ -85,7 +85,10 @@
       "share": "Partager",
       "linkCopied": "Lien copié !",
       "linkCopyError": "Erreur lors de la copie du lien",
-      "viewImages": "Voir les images"
+      "viewImages": "Voir les images",
+      "changeImage": "Changer l'image",
+      "imageUpdated": "Image de la conversation mise à jour",
+      "imageUploadError": "Erreur lors de l'upload de l'image"
     },
     "conversationUI": {
       "participants": "Participants",
@@ -141,7 +144,26 @@
       "descriptionUpdated": "Description mise à jour avec succès",
       "addDescription": "Cliquez pour ajouter une description...",
       "noDescription": "Aucune description",
-      "editDescription": "Modifier la description"
+      "editDescription": "Modifier la description",
+      "clickToChangeImage": "Cliquez pour changer l'image",
+      "imageUpdated": "Image de la conversation mise à jour",
+      "imageUploadError": "Erreur lors de l'upload de l'image"
+    },
+    "conversationImage": {
+      "title": "Changer l'image de la conversation",
+      "selectImage": "Sélectionner une image",
+      "selectImageDescription": "Choisissez une image pour représenter cette conversation",
+      "chooseFile": "Choisir un fichier",
+      "fileRequirements": "JPEG, PNG ou WebP - Max 5MB",
+      "zoom": "Zoom",
+      "rotation": "Rotation",
+      "instructions": "Utilisez la souris pour déplacer l'image, les curseurs pour zoomer et tourner.",
+      "reset": "Réinitialiser",
+      "changeImage": "Changer l'image",
+      "cancel": "Annuler",
+      "uploading": "Téléchargement...",
+      "processing": "Traitement...",
+      "save": "Enregistrer"
     },
     "typingIndicator": {
       "typing": "Écriture...",
