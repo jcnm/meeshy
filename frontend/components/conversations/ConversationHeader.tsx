@@ -38,6 +38,47 @@ function isAnonymousUser(user: any): user is AnonymousParticipant {
   return user && ('sessionToken' in user || 'shareLinkId' in user);
 }
 
+// Helper pour calculer le statut de l'utilisateur basé sur la dernière activité
+type UserStatus = 'online' | 'away' | 'offline';
+function getUserStatus(user: User | null | undefined): UserStatus {
+  if (!user) return 'offline';
+
+  // Si l'utilisateur a une propriété isOnline explicite et elle est false, retourner offline
+  if (user.isOnline === false) return 'offline';
+
+  // Sinon, calculer basé sur lastActiveAt
+  const lastActiveAt = user.lastActiveAt ? new Date(user.lastActiveAt) : null;
+  if (!lastActiveAt) {
+    // Si pas de lastActiveAt mais isOnline est true, considérer comme online
+    return user.isOnline ? 'online' : 'offline';
+  }
+
+  const now = Date.now();
+  const lastActive = lastActiveAt.getTime();
+  const minutesAgo = (now - lastActive) / (1000 * 60);
+
+  // Vert : actif dans les dernières 5 minutes
+  if (minutesAgo < 5) return 'online';
+
+  // Orange : absent depuis 5-30 minutes
+  if (minutesAgo < 30) return 'away';
+
+  // Gris : hors ligne depuis plus de 30 minutes
+  return 'offline';
+}
+
+// Helper pour obtenir la couleur de l'indicateur de statut
+function getStatusColor(status: UserStatus): string {
+  switch (status) {
+    case 'online':
+      return 'bg-green-500';
+    case 'away':
+      return 'bg-orange-500';
+    case 'offline':
+      return 'bg-gray-400';
+  }
+}
+
 interface ConversationHeaderProps {
   conversation: Conversation;
   currentUser: User;
@@ -193,6 +234,15 @@ export function ConversationHeader({
     return false;
   }, [conversation, currentUser, conversationParticipants]);
 
+  // Obtenir le statut de l'autre participant pour les conversations directes
+  const getOtherParticipantStatus = useCallback((): UserStatus => {
+    if (conversation.type === 'direct') {
+      const otherParticipant = conversationParticipants.find(p => p.userId !== currentUser?.id);
+      return getUserStatus(otherParticipant?.user);
+    }
+    return 'online'; // Pour les conversations de groupe, toujours afficher comme online
+  }, [conversation.type, conversationParticipants, currentUser?.id]);
+
   // Fonction pour copier le lien de la conversation
   const handleShareConversation = useCallback(async () => {
     const url = `${window.location.origin}/conversations/${conversation.id}`;
@@ -257,7 +307,10 @@ export function ConversationHeader({
                 </AvatarFallback>
               </Avatar>
             )}
-            <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-500 rounded-full border-2 border-background" />
+            {/* Status indicator - Only show for direct conversations */}
+            {conversation.type !== 'direct' && (
+              <div className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 ${getStatusColor('online')} rounded-full border-2 border-background`} />
+            )}
           </div>
         )}
 
@@ -268,16 +321,20 @@ export function ConversationHeader({
             {conversation.type === 'direct' && (
               <div className="relative flex-shrink-0">
                 {isOtherParticipantAnonymous() ? (
-                  <div className="h-6 w-6 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                    <Ghost className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
+                  <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                    <Ghost className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                   </div>
                 ) : (
-                  <Avatar className="h-6 w-6">
-                    <AvatarImage src={getConversationAvatarUrl()} />
-                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
-                      {getConversationAvatar()}
-                    </AvatarFallback>
-                  </Avatar>
+                  <>
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={getConversationAvatarUrl()} />
+                      <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                        {getConversationAvatar()}
+                      </AvatarFallback>
+                    </Avatar>
+                    {/* Accurate status indicator for direct conversations */}
+                    <div className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 ${getStatusColor(getOtherParticipantStatus())} rounded-full border-2 border-background`} />
+                  </>
                 )}
               </div>
             )}
@@ -298,15 +355,23 @@ export function ConversationHeader({
               />
             </div>
           ) : (
-            /* For direct conversations, only show typing indicator if someone is typing */
+            /* For direct conversations, show typing indicator with username */
             <div className="text-sm text-muted-foreground">
-              {typingUsers.filter(u => u.userId !== currentUser.id).length > 0 && (
-                <div className="flex items-center gap-1">
-                  <span className="text-xs">
-                    {t('conversationParticipants.typing') || 'En train d\'écrire...'}
-                  </span>
-                </div>
-              )}
+              {(() => {
+                const otherTypingUsers = typingUsers.filter(u => u.userId !== currentUser.id);
+                if (otherTypingUsers.length > 0) {
+                  const typingUser = otherTypingUsers[0];
+                  const typingUserName = typingUser.username || getConversationName();
+                  return (
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs">
+                        {typingUserName} {t('conversationParticipants.typing') || 'est en train d\'écrire...'}
+                      </span>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
             </div>
           )}
         </div>
@@ -336,18 +401,20 @@ export function ConversationHeader({
           </TooltipProvider>
         )}
 
-        {/* Participants drawer - S'ouvre depuis la gauche */}
-        <ConversationParticipantsDrawer
-          conversationId={conversation.id}
-          participants={conversationParticipants}
-          currentUser={currentUser}
-          isGroup={conversation.type !== 'direct'}
-          conversationType={conversation.type}
-          userConversationRole={getCurrentUserRole()}
-          onParticipantRemoved={onParticipantRemoved}
-          onParticipantAdded={onParticipantAdded}
-          onLinkCreated={onLinkCreated}
-        />
+        {/* Participants drawer - Only for group conversations */}
+        {conversation.type !== 'direct' && (
+          <ConversationParticipantsDrawer
+            conversationId={conversation.id}
+            participants={conversationParticipants}
+            currentUser={currentUser}
+            isGroup={conversation.type !== 'direct'}
+            conversationType={conversation.type}
+            userConversationRole={getCurrentUserRole()}
+            onParticipantRemoved={onParticipantRemoved}
+            onParticipantAdded={onParticipantAdded}
+            onLinkCreated={onLinkCreated}
+          />
+        )}
 
         {/* Bouton de création de lien rapide - seulement pour les conversations de groupe et avec les bons rôles */}
         {conversation.type !== 'direct' && 
