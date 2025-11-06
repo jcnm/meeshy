@@ -277,39 +277,39 @@ export function ConversationHeader({
       const newPinnedState = !isPinned;
       setIsPinned(newPinnedState);
       await userPreferencesService.togglePin(conversation.id, newPinnedState);
-      toast.success(newPinnedState ? 'Conversation épinglée' : 'Conversation désépinglée');
+      toast.success(t(newPinnedState ? 'conversationHeader.pinned' : 'conversationHeader.unpinned'));
     } catch (error) {
       console.error('Error toggling pin:', error);
       setIsPinned(!isPinned); // Revert on error
-      toast.error('Erreur lors de l\'épinglage');
+      toast.error(t('conversationHeader.pinError'));
     }
-  }, [conversation.id, isPinned]);
+  }, [conversation.id, isPinned, t]);
 
   const handleToggleMute = useCallback(async () => {
     try {
       const newMutedState = !isMuted;
       setIsMuted(newMutedState);
       await userPreferencesService.toggleMute(conversation.id, newMutedState);
-      toast.success(newMutedState ? 'Notifications désactivées' : 'Notifications activées');
+      toast.success(t(newMutedState ? 'conversationHeader.muted' : 'conversationHeader.unmuted'));
     } catch (error) {
       console.error('Error toggling mute:', error);
       setIsMuted(!isMuted); // Revert on error
-      toast.error('Erreur lors du changement des notifications');
+      toast.error(t('conversationHeader.muteError'));
     }
-  }, [conversation.id, isMuted]);
+  }, [conversation.id, isMuted, t]);
 
   const handleToggleArchive = useCallback(async () => {
     try {
       const newArchivedState = !isArchived;
       setIsArchived(newArchivedState);
       await userPreferencesService.toggleArchive(conversation.id, newArchivedState);
-      toast.success(newArchivedState ? 'Conversation archivée' : 'Conversation désarchivée');
+      toast.success(t(newArchivedState ? 'conversationHeader.archived' : 'conversationHeader.unarchived'));
     } catch (error) {
       console.error('Error toggling archive:', error);
       setIsArchived(!isArchived); // Revert on error
-      toast.error('Erreur lors de l\'archivage');
+      toast.error(t('conversationHeader.archiveError'));
     }
-  }, [conversation.id, isArchived]);
+  }, [conversation.id, isArchived, t]);
 
   // Fonction pour copier le lien de la conversation
   const handleShareConversation = useCallback(async () => {
@@ -531,7 +531,7 @@ export function ConversationHeader({
             {/* User Preferences */}
             <DropdownMenuItem onClick={handleTogglePin} disabled={isLoadingPreferences}>
               <Pin className={cn("h-4 w-4 mr-2", isPinned && "fill-current")} />
-              {isPinned ? 'Désépingler' : 'Épingler'}
+              {t(isPinned ? 'conversationHeader.unpin' : 'conversationHeader.pin')}
             </DropdownMenuItem>
 
             <DropdownMenuItem onClick={handleToggleMute} disabled={isLoadingPreferences}>
@@ -540,7 +540,7 @@ export function ConversationHeader({
               ) : (
                 <BellOff className="h-4 w-4 mr-2" />
               )}
-              {isMuted ? 'Activer les notifications' : 'Désactiver les notifications'}
+              {t(isMuted ? 'conversationHeader.unmute' : 'conversationHeader.mute')}
             </DropdownMenuItem>
 
             <DropdownMenuItem onClick={handleToggleArchive} disabled={isLoadingPreferences}>
@@ -549,7 +549,7 @@ export function ConversationHeader({
               ) : (
                 <Archive className="h-4 w-4 mr-2" />
               )}
-              {isArchived ? 'Désarchiver' : 'Archiver'}
+              {t(isArchived ? 'conversationHeader.unarchive' : 'conversationHeader.archive')}
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
