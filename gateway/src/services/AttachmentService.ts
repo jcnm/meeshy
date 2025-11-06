@@ -243,9 +243,14 @@ export class AttachmentService {
 
   /**
    * Génère une URL publique pour un fichier
+   * Utilise des URLs relatives pour éviter les problèmes de mixed content (HTTPS/HTTP)
+   * et pour fonctionner avec des proxies/reverse proxies
    */
   getAttachmentUrl(filePath: string): string {
-    return `${this.publicUrl}/api/attachments/file/${encodeURIComponent(filePath)}`;
+    // Utiliser une URL relative au lieu d'une URL absolue
+    // Cela permet au navigateur d'utiliser automatiquement le même protocole (HTTP/HTTPS)
+    // et le même host que la page courante
+    return `/api/attachments/file/${encodeURIComponent(filePath)}`;
   }
 
   /**
