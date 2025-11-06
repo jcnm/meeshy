@@ -369,6 +369,7 @@ export class ConversationsService {
       status: 'active' as const,
       title: conv.title as string,
       description: conv.description as string,
+      tags: Array.isArray(conv.tags) ? conv.tags as string[] : [],
       image: conv.image as string,
       avatar: conv.avatar as string,
       communityId: conv.communityId as string,

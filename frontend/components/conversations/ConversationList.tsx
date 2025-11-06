@@ -81,11 +81,13 @@ const ConversationItem = memo(function ConversationItem({
 
   const getConversationAvatarUrl = useCallback(() => {
     if (conversation.type === 'direct') {
-      // Pour l'instant, pas d'avatar car participants n'a pas de propriété user
-      // TODO: Charger les avatars des participants séparément
-      return undefined;
+      // Pour les conversations directes, retourner l'avatar de l'autre participant
+      const otherParticipant = conversation.participants?.find(p => p.userId !== currentUser?.id);
+      const participantUser = (otherParticipant as any)?.user;
+      return participantUser?.avatar;
     }
-    return undefined;
+    // Pour les conversations de groupe/public/global, retourner l'image de la conversation
+    return conversation.image || conversation.avatar;
   }, [conversation, currentUser]);
 
   const getConversationIcon = useCallback(() => {
@@ -157,6 +159,25 @@ const ConversationItem = memo(function ConversationItem({
 
       {/* Contenu */}
       <div className="flex-1 min-w-0">
+        {/* Tags - displayed above title in tiny text */}
+        {conversation.tags && conversation.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-1">
+            {conversation.tags.slice(0, 3).map((tag) => (
+              <span
+                key={tag}
+                className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium"
+              >
+                {tag}
+              </span>
+            ))}
+            {conversation.tags.length > 3 && (
+              <span className="text-[10px] text-muted-foreground">
+                +{conversation.tags.length - 3}
+              </span>
+            )}
+          </div>
+        )}
+
         <div className="flex items-start justify-between gap-2">
           <h3 className="font-semibold text-sm truncate">
             {getConversationName()}
@@ -219,9 +240,13 @@ export function ConversationList({
       if (!searchQuery) return true;
       const title = conv.title || '';
       const lastMessage = conv.lastMessage?.content || '';
+      const tags = conv.tags || [];
       const query = searchQuery.toLowerCase();
+
+      // Search in title, last message, AND tags
       return title.toLowerCase().includes(query) ||
-             lastMessage.toLowerCase().includes(query);
+             lastMessage.toLowerCase().includes(query) ||
+             tags.some(tag => tag.toLowerCase().includes(query));
     });
 
     console.log('[ConversationList] Filtrage des conversations:', {

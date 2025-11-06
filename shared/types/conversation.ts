@@ -290,6 +290,9 @@ export interface Conversation {
   readonly type: ConversationType;
   readonly status: ConversationStatus;
   readonly visibility: ConversationVisibility;
+  readonly tags?: readonly string[];  // Tags personnalisés pour la conversation
+  readonly image?: string;  // URL de l'image de la conversation
+  readonly avatar?: string;  // URL de l'avatar alternatif
 
   // ===== PARTICIPANTS =====
   readonly participants: readonly ConversationParticipantInfo[];

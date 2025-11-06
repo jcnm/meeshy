@@ -158,7 +158,8 @@ export function ConversationHeader({
       const otherParticipant = conversationParticipants.find(p => p.userId !== currentUser?.id);
       return otherParticipant?.user?.avatar;
     }
-    return undefined;
+    // Pour les conversations de groupe/public/global, retourner l'image de la conversation
+    return conversation.image || conversation.avatar;
   }, [conversation, currentUser, conversationParticipants]);
 
   // Helper pour vérifier si l'utilisateur peut utiliser les appels vidéo

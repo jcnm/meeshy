@@ -38,6 +38,136 @@ import { useI18n } from '@/hooks/useI18n';
 import { copyToClipboard } from '@/lib/clipboard';
 import { ConversationImageUploadDialog } from './conversation-image-upload-dialog';
 import { AttachmentService } from '@/services/attachmentService';
+import { X as XIcon, Plus, Tag as TagIcon } from 'lucide-react';
+
+// Tags Manager Component
+interface TagsManagerProps {
+  conversationId: string;
+  tags: readonly string[];
+  isAdmin: boolean;
+  onTagsUpdated: (tags: string[]) => Promise<void>;
+}
+
+function TagsManager({ conversationId, tags, isAdmin, onTagsUpdated }: TagsManagerProps) {
+  const [newTag, setNewTag] = useState('');
+  const [isAdding, setIsAdding] = useState(false);
+  const [localTags, setLocalTags] = useState<string[]>([...tags]);
+
+  useEffect(() => {
+    setLocalTags([...tags]);
+  }, [tags]);
+
+  const handleAddTag = async () => {
+    const trimmedTag = newTag.trim();
+    if (!trimmedTag) return;
+
+    // Vérifier si le tag existe déjà
+    if (localTags.includes(trimmedTag)) {
+      toast.error('Ce tag existe déjà');
+      return;
+    }
+
+    const updatedTags = [...localTags, trimmedTag];
+    setLocalTags(updatedTags);
+    setNewTag('');
+    setIsAdding(false);
+
+    await onTagsUpdated(updatedTags);
+  };
+
+  const handleRemoveTag = async (tagToRemove: string) => {
+    const updatedTags = localTags.filter(t => t !== tagToRemove);
+    setLocalTags(updatedTags);
+    await onTagsUpdated(updatedTags);
+  };
+
+  return (
+    <div className="space-y-2">
+      {/* Display tags */}
+      <div className="flex flex-wrap gap-2">
+        {localTags.map((tag) => (
+          <Badge
+            key={tag}
+            variant="secondary"
+            className="flex items-center gap-1 px-2 py-1 text-xs"
+          >
+            <TagIcon className="h-3 w-3" />
+            <span>{tag}</span>
+            {isAdmin && (
+              <button
+                onClick={() => handleRemoveTag(tag)}
+                className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+                aria-label={`Remove tag ${tag}`}
+              >
+                <XIcon className="h-3 w-3" />
+              </button>
+            )}
+          </Badge>
+        ))}
+
+        {localTags.length === 0 && !isAdding && (
+          <p className="text-xs text-muted-foreground italic">
+            {isAdmin ? 'Cliquez sur + pour ajouter des tags' : 'Aucun tag'}
+          </p>
+        )}
+      </div>
+
+      {/* Add new tag */}
+      {isAdmin && (
+        <div className="flex items-center gap-2">
+          {isAdding ? (
+            <>
+              <Input
+                type="text"
+                placeholder="Nouveau tag..."
+                value={newTag}
+                onChange={(e) => setNewTag(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleAddTag();
+                  } else if (e.key === 'Escape') {
+                    setIsAdding(false);
+                    setNewTag('');
+                  }
+                }}
+                className="flex-1 h-8 text-sm"
+                autoFocus
+              />
+              <Button
+                size="sm"
+                onClick={handleAddTag}
+                className="h-8 w-8 p-0"
+              >
+                <Check className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setIsAdding(false);
+                  setNewTag('');
+                }}
+                className="h-8 w-8 p-0"
+              >
+                <XIcon className="h-4 w-4" />
+              </Button>
+            </>
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsAdding(true)}
+              className="h-8 px-3 text-xs"
+            >
+              <Plus className="h-3 w-3 mr-1" />
+              Ajouter un tag
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // Import des composants de la sidebar de BubbleStreamPage
 import {
@@ -568,6 +698,30 @@ export function ConversationDetailsSidebar({
                       )}
                     </div>
                   )}
+                </div>
+
+                {/* Tags Section */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Tags
+                  </label>
+                  <TagsManager
+                    conversationId={conversation.id}
+                    tags={conversation.tags || []}
+                    isAdmin={isAdmin}
+                    onTagsUpdated={async (newTags) => {
+                      try {
+                        await conversationsService.updateConversation(conversation.id, {
+                          tags: newTags
+                        });
+                        toast.success('Tags mis à jour');
+                        window.location.reload();
+                      } catch (error) {
+                        console.error('Erreur lors de la mise à jour des tags:', error);
+                        toast.error('Erreur lors de la mise à jour des tags');
+                      }
+                    }}
+                  />
                 </div>
               </>
             )}
