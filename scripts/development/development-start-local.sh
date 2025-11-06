@@ -298,20 +298,20 @@ echo -e "${BLUE}📝 Configuration des variables d'environnement...${NC}"
 if [ "$USE_HTTPS" = true ]; then
   FRONTEND_PROTOCOL="https"
   FRONTEND_WS_PROTOCOL="wss"
-  FRONTEND_URL="https://localhost:3100"
+  FRONTEND_URL="https://${LOCAL_IP}:3100"
   GATEWAY_PROTOCOL="https"
-  GATEWAY_URL="https://localhost:3000"
-  GATEWAY_WS_URL="wss://localhost:3000"
-  CORS_ORIGINS="https://localhost:3100,https://localhost:3000"
+  GATEWAY_URL="https://${LOCAL_IP}:3000"
+  GATEWAY_WS_URL="wss://${LOCAL_IP}:3000"
+  CORS_ORIGINS="https://${LOCAL_IP}:3100,https://${LOCAL_IP}:3000,https://${LOCAL_IP}:3100,https://${LOCAL_IP}:3000,https://127.0.0.1:3100,https://127.0.0.1:3000"
   echo -e "${GREEN}   Mode HTTPS activé - URLs configurées pour HTTPS/WSS${NC}"
 else
   FRONTEND_PROTOCOL="http"
   FRONTEND_WS_PROTOCOL="ws"
-  FRONTEND_URL="http://localhost:3100"
+  FRONTEND_URL="http://${LOCAL_IP}:3100"
   GATEWAY_PROTOCOL="http"
-  GATEWAY_URL="http://localhost:3000"
-  GATEWAY_WS_URL="ws://localhost:3000"
-  CORS_ORIGINS="http://localhost:3100,http://localhost:3000"
+  GATEWAY_URL="http://${LOCAL_IP}:3000"
+  GATEWAY_WS_URL="ws://${LOCAL_IP}:3000"
+  CORS_ORIGINS="http://localhost:3100,http://localhost:3000,http://${LOCAL_IP}:3100,http://${LOCAL_IP}:3000,http://127.0.0.1:3100,http://127.0.0.1:3000"
 fi
 
 # .env racine
