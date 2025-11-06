@@ -6,7 +6,7 @@ const path = require('path');
 
 const dev = process.env.NODE_ENV !== 'production';
 const hostname = process.env.HOSTNAME || 'localhost';
-const port = parseInt(process.env.PORT || '3000', 10);
+const port = parseInt(process.env.PORT || '3100', 10);
 
 // Créer l'app Next.js
 const app = next({ dev, hostname, port });
