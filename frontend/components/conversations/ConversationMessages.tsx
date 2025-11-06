@@ -268,7 +268,10 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
         console.log('[ConversationMessages] 🔓 handleScroll détaché du conteneur externe');
       };
     } else {
-      console.log('[ConversationMessages] ⚠️ Aucun conteneur de scroll externe fourni');
+      // Container will be provided by parent component
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[ConversationMessages] Using internal scroll container (no external ref provided)');
+      }
     }
   }, [scrollContainerRef, handleScroll, scrollDirection]);
 

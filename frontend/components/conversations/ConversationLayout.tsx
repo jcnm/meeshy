@@ -222,7 +222,8 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     removeMessage
   } = useConversationMessages(selectedConversation?.id || null, user!, {
     limit: 20,
-    enabled: !!selectedConversation?.id
+    enabled: !!selectedConversation?.id,
+    containerRef: messagesScrollRef // Pass container ref to hook to avoid warnings
   });
 
     // Callback pour gérer les événements de frappe
@@ -1371,6 +1372,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               hasMore={hasMore}
               isMobile={isMobile}
               conversationType={(selectedConversation.type as any) === 'anonymous' ? 'direct' : (selectedConversation.type as any) === 'broadcast' ? 'public' : selectedConversation.type as any}
+              scrollContainerRef={messagesScrollRef}
               userRole={user.role as UserRoleEnum}
               conversationId={selectedConversation.id}
               addTranslatingState={addTranslatingState}
@@ -1539,6 +1541,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                   hasMore={hasMore}
                   isMobile={false}
                   conversationType={(selectedConversation.type as any) === 'anonymous' ? 'direct' : (selectedConversation.type as any) === 'broadcast' ? 'public' : selectedConversation.type as any}
+                  scrollContainerRef={messagesScrollRef}
                   userRole={user.role as UserRoleEnum}
                   conversationId={selectedConversation.id}
                   addTranslatingState={addTranslatingState}
