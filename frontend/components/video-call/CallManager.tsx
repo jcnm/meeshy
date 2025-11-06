@@ -435,7 +435,7 @@ export function CallManager() {
       console.log('✅ [CallManager] All call listeners registered', {
         socketId: socket.id,
         userId: user.id,
-        listenerCount: (socket as any).listenerCount('call:initiated')
+        listenersRegistered: true
       });
       logger.info('[CallManager]', '✅ All call listeners registered', {
         socketId: socket.id,
