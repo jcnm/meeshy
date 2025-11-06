@@ -39,30 +39,59 @@ import { useI18n } from '@/hooks/useI18n';
 import { copyToClipboard } from '@/lib/clipboard';
 import { ConversationImageUploadDialog } from './conversation-image-upload-dialog';
 import { AttachmentService } from '@/services/attachmentService';
-import { X as XIcon, Plus, Tag as TagIcon } from 'lucide-react';
+import { X as XIcon, Plus, Tag as TagIcon, Info, Folder } from 'lucide-react';
+import { getTagColor } from '@/utils/tag-colors';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
-// Tags Manager Component (User-specific)
+// Tags Manager Component (User-specific) - Improved UX with autocomplete
 interface TagsManagerProps {
   conversationId: string;
   onTagsUpdated?: () => void;
 }
 
 function TagsManager({ conversationId, onTagsUpdated }: TagsManagerProps) {
-  const [newTag, setNewTag] = useState('');
-  const [isAdding, setIsAdding] = useState(false);
   const [localTags, setLocalTags] = useState<string[]>([]);
+  const [allUserTags, setAllUserTags] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
-  // Load user's tags for this conversation
+  // Load user's tags for this conversation AND all user tags
   useEffect(() => {
     const loadTags = async () => {
       try {
         setIsLoading(true);
+        // Load current conversation tags
         const prefs = await userPreferencesService.getPreferences(conversationId);
         setLocalTags(prefs?.tags ? [...prefs.tags] : []);
+
+        // Load all user tags from all preferences
+        const allPrefs = await userPreferencesService.getAllPreferences();
+        const uniqueTags = new Set<string>();
+        allPrefs.forEach(p => p.tags.forEach(tag => uniqueTags.add(tag)));
+        setAllUserTags(Array.from(uniqueTags).sort());
       } catch (error) {
         console.error('Error loading tags:', error);
         setLocalTags([]);
+        setAllUserTags([]);
       } finally {
         setIsLoading(false);
       }
@@ -70,8 +99,8 @@ function TagsManager({ conversationId, onTagsUpdated }: TagsManagerProps) {
     loadTags();
   }, [conversationId]);
 
-  const handleAddTag = async () => {
-    const trimmedTag = newTag.trim();
+  const handleAddTag = async (tagToAdd: string) => {
+    const trimmedTag = tagToAdd.trim();
     if (!trimmedTag) return;
 
     // Check if tag already exists
@@ -84,123 +113,319 @@ function TagsManager({ conversationId, onTagsUpdated }: TagsManagerProps) {
       // Optimistically update UI
       const updatedTags = [...localTags, trimmedTag];
       setLocalTags(updatedTags);
-      setNewTag('');
-      setIsAdding(false);
+      setSearchQuery('');
+      setIsPopoverOpen(false);
 
       // Update preferences
       await userPreferencesService.updateTags(conversationId, updatedTags);
       toast.success('Tag ajouté');
+
+      // Add to all user tags if new
+      if (!allUserTags.includes(trimmedTag)) {
+        setAllUserTags([...allUserTags, trimmedTag].sort());
+      }
+
       onTagsUpdated?.();
     } catch (error) {
       console.error('Error adding tag:', error);
       toast.error('Erreur lors de l\'ajout du tag');
-      // Revert optimistic update
       setLocalTags(localTags);
     }
   };
 
   const handleRemoveTag = async (tagToRemove: string) => {
     try {
-      // Optimistically update UI
       const updatedTags = localTags.filter(t => t !== tagToRemove);
       setLocalTags(updatedTags);
 
-      // Update preferences
       await userPreferencesService.updateTags(conversationId, updatedTags);
       toast.success('Tag supprimé');
       onTagsUpdated?.();
     } catch (error) {
       console.error('Error removing tag:', error);
       toast.error('Erreur lors de la suppression du tag');
-      // Revert optimistic update
       setLocalTags([...localTags, tagToRemove]);
     }
   };
+
+  // Filter available tags (exclude already added)
+  const availableTags = allUserTags.filter(tag => !localTags.includes(tag));
+  const filteredTags = availableTags.filter(tag =>
+    tag.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Check if search query is a new tag
+  const isNewTag = searchQuery.trim().length > 0 &&
+    !allUserTags.some(tag => tag.toLowerCase() === searchQuery.toLowerCase());
 
   if (isLoading) {
     return <div className="text-xs text-muted-foreground italic">Chargement...</div>;
   }
 
   return (
-    <div className="space-y-2">
-      {/* Display tags */}
+    <div className="space-y-3">
+      {/* Display current tags with colored badges */}
       <div className="flex flex-wrap gap-2">
-        {localTags.map((tag) => (
-          <Badge
-            key={tag}
-            variant="secondary"
-            className="flex items-center gap-1 px-2 py-1 text-xs"
-          >
-            <TagIcon className="h-3 w-3" />
-            <span>{tag}</span>
-            <button
-              onClick={() => handleRemoveTag(tag)}
-              className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
-              aria-label={`Supprimer le tag ${tag}`}
+        {localTags.map((tag) => {
+          const colors = getTagColor(tag);
+          return (
+            <Badge
+              key={tag}
+              className={cn(
+                "flex items-center gap-1 px-2 py-1 text-xs border",
+                colors.bg,
+                colors.text,
+                colors.border
+              )}
             >
-              <XIcon className="h-3 w-3" />
-            </button>
-          </Badge>
-        ))}
-
-        {localTags.length === 0 && !isAdding && (
+              <TagIcon className="h-3 w-3" />
+              <span>{tag}</span>
+              <button
+                onClick={() => handleRemoveTag(tag)}
+                className="ml-1 hover:opacity-70 rounded-full p-0.5 transition-opacity"
+                aria-label={`Supprimer le tag ${tag}`}
+              >
+                <XIcon className="h-3 w-3" />
+              </button>
+            </Badge>
+          );
+        })}
+        {localTags.length === 0 && (
           <p className="text-xs text-muted-foreground italic">
-            Cliquez sur + pour ajouter vos tags personnels
+            Aucun tag
           </p>
         )}
       </div>
 
-      {/* Add new tag */}
-      <div className="flex items-center gap-2">
-        {isAdding ? (
-          <>
-            <Input
-              type="text"
-              placeholder="Nouveau tag..."
-              value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleAddTag();
-                } else if (e.key === 'Escape') {
-                  setIsAdding(false);
-                  setNewTag('');
-                }
-              }}
-              className="flex-1 h-8 text-sm"
-              autoFocus
-            />
-            <Button
-              size="sm"
-              onClick={handleAddTag}
-              className="h-8 w-8 p-0"
-            >
-              <Check className="h-4 w-4" />
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => {
-                setIsAdding(false);
-                setNewTag('');
-              }}
-              className="h-8 w-8 p-0"
-            >
-              <XIcon className="h-4 w-4" />
-            </Button>
-          </>
-        ) : (
+      {/* Search/Add tag with autocomplete */}
+      <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+        <PopoverTrigger asChild>
           <Button
-            size="sm"
             variant="outline"
-            onClick={() => setIsAdding(true)}
-            className="h-8 px-3 text-xs"
+            size="sm"
+            className="w-full justify-start text-left font-normal h-9"
           >
-            <Plus className="h-3 w-3 mr-1" />
-            Ajouter un tag
+            <TagIcon className="h-4 w-4 mr-2" />
+            <span className="text-muted-foreground">Rechercher ou ajouter un tag...</span>
           </Button>
-        )}
-      </div>
+        </PopoverTrigger>
+        <PopoverContent className="w-full p-0" align="start">
+          <Command>
+            <CommandInput
+              placeholder="Rechercher un tag..."
+              value={searchQuery}
+              onValueChange={setSearchQuery}
+            />
+            <CommandList>
+              <CommandEmpty>
+                {isNewTag ? (
+                  <div className="p-2">
+                    <Button
+                      size="sm"
+                      className="w-full"
+                      onClick={() => handleAddTag(searchQuery)}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Créer "{searchQuery}"
+                    </Button>
+                  </div>
+                ) : (
+                  'Aucun tag trouvé'
+                )}
+              </CommandEmpty>
+              <CommandGroup heading="Tags disponibles">
+                {filteredTags.map((tag) => {
+                  const colors = getTagColor(tag);
+                  return (
+                    <CommandItem
+                      key={tag}
+                      onSelect={() => handleAddTag(tag)}
+                      className="cursor-pointer"
+                    >
+                      <Badge
+                        className={cn(
+                          "flex items-center gap-1 px-2 py-0.5 text-xs border mr-2",
+                          colors.bg,
+                          colors.text,
+                          colors.border
+                        )}
+                      >
+                        <TagIcon className="h-3 w-3" />
+                        {tag}
+                      </Badge>
+                    </CommandItem>
+                  );
+                })}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+}
+
+// Category Selector Component (User-specific)
+interface CategorySelectorProps {
+  conversationId: string;
+  onCategoryUpdated?: () => void;
+}
+
+function CategorySelector({ conversationId, onCategoryUpdated }: CategorySelectorProps) {
+  const [categories, setCategories] = useState<any[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+
+  // Load categories and current selection
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        // Load current category
+        const prefs = await userPreferencesService.getPreferences(conversationId);
+        setSelectedCategoryId(prefs?.categoryId || null);
+
+        // Load all user categories
+        const cats = await userPreferencesService.getCategories();
+        setCategories(cats);
+      } catch (error) {
+        console.error('Error loading categories:', error);
+        setCategories([]);
+        setSelectedCategoryId(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  }, [conversationId]);
+
+  const handleSelectCategory = async (categoryId: string | null) => {
+    try {
+      setSelectedCategoryId(categoryId);
+      setSearchQuery('');
+      setIsPopoverOpen(false);
+
+      await userPreferencesService.updateCategory(conversationId, categoryId);
+      toast.success(categoryId ? 'Catégorie assignée' : 'Catégorie retirée');
+      onCategoryUpdated?.();
+    } catch (error) {
+      console.error('Error updating category:', error);
+      toast.error('Erreur lors de la mise à jour');
+      setSelectedCategoryId(selectedCategoryId);
+    }
+  };
+
+  const handleCreateCategory = async (name: string) => {
+    try {
+      const newCategory = await userPreferencesService.createCategory({ name });
+      setCategories([...categories, newCategory].sort((a, b) => a.order - b.order));
+      await handleSelectCategory(newCategory.id);
+      toast.success('Catégorie créée et assignée');
+    } catch (error) {
+      console.error('Error creating category:', error);
+      toast.error('Erreur lors de la création');
+    }
+  };
+
+  // Filter categories
+  const filteredCategories = categories.filter(cat =>
+    cat.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Check if search query is a new category
+  const isNewCategory = searchQuery.trim().length > 0 &&
+    !categories.some(cat => cat.name.toLowerCase() === searchQuery.toLowerCase());
+
+  const selectedCategory = categories.find(c => c.id === selectedCategoryId);
+
+  if (isLoading) {
+    return <div className="text-xs text-muted-foreground italic">Chargement...</div>;
+  }
+
+  return (
+    <div className="space-y-3">
+      {/* Display current category */}
+      {selectedCategory && (
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="flex items-center gap-1 px-2 py-1 text-xs">
+            <Folder className="h-3 w-3" />
+            <span>{selectedCategory.name}</span>
+            <button
+              onClick={() => handleSelectCategory(null)}
+              className="ml-1 hover:opacity-70 rounded-full p-0.5 transition-opacity"
+              aria-label="Retirer la catégorie"
+            >
+              <XIcon className="h-3 w-3" />
+            </button>
+          </Badge>
+        </div>
+      )}
+
+      {/* Select/Create category with autocomplete */}
+      <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full justify-start text-left font-normal h-9"
+          >
+            <Folder className="h-4 w-4 mr-2" />
+            <span className="text-muted-foreground">
+              {selectedCategory ? 'Changer de catégorie...' : 'Assigner à une catégorie...'}
+            </span>
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-full p-0" align="start">
+          <Command>
+            <CommandInput
+              placeholder="Rechercher une catégorie..."
+              value={searchQuery}
+              onValueChange={setSearchQuery}
+            />
+            <CommandList>
+              <CommandEmpty>
+                {isNewCategory ? (
+                  <div className="p-2">
+                    <Button
+                      size="sm"
+                      className="w-full"
+                      onClick={() => handleCreateCategory(searchQuery)}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Créer "{searchQuery}"
+                    </Button>
+                  </div>
+                ) : (
+                  'Aucune catégorie trouvée'
+                )}
+              </CommandEmpty>
+              <CommandGroup heading="Catégories disponibles">
+                {selectedCategory && (
+                  <CommandItem
+                    onSelect={() => handleSelectCategory(null)}
+                    className="cursor-pointer text-muted-foreground"
+                  >
+                    <XIcon className="h-4 w-4 mr-2" />
+                    Aucune catégorie
+                  </CommandItem>
+                )}
+                {filteredCategories.map((category) => (
+                  <CommandItem
+                    key={category.id}
+                    onSelect={() => handleSelectCategory(category.id)}
+                    className="cursor-pointer"
+                  >
+                    <Folder className="h-4 w-4 mr-2" />
+                    {category.name}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }
@@ -736,18 +961,57 @@ export function ConversationDetailsSidebar({
                   )}
                 </div>
 
-                {/* Tags Section (Personal) */}
-                <div className="space-y-2">
+              </>
+            )}
+
+            <Separator />
+
+            {/* User Preferences Section - Available for all conversation types */}
+            <div className="space-y-4">
+              {/* Tags Section (Personal) */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
                   <label className="text-sm font-medium text-muted-foreground">
                     Tags personnels
                   </label>
-                  <p className="text-xs text-muted-foreground mb-2">
-                    Organisez vos conversations avec vos propres tags
-                  </p>
-                  <TagsManager conversationId={conversation.id} />
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-3.5 w-3.5 text-muted-foreground/60 cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="max-w-xs">
+                        <p className="text-xs">
+                          Organisez vos conversations avec vos propres tags. Les couleurs sont automatiques et cohérentes.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
-              </>
-            )}
+                <TagsManager conversationId={conversation.id} />
+              </div>
+
+              {/* Category Section (Personal) */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Catégorie
+                  </label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-3.5 w-3.5 text-muted-foreground/60 cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="max-w-xs">
+                        <p className="text-xs">
+                          Classez vos conversations dans des catégories personnalisées pour mieux les organiser.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <CategorySelector conversationId={conversation.id} />
+              </div>
+            </div>
 
             <Separator />
 
