@@ -299,12 +299,18 @@ if [ "$USE_HTTPS" = true ]; then
   FRONTEND_PROTOCOL="https"
   FRONTEND_WS_PROTOCOL="wss"
   FRONTEND_URL="https://localhost:3100"
-  CORS_ORIGINS="https://localhost:3100,http://localhost:3000"
-  echo -e "${GREEN}   Mode HTTPS activé - URLs configurées pour HTTPS${NC}"
+  GATEWAY_PROTOCOL="https"
+  GATEWAY_URL="https://localhost:3000"
+  GATEWAY_WS_URL="wss://localhost:3000"
+  CORS_ORIGINS="https://localhost:3100,https://localhost:3000"
+  echo -e "${GREEN}   Mode HTTPS activé - URLs configurées pour HTTPS/WSS${NC}"
 else
   FRONTEND_PROTOCOL="http"
   FRONTEND_WS_PROTOCOL="ws"
   FRONTEND_URL="http://localhost:3100"
+  GATEWAY_PROTOCOL="http"
+  GATEWAY_URL="http://localhost:3000"
+  GATEWAY_WS_URL="ws://localhost:3000"
   CORS_ORIGINS="http://localhost:3100,http://localhost:3000"
 fi
 
@@ -317,6 +323,7 @@ LOG_LEVEL=debug
 # Configuration réseau
 LOCAL_IP=${LOCAL_IP}
 DOMAIN=${LOCAL_DOMAIN}
+USE_HTTPS=${USE_HTTPS}
 
 # Base de données MongoDB (sans authentification pour développement local)
 DATABASE_URL=mongodb://localhost:27017/meeshy?replicaSet=rs0&directConnection=true
@@ -329,7 +336,7 @@ JWT_SECRET=dev-secret-key-change-in-production-12345678
 
 # Services URLs
 TRANSLATOR_URL=http://localhost:8000
-GATEWAY_URL=http://localhost:3000
+GATEWAY_URL=${GATEWAY_URL}
 FRONTEND_URL=${FRONTEND_URL}
 DOMAINE=${LOCAL_DOMAIN}
 # CORS
@@ -346,15 +353,15 @@ LOCAL_IP=${LOCAL_IP}
 DOMAIN=${LOCAL_DOMAIN}
 
 # Public URLs (accessibles côté client)
-NEXT_PUBLIC_API_URL=http://localhost:3000
-NEXT_PUBLIC_WS_URL=ws://localhost:3000
-NEXT_PUBLIC_BACKEND_URL=http://localhost:3000
+NEXT_PUBLIC_API_URL=${GATEWAY_URL}
+NEXT_PUBLIC_WS_URL=${GATEWAY_WS_URL}
+NEXT_PUBLIC_BACKEND_URL=${GATEWAY_URL}
 NEXT_PUBLIC_TRANSLATION_URL=http://localhost:8000
 NEXT_PUBLIC_FRONTEND_URL=${FRONTEND_URL}
 
 # Server-side URLs
-API_URL=http://localhost:3000
-BACKEND_URL=http://localhost:3000
+API_URL=${GATEWAY_URL}
+BACKEND_URL=${GATEWAY_URL}
 TRANSLATION_URL=http://localhost:8000
 
 # Base de données MongoDB (sans authentification pour développement local)
@@ -366,6 +373,11 @@ echo -e "${GREEN}✅ frontend/.env créé${NC}"
 cat > gateway/.env << EOF
 NODE_ENV=development
 LOG_LEVEL=debug
+
+# HTTPS Configuration
+USE_HTTPS=${USE_HTTPS}
+LOCAL_IP=${LOCAL_IP}
+DOMAIN=${DOMAIN}
 
 # Base de données (sans authentification pour développement local)
 DATABASE_URL=mongodb://localhost:27017/meeshy?replicaSet=rs0&directConnection=true
