@@ -15,6 +15,7 @@ import { PDFViewer } from '@/components/pdf/PDFViewer';
 import { PDFLightbox } from '@/components/pdf/PDFLightbox';
 import { MarkdownViewer } from '@/components/markdown/MarkdownViewer';
 import { TextViewer } from '@/components/text/TextViewer';
+import { TextLightbox } from '@/components/text/TextLightbox';
 import {
   Tooltip,
   TooltipContent,
@@ -74,6 +75,8 @@ export const MessageAttachments = React.memo(function MessageAttachments({
   const [videoLightboxIndex, setVideoLightboxIndex] = useState(0);
   const [pdfLightboxOpen, setPdfLightboxOpen] = useState(false);
   const [pdfLightboxIndex, setPdfLightboxIndex] = useState(0);
+  const [textLightboxOpen, setTextLightboxOpen] = useState(false);
+  const [textLightboxIndex, setTextLightboxIndex] = useState(0);
   const { t } = useI18n('common');
 
   // Handler pour ouvrir la confirmation de suppression
@@ -478,6 +481,13 @@ export const MessageAttachments = React.memo(function MessageAttachments({
         attachment.mimeType !== 'text/markdown' &&
         attachment.mimeType !== 'text/x-markdown' &&
         !attachment.originalName.toLowerCase().endsWith('.md')) {
+      // Handler pour ouvrir le lightbox texte
+      const handleOpenTextLightbox = () => {
+        const textIndex = textAttachments.findIndex(txt => txt.id === attachment.id);
+        setTextLightboxIndex(textIndex);
+        setTextLightboxOpen(true);
+      };
+
       const textAttachment = {
         id: attachment.id,
         messageId: attachment.messageId,
@@ -494,7 +504,10 @@ export const MessageAttachments = React.memo(function MessageAttachments({
 
       return (
         <div key={attachment.id} className="relative">
-          <TextViewer attachment={textAttachment as any} />
+          <TextViewer
+            attachment={textAttachment as any}
+            onOpenLightbox={handleOpenTextLightbox}
+          />
           {/* Bouton de suppression */}
           {canDelete && (
             <button
@@ -728,6 +741,14 @@ export const MessageAttachments = React.memo(function MessageAttachments({
         initialIndex={pdfLightboxIndex}
         isOpen={pdfLightboxOpen}
         onClose={() => setPdfLightboxOpen(false)}
+      />
+
+      {/* Lightbox pour les fichiers texte */}
+      <TextLightbox
+        textFiles={textAttachments}
+        initialIndex={textLightboxIndex}
+        isOpen={textLightboxOpen}
+        onClose={() => setTextLightboxOpen(false)}
       />
 
       {/* Dialog de confirmation de suppression */}

@@ -8,11 +8,13 @@ import {
   FileText,
   Copy,
   Check,
-  WrapText
+  WrapText,
+  Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
 import { toast } from 'sonner';
+import { detectMarkdown, getMarkdownConfidence } from '@/lib/utils/markdown';
 
 interface TextViewerProps {
   attachment: UploadedAttachmentResponse;
@@ -40,6 +42,8 @@ export const TextViewer: React.FC<TextViewerProps> = ({
   const [errorMessage, setErrorMessage] = useState('');
   const [isCopied, setIsCopied] = useState(false);
   const [wordWrap, setWordWrap] = useState(true);
+  const [hasMarkdown, setHasMarkdown] = useState(false);
+  const [markdownConfidence, setMarkdownConfidence] = useState(0);
 
   const attachmentFileUrl = attachment.fileUrl;
 
@@ -56,6 +60,12 @@ export const TextViewer: React.FC<TextViewerProps> = ({
 
         const text = await response.text();
         setContent(text);
+
+        // Detect markdown in the content
+        const hasMarkdownSyntax = detectMarkdown(text);
+        const confidence = getMarkdownConfidence(text);
+        setHasMarkdown(hasMarkdownSyntax);
+        setMarkdownConfidence(confidence);
       } catch (error) {
         console.error('Erreur chargement fichier texte:', error);
         setHasError(true);
@@ -120,6 +130,12 @@ export const TextViewer: React.FC<TextViewerProps> = ({
                 <span className="text-xs font-mono text-gray-600 dark:text-gray-400">
                   {extension.toUpperCase()}
                 </span>
+                {hasMarkdown && (
+                  <span className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-1.5 py-0.5 rounded" title={`Markdown détecté (${markdownConfidence}% de confiance)`}>
+                    <Sparkles className="w-3 h-3" />
+                    <span className="hidden sm:inline">Markdown</span>
+                  </span>
+                )}
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400">
                 {content.split('\n').length} lignes
