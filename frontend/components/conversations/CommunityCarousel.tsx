@@ -165,7 +165,7 @@ export function CommunityCarousel({
 
   if (isLoadingCommunities) {
     return (
-      <div className="w-full py-4 px-8 border-b border-border bg-background/50">
+      <div className="w-full py-4 px-0 border-b border-border bg-background/50">
         <div className="flex items-center justify-center h-12 md:h-18">
           <div className="animate-spin rounded-full h-4 w-4 md:h-6 md:w-6 border-b-2 border-primary" />
         </div>
@@ -174,9 +174,9 @@ export function CommunityCarousel({
   }
 
   return (
-    <div className="w-full py-4 px-8 border-b border-border bg-background/50">
+    <div className="w-full py-4 px-0 border-b border-border bg-background/50">
       <ScrollArea className="w-full whitespace-nowrap">
-        <div className="flex gap-2 md:gap-3 pb-2">
+        <div className="flex gap-2 md:gap-3 pb-2 px-8">
           {cards.map((card) => (
             <CommunityCard
               key={card.id}
@@ -245,7 +245,7 @@ function CommunityCard({ card, isSelected, onClick }: CommunityCardProps) {
       </div>
 
       {/* Overlay avec informations */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-1 md:p-2">
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-2 md:p-3">
         <h3 className="text-white font-semibold text-[10px] md:text-sm leading-tight truncate mb-0.5 md:mb-1">
           {card.title}
         </h3>
