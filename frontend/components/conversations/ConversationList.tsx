@@ -325,12 +325,9 @@ export function ConversationList({
 
   // Charger les catégories
   useEffect(() => {
-    console.log('[ConversationList] useEffect for categories is running');
     const loadCategories = async () => {
       try {
-        console.log('[ConversationList] Starting to load categories...');
         const cats = await userPreferencesService.getCategories();
-        console.log('[ConversationList] Categories loaded:', cats);
         // Trier par order, puis alphabétiquement
         const sorted = cats.sort((a, b) => {
           if (a.order !== b.order) {
@@ -338,7 +335,6 @@ export function ConversationList({
           }
           return a.name.localeCompare(b.name);
         });
-        console.log('[ConversationList] Categories sorted:', sorted);
         setCategories(sorted);
       } catch (error) {
         console.error('[ConversationList] Error loading categories:', error);
@@ -456,14 +452,6 @@ export function ConversationList({
       const isPinned = prefs?.isPinned || false;
       const categoryId = prefs?.categoryId;
 
-      console.log('[ConversationList] Processing conversation:', {
-        id: conv.id,
-        title: conv.title,
-        isPinned,
-        categoryId,
-        hasPrefs: !!prefs
-      });
-
       if (isPinned && !categoryId) {
         // Épinglées sans catégorie
         pinnedWithoutCategory.push(conv);
@@ -517,19 +505,6 @@ export function ConversationList({
         conversations: uncategorized
       });
     }
-
-    console.log('[ConversationList] Grouped conversations:', {
-      totalCategories: categories.length,
-      groups: groups.map(g => ({
-        type: g.type,
-        categoryName: g.categoryName,
-        count: g.conversations.length
-      })),
-      conversationsByCategory: Array.from(conversationsByCategory.entries()).map(([id, convs]) => ({
-        categoryId: id,
-        count: convs.length
-      }))
-    });
 
     return groups;
   }, [filteredConversations, preferencesMap, categories]);

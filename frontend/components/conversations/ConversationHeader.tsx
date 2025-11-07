@@ -129,7 +129,6 @@ export function ConversationHeader({
       try {
         setIsLoadingPreferences(true);
         const prefs = await userPreferencesService.getPreferences(conversation.id);
-        console.log('[ConversationHeader] Loaded preferences:', { conversationId: conversation.id, prefs });
         if (prefs) {
           setIsPinned(prefs.isPinned);
           setIsMuted(prefs.isMuted);
