@@ -1,31 +1,32 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
 } from '@/components/ui/dialog';
-import { 
-  MessageSquare, 
-  Users, 
-  LogIn, 
+import {
+  MessageSquare,
+  Users,
+  LogIn,
   UserPlus,
   UserMinus,
   CheckCircle,
   XCircle,
   Clock,
   ExternalLink,
-  Globe
+  Globe,
+  Loader2
 } from 'lucide-react';
 import { LoginForm } from '@/components/auth/login-form';
 import { RegisterForm } from '@/components/auth/register-form';
@@ -116,6 +117,10 @@ export default function JoinConversationPage() {
     language: 'fr'
   });
 
+  // État pour la validation du username
+  const [usernameCheckStatus, setUsernameCheckStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
+  const usernameCheckTimeout = useRef<NodeJS.Timeout | null>(null);
+
   // Debug: Log currentUser pour voir ce qu'on a
   useEffect(() => {
     console.log('[JOIN_PAGE] currentUser:', currentUser);
@@ -157,12 +162,59 @@ export default function JoinConversationPage() {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       const autoAnonymous = urlParams.get('anonymous');
-      
+
       if (autoAnonymous === 'true' && !currentUser) {
         setShowAnonymousForm(true);
       }
     }
   }, [currentUser]);
+
+  // Vérification de disponibilité du username avec debounce
+  useEffect(() => {
+    // Clear le timeout précédent
+    if (usernameCheckTimeout.current) {
+      clearTimeout(usernameCheckTimeout.current);
+    }
+
+    // Si le username est vide, reset le statut
+    if (!anonymousForm.username.trim()) {
+      setUsernameCheckStatus('idle');
+      return;
+    }
+
+    // Indiquer qu'on est en train de vérifier
+    setUsernameCheckStatus('checking');
+
+    // Debounce: attendre 500ms avant de lancer la vérification
+    usernameCheckTimeout.current = setTimeout(async () => {
+      try {
+        const response = await fetch(
+          buildApiUrl(`/users/check-username/${encodeURIComponent(anonymousForm.username.trim())}`)
+        );
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            setUsernameCheckStatus(result.available ? 'available' : 'taken');
+          } else {
+            setUsernameCheckStatus('idle');
+          }
+        } else {
+          setUsernameCheckStatus('idle');
+        }
+      } catch (error) {
+        console.error('Erreur vérification username:', error);
+        setUsernameCheckStatus('idle');
+      }
+    }, 500);
+
+    // Cleanup
+    return () => {
+      if (usernameCheckTimeout.current) {
+        clearTimeout(usernameCheckTimeout.current);
+      }
+    };
+  }, [anonymousForm.username]);
 
   // Wrapper function for auth success that handles dialog state management
   const onAuthSuccess = (user: User, token: string) => {
@@ -178,10 +230,11 @@ export default function JoinConversationPage() {
 
   // Fonction pour générer automatiquement le username
   const generateUsername = (firstName: string, lastName: string) => {
+    // Utiliser le prénom et nom complets (pas juste les initiales)
     const cleanFirstName = firstName.toLowerCase().replace(/[^a-z]/g, '');
-    const lastNameInitials = lastName.toLowerCase().replace(/[^a-z]/g, '').slice(0, 2);
+    const cleanLastName = lastName.toLowerCase().replace(/[^a-z]/g, '');
     const randomSuffix = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    return `${cleanFirstName}_${lastNameInitials}${randomSuffix}`;
+    return `${cleanFirstName}_${cleanLastName}${randomSuffix}`;
   };
 
   // Fonction pour mettre à jour le formulaire anonyme
@@ -794,37 +847,95 @@ export default function JoinConversationPage() {
                           <Label htmlFor="username">
                             {t('username')} <span className="text-red-500">*</span>
                           </Label>
-                          <Input
-                            id="username"
-                            value={anonymousForm.username}
-                            onChange={(e) => updateAnonymousForm('username', e.target.value)}
-                            placeholder={t('username')}
-                            required={conversationLink.requireNickname}
-                          />
-                          <p className="text-xs text-red-500">
-                            {t('usernameRequired')}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {t('usernameWarning')}
-                          </p>
+                          <div className="relative">
+                            <Input
+                              id="username"
+                              value={anonymousForm.username}
+                              onChange={(e) => updateAnonymousForm('username', e.target.value)}
+                              placeholder={t('username')}
+                              required={conversationLink.requireNickname}
+                              className="pr-10"
+                            />
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                              {usernameCheckStatus === 'checking' && (
+                                <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                              )}
+                              {usernameCheckStatus === 'available' && (
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                              )}
+                              {usernameCheckStatus === 'taken' && (
+                                <XCircle className="h-4 w-4 text-red-500" />
+                              )}
+                            </div>
+                          </div>
+                          {usernameCheckStatus === 'taken' && (
+                            <p className="text-xs text-red-500">
+                              Ce pseudo est déjà utilisé
+                            </p>
+                          )}
+                          {usernameCheckStatus === 'available' && (
+                            <p className="text-xs text-green-600">
+                              Ce pseudo est disponible
+                            </p>
+                          )}
+                          {usernameCheckStatus === 'idle' && (
+                            <>
+                              <p className="text-xs text-red-500">
+                                {t('usernameRequired')}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {t('usernameWarning')}
+                              </p>
+                            </>
+                          )}
                         </div>
                       )}
                       
                       {!conversationLink.requireNickname && (
                         <div className="space-y-2">
                           <Label htmlFor="username">{t('usernameOptional')}</Label>
-                          <Input
-                            id="username"
-                            value={anonymousForm.username}
-                            onChange={(e) => updateAnonymousForm('username', e.target.value)}
-                            placeholder={t('autoGenerated')}
-                          />
-                          <p className="text-xs text-gray-500">
-                            {t('leaveEmpty')}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {t('customUsernameWarning')}
-                          </p>
+                          <div className="relative">
+                            <Input
+                              id="username"
+                              value={anonymousForm.username}
+                              onChange={(e) => updateAnonymousForm('username', e.target.value)}
+                              placeholder={t('autoGenerated')}
+                              className="pr-10"
+                            />
+                            {anonymousForm.username.trim() && (
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                {usernameCheckStatus === 'checking' && (
+                                  <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                                )}
+                                {usernameCheckStatus === 'available' && (
+                                  <CheckCircle className="h-4 w-4 text-green-500" />
+                                )}
+                                {usernameCheckStatus === 'taken' && (
+                                  <XCircle className="h-4 w-4 text-red-500" />
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          {usernameCheckStatus === 'taken' && (
+                            <p className="text-xs text-red-500">
+                              Ce pseudo est déjà utilisé
+                            </p>
+                          )}
+                          {usernameCheckStatus === 'available' && (
+                            <p className="text-xs text-green-600">
+                              Ce pseudo est disponible
+                            </p>
+                          )}
+                          {usernameCheckStatus === 'idle' && (
+                            <>
+                              <p className="text-xs text-gray-500">
+                                {t('leaveEmpty')}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {t('customUsernameWarning')}
+                              </p>
+                            </>
+                          )}
                         </div>
                       )}
                       
@@ -897,7 +1008,10 @@ export default function JoinConversationPage() {
                             !anonymousForm.lastName.trim() ||
                             (conversationLink.requireNickname && !anonymousForm.username.trim()) ||
                             (conversationLink.requireEmail && !anonymousForm.email.trim()) ||
-                            (conversationLink.requireBirthday && !anonymousForm.birthday.trim())
+                            (conversationLink.requireBirthday && !anonymousForm.birthday.trim()) ||
+                            // Désactiver si le username est en cours de vérification ou pris
+                            usernameCheckStatus === 'checking' ||
+                            (anonymousForm.username.trim() && usernameCheckStatus === 'taken')
                           }
                           size="lg"
                           className="flex-1"

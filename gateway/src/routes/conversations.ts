@@ -307,15 +307,44 @@ export async function conversationRoutes(fastify: FastifyInstance) {
     if (isValidMongoId(identifier)) {
       return identifier;
     }
-    
+
     // Sinon, chercher par le champ identifier
     const conversation = await prisma.conversation.findFirst({
       where: { identifier: identifier }
     });
-    
+
     return conversation ? conversation.id : null;
   }
-  
+
+  // Route pour vérifier la disponibilité d'un identifiant de conversation
+  fastify.get('/conversations/check-identifier/:identifier', { preValidation: [requiredAuth] }, async (request, reply) => {
+    try {
+      const { identifier } = request.params as { identifier: string };
+
+      // Vérifier si l'identifiant existe déjà
+      const existingConversation = await prisma.conversation.findFirst({
+        where: {
+          identifier: {
+            equals: identifier,
+            mode: 'insensitive'
+          }
+        }
+      });
+
+      return reply.send({
+        success: true,
+        available: !existingConversation,
+        identifier
+      });
+    } catch (error) {
+      console.error('[CONVERSATIONS] Error checking identifier availability:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Failed to check identifier availability'
+      });
+    }
+  });
+
   // Route pour obtenir toutes les conversations de l'utilisateur
   fastify.get<{ Querystring: { limit?: string; offset?: string; includeCount?: string } }>('/conversations', {
     preValidation: [optionalAuth]
