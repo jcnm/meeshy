@@ -99,8 +99,28 @@ const BubbleMessageInner = memo(function BubbleMessageInner({
   // Déterminer si c'est notre message
   const isOwnMessage = useMemo(() => {
     if (!currentUser) return false;
+
+    // Debug logs pour les messages anonymes
+    if (isAnonymous) {
+      console.log('[BubbleMessage] Vérification propriété message anonyme:', {
+        messageId: message.id,
+        currentUserId: currentUser.id,
+        currentAnonymousUserId,
+        anonymousSenderId: message.anonymousSender?.id,
+        senderId: message.sender?.id,
+        messageAnonymousSenderId: (message as any).anonymousSenderId,
+        messageSenderId: (message as any).senderId
+      });
+    }
+
     if (isAnonymous && currentAnonymousUserId) {
-      return message.anonymousSender?.id === currentAnonymousUserId;
+      // Pour les utilisateurs anonymes, vérifier plusieurs cas
+      const isOwn = message.anonymousSender?.id === currentAnonymousUserId ||
+                    (message as any).anonymousSenderId === currentAnonymousUserId ||
+                    (message as any).senderId === currentAnonymousUserId;
+
+      console.log('[BubbleMessage] Résultat vérification anonyme:', { isOwn });
+      return isOwn;
     }
     return message.sender?.id === currentUser.id;
   }, [message.sender?.id, message.anonymousSender?.id, currentUser, isAnonymous, currentAnonymousUserId]);
