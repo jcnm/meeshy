@@ -558,53 +558,12 @@ class MeeshySocketIOService {
 
     // Événements de réactions
     this.socket.on(SERVER_EVENTS.REACTION_ADDED, (data: any) => {
-      console.log('🎉 [SOCKETIO] REACTION_ADDED reçu:', {
-        messageId: data.messageId,
-        emoji: data.emoji,
-        userId: data.userId,
-        action: data.action,
-        aggregation: data.aggregation,
-        listenersCount: this.reactionAddedListeners.size,
-        hasListeners: this.reactionAddedListeners.size > 0,
-        socketConnected: this.socket?.connected
-      });
-      
-      logger.debug('[SOCKETIO]', 'Réaction ajoutée', {
-        messageId: data.messageId,
-        emoji: data.emoji,
-        userId: data.userId
-      });
-      
-      if (this.reactionAddedListeners.size === 0) {
-        console.warn('⚠️ [SOCKETIO] Aucun listener pour REACTION_ADDED!');
-      }
-      
-      let listenerIndex = 0;
       this.reactionAddedListeners.forEach((listener) => {
-        listenerIndex++;
-        console.log(`📢 [SOCKETIO] Appel du listener ${listenerIndex}/${this.reactionAddedListeners.size}`);
         listener(data);
       });
-      
-      console.log('✅ [SOCKETIO] REACTION_ADDED dispatché à tous les listeners');
     });
 
     this.socket.on(SERVER_EVENTS.REACTION_REMOVED, (data: any) => {
-      console.log('🗑️ [SOCKETIO] REACTION_REMOVED reçu:', {
-        messageId: data.messageId,
-        emoji: data.emoji,
-        userId: data.userId,
-        action: data.action,
-        aggregation: data.aggregation,
-        listenersCount: this.reactionRemovedListeners.size
-      });
-      
-      logger.debug('[SOCKETIO]', 'Réaction supprimée', {
-        messageId: data.messageId,
-        emoji: data.emoji,
-        userId: data.userId
-      });
-      
       this.reactionRemovedListeners.forEach(listener => listener(data));
     });
 
@@ -694,8 +653,6 @@ class MeeshySocketIOService {
    * Si ça échoue, nettoie la session et redirige vers /login
    */
   private async handleAuthenticationFailure(errorMessage: string): Promise<void> {
-    console.log('🔒 [handleAuthenticationFailure] Début du traitement d\'échec d\'authentification');
-
     // Vérifier si le message contient "Authentification requise" ou "Bearer token"
     const isAuthRequiredError = errorMessage.includes('Authentification requise') ||
                                 errorMessage.includes('Bearer token') ||
@@ -708,9 +665,6 @@ class MeeshySocketIOService {
     }
 
     // 1. Tenter une reconnexion automatique silencieuse
-    console.log('🔄 [handleAuthenticationFailure] Tentative de reconnexion automatique...');
-
-    // Vérifier si on a encore des tokens valides
     const hasAuthToken = !!authManager.getAuthToken();
     const hasSessionToken = !!authManager.getAnonymousSession()?.token;
 
@@ -732,21 +686,15 @@ class MeeshySocketIOService {
         for (let i = 0; i < 6; i++) {
           await new Promise(resolve => setTimeout(resolve, 500));
           if (this.isConnected) {
-            console.log('✅ [handleAuthenticationFailure] Reconnexion automatique réussie');
             return; // Succès, on sort
           }
         }
-
-        console.log('❌ [handleAuthenticationFailure] Reconnexion automatique échouée');
       } catch (error) {
-        console.error('❌ [handleAuthenticationFailure] Erreur durant la reconnexion:', error);
+        // Silence error
       }
     }
 
     // 2. La reconnexion a échoué ou pas de tokens - nettoyer la session
-    console.log('🧹 [handleAuthenticationFailure] Nettoyage de la session...');
-
-    // Nettoyer toutes les sessions (membre et anonyme)
     await authManager.logout();
 
     // 3. Afficher un message user-friendly traduit
@@ -754,9 +702,6 @@ class MeeshySocketIOService {
     toast.error(message);
 
     // 4. Rediriger vers /login
-    console.log('🔀 [handleAuthenticationFailure] Redirection vers /login');
-
-    // Attendre un peu pour que l'utilisateur voie le message
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     // Rediriger
@@ -975,24 +920,6 @@ class MeeshySocketIOService {
     // Transformer les attachments si présents
     const attachments = Array.isArray((socketMessage as any).attachments)
       ? (socketMessage as any).attachments.map((att: any) => {
-          // Log pour déboguer les attachments reçus
-          if (!att.fileUrl || att.fileUrl.trim() === '') {
-            console.error('[Socket.IO] ❌ Attachment sans fileUrl valide reçu:', {
-              id: att.id,
-              fileName: att.fileName,
-              mimeType: att.mimeType,
-              fileUrl: att.fileUrl,
-              fileUrlType: typeof att.fileUrl,
-              fullAttachment: att
-            });
-          } else {
-            console.log('[Socket.IO] ✅ Attachment avec fileUrl valide:', {
-              id: att.id,
-              fileName: att.fileName,
-              fileUrl: att.fileUrl
-            });
-          }
-
           return {
             id: String(att.id || ''),
             messageId: socketMessage.id,
@@ -1255,7 +1182,6 @@ class MeeshySocketIOService {
 
       if (!socketConnected || socketDisconnected) {
         // Tenter une reconnexion immédiate et attendre
-        console.log('🔄 [sendMessage] Connexion perdue, tentative de reconnexion...');
         toast.info('Connexion perdue. Reconnexion en cours...');
 
         this.reconnect();
@@ -1267,14 +1193,12 @@ class MeeshySocketIOService {
 
           if (this.socket && this.socket.connected) {
             reconnected = true;
-            console.log('✅ [sendMessage] Reconnexion réussie, envoi du message...');
             toast.success('Reconnecté ! Envoi du message...');
             break;
           }
         }
 
         if (!reconnected) {
-          console.error('❌ [sendMessage] Échec de la reconnexion après 5 secondes');
           toast.error('Impossible de se reconnecter. Veuillez réessayer.');
           resolve(false);
           return;
@@ -1393,7 +1317,6 @@ class MeeshySocketIOService {
 
       if (!socketConnected || socketDisconnected) {
         // Tenter une reconnexion immédiate et attendre
-        console.log('🔄 [sendMessageWithAttachments] Connexion perdue, tentative de reconnexion...');
         toast.info('Connexion perdue. Reconnexion en cours...');
 
         this.reconnect();
@@ -1405,14 +1328,12 @@ class MeeshySocketIOService {
 
           if (this.socket && this.socket.connected) {
             reconnected = true;
-            console.log('✅ [sendMessageWithAttachments] Reconnexion réussie, envoi du message...');
             toast.success('Reconnecté ! Envoi du message...');
             break;
           }
         }
 
         if (!reconnected) {
-          console.error('❌ [sendMessageWithAttachments] Échec de la reconnexion après 5 secondes');
           toast.error('Impossible de se reconnecter. Veuillez réessayer.');
           resolve(false);
           return;

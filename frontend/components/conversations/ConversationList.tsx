@@ -193,32 +193,10 @@ const ConversationItem = memo(function ConversationItem({
       // Pour les conversations directes, retourner l'avatar de l'autre participant
       const otherParticipant = conversation.participants?.find(p => p.userId !== currentUser?.id);
       const participantUser = (otherParticipant as any)?.user;
-      const avatarUrl = participantUser?.avatar;
-      console.log('[ConversationItem] 👤 Direct avatar:', {
-        id: conversation.id,
-        title: conversation.title,
-        type: conversation.type,
-        hasParticipants: !!conversation.participants,
-        participantsCount: conversation.participants?.length,
-        otherParticipant: otherParticipant ? 'Found' : 'Not found',
-        hasUser: !!participantUser,
-        avatarUrl
-      });
-      return avatarUrl;
+      return participantUser?.avatar;
     }
     // Pour les conversations de groupe/public/global, retourner l'image de la conversation
-    const avatarUrl = conversation.image || conversation.avatar;
-    console.log('[ConversationItem] 👥 Group avatar:', {
-      id: conversation.id,
-      title: conversation.title,
-      type: conversation.type,
-      visibility: conversation.visibility,
-      image: conversation.image,
-      avatar: conversation.avatar,
-      avatarUrl,
-      hasAvatarUrl: !!avatarUrl
-    });
-    return avatarUrl;
+    return conversation.image || conversation.avatar;
   }, [conversation, currentUser]);
 
   const getConversationIcon = useCallback(() => {
@@ -260,16 +238,7 @@ const ConversationItem = memo(function ConversationItem({
 
   return (
     <div
-      onClick={() => {
-        console.log('[ConversationItem] Clic sur conversation:', {
-          id: conversation.id,
-          title: conversation.title,
-          type: conversation.type,
-          visibility: conversation.visibility,
-          isSelected
-        });
-        onClick();
-      }}
+      onClick={onClick}
       className={cn(
         "group flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all",
         "hover:bg-accent/50",
