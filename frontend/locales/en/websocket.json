@@ -7,7 +7,8 @@
     "authenticationFailed": "Authentication failed",
     "connectionError": "Connection error",
     "reconnecting": "Reconnecting...",
-    "reconnected": "Reconnected successfully"
+    "reconnected": "Reconnected successfully",
+    "sessionExpired": "Your session has expired, please sign in again"
   }
 }
 
