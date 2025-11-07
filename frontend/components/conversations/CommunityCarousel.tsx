@@ -51,9 +51,30 @@ export function CommunityCarousel({
       try {
         setIsLoadingCommunities(true);
         const response = await communitiesService.getCommunities();
+
+        console.log('[CommunityCarousel] 🔍 Structure complète de la réponse:', {
+          response,
+          hasData: !!response.data,
+          dataType: typeof response.data,
+          isArray: Array.isArray(response.data),
+          dataKeys: response.data ? Object.keys(response.data) : []
+        });
+
+        // La réponse est ApiResponse<Community[]>, donc response.data est Community[]
+        // Mais si response.data contient {success, data}, alors il faut response.data.data
+        let communitiesData: Community[] = [];
+
+        if (Array.isArray(response.data)) {
+          // Cas 1: response.data est directement un tableau
+          communitiesData = response.data;
+        } else if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+          // Cas 2: response.data contient {success: true, data: [...]}
+          communitiesData = (response.data as any).data || [];
+        }
+
         console.log('[CommunityCarousel] 🏘️ Communautés chargées:', {
-          count: response.data?.length || 0,
-          communities: response.data?.map(c => ({
+          count: communitiesData.length,
+          communities: communitiesData.map(c => ({
             id: c.id,
             name: c.name,
             isPrivate: c.isPrivate,
@@ -61,9 +82,11 @@ export function CommunityCarousel({
             conversationCount: c._count?.Conversation
           }))
         });
-        setCommunities(response.data || []);
+
+        setCommunities(communitiesData);
       } catch (error) {
         console.error('[CommunityCarousel] ❌ Error loading communities:', error);
+        setCommunities([]);
       } finally {
         setIsLoadingCommunities(false);
       }
