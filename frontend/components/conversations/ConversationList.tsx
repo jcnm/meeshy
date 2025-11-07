@@ -243,10 +243,12 @@ export function ConversationList({
   const [preferencesMap, setPreferencesMap] = useState<Map<string, UserConversationPreferences>>(new Map());
   const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
   const [selectedFilter, setSelectedFilter] = useState<CommunityFilter>({ type: 'all' });
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   // Référence pour le scroll container
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
 
   // Charger les préférences utilisateur pour toutes les conversations
   useEffect(() => {
@@ -342,7 +344,28 @@ export function ConversationList({
 
     return sorted;
   }, [conversations, searchQuery, preferencesMap, selectedFilter]);
-  
+
+  // Gérer le focus de la recherche
+  const handleSearchFocus = useCallback(() => {
+    setIsSearchFocused(true);
+  }, []);
+
+  const handleSearchBlur = useCallback((e: React.FocusEvent) => {
+    // Vérifier si le focus va vers un élément du carousel
+    const relatedTarget = e.relatedTarget as HTMLElement;
+    const searchContainer = searchContainerRef.current;
+
+    if (searchContainer && relatedTarget && searchContainer.contains(relatedTarget)) {
+      // Le focus reste dans le container (carousel), ne pas fermer
+      return;
+    }
+
+    // Petit délai pour permettre les clics sur le carousel
+    setTimeout(() => {
+      setIsSearchFocused(false);
+    }, 150);
+  }, []);
+
   // Détection du scroll infini avec Intersection Observer
   useEffect(() => {
     if (!onLoadMore || !hasMore || isLoadingMore) return;
@@ -405,27 +428,35 @@ export function ConversationList({
           </div>
         </div>
 
-        {/* Barre de recherche */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={tSearch('placeholder')}
-            className="pl-9 h-9"
-          />
+        {/* Barre de recherche et carousel */}
+        <div ref={searchContainerRef}>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={handleSearchFocus}
+              onBlur={handleSearchBlur}
+              placeholder={tSearch('placeholder')}
+              className="pl-9 h-9"
+            />
+          </div>
+
+          {/* Community Carousel - affiché uniquement quand la recherche est focalisée */}
+          {isSearchFocused && (
+            <div onMouseDown={(e) => e.preventDefault()}>
+              <CommunityCarousel
+                conversations={conversations}
+                selectedFilter={selectedFilter}
+                onFilterChange={setSelectedFilter}
+                t={(key: string) => t(key)}
+                preferencesMap={preferencesMap}
+              />
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Community Carousel */}
-      <CommunityCarousel
-        conversations={conversations}
-        selectedFilter={selectedFilter}
-        onFilterChange={setSelectedFilter}
-        t={(key: string) => t(key)}
-        preferencesMap={preferencesMap}
-      />
 
       {/* Contenu scrollable */}
       <div className="flex-1 min-h-0 overflow-y-auto">
