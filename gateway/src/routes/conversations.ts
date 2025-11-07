@@ -363,7 +363,6 @@ export async function conversationRoutes(fastify: FastifyInstance) {
           isActive: true,
           createdAt: true,
           lastMessageAt: true,
-          visibility: true,
           image: true,
           avatar: true,
           communityId: true,
