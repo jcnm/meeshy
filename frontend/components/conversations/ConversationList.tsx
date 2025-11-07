@@ -485,6 +485,7 @@ export function ConversationList({
     }
 
     // Ajouter les groupes de catégories (dans l'ordre des catégories)
+    const displayedCategoryIds = new Set<string>();
     categories.forEach(category => {
       const categoryConvs = conversationsByCategory.get(category.id);
       if (categoryConvs && categoryConvs.length > 0) {
@@ -494,6 +495,15 @@ export function ConversationList({
           categoryName: category.name,
           conversations: categoryConvs
         });
+        displayedCategoryIds.add(category.id);
+      }
+    });
+
+    // Ajouter les conversations avec categoryId orphelin (catégorie n'existe plus) dans uncategorized
+    conversationsByCategory.forEach((convs, categoryId) => {
+      if (!displayedCategoryIds.has(categoryId)) {
+        console.warn('[ConversationList] Found orphaned conversations with missing category:', categoryId);
+        uncategorized.push(...convs);
       }
     });
 
