@@ -363,6 +363,10 @@ export async function conversationRoutes(fastify: FastifyInstance) {
           isActive: true,
           createdAt: true,
           lastMessageAt: true,
+          visibility: true,
+          image: true,
+          avatar: true,
+          communityId: true,
           members: {
             take: 5, // Réduit à 5 membres au lieu de 10
             select: {
