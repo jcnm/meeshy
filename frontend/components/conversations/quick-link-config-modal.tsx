@@ -20,25 +20,13 @@ import {
   CheckCircle,
   Info,
   ChevronRight,
-  ChevronLeft,
-  Calendar,
-  Check,
-  X,
-  MessageSquare,
-  FileText,
-  Image as ImageIcon,
-  Video,
-  Volume2,
-  File,
-  Link as LinkIcon,
-  MapPin,
-  Phone,
-  User,
-  Mail,
-  Users
+  Copy,
+  Check
 } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { copyToClipboard } from '@/lib/clipboard';
+import { toast } from 'sonner';
 
 interface QuickLinkConfigModalProps {
   isOpen: boolean;
@@ -46,11 +34,19 @@ interface QuickLinkConfigModalProps {
   onConfirm: (config: QuickLinkConfig) => void;
   defaultTitle?: string;
   isCreating?: boolean;
+  createdLink?: CreatedLinkData | null; // Le lien créé pour l'étape 2
 }
 
 export interface QuickLinkConfig {
   title: string;
   description: string;
+}
+
+export interface CreatedLinkData {
+  url: string;
+  title: string;
+  description: string;
+  expirationDays: number;
 }
 
 // Configuration par défaut pour les liens rapides
@@ -72,12 +68,14 @@ export function QuickLinkConfigModal({
   onClose,
   onConfirm,
   defaultTitle,
-  isCreating = false
+  isCreating = false,
+  createdLink = null
 }: QuickLinkConfigModalProps) {
   const { t } = useI18n('modals');
   const [currentStep, setCurrentStep] = useState(1);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [copied, setCopied] = useState(false);
 
   // Initialiser le titre quand la modale s'ouvre
   useEffect(() => {
@@ -85,6 +83,13 @@ export function QuickLinkConfigModal({
       setTitle(defaultTitle);
     }
   }, [isOpen, defaultTitle]);
+
+  // Passer automatiquement à l'étape 2 quand le lien est créé
+  useEffect(() => {
+    if (createdLink) {
+      setCurrentStep(2);
+    }
+  }, [createdLink]);
 
   const handleConfirm = () => {
     onConfirm({
@@ -97,22 +102,25 @@ export function QuickLinkConfigModal({
     setTitle('');
     setDescription('');
     setCurrentStep(1);
+    setCopied(false);
     onClose();
   };
 
-  const canProceedToStep2 = title.trim().length > 0;
+  const handleCopyLink = async () => {
+    if (!createdLink) return;
 
-  const nextStep = () => {
-    if (currentStep === 1 && canProceedToStep2) {
-      setCurrentStep(2);
+    const result = await copyToClipboard(createdLink.url);
+
+    if (result.success) {
+      setCopied(true);
+      toast.success('Lien copié dans le presse-papier !');
+      setTimeout(() => setCopied(false), 2000);
+    } else {
+      toast.error(result.message || 'Erreur lors de la copie du lien');
     }
   };
 
-  const prevStep = () => {
-    if (currentStep === 2) {
-      setCurrentStep(1);
-    }
-  };
+  const canCreate = title.trim().length > 0;
 
   const formatExpirationDate = (days: number) => {
     const date = new Date();
@@ -126,43 +134,21 @@ export function QuickLinkConfigModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg w-[90vw] max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-lg w-[90vw] max-h-[85vh] flex flex-col">
+        {/* Header fixe */}
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Link2 className="h-5 w-5 text-primary" />
-            {t('quickLinkModal.title')}
+            {currentStep === 1 ? t('quickLinkModal.title') : t('linkSummaryModal.title')}
           </DialogTitle>
           <DialogDescription>
-            {currentStep === 1
-              ? t('quickLinkModal.description')
-              : t('linkSummaryModal.description')
-            }
+            {currentStep === 1 ? t('quickLinkModal.description') : t('linkSummaryModal.description')}
           </DialogDescription>
         </DialogHeader>
 
-        {/* Indicateur d'étapes */}
-        <div className="flex items-center justify-center gap-2 py-1">
-          <div className={`flex items-center gap-2 ${currentStep === 1 ? 'text-primary' : 'text-muted-foreground'}`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              currentStep === 1 ? 'bg-primary text-primary-foreground' : 'bg-muted'
-            }`}>
-              1
-            </div>
-            <span className="text-sm font-medium hidden sm:inline">{t('quickLinkModal.steps.config')}</span>
-          </div>
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          <div className={`flex items-center gap-2 ${currentStep === 2 ? 'text-primary' : 'text-muted-foreground'}`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              currentStep === 2 ? 'bg-primary text-primary-foreground' : 'bg-muted'
-            }`}>
-              2
-            </div>
-            <span className="text-sm font-medium hidden sm:inline">{t('quickLinkModal.steps.summary')}</span>
-          </div>
-        </div>
-
-        {/* ÉTAPE 1 : Configuration */}
-        {currentStep === 1 && (
+        {/* Contenu scrollable */}
+        <div className="flex-1 overflow-y-auto">
+          {currentStep === 1 ? (
           <div className="space-y-2 py-2">
             {/* Configuration sécurisée par défaut */}
             <div className="p-2 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
@@ -251,169 +237,117 @@ export function QuickLinkConfigModal({
               </p>
             </div>
           </div>
-        )}
-
-        {/* ÉTAPE 2 : Résumé */}
-        {currentStep === 2 && (
-          <div className="space-y-2 py-2">
-            {/* Informations du lien */}
-            <div className="space-y-2">
-              <div className="p-2 bg-muted/50 rounded-lg">
-                <h4 className="text-sm font-semibold mb-2">{t('quickLinkModal.linkTitle.label')}</h4>
-                <p className="text-sm">{title}</p>
-              </div>
-
-              {description && (
-                <div className="p-2 bg-muted/50 rounded-lg text-sm">
-                  <h4 className="text-sm font-semibold mb-2">{t('quickLinkModal.welcomeMessage.label')}</h4>
-                  <p className="text-sm whitespace-pre-wrap">{description}</p>
-                </div>
-              )}
-            </div>
-
-            {/* Résumé de la configuration */}
-            <div className="space-y-2">
-              {/* Expiration et limites */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <div className="p-2 bg-muted/30 rounded-lg">
-                  <div className="flex items-center gap-1 text-xs mb-1">
-                    <Calendar className="h-3 w-3 text-muted-foreground" />
-                    <span className="font-medium">{t('linkSummaryModal.expires')}</span>
-                  </div>
-                  <p className="text-xs ml-4">{formatExpirationDate(DEFAULT_LINK_CONFIG.expirationDays)}</p>
-                </div>
-
-                <div className="p-2 bg-muted/30 rounded-lg">
-                  <div className="flex items-center gap-1 text-xs mb-1">
-                    <Users className="h-3 w-3 text-muted-foreground" />
-                    <span className="font-medium">{t('linkSummaryModal.userLimits')}</span>
-                  </div>
-                  <p className="text-xs ml-4">{t('linkSummaryModal.unlimitedUsage')}</p>
-                </div>
-              </div>
-
-              {/* Exigences d'authentification */}
-              <div className="p-2 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                <h4 className="text-xs font-semibold mb-1 flex items-center gap-2">
-                  <Shield className="h-4 w-4 text-blue-600" />
-                  {t('linkSummaryModal.authRequirements')}
-                </h4>
-                <div className="space-y-1 ml-4 text-xs">
-                  <div className="flex items-center gap-1">
-                    <Shield className="h-3 w-3 text-muted-foreground" />
-                    <span className="text-xs font-medium">{t('linkSummaryModal.accountRequired')}</span>
-                    <Check className="h-3 w-3 text-green-600" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <User className="h-3 w-3 text-muted-foreground" />
-                    <span className="text-xs">{t('linkSummaryModal.nickname')}</span>
-                    <Check className="h-3 w-3 text-green-600" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Mail className="h-3 w-3 text-muted-foreground" />
-                    <span className="text-xs">{t('linkSummaryModal.email')}</span>
-                    <Check className="h-3 w-3 text-green-600" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3 text-muted-foreground" />
-                    <span className="text-xs">{t('linkSummaryModal.birthday')}</span>
-                    <Check className="h-3 w-3 text-green-600" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Permissions d'envoi */}
-              <div className="p-2 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
-                <h4 className="text-xs font-semibold mb-1 flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  {t('linkSummaryModal.sendPermissions')}
-                </h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-1 ml-4 text-xs">
-                  <div className="flex items-center gap-1">
-                    <MessageSquare className="h-3 w-3 text-muted-foreground" />
-                    <span className="text-xs">{t('linkSummaryModal.messages')}</span>
-                    <Check className="h-3 w-3 text-green-600" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <ImageIcon className="h-3 w-3 text-muted-foreground" />
-                    <span className="text-xs">{t('linkSummaryModal.images')}</span>
-                    <Check className="h-3 w-3 text-green-600" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <FileText className="h-3 w-3 text-muted-foreground" />
-                    <span className="text-xs">{t('linkSummaryModal.files')}</span>
-                    <Check className="h-3 w-3 text-green-600" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Video className="h-3 w-3 text-muted-foreground" />
-                    <span className="text-xs">{t('linkSummaryModal.videos')}</span>
-                    <Check className="h-3 w-3 text-green-600" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Volume2 className="h-3 w-3 text-muted-foreground" />
-                    <span className="text-xs">{t('linkSummaryModal.audio')}</span>
-                    <Check className="h-3 w-3 text-green-600" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <File className="h-3 w-3 text-muted-foreground" />
-                    <span className="text-xs">{t('linkSummaryModal.documents')}</span>
-                    <Check className="h-3 w-3 text-green-600" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <DialogFooter className="flex-col sm:flex-row gap-2">
-          {currentStep === 1 ? (
-            <>
-              <Button
-                variant="outline"
-                onClick={handleClose}
-                disabled={isCreating}
-                className="w-full sm:w-auto"
-              >
-                {t('quickLinkModal.actions.cancel')}
-              </Button>
-              <Button
-                onClick={nextStep}
-                disabled={!canProceedToStep2}
-                className="w-full sm:w-auto"
-              >
-                {t('quickLinkModal.actions.next')}
-                <ChevronRight className="h-4 w-4 ml-2" />
-              </Button>
-            </>
           ) : (
-            <>
-              <Button
-                variant="outline"
-                onClick={prevStep}
-                disabled={isCreating}
-                className="w-full sm:w-auto"
-              >
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                {t('quickLinkModal.actions.back')}
-              </Button>
-              <Button
-                onClick={handleConfirm}
-                disabled={isCreating}
-                className="w-full sm:w-auto"
-              >
-                {isCreating ? (
-                  <>
-                    <span className="animate-spin mr-2">⏳</span>
-                    {t('quickLinkModal.actions.creating')}
-                  </>
-                ) : (
-                  <>
-                    <Link2 className="h-4 w-4 mr-2" />
-                    {t('quickLinkModal.actions.create')}
-                  </>
-                )}
-              </Button>
-            </>
+          <div className="space-y-4 py-2">
+            {/* Étape 2: Lien créé avec succès */}
+            <div className="p-4 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
+              <div className="flex items-start gap-2">
+                <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h4 className="text-sm font-semibold text-green-900 dark:text-green-100 mb-1">
+                    Lien créé avec succès !
+                  </h4>
+                  <p className="text-xs text-green-700 dark:text-green-300">
+                    Votre lien de partage est prêt à être utilisé
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Lien à copier */}
+            {createdLink && (
+              <>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Lien de partage</Label>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 p-3 bg-muted rounded text-xs break-all border">
+                      {createdLink.url}
+                    </code>
+                  </div>
+                </div>
+
+                {/* Informations du lien */}
+                <div className="space-y-3">
+                  <div className="p-3 bg-muted/50 rounded-lg">
+                    <h4 className="text-sm font-semibold mb-2">Titre</h4>
+                    <p className="text-sm">{createdLink.title}</p>
+                  </div>
+
+                  {createdLink.description && (
+                    <div className="p-3 bg-muted/50 rounded-lg">
+                      <h4 className="text-sm font-semibold mb-2">Description</h4>
+                      <p className="text-sm whitespace-pre-wrap">{createdLink.description}</p>
+                    </div>
+                  )}
+
+                  <div className="p-3 bg-muted/50 rounded-lg">
+                    <h4 className="text-sm font-semibold mb-2">Expire le</h4>
+                    <p className="text-sm">{formatExpirationDate(createdLink.expirationDays)}</p>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+          )}
+        </div>
+
+        {/* Footer fixe */}
+        <DialogFooter className="flex-shrink-0 flex-col sm:flex-row gap-2 pt-4 border-t">
+          {currentStep === 1 ? (
+          <>
+            <Button
+              variant="outline"
+              onClick={handleClose}
+              disabled={isCreating}
+              className="w-full sm:w-auto"
+            >
+              {t('quickLinkModal.actions.cancel')}
+            </Button>
+            <Button
+              onClick={handleConfirm}
+              disabled={!canCreate || isCreating}
+              className="w-full sm:w-auto"
+            >
+              {isCreating ? (
+                <>
+                  <span className="animate-spin mr-2">⏳</span>
+                  {t('quickLinkModal.actions.creating')}
+                </>
+              ) : (
+                <>
+                  {t('quickLinkModal.actions.create')}
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </>
+              )}
+            </Button>
+          </>
+          ) : (
+          <>
+            <Button
+              variant="default"
+              onClick={handleCopyLink}
+              className="w-full sm:flex-1"
+            >
+              {copied ? (
+                <>
+                  <Check className="h-4 w-4 mr-2" />
+                  Copié !
+                </>
+              ) : (
+                <>
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copier le lien
+                </>
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleClose}
+              className="w-full sm:w-auto"
+            >
+              Fermer
+            </Button>
+          </>
           )}
         </DialogFooter>
       </DialogContent>

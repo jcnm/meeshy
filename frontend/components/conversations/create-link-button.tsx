@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Link2, Plus } from 'lucide-react';
 import { CreateLinkModalV2 } from './create-link-modal';
 import { LinkSummaryModal } from './link-summary-modal';
-import { QuickLinkConfigModal, QuickLinkConfig } from './quick-link-config-modal';
+import { QuickLinkConfigModal, QuickLinkConfig, CreatedLinkData } from './quick-link-config-modal';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { copyToClipboard } from '@/lib/clipboard';
@@ -49,6 +49,7 @@ export function CreateLinkButton({
   const [linkSummaryData, setLinkSummaryData] = useState<any>(null);
   const [pendingConversationId, setPendingConversationId] = useState<string | null>(null);
   const [quickLinkDefaultTitle, setQuickLinkDefaultTitle] = useState<string>('');
+  const [createdLinkData, setCreatedLinkData] = useState<CreatedLinkData | null>(null);
   const { user: storeUser } = useUser();
   const currentUser = propCurrentUser || storeUser; // Utiliser la prop en priorité, sinon le store
   const router = useRouter();
@@ -182,81 +183,22 @@ export function CreateLinkButton({
         const result = await response.json();
         const linkUrl = `${window.location.origin}/join/${result.data.linkId}`;
         const messages = getTranslatedMessages(detectedInterfaceLanguage);
-        const shareText = messages.shareMessage + linkUrl;
-        
+
         // Stocker les liens générés
         setGeneratedLink(linkUrl);
         setGeneratedToken(result.data.linkId);
-        
-        // Préparer les données pour le modal synthétique
-        setLinkSummaryData({
-          url: linkUrl,
-          token: result.data.linkId,
-          name: linkData.name,
-          description: linkData.description,
-          expiresAt: linkData.expiresAt,
-          maxUses: linkData.maxUses,
-          maxConcurrentUsers: linkData.maxConcurrentUsers,
-          maxUniqueSessions: linkData.maxUniqueSessions,
-          allowAnonymousMessages: linkData.allowAnonymousMessages,
-          allowAnonymousFiles: linkData.allowAnonymousFiles,
-          allowAnonymousImages: linkData.allowAnonymousImages,
-          allowViewHistory: linkData.allowViewHistory,
-          requireAccount: linkData.requireAccount,
-          requireNickname: linkData.requireNickname,
-          requireEmail: linkData.requireEmail,
-          requireBirthday: linkData.requireBirthday,
-          allowedLanguages: linkData.allowedLanguages
-        });
-        
-        // Copier le lien avec message de partage dans le presse-papier
-        try {
-          await navigator.clipboard.writeText(shareText);
-          toast.success(messages.success, {
-            description: linkUrl,
-            duration: 10000,
-            onClick: async () => {
-              // Recopier au clic sur le toast
-              try {
-                await navigator.clipboard.writeText(shareText);
-                toast.success(messages.copied);
-              } catch (err) {
-                console.error('Erreur copie:', err);
-              }
-            },
-            style: { cursor: 'pointer' }
-          });
-        } catch (clipboardError: any) {
-          console.warn('Clipboard access denied or not available:', clipboardError);
-          // Fallback: afficher le lien dans un toast cliquable
-          toast.success(messages.success, {
-            description: linkUrl,
-            duration: 10000,
-            onClick: () => {
-              // Essayer une méthode alternative de copie
-              const textArea = document.createElement('textarea');
-              textArea.value = shareText;
-              document.body.appendChild(textArea);
-              textArea.select();
-              try {
-                document.execCommand('copy');
-                toast.success(messages.copied);
-              } catch (fallbackError) {
-                console.error('Fallback copy failed:', fallbackError);
-                toast.error('Échec de la copie');
-              }
-              document.body.removeChild(textArea);
-            },
-            style: { cursor: 'pointer' }
-          });
-        }
 
-        // Ne pas ouvrir le modal de résumé pour les liens rapides
-        // car le résumé est déjà intégré dans QuickLinkConfigModal
-        // Ouvrir uniquement si la modale complète était utilisée
-        // if (!disableSummaryModal) {
-        //   setIsSummaryModalOpen(true);
-        // }
+        // Préparer les données pour le modal QuickLink (étape 2)
+        setCreatedLinkData({
+          url: linkUrl,
+          title: linkData.name,
+          description: linkData.description || '',
+          expirationDays: expirationDays
+        });
+
+        // Afficher le toast de succès
+        toast.success(messages.success);
+
         onLinkCreated?.();
       } else {
         const error = await response.json();
@@ -325,6 +267,7 @@ export function CreateLinkButton({
     setIsQuickConfigModalOpen(false);
     setPendingConversationId(null);
     setQuickLinkDefaultTitle('');
+    setCreatedLinkData(null); // Reset le lien créé
   };
 
   return (
@@ -358,6 +301,7 @@ export function CreateLinkButton({
         onConfirm={handleQuickLinkConfirm}
         defaultTitle={quickLinkDefaultTitle}
         isCreating={isCreating}
+        createdLink={createdLinkData}
       />
 
       {linkSummaryData && (

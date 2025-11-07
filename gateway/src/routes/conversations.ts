@@ -2852,25 +2852,33 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       const authRequest = request as UnifiedAuthRequest;
       const userId = authRequest.authContext.userId;
 
-      // Vérifier que l'utilisateur est admin ou modérateur de la conversation
+      // Vérifier que l'utilisateur est membre de la conversation
       const membership = await prisma.conversationMember.findFirst({
         where: {
           conversationId,
           userId,
-          role: { in: ['CREATOR', 'ADMIN', 'MODERATOR'] },
           isActive: true
         }
       });
 
       if (!membership) {
-        return reply.status(403).send({ 
-          success: false, 
-          error: 'Accès non autorisé - droits administrateur ou modérateur requis' 
+        return reply.status(403).send({
+          success: false,
+          error: 'Vous devez être membre de cette conversation pour voir ses liens de partage'
         });
       }
 
+      // Vérifier si l'utilisateur est modérateur/admin de la conversation
+      const isModerator = ['CREATOR', 'ADMIN', 'MODERATOR'].includes(membership.role as string);
+
+      // Filtrer les liens selon les droits:
+      // - Modérateurs: voient TOUS les liens
+      // - Membres normaux: voient uniquement leurs propres liens
       const links = await prisma.conversationShareLink.findMany({
-        where: { conversationId },
+        where: {
+          conversationId,
+          ...(isModerator ? {} : { creatorId: userId }) // Si pas modérateur, filtrer par créateur
+        },
         include: {
           creator: {
             select: {
@@ -2898,7 +2906,11 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         orderBy: { createdAt: 'desc' }
       });
 
-      return reply.send({ success: true, data: links });
+      return reply.send({
+        success: true,
+        data: links,
+        isModerator // Indiquer au frontend si l'utilisateur peut gérer les liens
+      });
     } catch (error) {
       console.error('[GATEWAY] Error fetching conversation links:', error);
       return reply.status(500).send({ 
