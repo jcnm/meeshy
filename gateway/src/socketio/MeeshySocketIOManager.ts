@@ -924,8 +924,10 @@ export class MeeshySocketIOManager {
             }
 
             // Enregistrer l'utilisateur anonyme
+            // CORRECTION: Stocker le sessionToken au lieu de user.id pour les anonymes
+            // Cela permet au MessagingService de détecter correctement le type d'authentification
             this.connectedUsers.set(user.id, user);
-            this.socketToUser.set(socket.id, user.id);
+            this.socketToUser.set(socket.id, participant.sessionToken); // Utiliser sessionToken au lieu de user.id
 
             // CORRECTION: Mettre à jour l'état en ligne dans la base de données pour les anonymes et broadcaster
             await this.maintenanceService.updateAnonymousOnlineStatus(user.id, true, true);
@@ -1112,8 +1114,9 @@ export class MeeshySocketIOManager {
         }
 
         // Enregistrer l'utilisateur
+        // CORRECTION: Pour les anonymes, stocker le sessionToken au lieu de user.id
         this.connectedUsers.set(user.id, user);
-        this.socketToUser.set(socket.id, user.id);
+        this.socketToUser.set(socket.id, user.isAnonymous ? user.sessionToken! : user.id);
         
         // CORRECTION: Mettre à jour l'état en ligne selon le type d'utilisateur et broadcaster
         if (user.isAnonymous) {
