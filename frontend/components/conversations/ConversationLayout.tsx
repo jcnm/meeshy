@@ -1115,6 +1115,23 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       }
 
       console.log('[ConversationLayout] Message envoyé avec succès - en attente du retour serveur');
+
+      // CORRECTION MAJEURE: Marquer la conversation comme lue après l'envoi d'un message
+      if (selectedConversation?.id) {
+        conversationsService.markAsRead(selectedConversation.id).then(() => {
+          console.log('[ConversationLayout] ✅ Conversation marquée comme lue après envoi de message');
+
+          // Mettre à jour localement le unreadCount de cette conversation
+          setConversations(prev => prev.map(conv =>
+            conv.id === selectedConversation.id
+              ? { ...conv, unreadCount: 0 }
+              : conv
+          ));
+        }).catch(error => {
+          console.error('[ConversationLayout] ❌ Erreur marquage comme lu après envoi:', error);
+        });
+      }
+
       setNewMessage('');
       setAttachmentIds([]); // Réinitialiser les attachments
       setAttachmentMimeTypes([]); // Réinitialiser les MIME types
@@ -1378,10 +1395,12 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       clearMessages();
       previousConversationIdRef.current = currentId;
 
-      // Marquer la conversation comme lue
-      conversationsService.markAsRead(currentId).catch(error => {
-        console.error(`[ConversationLayout-${instanceId}] Erreur lors du marquage comme lu:`, error);
-      });
+      // CORRECTION MINEURE: Ne PAS marquer comme lu ici automatiquement au changement de conversation
+      // On veut marquer comme lu uniquement quand l'utilisateur arrive au dernier message
+      // Le marquage se fera via le scroll ou l'envoi de message
+      // conversationsService.markAsRead(currentId).catch(error => {
+      //   console.error(`[ConversationLayout-${instanceId}] Erreur lors du marquage comme lu:`, error);
+      // });
     } else if (currentId === previousId && currentId) {
       // Même conversation, pas de rechargement
       console.log(`[ConversationLayout-${instanceId}] Même conversation, pas de rechargement: ${currentId}`);
@@ -1392,6 +1411,68 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     }
   }, [selectedConversation?.id, loadParticipants, clearMessages, instanceId]);
 
+  // CORRECTION MAJEURE: Marquer la conversation comme lue quand on scroll jusqu'au dernier message
+  useEffect(() => {
+    const container = messagesScrollRef.current;
+    const conversationId = selectedConversation?.id;
+
+    if (!container || !conversationId) {
+      return;
+    }
+
+    let markAsReadTimeout: NodeJS.Timeout | null = null;
+    let hasMarkedAsRead = false;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+
+      // Calculer la distance depuis le bottom
+      // (scrollHeight - scrollTop - clientHeight donne la distance restante)
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+
+      // Si on est à moins de 100px du bottom (ou déjà au bottom) et qu'on n'a pas encore marqué
+      if (distanceFromBottom < 100 && !hasMarkedAsRead) {
+        console.log('[ConversationLayout] 📍 Utilisateur au dernier message, marquage comme lu dans 500ms');
+
+        // Utiliser un debounce de 500ms pour éviter les appels répétés
+        if (markAsReadTimeout) {
+          clearTimeout(markAsReadTimeout);
+        }
+
+        markAsReadTimeout = setTimeout(() => {
+          hasMarkedAsRead = true;
+
+          // Marquer la conversation comme lue
+          conversationsService.markAsRead(conversationId).then(() => {
+            console.log('[ConversationLayout] ✅ Conversation marquée comme lue (scroll)');
+
+            // Mettre à jour localement le unreadCount
+            setConversations(prev => prev.map(conv =>
+              conv.id === conversationId
+                ? { ...conv, unreadCount: 0 }
+                : conv
+            ));
+          }).catch(error => {
+            console.error('[ConversationLayout] ❌ Erreur marquage comme lu (scroll):', error);
+          });
+        }, 500);
+      }
+    };
+
+    // Ajouter le listener de scroll
+    container.addEventListener('scroll', handleScroll);
+
+    // Vérifier au montage (au cas où on est déjà en bas)
+    handleScroll();
+
+    // Cleanup
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      if (markAsReadTimeout) {
+        clearTimeout(markAsReadTimeout);
+      }
+    };
+  }, [selectedConversation?.id, setConversations]);
 
   // Loader d'authentification
   if (isAuthChecking) {

@@ -111,13 +111,16 @@ function QuickLoginPageContent() {
       if (data.success && data.data?.token) {
         // Utiliser le hook d'authentification pour mettre à jour le store
         authLogin(data.data.user, data.data.token);
-        
+
         // Notification de succès simple
         console.log(t('login.success.loginSuccess'));
-        
-        // Redirection immédiate
+
+        // CORRECTION CRITIQUE: Forcer un hard redirect pour rafraîchir complètement l'état
+        // router.replace() ne force pas le rechargement de tous les composants
         const redirectUrl = returnUrl || '/';
-        router.replace(redirectUrl);
+
+        // Utiliser window.location.href pour un vrai reload qui force tous les composants à se réinitialiser
+        window.location.href = redirectUrl;
       } else {
         alert(data.error || t('login.errors.loginFailed'));
       }

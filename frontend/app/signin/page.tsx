@@ -38,6 +38,7 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
     affiliateUser: any;
   } | null>(null);
   const [isValidatingAffiliate, setIsValidatingAffiliate] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
   // Pas d'utilisation de useAuth - gestion manuelle de l'authentification
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -46,9 +47,53 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
   // Récupérer l'URL de retour depuis les paramètres de recherche
   const returnUrl = searchParams.get('returnUrl');
   const urlAffiliateToken = searchParams.get('affiliate');
-  
+
   // Récupérer le token d'affiliation depuis localStorage (sauvegardé par le middleware)
   const [affiliateToken, setAffiliateToken] = useState<string | null>(null);
+
+  // CORRECTION MAJEURE: Vérifier si une session active existe au montage
+  useEffect(() => {
+    const checkExistingSession = async () => {
+      try {
+        setIsCheckingSession(true);
+
+        // Vérifier si un token d'authentification existe
+        const authToken = authManager.getAuthToken();
+        const anonymousSession = authManager.getAnonymousSession();
+
+        if (authToken || (anonymousSession && anonymousSession.token)) {
+          console.log('[SIGNIN_PAGE] Session active détectée, vérification backend...');
+
+          // Vérifier que la session est valide côté backend
+          const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://gate.meeshy.me';
+          const response = await fetch(`${backendUrl}/api/auth/me`, {
+            headers: {
+              'Authorization': `Bearer ${authToken || anonymousSession?.token}`
+            }
+          });
+
+          if (response.ok) {
+            // Session valide, rediriger vers la page d'accueil
+            console.log('[SIGNIN_PAGE] Session valide, redirection vers /', { returnUrl: returnUrl || '/' });
+            window.location.href = returnUrl || '/';
+            return;
+          } else {
+            // Session invalide, nettoyer toutes les données
+            console.log('[SIGNIN_PAGE] Session invalide, nettoyage des données...');
+            authManager.clearAllSessions();
+          }
+        }
+      } catch (error) {
+        console.error('[SIGNIN_PAGE] Erreur vérification session:', error);
+        // En cas d'erreur, nettoyer par sécurité
+        authManager.clearAllSessions();
+      } finally {
+        setIsCheckingSession(false);
+      }
+    };
+
+    checkExistingSession();
+  }, []); // Exécuter une seule fois au montage
 
   // Charger le token d'affiliation depuis localStorage ou URL au chargement
   useEffect(() => {
@@ -190,10 +235,10 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
         }
         
         toast.success(`${t('register.success.welcome', { name: formData.firstName })} ${formData.firstName}!`);
-        
-        // Redirection vers l'URL de retour ou la page d'accueil
+
+        // CORRECTION CRITIQUE: Forcer un hard redirect pour rafraîchir complètement l'état
         const redirectUrl = returnUrl || '/';
-        router.replace(redirectUrl);
+        window.location.href = redirectUrl;
       } else {
         throw new Error('Invalid response data');
       }
@@ -205,6 +250,19 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
     }
   };
 
+
+  // Afficher un écran de chargement pendant la vérification de session
+  if (isCheckingSession) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+        <div className="text-center space-y-4">
+          <LargeLogo href="/" />
+          <p className="text-gray-600 dark:text-gray-400">{t('register.checkingSession') || 'Vérification de session...'}</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
