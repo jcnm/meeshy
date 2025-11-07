@@ -324,10 +324,9 @@ export class TranslationService extends EventEmitter {
         }
         return true;
       });
-      
+
       console.log(`🌍 Langues cibles finales (après filtrage): ${filteredTargetLanguages.join(', ')}`);
-      console.log(`🔍 [DEBUG] Langue source: ${message.originalLanguage}, Langues cibles brutes: ${targetLanguages.join(', ')}, Langues filtrées: ${filteredTargetLanguages.join(', ')}`);
-      
+
       // Si aucune langue cible après filtrage, ne pas envoyer de requête
       if (filteredTargetLanguages.length === 0) {
         console.log(`✅ [TranslationService] Aucune traduction nécessaire pour ${message.id} (langues identiques)`);
