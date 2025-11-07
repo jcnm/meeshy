@@ -2852,20 +2852,20 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       const authRequest = request as UnifiedAuthRequest;
       const userId = authRequest.authContext.userId;
 
-      // Vérifier que l'utilisateur est admin ou modérateur de la conversation
+      // Vérifier que l'utilisateur est membre de la conversation
+      // Tous les membres peuvent voir les liens de partage (pour les partager)
       const membership = await prisma.conversationMember.findFirst({
         where: {
           conversationId,
           userId,
-          role: { in: ['CREATOR', 'ADMIN', 'MODERATOR'] },
           isActive: true
         }
       });
 
       if (!membership) {
-        return reply.status(403).send({ 
-          success: false, 
-          error: 'Accès non autorisé - droits administrateur ou modérateur requis' 
+        return reply.status(403).send({
+          success: false,
+          error: 'Vous devez être membre de cette conversation pour voir ses liens de partage'
         });
       }
 

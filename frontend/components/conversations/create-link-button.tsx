@@ -192,9 +192,9 @@ export function CreateLinkButton({
         setLinkSummaryData({
           url: linkUrl,
           token: result.data.linkId,
-          name: linkData.name,
+          title: linkData.name,
           description: linkData.description,
-          expiresAt: linkData.expiresAt,
+          expirationDays: expirationDays,
           maxUses: linkData.maxUses,
           maxConcurrentUsers: linkData.maxConcurrentUsers,
           maxUniqueSessions: linkData.maxUniqueSessions,
@@ -208,55 +208,16 @@ export function CreateLinkButton({
           requireBirthday: linkData.requireBirthday,
           allowedLanguages: linkData.allowedLanguages
         });
-        
-        // Copier le lien avec message de partage dans le presse-papier
-        try {
-          await navigator.clipboard.writeText(shareText);
-          toast.success(messages.success, {
-            description: linkUrl,
-            duration: 10000,
-            onClick: async () => {
-              // Recopier au clic sur le toast
-              try {
-                await navigator.clipboard.writeText(shareText);
-                toast.success(messages.copied);
-              } catch (err) {
-                console.error('Erreur copie:', err);
-              }
-            },
-            style: { cursor: 'pointer' }
-          });
-        } catch (clipboardError: any) {
-          console.warn('Clipboard access denied or not available:', clipboardError);
-          // Fallback: afficher le lien dans un toast cliquable
-          toast.success(messages.success, {
-            description: linkUrl,
-            duration: 10000,
-            onClick: () => {
-              // Essayer une méthode alternative de copie
-              const textArea = document.createElement('textarea');
-              textArea.value = shareText;
-              document.body.appendChild(textArea);
-              textArea.select();
-              try {
-                document.execCommand('copy');
-                toast.success(messages.copied);
-              } catch (fallbackError) {
-                console.error('Fallback copy failed:', fallbackError);
-                toast.error('Échec de la copie');
-              }
-              document.body.removeChild(textArea);
-            },
-            style: { cursor: 'pointer' }
-          });
+
+        // Afficher le toast de succès
+        const messages = getTranslatedMessages(detectedInterfaceLanguage);
+        toast.success(messages.success);
+
+        // Ouvrir le modal de résumé avec le lien et le bouton de copie
+        if (!disableSummaryModal) {
+          setIsSummaryModalOpen(true);
         }
 
-        // Ne pas ouvrir le modal de résumé pour les liens rapides
-        // car le résumé est déjà intégré dans QuickLinkConfigModal
-        // Ouvrir uniquement si la modale complète était utilisée
-        // if (!disableSummaryModal) {
-        //   setIsSummaryModalOpen(true);
-        // }
         onLinkCreated?.();
       } else {
         const error = await response.json();
