@@ -73,7 +73,22 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
           });
 
           if (response.ok) {
-            // Session valide, rediriger vers la page d'accueil
+            // CORRECTION MAJEURE: Redirection intelligente selon le type d'utilisateur
+            // Pour les utilisateurs anonymes : rediriger vers leur conversation
+            // Pour les membres : rediriger vers / ou returnUrl
+            if (anonymousSession) {
+              // Utilisateur anonyme - rediriger vers la conversation du lien utilisé
+              const shareLinkId = localStorage.getItem('anonymous_current_share_link') ||
+                                 localStorage.getItem('anonymous_current_link_id');
+
+              if (shareLinkId) {
+                console.log('[SIGNIN_PAGE] Utilisateur anonyme - redirection vers /chat/' + shareLinkId);
+                window.location.href = `/chat/${shareLinkId}`;
+                return;
+              }
+            }
+
+            // Session valide (utilisateur membre), rediriger vers la page d'accueil
             console.log('[SIGNIN_PAGE] Session valide, redirection vers /', { returnUrl: returnUrl || '/' });
             window.location.href = returnUrl || '/';
             return;

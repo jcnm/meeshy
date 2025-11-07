@@ -56,6 +56,7 @@ interface ConversationItemProps {
   isArchived?: boolean;
   reaction?: string;
   tags?: string[];
+  isMobile?: boolean;
 }
 
 // Composant pour un élément de conversation
@@ -70,7 +71,8 @@ const ConversationItem = memo(function ConversationItem({
   isMuted = false,
   isArchived = false,
   reaction,
-  tags = []
+  tags = [],
+  isMobile = false
 }: ConversationItemProps) {
   // State local pour les préférences (sera mis à jour après les actions)
   const [localIsPinned, setLocalIsPinned] = useState(isPinned);
@@ -359,7 +361,12 @@ const ConversationItem = memo(function ConversationItem({
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+            className={cn(
+              "h-8 w-8 flex-shrink-0 transition-opacity",
+              // Sur mobile: toujours visible
+              // Sur desktop: visible au hover
+              isMobile ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+            )}
             onClick={(e) => e.stopPropagation()}
           >
             <MoreVertical className="h-4 w-4" />
@@ -397,19 +404,25 @@ const ConversationItem = memo(function ConversationItem({
               <Smile className="mr-2 h-4 w-4" />
               <span>Réactions</span>
             </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent className="w-32">
-              {['❤️', '👍', '😊', '🎉', '🔥', '⭐'].map((emoji) => (
-                <DropdownMenuItem
-                  key={emoji}
-                  onClick={(e) => handleSetReaction(e, emoji)}
-                  className={cn(localReaction === emoji && "bg-accent")}
-                >
-                  <span className="text-lg">{emoji}</span>
-                  {localReaction === emoji && (
-                    <span className="ml-auto text-xs text-primary">✓</span>
-                  )}
-                </DropdownMenuItem>
-              ))}
+            <DropdownMenuSubContent className="w-auto p-2">
+              {/* Grid 3 colonnes x 2 rangées pour les 6 emojis */}
+              <div className="grid grid-cols-3 gap-1">
+                {['❤️', '👍', '😊', '🎉', '🔥', '⭐'].map((emoji) => (
+                  <button
+                    key={emoji}
+                    onClick={(e) => handleSetReaction(e, emoji)}
+                    className={cn(
+                      "flex items-center justify-center w-10 h-10 rounded-md hover:bg-accent transition-colors relative",
+                      localReaction === emoji && "bg-accent ring-2 ring-primary"
+                    )}
+                  >
+                    <span className="text-xl">{emoji}</span>
+                    {localReaction === emoji && (
+                      <span className="absolute top-0.5 right-0.5 text-[10px] text-primary font-bold">✓</span>
+                    )}
+                  </button>
+                ))}
+              </div>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
         </DropdownMenuContent>
@@ -811,6 +824,11 @@ export function ConversationList({
                 : group.type;
               const isCollapsed = collapsedSections.has(sectionId);
 
+              // Calculer si le groupe contient des conversations avec des messages non lus
+              const hasUnreadMessages = group.conversations.some(conv =>
+                conv.unreadCount !== undefined && conv.unreadCount > 0
+              );
+
               return (
                 <div key={`group-${group.type}-${group.categoryId || groupIndex}`} className="mb-4">
                   {/* Header de section */}
@@ -829,14 +847,20 @@ export function ConversationList({
                       {group.type === 'pinned' ? (
                         <>
                           <Pin className="h-4 w-4 text-primary fill-current flex-shrink-0" />
-                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                          <h4 className={cn(
+                            "text-xs font-semibold text-muted-foreground uppercase tracking-wide",
+                            hasUnreadMessages && "font-bold text-foreground"
+                          )}>
                             {t('conversationsList.pinned') || 'Épinglées'}
                           </h4>
                         </>
                       ) : (
                         <>
                           <Folder className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                          <h4 className={cn(
+                            "text-xs font-semibold text-muted-foreground uppercase tracking-wide",
+                            hasUnreadMessages && "font-bold text-foreground"
+                          )}>
                             {group.categoryName}
                           </h4>
                         </>
@@ -865,6 +889,7 @@ export function ConversationList({
                             isArchived={prefs?.isArchived || false}
                             reaction={prefs?.reaction}
                             tags={prefs?.tags || []}
+                            isMobile={isMobile}
                           />
                         );
                       })}
