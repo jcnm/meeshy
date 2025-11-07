@@ -253,6 +253,35 @@ export async function linksRoutes(fastify: FastifyInstance) {
     }
   }
 
+  // Route pour vérifier la disponibilité d'un identifiant de lien de partage
+  fastify.get('/links/check-identifier/:identifier', { onRequest: [authRequired] }, async (request, reply) => {
+    try {
+      const { identifier } = request.params as { identifier: string };
+
+      // Vérifier si l'identifiant existe déjà (linkId)
+      const existingLink = await fastify.prisma.conversationShareLink.findFirst({
+        where: {
+          linkId: {
+            equals: identifier,
+            mode: 'insensitive'
+          }
+        }
+      });
+
+      return reply.send({
+        success: true,
+        available: !existingLink,
+        identifier
+      });
+    } catch (error) {
+      console.error('[LINKS] Error checking identifier availability:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Failed to check identifier availability'
+      });
+    }
+  });
+
   // 1. Créer un lien - Les utilisateurs authentifiés peuvent créer des liens pour leurs conversations
   fastify.post('/links', { 
     onRequest: [authRequired] 

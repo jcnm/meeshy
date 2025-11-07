@@ -57,6 +57,50 @@ const updatePasswordSchema = z.object({
 });
 
 export async function userRoutes(fastify: FastifyInstance) {
+  // Route pour vérifier la disponibilité d'un username
+  fastify.get('/users/check-username/:username', async (request, reply) => {
+    try {
+      const { username } = request.params as { username: string };
+
+      // Normaliser le username pour la vérification
+      const normalizedUsername = normalizeUsername(username);
+
+      // Vérifier si le username existe déjà dans la table User
+      const existingUser = await fastify.prisma.user.findFirst({
+        where: {
+          username: {
+            equals: normalizedUsername,
+            mode: 'insensitive'
+          }
+        }
+      });
+
+      // Vérifier si le username existe dans la table AnonymousParticipant
+      const existingAnonymous = await fastify.prisma.anonymousParticipant.findFirst({
+        where: {
+          username: {
+            equals: normalizedUsername,
+            mode: 'insensitive'
+          }
+        }
+      });
+
+      const isAvailable = !existingUser && !existingAnonymous;
+
+      return reply.send({
+        success: true,
+        available: isAvailable,
+        username: normalizedUsername
+      });
+    } catch (error) {
+      console.error('[USERS] Error checking username availability:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Failed to check username availability'
+      });
+    }
+  });
+
   // Route de test simple
   fastify.get('/users/me/test', {
     onRequest: [fastify.authenticate]
