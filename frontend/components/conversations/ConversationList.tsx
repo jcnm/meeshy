@@ -325,9 +325,11 @@ export function ConversationList({
 
   // Charger les catégories
   useEffect(() => {
+    console.log('[ConversationList] useEffect for categories is running');
     const loadCategories = async () => {
       try {
-        const cats = await userPreferencesService.getAllCategories();
+        console.log('[ConversationList] Starting to load categories...');
+        const cats = await userPreferencesService.getCategories();
         console.log('[ConversationList] Categories loaded:', cats);
         // Trier par order, puis alphabétiquement
         const sorted = cats.sort((a, b) => {
@@ -336,9 +338,10 @@ export function ConversationList({
           }
           return a.name.localeCompare(b.name);
         });
+        console.log('[ConversationList] Categories sorted:', sorted);
         setCategories(sorted);
       } catch (error) {
-        console.error('Error loading categories:', error);
+        console.error('[ConversationList] Error loading categories:', error);
       }
     };
     loadCategories();
