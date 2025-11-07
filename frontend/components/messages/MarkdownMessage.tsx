@@ -47,6 +47,40 @@ const preprocessContent = (content: string): string => {
 };
 
 /**
+ * Normalise le markdown en corrigeant les espaces incorrects introduits par la traduction
+ * Corrige les problèmes courants:
+ * - `** texte **` → `**texte**` (gras avec espaces)
+ * - `* texte *` → `*texte*` (italique avec espaces)
+ * - `[ lien ]( url )` → `[lien](url)` (liens avec espaces)
+ * - `__ texte __` → `__texte__` (gras alternatif avec espaces)
+ * - `_ texte _` → `_texte_` (italique alternatif avec espaces)
+ */
+const normalizeMarkdown = (content: string): string => {
+  let normalized = content;
+
+  // Corriger les gras avec espaces: ** texte ** → **texte**
+  normalized = normalized.replace(/\*\*\s+([^*]+?)\s+\*\*/g, '**$1**');
+
+  // Corriger les italiques avec espaces: * texte * → *texte*
+  // Mais éviter de toucher aux listes (* item)
+  normalized = normalized.replace(/(?<!\n)\*\s+([^*\n]+?)\s+\*/g, '*$1*');
+
+  // Corriger les gras alternatifs avec espaces: __ texte __ → __texte__
+  normalized = normalized.replace(/__\s+([^_]+?)\s+__/g, '__$1__');
+
+  // Corriger les italiques alternatifs avec espaces: _ texte _ → _texte_
+  normalized = normalized.replace(/(?<!\w)_\s+([^_]+?)\s+_(?!\w)/g, '_$1_');
+
+  // Corriger les liens avec espaces: [ texte ]( url ) → [texte](url)
+  normalized = normalized.replace(/\[\s+([^\]]+?)\s+\]\(\s+([^)]+?)\s+\)/g, '[$1]($2)');
+
+  // Corriger les codes inline avec espaces: ` code ` → `code`
+  normalized = normalized.replace(/`\s+([^`]+?)\s+`/g, '`$1`');
+
+  return normalized;
+};
+
+/**
  * Component to render message content with GitHub Flavored Markdown support
  * Features:
  * - Full GFM support (tables, task lists, strikethrough, etc.)
@@ -65,8 +99,11 @@ export const MarkdownMessage: React.FC<MarkdownMessageProps> = ({
   const { theme, resolvedTheme } = useTheme();
   const isDark = theme === 'dark' || resolvedTheme === 'dark';
 
-  // Prétraiter le contenu pour transformer les liens m+TOKEN
-  const preprocessedContent = React.useMemo(() => preprocessContent(content), [content]);
+  // Prétraiter le contenu pour transformer les liens m+TOKEN et normaliser le markdown
+  const preprocessedContent = React.useMemo(() => {
+    const withLinks = preprocessContent(content);
+    return normalizeMarkdown(withLinks);
+  }, [content]);
 
   // Handle link clicks with tracking support
   const handleLinkClick = useCallback(
