@@ -132,26 +132,37 @@ export function CommunityCarousel({
     if (Array.isArray(communities)) {
       console.log('[CommunityCarousel] 🏘️ Traitement des communautés:', {
         communitiesCount: communities.length,
-        communities: communities.map(c => ({ id: c?.id, name: c?.name }))
+        communities: communities.map(c => ({
+          id: c?.id,
+          name: c?.name,
+          _count: c?._count
+        }))
       });
 
       communities.forEach(community => {
         if (!community || !community.id) return;
 
-        const communityConversations = conversations.filter(c => {
+        // CORRECTION: Utiliser le comptage du backend (_count.Conversation) au lieu de filtrer localement
+        // Le backend connaît le nombre exact de conversations dans la communauté
+        // Le filtrage local peut être incomplet si toutes les conversations ne sont pas chargées
+        const conversationCountFromBackend = community._count?.Conversation || 0;
+
+        // Pour debug: comparer avec le filtrage local
+        const communityConversationsLocal = conversations.filter(c => {
           if (!c || !c.id) return false;
           const prefs = preferencesMap.get(c.id);
           const isArchived = prefs?.isArchived || false;
           const matchesCommunity = c.communityId === community.id;
 
-          console.log('[CommunityCarousel] 🔍 Filtrage conversation:', {
-            conversationId: c.id,
-            conversationTitle: c.title,
-            conversationCommunityId: c.communityId,
-            targetCommunityId: community.id,
-            matchesCommunity,
-            isArchived
-          });
+          if (matchesCommunity) {
+            console.log('[CommunityCarousel] 🔍 Conversation trouvée pour communauté:', {
+              conversationId: c.id,
+              conversationTitle: c.title,
+              conversationCommunityId: c.communityId,
+              targetCommunityId: community.id,
+              isArchived
+            });
+          }
 
           return matchesCommunity && !isArchived;
         });
@@ -159,8 +170,9 @@ export function CommunityCarousel({
         console.log('[CommunityCarousel] ✅ Résultat pour communauté:', {
           communityId: community.id,
           communityName: community.name,
-          conversationsFiltered: communityConversations.length,
-          conversationTitles: communityConversations.map(c => c.title)
+          conversationCountFromBackend,
+          conversationsLocalCount: communityConversationsLocal.length,
+          conversationTitles: communityConversationsLocal.map(c => c.title)
         });
 
         result.push({
@@ -169,7 +181,7 @@ export function CommunityCarousel({
           title: community.name || 'Community',
           image: community.avatar,
           memberCount: community._count?.members,
-          conversationCount: communityConversations.length,
+          conversationCount: conversationCountFromBackend, // Utiliser le comptage du backend
           communityId: community.id
         });
       });

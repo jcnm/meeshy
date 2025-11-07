@@ -1,11 +1,21 @@
 'use client';
 
 import { useState, useCallback, useMemo, memo, useEffect, useRef } from 'react';
-import { MessageSquare, Link2, Users, Globe, Search, Loader2, Pin, ChevronDown, ChevronRight } from 'lucide-react';
+import { MessageSquare, Link2, Users, Globe, Search, Loader2, Pin, ChevronDown, ChevronRight, MoreVertical, Info, Archive, Bell, BellOff, Heart, Smile } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import type { Conversation, SocketIOUser as User } from '@shared/types';
 import type { UserConversationPreferences, UserConversationCategory } from '@/types/user-preferences';
@@ -14,6 +24,7 @@ import { userPreferencesService } from '@/services/user-preferences.service';
 import { CommunityCarousel, type CommunityFilter } from './CommunityCarousel';
 import { getTagColor } from '@/utils/tag-colors';
 import { Folder } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -38,8 +49,12 @@ interface ConversationItemProps {
   isSelected: boolean;
   currentUser: User;
   onClick: () => void;
+  onShowDetails?: (conversation: Conversation) => void;
   t: (key: string) => string;
   isPinned?: boolean;
+  isMuted?: boolean;
+  isArchived?: boolean;
+  reaction?: string;
   tags?: string[];
 }
 
@@ -49,10 +64,91 @@ const ConversationItem = memo(function ConversationItem({
   isSelected,
   currentUser,
   onClick,
+  onShowDetails,
   t,
   isPinned = false,
+  isMuted = false,
+  isArchived = false,
+  reaction,
   tags = []
 }: ConversationItemProps) {
+  // State local pour les préférences (sera mis à jour après les actions)
+  const [localIsPinned, setLocalIsPinned] = useState(isPinned);
+  const [localIsMuted, setLocalIsMuted] = useState(isMuted);
+  const [localIsArchived, setLocalIsArchived] = useState(isArchived);
+  const [localReaction, setLocalReaction] = useState(reaction);
+
+  // Sync with props
+  useEffect(() => {
+    setLocalIsPinned(isPinned);
+  }, [isPinned]);
+
+  useEffect(() => {
+    setLocalIsMuted(isMuted);
+  }, [isMuted]);
+
+  useEffect(() => {
+    setLocalIsArchived(isArchived);
+  }, [isArchived]);
+
+  useEffect(() => {
+    setLocalReaction(reaction);
+  }, [reaction]);
+
+  // Actions du menu
+  const handleTogglePin = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await userPreferencesService.togglePin(conversation.id, !localIsPinned);
+      setLocalIsPinned(!localIsPinned);
+      toast.success(localIsPinned ? 'Conversation désépinglée' : 'Conversation épinglée');
+    } catch (error) {
+      console.error('Error toggling pin:', error);
+      toast.error('Erreur lors de l\'épinglage');
+    }
+  }, [conversation.id, localIsPinned]);
+
+  const handleToggleMute = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await userPreferencesService.toggleMute(conversation.id, !localIsMuted);
+      setLocalIsMuted(!localIsMuted);
+      toast.success(localIsMuted ? 'Notifications activées' : 'Notifications désactivées');
+    } catch (error) {
+      console.error('Error toggling mute:', error);
+      toast.error('Erreur lors de la modification');
+    }
+  }, [conversation.id, localIsMuted]);
+
+  const handleToggleArchive = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await userPreferencesService.toggleArchive(conversation.id, !localIsArchived);
+      setLocalIsArchived(!localIsArchived);
+      toast.success(localIsArchived ? 'Conversation désarchivée' : 'Conversation archivée');
+    } catch (error) {
+      console.error('Error toggling archive:', error);
+      toast.error('Erreur lors de l\'archivage');
+    }
+  }, [conversation.id, localIsArchived]);
+
+  const handleSetReaction = useCallback(async (e: React.MouseEvent, emoji: string) => {
+    e.stopPropagation();
+    try {
+      const newReaction = localReaction === emoji ? null : emoji;
+      await userPreferencesService.updateReaction(conversation.id, newReaction);
+      setLocalReaction(newReaction || undefined);
+      toast.success(newReaction ? `Réaction ${emoji} ajoutée` : 'Réaction supprimée');
+    } catch (error) {
+      console.error('Error setting reaction:', error);
+      toast.error('Erreur lors de la modification');
+    }
+  }, [conversation.id, localReaction]);
+
+  const handleShowDetails = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onShowDetails?.(conversation);
+  }, [conversation, onShowDetails]);
   const getConversationName = useCallback(() => {
     if (conversation.type !== 'direct') {
       return conversation.title || 'Groupe sans nom';
@@ -94,26 +190,30 @@ const ConversationItem = memo(function ConversationItem({
       const otherParticipant = conversation.participants?.find(p => p.userId !== currentUser?.id);
       const participantUser = (otherParticipant as any)?.user;
       const avatarUrl = participantUser?.avatar;
-      // console.log('[ConversationItem] Direct avatar:', {
-      //   id: conversation.id,
-      //   type: conversation.type,
-      //   hasParticipants: !!conversation.participants,
-      //   participantsCount: conversation.participants?.length,
-      //   otherParticipant: otherParticipant ? 'Found' : 'Not found',
-      //   hasUser: !!participantUser,
-      //   avatarUrl
-      // });
+      console.log('[ConversationItem] 👤 Direct avatar:', {
+        id: conversation.id,
+        title: conversation.title,
+        type: conversation.type,
+        hasParticipants: !!conversation.participants,
+        participantsCount: conversation.participants?.length,
+        otherParticipant: otherParticipant ? 'Found' : 'Not found',
+        hasUser: !!participantUser,
+        avatarUrl
+      });
       return avatarUrl;
     }
     // Pour les conversations de groupe/public/global, retourner l'image de la conversation
     const avatarUrl = conversation.image || conversation.avatar;
-    // console.log('[ConversationItem] Group avatar:', {
-    //   id: conversation.id,
-    //   type: conversation.type,
-    //   image: conversation.image,
-    //   avatar: conversation.avatar,
-    //   avatarUrl
-    // });
+    console.log('[ConversationItem] 👥 Group avatar:', {
+      id: conversation.id,
+      title: conversation.title,
+      type: conversation.type,
+      visibility: conversation.visibility,
+      image: conversation.image,
+      avatar: conversation.avatar,
+      avatarUrl,
+      hasAvatarUrl: !!avatarUrl
+    });
     return avatarUrl;
   }, [conversation, currentUser]);
 
@@ -167,7 +267,7 @@ const ConversationItem = memo(function ConversationItem({
         onClick();
       }}
       className={cn(
-        "flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all",
+        "group flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all",
         "hover:bg-accent/50",
         isSelected && "bg-primary/10 hover:bg-primary/20"
       )}
@@ -252,6 +352,68 @@ const ConversationItem = memo(function ConversationItem({
           {conversation.unreadCount > 99 ? '99+' : conversation.unreadCount}
         </Badge>
       )}
+
+      {/* Menu Show More */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <MoreVertical className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuItem onClick={handleShowDetails}>
+            <Info className="mr-2 h-4 w-4" />
+            <span>Détails</span>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem onClick={handleTogglePin}>
+            <Pin className="mr-2 h-4 w-4" />
+            <span>{localIsPinned ? 'Désépingler' : 'Épingler'}</span>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem onClick={handleToggleMute}>
+            {localIsMuted ? (
+              <Bell className="mr-2 h-4 w-4" />
+            ) : (
+              <BellOff className="mr-2 h-4 w-4" />
+            )}
+            <span>{localIsMuted ? 'Activer notifications' : 'Désactiver notifications'}</span>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem onClick={handleToggleArchive}>
+            <Archive className="mr-2 h-4 w-4" />
+            <span>{localIsArchived ? 'Désarchiver' : 'Archiver'}</span>
+          </DropdownMenuItem>
+
+          <DropdownMenuSeparator />
+
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              <Smile className="mr-2 h-4 w-4" />
+              <span>Réactions</span>
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent className="w-32">
+              {['❤️', '👍', '😊', '🎉', '🔥', '⭐'].map((emoji) => (
+                <DropdownMenuItem
+                  key={emoji}
+                  onClick={(e) => handleSetReaction(e, emoji)}
+                  className={cn(localReaction === emoji && "bg-accent")}
+                >
+                  <span className="text-lg">{emoji}</span>
+                  {localReaction === emoji && (
+                    <span className="ml-auto text-xs text-primary">✓</span>
+                  )}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 });
@@ -688,18 +850,24 @@ export function ConversationList({
                   {/* Conversations du groupe - masquées si collapsed */}
                   {!isCollapsed && (
                     <div className="space-y-1">
-                      {group.conversations.map((conversation) => (
-                        <ConversationItem
-                          key={conversation.id}
-                          conversation={conversation}
-                          isSelected={selectedConversation?.id === conversation.id}
-                          currentUser={currentUser}
-                          onClick={() => onSelectConversation(conversation)}
-                          t={t}
-                          isPinned={preferencesMap.get(conversation.id)?.isPinned || false}
-                          tags={preferencesMap.get(conversation.id)?.tags || []}
-                        />
-                      ))}
+                      {group.conversations.map((conversation) => {
+                        const prefs = preferencesMap.get(conversation.id);
+                        return (
+                          <ConversationItem
+                            key={conversation.id}
+                            conversation={conversation}
+                            isSelected={selectedConversation?.id === conversation.id}
+                            currentUser={currentUser}
+                            onClick={() => onSelectConversation(conversation)}
+                            t={t}
+                            isPinned={prefs?.isPinned || false}
+                            isMuted={prefs?.isMuted || false}
+                            isArchived={prefs?.isArchived || false}
+                            reaction={prefs?.reaction}
+                            tags={prefs?.tags || []}
+                          />
+                        );
+                      })}
                     </div>
                   )}
                 </div>
