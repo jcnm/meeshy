@@ -25,6 +25,28 @@ interface MarkdownMessageProps {
 }
 
 /**
+ * Prétraite le contenu du message pour transformer les liens spéciaux m+TOKEN
+ * en liens markdown avant le rendu par ReactMarkdown
+ */
+const preprocessContent = (content: string): string => {
+  const parts = parseMessageLinks(content);
+
+  return parts.map(part => {
+    // Transformer les liens m+TOKEN en liens markdown
+    if (part.type === 'mshy-link' && part.trackingUrl) {
+      return `[${part.content}](${part.trackingUrl})`;
+    }
+    // Transformer les liens de tracking complets en markdown s'ils ne sont pas déjà formatés
+    if (part.type === 'tracking-link' && part.trackingUrl && !content.includes(`[`) && !content.includes(`](${part.trackingUrl})`)) {
+      // Ne transformer que si le lien n'est pas déjà dans un format markdown
+      return part.content;
+    }
+    // Garder le reste tel quel (texte brut et URLs qui seront gérées par ReactMarkdown)
+    return part.content;
+  }).join('');
+};
+
+/**
  * Component to render message content with GitHub Flavored Markdown support
  * Features:
  * - Full GFM support (tables, task lists, strikethrough, etc.)
@@ -32,7 +54,7 @@ interface MarkdownMessageProps {
  * - Auto-detects language from code fences
  * - Dark mode support
  * - Inline code highlighting
- * - Tracking link support
+ * - Tracking link support (including m+TOKEN format)
  */
 export const MarkdownMessage: React.FC<MarkdownMessageProps> = ({
   content,
@@ -42,6 +64,9 @@ export const MarkdownMessage: React.FC<MarkdownMessageProps> = ({
 }) => {
   const { theme, resolvedTheme } = useTheme();
   const isDark = theme === 'dark' || resolvedTheme === 'dark';
+
+  // Prétraiter le contenu pour transformer les liens m+TOKEN
+  const preprocessedContent = React.useMemo(() => preprocessContent(content), [content]);
 
   // Handle link clicks with tracking support
   const handleLinkClick = useCallback(
@@ -274,7 +299,7 @@ export const MarkdownMessage: React.FC<MarkdownMessageProps> = ({
           },
         }}
       >
-        {content}
+        {preprocessedContent}
       </ReactMarkdown>
     </div>
   );
