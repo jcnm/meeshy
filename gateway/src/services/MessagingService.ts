@@ -95,8 +95,6 @@ export class MessagingService {
         isAnonymous: authContext.isAnonymous  // Override pour compatibilité
       };
 
-      console.log(`[MessagingService] Message de ${authContext.type} user: ${authContext.isAnonymous ? 'Anonyme' : 'Enregistré'}`);
-
       // 2. Validation de la requête
       const validationResult = await this.validateRequest(enrichedRequest);
       if (!validationResult.isValid) {
@@ -314,14 +312,7 @@ export class MessagingService {
       if (authContext.isAnonymous) {
         // LOGIQUE ANONYME: Vérifier via AnonymousParticipant et ShareLink
         const identifier = authContext.sessionToken || authContext.userId || '';
-        
-        console.log('[MessagingService] Checking anonymous permissions:', {
-          identifier,
-          conversationId,
-          authContextType: authContext.type,
-          sessionToken: authContext.sessionToken ? 'present' : 'missing'
-        });
-        
+
         const anonymousParticipant = await this.prisma.anonymousParticipant.findFirst({
           where: {
             sessionToken: identifier,
@@ -344,15 +335,6 @@ export class MessagingService {
               }
             }
           }
-        });
-
-        console.log('[MessagingService] Anonymous participant found:', {
-          found: !!anonymousParticipant,
-          participantId: anonymousParticipant?.id,
-          hasShareLink: !!anonymousParticipant?.shareLink,
-          shareLinkId: anonymousParticipant?.shareLink?.id,
-          isActive: anonymousParticipant?.shareLink?.isActive,
-          allowMessages: anonymousParticipant?.shareLink?.allowAnonymousMessages
         });
 
         if (!anonymousParticipant || !anonymousParticipant.shareLink) {
@@ -492,11 +474,8 @@ export class MessagingService {
    * Résout l'ID de conversation réel à partir de différents formats
    */
   private async resolveConversationId(identifier: string): Promise<string | null> {
-    console.log('[MessagingService] Resolving conversation ID:', identifier);
-    
     // Si c'est déjà un ObjectId MongoDB, on le retourne
     if (/^[0-9a-fA-F]{24}$/.test(identifier)) {
-      console.log('[MessagingService] Identifier is already an ObjectId');
       return identifier;
     }
 
@@ -504,13 +483,7 @@ export class MessagingService {
     const conversation = await this.prisma.conversation.findFirst({
       where: { identifier: identifier }
     });
-    
-    console.log('[MessagingService] Conversation found by identifier:', {
-      found: !!conversation,
-      conversationId: conversation?.id,
-      conversationType: conversation?.type
-    });
-    
+
     return conversation ? conversation.id : null;
   }
 
@@ -545,13 +518,10 @@ export class MessagingService {
       
       // Chercher tous les liens dans le message
       const urls = content.match(URL_REGEX);
-      
+
       if (!urls || urls.length === 0) {
-        console.log('[MessagingService] Aucun lien détecté dans le message');
         return content;
       }
-
-      console.log(`[MessagingService] 🔗 ${urls.length} lien(s) détecté(s) dans le message`);
 
       let processedContent = content;
 
@@ -566,22 +536,17 @@ export class MessagingService {
 
           // Si le lien n'existe pas, le créer
           if (!trackingLink) {
-            console.log(`[MessagingService] Création d'un nouveau lien de tracking pour: ${url}`);
             trackingLink = await this.trackingLinkService.createTrackingLink({
               originalUrl: url,
               conversationId,
               createdBy: senderId,
               messageId
             });
-          } else {
-            console.log(`[MessagingService] Lien de tracking existant trouvé: m+${trackingLink.token}`);
           }
 
           // Remplacer l'URL par le format court Meeshy
           const meeshyShortLink = `m+${trackingLink.token}`;
           processedContent = processedContent.replace(url, meeshyShortLink);
-
-          console.log(`[MessagingService] ✅ URL remplacée: ${url} → ${meeshyShortLink}`);
         } catch (linkError) {
           console.error(`[MessagingService] ❌ Erreur lors du traitement du lien ${url}:`, linkError);
           // En cas d'erreur, on garde l'URL originale
@@ -610,19 +575,12 @@ export class MessagingService {
     encrypted?: boolean;
   }): Promise<Message> {
     // ÉTAPE 1: Traiter les liens AVANT de sauvegarder le message
-    console.log('[MessagingService] 🔗 Traitement des liens dans le contenu...');
     const processedContent = await this.processLinksInContent(
       data.content,
       data.conversationId,
       data.senderId || data.anonymousSenderId,
       undefined // messageId sera mis à jour après création
     );
-
-    if (processedContent !== data.content) {
-      console.log('[MessagingService] ✅ Contenu modifié avec liens Meeshy');
-      console.log('[MessagingService] Original:', data.content.substring(0, 100));
-      console.log('[MessagingService] Modifié:', processedContent.substring(0, 100));
-    }
 
     // ÉTAPE 2: Créer le message avec le contenu traité
     const message = await this.prisma.message.create({
