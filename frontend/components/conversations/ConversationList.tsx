@@ -811,6 +811,11 @@ export function ConversationList({
                 : group.type;
               const isCollapsed = collapsedSections.has(sectionId);
 
+              // Calculer si le groupe contient des conversations avec des messages non lus
+              const hasUnreadMessages = group.conversations.some(conv =>
+                conv.unreadCount !== undefined && conv.unreadCount > 0
+              );
+
               return (
                 <div key={`group-${group.type}-${group.categoryId || groupIndex}`} className="mb-4">
                   {/* Header de section */}
@@ -829,14 +834,20 @@ export function ConversationList({
                       {group.type === 'pinned' ? (
                         <>
                           <Pin className="h-4 w-4 text-primary fill-current flex-shrink-0" />
-                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                          <h4 className={cn(
+                            "text-xs font-semibold text-muted-foreground uppercase tracking-wide",
+                            hasUnreadMessages && "font-bold text-foreground"
+                          )}>
                             {t('conversationsList.pinned') || 'Épinglées'}
                           </h4>
                         </>
                       ) : (
                         <>
                           <Folder className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                          <h4 className={cn(
+                            "text-xs font-semibold text-muted-foreground uppercase tracking-wide",
+                            hasUnreadMessages && "font-bold text-foreground"
+                          )}>
                             {group.categoryName}
                           </h4>
                         </>

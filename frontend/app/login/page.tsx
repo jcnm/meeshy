@@ -77,6 +77,23 @@ function QuickLoginPageContent() {
   // Rediriger si déjà authentifié
   useEffect(() => {
     if (!isChecking && isAuthenticated) {
+      // CORRECTION MAJEURE: Redirection intelligente selon le type d'utilisateur
+      // Pour les utilisateurs anonymes : rediriger vers leur conversation
+      // Pour les membres : rediriger vers / ou returnUrl
+      const anonymousSession = authManager.getAnonymousSession();
+      if (anonymousSession) {
+        // Utilisateur anonyme - rediriger vers la conversation du lien utilisé
+        const shareLinkId = localStorage.getItem('anonymous_current_share_link') ||
+                           localStorage.getItem('anonymous_current_link_id');
+
+        if (shareLinkId) {
+          console.log('[LOGIN] Utilisateur anonyme - redirection vers /chat/' + shareLinkId);
+          router.replace(`/chat/${shareLinkId}`);
+          return;
+        }
+      }
+
+      // Utilisateur membre authentifié - redirection normale
       const redirectUrl = returnUrl || '/';
       router.replace(redirectUrl);
     }
