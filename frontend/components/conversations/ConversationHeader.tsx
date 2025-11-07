@@ -125,6 +125,19 @@ export function ConversationHeader({
 
   // Charger les préférences utilisateur
   useEffect(() => {
+    // CORRECTION: Ne pas charger les préférences pour les utilisateurs anonymes
+    // Les préférences (pin, mute, archive) sont uniquement pour les utilisateurs authentifiés
+    const isUserAnonymous = isAnonymousUser(currentUser);
+
+    if (isUserAnonymous) {
+      // Utilisateur anonyme : pas de préférences
+      setIsPinned(false);
+      setIsMuted(false);
+      setIsArchived(false);
+      setIsLoadingPreferences(false);
+      return;
+    }
+
     const loadPreferences = async () => {
       try {
         setIsLoadingPreferences(true);
@@ -151,11 +164,10 @@ export function ConversationHeader({
     };
     loadPreferences();
 
-    // Recharger les préférences toutes les 2 secondes pour refléter les changements
-    const intervalId = setInterval(loadPreferences, 2000);
-
-    return () => clearInterval(intervalId);
-  }, [conversation.id]);
+    // CORRECTION: Supprimer le polling agressif de 2 secondes
+    // Les préférences changent rarement et seront mises à jour lors des actions utilisateur
+    // Si nécessaire, utiliser WebSocket pour les mises à jour en temps réel
+  }, [conversation.id, currentUser]);
 
   // Helper pour obtenir le rôle de l'utilisateur
   const getCurrentUserRole = useCallback((): UserRoleEnum => {
