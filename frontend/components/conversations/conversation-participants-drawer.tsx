@@ -33,6 +33,8 @@ import type { AnonymousParticipant } from '@shared/types/anonymous';
 import { useUserStatusRealtime } from '@/hooks/use-user-status-realtime';
 import { useUserStore } from '@/stores/user-store';
 import { useManualStatusRefresh } from '@/hooks/use-manual-status-refresh';
+import { OnlineIndicator } from '@/components/ui/online-indicator';
+import { getUserStatus } from '@/lib/user-status';
 
 // Helper pour détecter si un utilisateur est anonyme
 function isAnonymousUser(user: any): user is AnonymousParticipant {
@@ -268,7 +270,12 @@ export function ConversationParticipantsDrawer({
                                   </AvatarFallback>
                                 </Avatar>
                               )}
-                              <div className="absolute -bottom-0 -right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-card" />
+                              <OnlineIndicator
+                                isOnline={getUserStatus(user) === 'online'}
+                                status={getUserStatus(user)}
+                                size="md"
+                                className="absolute -bottom-0 -right-0"
+                              />
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">

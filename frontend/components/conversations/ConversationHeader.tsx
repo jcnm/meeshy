@@ -4,6 +4,7 @@ import { useCallback, useState, useEffect } from 'react';
 import { ArrowLeft, UserPlus, Info, MoreVertical, Link2, Video, Ghost, Share2, Image, Pin, Bell, BellOff, Archive, ArchiveRestore } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { OnlineIndicator } from '@/components/ui/online-indicator';
 import {
   Tooltip,
   TooltipContent,
@@ -33,51 +34,11 @@ import { ConversationImageUploadDialog } from './conversation-image-upload-dialo
 import { AttachmentService } from '@/services/attachmentService';
 import { conversationsService } from '@/services/conversations.service';
 import { userPreferencesService } from '@/services/user-preferences.service';
+import { getUserStatus, type UserStatus } from '@/lib/user-status';
 
 // Helper pour détecter si un utilisateur est anonyme
 function isAnonymousUser(user: any): user is AnonymousParticipant {
   return user && ('sessionToken' in user || 'shareLinkId' in user);
-}
-
-// Helper pour calculer le statut de l'utilisateur basé sur la dernière activité
-type UserStatus = 'online' | 'away' | 'offline';
-function getUserStatus(user: User | null | undefined): UserStatus {
-  if (!user) return 'offline';
-
-  // Si l'utilisateur a une propriété isOnline explicite et elle est false, retourner offline
-  if (user.isOnline === false) return 'offline';
-
-  // Sinon, calculer basé sur lastActiveAt
-  const lastActiveAt = user.lastActiveAt ? new Date(user.lastActiveAt) : null;
-  if (!lastActiveAt) {
-    // Si pas de lastActiveAt mais isOnline est true, considérer comme online
-    return user.isOnline ? 'online' : 'offline';
-  }
-
-  const now = Date.now();
-  const lastActive = lastActiveAt.getTime();
-  const minutesAgo = (now - lastActive) / (1000 * 60);
-
-  // Vert : actif dans les dernières 5 minutes
-  if (minutesAgo < 5) return 'online';
-
-  // Orange : absent depuis 5-30 minutes
-  if (minutesAgo < 30) return 'away';
-
-  // Gris : hors ligne depuis plus de 30 minutes
-  return 'offline';
-}
-
-// Helper pour obtenir la couleur de l'indicateur de statut
-function getStatusColor(status: UserStatus): string {
-  switch (status) {
-    case 'online':
-      return 'bg-green-500';
-    case 'away':
-      return 'bg-orange-500';
-    case 'offline':
-      return 'bg-gray-400';
-  }
 }
 
 interface ConversationHeaderProps {
@@ -401,10 +362,6 @@ export function ConversationHeader({
                 </AvatarFallback>
               </Avatar>
             )}
-            {/* Status indicator - Only show for direct conversations */}
-            {conversation.type !== 'direct' && (
-              <div className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 ${getStatusColor('online')} rounded-full border-2 border-background`} />
-            )}
           </div>
         )}
 
@@ -426,8 +383,13 @@ export function ConversationHeader({
                         {getConversationAvatar()}
                       </AvatarFallback>
                     </Avatar>
-                    {/* Accurate status indicator for direct conversations */}
-                    <div className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 ${getStatusColor(getOtherParticipantStatus())} rounded-full border-2 border-background`} />
+                    {/* Status indicator for direct conversations */}
+                    <OnlineIndicator
+                      isOnline={getOtherParticipantStatus() === 'online'}
+                      status={getOtherParticipantStatus()}
+                      size="md"
+                      className="absolute -bottom-0.5 -right-0.5"
+                    />
                   </>
                 )}
               </div>
