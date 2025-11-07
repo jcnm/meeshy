@@ -89,10 +89,28 @@ const ConversationItem = memo(function ConversationItem({
       // Pour les conversations directes, retourner l'avatar de l'autre participant
       const otherParticipant = conversation.participants?.find(p => p.userId !== currentUser?.id);
       const participantUser = (otherParticipant as any)?.user;
-      return participantUser?.avatar;
+      const avatarUrl = participantUser?.avatar;
+      // console.log('[ConversationItem] Direct avatar:', {
+      //   id: conversation.id,
+      //   type: conversation.type,
+      //   hasParticipants: !!conversation.participants,
+      //   participantsCount: conversation.participants?.length,
+      //   otherParticipant: otherParticipant ? 'Found' : 'Not found',
+      //   hasUser: !!participantUser,
+      //   avatarUrl
+      // });
+      return avatarUrl;
     }
     // Pour les conversations de groupe/public/global, retourner l'image de la conversation
-    return conversation.image || conversation.avatar;
+    const avatarUrl = conversation.image || conversation.avatar;
+    // console.log('[ConversationItem] Group avatar:', {
+    //   id: conversation.id,
+    //   type: conversation.type,
+    //   image: conversation.image,
+    //   avatar: conversation.avatar,
+    //   avatarUrl
+    // });
+    return avatarUrl;
   }, [conversation, currentUser]);
 
   const getConversationIcon = useCallback(() => {

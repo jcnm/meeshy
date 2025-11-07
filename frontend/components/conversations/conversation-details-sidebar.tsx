@@ -613,6 +613,33 @@ export function ConversationDetailsSidebar({
     return conv.title || t('conversationDetails.conversation');
   };
 
+  // Obtenir l'URL de l'avatar selon le type de conversation
+  const getConversationAvatarUrl = (conv: Conversation) => {
+    if (conv.type === 'direct') {
+      // Pour les conversations directes, retourner l'avatar de l'autre participant
+      const otherParticipant = conv.participants?.find(p => p.userId !== currentUser.id);
+      const participantUser = (otherParticipant as any)?.user;
+      const avatarUrl = participantUser?.avatar;
+      console.log('[ConversationDetailsSidebar] Direct conversation avatar:', {
+        conversationId: conv.id,
+        otherParticipant: otherParticipant ? 'Found' : 'Not found',
+        participantUser: participantUser ? 'Found' : 'Not found',
+        avatarUrl
+      });
+      return avatarUrl;
+    }
+    // Pour les conversations de groupe/public/global, retourner l'image de la conversation
+    const avatarUrl = conv.image || conv.avatar;
+    console.log('[ConversationDetailsSidebar] Group conversation avatar:', {
+      conversationId: conv.id,
+      type: conv.type,
+      image: conv.image,
+      avatar: conv.avatar,
+      avatarUrl
+    });
+    return avatarUrl;
+  };
+
   // Fonctions pour la gestion des conversations
   const handleSaveName = async () => {
     try {
@@ -801,7 +828,7 @@ export function ConversationDetailsSidebar({
                     className="h-16 w-16 ring-2 ring-primary/20 cursor-pointer group-hover:ring-primary/50 transition-all"
                     onClick={() => setIsImageUploadDialogOpen(true)}
                   >
-                    <AvatarImage src={conversation.image || conversation.avatar} />
+                    <AvatarImage src={getConversationAvatarUrl(conversation)} />
                     <AvatarFallback className="bg-primary/20 text-primary font-bold text-lg">
                       {getConversationDisplayName(conversation).charAt(0).toUpperCase()}
                     </AvatarFallback>
@@ -819,7 +846,7 @@ export function ConversationDetailsSidebar({
                 </div>
               ) : (
                 <Avatar className="h-16 w-16 mx-auto ring-2 ring-primary/20">
-                  <AvatarImage src={conversation.image || conversation.avatar} />
+                  <AvatarImage src={getConversationAvatarUrl(conversation)} />
                   <AvatarFallback className="bg-primary/20 text-primary font-bold text-lg">
                     {getConversationDisplayName(conversation).charAt(0).toUpperCase()}
                   </AvatarFallback>
