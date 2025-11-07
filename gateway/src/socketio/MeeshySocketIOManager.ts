@@ -303,15 +303,13 @@ export class MeeshySocketIOManager {
           });
 
           // PHASE 3.1: Utilisation du MessagingService unifié avec contexte d'auth
-          console.log(`🔍 [DEBUG] Appel MessagingService.handleMessage pour userId ${userId}`);
           const response: MessageResponse = await this.messagingService.handleMessage(
-            messageRequest, 
-            userId, 
+            messageRequest,
+            userId,
             true,
             jwtToken,
             sessionToken
           );
-          console.log(`🔍 [DEBUG] Réponse MessagingService:`, { success: response.success, messageId: response.data?.id });
 
           // Réponse via callback - typage strict SocketIOResponse
           if (callback) {
@@ -377,25 +375,13 @@ export class MeeshySocketIOManager {
                 }
               }
             });
-            
-            console.log(`🔍 [DEBUG] Message trouvé en base:`, {
-              messageId: response.data.id,
-              hasMessage: !!message,
-              messageDetails: message ? {
-                id: message.id,
-                content: message.content?.substring(0, 50) + '...',
-                senderId: message.senderId,
-                conversationId: message.conversationId
-              } : null
-            });
-            
+
             if (message) {
               // Ajouter le champ timestamp requis par le type Message
               const messageWithTimestamp = {
                 ...message,
                 timestamp: message.createdAt
               } as any; // Cast temporaire pour éviter les conflits de types
-              console.log(`🔍 [DEBUG] Appel _broadcastNewMessage pour message ${message.id}`);
               // FIX: Utiliser message.conversationId (déjà normalisé en base) au lieu de data.conversationId (peut être un identifier)
               await this._broadcastNewMessage(messageWithTimestamp, message.conversationId, socket);
             } else {
@@ -1921,9 +1907,8 @@ export class MeeshySocketIOManager {
       // Extraire les résultats
       if (translationsResult.status === 'fulfilled') {
         messageTranslations = translationsResult.value;
-        console.log(`🔍 [DEBUG] Message ${message.id} a ${messageTranslations.length} traductions existantes`);
       }
-      
+
       if (statsResult.status === 'fulfilled') {
         updatedStats = statsResult.value;
       } else {
@@ -2014,21 +1999,8 @@ export class MeeshySocketIOManager {
         }
       }
 
-      // Debug: Vérifier les clients connectés à la room avec l'ID normalisé
-      const room = `conversation_${normalizedId}`;
-      const roomClients = this.io.sockets.adapter.rooms.get(room);
-      console.log(`🔍 [DEBUG] Room ${room} a ${roomClients?.size || 0} clients connectés`);
-      
-      // Debug: Vérifier le payload
-      console.log(`🔍 [DEBUG] Payload à broadcaster:`, {
-        id: messagePayload.id,
-        conversationId: messagePayload.conversationId,
-        content: messagePayload.content?.substring(0, 50) + '...',
-        senderId: messagePayload.senderId,
-        hasSender: !!messagePayload.sender
-      });
-      
       // COMPORTEMENT SIMPLE ET FIABLE DE L'ANCIENNE MÉTHODE
+      const room = `conversation_${normalizedId}`;
       // 1. Broadcast vers tous les clients de la conversation
       this.io.to(room).emit(SERVER_EVENTS.MESSAGE_NEW, messagePayload);
       
