@@ -165,7 +165,7 @@ export function CommunityCarousel({
 
   if (isLoadingCommunities) {
     return (
-      <div className="w-full py-4 px-6 border-b border-border bg-background/50">
+      <div className="w-full py-4 px-8 border-b border-border bg-background/50">
         <div className="flex items-center justify-center h-12 md:h-18">
           <div className="animate-spin rounded-full h-4 w-4 md:h-6 md:w-6 border-b-2 border-primary" />
         </div>
@@ -174,7 +174,7 @@ export function CommunityCarousel({
   }
 
   return (
-    <div className="w-full py-4 px-6 border-b border-border bg-background/50">
+    <div className="w-full py-4 px-8 border-b border-border bg-background/50">
       <ScrollArea className="w-full whitespace-nowrap">
         <div className="flex gap-2 md:gap-3 pb-2">
           {cards.map((card) => (
@@ -200,10 +200,10 @@ interface CommunityCardProps {
 
 function CommunityCard({ card, isSelected, onClick }: CommunityCardProps) {
   const getCardIcon = () => {
-    if (card.type === 'all') return <Grid3x3 className="h-4 w-4 md:h-6 md:w-6" />;
-    if (card.type === 'archived') return <Archive className="h-4 w-4 md:h-6 md:w-6" />;
-    if (card.type === 'reacted') return <Heart className="h-4 w-4 md:h-6 md:w-6" />;
-    return <Users className="h-4 w-4 md:h-6 md:w-6" />;
+    if (card.type === 'all') return <Grid3x3 className="h-4 w-4 md:h-8 md:w-8" />;
+    if (card.type === 'archived') return <Archive className="h-4 w-4 md:h-8 md:w-8" />;
+    if (card.type === 'reacted') return <Heart className="h-4 w-4 md:h-8 md:w-8" />;
+    return <Users className="h-4 w-4 md:h-8 md:w-8" />;
   };
 
   const getCardGradient = () => {
