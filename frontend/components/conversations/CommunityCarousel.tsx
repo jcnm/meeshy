@@ -51,9 +51,19 @@ export function CommunityCarousel({
       try {
         setIsLoadingCommunities(true);
         const response = await communitiesService.getCommunities();
+        console.log('[CommunityCarousel] 🏘️ Communautés chargées:', {
+          count: response.data?.length || 0,
+          communities: response.data?.map(c => ({
+            id: c.id,
+            name: c.name,
+            isPrivate: c.isPrivate,
+            memberCount: c._count?.members,
+            conversationCount: c._count?.Conversation
+          }))
+        });
         setCommunities(response.data || []);
       } catch (error) {
-        console.error('Error loading communities:', error);
+        console.error('[CommunityCarousel] ❌ Error loading communities:', error);
       } finally {
         setIsLoadingCommunities(false);
       }
@@ -67,8 +77,19 @@ export function CommunityCarousel({
 
     // Vérifier que conversations est un tableau valide
     if (!Array.isArray(conversations)) {
+      console.warn('[CommunityCarousel] ⚠️ Conversations is not an array:', conversations);
       return result;
     }
+
+    console.log('[CommunityCarousel] 📊 Calcul des cartes:', {
+      totalConversations: conversations.length,
+      conversationsWithCommunityId: conversations.filter(c => c?.communityId).length,
+      conversationIds: conversations.map(c => ({
+        id: c?.id,
+        title: c?.title,
+        communityId: c?.communityId
+      }))
+    });
 
     // Carte "All" - toutes les conversations non archivées
     const nonArchivedCount = conversations.filter(c => {
@@ -86,6 +107,11 @@ export function CommunityCarousel({
 
     // Cartes des communautés
     if (Array.isArray(communities)) {
+      console.log('[CommunityCarousel] 🏘️ Traitement des communautés:', {
+        communitiesCount: communities.length,
+        communities: communities.map(c => ({ id: c?.id, name: c?.name }))
+      });
+
       communities.forEach(community => {
         if (!community || !community.id) return;
 
@@ -93,7 +119,25 @@ export function CommunityCarousel({
           if (!c || !c.id) return false;
           const prefs = preferencesMap.get(c.id);
           const isArchived = prefs?.isArchived || false;
-          return c.communityId === community.id && !isArchived;
+          const matchesCommunity = c.communityId === community.id;
+
+          console.log('[CommunityCarousel] 🔍 Filtrage conversation:', {
+            conversationId: c.id,
+            conversationTitle: c.title,
+            conversationCommunityId: c.communityId,
+            targetCommunityId: community.id,
+            matchesCommunity,
+            isArchived
+          });
+
+          return matchesCommunity && !isArchived;
+        });
+
+        console.log('[CommunityCarousel] ✅ Résultat pour communauté:', {
+          communityId: community.id,
+          communityName: community.name,
+          conversationsFiltered: communityConversations.length,
+          conversationTitles: communityConversations.map(c => c.title)
         });
 
         result.push({
@@ -136,6 +180,11 @@ export function CommunityCarousel({
       type: 'archived',
       title: t('conversationsList.archived') || 'Archived',
       conversationCount: archivedCount
+    });
+
+    console.log('[CommunityCarousel] 🎴 Cartes finales:', {
+      cardsCount: result.length,
+      cards: result.map(c => ({ type: c.type, title: c.title, count: c.conversationCount }))
     });
 
     return result;
