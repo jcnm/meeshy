@@ -328,7 +328,7 @@ function CategorySelector({ conversationId, onCategoryUpdated }: CategorySelecto
       setSearchQuery('');
       setIsDropdownOpen(false);
 
-      await userPreferencesService.updateCategory(conversationId, categoryId);
+      await userPreferencesService.upsertPreferences(conversationId, { categoryId });
       toast.success(t(categoryId ? 'conversationDetails.categoryAssigned' : 'conversationDetails.categoryRemoved'));
       onCategoryUpdated?.();
     } catch (error) {
@@ -358,7 +358,7 @@ function CategorySelector({ conversationId, onCategoryUpdated }: CategorySelecto
       setIsDropdownOpen(false);
 
       try {
-        await userPreferencesService.updateCategory(conversationId, newCategory.id);
+        await userPreferencesService.upsertPreferences(conversationId, { categoryId: newCategory.id });
         toast.success(t('conversationDetails.categoryCreated'));
         onCategoryUpdated?.();
       } catch (updateError) {
