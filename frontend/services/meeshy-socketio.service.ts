@@ -388,14 +388,16 @@ class MeeshySocketIOService {
     this.socket.on(SERVER_EVENTS.AUTHENTICATED, (response: any) => {
       if (response?.success) {
         this.isConnected = true;
-        
+
         // CORRECTION CRITIQUE: Rejoindre automatiquement la dernière conversation active
         this._autoJoinLastConversation();
-        
+
         // Toast retiré pour éviter les notifications intrusives
       } else {
         this.isConnected = false;
-        toast.error(this.t('websocket.authenticationFailed') + ': ' + (response?.error || 'Erreur inconnue'));
+        // Gérer l'échec d'authentification avec reconnexion auto et nettoyage session
+        const errorMessage = response?.error || 'Erreur inconnue';
+        this.handleAuthenticationFailure(errorMessage);
       }
     });
 
@@ -680,9 +682,87 @@ class MeeshySocketIOService {
         isConnected: this.isConnected,
         currentUser: this.currentUser?.id
       });
-      
-      toast.error(error.message || 'Erreur serveur');
+
+      // Gérer l'erreur d'authentification avec reconnexion auto et nettoyage session
+      const errorMessage = error.message || 'Erreur serveur';
+      this.handleAuthenticationFailure(errorMessage);
     });
+  }
+
+  /**
+   * Gère l'échec d'authentification en tentant une reconnexion automatique
+   * Si ça échoue, nettoie la session et redirige vers /login
+   */
+  private async handleAuthenticationFailure(errorMessage: string): Promise<void> {
+    console.log('🔒 [handleAuthenticationFailure] Début du traitement d\'échec d\'authentification');
+
+    // Vérifier si le message contient "Authentification requise" ou "Bearer token"
+    const isAuthRequiredError = errorMessage.includes('Authentification requise') ||
+                                errorMessage.includes('Bearer token') ||
+                                errorMessage.includes('x-session-token');
+
+    if (!isAuthRequiredError) {
+      // Autre type d'erreur, afficher tel quel
+      toast.error(errorMessage);
+      return;
+    }
+
+    // 1. Tenter une reconnexion automatique silencieuse
+    console.log('🔄 [handleAuthenticationFailure] Tentative de reconnexion automatique...');
+
+    // Vérifier si on a encore des tokens valides
+    const hasAuthToken = !!authManager.getAuthToken();
+    const hasSessionToken = !!authManager.getAnonymousSession()?.token;
+
+    if (hasAuthToken || hasSessionToken) {
+      // On a des tokens, tenter la reconnexion
+      try {
+        // Déconnecter et reconnecter
+        if (this.socket) {
+          this.socket.disconnect();
+        }
+
+        // Attendre un peu
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Reconnecter
+        this.initializeConnection();
+
+        // Attendre la confirmation d'authentification (max 3 secondes)
+        for (let i = 0; i < 6; i++) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+          if (this.isConnected) {
+            console.log('✅ [handleAuthenticationFailure] Reconnexion automatique réussie');
+            return; // Succès, on sort
+          }
+        }
+
+        console.log('❌ [handleAuthenticationFailure] Reconnexion automatique échouée');
+      } catch (error) {
+        console.error('❌ [handleAuthenticationFailure] Erreur durant la reconnexion:', error);
+      }
+    }
+
+    // 2. La reconnexion a échoué ou pas de tokens - nettoyer la session
+    console.log('🧹 [handleAuthenticationFailure] Nettoyage de la session...');
+
+    // Nettoyer toutes les sessions (membre et anonyme)
+    await authManager.logout();
+
+    // 3. Afficher un message user-friendly traduit
+    const message = this.t('websocket.sessionExpired') || 'Votre session a expiré, veuillez vous reconnecter';
+    toast.error(message);
+
+    // 4. Rediriger vers /login
+    console.log('🔀 [handleAuthenticationFailure] Redirection vers /login');
+
+    // Attendre un peu pour que l'utilisateur voie le message
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Rediriger
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
   }
 
   /**
