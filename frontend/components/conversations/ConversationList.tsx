@@ -8,10 +8,12 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import type { Conversation, SocketIOUser as User } from '@shared/types';
-import type { UserConversationPreferences } from '@/types/user-preferences';
+import type { UserConversationPreferences, UserConversationCategory } from '@/types/user-preferences';
 import { CreateLinkButton } from './create-link-button';
 import { userPreferencesService } from '@/services/user-preferences.service';
 import { CommunityCarousel, type CommunityFilter } from './CommunityCarousel';
+import { getTagColor } from '@/utils/tag-colors';
+import { Folder } from 'lucide-react';
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -38,6 +40,7 @@ interface ConversationItemProps {
   onClick: () => void;
   t: (key: string) => string;
   isPinned?: boolean;
+  tags?: string[];
 }
 
 // Composant pour un élément de conversation
@@ -47,7 +50,8 @@ const ConversationItem = memo(function ConversationItem({
   currentUser,
   onClick,
   t,
-  isPinned = false
+  isPinned = false,
+  tags = []
 }: ConversationItemProps) {
   const getConversationName = useCallback(() => {
     if (conversation.type !== 'direct') {
@@ -182,7 +186,36 @@ const ConversationItem = memo(function ConversationItem({
 
       {/* Contenu */}
       <div className="flex-1 min-w-0">
-        {/* TODO: Display user-specific tags from preferences */}
+        {/* Tags colorés au-dessus du titre */}
+        {tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-1">
+            {tags.slice(0, 3).map((tag) => {
+              const colors = getTagColor(tag);
+              return (
+                <Badge
+                  key={tag}
+                  variant="outline"
+                  className={cn(
+                    "px-1.5 py-0 h-4 text-[10px] font-medium border",
+                    colors.bg,
+                    colors.text,
+                    colors.border
+                  )}
+                >
+                  {tag}
+                </Badge>
+              );
+            })}
+            {tags.length > 3 && (
+              <Badge
+                variant="outline"
+                className="px-1.5 py-0 h-4 text-[10px] font-medium border border-muted-foreground/20 bg-muted/50 text-muted-foreground"
+              >
+                +{tags.length - 3}
+              </Badge>
+            )}
+          </div>
+        )}
 
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
@@ -244,6 +277,7 @@ export function ConversationList({
   const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
   const [selectedFilter, setSelectedFilter] = useState<CommunityFilter>({ type: 'all' });
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [categories, setCategories] = useState<UserConversationCategory[]>([]);
 
   // Référence pour le scroll container
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -274,6 +308,26 @@ export function ConversationList({
 
     return () => clearInterval(intervalId);
   }, [conversations.length]); // Recharger quand la liste change
+
+  // Charger les catégories
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const cats = await userPreferencesService.getAllCategories();
+        // Trier par order, puis alphabétiquement
+        const sorted = cats.sort((a, b) => {
+          if (a.order !== b.order) {
+            return a.order - b.order;
+          }
+          return a.name.localeCompare(b.name);
+        });
+        setCategories(sorted);
+      } catch (error) {
+        console.error('Error loading categories:', error);
+      }
+    };
+    loadCategories();
+  }, []);
 
   // Filtrage et tri des conversations - épinglées en haut
   const filteredConversations = useMemo(() => {
@@ -344,6 +398,72 @@ export function ConversationList({
 
     return sorted;
   }, [conversations, searchQuery, preferencesMap, selectedFilter]);
+
+  // Grouper les conversations par catégorie
+  const groupedConversations = useMemo(() => {
+    const groups: Array<{
+      type: 'pinned' | 'category' | 'uncategorized';
+      categoryId?: string;
+      categoryName?: string;
+      conversations: Conversation[];
+    }> = [];
+
+    // Séparer les conversations
+    const pinnedWithoutCategory: Conversation[] = [];
+    const conversationsByCategory = new Map<string, Conversation[]>();
+    const uncategorized: Conversation[] = [];
+
+    filteredConversations.forEach(conv => {
+      const prefs = preferencesMap.get(conv.id);
+      const isPinned = prefs?.isPinned || false;
+      const categoryId = prefs?.categoryId;
+
+      if (isPinned && !categoryId) {
+        // Épinglées sans catégorie
+        pinnedWithoutCategory.push(conv);
+      } else if (categoryId) {
+        // Avec catégorie (épinglée ou non)
+        if (!conversationsByCategory.has(categoryId)) {
+          conversationsByCategory.set(categoryId, []);
+        }
+        conversationsByCategory.get(categoryId)!.push(conv);
+      } else {
+        // Sans catégorie et non épinglée
+        uncategorized.push(conv);
+      }
+    });
+
+    // Ajouter le groupe "Pinned" si nécessaire
+    if (pinnedWithoutCategory.length > 0) {
+      groups.push({
+        type: 'pinned',
+        conversations: pinnedWithoutCategory
+      });
+    }
+
+    // Ajouter les groupes de catégories (dans l'ordre des catégories)
+    categories.forEach(category => {
+      const categoryConvs = conversationsByCategory.get(category.id);
+      if (categoryConvs && categoryConvs.length > 0) {
+        groups.push({
+          type: 'category',
+          categoryId: category.id,
+          categoryName: category.name,
+          conversations: categoryConvs
+        });
+      }
+    });
+
+    // Ajouter le groupe "Uncategorized" si nécessaire
+    if (uncategorized.length > 0) {
+      groups.push({
+        type: 'uncategorized',
+        conversations: uncategorized
+      });
+    }
+
+    return groups;
+  }, [filteredConversations, preferencesMap, categories]);
 
   // Gérer le focus de la recherche
   const handleSearchFocus = useCallback(() => {
@@ -478,19 +598,51 @@ export function ConversationList({
             </p>
           </div>
         ) : (
-          <div className="px-4 py-2 space-y-1">
-            {filteredConversations.map((conversation) => (
-              <ConversationItem
-                key={conversation.id}
-                conversation={conversation}
-                isSelected={selectedConversation?.id === conversation.id}
-                currentUser={currentUser}
-                onClick={() => onSelectConversation(conversation)}
-                t={t}
-                isPinned={preferencesMap.get(conversation.id)?.isPinned || false}
-              />
+          <div className="px-4 py-2">
+            {groupedConversations.map((group, groupIndex) => (
+              <div key={`group-${group.type}-${group.categoryId || groupIndex}`} className="mb-4">
+                {/* Header de section */}
+                {(group.type === 'pinned' || group.type === 'category') && (
+                  <div className="flex items-center gap-2 px-2 py-1.5 mb-1">
+                    {group.type === 'pinned' ? (
+                      <>
+                        <Pin className="h-4 w-4 text-primary fill-current" />
+                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                          {t('conversationsList.pinned') || 'Épinglées'}
+                        </h4>
+                      </>
+                    ) : (
+                      <>
+                        <Folder className="h-4 w-4 text-muted-foreground" />
+                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                          {group.categoryName}
+                        </h4>
+                      </>
+                    )}
+                    <Badge variant="secondary" className="ml-auto h-5 px-2 text-[10px]">
+                      {group.conversations.length}
+                    </Badge>
+                  </div>
+                )}
+
+                {/* Conversations du groupe */}
+                <div className="space-y-1">
+                  {group.conversations.map((conversation) => (
+                    <ConversationItem
+                      key={conversation.id}
+                      conversation={conversation}
+                      isSelected={selectedConversation?.id === conversation.id}
+                      currentUser={currentUser}
+                      onClick={() => onSelectConversation(conversation)}
+                      t={t}
+                      isPinned={preferencesMap.get(conversation.id)?.isPinned || false}
+                      tags={preferencesMap.get(conversation.id)?.tags || []}
+                    />
+                  ))}
+                </div>
+              </div>
             ))}
-            
+
             {/* Indicateur de chargement de plus de conversations */}
             {isLoadingMore && (
               <div className="flex items-center justify-center py-4">
