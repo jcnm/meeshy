@@ -166,7 +166,7 @@ export function CommunityCarousel({
   if (isLoadingCommunities) {
     return (
       <div className="w-full py-3 px-2 border-b border-border bg-background/50">
-        <div className="flex items-center justify-center h-18 md:h-24 p-2">
+        <div className="flex items-center justify-center h-20 md:h-24 p-2">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
         </div>
       </div>
@@ -217,7 +217,7 @@ function CommunityCard({ card, isSelected, onClick }: CommunityCardProps) {
     <button
       onClick={onClick}
       className={cn(
-        "relative flex-shrink-0 w-24 h-18 md:w-32 md:h-24 rounded-xl overflow-hidden transition-all",
+        "relative flex-shrink-0 w-28 h-20 md:w-32 md:h-24 rounded-xl overflow-hidden transition-all",
         "hover:scale-105 hover:shadow-lg",
         "border-2",
         isSelected
@@ -246,7 +246,7 @@ function CommunityCard({ card, isSelected, onClick }: CommunityCardProps) {
 
       {/* Overlay avec informations */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-2">
-        <h3 className="text-white font-semibold text-xs md:text-sm truncate mb-1">
+        <h3 className="text-white font-semibold text-sm truncate mb-1">
           {card.title}
         </h3>
         <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs text-white/80">
