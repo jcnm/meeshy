@@ -165,18 +165,18 @@ export function CommunityCarousel({
 
   if (isLoadingCommunities) {
     return (
-      <div className="w-full py-2 px-4 border-b border-border bg-background/50">
-        <div className="flex items-center justify-center h-12">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
+      <div className="w-full py-4 px-6 border-b border-border bg-background/50">
+        <div className="flex items-center justify-center h-12 md:h-18">
+          <div className="animate-spin rounded-full h-4 w-4 md:h-6 md:w-6 border-b-2 border-primary" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full py-2 px-4 border-b border-border bg-background/50">
+    <div className="w-full py-4 px-6 border-b border-border bg-background/50">
       <ScrollArea className="w-full whitespace-nowrap">
-        <div className="flex gap-2 pb-2">
+        <div className="flex gap-2 md:gap-3 pb-2">
           {cards.map((card) => (
             <CommunityCard
               key={card.id}
@@ -200,10 +200,10 @@ interface CommunityCardProps {
 
 function CommunityCard({ card, isSelected, onClick }: CommunityCardProps) {
   const getCardIcon = () => {
-    if (card.type === 'all') return <Grid3x3 className="h-4 w-4" />;
-    if (card.type === 'archived') return <Archive className="h-4 w-4" />;
-    if (card.type === 'reacted') return <Heart className="h-4 w-4" />;
-    return <Users className="h-4 w-4" />;
+    if (card.type === 'all') return <Grid3x3 className="h-4 w-4 md:h-6 md:w-6" />;
+    if (card.type === 'archived') return <Archive className="h-4 w-4 md:h-6 md:w-6" />;
+    if (card.type === 'reacted') return <Heart className="h-4 w-4 md:h-6 md:w-6" />;
+    return <Users className="h-4 w-4 md:h-6 md:w-6" />;
   };
 
   const getCardGradient = () => {
@@ -217,7 +217,7 @@ function CommunityCard({ card, isSelected, onClick }: CommunityCardProps) {
     <button
       onClick={onClick}
       className={cn(
-        "relative flex-shrink-0 w-16 h-12 rounded-lg overflow-hidden transition-all",
+        "relative flex-shrink-0 w-16 h-12 md:w-24 md:h-18 rounded-lg overflow-hidden transition-all",
         "hover:scale-105 hover:shadow-lg",
         "border",
         isSelected
@@ -245,18 +245,18 @@ function CommunityCard({ card, isSelected, onClick }: CommunityCardProps) {
       </div>
 
       {/* Overlay avec informations */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-1">
-        <h3 className="text-white font-semibold text-[10px] leading-tight truncate mb-0.5">
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-1 md:p-2">
+        <h3 className="text-white font-semibold text-[10px] md:text-sm leading-tight truncate mb-0.5 md:mb-1">
           {card.title}
         </h3>
-        <div className="flex items-center gap-1 text-[9px] text-white/80">
-          <div className="flex items-center gap-0.5">
-            <MessageSquare className="h-2 w-2" />
+        <div className="flex items-center gap-1 md:gap-2 text-[9px] md:text-xs text-white/80">
+          <div className="flex items-center gap-0.5 md:gap-1">
+            <MessageSquare className="h-2 w-2 md:h-3 md:w-3" />
             <span>{card.conversationCount}</span>
           </div>
           {card.memberCount !== undefined && (
-            <div className="flex items-center gap-0.5">
-              <Users className="h-2 w-2" />
+            <div className="flex items-center gap-0.5 md:gap-1">
+              <Users className="h-2 w-2 md:h-3 md:w-3" />
               <span>{card.memberCount}</span>
             </div>
           )}
@@ -265,7 +265,7 @@ function CommunityCard({ card, isSelected, onClick }: CommunityCardProps) {
 
       {/* Indicateur de sélection */}
       {isSelected && (
-        <div className="absolute top-1 right-1 h-1.5 w-1.5 bg-primary rounded-full animate-pulse" />
+        <div className="absolute top-1 right-1 md:top-2 md:right-2 h-1.5 w-1.5 md:h-2 md:w-2 bg-primary rounded-full animate-pulse" />
       )}
     </button>
   );
