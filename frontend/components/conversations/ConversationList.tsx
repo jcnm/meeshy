@@ -25,6 +25,8 @@ import { CommunityCarousel, type CommunityFilter } from './CommunityCarousel';
 import { getTagColor } from '@/utils/tag-colors';
 import { Folder } from 'lucide-react';
 import { toast } from 'sonner';
+import { OnlineIndicator } from '@/components/ui/online-indicator';
+import { getUserStatus } from '@/lib/user-status';
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -282,8 +284,23 @@ const ConversationItem = memo(function ConversationItem({
             {getConversationIcon() || getConversationAvatar()}
           </AvatarFallback>
         </Avatar>
-        {/* Indicateur en ligne */}
-        <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 bg-green-500 rounded-full border-2 border-background" />
+        {/* Indicateur en ligne - seulement pour les conversations directes */}
+        {conversation.type === 'direct' && (() => {
+          const otherParticipant = conversation.participants?.find(p => p.userId !== currentUser?.id);
+          const participantUser = (otherParticipant as any)?.user;
+          if (participantUser) {
+            const status = getUserStatus(participantUser);
+            return (
+              <OnlineIndicator
+                isOnline={status === 'online'}
+                status={status}
+                size="md"
+                className="absolute -bottom-0.5 -right-0.5"
+              />
+            );
+          }
+          return null;
+        })()}
       </div>
 
       {/* Contenu */}

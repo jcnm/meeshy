@@ -27,6 +27,8 @@ import {
   Camera
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { OnlineIndicator } from '@/components/ui/online-indicator';
+import { getUserStatus } from '@/lib/user-status';
 import type { Conversation, User, Message } from '@shared/types';
 import type { AnonymousParticipant } from '@shared/types/anonymous';
 import { conversationsService } from '@/services/conversations.service';
@@ -1144,15 +1146,19 @@ export function ConversationDetailsSidebar({
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">
-                        {user.firstName && user.lastName 
-                          ? `${user.firstName} ${user.lastName}` 
+                        {user.firstName && user.lastName
+                          ? `${user.firstName} ${user.lastName}`
                           : user.username}
                       </p>
                       <p className="text-xs text-gray-500 truncate">
                         {getLanguageDisplayName(user.systemLanguage)} {getLanguageFlag(user.systemLanguage)}
                       </p>
                     </div>
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <OnlineIndicator
+                      isOnline={getUserStatus(user) === 'online'}
+                      status={getUserStatus(user)}
+                      size="sm"
+                    />
                   </div>
                 ))}
                 
