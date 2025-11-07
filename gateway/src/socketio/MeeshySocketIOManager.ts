@@ -384,8 +384,6 @@ export class MeeshySocketIOManager {
               } as any; // Cast temporaire pour éviter les conflits de types
               // FIX: Utiliser message.conversationId (déjà normalisé en base) au lieu de data.conversationId (peut être un identifier)
               await this._broadcastNewMessage(messageWithTimestamp, message.conversationId, socket);
-            } else {
-              console.log(`⚠️ [DEBUG] Message ${response.data.id} non trouvé en base de données`);
             }
           }
 
