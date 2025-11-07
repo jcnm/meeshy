@@ -196,17 +196,29 @@ export class MeeshySocketIOManager {
         replyToId?: string;
       }, callback?: (response: SocketIOResponse<{ messageId: string }>) => void) => {
         try {
+          console.log(`📨 [MESSAGE_SEND] Réception message de socket ${socket.id}`);
+          console.log(`  ├─ Conversation: ${data.conversationId}`);
+          console.log(`  ├─ Content length: ${data.content?.length || 0}`);
+          console.log(`  └─ Socket mappings: socketToUser has ${this.socketToUser.size} entries`);
+
           const userId = this.socketToUser.get(socket.id);
+          console.log(`  └─ UserId trouvé: ${userId || 'NULL'}`);
+
           if (!userId) {
+            console.error(`❌ [MESSAGE_SEND] Socket ${socket.id} non authentifié`);
+            console.error(`  └─ Sockets connectés:`, Array.from(this.socketToUser.keys()).slice(0, 5));
+
             const errorResponse: SocketIOResponse<{ messageId: string }> = {
               success: false,
               error: 'User not authenticated'
             };
-            
+
             if (callback) callback(errorResponse);
             socket.emit('error', { message: 'User not authenticated' });
             return;
           }
+
+          console.log(`✓ [MESSAGE_SEND] UserId ${userId} authentifié pour socket ${socket.id}`);
 
           // Validation de la longueur du message
           const validation = validateMessageLength(data.content);
