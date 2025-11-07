@@ -319,7 +319,23 @@ class MeeshyServer {
 
     // Security headers
     await this.server.register(helmet, {
-      contentSecurityPolicy: config.isDev ? false : undefined
+      contentSecurityPolicy: config.isDev ? false : {
+        directives: {
+          // Permet l'affichage des PDFs dans des iframes depuis meeshy.me
+          'frame-ancestors': ["'self'", 'https://meeshy.me', 'https://www.meeshy.me'],
+          'default-src': ["'self'"],
+          'base-uri': ["'self'"],
+          'font-src': ["'self'", 'https:', 'data:'],
+          'form-action': ["'self'"],
+          'frame-src': ["'self'"],
+          'img-src': ["'self'", 'data:', 'https:'],
+          'object-src': ["'none'"],
+          'script-src': ["'self'"],
+          'script-src-attr': ["'none'"],
+          'style-src': ["'self'", 'https:', "'unsafe-inline'"],
+          'upgrade-insecure-requests': []
+        }
+      }
     });
 
     // CORS configuration
