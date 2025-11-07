@@ -2853,7 +2853,6 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       const userId = authRequest.authContext.userId;
 
       // Vérifier que l'utilisateur est membre de la conversation
-      // Tous les membres peuvent voir les liens de partage (pour les partager)
       const membership = await prisma.conversationMember.findFirst({
         where: {
           conversationId,
@@ -2869,8 +2868,17 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         });
       }
 
+      // Vérifier si l'utilisateur est modérateur/admin de la conversation
+      const isModerator = ['CREATOR', 'ADMIN', 'MODERATOR'].includes(membership.role as string);
+
+      // Filtrer les liens selon les droits:
+      // - Modérateurs: voient TOUS les liens
+      // - Membres normaux: voient uniquement leurs propres liens
       const links = await prisma.conversationShareLink.findMany({
-        where: { conversationId },
+        where: {
+          conversationId,
+          ...(isModerator ? {} : { creatorId: userId }) // Si pas modérateur, filtrer par créateur
+        },
         include: {
           creator: {
             select: {
@@ -2898,7 +2906,11 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         orderBy: { createdAt: 'desc' }
       });
 
-      return reply.send({ success: true, data: links });
+      return reply.send({
+        success: true,
+        data: links,
+        isModerator // Indiquer au frontend si l'utilisateur peut gérer les liens
+      });
     } catch (error) {
       console.error('[GATEWAY] Error fetching conversation links:', error);
       return reply.status(500).send({ 

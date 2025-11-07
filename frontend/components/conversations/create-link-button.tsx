@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Link2, Plus } from 'lucide-react';
 import { CreateLinkModalV2 } from './create-link-modal';
 import { LinkSummaryModal } from './link-summary-modal';
-import { QuickLinkConfigModal, QuickLinkConfig } from './quick-link-config-modal';
+import { QuickLinkConfigModal, QuickLinkConfig, CreatedLinkData } from './quick-link-config-modal';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { copyToClipboard } from '@/lib/clipboard';
@@ -49,6 +49,7 @@ export function CreateLinkButton({
   const [linkSummaryData, setLinkSummaryData] = useState<any>(null);
   const [pendingConversationId, setPendingConversationId] = useState<string | null>(null);
   const [quickLinkDefaultTitle, setQuickLinkDefaultTitle] = useState<string>('');
+  const [createdLinkData, setCreatedLinkData] = useState<CreatedLinkData | null>(null);
   const { user: storeUser } = useUser();
   const currentUser = propCurrentUser || storeUser; // Utiliser la prop en priorité, sinon le store
   const router = useRouter();
@@ -182,41 +183,21 @@ export function CreateLinkButton({
         const result = await response.json();
         const linkUrl = `${window.location.origin}/join/${result.data.linkId}`;
         const messages = getTranslatedMessages(detectedInterfaceLanguage);
-        const shareText = messages.shareMessage + linkUrl;
-        
+
         // Stocker les liens générés
         setGeneratedLink(linkUrl);
         setGeneratedToken(result.data.linkId);
-        
-        // Préparer les données pour le modal synthétique
-        setLinkSummaryData({
+
+        // Préparer les données pour le modal QuickLink (étape 2)
+        setCreatedLinkData({
           url: linkUrl,
-          token: result.data.linkId,
           title: linkData.name,
-          description: linkData.description,
-          expirationDays: expirationDays,
-          maxUses: linkData.maxUses,
-          maxConcurrentUsers: linkData.maxConcurrentUsers,
-          maxUniqueSessions: linkData.maxUniqueSessions,
-          allowAnonymousMessages: linkData.allowAnonymousMessages,
-          allowAnonymousFiles: linkData.allowAnonymousFiles,
-          allowAnonymousImages: linkData.allowAnonymousImages,
-          allowViewHistory: linkData.allowViewHistory,
-          requireAccount: linkData.requireAccount,
-          requireNickname: linkData.requireNickname,
-          requireEmail: linkData.requireEmail,
-          requireBirthday: linkData.requireBirthday,
-          allowedLanguages: linkData.allowedLanguages
+          description: linkData.description || '',
+          expirationDays: expirationDays
         });
 
         // Afficher le toast de succès
-        const messages = getTranslatedMessages(detectedInterfaceLanguage);
         toast.success(messages.success);
-
-        // Ouvrir le modal de résumé avec le lien et le bouton de copie
-        if (!disableSummaryModal) {
-          setIsSummaryModalOpen(true);
-        }
 
         onLinkCreated?.();
       } else {
@@ -286,6 +267,7 @@ export function CreateLinkButton({
     setIsQuickConfigModalOpen(false);
     setPendingConversationId(null);
     setQuickLinkDefaultTitle('');
+    setCreatedLinkData(null); // Reset le lien créé
   };
 
   return (
@@ -319,6 +301,7 @@ export function CreateLinkButton({
         onConfirm={handleQuickLinkConfirm}
         defaultTitle={quickLinkDefaultTitle}
         isCreating={isCreating}
+        createdLink={createdLinkData}
       />
 
       {linkSummaryData && (

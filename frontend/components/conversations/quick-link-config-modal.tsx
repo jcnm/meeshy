@@ -18,10 +18,15 @@ import {
   Link2,
   Shield,
   CheckCircle,
-  Info
+  Info,
+  ChevronRight,
+  Copy,
+  Check
 } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { copyToClipboard } from '@/lib/clipboard';
+import { toast } from 'sonner';
 
 interface QuickLinkConfigModalProps {
   isOpen: boolean;
@@ -29,11 +34,19 @@ interface QuickLinkConfigModalProps {
   onConfirm: (config: QuickLinkConfig) => void;
   defaultTitle?: string;
   isCreating?: boolean;
+  createdLink?: CreatedLinkData | null; // Le lien créé pour l'étape 2
 }
 
 export interface QuickLinkConfig {
   title: string;
   description: string;
+}
+
+export interface CreatedLinkData {
+  url: string;
+  title: string;
+  description: string;
+  expirationDays: number;
 }
 
 // Configuration par défaut pour les liens rapides
@@ -55,11 +68,14 @@ export function QuickLinkConfigModal({
   onClose,
   onConfirm,
   defaultTitle,
-  isCreating = false
+  isCreating = false,
+  createdLink = null
 }: QuickLinkConfigModalProps) {
   const { t } = useI18n('modals');
+  const [currentStep, setCurrentStep] = useState(1);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [copied, setCopied] = useState(false);
 
   // Initialiser le titre quand la modale s'ouvre
   useEffect(() => {
@@ -67,6 +83,13 @@ export function QuickLinkConfigModal({
       setTitle(defaultTitle);
     }
   }, [isOpen, defaultTitle]);
+
+  // Passer automatiquement à l'étape 2 quand le lien est créé
+  useEffect(() => {
+    if (createdLink) {
+      setCurrentStep(2);
+    }
+  }, [createdLink]);
 
   const handleConfirm = () => {
     onConfirm({
@@ -78,7 +101,23 @@ export function QuickLinkConfigModal({
   const handleClose = () => {
     setTitle('');
     setDescription('');
+    setCurrentStep(1);
+    setCopied(false);
     onClose();
+  };
+
+  const handleCopyLink = async () => {
+    if (!createdLink) return;
+
+    const result = await copyToClipboard(createdLink.url);
+
+    if (result.success) {
+      setCopied(true);
+      toast.success('Lien copié dans le presse-papier !');
+      setTimeout(() => setCopied(false), 2000);
+    } else {
+      toast.error(result.message || 'Erreur lors de la copie du lien');
+    }
   };
 
   const canCreate = title.trim().length > 0;
@@ -100,15 +139,16 @@ export function QuickLinkConfigModal({
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Link2 className="h-5 w-5 text-primary" />
-            {t('quickLinkModal.title')}
+            {currentStep === 1 ? t('quickLinkModal.title') : t('linkSummaryModal.title')}
           </DialogTitle>
           <DialogDescription>
-            {t('quickLinkModal.description')}
+            {currentStep === 1 ? t('quickLinkModal.description') : t('linkSummaryModal.description')}
           </DialogDescription>
         </DialogHeader>
 
         {/* Contenu scrollable */}
         <div className="flex-1 overflow-y-auto">
+          {currentStep === 1 ? (
           <div className="space-y-2 py-2">
             {/* Configuration sécurisée par défaut */}
             <div className="p-2 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
@@ -197,35 +237,118 @@ export function QuickLinkConfigModal({
               </p>
             </div>
           </div>
+          ) : (
+          <div className="space-y-4 py-2">
+            {/* Étape 2: Lien créé avec succès */}
+            <div className="p-4 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
+              <div className="flex items-start gap-2">
+                <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h4 className="text-sm font-semibold text-green-900 dark:text-green-100 mb-1">
+                    Lien créé avec succès !
+                  </h4>
+                  <p className="text-xs text-green-700 dark:text-green-300">
+                    Votre lien de partage est prêt à être utilisé
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Lien à copier */}
+            {createdLink && (
+              <>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Lien de partage</Label>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 p-3 bg-muted rounded text-xs break-all border">
+                      {createdLink.url}
+                    </code>
+                  </div>
+                </div>
+
+                {/* Informations du lien */}
+                <div className="space-y-3">
+                  <div className="p-3 bg-muted/50 rounded-lg">
+                    <h4 className="text-sm font-semibold mb-2">Titre</h4>
+                    <p className="text-sm">{createdLink.title}</p>
+                  </div>
+
+                  {createdLink.description && (
+                    <div className="p-3 bg-muted/50 rounded-lg">
+                      <h4 className="text-sm font-semibold mb-2">Description</h4>
+                      <p className="text-sm whitespace-pre-wrap">{createdLink.description}</p>
+                    </div>
+                  )}
+
+                  <div className="p-3 bg-muted/50 rounded-lg">
+                    <h4 className="text-sm font-semibold mb-2">Expire le</h4>
+                    <p className="text-sm">{formatExpirationDate(createdLink.expirationDays)}</p>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+          )}
         </div>
 
         {/* Footer fixe */}
         <DialogFooter className="flex-shrink-0 flex-col sm:flex-row gap-2 pt-4 border-t">
-          <Button
-            variant="outline"
-            onClick={handleClose}
-            disabled={isCreating}
-            className="w-full sm:w-auto"
-          >
-            {t('quickLinkModal.actions.cancel')}
-          </Button>
-          <Button
-            onClick={handleConfirm}
-            disabled={!canCreate || isCreating}
-            className="w-full sm:w-auto"
-          >
-            {isCreating ? (
-              <>
-                <span className="animate-spin mr-2">⏳</span>
-                {t('quickLinkModal.actions.creating')}
-              </>
-            ) : (
-              <>
-                <Link2 className="h-4 w-4 mr-2" />
-                {t('quickLinkModal.actions.create')}
-              </>
-            )}
-          </Button>
+          {currentStep === 1 ? (
+          <>
+            <Button
+              variant="outline"
+              onClick={handleClose}
+              disabled={isCreating}
+              className="w-full sm:w-auto"
+            >
+              {t('quickLinkModal.actions.cancel')}
+            </Button>
+            <Button
+              onClick={handleConfirm}
+              disabled={!canCreate || isCreating}
+              className="w-full sm:w-auto"
+            >
+              {isCreating ? (
+                <>
+                  <span className="animate-spin mr-2">⏳</span>
+                  {t('quickLinkModal.actions.creating')}
+                </>
+              ) : (
+                <>
+                  {t('quickLinkModal.actions.create')}
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </>
+              )}
+            </Button>
+          </>
+          ) : (
+          <>
+            <Button
+              variant="default"
+              onClick={handleCopyLink}
+              className="w-full sm:flex-1"
+            >
+              {copied ? (
+                <>
+                  <Check className="h-4 w-4 mr-2" />
+                  Copié !
+                </>
+              ) : (
+                <>
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copier le lien
+                </>
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleClose}
+              className="w-full sm:w-auto"
+            >
+              Fermer
+            </Button>
+          </>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
