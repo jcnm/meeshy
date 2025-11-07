@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Conversation, User, Message } from '@shared/types';
+import type { AnonymousParticipant } from '@shared/types/anonymous';
 import { conversationsService } from '@/services/conversations.service';
 import { userPreferencesService } from '@/services/user-preferences.service';
 import { getLanguageDisplayName, getLanguageFlag } from '@/utils/language-utils';
@@ -70,13 +71,19 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+// Helper pour détecter si un utilisateur est anonyme
+function isAnonymousUser(user: any): user is AnonymousParticipant {
+  return user && ('sessionToken' in user || 'shareLinkId' in user);
+}
+
 // Tags Manager Component (User-specific) - Improved UX with autocomplete
 interface TagsManagerProps {
   conversationId: string;
+  currentUser: User;
   onTagsUpdated?: () => void;
 }
 
-function TagsManager({ conversationId, onTagsUpdated }: TagsManagerProps) {
+function TagsManager({ conversationId, currentUser, onTagsUpdated }: TagsManagerProps) {
   const { t } = useI18n('conversations');
   const [localTags, setLocalTags] = useState<string[]>([]);
   const [allUserTags, setAllUserTags] = useState<string[]>([]);
@@ -86,6 +93,14 @@ function TagsManager({ conversationId, onTagsUpdated }: TagsManagerProps) {
 
   // Load user's tags for this conversation AND all user tags
   useEffect(() => {
+    // CORRECTION: Ne pas charger les préférences pour les utilisateurs anonymes
+    if (isAnonymousUser(currentUser)) {
+      setLocalTags([]);
+      setAllUserTags([]);
+      setIsLoading(false);
+      return;
+    }
+
     const loadTags = async () => {
       try {
         setIsLoading(true);
@@ -107,7 +122,7 @@ function TagsManager({ conversationId, onTagsUpdated }: TagsManagerProps) {
       }
     };
     loadTags();
-  }, [conversationId]);
+  }, [conversationId, currentUser]);
 
   const handleAddTag = async (tagToAdd: string) => {
     const trimmedTag = tagToAdd.trim();
@@ -280,10 +295,11 @@ function TagsManager({ conversationId, onTagsUpdated }: TagsManagerProps) {
 // Category Selector Component (User-specific)
 interface CategorySelectorProps {
   conversationId: string;
+  currentUser: User;
   onCategoryUpdated?: () => void;
 }
 
-function CategorySelector({ conversationId, onCategoryUpdated }: CategorySelectorProps) {
+function CategorySelector({ conversationId, currentUser, onCategoryUpdated }: CategorySelectorProps) {
   const { t } = useI18n('conversations');
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
@@ -293,6 +309,14 @@ function CategorySelector({ conversationId, onCategoryUpdated }: CategorySelecto
 
   // Load categories and current selection
   useEffect(() => {
+    // CORRECTION: Ne pas charger les préférences pour les utilisateurs anonymes
+    if (isAnonymousUser(currentUser)) {
+      setCategories([]);
+      setSelectedCategoryId(null);
+      setIsLoading(false);
+      return;
+    }
+
     const loadData = async () => {
       try {
         setIsLoading(true);
@@ -320,7 +344,7 @@ function CategorySelector({ conversationId, onCategoryUpdated }: CategorySelecto
       }
     };
     loadData();
-  }, [conversationId]);
+  }, [conversationId, currentUser]);
 
   const handleSelectCategory = async (categoryId: string | null) => {
     try {
@@ -1060,7 +1084,7 @@ export function ConversationDetailsSidebar({
                     </Tooltip>
                   </TooltipProvider>
                 </div>
-                <TagsManager conversationId={conversation.id} />
+                <TagsManager conversationId={conversation.id} currentUser={currentUser} />
               </div>
 
               {/* Category Section (Personal) */}
@@ -1082,7 +1106,7 @@ export function ConversationDetailsSidebar({
                     </Tooltip>
                   </TooltipProvider>
                 </div>
-                <CategorySelector conversationId={conversation.id} />
+                <CategorySelector conversationId={conversation.id} currentUser={currentUser} />
               </div>
             </div>
 
