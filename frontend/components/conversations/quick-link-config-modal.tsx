@@ -95,8 +95,9 @@ export function QuickLinkConfigModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg w-[90vw] max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-lg w-[90vw] max-h-[85vh] flex flex-col">
+        {/* Header fixe */}
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Link2 className="h-5 w-5 text-primary" />
             {t('quickLinkModal.title')}
@@ -106,8 +107,9 @@ export function QuickLinkConfigModal({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Configuration */}
-        <div className="space-y-2 py-2">
+        {/* Contenu scrollable */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="space-y-2 py-2">
             {/* Configuration sécurisée par défaut */}
             <div className="p-2 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
               <div className="flex items-start gap-2">
@@ -194,9 +196,11 @@ export function QuickLinkConfigModal({
                 ℹ️ {t('quickLinkModal.expirationNote')}
               </p>
             </div>
+          </div>
         </div>
 
-        <DialogFooter className="flex-col sm:flex-row gap-2">
+        {/* Footer fixe */}
+        <DialogFooter className="flex-shrink-0 flex-col sm:flex-row gap-2 pt-4 border-t">
           <Button
             variant="outline"
             onClick={handleClose}
