@@ -46,6 +46,9 @@ export * from './errors';
 // Export des types signalement
 export * from './report';
 
+// Export des types de préférences utilisateur
+export * from './user-preferences';
+
 // ===== UTILITAIRES PARTAGÉS =====
 export * from '../utils';
 

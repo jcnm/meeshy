@@ -60,6 +60,7 @@ interface ConversationLink {
   allowAnonymousImages: boolean;
   allowAnonymousFiles: boolean;
   allowViewHistory?: boolean;
+  requireAccount?: boolean;  // Ajouter ce champ
   requireEmail?: boolean;
   requireName?: boolean;
   requireBirthday?: boolean;
@@ -341,13 +342,22 @@ export function ExpandableLinkCard({
                 </div>
 
                 {/* Exigences */}
-                {(link.requireEmail || link.requireName || link.requireBirthday) && (
+                {(link.requireAccount || link.requireEmail || link.requireName || link.requireBirthday) && (
                   <div className="space-y-2">
                     <h4 className="text-sm font-semibold flex items-center gap-2">
                       <Hash className="h-4 w-4" />
                       {t('details.requirements')}
                     </h4>
                     <div className="grid gap-2">
+                      {link.requireAccount && (
+                        <div className="flex items-center gap-2 py-2 px-3 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800">
+                          <Shield className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                          <span className="text-sm font-medium text-blue-700 dark:text-blue-300">{t('requirements.account')}</span>
+                          <Badge variant="secondary" className="ml-auto text-xs">
+                            {t('requirements.noAnonymous')}
+                          </Badge>
+                        </div>
+                      )}
                       {link.requireEmail && (
                         <div className="flex items-center gap-2 py-2 px-3 bg-gray-50 dark:bg-gray-800/50 rounded">
                           <Mail className="h-4 w-4 text-muted-foreground" />

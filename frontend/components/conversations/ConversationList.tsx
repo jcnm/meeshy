@@ -1,14 +1,19 @@
 'use client';
 
 import { useState, useCallback, useMemo, memo, useEffect, useRef } from 'react';
-import { MessageSquare, Link2, Users, Globe, Search, Loader2 } from 'lucide-react';
+import { MessageSquare, Link2, Users, Globe, Search, Loader2, Pin, ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import type { Conversation, SocketIOUser as User } from '@shared/types';
+import type { UserConversationPreferences, UserConversationCategory } from '@/types/user-preferences';
 import { CreateLinkButton } from './create-link-button';
+import { userPreferencesService } from '@/services/user-preferences.service';
+import { CommunityCarousel, type CommunityFilter } from './CommunityCarousel';
+import { getTagColor } from '@/utils/tag-colors';
+import { Folder } from 'lucide-react';
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -34,6 +39,8 @@ interface ConversationItemProps {
   currentUser: User;
   onClick: () => void;
   t: (key: string) => string;
+  isPinned?: boolean;
+  tags?: string[];
 }
 
 // Composant pour un élément de conversation
@@ -42,7 +49,9 @@ const ConversationItem = memo(function ConversationItem({
   isSelected,
   currentUser,
   onClick,
-  t
+  t,
+  isPinned = false,
+  tags = []
 }: ConversationItemProps) {
   const getConversationName = useCallback(() => {
     if (conversation.type !== 'direct') {
@@ -81,11 +90,31 @@ const ConversationItem = memo(function ConversationItem({
 
   const getConversationAvatarUrl = useCallback(() => {
     if (conversation.type === 'direct') {
-      // Pour l'instant, pas d'avatar car participants n'a pas de propriété user
-      // TODO: Charger les avatars des participants séparément
-      return undefined;
+      // Pour les conversations directes, retourner l'avatar de l'autre participant
+      const otherParticipant = conversation.participants?.find(p => p.userId !== currentUser?.id);
+      const participantUser = (otherParticipant as any)?.user;
+      const avatarUrl = participantUser?.avatar;
+      // console.log('[ConversationItem] Direct avatar:', {
+      //   id: conversation.id,
+      //   type: conversation.type,
+      //   hasParticipants: !!conversation.participants,
+      //   participantsCount: conversation.participants?.length,
+      //   otherParticipant: otherParticipant ? 'Found' : 'Not found',
+      //   hasUser: !!participantUser,
+      //   avatarUrl
+      // });
+      return avatarUrl;
     }
-    return undefined;
+    // Pour les conversations de groupe/public/global, retourner l'image de la conversation
+    const avatarUrl = conversation.image || conversation.avatar;
+    // console.log('[ConversationItem] Group avatar:', {
+    //   id: conversation.id,
+    //   type: conversation.type,
+    //   image: conversation.image,
+    //   avatar: conversation.avatar,
+    //   avatarUrl
+    // });
+    return avatarUrl;
   }, [conversation, currentUser]);
 
   const getConversationIcon = useCallback(() => {
@@ -157,10 +186,46 @@ const ConversationItem = memo(function ConversationItem({
 
       {/* Contenu */}
       <div className="flex-1 min-w-0">
+        {/* Tags colorés au-dessus du titre */}
+        {tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-1">
+            {tags.slice(0, 3).map((tag) => {
+              const colors = getTagColor(tag);
+              return (
+                <Badge
+                  key={tag}
+                  variant="outline"
+                  className={cn(
+                    "px-1.5 py-0 h-4 text-[10px] font-medium border",
+                    colors.bg,
+                    colors.text,
+                    colors.border
+                  )}
+                >
+                  {tag}
+                </Badge>
+              );
+            })}
+            {tags.length > 3 && (
+              <Badge
+                variant="outline"
+                className="px-1.5 py-0 h-4 text-[10px] font-medium border border-muted-foreground/20 bg-muted/50 text-muted-foreground"
+              >
+                +{tags.length - 3}
+              </Badge>
+            )}
+          </div>
+        )}
+
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold text-sm truncate">
-            {getConversationName()}
-          </h3>
+          <div className="flex items-center gap-1.5 min-w-0">
+            {isPinned && (
+              <Pin className="h-3.5 w-3.5 text-primary flex-shrink-0 fill-current" />
+            )}
+            <h3 className="font-semibold text-sm truncate">
+              {getConversationName()}
+            </h3>
+          </div>
           {conversation.lastMessage && (
             <span className="text-xs text-muted-foreground flex-shrink-0">
               {formatTime(conversation.lastMessage.createdAt)}
@@ -208,31 +273,263 @@ export function ConversationList({
   onLoadMore
 }: ConversationListProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [preferencesMap, setPreferencesMap] = useState<Map<string, UserConversationPreferences>>(new Map());
+  const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
+  const [selectedFilter, setSelectedFilter] = useState<CommunityFilter>({ type: 'all' });
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [categories, setCategories] = useState<UserConversationCategory[]>([]);
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
+    // Charger l'état collapsed depuis localStorage
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('collapsedConversationSections');
+      if (saved) {
+        try {
+          return new Set(JSON.parse(saved));
+        } catch (e) {
+          return new Set();
+        }
+      }
+    }
+    return new Set();
+  });
 
   // Référence pour le scroll container
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
 
-  // Filtrage des conversations - toutes les conversations dans une seule liste
+  // Charger les préférences utilisateur pour toutes les conversations
+  useEffect(() => {
+    const loadPreferences = async () => {
+      try {
+        setIsLoadingPreferences(true);
+        const allPrefs = await userPreferencesService.getAllPreferences();
+        const map = new Map<string, UserConversationPreferences>();
+        allPrefs.forEach(pref => {
+          map.set(pref.conversationId, pref);
+        });
+        setPreferencesMap(map);
+      } catch (error) {
+        console.error('Error loading preferences:', error);
+      } finally {
+        setIsLoadingPreferences(false);
+      }
+    };
+    loadPreferences();
+
+    // Recharger les préférences toutes les 2 secondes pour détecter les changements
+    const intervalId = setInterval(loadPreferences, 2000);
+
+    return () => clearInterval(intervalId);
+  }, [conversations.length]); // Recharger quand la liste change
+
+  // Charger les catégories
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const cats = await userPreferencesService.getCategories();
+        // Trier par order, puis alphabétiquement
+        const sorted = cats.sort((a, b) => {
+          if (a.order !== b.order) {
+            return a.order - b.order;
+          }
+          return a.name.localeCompare(b.name);
+        });
+        setCategories(sorted);
+      } catch (error) {
+        console.error('[ConversationList] Error loading categories:', error);
+      }
+    };
+    loadCategories();
+  }, []);
+
+  // Sauvegarder l'état collapsed dans localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('collapsedConversationSections', JSON.stringify([...collapsedSections]));
+    }
+  }, [collapsedSections]);
+
+  // Fonction pour toggle une section
+  const toggleSection = useCallback((sectionId: string) => {
+    setCollapsedSections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(sectionId)) {
+        newSet.delete(sectionId);
+      } else {
+        newSet.add(sectionId);
+      }
+      return newSet;
+    });
+  }, []);
+
+  // Filtrage et tri des conversations - épinglées en haut
   const filteredConversations = useMemo(() => {
-    const filtered = conversations.filter(conv => {
-      if (!searchQuery) return true;
-      const title = conv.title || '';
-      const lastMessage = conv.lastMessage?.content || '';
-      const query = searchQuery.toLowerCase();
-      return title.toLowerCase().includes(query) ||
-             lastMessage.toLowerCase().includes(query);
+    // Filtrer selon le filtre sélectionné (all/community/reacted/archived/category)
+    let filtered = conversations.filter(conv => {
+      const prefs = preferencesMap.get(conv.id);
+      const isArchived = prefs?.isArchived || false;
+
+      // Filtrer selon le type de filtre
+      if (selectedFilter.type === 'all') {
+        // "All" affiche toutes les conversations sauf archivées
+        return !isArchived;
+      } else if (selectedFilter.type === 'archived') {
+        // "Archived" affiche uniquement les archivées
+        return isArchived;
+      } else if (selectedFilter.type === 'reacted') {
+        // "Reacted" affiche uniquement les conversations avec réaction (non archivées)
+        return !isArchived && !!prefs?.reaction;
+      } else if (selectedFilter.type === 'community') {
+        // Filtrer par communauté, exclure les archivées
+        return !isArchived && conv.communityId === selectedFilter.communityId;
+      } else if (selectedFilter.type === 'category') {
+        // Filtrer par catégorie, exclure les archivées
+        return !isArchived && prefs?.categoryId === selectedFilter.categoryId;
+      }
+      return true;
     });
 
-    console.log('[ConversationList] Filtrage des conversations:', {
-      total: conversations.length,
-      filtered: filtered.length,
-      searchQuery
+    // Filtrer par recherche
+    if (searchQuery) {
+      filtered = filtered.filter(conv => {
+        const title = conv.title || '';
+        const lastMessage = conv.lastMessage?.content || '';
+        const query = searchQuery.toLowerCase();
+
+        // Search in title and last message
+        // TODO: Add search by user-specific tags from preferences
+        return title.toLowerCase().includes(query) ||
+               lastMessage.toLowerCase().includes(query);
+      });
+    }
+
+    // Trier les conversations : épinglées en haut, puis par ordre de dernier message
+    const sorted = filtered.sort((a, b) => {
+      const aPrefs = preferencesMap.get(a.id);
+      const bPrefs = preferencesMap.get(b.id);
+      const aPinned = aPrefs?.isPinned || false;
+      const bPinned = bPrefs?.isPinned || false;
+
+      // Les conversations épinglées viennent en premier
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+
+      // Pour les conversations du même statut d'épinglage, trier par date de dernier message
+      const aTime = a.lastMessage?.createdAt ? new Date(a.lastMessage.createdAt).getTime() : 0;
+      const bTime = b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt).getTime() : 0;
+      return bTime - aTime;
     });
 
-    return filtered;
-  }, [conversations, searchQuery]);
-  
+    // console.log('[ConversationList] Filtrage et tri des conversations:', {
+    //   total: conversations.length,
+    //   filtered: sorted.length,
+    //   searchQuery,
+    //   selectedFilter,
+    //   pinnedCount: sorted.filter(c => preferencesMap.get(c.id)?.isPinned).length,
+    //   archivedCount: conversations.filter(c => preferencesMap.get(c.id)?.isArchived).length
+    // });
+
+    return sorted;
+  }, [conversations, searchQuery, preferencesMap, selectedFilter]);
+
+  // Grouper les conversations par catégorie
+  const groupedConversations = useMemo(() => {
+    const groups: Array<{
+      type: 'pinned' | 'category' | 'uncategorized';
+      categoryId?: string;
+      categoryName?: string;
+      conversations: Conversation[];
+    }> = [];
+
+    // Séparer les conversations
+    const pinnedWithoutCategory: Conversation[] = [];
+    const conversationsByCategory = new Map<string, Conversation[]>();
+    const uncategorized: Conversation[] = [];
+
+    filteredConversations.forEach(conv => {
+      const prefs = preferencesMap.get(conv.id);
+      const isPinned = prefs?.isPinned || false;
+      const categoryId = prefs?.categoryId;
+
+      if (isPinned && !categoryId) {
+        // Épinglées sans catégorie
+        pinnedWithoutCategory.push(conv);
+      } else if (categoryId) {
+        // Avec catégorie (épinglée ou non)
+        if (!conversationsByCategory.has(categoryId)) {
+          conversationsByCategory.set(categoryId, []);
+        }
+        conversationsByCategory.get(categoryId)!.push(conv);
+      } else {
+        // Sans catégorie et non épinglée
+        uncategorized.push(conv);
+      }
+    });
+
+    // Ajouter le groupe "Pinned" si nécessaire
+    if (pinnedWithoutCategory.length > 0) {
+      groups.push({
+        type: 'pinned',
+        conversations: pinnedWithoutCategory
+      });
+    }
+
+    // Ajouter les groupes de catégories (dans l'ordre des catégories)
+    const displayedCategoryIds = new Set<string>();
+    categories.forEach(category => {
+      const categoryConvs = conversationsByCategory.get(category.id);
+      if (categoryConvs && categoryConvs.length > 0) {
+        groups.push({
+          type: 'category',
+          categoryId: category.id,
+          categoryName: category.name,
+          conversations: categoryConvs
+        });
+        displayedCategoryIds.add(category.id);
+      }
+    });
+
+    // Ajouter les conversations avec categoryId orphelin (catégorie n'existe plus) dans uncategorized
+    conversationsByCategory.forEach((convs, categoryId) => {
+      if (!displayedCategoryIds.has(categoryId)) {
+        console.warn('[ConversationList] Found orphaned conversations with missing category:', categoryId);
+        uncategorized.push(...convs);
+      }
+    });
+
+    // Ajouter le groupe "Uncategorized" si nécessaire
+    if (uncategorized.length > 0) {
+      groups.push({
+        type: 'uncategorized',
+        conversations: uncategorized
+      });
+    }
+
+    return groups;
+  }, [filteredConversations, preferencesMap, categories]);
+
+  // Gérer le focus de la recherche
+  const handleSearchFocus = useCallback(() => {
+    setIsSearchFocused(true);
+  }, []);
+
+  const handleSearchBlur = useCallback((e: React.FocusEvent) => {
+    // Vérifier si le focus va vers un élément du carousel
+    const relatedTarget = e.relatedTarget as HTMLElement;
+    const searchContainer = searchContainerRef.current;
+
+    if (searchContainer && relatedTarget && searchContainer.contains(relatedTarget)) {
+      // Le focus reste dans le container (carousel), ne pas fermer
+      return;
+    }
+
+    // Petit délai pour permettre les clics sur le carousel
+    setTimeout(() => {
+      setIsSearchFocused(false);
+    }, 150);
+  }, []);
+
   // Détection du scroll infini avec Intersection Observer
   useEffect(() => {
     if (!onLoadMore || !hasMore || isLoadingMore) return;
@@ -295,16 +592,33 @@ export function ConversationList({
           </div>
         </div>
 
-        {/* Barre de recherche */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={tSearch('placeholder')}
-            className="pl-9 h-9"
-          />
+        {/* Barre de recherche et carousel */}
+        <div ref={searchContainerRef}>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={handleSearchFocus}
+              onBlur={handleSearchBlur}
+              placeholder={tSearch('placeholder')}
+              className="pl-9 h-9"
+            />
+          </div>
+
+          {/* Community Carousel - affiché uniquement quand la recherche est focalisée */}
+          {isSearchFocused && (
+            <div onMouseDown={(e) => e.preventDefault()}>
+              <CommunityCarousel
+                conversations={conversations}
+                selectedFilter={selectedFilter}
+                onFilterChange={setSelectedFilter}
+                t={(key: string) => t(key)}
+                preferencesMap={preferencesMap}
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -328,18 +642,70 @@ export function ConversationList({
             </p>
           </div>
         ) : (
-          <div className="px-4 py-2 space-y-1">
-            {filteredConversations.map((conversation) => (
-              <ConversationItem
-                key={conversation.id}
-                conversation={conversation}
-                isSelected={selectedConversation?.id === conversation.id}
-                currentUser={currentUser}
-                onClick={() => onSelectConversation(conversation)}
-                t={t}
-              />
-            ))}
-            
+          <div className="px-4 py-2">
+            {groupedConversations.map((group, groupIndex) => {
+              const sectionId = group.type === 'category' && group.categoryId
+                ? `category-${group.categoryId}`
+                : group.type;
+              const isCollapsed = collapsedSections.has(sectionId);
+
+              return (
+                <div key={`group-${group.type}-${group.categoryId || groupIndex}`} className="mb-4">
+                  {/* Header de section */}
+                  {(group.type === 'pinned' || group.type === 'category') && (
+                    <div
+                      className="flex items-center gap-2 px-2 py-1.5 mb-1 cursor-pointer hover:bg-accent/50 rounded-md transition-colors"
+                      onClick={() => toggleSection(sectionId)}
+                    >
+                      {/* Chevron pour indiquer si la section est ouverte ou fermée */}
+                      {isCollapsed ? (
+                        <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      )}
+
+                      {group.type === 'pinned' ? (
+                        <>
+                          <Pin className="h-4 w-4 text-primary fill-current flex-shrink-0" />
+                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                            {t('conversationsList.pinned') || 'Épinglées'}
+                          </h4>
+                        </>
+                      ) : (
+                        <>
+                          <Folder className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                            {group.categoryName}
+                          </h4>
+                        </>
+                      )}
+                      <Badge variant="secondary" className="ml-auto h-5 px-2 text-[10px]">
+                        {group.conversations.length}
+                      </Badge>
+                    </div>
+                  )}
+
+                  {/* Conversations du groupe - masquées si collapsed */}
+                  {!isCollapsed && (
+                    <div className="space-y-1">
+                      {group.conversations.map((conversation) => (
+                        <ConversationItem
+                          key={conversation.id}
+                          conversation={conversation}
+                          isSelected={selectedConversation?.id === conversation.id}
+                          currentUser={currentUser}
+                          onClick={() => onSelectConversation(conversation)}
+                          t={t}
+                          isPinned={preferencesMap.get(conversation.id)?.isPinned || false}
+                          tags={preferencesMap.get(conversation.id)?.tags || []}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
             {/* Indicateur de chargement de plus de conversations */}
             {isLoadingMore && (
               <div className="flex items-center justify-center py-4">

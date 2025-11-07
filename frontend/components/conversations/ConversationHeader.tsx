@@ -1,7 +1,7 @@
 'use client';
 
-import { useCallback } from 'react';
-import { ArrowLeft, UserPlus, Info, MoreVertical, Link2, Video, Ghost, Share2, Image } from 'lucide-react';
+import { useCallback, useState, useEffect } from 'react';
+import { ArrowLeft, UserPlus, Info, MoreVertical, Link2, Video, Ghost, Share2, Image, Pin, Bell, BellOff, Archive, ArchiveRestore } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -29,10 +29,55 @@ import { ConversationParticipantsDrawer } from './conversation-participants-draw
 import { CreateLinkButton } from './create-link-button';
 import { UserRoleEnum } from '@shared/types';
 import { toast } from 'sonner';
+import { ConversationImageUploadDialog } from './conversation-image-upload-dialog';
+import { AttachmentService } from '@/services/attachmentService';
+import { conversationsService } from '@/services/conversations.service';
+import { userPreferencesService } from '@/services/user-preferences.service';
 
 // Helper pour détecter si un utilisateur est anonyme
 function isAnonymousUser(user: any): user is AnonymousParticipant {
   return user && ('sessionToken' in user || 'shareLinkId' in user);
+}
+
+// Helper pour calculer le statut de l'utilisateur basé sur la dernière activité
+type UserStatus = 'online' | 'away' | 'offline';
+function getUserStatus(user: User | null | undefined): UserStatus {
+  if (!user) return 'offline';
+
+  // Si l'utilisateur a une propriété isOnline explicite et elle est false, retourner offline
+  if (user.isOnline === false) return 'offline';
+
+  // Sinon, calculer basé sur lastActiveAt
+  const lastActiveAt = user.lastActiveAt ? new Date(user.lastActiveAt) : null;
+  if (!lastActiveAt) {
+    // Si pas de lastActiveAt mais isOnline est true, considérer comme online
+    return user.isOnline ? 'online' : 'offline';
+  }
+
+  const now = Date.now();
+  const lastActive = lastActiveAt.getTime();
+  const minutesAgo = (now - lastActive) / (1000 * 60);
+
+  // Vert : actif dans les dernières 5 minutes
+  if (minutesAgo < 5) return 'online';
+
+  // Orange : absent depuis 5-30 minutes
+  if (minutesAgo < 30) return 'away';
+
+  // Gris : hors ligne depuis plus de 30 minutes
+  return 'offline';
+}
+
+// Helper pour obtenir la couleur de l'indicateur de statut
+function getStatusColor(status: UserStatus): string {
+  switch (status) {
+    case 'online':
+      return 'bg-green-500';
+    case 'away':
+      return 'bg-orange-500';
+    case 'offline':
+      return 'bg-gray-400';
+  }
 }
 
 interface ConversationHeaderProps {
@@ -68,6 +113,62 @@ export function ConversationHeader({
   t,
   showBackButton = false
 }: ConversationHeaderProps) {
+  // État pour la gestion de l'upload d'image
+  const [isImageUploadDialogOpen, setIsImageUploadDialogOpen] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+  // État pour les préférences utilisateur
+  const [isPinned, setIsPinned] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isArchived, setIsArchived] = useState(false);
+  const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
+
+  // Charger les préférences utilisateur
+  useEffect(() => {
+    // CORRECTION: Ne pas charger les préférences pour les utilisateurs anonymes
+    // Les préférences (pin, mute, archive) sont uniquement pour les utilisateurs authentifiés
+    const isUserAnonymous = isAnonymousUser(currentUser);
+
+    if (isUserAnonymous) {
+      // Utilisateur anonyme : pas de préférences
+      setIsPinned(false);
+      setIsMuted(false);
+      setIsArchived(false);
+      setIsLoadingPreferences(false);
+      return;
+    }
+
+    const loadPreferences = async () => {
+      try {
+        setIsLoadingPreferences(true);
+        const prefs = await userPreferencesService.getPreferences(conversation.id);
+        if (prefs) {
+          setIsPinned(prefs.isPinned);
+          setIsMuted(prefs.isMuted);
+          setIsArchived(prefs.isArchived);
+        } else {
+          // Réinitialiser à false si pas de préférences
+          setIsPinned(false);
+          setIsMuted(false);
+          setIsArchived(false);
+        }
+      } catch (error) {
+        console.error('Error loading preferences:', error);
+        // En cas d'erreur, réinitialiser
+        setIsPinned(false);
+        setIsMuted(false);
+        setIsArchived(false);
+      } finally {
+        setIsLoadingPreferences(false);
+      }
+    };
+    loadPreferences();
+
+    // CORRECTION: Supprimer le polling agressif de 2 secondes
+    // Les préférences changent rarement et seront mises à jour lors des actions utilisateur
+    // Si nécessaire, utiliser WebSocket pour les mises à jour en temps réel
+  }, [conversation.id, currentUser]);
+
   // Helper pour obtenir le rôle de l'utilisateur
   const getCurrentUserRole = useCallback((): UserRoleEnum => {
     if (!conversation || !currentUser?.id || !conversationParticipants.length) {
@@ -110,7 +211,8 @@ export function ConversationHeader({
       const otherParticipant = conversationParticipants.find(p => p.userId !== currentUser?.id);
       return otherParticipant?.user?.avatar;
     }
-    return undefined;
+    // Pour les conversations de groupe/public/global, retourner l'image de la conversation
+    return conversation.image || conversation.avatar;
   }, [conversation, currentUser, conversationParticipants]);
 
   // Helper pour vérifier si l'utilisateur peut utiliser les appels vidéo
@@ -127,6 +229,56 @@ export function ConversationHeader({
     ].includes(role);
   }, [currentUser?.role]);
 
+  // Helper pour vérifier si l'utilisateur peut modifier l'image de la conversation
+  const canModifyConversationImage = useCallback((): boolean => {
+    // Seulement pour les conversations group, public et global (pas direct)
+    if (conversation.type === 'direct') return false;
+
+    const role = getCurrentUserRole();
+    // Modérateurs et au-dessus peuvent modifier l'image
+    return [
+      UserRoleEnum.BIGBOSS,
+      UserRoleEnum.ADMIN,
+      UserRoleEnum.MODO,
+      UserRoleEnum.MODERATOR,
+      UserRoleEnum.AUDIT,
+      UserRoleEnum.ANALYST,
+      UserRoleEnum.CREATOR
+    ].includes(role);
+  }, [conversation.type, getCurrentUserRole]);
+
+  // Fonction pour gérer l'upload de l'image de conversation
+  const handleImageUpload = useCallback(async (file: File) => {
+    setIsUploadingImage(true);
+    try {
+      // Upload du fichier via le service d'attachments
+      const uploadResult = await AttachmentService.uploadFiles([file]);
+
+      if (uploadResult.success && uploadResult.attachments.length > 0) {
+        const imageUrl = uploadResult.attachments[0].url;
+
+        // Mettre à jour la conversation avec la nouvelle image
+        await conversationsService.updateConversation(conversation.id, {
+          image: imageUrl,
+          avatar: imageUrl
+        });
+
+        toast.success(t('conversationHeader.imageUpdated') || 'Image de la conversation mise à jour');
+        setIsImageUploadDialogOpen(false);
+
+        // Recharger la page pour afficher la nouvelle image
+        window.location.reload();
+      } else {
+        throw new Error('Upload failed');
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'upload de l\'image:', error);
+      toast.error(t('conversationHeader.imageUploadError') || 'Erreur lors de l\'upload de l\'image');
+    } finally {
+      setIsUploadingImage(false);
+    }
+  }, [conversation.id, t]);
+
   // Vérifier si l'autre participant est anonyme
   const isOtherParticipantAnonymous = useCallback(() => {
     if (conversation.type === 'direct') {
@@ -135,6 +287,55 @@ export function ConversationHeader({
     }
     return false;
   }, [conversation, currentUser, conversationParticipants]);
+
+  // Obtenir le statut de l'autre participant pour les conversations directes
+  const getOtherParticipantStatus = useCallback((): UserStatus => {
+    if (conversation.type === 'direct') {
+      const otherParticipant = conversationParticipants.find(p => p.userId !== currentUser?.id);
+      return getUserStatus(otherParticipant?.user);
+    }
+    return 'online'; // Pour les conversations de groupe, toujours afficher comme online
+  }, [conversation.type, conversationParticipants, currentUser?.id]);
+
+  // Handlers pour les préférences utilisateur
+  const handleTogglePin = useCallback(async () => {
+    try {
+      const newPinnedState = !isPinned;
+      setIsPinned(newPinnedState);
+      await userPreferencesService.togglePin(conversation.id, newPinnedState);
+      toast.success(t(newPinnedState ? 'conversationHeader.pinned' : 'conversationHeader.unpinned'));
+    } catch (error) {
+      console.error('Error toggling pin:', error);
+      setIsPinned(!isPinned); // Revert on error
+      toast.error(t('conversationHeader.pinError'));
+    }
+  }, [conversation.id, isPinned, t]);
+
+  const handleToggleMute = useCallback(async () => {
+    try {
+      const newMutedState = !isMuted;
+      setIsMuted(newMutedState);
+      await userPreferencesService.toggleMute(conversation.id, newMutedState);
+      toast.success(t(newMutedState ? 'conversationHeader.muted' : 'conversationHeader.unmuted'));
+    } catch (error) {
+      console.error('Error toggling mute:', error);
+      setIsMuted(!isMuted); // Revert on error
+      toast.error(t('conversationHeader.muteError'));
+    }
+  }, [conversation.id, isMuted, t]);
+
+  const handleToggleArchive = useCallback(async () => {
+    try {
+      const newArchivedState = !isArchived;
+      setIsArchived(newArchivedState);
+      await userPreferencesService.toggleArchive(conversation.id, newArchivedState);
+      toast.success(t(newArchivedState ? 'conversationHeader.archived' : 'conversationHeader.unarchived'));
+    } catch (error) {
+      console.error('Error toggling archive:', error);
+      setIsArchived(!isArchived); // Revert on error
+      toast.error(t('conversationHeader.archiveError'));
+    }
+  }, [conversation.id, isArchived, t]);
 
   // Fonction pour copier le lien de la conversation
   const handleShareConversation = useCallback(async () => {
@@ -164,43 +365,109 @@ export function ConversationHeader({
           </Button>
         )}
 
-        {/* Avatar */}
-        <div className="relative flex-shrink-0">
-          {isOtherParticipantAnonymous() ? (
-            <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-              <Ghost className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-            </div>
-          ) : (
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={getConversationAvatarUrl()} />
-              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                {getConversationAvatar()}
-              </AvatarFallback>
-            </Avatar>
-          )}
-          <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-500 rounded-full border-2 border-background" />
-        </div>
+        {/* Avatar - Only show for non-direct conversations, clickable for moderators+ */}
+        {conversation.type !== 'direct' && (
+          <div className="relative flex-shrink-0">
+            {canModifyConversationImage() ? (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div
+                      className="cursor-pointer group relative"
+                      onClick={() => setIsImageUploadDialogOpen(true)}
+                    >
+                      <Avatar className="h-10 w-10 ring-2 ring-transparent group-hover:ring-primary/50 transition-all">
+                        <AvatarImage src={getConversationAvatarUrl()} />
+                        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                          {getConversationAvatar()}
+                        </AvatarFallback>
+                      </Avatar>
+                      {/* Overlay avec icône camera au survol */}
+                      <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <Image className="h-4 w-4 text-white" />
+                      </div>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t('conversationHeader.changeImage') || 'Changer l\'image'}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ) : (
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={getConversationAvatarUrl()} />
+                <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                  {getConversationAvatar()}
+                </AvatarFallback>
+              </Avatar>
+            )}
+            {/* Status indicator - Only show for direct conversations */}
+            {conversation.type !== 'direct' && (
+              <div className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 ${getStatusColor('online')} rounded-full border-2 border-background`} />
+            )}
+          </div>
+        )}
 
         {/* Infos de la conversation */}
         <div className="flex-1 min-w-0">
           <h2 className="font-semibold text-base truncate flex items-center gap-1.5">
-            {isOtherParticipantAnonymous() && (
-              <Ghost className="h-4 w-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+            {/* For direct conversations, show interlocutor avatar before name */}
+            {conversation.type === 'direct' && (
+              <div className="relative flex-shrink-0">
+                {isOtherParticipantAnonymous() ? (
+                  <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                    <Ghost className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                  </div>
+                ) : (
+                  <>
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={getConversationAvatarUrl()} />
+                      <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                        {getConversationAvatar()}
+                      </AvatarFallback>
+                    </Avatar>
+                    {/* Accurate status indicator for direct conversations */}
+                    <div className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 ${getStatusColor(getOtherParticipantStatus())} rounded-full border-2 border-background`} />
+                  </>
+                )}
+              </div>
             )}
             <span className="truncate">{getConversationName()}</span>
           </h2>
 
-          <div className="text-sm text-muted-foreground">
-            <ConversationParticipants
-              conversationId={conversation.id}
-              participants={conversationParticipants}
-              currentUser={currentUser}
-              isGroup={conversation.type !== 'direct'}
-              conversationType={conversation.type}
-              typingUsers={typingUsers.map(u => ({ userId: u.userId, conversationId: u.conversationId }))}
-              className="truncate"
-            />
-          </div>
+          {/* Show participant info and typing only for non-direct conversations */}
+          {conversation.type !== 'direct' ? (
+            <div className="text-sm text-muted-foreground">
+              <ConversationParticipants
+                conversationId={conversation.id}
+                participants={conversationParticipants}
+                currentUser={currentUser}
+                isGroup={conversation.type !== 'direct'}
+                conversationType={conversation.type}
+                typingUsers={typingUsers.map(u => ({ userId: u.userId, conversationId: u.conversationId }))}
+                className="truncate"
+              />
+            </div>
+          ) : (
+            /* For direct conversations, show typing indicator with username */
+            <div className="text-sm text-muted-foreground">
+              {(() => {
+                const otherTypingUsers = typingUsers.filter(u => u.userId !== currentUser.id);
+                if (otherTypingUsers.length > 0) {
+                  const typingUser = otherTypingUsers[0];
+                  const typingUserName = typingUser.username || getConversationName();
+                  return (
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs">
+                        {typingUserName} {t('conversationParticipants.typing') || 'est en train d\'écrire...'}
+                      </span>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+            </div>
+          )}
         </div>
       </div>
 
@@ -228,18 +495,20 @@ export function ConversationHeader({
           </TooltipProvider>
         )}
 
-        {/* Participants drawer - S'ouvre depuis la gauche */}
-        <ConversationParticipantsDrawer
-          conversationId={conversation.id}
-          participants={conversationParticipants}
-          currentUser={currentUser}
-          isGroup={conversation.type !== 'direct'}
-          conversationType={conversation.type}
-          userConversationRole={getCurrentUserRole()}
-          onParticipantRemoved={onParticipantRemoved}
-          onParticipantAdded={onParticipantAdded}
-          onLinkCreated={onLinkCreated}
-        />
+        {/* Participants drawer - Only for group conversations */}
+        {conversation.type !== 'direct' && (
+          <ConversationParticipantsDrawer
+            conversationId={conversation.id}
+            participants={conversationParticipants}
+            currentUser={currentUser}
+            isGroup={conversation.type !== 'direct'}
+            conversationType={conversation.type}
+            userConversationRole={getCurrentUserRole()}
+            onParticipantRemoved={onParticipantRemoved}
+            onParticipantAdded={onParticipantAdded}
+            onLinkCreated={onLinkCreated}
+          />
+        )}
 
         {/* Bouton de création de lien rapide - seulement pour les conversations de groupe et avec les bons rôles */}
         {conversation.type !== 'direct' && 
@@ -283,6 +552,34 @@ export function ConversationHeader({
               </DropdownMenuItem>
             )}
 
+            <DropdownMenuSeparator />
+
+            {/* User Preferences */}
+            <DropdownMenuItem onClick={handleTogglePin} disabled={isLoadingPreferences}>
+              <Pin className={cn("h-4 w-4 mr-2", isPinned && "fill-current")} />
+              {t(isPinned ? 'conversationHeader.unpin' : 'conversationHeader.pin')}
+            </DropdownMenuItem>
+
+            <DropdownMenuItem onClick={handleToggleMute} disabled={isLoadingPreferences}>
+              {isMuted ? (
+                <Bell className="h-4 w-4 mr-2" />
+              ) : (
+                <BellOff className="h-4 w-4 mr-2" />
+              )}
+              {t(isMuted ? 'conversationHeader.unmute' : 'conversationHeader.mute')}
+            </DropdownMenuItem>
+
+            <DropdownMenuItem onClick={handleToggleArchive} disabled={isLoadingPreferences}>
+              {isArchived ? (
+                <ArchiveRestore className="h-4 w-4 mr-2" />
+              ) : (
+                <Archive className="h-4 w-4 mr-2" />
+              )}
+              {t(isArchived ? 'conversationHeader.unarchive' : 'conversationHeader.archive')}
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator />
+
             <DropdownMenuItem onClick={handleShareConversation}>
               <Share2 className="h-4 w-4 mr-2" />
               {t('conversationHeader.share') || 'Partager'}
@@ -300,6 +597,15 @@ export function ConversationHeader({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* Dialog pour l'upload d'image de conversation */}
+      <ConversationImageUploadDialog
+        open={isImageUploadDialogOpen}
+        onClose={() => setIsImageUploadDialogOpen(false)}
+        onImageUploaded={handleImageUpload}
+        isUploading={isUploadingImage}
+        conversationTitle={conversation.title || conversation.id}
+      />
     </div>
   );
 }

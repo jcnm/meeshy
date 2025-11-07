@@ -58,6 +58,14 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1, // Empêche le zoom sur mobile lors du focus des inputs
+  userScalable: false, // Désactive le zoom utilisateur
+  viewportFit: 'cover',
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{

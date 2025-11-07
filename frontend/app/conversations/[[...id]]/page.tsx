@@ -22,8 +22,6 @@ function ConversationPageContent() {
   const params = useParams();
   const conversationId = Array.isArray(params.id) ? params.id[0] : params.id;
 
-  console.log('[ConversationPage] Params depuis useParams:', { params, conversationId });
-
   return <ConversationLayout selectedConversationId={conversationId} />;
 }
 

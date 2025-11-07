@@ -98,6 +98,49 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   // États modaux et UI
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
+  // Resize handler for conversation list (desktop only)
+  const [conversationListWidth, setConversationListWidth] = useState(() => {
+    if (typeof window === 'undefined') return 384; // Default 96*4 (lg:w-96)
+    const saved = localStorage.getItem('conversationListWidth');
+    return saved ? parseInt(saved, 10) : 384;
+  });
+  const [isResizing, setIsResizing] = useState(false);
+  const resizeRef = useRef<HTMLDivElement>(null);
+
+  // Save width to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('conversationListWidth', conversationListWidth.toString());
+  }, [conversationListWidth]);
+
+  // Handle resize
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isResizing) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const newWidth = e.clientX;
+      // Constrain between 280px (min) and 600px (max)
+      const constrainedWidth = Math.max(280, Math.min(600, newWidth));
+      setConversationListWidth(constrainedWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing]);
   const [isMobile, setIsMobile] = useState(false);
   const [showConversationList, setShowConversationList] = useState(true);
   const [newMessage, setNewMessage] = useState('');
@@ -222,7 +265,8 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     removeMessage
   } = useConversationMessages(selectedConversation?.id || null, user!, {
     limit: 20,
-    enabled: !!selectedConversation?.id
+    enabled: !!selectedConversation?.id,
+    containerRef: messagesScrollRef // Pass container ref to hook to avoid warnings
   });
 
     // Callback pour gérer les événements de frappe
@@ -309,7 +353,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       removeMessage(messageId);
       toast.info(tCommon('messages.messageDeletedByOther'));
     }, [removeMessage, tCommon]),
-    onNewMessage: useCallback((message: any) => {
+    onNewMessage: useCallback(async (message: any) => {
       // Utiliser la ref au lieu de selectedConversation?.id
       const currentConvId = selectedConversationIdRef.current;
 
@@ -336,8 +380,16 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         const conversationIndex = prevConversations.findIndex(c => c.id === message.conversationId);
 
         if (conversationIndex === -1) {
-          // Conversation non trouvée dans la liste, ne rien faire
-          console.log(`[ConversationLayout-${instanceId}] Conversation ${message.conversationId} non trouvée dans la liste`);
+          // Conversation non trouvée dans la liste
+          console.log(`[ConversationLayout-${instanceId}] ⚠️ Conversation ${message.conversationId} non trouvée dans la liste - refresh nécessaire`);
+
+          // Déclencher un refresh asynchrone de la liste pour inclure cette conversation
+          // Utiliser setTimeout pour ne pas bloquer le traitement du message
+          setTimeout(() => {
+            console.log(`[ConversationLayout-${instanceId}] 🔄 Rafraîchissement de la liste des conversations...`);
+            refreshConversations();
+          }, 100);
+
           return prevConversations;
         }
 
@@ -345,6 +397,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         const updatedConversation = {
           ...prevConversations[conversationIndex],
           lastMessage: message,
+          lastMessageAt: message.createdAt || new Date(),
           lastActivityAt: message.createdAt || new Date()
         };
 
@@ -371,7 +424,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       } else {
         console.log(`[ConversationLayout-${instanceId}] Message ignoré pour la vue (autre conversation)`);
       }
-    }, [addMessage, instanceId, setConversations]),
+    }, [addMessage, instanceId, setConversations, refreshConversations]),
     onTranslation: useCallback((messageId: string, translations: any[]) => {
       console.log('🌐 [ConversationLayoutV2] Traductions reçues pour message:', messageId, translations);
       
@@ -688,7 +741,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   }, [isMobile, selectedConversationId, localSelectedConversationId, router, instanceId]);
 
   // Start video call
-  const handleStartCall = useCallback(() => {
+  const handleStartCall = useCallback(async () => {
     console.log('🎥🎥🎥 [ConversationLayout] handleStartCall CLICKED 🎥🎥🎥');
     logger.debug('[ConversationLayout]', '🎥 handleStartCall called', {
       hasConversation: !!selectedConversation,
@@ -713,49 +766,172 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     console.log('✅ [ConversationLayout] Starting video call for conversation:', selectedConversation.id);
     logger.info('[ConversationLayout]', 'Starting video call - conversationId: ' + selectedConversation.id);
 
-    const socket = meeshySocketIOService.getSocket();
-    console.log('🔌 [ConversationLayout] Socket status:', {
-      hasSocket: !!socket,
-      isConnected: socket?.connected,
-      socketId: socket?.id
-    });
-    logger.debug('[ConversationLayout]', '🔌 Socket status', {
-      hasSocket: !!socket,
-      isConnected: socket?.connected,
-      socketId: socket?.id
-    });
+    // SAFARI FIX: Request media permissions IMMEDIATELY in user gesture context
+    // Safari blocks getUserMedia() if not called synchronously from user interaction
+    console.log('🎤📹 [ConversationLayout] Requesting media permissions (Safari-compatible)...');
+    logger.debug('[ConversationLayout]', 'Requesting media permissions in click handler for Safari compatibility');
 
-    if (!socket) {
-      console.error('❌ [ConversationLayout] No socket connection available');
-      toast.error('Connection error. Please try again.');
-      logger.error('[ConversationLayout]', 'Cannot start call: no socket connection');
-      return;
+    let stream: MediaStream | null = null;
+
+    try {
+      // Request permissions synchronously in the click handler
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+        video: {
+          width: { ideal: 640, max: 1280 },
+          height: { ideal: 480, max: 720 },
+          frameRate: { ideal: 24, max: 30 },
+          facingMode: 'user',
+        },
+      });
+
+      console.log('✅ [ConversationLayout] Media permissions granted!', {
+        audioTracks: stream.getAudioTracks().length,
+        videoTracks: stream.getVideoTracks().length,
+      });
+      logger.info('[ConversationLayout]', 'Media permissions granted', {
+        audioTracks: stream.getAudioTracks().length,
+        videoTracks: stream.getVideoTracks().length,
+      });
+
+      // Store the stream temporarily - it will be used by CallInterface
+      (window as any).__preauthorizedMediaStream = stream;
+
+      // Continue with call initiation
+      const socket = meeshySocketIOService.getSocket();
+      console.log('🔌 [ConversationLayout] Socket status:', {
+        hasSocket: !!socket,
+        isConnected: socket?.connected,
+        socketId: socket?.id
+      });
+      logger.debug('[ConversationLayout]', '🔌 Socket status', {
+        hasSocket: !!socket,
+        isConnected: socket?.connected,
+        socketId: socket?.id
+      });
+
+      if (!socket) {
+        console.error('❌ [ConversationLayout] No socket connection available');
+        toast.error('Connection error. Please try again.');
+        logger.error('[ConversationLayout]', 'Cannot start call: no socket connection');
+
+        // Clean up stream
+        stream.getTracks().forEach(track => track.stop());
+        delete (window as any).__preauthorizedMediaStream;
+        return;
+      }
+
+      if (!socket.connected) {
+        console.error('❌ [ConversationLayout] Socket not connected');
+        toast.error('Socket not connected. Please wait...');
+        logger.error('[ConversationLayout]', 'Cannot start call: socket not connected');
+
+        // Clean up stream
+        stream.getTracks().forEach(track => track.stop());
+        delete (window as any).__preauthorizedMediaStream;
+        return;
+      }
+
+      const callData = {
+        conversationId: selectedConversation.id,
+        type: 'video',
+        settings: {
+          audioEnabled: true,
+          videoEnabled: true,
+        },
+      };
+
+      console.log('📤 [ConversationLayout] Emitting call:initiate event:', callData);
+      logger.info('[ConversationLayout]', '📤 Emitting call:initiate', callData);
+
+      // Emit call:initiate event
+      (socket as any).emit('call:initiate', callData);
+
+      console.log('✅ [ConversationLayout] call:initiate event sent successfully');
+      toast.success('Starting call...');
+
+      // Set up cleanup listener for errors
+      // If call:error arrives within 2 seconds, cleanup the stream
+      const errorCleanupTimeout = setTimeout(() => {
+        // Remove error listener after 2 seconds (call should start by then)
+        (socket as any).off('call:error', errorCleanupHandler);
+      }, 2000);
+
+      const errorCleanupHandler = (error: any) => {
+        console.error('❌ [ConversationLayout] Call error received:', error);
+        logger.error('[ConversationLayout]', 'Call error received', { error });
+
+        // Check if error is "call already active"
+        const errorMessage = error?.message || String(error) || '';
+        const isCallAlreadyActive = errorMessage.includes('A call is already active') ||
+                                     errorMessage.includes('CALL_ALREADY_ACTIVE');
+
+        if (isCallAlreadyActive) {
+          console.log('🔄 [ConversationLayout] Call already active - forcing cleanup and retry');
+          toast.info('Cleaning up previous call...');
+
+          // Force leave any existing calls in the conversation
+          (socket as any).emit('call:force-leave', {
+            conversationId: selectedConversation.id
+          });
+
+          // Wait 500ms then retry
+          setTimeout(() => {
+            console.log('🔄 [ConversationLayout] Retrying call initiation after cleanup');
+            (socket as any).emit('call:initiate', callData);
+            toast.success('Retrying call...');
+          }, 500);
+
+          // Keep the stream for retry - don't clean it up
+          // Clear timeout but keep listener for retry attempt
+          clearTimeout(errorCleanupTimeout);
+          return;
+        }
+
+        // For other errors, clean up the pre-authorized stream
+        const preauthorizedStream = (window as any).__preauthorizedMediaStream;
+        if (preauthorizedStream) {
+          preauthorizedStream.getTracks().forEach((track: MediaStreamTrack) => {
+            track.stop();
+            console.log('🛑 [ConversationLayout] Stopped track:', track.kind);
+          });
+          delete (window as any).__preauthorizedMediaStream;
+        }
+
+        // Clear timeout
+        clearTimeout(errorCleanupTimeout);
+      };
+
+      // Listen for call:error for cleanup
+      (socket as any).once('call:error', errorCleanupHandler);
+
+    } catch (error: any) {
+      console.error('❌ [ConversationLayout] Media permission denied or error:', error);
+      logger.error('[ConversationLayout]', 'Failed to get media permissions', { error });
+
+      // Clean up stream if it was created
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        delete (window as any).__preauthorizedMediaStream;
+      }
+
+      // Provide user-friendly error messages
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        toast.error('Camera/microphone permission denied. Please allow access in your browser settings.');
+      } else if (error.name === 'NotFoundError') {
+        toast.error('No camera or microphone found. Please connect a device.');
+      } else if (error.name === 'NotReadableError') {
+        toast.error('Camera/microphone is already in use by another application.');
+      } else {
+        toast.error('Failed to access camera/microphone: ' + error.message);
+      }
+
+      return; // Don't proceed with call if permissions failed
     }
-
-    if (!socket.connected) {
-      console.error('❌ [ConversationLayout] Socket not connected');
-      toast.error('Socket not connected. Please wait...');
-      logger.error('[ConversationLayout]', 'Cannot start call: socket not connected');
-      return;
-    }
-
-    const callData = {
-      conversationId: selectedConversation.id,
-      type: 'video',
-      settings: {
-        audioEnabled: true,
-        videoEnabled: true,
-      },
-    };
-
-    console.log('📤 [ConversationLayout] Emitting call:initiate event:', callData);
-    logger.info('[ConversationLayout]', '📤 Emitting call:initiate', callData);
-
-    // Emit call:initiate event
-    (socket as any).emit('call:initiate', callData);
-
-    console.log('✅ [ConversationLayout] call:initiate event sent successfully');
-    toast.success('Starting call...');
   }, [selectedConversation]);
 
   // Gérer la réponse à un message
@@ -939,6 +1115,23 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       }
 
       console.log('[ConversationLayout] Message envoyé avec succès - en attente du retour serveur');
+
+      // CORRECTION MAJEURE: Marquer la conversation comme lue après l'envoi d'un message
+      if (selectedConversation?.id) {
+        conversationsService.markAsRead(selectedConversation.id).then(() => {
+          console.log('[ConversationLayout] ✅ Conversation marquée comme lue après envoi de message');
+
+          // Mettre à jour localement le unreadCount de cette conversation
+          setConversations(prev => prev.map(conv =>
+            conv.id === selectedConversation.id
+              ? { ...conv, unreadCount: 0 }
+              : conv
+          ));
+        }).catch(error => {
+          console.error('[ConversationLayout] ❌ Erreur marquage comme lu après envoi:', error);
+        });
+      }
+
       setNewMessage('');
       setAttachmentIds([]); // Réinitialiser les attachments
       setAttachmentMimeTypes([]); // Réinitialiser les MIME types
@@ -1202,10 +1395,12 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       clearMessages();
       previousConversationIdRef.current = currentId;
 
-      // Marquer la conversation comme lue
-      conversationsService.markAsRead(currentId).catch(error => {
-        console.error(`[ConversationLayout-${instanceId}] Erreur lors du marquage comme lu:`, error);
-      });
+      // CORRECTION MINEURE: Ne PAS marquer comme lu ici automatiquement au changement de conversation
+      // On veut marquer comme lu uniquement quand l'utilisateur arrive au dernier message
+      // Le marquage se fera via le scroll ou l'envoi de message
+      // conversationsService.markAsRead(currentId).catch(error => {
+      //   console.error(`[ConversationLayout-${instanceId}] Erreur lors du marquage comme lu:`, error);
+      // });
     } else if (currentId === previousId && currentId) {
       // Même conversation, pas de rechargement
       console.log(`[ConversationLayout-${instanceId}] Même conversation, pas de rechargement: ${currentId}`);
@@ -1216,6 +1411,68 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     }
   }, [selectedConversation?.id, loadParticipants, clearMessages, instanceId]);
 
+  // CORRECTION MAJEURE: Marquer la conversation comme lue quand on scroll jusqu'au dernier message
+  useEffect(() => {
+    const container = messagesScrollRef.current;
+    const conversationId = selectedConversation?.id;
+
+    if (!container || !conversationId) {
+      return;
+    }
+
+    let markAsReadTimeout: NodeJS.Timeout | null = null;
+    let hasMarkedAsRead = false;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+
+      // Calculer la distance depuis le bottom
+      // (scrollHeight - scrollTop - clientHeight donne la distance restante)
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+
+      // Si on est à moins de 100px du bottom (ou déjà au bottom) et qu'on n'a pas encore marqué
+      if (distanceFromBottom < 100 && !hasMarkedAsRead) {
+        console.log('[ConversationLayout] 📍 Utilisateur au dernier message, marquage comme lu dans 500ms');
+
+        // Utiliser un debounce de 500ms pour éviter les appels répétés
+        if (markAsReadTimeout) {
+          clearTimeout(markAsReadTimeout);
+        }
+
+        markAsReadTimeout = setTimeout(() => {
+          hasMarkedAsRead = true;
+
+          // Marquer la conversation comme lue
+          conversationsService.markAsRead(conversationId).then(() => {
+            console.log('[ConversationLayout] ✅ Conversation marquée comme lue (scroll)');
+
+            // Mettre à jour localement le unreadCount
+            setConversations(prev => prev.map(conv =>
+              conv.id === conversationId
+                ? { ...conv, unreadCount: 0 }
+                : conv
+            ));
+          }).catch(error => {
+            console.error('[ConversationLayout] ❌ Erreur marquage comme lu (scroll):', error);
+          });
+        }, 500);
+      }
+    };
+
+    // Ajouter le listener de scroll
+    container.addEventListener('scroll', handleScroll);
+
+    // Vérifier au montage (au cas où on est déjà en bas)
+    handleScroll();
+
+    // Cleanup
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      if (markAsReadTimeout) {
+        clearTimeout(markAsReadTimeout);
+      }
+    };
+  }, [selectedConversation?.id, setConversations]);
 
   // Loader d'authentification
   if (isAuthChecking) {
@@ -1275,6 +1532,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               hasMore={hasMore}
               isMobile={isMobile}
               conversationType={(selectedConversation.type as any) === 'anonymous' ? 'direct' : (selectedConversation.type as any) === 'broadcast' ? 'public' : selectedConversation.type as any}
+              scrollContainerRef={messagesScrollRef}
               userRole={user.role as UserRoleEnum}
               conversationId={selectedConversation.id}
               addTranslatingState={addTranslatingState}
@@ -1336,10 +1594,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         </div>
       ) : (
         /* Mode desktop ou mobile sans conversation */
-        <div className={cn(
-          "flex flex-col bg-gradient-to-br from-blue-50 to-indigo-100 overflow-hidden",
-          isMobile ? "min-h-screen" : "h-screen"
-        )}>
+        <div className="flex flex-col bg-gradient-to-br from-blue-50 to-indigo-100 overflow-hidden h-screen">
           <DashboardLayout
             title={t('conversationLayout.conversations.title')}
             hideHeaderOnMobile={false}
@@ -1355,19 +1610,22 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
             >
         {/* Liste des conversations - Sidebar gauche - Toujours visible en desktop, masquée en mobile si conversation sélectionnée */}
         {(!isMobile || !selectedConversationId) && (
-          <aside 
-            className={cn(
-              "flex-shrink-0 bg-white dark:bg-gray-950 border-r-2 border-gray-200 dark:border-gray-800 transition-all duration-300 shadow-lg",
-              isMobile ? (
-                showConversationList 
-                  ? "fixed top-16 left-0 right-0 bottom-0 z-40 w-full" 
-                  : "hidden"
-              ) : "relative w-80 lg:w-96 h-full"
-            )}
-            role="complementary"
-            aria-label={t('conversationLayout.conversationsList')}
-          >
-          <ConversationList
+          <>
+            <aside
+              ref={resizeRef}
+              style={!isMobile ? { width: `${conversationListWidth}px` } : undefined}
+              className={cn(
+                "flex-shrink-0 bg-white dark:bg-gray-950 border-r-2 border-gray-200 dark:border-gray-800 shadow-lg",
+                isMobile ? (
+                  showConversationList
+                    ? "fixed top-16 left-0 right-0 bottom-0 z-40 w-full"
+                    : "hidden"
+                ) : "relative h-full"
+              )}
+              role="complementary"
+              aria-label={t('conversationLayout.conversationsList')}
+            >
+            <ConversationList
             conversations={conversations}
             selectedConversation={selectedConversation}
             currentUser={user}
@@ -1384,6 +1642,29 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
             tSearch={(key: string) => t(`search.${key}`)}
           />
           </aside>
+
+          {/* Resize handle - Desktop only */}
+          {!isMobile && (
+            <div
+              onMouseDown={handleMouseDown}
+              className={cn(
+                "w-1 hover:w-2 bg-transparent hover:bg-primary/20 cursor-col-resize transition-all relative group",
+                isResizing && "w-2 bg-primary/30"
+              )}
+              style={{
+                userSelect: 'none',
+                touchAction: 'none',
+              }}
+            >
+              <div className="absolute inset-y-0 -left-1 -right-1" />
+              {/* Visual indicator */}
+              <div className={cn(
+                "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-8 rounded-full bg-muted-foreground/20 opacity-0 group-hover:opacity-100 transition-opacity",
+                isResizing && "opacity-100 bg-primary/50"
+              )} />
+            </div>
+          )}
+          </>
         )}
 
         {/* Zone de conversation principale - Desktop uniquement */}
@@ -1443,6 +1724,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                   hasMore={hasMore}
                   isMobile={false}
                   conversationType={(selectedConversation.type as any) === 'anonymous' ? 'direct' : (selectedConversation.type as any) === 'broadcast' ? 'public' : selectedConversation.type as any}
+                  scrollContainerRef={messagesScrollRef}
                   userRole={user.role as UserRoleEnum}
                   conversationId={selectedConversation.id}
                   addTranslatingState={addTranslatingState}
@@ -1487,7 +1769,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               </div>
             </div>
           ) : (
-            <div className="flex-1 flex items-center justify-center p-4 h-full bg-white dark:bg-gray-950">
+            <div className="flex-1 flex items-center justify-center p-4 bg-white dark:bg-gray-950 overflow-hidden">
               <ConversationEmptyState
                 conversationsCount={conversations.length}
                 onCreateConversation={() => setIsCreateModalOpen(true)}

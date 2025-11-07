@@ -6,6 +6,7 @@
 'use client';
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
   Download,
@@ -48,6 +49,13 @@ export function VideoLightbox({
   const animationFrameRef = useRef<number | null>(null);
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
+
+  // Update currentIndex when initialIndex changes (when clicking different video)
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentIndex(initialIndex);
+    }
+  }, [initialIndex, isOpen]);
 
   // Reset état quand on change de vidéo
   useEffect(() => {
@@ -361,7 +369,7 @@ export function VideoLightbox({
 
   if (!isOpen || !currentVideo) return null;
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
@@ -609,6 +617,7 @@ export function VideoLightbox({
           </p>
         </div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

@@ -205,8 +205,10 @@ exports.Prisma.ConversationShareLinkScalarFieldEnum = {
   allowAnonymousFiles: 'allowAnonymousFiles',
   allowAnonymousImages: 'allowAnonymousImages',
   allowViewHistory: 'allowViewHistory',
+  requireAccount: 'requireAccount',
   requireNickname: 'requireNickname',
   requireEmail: 'requireEmail',
+  requireBirthday: 'requireBirthday',
   allowedCountries: 'allowedCountries',
   allowedLanguages: 'allowedLanguages',
   allowedIpRanges: 'allowedIpRanges',
@@ -222,6 +224,7 @@ exports.Prisma.AnonymousParticipantScalarFieldEnum = {
   lastName: 'lastName',
   username: 'username',
   email: 'email',
+  birthday: 'birthday',
   sessionToken: 'sessionToken',
   ipAddress: 'ipAddress',
   country: 'country',
@@ -288,7 +291,8 @@ exports.Prisma.MessageAttachmentScalarFieldEnum = {
   channels: 'channels',
   uploadedBy: 'uploadedBy',
   isAnonymous: 'isAnonymous',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  metadata: 'metadata'
 };
 
 exports.Prisma.MessageStatusScalarFieldEnum = {
@@ -548,6 +552,34 @@ exports.Prisma.TranslationCallScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.UserConversationPreferencesScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  conversationId: 'conversationId',
+  isPinned: 'isPinned',
+  isMuted: 'isMuted',
+  isArchived: 'isArchived',
+  tags: 'tags',
+  categoryId: 'categoryId',
+  orderInCategory: 'orderInCategory',
+  customName: 'customName',
+  reaction: 'reaction',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.UserConversationCategoryScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  color: 'color',
+  icon: 'icon',
+  order: 'order',
+  isExpanded: 'isExpanded',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -607,7 +639,9 @@ exports.Prisma.ModelName = {
   CallSession: 'CallSession',
   CallParticipant: 'CallParticipant',
   Transcription: 'Transcription',
-  TranslationCall: 'TranslationCall'
+  TranslationCall: 'TranslationCall',
+  UserConversationPreferences: 'UserConversationPreferences',
+  UserConversationCategory: 'UserConversationCategory'
 };
 
 /**

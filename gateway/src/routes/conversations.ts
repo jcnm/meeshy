@@ -317,12 +317,12 @@ export async function conversationRoutes(fastify: FastifyInstance) {
   }
   
   // Route pour obtenir toutes les conversations de l'utilisateur
-  fastify.get<{ Querystring: { limit?: string; offset?: string } }>('/conversations', {
+  fastify.get<{ Querystring: { limit?: string; offset?: string; includeCount?: string } }>('/conversations', {
     preValidation: [optionalAuth]
-  }, async (request: FastifyRequest<{ Querystring: { limit?: string; offset?: string } }>, reply) => {
+  }, async (request: FastifyRequest<{ Querystring: { limit?: string; offset?: string; includeCount?: string } }>, reply) => {
     try {
       const authRequest = request as UnifiedAuthRequest;
-      
+
       // Vérifier que l'utilisateur est authentifié
       if (!authRequest.authContext.isAuthenticated) {
         return reply.status(403).send({
@@ -330,12 +330,13 @@ export async function conversationRoutes(fastify: FastifyInstance) {
           error: 'Authentification requise pour accéder aux conversations'
         });
       }
-      
+
       const userId = authRequest.authContext.userId;
-      
-      // Paramètres de pagination
-      const limit = parseInt(request.query.limit || '20', 10);
+
+      // Paramètres de pagination (réduit à 15 par défaut pour améliorer la performance)
+      const limit = Math.min(parseInt(request.query.limit || '15', 10), 50); // Max 50
       const offset = parseInt(request.query.offset || '0', 10);
+      const includeCount = request.query.includeCount === 'true';
 
       const conversations = await prisma.conversation.findMany({
         where: {
@@ -354,24 +355,33 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         },
         skip: offset,
         take: limit,
-        include: {
+        select: {
+          id: true,
+          title: true,
+          type: true,
+          identifier: true,
+          isActive: true,
+          createdAt: true,
+          lastMessageAt: true,
           members: {
-            take: 10, // Limiter à 10 membres pour optimiser la performance
-            include: {
+            take: 5, // Réduit à 5 membres au lieu de 10
+            select: {
+              userId: true,
+              role: true,
+              isActive: true,
               user: {
                 select: {
                   id: true,
                   username: true,
                   displayName: true,
                   avatar: true,
-                  isOnline: true,
-                  lastSeen: true
+                  isOnline: true
                 }
               }
             }
           },
           anonymousParticipants: {
-            take: 5, // Limiter à 5 participants anonymes
+            take: 3, // Réduit à 3 participants anonymes
             where: {
               isActive: true
             },
@@ -380,9 +390,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
               username: true,
               firstName: true,
               lastName: true,
-              isOnline: true,
-              lastSeenAt: true,
-              joinedAt: true
+              isOnline: true
             }
           },
           messages: {
@@ -391,7 +399,11 @@ export async function conversationRoutes(fastify: FastifyInstance) {
             },
             orderBy: { createdAt: 'desc' },
             take: 1,
-            include: {
+            select: {
+              id: true,
+              content: true,
+              createdAt: true,
+              senderId: true,
               sender: {
                 select: {
                   id: true,
@@ -401,76 +413,88 @@ export async function conversationRoutes(fastify: FastifyInstance) {
                 }
               }
             }
-          },
-          _count: {
-            select: {
-              messages: true,
-              members: true,
-              anonymousParticipants: true
-            }
           }
         },
         orderBy: { lastMessageAt: 'desc' }
       });
 
-      // Compter le nombre total de conversations (pour la pagination)
-      const totalCount = await prisma.conversation.count({
+      // Optimisation : Calculer tous les unreadCounts en une seule requête groupée au lieu de N+1
+      const conversationIds = conversations.map(c => c.id);
+
+      const unreadCounts = await prisma.message.groupBy({
+        by: ['conversationId'],
         where: {
-          OR: [
-            {
-              members: {
-                some: {
-                  userId: userId,
-                  isActive: true
-                }
+          conversationId: { in: conversationIds },
+          isDeleted: false,
+          NOT: {
+            status: {
+              some: {
+                userId: userId
               }
             }
-          ],
-          isActive: true
+          }
+        },
+        _count: {
+          id: true
         }
       });
-      
-      const hasMore = offset + conversations.length < totalCount;
 
-      // Calculer le nombre de messages non lus pour chaque conversation
-      const conversationsWithUnreadCount = await Promise.all(
-        conversations.map(async (conversation) => {
-          const unreadCount = await prisma.message.count({
-            where: {
-              conversationId: conversation.id,
-              isDeleted: false,
-              NOT: {
-                status: {
+      // Créer un map pour un accès O(1)
+      const unreadCountMap = new Map(
+        unreadCounts.map(uc => [uc.conversationId, uc._count.id])
+      );
+
+      // Compter le nombre total de conversations (optionnel pour performance)
+      let totalCount = 0;
+      let hasMore = true;
+
+      if (includeCount || offset === 0) {
+        totalCount = await prisma.conversation.count({
+          where: {
+            OR: [
+              {
+                members: {
                   some: {
-                    userId: userId
+                    userId: userId,
+                    isActive: true
                   }
                 }
               }
-            }
-          });
+            ],
+            isActive: true
+          }
+        });
+        hasMore = offset + conversations.length < totalCount;
+      } else {
+        // Si on ne compte pas, on estime hasMore en vérifiant si on a reçu le nombre limit
+        hasMore = conversations.length === limit;
+      }
 
-          // S'assurer qu'un titre existe toujours
-          const displayTitle = conversation.title && conversation.title.trim() !== ''
-            ? conversation.title
-            : generateDefaultConversationTitle(
-                conversation.members.map((m: any) => ({
-                  id: m.userId,
-                  displayName: m.user?.displayName,
-                  username: m.user?.username,
-                  firstName: m.user?.firstName,
-                  lastName: m.user?.lastName
-                })),
-                userId
-              );
+      // Mapper les conversations avec unreadCount (sans Promise.all - tout est déjà chargé)
+      const conversationsWithUnreadCount = conversations.map((conversation) => {
+        const unreadCount = unreadCountMap.get(conversation.id) || 0;
 
-          return {
-            ...conversation,
-            title: displayTitle,
-            lastMessage: conversation.messages[0] || null,
-            unreadCount
-          };
-        })
-      );
+        // S'assurer qu'un titre existe toujours
+        const displayTitle = conversation.title && conversation.title.trim() !== ''
+          ? conversation.title
+          : generateDefaultConversationTitle(
+              conversation.members.map((m: any) => ({
+                id: m.userId,
+                displayName: m.user?.displayName,
+                username: m.user?.username,
+                firstName: m.user?.firstName,
+                lastName: m.user?.lastName
+              })),
+              userId
+            );
+
+        return {
+          ...conversation,
+          title: displayTitle,
+          lastMessage: conversation.messages[0] || null,
+          unreadCount
+        };
+      });
 
       reply.send({
         success: true,
@@ -824,7 +848,18 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
       const messages = await prisma.message.findMany({
         where: whereClause,
-        include: {
+        select: {
+          id: true,
+          content: true,
+          originalLanguage: true,
+          createdAt: true,
+          updatedAt: true,
+          editedAt: true,
+          senderId: true,
+          anonymousSenderId: true,
+          conversationId: true,
+          isDeleted: true,
+          replyToId: true,
           sender: {
             select: {
               id: true,
@@ -858,6 +893,9 @@ export async function conversationRoutes(fastify: FastifyInstance) {
             }
           },
           status: {
+            where: {
+              userId: userId // Charger seulement le status de l'utilisateur courant
+            },
             select: {
               userId: true,
               readAt: true
@@ -868,8 +906,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
               id: true,
               targetLanguage: true,
               translatedContent: true,
-              translationModel: true,
-              cacheKey: true
+              translationModel: true
             }
           },
           reactions: {
@@ -879,10 +916,20 @@ export async function conversationRoutes(fastify: FastifyInstance) {
               userId: true,
               anonymousUserId: true,
               createdAt: true
-            }
+            },
+            orderBy: {
+              createdAt: 'desc'
+            },
+            take: 20 // Limiter à 20 réactions par message
           },
           replyTo: {
-            include: {
+            select: {
+              id: true,
+              content: true,
+              originalLanguage: true,
+              createdAt: true,
+              senderId: true,
+              anonymousSenderId: true,
               sender: {
                 select: {
                   id: true,
@@ -896,72 +943,56 @@ export async function conversationRoutes(fastify: FastifyInstance) {
                   id: true,
                   username: true,
                   firstName: true,
-                  lastName: true,
-                  language: true
+                  lastName: true
                 }
               },
               attachments: {
                 select: {
                   id: true,
                   fileName: true,
-                  originalName: true,
                   mimeType: true,
-                  fileSize: true,
                   fileUrl: true,
-                  thumbnailUrl: true,
-                  width: true,
-                  height: true,
-                  createdAt: true
-                }
+                  thumbnailUrl: true
+                },
+                take: 3 // Limiter à 3 attachments dans le replyTo
               },
-              status: {
+              // Ne pas charger les translations/reactions du replyTo pour optimiser
+              _count: {
                 select: {
-                  userId: true,
-                  readAt: true
-                }
-              },
-              translations: {
-                select: {
-                  id: true,
-                  targetLanguage: true,
-                  translatedContent: true,
-                  translationModel: true,
-                  cacheKey: true
-                }
-              },
-              reactions: {
-                select: {
-                  id: true,
-                  emoji: true,
-                  userId: true,
-                  anonymousUserId: true,
-                  createdAt: true
+                  reactions: true
                 }
               }
+            }
+          },
+          _count: {
+            select: {
+              reactions: true,
+              status: true
             }
           }
         },
         orderBy: { createdAt: 'desc' },
-        take: parseInt(limit),
+        take: Math.min(parseInt(limit), 50), // Max 50 messages
         skip: before ? 0 : parseInt(offset)
       });
 
-      // Récupérer les préférences linguistiques de l'utilisateur (pour information)
-      const user = await prisma.user.findFirst({
-        where: { id: userId },
-        select: {
-          systemLanguage: true,
-          regionalLanguage: true,
-          customDestinationLanguage: true,
-          autoTranslateEnabled: true,
-          translateToSystemLanguage: true,
-          translateToRegionalLanguage: true,
-          useCustomDestination: true
-        }
-      });
+      // Optimisation : Récupérer les préférences linguistiques seulement si nécessaire
+      // (le frontend peut aussi utiliser ses préférences locales en cache)
+      let userPreferredLanguage = 'en';
 
-      // Déterminer la langue préférée de l'utilisateur (pour information au frontend)
-      const userPreferredLanguage = resolveUserLanguage(user || { systemLanguage: 'en' });
+      if (authRequest.authContext.isAuthenticated && !authRequest.authContext.isAnonymous) {
+        const user = await prisma.user.findFirst({
+          where: { id: userId },
+          select: {
+            systemLanguage: true,
+            regionalLanguage: true,
+            customDestinationLanguage: true
+          }
+        });
+
+        // Déterminer la langue préférée de l'utilisateur (pour information au frontend)
+        userPreferredLanguage = resolveUserLanguage(user || { systemLanguage: 'en' });
+      }
 
       // Retourner les messages avec toutes leurs traductions
       // Le frontend se chargera d'afficher la bonne traduction
@@ -971,8 +1002,8 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         if (message.replyTo) {
           adaptedReplyTo = {
             ...message.replyTo,
-            originalLanguage: message.replyTo.originalLanguage || 'fr', // Garantir une langue par défaut
-            translations: message.replyTo.translations // Garder toutes les traductions
+            originalLanguage: message.replyTo.originalLanguage || 'fr' // Garantir une langue par défaut
+            // Note: translations non chargées dans replyTo pour optimisation
           };
         }
 
@@ -985,38 +1016,27 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         };
       });
 
-      // Marquer les messages comme lus
-      if (messages.length > 0) {
+      // Marquer les messages comme lus (optimisé - ne marquer que les messages non lus)
+      if (messages.length > 0 && !authRequest.authContext.isAnonymous) {
         const messageIds = messages.map(m => m.id);
+
         try {
-          // Vérifier que l'utilisateur existe avant de marquer les messages comme lus
-          const userExists = await prisma.user.findFirst({
-            where: { id: userId },
-            select: { id: true }
-          });
-          
-          if (!userExists) {
-            console.warn('[GATEWAY] Cannot mark messages as read: user not found:', userId);
-          } else {
-            // Vérifier quels messages ne sont pas encore marqués comme lus
-            const existingReadStatus = await prisma.messageStatus.findMany({
-              where: {
-                messageId: { in: messageIds },
-                userId: userId
-              },
-              select: { messageId: true }
-            });
-            
-            const alreadyReadMessageIds = new Set(existingReadStatus.map(r => r.messageId));
-            const unreadMessageIds = messageIds.filter(id => !alreadyReadMessageIds.has(id));
-            
-            if (unreadMessageIds.length > 0) {
-              await prisma.messageStatus.createMany({
-                data: unreadMessageIds.map(messageId => ({
+          // Optimisation : Créer les status seulement si pas déjà marqué comme lu
+          // On utilise createMany pour créer les statuts de lecture
+          // Note: On ignore les erreurs de duplication car certains messages peuvent déjà être lus
+          for (const messageId of messageIds) {
+            try {
+              await prisma.messageStatus.create({
+                data: {
                   messageId,
                   userId
-                }))
+                }
               });
+            } catch (err) {
+              // Ignorer les erreurs de duplication (message déjà lu)
+              if ((err as any)?.code !== 'P2002') {
+                console.warn('[GATEWAY] Error creating message status:', err);
+              }
             }
           }
         } catch (error) {

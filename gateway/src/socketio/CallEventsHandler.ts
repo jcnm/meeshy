@@ -156,17 +156,25 @@ export class CallEventsHandler {
           }))
         };
 
-        // Emit to initiator (confirmation)
+        // Emit to initiator (confirmation) - direct socket emit
+        logger.info('📤 Sending call:initiated to initiator (direct)', {
+          callId: callSession.id,
+          initiatorSocketId: socket.id,
+          initiatorUserId: userId
+        });
         socket.emit(CALL_EVENTS.INITIATED, initiatedEvent);
 
-        // Broadcast to all conversation members
+        // ALSO broadcast to conversation room to ensure initiator receives it
         const roomName = `conversation_${data.conversationId}`;
         const socketsInRoom = await io.in(roomName).fetchSockets();
+        const initiatorInRoom = socketsInRoom.find(s => s.id === socket.id);
 
-        logger.info('📡 Broadcasting call:initiated', {
+        logger.info('📡 Broadcasting call:initiated to conversation room', {
           roomName,
           socketsCount: socketsInRoom.length,
-          socketIds: socketsInRoom.map(s => s.id)
+          socketIds: socketsInRoom.map(s => s.id),
+          initiatorSocketId: socket.id,
+          initiatorInConversationRoom: !!initiatorInRoom
         });
 
         io.to(roomName).emit(
@@ -374,21 +382,38 @@ export class CallEventsHandler {
           userId
         });
 
-        // Leave call room
-        socket.leave(`call:${data.callId}`);
-
-        // Prepare event data
+        // Prepare event data BEFORE leaving room
         const leftEvent: CallParticipantLeftEvent = {
           callId: callSession.id,
           participantId: participant.id,
+          userId: participant.userId || undefined,
+          anonymousId: participant.anonymousId || undefined,
           mode: callSession.mode
         };
 
-        // Broadcast to remaining call participants
+        // Get all sockets in the room for debugging
+        const socketsInRoom = await io.in(`call:${data.callId}`).fetchSockets();
+
+        logger.info('📤 Broadcasting call:participant-left event', {
+          callId: data.callId,
+          participantId: participant.id,
+          userId: participant.userId,
+          anonymousId: participant.anonymousId,
+          remainingParticipants: callSession.participants.filter(p => !p.leftAt).length,
+          roomName: `call:${data.callId}`,
+          socketsInRoom: socketsInRoom.length,
+          socketIds: socketsInRoom.map(s => s.id),
+          leavingSocketId: socket.id
+        });
+
+        // IMPORTANT: Broadcast BEFORE leaving room to ensure message delivery
         io.to(`call:${data.callId}`).emit(
           CALL_EVENTS.PARTICIPANT_LEFT,
           leftEvent
         );
+
+        // Leave call room AFTER broadcasting
+        socket.leave(`call:${data.callId}`);
 
         // If call ended, broadcast to BOTH call room AND conversation room
         if (callSession.status === 'ended') {
@@ -432,6 +457,106 @@ export class CallEventsHandler {
         socket.emit(CALL_EVENTS.ERROR, {
           code: errorCode,
           message
+        } as CallError);
+      }
+    });
+
+    /**
+     * call:force-leave - Force cleanup of any active calls in a conversation
+     * This is used when "call already active" error occurs to cleanup stale calls
+     */
+    socket.on('call:force-leave', async (data: { conversationId: string }) => {
+      try {
+        const userId = getUserId(socket.id);
+        if (!userId) {
+          socket.emit(CALL_EVENTS.ERROR, {
+            code: 'NOT_AUTHENTICATED',
+            message: 'User not authenticated'
+          } as CallError);
+          return;
+        }
+
+        logger.info('📞 Socket: call:force-leave', {
+          socketId: socket.id,
+          userId,
+          conversationId: data.conversationId
+        });
+
+        // Find any active calls in this conversation
+        const activeCalls = await this.prisma.callSession.findMany({
+          where: {
+            conversationId: data.conversationId,
+            status: { in: ['initiated', 'ringing', 'active'] }
+          },
+          include: {
+            participants: true
+          }
+        });
+
+        // Force leave each active call where user is a participant
+        for (const call of activeCalls) {
+          const participant = call.participants.find(
+            (p) => p.userId === userId && !p.leftAt
+          );
+
+          if (participant) {
+            logger.info('🔄 Force leaving call', {
+              callId: call.id,
+              userId,
+              participantId: participant.id
+            });
+
+            try {
+              // Leave the call
+              const callSession = await this.callService.leaveCall({
+                callId: call.id,
+                userId
+              });
+
+              // Broadcast participant left event
+              const leftEvent: CallParticipantLeftEvent = {
+                callId: callSession.id,
+                participantId: participant.id,
+                userId: participant.userId || undefined,
+                anonymousId: participant.anonymousId || undefined,
+                mode: callSession.mode
+              };
+
+              io.to(`call:${call.id}`).emit(
+                CALL_EVENTS.PARTICIPANT_LEFT,
+                leftEvent
+              );
+
+              // Leave the room
+              socket.leave(`call:${call.id}`);
+
+              // If call ended, broadcast ended event
+              if (callSession.status === 'ended') {
+                const endedEvent: CallEndedEvent = {
+                  callId: callSession.id,
+                  duration: callSession.duration || 0,
+                  endedBy: userId
+                };
+
+                io.to(`call:${call.id}`).emit(CALL_EVENTS.ENDED, endedEvent);
+                io.to(`conversation_${callSession.conversationId}`).emit(CALL_EVENTS.ENDED, endedEvent);
+              }
+            } catch (leaveError) {
+              logger.error('❌ Error force leaving call', { callId: call.id, error: leaveError });
+            }
+          }
+        }
+
+        logger.info('✅ Force cleanup completed', {
+          conversationId: data.conversationId,
+          userId,
+          callsProcessed: activeCalls.length
+        });
+      } catch (error: any) {
+        logger.error('❌ Socket: Error force leaving calls', error);
+        socket.emit(CALL_EVENTS.ERROR, {
+          code: 'FORCE_LEAVE_ERROR',
+          message: error.message || 'Failed to force leave calls'
         } as CallError);
       }
     });

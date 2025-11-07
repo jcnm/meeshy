@@ -332,6 +332,14 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
    */
   fastify.get(
     '/attachments/file/*',
+    {
+      // Use onSend hook to override Helmet's X-Frame-Options header
+      // This allows PDFs and other attachments to be embedded in iframes
+      onSend: async (request, reply, payload) => {
+        reply.header('X-Frame-Options', 'ALLOWALL');
+        return payload;
+      }
+    },
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         // Extraire le chemin du fichier

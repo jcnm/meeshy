@@ -352,10 +352,12 @@ export function useAuth() {
 
   // Quitter une session anonyme
   const leaveAnonymousSession = useCallback(() => {
-    localStorage.removeItem('anonymous_session_token');
-    localStorage.removeItem('anonymous_participant');
-    localStorage.removeItem('anonymous_current_share_link');
-    
+    devLog('[USE_AUTH] Fermeture de session anonyme');
+
+    // CORRECTION CRITIQUE: Utiliser AuthManager pour nettoyer TOUTES les sessions
+    // Cela garantit que toutes les données (anonymes ET non-anonymes) sont nettoyées
+    authManager.clearAllSessions();
+
     const newAuthState = {
       isAuthenticated: false,
       user: null,
@@ -363,9 +365,11 @@ export function useAuth() {
       isChecking: false,
       isAnonymous: false
     };
-    
+
     setAuthState(newAuthState);
     setUserRef.current(null);
+
+    devLog('[USE_AUTH] Session anonyme fermée avec succès');
   }, []);
 
   // Rafraîchir l'état d'authentification

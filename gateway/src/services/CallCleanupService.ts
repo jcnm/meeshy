@@ -15,7 +15,7 @@ export class CallCleanupService {
   private readonly CLEANUP_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
 
   // URGENT FIX: Different timeouts for different call statuses
-  private readonly MAX_INITIATED_DURATION_MS = 2 * 60 * 1000; // 2 minutes for 'initiated' calls
+  private readonly MAX_INITIATED_DURATION_MS = 30 * 1000; // 30 seconds for 'initiated' calls (unanswered)
   private readonly MAX_ACTIVE_DURATION_MS = 5 * 60 * 60 * 1000; // 5 hours for 'active' calls
 
   constructor(private prisma: PrismaClient) {}
@@ -31,7 +31,7 @@ export class CallCleanupService {
 
     logger.info('[CallCleanupService] Starting automatic call cleanup job', {
       intervalMinutes: this.CLEANUP_INTERVAL_MS / 60000,
-      maxInitiatedDurationMinutes: this.MAX_INITIATED_DURATION_MS / 60000,
+      maxInitiatedDurationSeconds: this.MAX_INITIATED_DURATION_MS / 1000,
       maxActiveDurationHours: this.MAX_ACTIVE_DURATION_MS / 3600000
     });
 
@@ -167,7 +167,7 @@ export class CallCleanupService {
               ? `${Math.floor(duration / 60)} minutes`
               : `${(duration / 3600).toFixed(2)} hours`,
             activeParticipants: call.participants.length,
-            reason: call.status === 'initiated' ? 'Unanswered call (>2min)' : 'Stuck active call (>5h)'
+            reason: call.status === 'initiated' ? 'Unanswered call (>30s)' : 'Stuck active call (>5h)'
           });
 
           cleaned++;

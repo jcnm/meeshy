@@ -28,6 +28,7 @@ services:
     environment:
       - TRAEFIK_USERS=${TRAEFIK_USERS}
       - API_USERS=${API_USERS}
+      - DOMAIN=traefik.${DOMAIN:-localhost}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - traefik_certs:/letsencrypt
@@ -53,6 +54,7 @@ services:
     command: mongod --replSet rs0 --bind_ip_all --noauth
     environment:
       MONGO_INITDB_DATABASE: ${MONGODB_DATABASE:-meeshy}
+      DOMAIN: db.${DOMAIN:-localhost}
     volumes:
       - database_data:/data/db
       - database_config:/data/configdb
@@ -78,6 +80,7 @@ services:
       MONGOCLIENT_DEFAULT_CONNECTION_URL: "mongodb://${MONGODB_USER:-meeshy}:${MONGODB_PASSWORD:-MeeshyPassword123}@database:27017/${MONGODB_DATABASE:-meeshy}?authSource=admin"
       ROOT_URL: "https://mongo.${DOMAIN:-localhost}"
       PORT: 3000
+      DOMAIN: mongo.${DOMAIN:-localhost}
     depends_on:
       database:
         condition: service_healthy
@@ -161,6 +164,7 @@ services:
       - HF_HOME=/workspace/models
       - TRANSFORMERS_CACHE=/workspace/models
       - HUGGINGFACE_HUB_CACHE=/workspace/models
+      - DOMAIN=ml.${DOMAIN:-localhost}
     volumes:
       - models_data:/workspace/models
     depends_on:
@@ -293,6 +297,7 @@ services:
       - NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION=${NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION:-true}
       - NEXT_PUBLIC_USE_API_TRANSLATION_ONLY=${NEXT_PUBLIC_USE_API_TRANSLATION_ONLY:-true}
       - NEXT_PUBLIC_DEBUG_LOGS=${NEXT_PUBLIC_DEBUG_LOGS:-false}
+      - DOMAIN=${DOMAIN:-localhost}
       - NODE_ENV=production
     volumes:
       - frontend_uploads:/app/public/u

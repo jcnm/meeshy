@@ -56,27 +56,29 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  createdCommunities      Community[]              @relation("CommunityCreator")
+  createdCommunities      Community[]                   @relation("CommunityCreator")
   communityMemberships    CommunityMember[]
   conversations           ConversationMember[]
   conversationPreferences ConversationPreference[]
-  createdShareLinks       ConversationShareLink[]  @relation("ShareLinkCreator")
-  receivedFriendRequests  FriendRequest[]          @relation("FriendRequestReceiver")
-  sentFriendRequests      FriendRequest[]          @relation("FriendRequestSender")
+  createdShareLinks       ConversationShareLink[]       @relation("ShareLinkCreator")
+  receivedFriendRequests  FriendRequest[]               @relation("FriendRequestReceiver")
+  sentFriendRequests      FriendRequest[]               @relation("FriendRequestSender")
   messageStatus           MessageStatus[]
-  sentMessages            Message[]                @relation("MessageSender")
-  reactions               Reaction[]               @relation("UserReactions")
+  sentMessages            Message[]                     @relation("MessageSender")
+  reactions               Reaction[]                    @relation("UserReactions")
   notifications           Notification[]
   typingIndicators        TypingIndicator[]
   preferences             UserPreference[]
   stats                   UserStats?
-  createdAffiliateTokens  AffiliateToken[]         @relation("AffiliateTokenCreator")
-  affiliateRelations      AffiliateRelation[]      @relation("AffiliateUser")
-  referredRelations       AffiliateRelation[]      @relation("ReferredUser")
-  createdTrackingLinks    TrackingLink[]           @relation("TrackingLinkCreator")
-  trackingLinkClicks      TrackingLinkClick[]      @relation("TrackingLinkClickUser")
-  initiatedCalls          CallSession[]            @relation("CallInitiator")
-  callParticipations      CallParticipant[]        @relation("CallParticipants")
+  createdAffiliateTokens  AffiliateToken[]              @relation("AffiliateTokenCreator")
+  affiliateRelations      AffiliateRelation[]           @relation("AffiliateUser")
+  referredRelations       AffiliateRelation[]           @relation("ReferredUser")
+  createdTrackingLinks    TrackingLink[]                @relation("TrackingLinkCreator")
+  trackingLinkClicks      TrackingLinkClick[]           @relation("TrackingLinkClickUser")
+  initiatedCalls          CallSession[]                 @relation("CallInitiator")
+  callParticipations      CallParticipant[]             @relation("CallParticipants")
+  conversationPrefs       UserConversationPreferences[]
+  conversationCategories  UserConversationCategory[]
 }
 
 /// Conversation entre utilisateurs (direct, group, public, global)
@@ -101,10 +103,11 @@ model Conversation {
   members               ConversationMember[]
   preferences           ConversationPreference[]
   shareLinks            ConversationShareLink[]
-  community             Community?               @relation(fields: [communityId], references: [id])
+  community             Community?                    @relation(fields: [communityId], references: [id])
   messages              Message[]
   typingIndicators      TypingIndicator[]
   callSessions          CallSession[]
+  userPreferences       UserConversationPreferences[]
 }
 
 /// Appartenance d'un utilisateur à une conversation
@@ -151,8 +154,12 @@ model ConversationShareLink {
   allowAnonymousFiles    Boolean   @default(false)
   allowAnonymousImages   Boolean   @default(true)
   allowViewHistory       Boolean   @default(true)
+  /// Si true, seuls les utilisateurs avec compte peuvent rejoindre (bloque l'accès anonyme)
+  requireAccount         Boolean   @default(false)
   requireNickname        Boolean   @default(true)
   requireEmail           Boolean   @default(false)
+  /// Si true, demande la date de naissance pour vérifier l'âge minimum
+  requireBirthday        Boolean   @default(false)
   allowedCountries       String[]  @default([])
   allowedLanguages       String[]  @default([])
   allowedIpRanges        String[]  @default([])
@@ -173,6 +180,7 @@ model AnonymousParticipant {
   lastName          String
   username          String
   email             String?
+  birthday          DateTime?
   sessionToken      String    @unique
   ipAddress         String?
   country           String?
@@ -277,6 +285,8 @@ model MessageAttachment {
   isAnonymous Boolean @default(false)
 
   createdAt DateTime @default(now())
+  /// Attachment metadata
+  metadata  Json? // JSON blob for additional metadata
 
   message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
 
@@ -612,10 +622,10 @@ model CallSession {
   conversationId String       @db.ObjectId
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
-  /// Call mode: 'p2p' for 2 participants, 'sfu' for 3+
+  /// Call mode: p2p for 2 participants, sfu for 3+
   mode CallMode @default(p2p)
 
-  /// Call status: 'initiated', 'ringing', 'active', 'ended'
+  /// Call status: initiated, ringing, active, ended
   status CallStatus @default(initiated)
 
   /// User who initiated the call
@@ -657,7 +667,7 @@ model CallParticipant {
   /// Anonymous participant ID (from AnonymousParticipant model)
   anonymousId String?
 
-  /// Participant role: 'initiator', 'participant'
+  /// Participant role: initiator or participant
   role ParticipantRole @default(participant)
 
   /// Timestamps
@@ -687,7 +697,7 @@ model Transcription {
   /// Participant who spoke
   participantId String @db.ObjectId
 
-  /// Transcription source: 'client' (Web Speech API/Whisper.js) or 'server' (faster-whisper)
+  /// Transcription source: client (Web Speech API/Whisper.js) or server (faster-whisper)
   source TranscriptionSource
 
   /// Transcribed text
@@ -764,4 +774,79 @@ enum ParticipantRole {
 enum TranscriptionSource {
   client // Client-side (Web Speech API or Whisper.js)
   server // Server-side (faster-whisper)
+}
+
+/// User-specific conversation preferences (personal settings per conversation)
+model UserConversationPreferences {
+  id             String @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String @db.ObjectId
+  conversationId String @db.ObjectId
+
+  /// Pin conversation to top
+  isPinned Boolean @default(false)
+
+  /// Mute notifications for this conversation
+  isMuted Boolean @default(false)
+
+  /// Archive conversation (hide from main list)
+  isArchived Boolean @default(false)
+
+  /// Personal tags for this conversation
+  tags String[] @default([])
+
+  /// Assigned category ID
+  categoryId String? @db.ObjectId
+
+  /// Order within category (for manual sorting)
+  orderInCategory Int?
+
+  /// Custom display name override
+  customName String?
+
+  /// Emoji reaction on conversation
+  reaction String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation              @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  category     UserConversationCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, conversationId])
+  @@index([userId])
+  @@index([conversationId])
+  @@index([categoryId])
+  @@map("user_conversation_preferences")
+}
+
+/// User-defined categories for organizing conversations
+model UserConversationCategory {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @db.ObjectId
+
+  /// Category name
+  name String
+
+  /// Color hex code (optional)
+  color String?
+
+  /// Icon name/emoji (optional)
+  icon String?
+
+  /// Display order
+  order Int @default(0)
+
+  /// Accordion expanded state
+  isExpanded Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user          User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversations UserConversationPreferences[]
+
+  @@index([userId])
+  @@index([userId, order])
+  @@map("user_conversation_categories")
 }

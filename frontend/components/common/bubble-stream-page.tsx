@@ -652,6 +652,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   const normalizedConversationIdRef = useRef<string | null>(null); // ObjectId normalisé du backend
   const userRef = useRef(user);
   const isAnonymousModeRef = useRef(isAnonymousMode);
+  const activeUsersRef = useRef(activeUsers); // CORRECTION: Ref pour activeUsers
 
   // Mettre à jour les refs quand les valeurs changent
   useEffect(() => {
@@ -659,6 +660,10 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     // Récupérer l'ObjectId normalisé depuis le service
     normalizedConversationIdRef.current = meeshySocketIOService.getCurrentConversationId();
   }, [conversationId]);
+
+  useEffect(() => {
+    activeUsersRef.current = activeUsers;
+  }, [activeUsers]);
 
   // Écouter l'événement CONVERSATION_JOINED pour obtenir l'ObjectId normalisé
   useEffect(() => {
@@ -711,12 +716,12 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
     // Message reçu via WebSocket
 
-    // Enrichir le message avec les informations du sender si nécessaire
+    // CORRECTION CRITIQUE: Enrichir le message avec les informations du sender si nécessaire
     const enrichedMessage = { ...message };
     const currentUser = userRef.current;
     const currentIsAnonymous = isAnonymousModeRef.current;
 
-    // Si c'est notre propre message et que sender/anonymousSender manque, l'enrichir
+    // CAS 1: Si c'est notre propre message et que sender/anonymousSender manque
     if ((message.senderId === currentUser.id || message.anonymousSenderId === currentUser.id) &&
         !message.sender && !message.anonymousSender) {
       if (currentIsAnonymous) {
@@ -752,6 +757,50 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           isActive: true,
           lastActiveAt: new Date(),
           isMeeshyer: true
+        };
+      }
+    }
+
+    // CAS 2: CORRECTION MAJEURE - Si c'est un message d'un AUTRE utilisateur anonyme
+    // et que anonymousSender manque, l'enrichir depuis activeUsers
+    else if (message.anonymousSenderId && !message.anonymousSender) {
+      console.log('[BubbleStreamPage] 🔍 Message anonyme sans anonymousSender détecté, recherche dans activeUsers...', {
+        anonymousSenderId: message.anonymousSenderId,
+        activeUsersCount: activeUsersRef.current.length
+      });
+
+      // CORRECTION: Utiliser activeUsersRef.current au lieu de activeUsers
+      // pour éviter les problèmes de closure stale dans le callback
+      const senderUser = activeUsersRef.current.find(u => u.id === message.anonymousSenderId);
+
+      if (senderUser) {
+        console.log('[BubbleStreamPage] ✅ Utilisateur anonyme trouvé, enrichissement du message:', {
+          username: senderUser.username,
+          id: senderUser.id
+        });
+
+        enrichedMessage.anonymousSender = {
+          id: senderUser.id,
+          username: senderUser.username,
+          firstName: senderUser.firstName || '',
+          lastName: senderUser.lastName || '',
+          language: senderUser.systemLanguage || 'fr',
+          isMeeshyer: false
+        };
+      } else {
+        console.warn('[BubbleStreamPage] ⚠️ Utilisateur anonyme non trouvé dans activeUsers:', {
+          anonymousSenderId: message.anonymousSenderId,
+          activeUsersIds: activeUsersRef.current.map(u => u.id)
+        });
+
+        // Fallback: créer un anonymousSender minimal pour éviter les bugs d'affichage
+        enrichedMessage.anonymousSender = {
+          id: message.anonymousSenderId,
+          username: `Anonymous_${message.anonymousSenderId.slice(-6)}`,
+          firstName: '',
+          lastName: '',
+          language: 'fr',
+          isMeeshyer: false
         };
       }
     }

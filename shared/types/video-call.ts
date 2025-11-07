@@ -104,17 +104,137 @@ export interface CallControls {
   screenShareEnabled: boolean;
 }
 
+// ===== AUDIO EFFECTS =====
+
+/**
+ * Types d'effets audio disponibles
+ */
+export type AudioEffectType = 'voice-coder' | 'baby-voice' | 'demon-voice' | 'back-sound';
+
+/**
+ * Mode de loop pour le back sound
+ */
+export type LoopMode = 'N_TIMES' | 'N_MINUTES';
+
+/**
+ * Paramètres pour l'effet Voice Coder (auto-tune)
+ */
+export interface VoiceCoderParams {
+  readonly pitch: number;           // -12 à +12 semitones
+  readonly harmonization: boolean;  // Ajouter harmonies
+  readonly strength: number;        // 0-100%, intensité correction
+}
+
+/**
+ * Paramètres pour l'effet Baby Voice
+ */
+export interface BabyVoiceParams {
+  readonly pitch: number;           // +6 à +12 semitones
+  readonly formant: number;         // 1.2-1.5x shift formantique
+  readonly breathiness: number;     // 0-100%, ajout de souffle
+}
+
+/**
+ * Paramètres pour l'effet Demon Voice
+ */
+export interface DemonVoiceParams {
+  readonly pitch: number;           // -8 à -12 semitones
+  readonly distortion: number;      // 0-100%, saturation
+  readonly reverb: number;          // 0-100%, echo cathedral
+}
+
+/**
+ * Paramètres pour l'effet Back Sound Code
+ */
+export interface BackSoundParams {
+  readonly soundFile: string;       // Nom du fichier son
+  readonly volume: number;          // 0-100%
+  readonly loopMode: LoopMode;      // Mode de loop
+  readonly loopValue: number;       // Nombre de fois ou minutes
+}
+
+/**
+ * Union des paramètres d'effets audio
+ */
+export type AudioEffectParams =
+  | VoiceCoderParams
+  | BabyVoiceParams
+  | DemonVoiceParams
+  | BackSoundParams;
+
+/**
+ * Configuration d'un effet audio
+ */
+export interface AudioEffect {
+  readonly type: AudioEffectType;
+  readonly enabled: boolean;
+  readonly params: AudioEffectParams;
+}
+
+/**
+ * État des effets audio
+ */
+export interface AudioEffectsState {
+  readonly voiceCoder: AudioEffect & { params: VoiceCoderParams };
+  readonly babyVoice: AudioEffect & { params: BabyVoiceParams };
+  readonly demonVoice: AudioEffect & { params: DemonVoiceParams };
+  readonly backSound: AudioEffect & { params: BackSoundParams };
+}
+
+// ===== CONNECTION QUALITY =====
+
+/**
+ * Niveau de qualité de connexion
+ */
+export type ConnectionQualityLevel = 'excellent' | 'good' | 'fair' | 'poor';
+
+/**
+ * Statistiques de qualité de connexion en temps réel
+ */
+export interface ConnectionQualityStats {
+  readonly level: ConnectionQualityLevel;
+  readonly packetLoss: number;      // Pourcentage (0-100)
+  readonly rtt: number;             // Round-trip time en ms
+  readonly bitrate: {
+    readonly audio: number;         // kbps
+    readonly video: number;         // kbps
+  };
+  readonly jitter: number;          // ms
+  readonly timestamp: Date;
+}
+
 // ===== WEBRTC SIGNALING =====
 
 /**
- * Signal WebRTC (SDP ou ICE candidate)
+ * Base properties for all WebRTC signals
  */
-export interface WebRTCSignal {
-  readonly type: 'offer' | 'answer' | 'ice-candidate';
+interface WebRTCSignalBase {
   readonly from: string;                  // userId ou anonymousId
   readonly to: string;                    // userId ou anonymousId
-  readonly signal: RTCSessionDescriptionInit | RTCIceCandidateInit;
 }
+
+/**
+ * Signal WebRTC pour Offer/Answer (contient SDP)
+ */
+export interface WebRTCOfferAnswerSignal extends WebRTCSignalBase {
+  readonly type: 'offer' | 'answer';
+  readonly sdp: string;                   // Session Description Protocol
+}
+
+/**
+ * Signal WebRTC pour ICE Candidate
+ */
+export interface WebRTCIceCandidateSignal extends WebRTCSignalBase {
+  readonly type: 'ice-candidate';
+  readonly candidate: string;             // ICE candidate string
+  readonly sdpMLineIndex?: number;        // Media line index
+  readonly sdpMid?: string;               // Media stream ID
+}
+
+/**
+ * Union type for all WebRTC signals
+ */
+export type WebRTCSignal = WebRTCOfferAnswerSignal | WebRTCIceCandidateSignal;
 
 // ===== TRANSCRIPTION (Phase 2A/2B) =====
 
@@ -248,8 +368,10 @@ export interface CallParticipantJoinedEvent {
  */
 export interface CallParticipantLeftEvent {
   readonly callId: string;
-  readonly participantId: string;
-  readonly mode: CallMode;              // Peut changer (SFU→P2P)
+  readonly participantId: string;         // Database participant ID
+  readonly userId?: string;               // User ID (for removing WebRTC connections)
+  readonly anonymousId?: string;          // Anonymous ID (for guest users)
+  readonly mode: CallMode;                // Peut changer (SFU→P2P)
 }
 
 /**
@@ -405,7 +527,12 @@ export const CALL_ERROR_CODES = {
   CALL_ALREADY_ACTIVE: 'CALL_ALREADY_ACTIVE',
   CALL_ENDED: 'CALL_ENDED',
   MAX_PARTICIPANTS_REACHED: 'MAX_PARTICIPANTS_REACHED',
-
+  FORCE_LEAVE_ERROR: 'FORCE_LEAVE_ERROR',
+  INVALID_CALL_MODE: 'INVALID_CALL_MODE',
+  UNSUPPORTED_CALL_TYPE: 'UNSUPPORTED_CALL_TYPE',
+  ALREADY_IN_CALL: 'ALREADY_IN_CALL',
+  NOT_IN_CALL: 'NOT_IN_CALL',
+  
   // Media control errors
   MEDIA_TOGGLE_FAILED: 'MEDIA_TOGGLE_FAILED',
 

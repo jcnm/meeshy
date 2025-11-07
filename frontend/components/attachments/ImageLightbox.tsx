@@ -6,6 +6,7 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Download, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Attachment, formatFileSize } from '../../shared/types/attachment';
@@ -23,6 +24,13 @@ export function ImageLightbox({ images, initialIndex, isOpen, onClose }: ImageLi
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
+
+  // Update currentIndex when initialIndex changes (when clicking different image)
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentIndex(initialIndex);
+    }
+  }, [initialIndex, isOpen]);
 
   // Reset zoom et rotation quand on change d'image
   useEffect(() => {
@@ -118,7 +126,7 @@ export function ImageLightbox({ images, initialIndex, isOpen, onClose }: ImageLi
 
   if (!isOpen || !currentImage) return null;
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
@@ -282,6 +290,7 @@ export function ImageLightbox({ images, initialIndex, isOpen, onClose }: ImageLi
           </p>
         </div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
