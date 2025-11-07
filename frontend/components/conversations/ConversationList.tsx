@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo, memo, useEffect, useRef } from 'react';
-import { MessageSquare, Link2, Users, Globe, Search, Loader2, Pin } from 'lucide-react';
+import { MessageSquare, Link2, Users, Globe, Search, Loader2, Pin, ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -278,6 +278,20 @@ export function ConversationList({
   const [selectedFilter, setSelectedFilter] = useState<CommunityFilter>({ type: 'all' });
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [categories, setCategories] = useState<UserConversationCategory[]>([]);
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
+    // Charger l'état collapsed depuis localStorage
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('collapsedConversationSections');
+      if (saved) {
+        try {
+          return new Set(JSON.parse(saved));
+        } catch (e) {
+          return new Set();
+        }
+      }
+    }
+    return new Set();
+  });
 
   // Référence pour le scroll container
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -314,6 +328,7 @@ export function ConversationList({
     const loadCategories = async () => {
       try {
         const cats = await userPreferencesService.getAllCategories();
+        console.log('[ConversationList] Categories loaded:', cats);
         // Trier par order, puis alphabétiquement
         const sorted = cats.sort((a, b) => {
           if (a.order !== b.order) {
@@ -327,6 +342,26 @@ export function ConversationList({
       }
     };
     loadCategories();
+  }, []);
+
+  // Sauvegarder l'état collapsed dans localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('collapsedConversationSections', JSON.stringify([...collapsedSections]));
+    }
+  }, [collapsedSections]);
+
+  // Fonction pour toggle une section
+  const toggleSection = useCallback((sectionId: string) => {
+    setCollapsedSections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(sectionId)) {
+        newSet.delete(sectionId);
+      } else {
+        newSet.add(sectionId);
+      }
+      return newSet;
+    });
   }, []);
 
   // Filtrage et tri des conversations - épinglées en haut
@@ -418,6 +453,14 @@ export function ConversationList({
       const isPinned = prefs?.isPinned || false;
       const categoryId = prefs?.categoryId;
 
+      console.log('[ConversationList] Processing conversation:', {
+        id: conv.id,
+        title: conv.title,
+        isPinned,
+        categoryId,
+        hasPrefs: !!prefs
+      });
+
       if (isPinned && !categoryId) {
         // Épinglées sans catégorie
         pinnedWithoutCategory.push(conv);
@@ -461,6 +504,19 @@ export function ConversationList({
         conversations: uncategorized
       });
     }
+
+    console.log('[ConversationList] Grouped conversations:', {
+      totalCategories: categories.length,
+      groups: groups.map(g => ({
+        type: g.type,
+        categoryName: g.categoryName,
+        count: g.conversations.length
+      })),
+      conversationsByCategory: Array.from(conversationsByCategory.entries()).map(([id, convs]) => ({
+        categoryId: id,
+        count: convs.length
+      }))
+    });
 
     return groups;
   }, [filteredConversations, preferencesMap, categories]);
@@ -599,49 +655,68 @@ export function ConversationList({
           </div>
         ) : (
           <div className="px-4 py-2">
-            {groupedConversations.map((group, groupIndex) => (
-              <div key={`group-${group.type}-${group.categoryId || groupIndex}`} className="mb-4">
-                {/* Header de section */}
-                {(group.type === 'pinned' || group.type === 'category') && (
-                  <div className="flex items-center gap-2 px-2 py-1.5 mb-1">
-                    {group.type === 'pinned' ? (
-                      <>
-                        <Pin className="h-4 w-4 text-primary fill-current" />
-                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                          {t('conversationsList.pinned') || 'Épinglées'}
-                        </h4>
-                      </>
-                    ) : (
-                      <>
-                        <Folder className="h-4 w-4 text-muted-foreground" />
-                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                          {group.categoryName}
-                        </h4>
-                      </>
-                    )}
-                    <Badge variant="secondary" className="ml-auto h-5 px-2 text-[10px]">
-                      {group.conversations.length}
-                    </Badge>
-                  </div>
-                )}
+            {groupedConversations.map((group, groupIndex) => {
+              const sectionId = group.type === 'category' && group.categoryId
+                ? `category-${group.categoryId}`
+                : group.type;
+              const isCollapsed = collapsedSections.has(sectionId);
 
-                {/* Conversations du groupe */}
-                <div className="space-y-1">
-                  {group.conversations.map((conversation) => (
-                    <ConversationItem
-                      key={conversation.id}
-                      conversation={conversation}
-                      isSelected={selectedConversation?.id === conversation.id}
-                      currentUser={currentUser}
-                      onClick={() => onSelectConversation(conversation)}
-                      t={t}
-                      isPinned={preferencesMap.get(conversation.id)?.isPinned || false}
-                      tags={preferencesMap.get(conversation.id)?.tags || []}
-                    />
-                  ))}
+              return (
+                <div key={`group-${group.type}-${group.categoryId || groupIndex}`} className="mb-4">
+                  {/* Header de section */}
+                  {(group.type === 'pinned' || group.type === 'category') && (
+                    <div
+                      className="flex items-center gap-2 px-2 py-1.5 mb-1 cursor-pointer hover:bg-accent/50 rounded-md transition-colors"
+                      onClick={() => toggleSection(sectionId)}
+                    >
+                      {/* Chevron pour indiquer si la section est ouverte ou fermée */}
+                      {isCollapsed ? (
+                        <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      )}
+
+                      {group.type === 'pinned' ? (
+                        <>
+                          <Pin className="h-4 w-4 text-primary fill-current flex-shrink-0" />
+                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                            {t('conversationsList.pinned') || 'Épinglées'}
+                          </h4>
+                        </>
+                      ) : (
+                        <>
+                          <Folder className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                            {group.categoryName}
+                          </h4>
+                        </>
+                      )}
+                      <Badge variant="secondary" className="ml-auto h-5 px-2 text-[10px]">
+                        {group.conversations.length}
+                      </Badge>
+                    </div>
+                  )}
+
+                  {/* Conversations du groupe - masquées si collapsed */}
+                  {!isCollapsed && (
+                    <div className="space-y-1">
+                      {group.conversations.map((conversation) => (
+                        <ConversationItem
+                          key={conversation.id}
+                          conversation={conversation}
+                          isSelected={selectedConversation?.id === conversation.id}
+                          currentUser={currentUser}
+                          onClick={() => onSelectConversation(conversation)}
+                          t={t}
+                          isPinned={preferencesMap.get(conversation.id)?.isPinned || false}
+                          tags={preferencesMap.get(conversation.id)?.tags || []}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {/* Indicateur de chargement de plus de conversations */}
             {isLoadingMore && (
