@@ -502,9 +502,11 @@ export class MessagingService {
   }
 
   /**
-   * Traite les liens dans le contenu du message
-   * Détecte les URLs et crée des liens de tracking Meeshy
-   * Remplace les URLs par le format court m+<token>
+   * Traite les liens dans le contenu du message selon les règles suivantes:
+   * - Règle 1: Markdown [texte](url) → Lien normal (pas de tracking)
+   * - Règle 2: URLs brutes → Aucun tracking automatique
+   * - Règle 3: [[url]] → Force le tracking → m+token
+   * - Règle 4: <url> → Force le tracking → m+token
    */
   private async processLinksInContent(
     content: string,
@@ -513,28 +515,32 @@ export class MessagingService {
     messageId?: string
   ): Promise<string> {
     try {
-      // Regex pour détecter les URLs (excluant déjà les liens Meeshy)
-      const URL_REGEX = /(https?:\/\/(?!(?:www\.)?meeshy\.me\/l\/)(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*))/gi;
-      
-      // Chercher tous les liens dans le message
-      const urls = content.match(URL_REGEX);
-
-      if (!urls || urls.length === 0) {
-        return content;
-      }
-
       let processedContent = content;
+      const protectedItems: Array<{ placeholder: string; original: string }> = [];
+      let placeholderCounter = 0;
 
-      // Traiter chaque URL
-      for (const url of urls) {
+      // ÉTAPE 1: Protéger les liens markdown [texte](url) - Règle 1
+      const MARKDOWN_LINK_REGEX = /\[([^\]]+)\]\(([^)]+)\)/g;
+      processedContent = processedContent.replace(MARKDOWN_LINK_REGEX, (match) => {
+        const placeholder = `__PROTECTED_MD_${placeholderCounter++}__`;
+        protectedItems.push({ placeholder, original: match });
+        return placeholder;
+      });
+
+      // ÉTAPE 2: Traiter [[url]] - Règle 3: Force le tracking
+      const DOUBLE_BRACKET_REGEX = /\[\[(https?:\/\/[^\]]+)\]\]/gi;
+      const doubleBracketMatches = [...processedContent.matchAll(DOUBLE_BRACKET_REGEX)];
+
+      for (const match of doubleBracketMatches) {
+        const fullMatch = match[0];
+        const url = match[1];
+
         try {
-          // Vérifier si un lien de tracking existe déjà pour cette URL dans cette conversation
           let trackingLink = await this.trackingLinkService.findExistingTrackingLink(
             url,
             conversationId
           );
 
-          // Si le lien n'existe pas, le créer
           if (!trackingLink) {
             trackingLink = await this.trackingLinkService.createTrackingLink({
               originalUrl: url,
@@ -544,19 +550,58 @@ export class MessagingService {
             });
           }
 
-          // Remplacer l'URL par le format court Meeshy
           const meeshyShortLink = `m+${trackingLink.token}`;
-          processedContent = processedContent.replace(url, meeshyShortLink);
+          processedContent = processedContent.replace(fullMatch, meeshyShortLink);
         } catch (linkError) {
-          console.error(`[MessagingService] ❌ Erreur lors du traitement du lien ${url}:`, linkError);
-          // En cas d'erreur, on garde l'URL originale
+          console.error(`[MessagingService] ❌ Erreur lors du traitement du lien [[url]]:`, linkError);
+          // En cas d'erreur, remplacer par l'URL sans les doubles crochets
+          processedContent = processedContent.replace(fullMatch, url);
         }
+      }
+
+      // ÉTAPE 3: Traiter <url> - Règle 4: Force le tracking
+      const ANGLE_BRACKET_REGEX = /<(https?:\/\/[^>]+)>/gi;
+      const angleBracketMatches = [...processedContent.matchAll(ANGLE_BRACKET_REGEX)];
+
+      for (const match of angleBracketMatches) {
+        const fullMatch = match[0];
+        const url = match[1];
+
+        try {
+          let trackingLink = await this.trackingLinkService.findExistingTrackingLink(
+            url,
+            conversationId
+          );
+
+          if (!trackingLink) {
+            trackingLink = await this.trackingLinkService.createTrackingLink({
+              originalUrl: url,
+              conversationId,
+              createdBy: senderId,
+              messageId
+            });
+          }
+
+          const meeshyShortLink = `m+${trackingLink.token}`;
+          processedContent = processedContent.replace(fullMatch, meeshyShortLink);
+        } catch (linkError) {
+          console.error(`[MessagingService] ❌ Erreur lors du traitement du lien <url>:`, linkError);
+          // En cas d'erreur, remplacer par l'URL sans les chevrons
+          processedContent = processedContent.replace(fullMatch, url);
+        }
+      }
+
+      // ÉTAPE 4: Règle 2 - Les URLs brutes ne sont PAS trackées automatiquement
+      // On ne fait rien, elles restent telles quelles
+
+      // ÉTAPE 5: Restaurer les liens markdown protégés
+      for (const { placeholder, original } of protectedItems) {
+        processedContent = processedContent.replace(placeholder, original);
       }
 
       return processedContent;
     } catch (error) {
       console.error('[MessagingService] Erreur lors du traitement des liens:', error);
-      // En cas d'erreur globale, retourner le contenu original
       return content;
     }
   }
