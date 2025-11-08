@@ -2001,7 +2001,7 @@ export class MeeshySocketIOManager {
       const room = `conversation_${normalizedId}`;
       // 1. Broadcast vers tous les clients de la conversation
       this.io.to(room).emit(SERVER_EVENTS.MESSAGE_NEW, messagePayload);
-      
+
       // 2. S'assurer que l'auteur reçoit aussi (au cas où il ne serait pas dans la room encore)
       if (senderSocket) {
         senderSocket.emit(SERVER_EVENTS.MESSAGE_NEW, messagePayload);
@@ -2009,7 +2009,8 @@ export class MeeshySocketIOManager {
       } else {
         console.log(`⚠️ [PHASE 3.1] Socket de l'auteur non fourni, broadcast room seulement`);
       }
-      
+
+      const roomClients = this.io.sockets.adapter.rooms.get(room);
       console.log(`✅ [PHASE 3.1] Message ${message.id} broadcasté vers ${room} (${roomClients?.size || 0} clients)`);
       
       // Envoyer les notifications de message pour les utilisateurs non connectés à la conversation
