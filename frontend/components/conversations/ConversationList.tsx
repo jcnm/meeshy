@@ -208,10 +208,42 @@ const ConversationItem = memo(function ConversationItem({
   }, [conversation.type, conversation.visibility]);
 
   const formatTime = useCallback((date: Date | string) => {
-    return new Date(date).toLocaleTimeString('fr-FR', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const messageDate = new Date(date);
+    const now = new Date();
+
+    // Calculer la différence en jours
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const messageDateStart = new Date(messageDate.getFullYear(), messageDate.getMonth(), messageDate.getDate());
+    const diffTime = todayStart.getTime() - messageDateStart.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    // Si c'est aujourd'hui, afficher seulement l'heure
+    if (diffDays === 0) {
+      return messageDate.toLocaleTimeString('fr-FR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    // Si c'est dans les 7 derniers jours, afficher le jour de la semaine + heure
+    if (diffDays < 7) {
+      const dayName = messageDate.toLocaleDateString('fr-FR', { weekday: 'short' });
+      const time = messageDate.toLocaleTimeString('fr-FR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      // Capitaliser la première lettre du jour
+      const capitalizedDay = dayName.charAt(0).toUpperCase() + dayName.slice(1);
+      return `${capitalizedDay} ${time}`;
+    }
+
+    // Si c'est plus ancien, afficher la date complète
+    return messageDate.toLocaleDateString('fr-FR', {
+      weekday: 'short',
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    }).replace(/\s/g, '. ');
   }, []);
 
   const getSenderName = useCallback((message: any) => {
