@@ -14,6 +14,7 @@ import { LanguageSelectionMessageView } from './bubble-message/LanguageSelection
 import { EditMessageView } from './bubble-message/EditMessageView';
 import { DeleteConfirmationView } from './bubble-message/DeleteConfirmationView';
 import { ReportMessageView } from './bubble-message/ReportMessageView';
+import { formatRelativeDate } from '@/utils/date-format';
 
 interface BubbleMessageProps {
   message: Message & {
@@ -145,21 +146,9 @@ const BubbleMessageInner = memo(function BubbleMessageInner({
     return translation ? (translation.content || translation.translatedContent || replyMessage.content) : replyMessage.content;
   }, [message.replyTo, effectiveDisplayLanguage]);
 
-  // Format de date pour les réponses
+  // Format de date pour les réponses - utilise la fonction utilitaire factorisée
   const formatReplyDate = useCallback((date: Date | string) => {
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    const now = new Date();
-    const diffMs = now.getTime() - dateObj.getTime();
-    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffMinutes < 1) return t('justNow');
-    if (diffMinutes < 60) return t('minutesAgo', { minutes: diffMinutes });
-    if (diffHours < 24) return t('hoursAgo', { hours: diffHours });
-    if (diffDays < 7) return t('daysAgo', { days: diffDays });
-
-    return dateObj.toLocaleDateString();
+    return formatRelativeDate(date, { t });
   }, [t]);
 
   // Actions des vues spécialisées

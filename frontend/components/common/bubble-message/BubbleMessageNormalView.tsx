@@ -26,6 +26,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { formatRelativeDate } from '@/utils/date-format';
 import {
   Tooltip,
   TooltipContent,
@@ -163,20 +164,9 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
     return visibleAttachments.some(att => getAttachmentType(att.mimeType) === 'audio');
   }, [visibleAttachments]);
 
-  // Logique copiée de l'original
+  // Utilise la fonction utilitaire factorisée pour le formatage de date
   const formatReplyDate = (date: Date | string) => {
-    const messageDate = new Date(date);
-    const now = new Date();
-    const diffMs = Math.abs(now.getTime() - messageDate.getTime());
-    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffMinutes < 1) return tBubble('justNow');
-    if (diffMinutes < 60) return tBubble('minutesAgo', { minutes: diffMinutes });
-    if (diffHours < 24) return tBubble('hoursAgo', { hours: diffHours });
-    if (diffDays < 7) return tBubble('daysAgo', { days: diffDays });
-    return messageDate.toLocaleDateString();
+    return formatRelativeDate(date, { t: tBubble });
   };
 
   // Contenu traduit (utilise les bons noms de champs du backend)

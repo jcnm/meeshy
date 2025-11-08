@@ -284,6 +284,7 @@
       "minutesAgo": "{minutes}min ago",
       "hoursAgo": "{hours}h ago",
       "daysAgo": "{days}d ago",
+      "yesterday": "Yesterday {time}",
       "maxModelReached": "Maximum translation model already reached",
       "retranslatingTo": "Retranslating to {language} ({model} model)",
       "upgradeError": "Error requesting upgrade",
