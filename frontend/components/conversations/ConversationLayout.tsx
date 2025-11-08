@@ -144,7 +144,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   const [isMobile, setIsMobile] = useState(false);
   const [showConversationList, setShowConversationList] = useState(true);
   const [newMessage, setNewMessage] = useState('');
-  
+
   // État pour les attachments
   const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
   const [attachmentMimeTypes, setAttachmentMimeTypes] = useState<string[]>([]);
@@ -152,6 +152,17 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   // Ref pour stocker les valeurs précédentes d'attachments
   const prevAttachmentIdsRef = useRef<string>('[]');
   const prevMimeTypesRef = useRef<string>('[]');
+
+  // SÉCURITÉ: Stockage du composer state par conversation pour éviter les fuites de données
+  // Chaque conversation a son propre brouillon (message, attachments, reply)
+  interface ComposerState {
+    message: string;
+    attachmentIds: string[];
+    attachmentMimeTypes: string[];
+    replyTo: any | null; // Message auquel on répond
+  }
+  const composerStatesRef = useRef<Map<string, ComposerState>>(new Map());
+  const previousConversationIdRef = useRef<string | null>(null);
 
   // Callback mémorisé pour les changements d'attachments
   // FIX: Mémoiser ce callback pour éviter les boucles infinies dans MessageComposer
@@ -562,7 +573,73 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       setLocalSelectedConversationId(selectedConversationId);
     }
   }, [selectedConversationId, instanceId]);
-  
+
+  // SÉCURITÉ: Sauvegarder et restaurer le composer state lors du changement de conversation
+  useEffect(() => {
+    const currentConversationId = effectiveSelectedId;
+
+    // Si on change de conversation
+    if (currentConversationId !== previousConversationIdRef.current) {
+      const previousId = previousConversationIdRef.current;
+
+      console.log(`[ConversationLayout-${instanceId}] 🔄 Changement de conversation:`, {
+        previous: previousId,
+        current: currentConversationId
+      });
+
+      // Sauvegarder l'état du composer de la conversation précédente
+      if (previousId) {
+        const currentReplyTo = useReplyStore.getState().replyingTo;
+        const composerState: ComposerState = {
+          message: newMessage,
+          attachmentIds: attachmentIds,
+          attachmentMimeTypes: attachmentMimeTypes,
+          replyTo: currentReplyTo
+        };
+
+        composerStatesRef.current.set(previousId, composerState);
+        console.log(`[ConversationLayout-${instanceId}] 💾 Sauvegarde composer state pour ${previousId}:`, {
+          messageLength: composerState.message.length,
+          attachmentsCount: composerState.attachmentIds.length,
+          hasReply: !!composerState.replyTo
+        });
+      }
+
+      // Restaurer l'état du composer de la nouvelle conversation
+      if (currentConversationId) {
+        const savedState = composerStatesRef.current.get(currentConversationId);
+
+        if (savedState) {
+          console.log(`[ConversationLayout-${instanceId}] 📥 Restauration composer state pour ${currentConversationId}:`, {
+            messageLength: savedState.message.length,
+            attachmentsCount: savedState.attachmentIds.length,
+            hasReply: !!savedState.replyTo
+          });
+
+          setNewMessage(savedState.message);
+          setAttachmentIds(savedState.attachmentIds);
+          setAttachmentMimeTypes(savedState.attachmentMimeTypes);
+
+          if (savedState.replyTo) {
+            useReplyStore.getState().setReplyingTo(savedState.replyTo);
+          } else {
+            useReplyStore.getState().clearReply();
+          }
+        } else {
+          // Pas de brouillon sauvegardé, réinitialiser
+          console.log(`[ConversationLayout-${instanceId}] 🆕 Nouvelle conversation, réinitialisation composer`);
+          setNewMessage('');
+          setAttachmentIds([]);
+          setAttachmentMimeTypes([]);
+          useReplyStore.getState().clearReply();
+        }
+      }
+
+      // Mettre à jour la référence
+      previousConversationIdRef.current = currentConversationId;
+    }
+  }, [effectiveSelectedId, instanceId]); // Ne pas inclure newMessage, attachmentIds etc. pour éviter les boucles
+
 
   // Le chargement des conversations est maintenant géré par le hook useConversationsPagination
   // Cette fonction n'est plus nécessaire mais gardée pour compatibilité
@@ -739,6 +816,19 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       setShowConversationList(true);
     }
   }, [isMobile, selectedConversationId, localSelectedConversationId, router, instanceId]);
+
+  // Afficher les détails d'une conversation (depuis le menu)
+  const handleShowDetails = useCallback((conversation: Conversation) => {
+    console.log(`[ConversationLayout-${instanceId}] Affichage détails conversation:`, conversation.id);
+
+    // Sélectionner la conversation d'abord
+    if (effectiveSelectedId !== conversation.id) {
+      handleSelectConversation(conversation);
+    }
+
+    // Ouvrir la sidebar de détails
+    setIsDetailsOpen(true);
+  }, [effectiveSelectedId, handleSelectConversation, instanceId]);
 
   // Start video call
   const handleStartCall = useCallback(async () => {
@@ -1070,9 +1160,9 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
     const content = newMessage.trim();
     const replyToId = useReplyStore.getState().replyingTo?.id;
-    
+
     const hasAttachments = attachmentIds.length > 0;
-    
+
     console.log('[ConversationLayout] handleSendMessage appelé:', {
       content,
       selectedConversationId: selectedConversation?.id,
@@ -1083,9 +1173,20 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       attachmentCount: attachmentIds.length,
       hasAttachments
     });
-    
+
     if (!selectedConversation?.id || !user) {
       console.error('[ConversationLayout] Pas de conversation sélectionnée ou pas d\'utilisateur');
+      return;
+    }
+
+    // SÉCURITÉ CRITIQUE: Vérifier que la conversation sélectionnée correspond bien à la conversation actuelle
+    // Cela évite d'envoyer un message à la mauvaise conversation si l'utilisateur change rapidement de conversation
+    if (selectedConversation.id !== effectiveSelectedId) {
+      console.error('[ConversationLayout] ⚠️ SÉCURITÉ: Tentative d\'envoi à une conversation différente!', {
+        composerConversationId: selectedConversation.id,
+        currentConversationId: effectiveSelectedId
+      });
+      toast.error(t('conversationLayout.conversationChangedError'));
       return;
     }
     
@@ -1144,6 +1245,12 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       // Effacer l'état de réponse
       if (replyToId) {
         useReplyStore.getState().clearReply();
+      }
+
+      // SÉCURITÉ: Nettoyer le composer state sauvegardé pour cette conversation
+      if (selectedConversation?.id) {
+        composerStatesRef.current.delete(selectedConversation.id);
+        console.log(`[ConversationLayout] 🗑️ Composer state nettoyé pour ${selectedConversation.id}`);
       }
 
       // Scroller vers le bas immédiatement après l'envoi
@@ -1633,6 +1740,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
             isMobile={isMobile}
             showConversationList={showConversationList}
             onSelectConversation={handleSelectConversation}
+            onShowDetails={handleShowDetails}
             onCreateConversation={() => setIsCreateModalOpen(true)}
             onLinkCreated={loadConversations}
             t={t}

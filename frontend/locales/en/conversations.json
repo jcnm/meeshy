@@ -58,7 +58,8 @@
         "conversations": {
           "loadError": "Error loading conversation"
         }
-      }
+      },
+      "conversationChangedError": "Error: The conversation has changed. Message not sent for your security."
     },
     "search": {
       "placeholder": "Search conversations..."
