@@ -1486,9 +1486,9 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   }, [selectedConversationId, user, conversations.length, selectedConversation?.id, loadDirectConversation, instanceId]);
 
   // Charger les participants quand la conversation change via URL
-  // Utiliser une ref pour tracker l'ID précédent et éviter de clear les messages
+  // Note: Utilise previousConversationIdRef déjà déclaré plus haut (ligne 165)
+  // pour tracker l'ID précédent et éviter de clear les messages
   // quand c'est juste une mise à jour de l'objet conversation
-  const previousConversationIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     const currentId = selectedConversation?.id;
