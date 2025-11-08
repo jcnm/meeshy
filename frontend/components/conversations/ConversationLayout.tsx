@@ -1186,7 +1186,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         composerConversationId: selectedConversation.id,
         currentConversationId: effectiveSelectedId
       });
-      toast.error('Erreur: La conversation a changé. Message non envoyé pour votre sécurité.');
+      toast.error(t('conversationLayout.conversationChangedError'));
       return;
     }
     
