@@ -24,7 +24,9 @@ import {
   Link2,
   Copy,
   Check,
-  Camera
+  Camera,
+  Pencil,
+  Trash2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { OnlineIndicator } from '@/components/ui/online-indicator';
@@ -308,6 +310,8 @@ function CategorySelector({ conversationId, currentUser, onCategoryUpdated }: Ca
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+  const [editingCategoryName, setEditingCategoryName] = useState('');
 
   // Load categories and current selection
   useEffect(() => {
@@ -399,6 +403,57 @@ function CategorySelector({ conversationId, currentUser, onCategoryUpdated }: Ca
     }
   };
 
+  const handleEditCategory = async (categoryId: string) => {
+    if (!editingCategoryName.trim()) {
+      toast.error(t('conversationDetails.categoryNameRequired'));
+      return;
+    }
+
+    try {
+      await userPreferencesService.updateCategory(categoryId, { name: editingCategoryName.trim() });
+
+      // Mettre à jour la liste des catégories
+      const updatedCategories = categories.map(cat =>
+        cat.id === categoryId ? { ...cat, name: editingCategoryName.trim() } : cat
+      );
+      setCategories(updatedCategories);
+
+      setEditingCategoryId(null);
+      setEditingCategoryName('');
+      toast.success(t('conversationDetails.categoryUpdated'));
+      onCategoryUpdated?.();
+    } catch (error) {
+      console.error('Error updating category:', error);
+      toast.error(t('conversationDetails.categoryUpdateError'));
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId: string, categoryName: string) => {
+    // Demander confirmation
+    if (!confirm(t('conversationDetails.confirmDeleteCategory', { category: categoryName }))) {
+      return;
+    }
+
+    try {
+      await userPreferencesService.deleteCategory(categoryId);
+
+      // Retirer la catégorie de la liste
+      const updatedCategories = categories.filter(cat => cat.id !== categoryId);
+      setCategories(updatedCategories);
+
+      // Si la catégorie supprimée était sélectionnée, la désélectionner
+      if (selectedCategoryId === categoryId) {
+        setSelectedCategoryId(null);
+      }
+
+      toast.success(t('conversationDetails.categoryDeleted'));
+      onCategoryUpdated?.();
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      toast.error(t('conversationDetails.categoryDeleteError'));
+    }
+  };
+
   // Filter categories
   const filteredCategories = categories.filter(cat =>
     cat.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -486,11 +541,93 @@ function CategorySelector({ conversationId, currentUser, onCategoryUpdated }: Ca
                 {filteredCategories.map((category) => (
                   <CommandItem
                     key={category.id}
-                    onSelect={() => handleSelectCategory(category.id)}
-                    className="cursor-pointer"
+                    className="cursor-pointer group"
+                    onSelect={() => {
+                      if (editingCategoryId !== category.id) {
+                        handleSelectCategory(category.id);
+                      }
+                    }}
                   >
-                    <Folder className="h-4 w-4 mr-2" />
-                    {category.name}
+                    <div className="flex items-center justify-between w-full">
+                      {editingCategoryId === category.id ? (
+                        <div className="flex items-center gap-2 flex-1">
+                          <Folder className="h-4 w-4 flex-shrink-0" />
+                          <Input
+                            value={editingCategoryName}
+                            onChange={(e) => setEditingCategoryName(e.target.value)}
+                            onClick={(e) => e.stopPropagation()}
+                            onKeyDown={(e) => {
+                              e.stopPropagation();
+                              if (e.key === 'Enter') {
+                                handleEditCategory(category.id);
+                              } else if (e.key === 'Escape') {
+                                setEditingCategoryId(null);
+                                setEditingCategoryName('');
+                              }
+                            }}
+                            className="h-7 flex-1"
+                            autoFocus
+                          />
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 w-6 p-0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditCategory(category.id);
+                            }}
+                          >
+                            <Check className="h-3 w-3 text-green-600" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 w-6 p-0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingCategoryId(null);
+                              setEditingCategoryName('');
+                            }}
+                          >
+                            <XIcon className="h-3 w-3 text-red-600" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-center flex-1">
+                            <Folder className="h-4 w-4 mr-2" />
+                            <span>{category.name}</span>
+                          </div>
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 p-0 hover:bg-blue-100 dark:hover:bg-blue-900"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingCategoryId(category.id);
+                                setEditingCategoryName(category.name);
+                              }}
+                              title={t('conversationDetails.editCategory')}
+                            >
+                              <Pencil className="h-3 w-3 text-blue-600" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 p-0 hover:bg-red-100 dark:hover:bg-red-900"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteCategory(category.id, category.name);
+                              }}
+                              title={t('conversationDetails.deleteCategory')}
+                            >
+                              <Trash2 className="h-3 w-3 text-red-600" />
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </CommandItem>
                 ))}
               </CommandGroup>
