@@ -177,10 +177,10 @@ const ConversationItem = memo(function ConversationItem({
                         : participantUser.firstName || participantUser.lastName) ||
                       'Utilisateur';
 
-      // Afficher le nom avec "(since date)" si lastActiveAt est disponible
-      if (participantUser.lastActiveAt) {
-        const sinceDate = formatRelativeDate(participantUser.lastActiveAt, { t });
-        return `${userName} (${sinceDate})`;
+      // Pour les conversations directes, afficher la date de création entre parenthèses
+      if (conversation.createdAt) {
+        const createdDate = formatRelativeDate(conversation.createdAt, { t });
+        return `${userName} (${createdDate})`;
       }
 
       return userName;
@@ -255,22 +255,19 @@ const ConversationItem = memo(function ConversationItem({
             {getConversationIcon() || getConversationAvatar()}
           </AvatarFallback>
         </Avatar>
-        {/* Indicateur en ligne - seulement pour les conversations directes et si online/away (pas offline) */}
+        {/* Indicateur de présence - pour les conversations directes (vert, orange, gris) */}
         {conversation.type === 'direct' && (() => {
           const participantUser = getOtherParticipantUser();
           if (participantUser) {
             const status = getUserStatus(participantUser);
-            // N'afficher que si online (vert) ou away (orange), pas offline (gris)
-            if (status !== 'offline') {
-              return (
-                <OnlineIndicator
-                  isOnline={status === 'online'}
-                  status={status}
-                  size="md"
-                  className="absolute -bottom-0.5 -right-0.5"
-                />
-              );
-            }
+            return (
+              <OnlineIndicator
+                isOnline={status === 'online'}
+                status={status}
+                size="md"
+                className="absolute -bottom-0.5 -right-0.5"
+              />
+            );
           }
           return null;
         })()}

@@ -654,8 +654,14 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   // Chargement des participants
   const loadParticipants = useCallback(async (conversationId: string) => {
     try {
+      console.log(`[ConversationLayout] 📥 Chargement des participants pour: ${conversationId}`);
       const participantsData = await conversationsService.getAllParticipants(conversationId);
-      
+      console.log(`[ConversationLayout] 📊 Participants reçus:`, {
+        authenticated: participantsData.authenticatedParticipants.length,
+        anonymous: participantsData.anonymousParticipants.length,
+        total: participantsData.authenticatedParticipants.length + participantsData.anonymousParticipants.length
+      });
+
       const allParticipants: ThreadMember[] = [
         ...participantsData.authenticatedParticipants.map(user => ({
           id: user.id,
@@ -714,10 +720,18 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         .forEach(p => participantsMap.set(p.userId, p));
       
       const uniqueParticipants = Array.from(participantsMap.values());
-      
+
+      console.log(`[ConversationLayout] ✅ Participants uniques après déduplication: ${uniqueParticipants.length}`);
+      console.log(`[ConversationLayout] 👥 Liste des participants:`, uniqueParticipants.map(p => ({
+        id: p.userId,
+        name: p.user.displayName || p.user.username,
+        role: p.role,
+        isAnonymous: p.isAnonymous
+      })));
+
       setParticipants(uniqueParticipants);
     } catch (error) {
-      console.error('Erreur lors du chargement des participants:', error);
+      console.error('[ConversationLayout] ❌ Erreur lors du chargement des participants:', error);
       setParticipants([]);
     }
   }, []);

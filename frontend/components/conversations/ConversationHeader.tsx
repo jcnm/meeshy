@@ -200,30 +200,53 @@ export function ConversationHeader({
       return conversation.title || 'Groupe sans nom';
     }
 
-    // Pour les conversations directes, utiliser les participants chargés
+    // Pour les conversations directes, essayer plusieurs sources de données
+
+    // 1. Utiliser les participants chargés (conversationParticipants)
     const otherParticipant = conversationParticipants.find(p => p.userId !== currentUser?.id);
     if (otherParticipant?.user) {
-      const name = otherParticipant.user.displayName ||
-             `${otherParticipant.user.firstName || ''} ${otherParticipant.user.lastName || ''}`.trim() ||
-             otherParticipant.user.username;
-
-      // Ne pas ajouter d'émoji, l'icône Ghost est affichée séparément
-      return name;
+      const user = otherParticipant.user;
+      return user.displayName ||
+             user.username ||
+             (user.firstName || user.lastName
+               ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
+               : null) ||
+             'Utilisateur';
     }
 
-    // Fallback: utiliser conversation.members si disponible
+    // 2. Fallback: utiliser conversation.participants (données de la conversation)
+    const otherConvParticipant = (conversation as any).participants?.find((p: any) => p.userId !== currentUser?.id);
+    if (otherConvParticipant?.user) {
+      const user = otherConvParticipant.user;
+      return user.displayName ||
+             user.username ||
+             (user.firstName || user.lastName
+               ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
+               : null) ||
+             'Utilisateur';
+    }
+
+    // 3. Fallback: utiliser conversation.members si disponible
     if ((conversation as any).members) {
       const otherMember = (conversation as any).members.find((m: any) => m.userId !== currentUser?.id);
       if (otherMember?.user) {
-        const name = otherMember.user.displayName ||
-               `${otherMember.user.firstName || ''} ${otherMember.user.lastName || ''}`.trim() ||
-               otherMember.user.username;
-        return name;
+        const user = otherMember.user;
+        return user.displayName ||
+               user.username ||
+               (user.firstName || user.lastName
+                 ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
+                 : null) ||
+               'Utilisateur';
       }
     }
 
-    // Dernier fallback
-    return 'Conversation privée';
+    // 4. Dernier fallback: utiliser le titre de la conversation s'il existe
+    if (conversation.title && conversation.title !== 'Conversation privée') {
+      return conversation.title;
+    }
+
+    // 5. Fallback ultime
+    return 'Utilisateur inconnu';
   }, [conversation, currentUser, conversationParticipants]);
 
   // Obtenir l'avatar
@@ -234,13 +257,19 @@ export function ConversationHeader({
 
   const getConversationAvatarUrl = useCallback(() => {
     if (conversation.type === 'direct') {
-      // Essayer d'abord avec conversationParticipants
+      // 1. Essayer avec conversationParticipants
       const otherParticipant = conversationParticipants.find(p => p.userId !== currentUser?.id);
       if (otherParticipant?.user?.avatar) {
         return otherParticipant.user.avatar;
       }
 
-      // Fallback: utiliser conversation.members si disponible
+      // 2. Fallback: utiliser conversation.participants
+      const otherConvParticipant = (conversation as any).participants?.find((p: any) => p.userId !== currentUser?.id);
+      if (otherConvParticipant?.user?.avatar) {
+        return otherConvParticipant.user.avatar;
+      }
+
+      // 3. Fallback: utiliser conversation.members si disponible
       if ((conversation as any).members) {
         const otherMember = (conversation as any).members.find((m: any) => m.userId !== currentUser?.id);
         return otherMember?.user?.avatar;
@@ -317,13 +346,19 @@ export function ConversationHeader({
   // Vérifier si l'autre participant est anonyme
   const isOtherParticipantAnonymous = useCallback(() => {
     if (conversation.type === 'direct') {
-      // Essayer d'abord avec conversationParticipants
+      // 1. Essayer avec conversationParticipants
       const otherParticipant = conversationParticipants.find(p => p.userId !== currentUser?.id);
       if (otherParticipant?.user) {
         return isAnonymousUser(otherParticipant.user);
       }
 
-      // Fallback: utiliser conversation.members si disponible
+      // 2. Fallback: utiliser conversation.participants
+      const otherConvParticipant = (conversation as any).participants?.find((p: any) => p.userId !== currentUser?.id);
+      if (otherConvParticipant?.user) {
+        return isAnonymousUser(otherConvParticipant.user);
+      }
+
+      // 3. Fallback: utiliser conversation.members si disponible
       if ((conversation as any).members) {
         const otherMember = (conversation as any).members.find((m: any) => m.userId !== currentUser?.id);
         return otherMember?.user ? isAnonymousUser(otherMember.user) : false;
@@ -335,20 +370,31 @@ export function ConversationHeader({
   // Obtenir le statut de l'autre participant pour les conversations directes
   const getOtherParticipantStatus = useCallback((): UserStatus => {
     if (conversation.type === 'direct') {
-      // Essayer d'abord avec conversationParticipants
+      // 1. Essayer avec conversationParticipants
       const otherParticipant = conversationParticipants.find(p => p.userId !== currentUser?.id);
       if (otherParticipant?.user) {
         return getUserStatus(otherParticipant.user);
       }
 
-      // Fallback: utiliser conversation.members si disponible
+      // 2. Fallback: utiliser conversation.participants
+      const otherConvParticipant = (conversation as any).participants?.find((p: any) => p.userId !== currentUser?.id);
+      if (otherConvParticipant?.user) {
+        return getUserStatus(otherConvParticipant.user);
+      }
+
+      // 3. Fallback: utiliser conversation.members si disponible
       if ((conversation as any).members) {
         const otherMember = (conversation as any).members.find((m: any) => m.userId !== currentUser?.id);
-        return getUserStatus(otherMember?.user);
+        if (otherMember?.user) {
+          return getUserStatus(otherMember.user);
+        }
       }
+
+      // Si aucune donnée n'est disponible, retourner offline par défaut
+      return 'offline';
     }
     return 'online'; // Pour les conversations de groupe, toujours afficher comme online
-  }, [conversation.type, conversationParticipants, currentUser?.id]);
+  }, [conversation, conversationParticipants, currentUser?.id]);
 
   // Handlers pour les préférences utilisateur
   const handleTogglePin = useCallback(async () => {
