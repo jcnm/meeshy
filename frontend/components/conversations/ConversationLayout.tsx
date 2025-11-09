@@ -372,8 +372,11 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       // Plus besoin de triple comparaison ni de getCurrentConversationIdentifier()
       const normalizedConvId = meeshySocketIOService.getCurrentConversationId();
 
-      // Comparer avec l'ObjectId normalisé reçu lors du CONVERSATION_JOINED
-      const isForCurrentConversation = message.conversationId === normalizedConvId;
+      // CORRECTION CRITIQUE: Comparer AUSSI avec currentConvId pour éviter les messages d'anciennes conversations
+      // pendant les transitions de conversation
+      const isForCurrentConversation =
+        message.conversationId === normalizedConvId &&
+        message.conversationId === currentConvId;
 
       console.log(`[ConversationLayout-${instanceId}] 🔥 NOUVEAU MESSAGE VIA WEBSOCKET:`, {
         messageId: message.id,
