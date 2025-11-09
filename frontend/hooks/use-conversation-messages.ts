@@ -68,9 +68,24 @@ export function useConversationMessages(
 
   // Fonction pour charger les messages
   const loadMessagesInternal = useCallback(async (isLoadMore = false) => {
+    console.log('[useConversationMessages] 📥 DEBUT loadMessagesInternal:', {
+      conversationId,
+      isLoadMore,
+      enabled,
+      hasCurrentUser: !!currentUser,
+      currentOffset: offsetRef.current
+    });
+
     if (!conversationId || !currentUser || !enabled) {
+      console.log('[useConversationMessages] ❌ Conditions non remplies, abandon:', {
+        hasConversationId: !!conversationId,
+        hasCurrentUser: !!currentUser,
+        enabled
+      });
       return;
     }
+
+    console.log('[useConversationMessages] ✅ Chargement des messages pour conversation:', conversationId);
 
     // Annuler la requête précédente si elle existe
     if (abortControllerRef.current) {
@@ -93,7 +108,7 @@ export function useConversationMessages(
       // Chercher le token d'authentification via authManager (source unique)
       const authToken = authManager.getAuthToken();
       const sessionToken = authManager.getAnonymousSession()?.token;
-      
+
       if (!authToken && !sessionToken) {
         throw new Error('Token d\'authentification manquant');
       }
@@ -104,7 +119,7 @@ export function useConversationMessages(
       // Déterminer l'endpoint selon le contexte
       let endpoint: string;
       const requestOptions: { headers?: Record<string, string> } = {};
-      
+
       if (sessionToken && linkId) {
         // Route "/chat/[linkId]" : PRIORITÉ à l'endpoint des liens partagés
         endpoint = `/api/links/${linkId}/messages`;
@@ -120,6 +135,8 @@ export function useConversationMessages(
       } else {
         throw new Error('Configuration invalide pour charger les messages');
       }
+
+      console.log('[useConversationMessages] 🌐 Appel API endpoint:', endpoint);
 
       const response = await apiService.get<{ success: boolean; data: { messages: Message[] } }>(
         endpoint,
