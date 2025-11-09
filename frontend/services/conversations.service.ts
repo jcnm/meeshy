@@ -656,6 +656,8 @@ export class ConversationsService {
     }>;
   }> {
     try {
+      console.log('[ConversationsService] 📥 Récupération des participants pour:', conversationId);
+
       // Récupérer tous les participants via l'endpoint /api/conversations/:conversationId/participants
       const response = await apiService.get<{
         success: boolean;
@@ -666,9 +668,16 @@ export class ConversationsService {
           canSendImages?: boolean;
         }>;
       }>(`/api/conversations/${conversationId}/participants`);
-      
+
+      console.log('[ConversationsService] 📊 Réponse brute de l\'API:', {
+        success: response.data.success,
+        dataLength: response.data.data?.length || 0,
+        data: response.data.data
+      });
+
       const allParticipants = response.data.data || [];
-      
+      console.log('[ConversationsService] 🔍 Tous les participants reçus:', allParticipants.length);
+
       // Séparer les participants authentifiés et anonymes
       const authenticatedParticipants: User[] = [];
       const anonymousParticipants: Array<{
@@ -684,7 +693,15 @@ export class ConversationsService {
         canSendImages: boolean;
       }> = [];
       
-      allParticipants.forEach(participant => {
+      allParticipants.forEach((participant, index) => {
+        console.log(`[ConversationsService] 👤 Participant ${index + 1}:`, {
+          id: participant.id,
+          username: participant.username,
+          displayName: participant.displayName,
+          isAnonymous: participant.isAnonymous,
+          role: participant.role
+        });
+
         if (participant.isAnonymous) {
           anonymousParticipants.push({
             id: participant.id,
@@ -702,7 +719,22 @@ export class ConversationsService {
           authenticatedParticipants.push(participant);
         }
       });
-      
+
+      console.log('[ConversationsService] ✅ Résultat de la séparation:', {
+        authenticated: authenticatedParticipants.length,
+        anonymous: anonymousParticipants.length,
+        total: authenticatedParticipants.length + anonymousParticipants.length
+      });
+      console.log('[ConversationsService] 📝 Participants authentifiés:', authenticatedParticipants.map(p => ({
+        id: p.id,
+        username: p.username,
+        displayName: p.displayName
+      })));
+      console.log('[ConversationsService] 👻 Participants anonymes:', anonymousParticipants.map(p => ({
+        id: p.id,
+        username: p.username
+      })));
+
       return {
         authenticatedParticipants,
         anonymousParticipants

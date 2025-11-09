@@ -2331,6 +2331,18 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       // Combiner les participants authentifiés et anonymes
       const allParticipants = [...formattedParticipants, ...formattedAnonymousParticipants];
 
+      console.log('[GATEWAY] 📊 Participants récupérés pour conversation:', conversationId, {
+        authenticated: formattedParticipants.length,
+        anonymous: formattedAnonymousParticipants.length,
+        total: allParticipants.length
+      });
+      console.log('[GATEWAY] 👥 Liste des participants:', allParticipants.map(p => ({
+        id: p.id,
+        username: p.username,
+        displayName: p.displayName,
+        isAnonymous: p.isAnonymous || false
+      })));
+
       reply.send({
         success: true,
         data: allParticipants
