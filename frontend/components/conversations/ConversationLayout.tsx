@@ -70,23 +70,42 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   
   // État local pour la sélection dynamique (sans changement d'URL)
   const [localSelectedConversationId, setLocalSelectedConversationId] = useState<string | null>(null);
-  
+
+  // Log quand localSelectedConversationId change
+  useEffect(() => {
+    console.log(`[ConversationLayout-${instanceId}] 🔄 localSelectedConversationId CHANGED:`, localSelectedConversationId);
+  }, [localSelectedConversationId, instanceId]);
+
   // Utiliser l'ID depuis l'URL ou l'état local
   const effectiveSelectedId = selectedConversationId || localSelectedConversationId;
   
   const selectedConversation = useMemo(() => {
-    if (!effectiveSelectedId || !conversations.length) return null;
+    console.log(`[ConversationLayout-${instanceId}] 🔍 useMemo selectedConversation RECALCULE:`, {
+      effectiveSelectedId,
+      conversationsCount: conversations.length,
+      conversationsFirstId: conversations[0]?.id,
+      conversationsFirstTitle: conversations[0]?.title
+    });
+
+    if (!effectiveSelectedId || !conversations.length) {
+      console.log(`[ConversationLayout-${instanceId}] ❌ Pas d'ID effectif ou pas de conversations`);
+      return null;
+    }
+
     const found = conversations.find(c => c.id === effectiveSelectedId);
-    console.log(`[ConversationLayout-${instanceId}] Conversation sélectionnée:`, {
-      fromUrl: !!selectedConversationId,
-      fromLocal: !!localSelectedConversationId,
-      effectiveId: effectiveSelectedId,
+    console.log(`[ConversationLayout-${instanceId}] 🎯 Résultat find:`, {
+      effectiveSelectedId,
       found: !!found,
       foundId: found?.id,
-      foundTitle: found?.title
+      foundTitle: found?.title,
+      foundIdentifier: found?.identifier,
+      allIds: conversations.map(c => c.id),
+      searchedId: effectiveSelectedId,
+      match: found ? 'TROUVE' : 'PAS TROUVE'
     });
+
     return found || null;
-  }, [effectiveSelectedId, conversations]);
+  }, [effectiveSelectedId, conversations, instanceId]);
   const [participants, setParticipants] = useState<ThreadMember[]>([]);
 
   // Ref pour les participants (évite les re-créations de callbacks)
@@ -786,34 +805,38 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
   // Sélection d'une conversation (dynamique ou par URL)
   const handleSelectConversation = useCallback((conversation: Conversation) => {
-    console.log(`[ConversationLayout-${instanceId}] Sélection conversation:`, {
-      id: conversation.id,
-      title: conversation.title,
-      type: conversation.type,
+    console.log(`[ConversationLayout-${instanceId}] 🎯 SELECTION CONVERSATION:`, {
+      conversationClicked_id: conversation.id,
+      conversationClicked_title: conversation.title,
+      conversationClicked_type: conversation.type,
+      conversationClicked_identifier: conversation.identifier,
       currentEffectiveId: effectiveSelectedId,
-      mode: selectedConversationId ? 'url' : 'dynamic'
+      currentSelectedConversation_id: selectedConversation?.id,
+      currentSelectedConversation_title: selectedConversation?.title,
+      mode: selectedConversationId ? 'url' : 'dynamic',
+      allConversationsIds: conversations.map(c => ({ id: c.id, title: c.title }))
     });
-    
+
     if (effectiveSelectedId === conversation.id) {
-      console.log(`[ConversationLayout-${instanceId}] Conversation déjà sélectionnée, ignore`);
+      console.log(`[ConversationLayout-${instanceId}] ⚠️ Conversation déjà sélectionnée, ignore`);
       return;
     }
 
     // Mode dynamique : mise à jour de l'état local SANS changer l'URL
     if (!selectedConversationId) {
-      console.log(`[ConversationLayout-${instanceId}] Mode dynamique: sélection locale sans changement URL`);
+      console.log(`[ConversationLayout-${instanceId}] 📝 Mode dynamique: setLocalSelectedConversationId à:`, conversation.id);
       setLocalSelectedConversationId(conversation.id);
-      
+
       // Mise à jour de l'URL dans l'historique sans recharger
       window.history.replaceState(null, '', '/conversations');
     } else {
       // Mode URL : navigation classique (pour compatibilité)
-      console.log(`[ConversationLayout-${instanceId}] Mode URL: navigation vers:`, `/conversations/${conversation.id}`);
+      console.log(`[ConversationLayout-${instanceId}] 🔗 Mode URL: navigation vers:`, `/conversations/${conversation.id}`);
       router.push(`/conversations/${conversation.id}`);
     }
-    
+
     // Note: L'affichage mobile est maintenant géré automatiquement par l'effet useEffect
-  }, [effectiveSelectedId, selectedConversationId, router, instanceId]);
+  }, [effectiveSelectedId, selectedConversationId, selectedConversation, conversations, router, instanceId]);
 
   // Retour à la liste (mobile et desktop)
   const handleBackToList = useCallback(() => {
