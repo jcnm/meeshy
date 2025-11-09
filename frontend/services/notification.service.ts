@@ -8,13 +8,18 @@ import { APP_CONFIG } from '@/lib/config';
 
 export interface Notification {
   id: string;
-  type: 'message' | 'system' | 'user_action' | 'conversation' | 'translation';
+  type: 'message' | 'system' | 'user_action' | 'conversation' | 'translation' | 'new_message' | 'missed_call';
   title: string;
   message: string;
   data?: any;
   conversationId?: string;
+  messageId?: string;
+  callSessionId?: string;
   senderId?: string;
   senderName?: string;
+  senderUsername?: string;
+  senderAvatar?: string;
+  messagePreview?: string;
   timestamp: Date;
   isRead: boolean;
   translations?: {
@@ -123,6 +128,11 @@ export class NotificationService {
       this.config?.onError?.(error);
     });
 
+    // Événement générique pour toutes les notifications (nouveau système)
+    this.socket.on('notification', (data: any) => {
+      this.handleGenericNotification(data);
+    });
+
     // Événement pour les notifications de messages
     this.socket.on('newMessageNotification', (data: any) => {
       this.handleMessageNotification(data);
@@ -147,6 +157,34 @@ export class NotificationService {
     this.socket.on('notificationCountsUpdate', (data: any) => {
       this.updateCounts(data);
     });
+  }
+
+  /**
+   * Traite une notification générique (nouveau système avec avatar et preview)
+   */
+  private handleGenericNotification(data: any): void {
+    console.log('📢 Notification générique reçue:', data);
+
+    const notification: Notification = {
+      id: data.id,
+      type: data.type,
+      title: data.title,
+      message: data.content || data.message,
+      data: data.data,
+      conversationId: data.conversationId,
+      messageId: data.messageId,
+      callSessionId: data.callSessionId,
+      senderId: data.senderId,
+      senderName: data.senderUsername,
+      senderUsername: data.senderUsername,
+      senderAvatar: data.senderAvatar,
+      messagePreview: data.messagePreview,
+      timestamp: new Date(data.createdAt || Date.now()),
+      isRead: data.isRead || false,
+      translations: data.translations
+    };
+
+    this.addNotification(notification);
   }
 
   /**

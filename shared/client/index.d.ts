@@ -182,7 +182,9 @@ export const CallStatus: {
   initiated: 'initiated',
   ringing: 'ringing',
   active: 'active',
-  ended: 'ended'
+  ended: 'ended',
+  missed: 'missed',
+  rejected: 'rejected'
 };
 
 export type CallStatus = (typeof CallStatus)[keyof typeof CallStatus]
@@ -269,13 +271,6 @@ export class PrismaClient<
    * Disconnect from the database
    */
   $disconnect(): $Utils.JsPromise<void>;
-
-  /**
-   * Add a middleware
-   * @deprecated since 4.16.0. For new code, prefer client extensions instead.
-   * @see https://pris.ly/d/extensions
-   */
-  $use(cb: Prisma.Middleware): void
 
 /**
    * Allows the running of a sequence of read/write operations that are guaranteed to either succeed or fail as a whole.
@@ -670,8 +665,8 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 6.13.0
-   * Query Engine version: 361e86d0ea4987e9f53a565309b3eed797a6bcbd
+   * Prisma Client JS version: 6.19.0
+   * Query Engine version: 2ba551f319ab1df4bc874a89965d8b3641056773
    */
   export type PrismaVersion = {
     client: string
@@ -684,6 +679,7 @@ export namespace Prisma {
    */
 
 
+  export import Bytes = runtime.Bytes
   export import JsonObject = runtime.JsonObject
   export import JsonArray = runtime.JsonArray
   export import JsonValue = runtime.JsonValue
@@ -3490,25 +3486,6 @@ export namespace Prisma {
     | 'runCommandRaw'
     | 'findRaw'
     | 'groupBy'
-
-  /**
-   * These options are being passed into the middleware as "params"
-   */
-  export type MiddlewareParams = {
-    model?: ModelName
-    action: PrismaAction
-    args: any
-    dataPath: string[]
-    runInTransaction: boolean
-  }
-
-  /**
-   * The `T` type makes sure, that the `return proceed` is not forgotten in the middleware implementation
-   */
-  export type Middleware<T = any> = (
-    params: MiddlewareParams,
-    next: (params: MiddlewareParams) => $Utils.JsPromise<T>,
-  ) => $Utils.JsPromise<T>
 
   // tested in getLogLevel.test.ts
   export function getLogLevel(log: Array<LogLevel | LogDefinition>): LogLevel | undefined;
@@ -18866,6 +18843,13 @@ export namespace Prisma {
     pushSent: boolean | null
     expiresAt: Date | null
     createdAt: Date | null
+    senderId: string | null
+    senderUsername: string | null
+    senderAvatar: string | null
+    messagePreview: string | null
+    conversationId: string | null
+    messageId: string | null
+    callSessionId: string | null
   }
 
   export type NotificationMaxAggregateOutputType = {
@@ -18881,6 +18865,13 @@ export namespace Prisma {
     pushSent: boolean | null
     expiresAt: Date | null
     createdAt: Date | null
+    senderId: string | null
+    senderUsername: string | null
+    senderAvatar: string | null
+    messagePreview: string | null
+    conversationId: string | null
+    messageId: string | null
+    callSessionId: string | null
   }
 
   export type NotificationCountAggregateOutputType = {
@@ -18896,6 +18887,13 @@ export namespace Prisma {
     pushSent: number
     expiresAt: number
     createdAt: number
+    senderId: number
+    senderUsername: number
+    senderAvatar: number
+    messagePreview: number
+    conversationId: number
+    messageId: number
+    callSessionId: number
     _all: number
   }
 
@@ -18913,6 +18911,13 @@ export namespace Prisma {
     pushSent?: true
     expiresAt?: true
     createdAt?: true
+    senderId?: true
+    senderUsername?: true
+    senderAvatar?: true
+    messagePreview?: true
+    conversationId?: true
+    messageId?: true
+    callSessionId?: true
   }
 
   export type NotificationMaxAggregateInputType = {
@@ -18928,6 +18933,13 @@ export namespace Prisma {
     pushSent?: true
     expiresAt?: true
     createdAt?: true
+    senderId?: true
+    senderUsername?: true
+    senderAvatar?: true
+    messagePreview?: true
+    conversationId?: true
+    messageId?: true
+    callSessionId?: true
   }
 
   export type NotificationCountAggregateInputType = {
@@ -18943,6 +18955,13 @@ export namespace Prisma {
     pushSent?: true
     expiresAt?: true
     createdAt?: true
+    senderId?: true
+    senderUsername?: true
+    senderAvatar?: true
+    messagePreview?: true
+    conversationId?: true
+    messageId?: true
+    callSessionId?: true
     _all?: true
   }
 
@@ -19031,6 +19050,13 @@ export namespace Prisma {
     pushSent: boolean
     expiresAt: Date | null
     createdAt: Date
+    senderId: string | null
+    senderUsername: string | null
+    senderAvatar: string | null
+    messagePreview: string | null
+    conversationId: string | null
+    messageId: string | null
+    callSessionId: string | null
     _count: NotificationCountAggregateOutputType | null
     _min: NotificationMinAggregateOutputType | null
     _max: NotificationMaxAggregateOutputType | null
@@ -19063,6 +19089,13 @@ export namespace Prisma {
     pushSent?: boolean
     expiresAt?: boolean
     createdAt?: boolean
+    senderId?: boolean
+    senderUsername?: boolean
+    senderAvatar?: boolean
+    messagePreview?: boolean
+    conversationId?: boolean
+    messageId?: boolean
+    callSessionId?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["notification"]>
 
@@ -19081,9 +19114,16 @@ export namespace Prisma {
     pushSent?: boolean
     expiresAt?: boolean
     createdAt?: boolean
+    senderId?: boolean
+    senderUsername?: boolean
+    senderAvatar?: boolean
+    messagePreview?: boolean
+    conversationId?: boolean
+    messageId?: boolean
+    callSessionId?: boolean
   }
 
-  export type NotificationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "type" | "title" | "content" | "data" | "priority" | "isRead" | "emailSent" | "pushSent" | "expiresAt" | "createdAt", ExtArgs["result"]["notification"]>
+  export type NotificationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "type" | "title" | "content" | "data" | "priority" | "isRead" | "emailSent" | "pushSent" | "expiresAt" | "createdAt" | "senderId" | "senderUsername" | "senderAvatar" | "messagePreview" | "conversationId" | "messageId" | "callSessionId", ExtArgs["result"]["notification"]>
   export type NotificationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -19097,7 +19137,7 @@ export namespace Prisma {
       id: string
       userId: string
       /**
-       * new_conversation, new_message, message_edited, friend_request, etc.
+       * new_conversation, new_message, message_edited, friend_request, missed_call, etc.
        */
       type: string
       title: string
@@ -19109,6 +19149,22 @@ export namespace Prisma {
       pushSent: boolean
       expiresAt: Date | null
       createdAt: Date
+      /**
+       * Informations de l'expéditeur (pour les notifications de messages/appels)
+       */
+      senderId: string | null
+      senderUsername: string | null
+      senderAvatar: string | null
+      /**
+       * Aperçu du message (tronqué à 32 caractères)
+       */
+      messagePreview: string | null
+      /**
+       * Références pour navigation
+       */
+      conversationId: string | null
+      messageId: string | null
+      callSessionId: string | null
     }, ExtArgs["result"]["notification"]>
     composites: {}
   }
@@ -19514,6 +19570,13 @@ export namespace Prisma {
     readonly pushSent: FieldRef<"Notification", 'Boolean'>
     readonly expiresAt: FieldRef<"Notification", 'DateTime'>
     readonly createdAt: FieldRef<"Notification", 'DateTime'>
+    readonly senderId: FieldRef<"Notification", 'String'>
+    readonly senderUsername: FieldRef<"Notification", 'String'>
+    readonly senderAvatar: FieldRef<"Notification", 'String'>
+    readonly messagePreview: FieldRef<"Notification", 'String'>
+    readonly conversationId: FieldRef<"Notification", 'String'>
+    readonly messageId: FieldRef<"Notification", 'String'>
+    readonly callSessionId: FieldRef<"Notification", 'String'>
   }
     
 
@@ -38676,7 +38739,14 @@ export namespace Prisma {
     emailSent: 'emailSent',
     pushSent: 'pushSent',
     expiresAt: 'expiresAt',
-    createdAt: 'createdAt'
+    createdAt: 'createdAt',
+    senderId: 'senderId',
+    senderUsername: 'senderUsername',
+    senderAvatar: 'senderAvatar',
+    messagePreview: 'messagePreview',
+    conversationId: 'conversationId',
+    messageId: 'messageId',
+    callSessionId: 'callSessionId'
   };
 
   export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
@@ -40575,6 +40645,13 @@ export namespace Prisma {
     pushSent?: BoolFilter<"Notification"> | boolean
     expiresAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
     createdAt?: DateTimeFilter<"Notification"> | Date | string
+    senderId?: StringNullableFilter<"Notification"> | string | null
+    senderUsername?: StringNullableFilter<"Notification"> | string | null
+    senderAvatar?: StringNullableFilter<"Notification"> | string | null
+    messagePreview?: StringNullableFilter<"Notification"> | string | null
+    conversationId?: StringNullableFilter<"Notification"> | string | null
+    messageId?: StringNullableFilter<"Notification"> | string | null
+    callSessionId?: StringNullableFilter<"Notification"> | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
@@ -40591,6 +40668,13 @@ export namespace Prisma {
     pushSent?: SortOrder
     expiresAt?: SortOrder
     createdAt?: SortOrder
+    senderId?: SortOrder
+    senderUsername?: SortOrder
+    senderAvatar?: SortOrder
+    messagePreview?: SortOrder
+    conversationId?: SortOrder
+    messageId?: SortOrder
+    callSessionId?: SortOrder
     user?: UserOrderByWithRelationInput
   }
 
@@ -40610,6 +40694,13 @@ export namespace Prisma {
     pushSent?: BoolFilter<"Notification"> | boolean
     expiresAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
     createdAt?: DateTimeFilter<"Notification"> | Date | string
+    senderId?: StringNullableFilter<"Notification"> | string | null
+    senderUsername?: StringNullableFilter<"Notification"> | string | null
+    senderAvatar?: StringNullableFilter<"Notification"> | string | null
+    messagePreview?: StringNullableFilter<"Notification"> | string | null
+    conversationId?: StringNullableFilter<"Notification"> | string | null
+    messageId?: StringNullableFilter<"Notification"> | string | null
+    callSessionId?: StringNullableFilter<"Notification"> | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id">
 
@@ -40626,6 +40717,13 @@ export namespace Prisma {
     pushSent?: SortOrder
     expiresAt?: SortOrder
     createdAt?: SortOrder
+    senderId?: SortOrder
+    senderUsername?: SortOrder
+    senderAvatar?: SortOrder
+    messagePreview?: SortOrder
+    conversationId?: SortOrder
+    messageId?: SortOrder
+    callSessionId?: SortOrder
     _count?: NotificationCountOrderByAggregateInput
     _max?: NotificationMaxOrderByAggregateInput
     _min?: NotificationMinOrderByAggregateInput
@@ -40647,6 +40745,13 @@ export namespace Prisma {
     pushSent?: BoolWithAggregatesFilter<"Notification"> | boolean
     expiresAt?: DateTimeNullableWithAggregatesFilter<"Notification"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Notification"> | Date | string
+    senderId?: StringNullableWithAggregatesFilter<"Notification"> | string | null
+    senderUsername?: StringNullableWithAggregatesFilter<"Notification"> | string | null
+    senderAvatar?: StringNullableWithAggregatesFilter<"Notification"> | string | null
+    messagePreview?: StringNullableWithAggregatesFilter<"Notification"> | string | null
+    conversationId?: StringNullableWithAggregatesFilter<"Notification"> | string | null
+    messageId?: StringNullableWithAggregatesFilter<"Notification"> | string | null
+    callSessionId?: StringNullableWithAggregatesFilter<"Notification"> | string | null
   }
 
   export type CommunityWhereInput = {
@@ -43772,6 +43877,13 @@ export namespace Prisma {
     pushSent?: boolean
     expiresAt?: Date | string | null
     createdAt?: Date | string
+    senderId?: string | null
+    senderUsername?: string | null
+    senderAvatar?: string | null
+    messagePreview?: string | null
+    conversationId?: string | null
+    messageId?: string | null
+    callSessionId?: string | null
     user: UserCreateNestedOneWithoutNotificationsInput
   }
 
@@ -43788,6 +43900,13 @@ export namespace Prisma {
     pushSent?: boolean
     expiresAt?: Date | string | null
     createdAt?: Date | string
+    senderId?: string | null
+    senderUsername?: string | null
+    senderAvatar?: string | null
+    messagePreview?: string | null
+    conversationId?: string | null
+    messageId?: string | null
+    callSessionId?: string | null
   }
 
   export type NotificationUpdateInput = {
@@ -43801,6 +43920,13 @@ export namespace Prisma {
     pushSent?: BoolFieldUpdateOperationsInput | boolean
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    senderId?: NullableStringFieldUpdateOperationsInput | string | null
+    senderUsername?: NullableStringFieldUpdateOperationsInput | string | null
+    senderAvatar?: NullableStringFieldUpdateOperationsInput | string | null
+    messagePreview?: NullableStringFieldUpdateOperationsInput | string | null
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    messageId?: NullableStringFieldUpdateOperationsInput | string | null
+    callSessionId?: NullableStringFieldUpdateOperationsInput | string | null
     user?: UserUpdateOneRequiredWithoutNotificationsNestedInput
   }
 
@@ -43816,6 +43942,13 @@ export namespace Prisma {
     pushSent?: BoolFieldUpdateOperationsInput | boolean
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    senderId?: NullableStringFieldUpdateOperationsInput | string | null
+    senderUsername?: NullableStringFieldUpdateOperationsInput | string | null
+    senderAvatar?: NullableStringFieldUpdateOperationsInput | string | null
+    messagePreview?: NullableStringFieldUpdateOperationsInput | string | null
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    messageId?: NullableStringFieldUpdateOperationsInput | string | null
+    callSessionId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type NotificationCreateManyInput = {
@@ -43831,6 +43964,13 @@ export namespace Prisma {
     pushSent?: boolean
     expiresAt?: Date | string | null
     createdAt?: Date | string
+    senderId?: string | null
+    senderUsername?: string | null
+    senderAvatar?: string | null
+    messagePreview?: string | null
+    conversationId?: string | null
+    messageId?: string | null
+    callSessionId?: string | null
   }
 
   export type NotificationUpdateManyMutationInput = {
@@ -43844,6 +43984,13 @@ export namespace Prisma {
     pushSent?: BoolFieldUpdateOperationsInput | boolean
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    senderId?: NullableStringFieldUpdateOperationsInput | string | null
+    senderUsername?: NullableStringFieldUpdateOperationsInput | string | null
+    senderAvatar?: NullableStringFieldUpdateOperationsInput | string | null
+    messagePreview?: NullableStringFieldUpdateOperationsInput | string | null
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    messageId?: NullableStringFieldUpdateOperationsInput | string | null
+    callSessionId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type NotificationUncheckedUpdateManyInput = {
@@ -43858,6 +44005,13 @@ export namespace Prisma {
     pushSent?: BoolFieldUpdateOperationsInput | boolean
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    senderId?: NullableStringFieldUpdateOperationsInput | string | null
+    senderUsername?: NullableStringFieldUpdateOperationsInput | string | null
+    senderAvatar?: NullableStringFieldUpdateOperationsInput | string | null
+    messagePreview?: NullableStringFieldUpdateOperationsInput | string | null
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    messageId?: NullableStringFieldUpdateOperationsInput | string | null
+    callSessionId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type CommunityCreateInput = {
@@ -46713,6 +46867,13 @@ export namespace Prisma {
     pushSent?: SortOrder
     expiresAt?: SortOrder
     createdAt?: SortOrder
+    senderId?: SortOrder
+    senderUsername?: SortOrder
+    senderAvatar?: SortOrder
+    messagePreview?: SortOrder
+    conversationId?: SortOrder
+    messageId?: SortOrder
+    callSessionId?: SortOrder
   }
 
   export type NotificationMaxOrderByAggregateInput = {
@@ -46728,6 +46889,13 @@ export namespace Prisma {
     pushSent?: SortOrder
     expiresAt?: SortOrder
     createdAt?: SortOrder
+    senderId?: SortOrder
+    senderUsername?: SortOrder
+    senderAvatar?: SortOrder
+    messagePreview?: SortOrder
+    conversationId?: SortOrder
+    messageId?: SortOrder
+    callSessionId?: SortOrder
   }
 
   export type NotificationMinOrderByAggregateInput = {
@@ -46743,6 +46911,13 @@ export namespace Prisma {
     pushSent?: SortOrder
     expiresAt?: SortOrder
     createdAt?: SortOrder
+    senderId?: SortOrder
+    senderUsername?: SortOrder
+    senderAvatar?: SortOrder
+    messagePreview?: SortOrder
+    conversationId?: SortOrder
+    messageId?: SortOrder
+    callSessionId?: SortOrder
   }
 
   export type ConversationListRelationFilter = {
@@ -51218,6 +51393,13 @@ export namespace Prisma {
     pushSent?: boolean
     expiresAt?: Date | string | null
     createdAt?: Date | string
+    senderId?: string | null
+    senderUsername?: string | null
+    senderAvatar?: string | null
+    messagePreview?: string | null
+    conversationId?: string | null
+    messageId?: string | null
+    callSessionId?: string | null
   }
 
   export type NotificationUncheckedCreateWithoutUserInput = {
@@ -51232,6 +51414,13 @@ export namespace Prisma {
     pushSent?: boolean
     expiresAt?: Date | string | null
     createdAt?: Date | string
+    senderId?: string | null
+    senderUsername?: string | null
+    senderAvatar?: string | null
+    messagePreview?: string | null
+    conversationId?: string | null
+    messageId?: string | null
+    callSessionId?: string | null
   }
 
   export type NotificationCreateOrConnectWithoutUserInput = {
@@ -52009,6 +52198,13 @@ export namespace Prisma {
     pushSent?: BoolFilter<"Notification"> | boolean
     expiresAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
     createdAt?: DateTimeFilter<"Notification"> | Date | string
+    senderId?: StringNullableFilter<"Notification"> | string | null
+    senderUsername?: StringNullableFilter<"Notification"> | string | null
+    senderAvatar?: StringNullableFilter<"Notification"> | string | null
+    messagePreview?: StringNullableFilter<"Notification"> | string | null
+    conversationId?: StringNullableFilter<"Notification"> | string | null
+    messageId?: StringNullableFilter<"Notification"> | string | null
+    callSessionId?: StringNullableFilter<"Notification"> | string | null
   }
 
   export type TypingIndicatorUpsertWithWhereUniqueWithoutUserInput = {
@@ -62569,6 +62765,13 @@ export namespace Prisma {
     pushSent?: boolean
     expiresAt?: Date | string | null
     createdAt?: Date | string
+    senderId?: string | null
+    senderUsername?: string | null
+    senderAvatar?: string | null
+    messagePreview?: string | null
+    conversationId?: string | null
+    messageId?: string | null
+    callSessionId?: string | null
   }
 
   export type TypingIndicatorCreateManyUserInput = {
@@ -63075,6 +63278,13 @@ export namespace Prisma {
     pushSent?: BoolFieldUpdateOperationsInput | boolean
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    senderId?: NullableStringFieldUpdateOperationsInput | string | null
+    senderUsername?: NullableStringFieldUpdateOperationsInput | string | null
+    senderAvatar?: NullableStringFieldUpdateOperationsInput | string | null
+    messagePreview?: NullableStringFieldUpdateOperationsInput | string | null
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    messageId?: NullableStringFieldUpdateOperationsInput | string | null
+    callSessionId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type NotificationUncheckedUpdateWithoutUserInput = {
@@ -63088,6 +63298,13 @@ export namespace Prisma {
     pushSent?: BoolFieldUpdateOperationsInput | boolean
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    senderId?: NullableStringFieldUpdateOperationsInput | string | null
+    senderUsername?: NullableStringFieldUpdateOperationsInput | string | null
+    senderAvatar?: NullableStringFieldUpdateOperationsInput | string | null
+    messagePreview?: NullableStringFieldUpdateOperationsInput | string | null
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    messageId?: NullableStringFieldUpdateOperationsInput | string | null
+    callSessionId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type NotificationUncheckedUpdateManyWithoutUserInput = {
@@ -63101,6 +63318,13 @@ export namespace Prisma {
     pushSent?: BoolFieldUpdateOperationsInput | boolean
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    senderId?: NullableStringFieldUpdateOperationsInput | string | null
+    senderUsername?: NullableStringFieldUpdateOperationsInput | string | null
+    senderAvatar?: NullableStringFieldUpdateOperationsInput | string | null
+    messagePreview?: NullableStringFieldUpdateOperationsInput | string | null
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    messageId?: NullableStringFieldUpdateOperationsInput | string | null
+    callSessionId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type TypingIndicatorUpdateWithoutUserInput = {

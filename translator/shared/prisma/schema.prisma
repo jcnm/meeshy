@@ -366,7 +366,7 @@ model TypingIndicator {
 model Notification {
   id        String    @id @default(auto()) @map("_id") @db.ObjectId
   userId    String    @db.ObjectId
-  /// new_conversation, new_message, message_edited, friend_request, etc.
+  /// new_conversation, new_message, message_edited, friend_request, missed_call, etc.
   type      String
   title     String
   content   String
@@ -377,8 +377,25 @@ model Notification {
   pushSent  Boolean   @default(false)
   expiresAt DateTime?
   createdAt DateTime  @default(now())
-  
+
+  /// Informations de l'expéditeur (pour les notifications de messages/appels)
+  senderId       String?   @db.ObjectId
+  senderUsername String?
+  senderAvatar   String?
+
+  /// Aperçu du message (tronqué à 32 caractères)
+  messagePreview String?
+
+  /// Références pour navigation
+  conversationId String?   @db.ObjectId
+  messageId      String?   @db.ObjectId
+  callSessionId  String?   @db.ObjectId
+
   user      User      @relation(fields: [userId], references: [id])
+
+  @@index([userId, isRead])
+  @@index([userId, type])
+  @@index([createdAt])
 }
 
 /// Communauté (représente une communauté de conversation)
@@ -770,6 +787,8 @@ enum CallStatus {
   ringing    // Ringing on remote participants
   active     // Call is active with participants
   ended      // Call has ended
+  missed     // Call was not answered
+  rejected   // Call was rejected by recipient
 }
 
 enum ParticipantRole {
