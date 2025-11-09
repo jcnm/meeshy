@@ -407,7 +407,9 @@ export async function conversationRoutes(fastify: FastifyInstance) {
                   username: true,
                   displayName: true,
                   avatar: true,
-                  isOnline: true
+                  isOnline: true,
+                  lastActiveAt: true,
+                  lastSeen: true
                 }
               }
             }
@@ -597,6 +599,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
                   displayName: true,
                   avatar: true,
                   isOnline: true,
+                  lastActiveAt: true,
                   lastSeen: true,
                   role: true
                 }
