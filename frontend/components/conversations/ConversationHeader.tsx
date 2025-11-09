@@ -5,6 +5,8 @@ import { ArrowLeft, UserPlus, Info, MoreVertical, Link2, Video, Ghost, Share2, I
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { OnlineIndicator } from '@/components/ui/online-indicator';
+import { OngoingCallBanner } from '@/components/video-calls/OngoingCallBanner';
+import { useCallStore } from '@/stores/call-store';
 import {
   Tooltip,
   TooltipContent,
@@ -84,6 +86,11 @@ export function ConversationHeader({
   const [isArchived, setIsArchived] = useState(false);
   const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
 
+  // État pour gérer l'appel en cours
+  const { currentCall, isInCall } = useCallStore();
+  const [callDuration, setCallDuration] = useState(0);
+  const [showCallBanner, setShowCallBanner] = useState(false);
+
   // Charger les préférences utilisateur
   useEffect(() => {
     // CORRECTION: Ne pas charger les préférences pour les utilisateurs anonymes
@@ -129,6 +136,53 @@ export function ConversationHeader({
     // Les préférences changent rarement et seront mises à jour lors des actions utilisateur
     // Si nécessaire, utiliser WebSocket pour les mises à jour en temps réel
   }, [conversation.id, currentUser]);
+
+  // Gérer l'affichage du banner d'appel en cours
+  useEffect(() => {
+    // Vérifier si un appel est en cours pour cette conversation
+    const hasActiveCall =
+      currentCall &&
+      isInCall &&
+      currentCall.conversationId === conversation.id &&
+      currentCall.status !== 'ended';
+
+    if (hasActiveCall) {
+      setShowCallBanner(true);
+
+      // Calculer et mettre à jour la durée de l'appel
+      const updateDuration = () => {
+        if (currentCall.startedAt) {
+          const now = new Date();
+          const start = new Date(currentCall.startedAt);
+          const durationInSeconds = Math.floor((now.getTime() - start.getTime()) / 1000);
+          setCallDuration(durationInSeconds);
+        }
+      };
+
+      // Mise à jour initiale
+      updateDuration();
+
+      // Mise à jour toutes les secondes
+      const interval = setInterval(updateDuration, 1000);
+
+      return () => clearInterval(interval);
+    } else {
+      setShowCallBanner(false);
+      setCallDuration(0);
+    }
+  }, [currentCall, isInCall, conversation.id]);
+
+  // Gérer le join à un appel en cours
+  const handleJoinCall = useCallback(() => {
+    if (currentCall && onStartCall) {
+      onStartCall();
+    }
+  }, [currentCall, onStartCall]);
+
+  // Gérer le dismiss du banner d'appel
+  const handleDismissCallBanner = useCallback(() => {
+    setShowCallBanner(false);
+  }, []);
 
   // Helper pour obtenir le rôle de l'utilisateur
   const getCurrentUserRole = useCallback((): UserRoleEnum => {
@@ -311,7 +365,19 @@ export function ConversationHeader({
   }, [conversation.id, t]);
 
   return (
-    <div className="flex items-center justify-between p-4 border-b border-border bg-card min-h-[72px]">
+    <>
+      {/* Banner d'appel en cours */}
+      {showCallBanner && currentCall && (
+        <OngoingCallBanner
+          callId={currentCall.id}
+          participantCount={currentCall.participants?.length || 0}
+          duration={callDuration}
+          onJoin={handleJoinCall}
+          onDismiss={handleDismissCallBanner}
+        />
+      )}
+
+      <div className="flex items-center justify-between p-4 border-b border-border bg-card min-h-[72px]">
       <div className="flex items-center gap-3 flex-1 min-w-0">
         {/* Bouton retour (mobile ou desktop avec showBackButton) */}
         {(isMobile || showBackButton) && (
@@ -571,5 +637,6 @@ export function ConversationHeader({
         conversationTitle={conversation.title || conversation.id}
       />
     </div>
+    </>
   );
 }
