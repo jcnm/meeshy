@@ -383,13 +383,15 @@ export function ConversationHeader({
                         {getConversationAvatar()}
                       </AvatarFallback>
                     </Avatar>
-                    {/* Status indicator for direct conversations */}
-                    <OnlineIndicator
-                      isOnline={getOtherParticipantStatus() === 'online'}
-                      status={getOtherParticipantStatus()}
-                      size="md"
-                      className="absolute -bottom-0.5 -right-0.5"
-                    />
+                    {/* Status indicator for direct conversations - only show if online (green) or away (orange), not offline (grey) */}
+                    {getOtherParticipantStatus() !== 'offline' && (
+                      <OnlineIndicator
+                        isOnline={getOtherParticipantStatus() === 'online'}
+                        status={getOtherParticipantStatus()}
+                        size="md"
+                        className="absolute -bottom-0.5 -right-0.5"
+                      />
+                    )}
                   </>
                 )}
               </div>

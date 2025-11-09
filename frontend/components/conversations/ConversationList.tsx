@@ -27,7 +27,7 @@ import { Folder } from 'lucide-react';
 import { toast } from 'sonner';
 import { OnlineIndicator } from '@/components/ui/online-indicator';
 import { getUserStatus } from '@/lib/user-status';
-import { formatConversationDate } from '@/utils/date-format';
+import { formatConversationDate, formatRelativeDate } from '@/utils/date-format';
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -154,35 +154,41 @@ const ConversationItem = memo(function ConversationItem({
     e.stopPropagation();
     onShowDetails?.(conversation);
   }, [conversation, onShowDetails]);
+
+  // Helper pour obtenir l'autre participant dans une conversation directe
+  const getOtherParticipantUser = useCallback(() => {
+    if (conversation.type !== 'direct') return null;
+    const otherParticipant = conversation.participants?.find(p => p.userId !== currentUser?.id);
+    return otherParticipant ? (otherParticipant as any).user : null;
+  }, [conversation, currentUser]);
+
   const getConversationName = useCallback(() => {
     if (conversation.type !== 'direct') {
       return conversation.title || 'Groupe sans nom';
     }
 
-    // Pour les conversations directes, extraire le nom de l'autre utilisateur
-    const otherParticipant = conversation.participants?.find(p => p.userId !== currentUser?.id);
+    const participantUser = getOtherParticipantUser();
+    if (participantUser) {
+      // Utiliser displayName, puis username, puis firstName/lastName
+      const userName = participantUser.displayName ||
+                      participantUser.username ||
+                      (participantUser.firstName && participantUser.lastName
+                        ? `${participantUser.firstName} ${participantUser.lastName}`.trim()
+                        : participantUser.firstName || participantUser.lastName) ||
+                      'Utilisateur';
 
-    if (otherParticipant) {
-      // Les participants ont un objet 'user' au runtime même si le type ne le reflète pas
-      const participantUser = (otherParticipant as any).user;
-
-      if (participantUser) {
-        // Utiliser displayName, puis username, puis firstName/lastName
-        const userName = participantUser.displayName ||
-                        participantUser.username ||
-                        (participantUser.firstName && participantUser.lastName
-                          ? `${participantUser.firstName} ${participantUser.lastName}`.trim()
-                          : participantUser.firstName || participantUser.lastName) ||
-                        'Utilisateur';
-
-        return `${userName} ${t('andMe')}`;
+      // Afficher le nom avec "(since date)" si lastActiveAt est disponible
+      if (participantUser.lastActiveAt) {
+        const sinceDate = formatRelativeDate(participantUser.lastActiveAt, { t });
+        return `${userName} (${sinceDate})`;
       }
+
+      return userName;
     }
 
     // Fallback sur le titre de la conversation
-    const conversationTitle = conversation.title || 'Conversation privée';
-    return `${conversationTitle} ${t('andMe')}`;
-  }, [conversation, currentUser, t]);
+    return conversation.title || 'Conversation privée';
+  }, [conversation, getOtherParticipantUser, t]);
 
   const getConversationAvatar = useCallback(() => {
     const name = getConversationName();
@@ -191,14 +197,12 @@ const ConversationItem = memo(function ConversationItem({
 
   const getConversationAvatarUrl = useCallback(() => {
     if (conversation.type === 'direct') {
-      // Pour les conversations directes, retourner l'avatar de l'autre participant
-      const otherParticipant = conversation.participants?.find(p => p.userId !== currentUser?.id);
-      const participantUser = (otherParticipant as any)?.user;
+      const participantUser = getOtherParticipantUser();
       return participantUser?.avatar;
     }
     // Pour les conversations de groupe/public/global, retourner l'image de la conversation
     return conversation.image || conversation.avatar;
-  }, [conversation, currentUser]);
+  }, [conversation, getOtherParticipantUser]);
 
   const getConversationIcon = useCallback(() => {
     if (conversation.visibility === 'public') return <Globe className="h-4 w-4" />;
@@ -251,20 +255,22 @@ const ConversationItem = memo(function ConversationItem({
             {getConversationIcon() || getConversationAvatar()}
           </AvatarFallback>
         </Avatar>
-        {/* Indicateur en ligne - seulement pour les conversations directes */}
+        {/* Indicateur en ligne - seulement pour les conversations directes et si online/away (pas offline) */}
         {conversation.type === 'direct' && (() => {
-          const otherParticipant = conversation.participants?.find(p => p.userId !== currentUser?.id);
-          const participantUser = (otherParticipant as any)?.user;
+          const participantUser = getOtherParticipantUser();
           if (participantUser) {
             const status = getUserStatus(participantUser);
-            return (
-              <OnlineIndicator
-                isOnline={status === 'online'}
-                status={status}
-                size="md"
-                className="absolute -bottom-0.5 -right-0.5"
-              />
-            );
+            // N'afficher que si online (vert) ou away (orange), pas offline (gris)
+            if (status !== 'offline') {
+              return (
+                <OnlineIndicator
+                  isOnline={status === 'online'}
+                  status={status}
+                  size="md"
+                  className="absolute -bottom-0.5 -right-0.5"
+                />
+              );
+            }
           }
           return null;
         })()}

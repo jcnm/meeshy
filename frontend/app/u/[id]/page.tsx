@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
-import { 
+import {
   ArrowLeft,
   MessageSquare,
   Users,
@@ -18,6 +18,8 @@ import { type User } from '@/types';
 import { useI18n } from '@/hooks/useI18n';
 import { useUser } from '@/stores';
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
+import { OnlineIndicator } from '@/components/ui/online-indicator';
+import { getUserStatus } from '@/lib/user-status';
 
 interface ProfilePageProps {
   params: Promise<{
@@ -242,8 +244,13 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                         {getUserDisplayName(user).slice(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    {/* Online status indicator */}
-                    <div className={`absolute bottom-1 right-1 w-5 h-5 rounded-full border-4 border-white dark:border-gray-800 ${user.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
+                    {/* Online status indicator with 3 states: green (online), orange (away), grey (offline) */}
+                    <OnlineIndicator
+                      isOnline={getUserStatus(user) === 'online'}
+                      status={getUserStatus(user)}
+                      size="lg"
+                      className="absolute bottom-1 right-1"
+                    />
                   </div>
                   
                   <div className="flex-1 space-y-4">
