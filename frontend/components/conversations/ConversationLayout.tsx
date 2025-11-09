@@ -182,6 +182,8 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   }
   const composerStatesRef = useRef<Map<string, ComposerState>>(new Map());
   const previousConversationIdRef = useRef<string | null>(null);
+  // Ref séparée pour le composer state afin d'éviter les conflits avec le useEffect de chargement des messages
+  const previousComposerConversationIdRef = useRef<string | null>(null);
 
   // Callback mémorisé pour les changements d'attachments
   // FIX: Mémoiser ce callback pour éviter les boucles infinies dans MessageComposer
@@ -600,11 +602,11 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   useEffect(() => {
     const currentConversationId = effectiveSelectedId;
 
-    // Si on change de conversation
-    if (currentConversationId !== previousConversationIdRef.current) {
-      const previousId = previousConversationIdRef.current;
+    // Si on change de conversation (utiliser une ref séparée pour éviter les conflits)
+    if (currentConversationId !== previousComposerConversationIdRef.current) {
+      const previousId = previousComposerConversationIdRef.current;
 
-      console.log(`[ConversationLayout-${instanceId}] 🔄 Changement de conversation:`, {
+      console.log(`[ConversationLayout-${instanceId}] 🔄 Changement de conversation (composer):`, {
         previous: previousId,
         current: currentConversationId
       });
@@ -657,8 +659,8 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         }
       }
 
-      // Mettre à jour la référence
-      previousConversationIdRef.current = currentConversationId;
+      // Mettre à jour la référence (ref séparée pour le composer)
+      previousComposerConversationIdRef.current = currentConversationId;
     }
   }, [effectiveSelectedId, instanceId]); // Ne pas inclure newMessage, attachmentIds etc. pour éviter les boucles
 
