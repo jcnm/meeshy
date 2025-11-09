@@ -341,8 +341,7 @@ export class MeeshySocketIOManager {
                     displayName: true,
                     firstName: true,
                     lastName: true,
-                    avatar: true,
-                    thumbnail: true
+                    avatar: true
                   }
                 },
                 anonymousSender: {
@@ -363,8 +362,7 @@ export class MeeshySocketIOManager {
                         displayName: true,
                         firstName: true,
                         lastName: true,
-                        avatar: true,
-                        thumbnail: true
+                        avatar: true
                       }
                     },
                     anonymousSender: {
@@ -565,8 +563,7 @@ export class MeeshySocketIOManager {
                     displayName: true,
                     firstName: true,
                     lastName: true,
-                    avatar: true,
-                    thumbnail: true
+                    avatar: true
                   }
                 },
                 anonymousSender: {
@@ -587,8 +584,7 @@ export class MeeshySocketIOManager {
                         displayName: true,
                         firstName: true,
                         lastName: true,
-                        avatar: true,
-                        thumbnail: true
+                        avatar: true
                       }
                     },
                     anonymousSender: {

@@ -211,8 +211,19 @@ export function ConversationHeader({
       return name;
     }
 
-    // Fallback
-    return conversation.title || 'Conversation privée';
+    // Fallback: utiliser conversation.members si disponible
+    if ((conversation as any).members) {
+      const otherMember = (conversation as any).members.find((m: any) => m.userId !== currentUser?.id);
+      if (otherMember?.user) {
+        const name = otherMember.user.displayName ||
+               `${otherMember.user.firstName || ''} ${otherMember.user.lastName || ''}`.trim() ||
+               otherMember.user.username;
+        return name;
+      }
+    }
+
+    // Dernier fallback
+    return 'Conversation privée';
   }, [conversation, currentUser, conversationParticipants]);
 
   // Obtenir l'avatar
@@ -223,8 +234,17 @@ export function ConversationHeader({
 
   const getConversationAvatarUrl = useCallback(() => {
     if (conversation.type === 'direct') {
+      // Essayer d'abord avec conversationParticipants
       const otherParticipant = conversationParticipants.find(p => p.userId !== currentUser?.id);
-      return otherParticipant?.user?.avatar;
+      if (otherParticipant?.user?.avatar) {
+        return otherParticipant.user.avatar;
+      }
+
+      // Fallback: utiliser conversation.members si disponible
+      if ((conversation as any).members) {
+        const otherMember = (conversation as any).members.find((m: any) => m.userId !== currentUser?.id);
+        return otherMember?.user?.avatar;
+      }
     }
     // Pour les conversations de groupe/public/global, retourner l'image de la conversation
     return conversation.image || conversation.avatar;
@@ -297,8 +317,17 @@ export function ConversationHeader({
   // Vérifier si l'autre participant est anonyme
   const isOtherParticipantAnonymous = useCallback(() => {
     if (conversation.type === 'direct') {
+      // Essayer d'abord avec conversationParticipants
       const otherParticipant = conversationParticipants.find(p => p.userId !== currentUser?.id);
-      return otherParticipant?.user ? isAnonymousUser(otherParticipant.user) : false;
+      if (otherParticipant?.user) {
+        return isAnonymousUser(otherParticipant.user);
+      }
+
+      // Fallback: utiliser conversation.members si disponible
+      if ((conversation as any).members) {
+        const otherMember = (conversation as any).members.find((m: any) => m.userId !== currentUser?.id);
+        return otherMember?.user ? isAnonymousUser(otherMember.user) : false;
+      }
     }
     return false;
   }, [conversation, currentUser, conversationParticipants]);
@@ -306,8 +335,17 @@ export function ConversationHeader({
   // Obtenir le statut de l'autre participant pour les conversations directes
   const getOtherParticipantStatus = useCallback((): UserStatus => {
     if (conversation.type === 'direct') {
+      // Essayer d'abord avec conversationParticipants
       const otherParticipant = conversationParticipants.find(p => p.userId !== currentUser?.id);
-      return getUserStatus(otherParticipant?.user);
+      if (otherParticipant?.user) {
+        return getUserStatus(otherParticipant.user);
+      }
+
+      // Fallback: utiliser conversation.members si disponible
+      if ((conversation as any).members) {
+        const otherMember = (conversation as any).members.find((m: any) => m.userId !== currentUser?.id);
+        return getUserStatus(otherMember?.user);
+      }
     }
     return 'online'; // Pour les conversations de groupe, toujours afficher comme online
   }, [conversation.type, conversationParticipants, currentUser?.id]);
