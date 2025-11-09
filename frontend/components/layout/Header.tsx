@@ -224,7 +224,7 @@ export function Header({
                     {t('continueChat')}
                   </Button>
                 )}
-                
+
                 {/* Sélecteur de langue pour la page d'accueil */}
                 <LanguageFlagSelector
                   value={currentInterfaceLanguage}
@@ -232,9 +232,9 @@ export function Header({
                   interfaceOnly={true}
                   showLanguageName={true}
                 />
-                
+
                 <Link href="/login">
-                  <Button variant="ghost">
+                  <Button variant="outline">
                     <LogIn className="h-4 w-4 mr-2" />
                     {t('login')}
                   </Button>
@@ -258,9 +258,9 @@ export function Header({
                   interfaceOnly={true}
                   showLanguageName={true}
                 />
-                
+
                 <Link href="/login">
-                  <Button variant="ghost">
+                  <Button variant="outline">
                     <LogIn className="h-4 w-4 mr-2" />
                     {t('login')}
                   </Button>
@@ -444,7 +444,7 @@ export function Header({
                       />
                     </div>
                   </div>
-                  
+
                   {anonymousChatLink && (
                     <Button
                       variant="outline"
@@ -459,7 +459,7 @@ export function Header({
                     </Button>
                   )}
                   <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                    <Button variant="ghost" className="w-full justify-start">
+                    <Button variant="outline" className="w-full justify-start">
                       <LogIn className="h-4 w-4 mr-2" />
                       {t('login')}
                     </Button>
@@ -491,9 +491,9 @@ export function Header({
                       />
                     </div>
                   </div>
-                  
+
                   <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                    <Button variant="ghost" className="w-full justify-start">
+                    <Button variant="outline" className="w-full justify-start">
                       <LogIn className="h-4 w-4 mr-2" />
                       {t('login')}
                     </Button>
