@@ -83,10 +83,66 @@ export class NotificationService {
   }
 
   /**
+   * Vérifier si l'utilisateur a activé ce type de notification
+   */
+  private async shouldSendNotification(userId: string, type: string): Promise<boolean> {
+    try {
+      const preferences = await this.prisma.notificationPreference.findUnique({
+        where: { userId }
+      });
+
+      // Si aucune préférence, envoyer par défaut
+      if (!preferences) {
+        return true;
+      }
+
+      // Vérifier Do Not Disturb
+      if (preferences.dndEnabled && preferences.dndStartTime && preferences.dndEndTime) {
+        const now = new Date();
+        const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+        if (currentTime >= preferences.dndStartTime && currentTime <= preferences.dndEndTime) {
+          logger.debug('📢 Notification supprimée (Do Not Disturb)', { userId, type });
+          return false;
+        }
+      }
+
+      // Vérifier les préférences par type
+      switch (type) {
+        case 'new_message':
+          return preferences.newMessageEnabled;
+        case 'missed_call':
+          return preferences.missedCallEnabled;
+        case 'system':
+          return preferences.systemEnabled;
+        case 'new_conversation':
+        case 'message_edited':
+          return preferences.conversationEnabled;
+        default:
+          return true;
+      }
+    } catch (error) {
+      logger.error('❌ Error checking notification preferences:', error);
+      // En cas d'erreur, envoyer quand même
+      return true;
+    }
+  }
+
+  /**
    * Créer une notification et l'émettre en temps réel
    */
   async createNotification(data: CreateNotificationData): Promise<NotificationEventData | null> {
     try {
+      // Vérifier les préférences de l'utilisateur
+      const shouldSend = await this.shouldSendNotification(data.userId, data.type);
+      if (!shouldSend) {
+        logger.debug('📢 Notification skipped due to user preferences', {
+          type: data.type,
+          userId: data.userId
+        });
+        return null;
+      }
+
       logger.info('📢 Creating notification', {
         type: data.type,
         userId: data.userId,

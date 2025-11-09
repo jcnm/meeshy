@@ -13,7 +13,14 @@ const createNotificationSchema = z.object({
 const updatePreferencesSchema = z.object({
   pushEnabled: z.boolean().optional(),
   emailEnabled: z.boolean().optional(),
-  types: z.record(z.boolean()).optional()
+  soundEnabled: z.boolean().optional(),
+  newMessageEnabled: z.boolean().optional(),
+  missedCallEnabled: z.boolean().optional(),
+  systemEnabled: z.boolean().optional(),
+  conversationEnabled: z.boolean().optional(),
+  dndEnabled: z.boolean().optional(),
+  dndStartTime: z.string().optional(),
+  dndEndTime: z.string().optional()
 });
 
 export async function notificationRoutes(fastify: FastifyInstance) {
@@ -23,7 +30,7 @@ export async function notificationRoutes(fastify: FastifyInstance) {
   }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const { userId } = request.user as any;
-      const { page = '1', limit = '20', unread = 'false' } = request.query as any;
+      const { page = '1', limit = '20', unread = 'false', type } = request.query as any;
 
       const pageNum = parseInt(page, 10);
       const limitNum = parseInt(limit, 10);
@@ -32,6 +39,11 @@ export async function notificationRoutes(fastify: FastifyInstance) {
       const whereClause: any = { userId };
       if (unread === 'true') {
         whereClause.isRead = false;
+      }
+
+      // Filtre par type de notification
+      if (type && type !== 'all') {
+        whereClause.type = type;
       }
 
       // Supprimer les notifications expirées
@@ -224,33 +236,31 @@ export async function notificationRoutes(fastify: FastifyInstance) {
     try {
       const { userId } = request.user as any;
 
-      const preferences = await fastify.prisma.userPreference.findMany({
-        where: {
-          userId,
-          key: { startsWith: 'notification_' }
-        }
+      // Récupérer les préférences ou créer avec valeurs par défaut
+      let preferences = await fastify.prisma.notificationPreference.findUnique({
+        where: { userId }
       });
 
-      // Convertir en format utilisable
-      const preferencesMap: any = {
-        pushEnabled: true,
-        emailEnabled: true,
-        types: {}
-      };
-
-      preferences.forEach((pref: any) => {
-        const key = pref.key.replace('notification_', '');
-        if (key === 'pushEnabled' || key === 'emailEnabled') {
-          preferencesMap[key] = pref.value === 'true';
-        } else if (key.startsWith('type_')) {
-          const type = key.replace('type_', '');
-          preferencesMap.types[type] = pref.value === 'true';
-        }
-      });
+      // Si aucune préférence n'existe, créer avec valeurs par défaut
+      if (!preferences) {
+        preferences = await fastify.prisma.notificationPreference.create({
+          data: {
+            userId,
+            pushEnabled: true,
+            emailEnabled: true,
+            soundEnabled: true,
+            newMessageEnabled: true,
+            missedCallEnabled: true,
+            systemEnabled: true,
+            conversationEnabled: true,
+            dndEnabled: false
+          }
+        });
+      }
 
       return reply.send({
         success: true,
-        data: preferencesMap
+        data: preferences
       });
 
     } catch (error) {
@@ -270,58 +280,32 @@ export async function notificationRoutes(fastify: FastifyInstance) {
       const body = updatePreferencesSchema.parse(request.body);
       const { userId } = request.user as any;
 
-      const updates = [];
+      // Vérifier si les préférences existent
+      const existingPreferences = await fastify.prisma.notificationPreference.findUnique({
+        where: { userId }
+      });
 
-      if (body.pushEnabled !== undefined) {
-        updates.push({
-          userId,
-          key: 'notification_pushEnabled',
-          value: body.pushEnabled.toString()
+      let preferences;
+      if (existingPreferences) {
+        // Mettre à jour les préférences existantes
+        preferences = await fastify.prisma.notificationPreference.update({
+          where: { userId },
+          data: body
         });
-      }
-
-      if (body.emailEnabled !== undefined) {
-        updates.push({
-          userId,
-          key: 'notification_emailEnabled',
-          value: body.emailEnabled.toString()
-        });
-      }
-
-      if (body.types) {
-        Object.entries(body.types).forEach(([type, enabled]) => {
-          updates.push({
+      } else {
+        // Créer de nouvelles préférences
+        preferences = await fastify.prisma.notificationPreference.create({
+          data: {
             userId,
-            key: `notification_type_${type}`,
-            value: enabled.toString()
-          });
-        });
-      }
-
-      // Utiliser upsert pour chaque préférence
-      for (const update of updates) {
-        const existingPreference = await fastify.prisma.userPreference.findFirst({
-          where: {
-            userId: update.userId,
-            key: update.key
+            ...body
           }
         });
-
-        if (existingPreference) {
-          await fastify.prisma.userPreference.update({
-            where: { id: existingPreference.id },
-            data: { value: update.value }
-          });
-        } else {
-          await fastify.prisma.userPreference.create({
-            data: update
-          });
-        }
       }
 
       return reply.send({
         success: true,
-        message: 'Préférences mises à jour'
+        message: 'Préférences mises à jour',
+        data: preferences
       });
 
     } catch (error) {
