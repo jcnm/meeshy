@@ -187,21 +187,9 @@ export function ConversationParticipantsDrawer({
           className="w-[400px] sm:w-[500px] p-0 bg-card"
         >
           <SheetHeader className="px-6 py-4 border-b">
-            <div className="flex items-center justify-between">
-              <SheetTitle className="text-lg font-semibold">
-                {t('conversationUI.participants')} ({participants.length})
-              </SheetTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleManualRefresh}
-                disabled={isRefreshing}
-                className="h-8 w-8 p-0"
-                title="Rafraîchir les statuts"
-              >
-                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              </Button>
-            </div>
+            <SheetTitle className="text-lg font-semibold">
+              {t('conversationUI.participants')} ({participants.length})
+            </SheetTitle>
           </SheetHeader>
 
           <div className="px-6 py-4">
@@ -228,6 +216,16 @@ export function ConversationParticipantsDrawer({
                     <UserPlus className="h-4 w-4" />
                   </Button>
                 )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleManualRefresh}
+                  disabled={isRefreshing}
+                  className="h-10 w-10 p-0 flex-shrink-0"
+                  title="Rafraîchir les statuts"
+                >
+                  <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                </Button>
               </div>
             </div>
 
