@@ -105,9 +105,9 @@ export const MessageActionsBar = memo(function MessageActionsBar({
         className={cn(
           'flex items-center gap-1.5 px-1 py-1 transition-all duration-200',
           isOwnMessage ? 'justify-end' : 'justify-start',
-          'max-h-0 group-hover/message:max-h-[32px]',
-          'opacity-0 group-hover/message:opacity-100',
-          'overflow-hidden group-hover/message:overflow-visible'
+          'max-h-[32px]',
+          'opacity-100',
+          'overflow-visible'
         )}
       >
         {/* Translation Controls - Masquer pour les messages avec uniquement des attachments */}
