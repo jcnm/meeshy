@@ -162,7 +162,8 @@ const ConversationItem = memo(function ConversationItem({
     return otherParticipant ? (otherParticipant as any).user : null;
   }, [conversation, currentUser]);
 
-  const getConversationName = useCallback(() => {
+  // Obtenir seulement le nom de la conversation (sans date)
+  const getConversationNameOnly = useCallback(() => {
     if (conversation.type !== 'direct') {
       return conversation.title || 'Groupe sans nom';
     }
@@ -176,19 +177,27 @@ const ConversationItem = memo(function ConversationItem({
                         ? `${participantUser.firstName} ${participantUser.lastName}`.trim()
                         : participantUser.firstName || participantUser.lastName) ||
                       'Utilisateur';
-
-      // Pour les conversations directes, afficher la date de création entre parenthèses
-      if (conversation.createdAt) {
-        const createdDate = formatRelativeDate(conversation.createdAt, { t });
-        return `${userName} (${createdDate})`;
-      }
-
       return userName;
     }
 
     // Fallback sur le titre de la conversation
     return conversation.title || 'Conversation privée';
-  }, [conversation, getOtherParticipantUser, t]);
+  }, [conversation, getOtherParticipantUser]);
+
+  // Obtenir la date de création formatée pour les conversations directes
+  const getConversationCreatedDate = useCallback(() => {
+    if (conversation.type === 'direct' && conversation.createdAt) {
+      return formatRelativeDate(conversation.createdAt, { t });
+    }
+    return null;
+  }, [conversation, t]);
+
+  // Fonction legacy pour compatibilité avec getConversationAvatar
+  const getConversationName = useCallback(() => {
+    const name = getConversationNameOnly();
+    const date = getConversationCreatedDate();
+    return date ? `${name} (${date})` : name;
+  }, [getConversationNameOnly, getConversationCreatedDate]);
 
   const getConversationAvatar = useCallback(() => {
     const name = getConversationName();
@@ -312,7 +321,12 @@ const ConversationItem = memo(function ConversationItem({
               <Pin className="h-3.5 w-3.5 text-primary flex-shrink-0 fill-current" />
             )}
             <h3 className="font-semibold text-sm truncate">
-              {getConversationName()}
+              {getConversationNameOnly()}
+              {getConversationCreatedDate() && (
+                <span className="text-[0.5em] font-normal ml-1 text-muted-foreground">
+                  ({getConversationCreatedDate()})
+                </span>
+              )}
             </h3>
           </div>
           {conversation.lastMessage && (
