@@ -662,4 +662,128 @@ export class CallService {
 
     return this.getCallSession(callId);
   }
+
+  /**
+   * Marquer un appel comme manqué
+   * À appeler quand un appel n'est pas répondu après un timeout
+   */
+  async markCallAsMissed(callId: string): Promise<CallSessionWithParticipants> {
+    logger.info('📞 Marking call as missed', { callId });
+
+    const callSession = await this.prisma.callSession.findUnique({
+      where: { id: callId },
+      include: {
+        participants: true,
+        initiator: true
+      }
+    });
+
+    if (!callSession) {
+      logger.error('❌ Call session not found', { callId });
+      throw new Error(`${CALL_ERROR_CODES.CALL_NOT_FOUND}: Call session not found`);
+    }
+
+    // Mettre à jour le statut de l'appel
+    const now = new Date();
+    const duration = Math.floor((now.getTime() - callSession.startedAt.getTime()) / 1000);
+
+    await this.prisma.callSession.update({
+      where: { id: callId },
+      data: {
+        status: CallStatus.missed,
+        endedAt: now,
+        duration,
+        metadata: {
+          ...(callSession.metadata as any),
+          endReason: 'missed'
+        }
+      }
+    });
+
+    logger.info('✅ Call marked as missed', { callId, duration });
+
+    return this.getCallSession(callId);
+  }
+
+  /**
+   * Marquer un appel comme rejeté
+   * À appeler quand un participant rejette l'appel
+   */
+  async markCallAsRejected(callId: string): Promise<CallSessionWithParticipants> {
+    logger.info('📞 Marking call as rejected', { callId });
+
+    const callSession = await this.prisma.callSession.findUnique({
+      where: { id: callId },
+      include: {
+        participants: true
+      }
+    });
+
+    if (!callSession) {
+      logger.error('❌ Call session not found', { callId });
+      throw new Error(`${CALL_ERROR_CODES.CALL_NOT_FOUND}: Call session not found`);
+    }
+
+    // Mettre à jour le statut de l'appel
+    const now = new Date();
+    const duration = Math.floor((now.getTime() - callSession.startedAt.getTime()) / 1000);
+
+    await this.prisma.callSession.update({
+      where: { id: callId },
+      data: {
+        status: CallStatus.rejected,
+        endedAt: now,
+        duration,
+        metadata: {
+          ...(callSession.metadata as any),
+          endReason: 'rejected'
+        }
+      }
+    });
+
+    logger.info('✅ Call marked as rejected', { callId, duration });
+
+    return this.getCallSession(callId);
+  }
+
+  /**
+   * Récupérer les participants d'un appel qui n'ont pas rejoint
+   */
+  async getUnrespondedParticipants(callId: string): Promise<string[]> {
+    const callSession = await this.prisma.callSession.findUnique({
+      where: { id: callId },
+      include: {
+        participants: true,
+        conversation: {
+          include: {
+            members: {
+              where: {
+                isActive: true
+              },
+              select: {
+                userId: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!callSession) {
+      return [];
+    }
+
+    // Récupérer les IDs des participants qui ont déjà rejoint l'appel
+    const joinedUserIds = callSession.participants.map(p => p.userId).filter(Boolean) as string[];
+
+    // Récupérer tous les membres de la conversation
+    const conversationMemberIds = callSession.conversation.members.map(m => m.userId);
+
+    // Exclure l'initiateur et ceux qui ont rejoint
+    const unrespondedUserIds = conversationMemberIds.filter(
+      userId => userId !== callSession.initiatorId && !joinedUserIds.includes(userId)
+    );
+
+    return unrespondedUserIds;
+  }
 }

@@ -12,6 +12,7 @@
 import { Socket } from 'socket.io';
 import { PrismaClient } from '../../shared/prisma/client';
 import { CallService } from '../services/CallService';
+import { NotificationService } from '../services/NotificationService';
 import { logger } from '../utils/logger';
 import { CALL_EVENTS, CALL_ERROR_CODES } from '../../shared/types/video-call';
 import { validateSocketEvent } from '../middleware/validation';
@@ -52,10 +53,19 @@ const ICE_SERVERS_CONFIG = {
 
 export class CallEventsHandler {
   private callService: CallService;
+  private notificationService: NotificationService | null = null;
   private rateLimiter = getSocketRateLimiter();
 
   constructor(private prisma: PrismaClient) {
     this.callService = new CallService(prisma);
+  }
+
+  /**
+   * Initialiser le service de notifications
+   */
+  setNotificationService(notificationService: NotificationService): void {
+    this.notificationService = notificationService;
+    logger.info('📢 CallEventsHandler: NotificationService initialized');
   }
 
   /**
@@ -1041,5 +1051,91 @@ export class CallEventsHandler {
         logger.error('❌ Socket: Error handling disconnect for calls', error);
       }
     });
+  }
+
+  /**
+   * Créer des notifications pour les participants qui n'ont pas répondu à un appel
+   */
+  async createMissedCallNotifications(callId: string): Promise<void> {
+    if (!this.notificationService) {
+      logger.warn('⚠️ NotificationService not initialized, cannot create missed call notifications');
+      return;
+    }
+
+    try {
+      // Récupérer les informations de l'appel
+      const callSession = await this.prisma.callSession.findUnique({
+        where: { id: callId },
+        include: {
+          initiator: {
+            select: {
+              id: true,
+              username: true,
+              displayName: true,
+              avatar: true
+            }
+          },
+          conversation: {
+            select: {
+              id: true,
+              identifier: true
+            }
+          }
+        }
+      });
+
+      if (!callSession) {
+        logger.warn('⚠️ Call session not found for missed call notifications', { callId });
+        return;
+      }
+
+      // Récupérer les participants qui n'ont pas rejoint l'appel
+      const unrespondedParticipants = await this.callService.getUnrespondedParticipants(callId);
+
+      if (unrespondedParticipants.length === 0) {
+        logger.info('📢 No unresponded participants for missed call notifications', { callId });
+        return;
+      }
+
+      // Créer une notification pour chaque participant qui n'a pas répondu
+      const callerName = callSession.initiator.displayName || callSession.initiator.username;
+      const callerAvatar = callSession.initiator.avatar || undefined;
+
+      for (const participantId of unrespondedParticipants) {
+        await this.notificationService.createMissedCallNotification({
+          recipientId: participantId,
+          callerId: callSession.initiatorId,
+          callerUsername: callerName,
+          callerAvatar,
+          conversationId: callSession.conversationId,
+          callSessionId: callSession.id,
+          callType: 'video' // TODO: Récupérer le type d'appel depuis les métadonnées
+        });
+      }
+
+      logger.info('📢 Missed call notifications created', {
+        callId,
+        recipientCount: unrespondedParticipants.length
+      });
+    } catch (error) {
+      logger.error('❌ Error creating missed call notifications:', error);
+    }
+  }
+
+  /**
+   * Marquer un appel comme manqué et créer les notifications
+   */
+  async handleMissedCall(callId: string): Promise<void> {
+    try {
+      // Marquer l'appel comme manqué
+      await this.callService.markCallAsMissed(callId);
+
+      // Créer les notifications pour les participants qui n'ont pas répondu
+      await this.createMissedCallNotifications(callId);
+
+      logger.info('✅ Missed call handled', { callId });
+    } catch (error) {
+      logger.error('❌ Error handling missed call:', error);
+    }
   }
 }

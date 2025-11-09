@@ -12,6 +12,7 @@ import { MessagingService } from '../services/MessagingService';
 import { CallEventsHandler } from './CallEventsHandler';
 import { CallService } from '../services/CallService';
 import { AttachmentService } from '../services/AttachmentService';
+import { NotificationService } from '../services/NotificationService';
 import { validateMessageLength } from '../config/message-limits';
 import jwt from 'jsonwebtoken';
 import type {
@@ -51,10 +52,12 @@ export class MeeshySocketIOManager {
   private messagingService: MessagingService;
   private callEventsHandler: CallEventsHandler;
   private callService: CallService;
+  private notificationService: NotificationService;
 
   // Mapping des utilisateurs connectés
   private connectedUsers: Map<string, SocketUser> = new Map();
   private socketToUser: Map<string, string> = new Map();
+  private userSockets: Map<string, Set<string>> = new Map();
 
   // Statistiques
   private stats = {
@@ -76,6 +79,7 @@ export class MeeshySocketIOManager {
     this.messagingService = new MessagingService(prisma, this.translationService);
     this.callEventsHandler = new CallEventsHandler(prisma);
     this.callService = new CallService(prisma);
+    this.notificationService = new NotificationService(prisma);
 
     // CORRECTION: Configurer le callback de broadcast pour le MaintenanceService
     this.maintenanceService.setStatusBroadcastCallback(
@@ -143,7 +147,13 @@ export class MeeshySocketIOManager {
     try {
       // Initialiser le service de traduction
       await this.translationService.initialize();
-      
+
+      // Initialiser le service de notifications avec Socket.IO
+      this.notificationService.setSocketIO(this.io, this.userSockets);
+
+      // Initialiser le service de notifications pour CallEventsHandler
+      this.callEventsHandler.setNotificationService(this.notificationService);
+
       // Écouter les événements de traduction prêtes
       this.translationService.on('translationReady', this._handleTranslationReady.bind(this));
       
@@ -386,6 +396,9 @@ export class MeeshySocketIOManager {
               } as any; // Cast temporaire pour éviter les conflits de types
               // FIX: Utiliser message.conversationId (déjà normalisé en base) au lieu de data.conversationId (peut être un identifier)
               await this._broadcastNewMessage(messageWithTimestamp, message.conversationId, socket);
+
+              // Créer des notifications pour les autres participants de la conversation
+              await this._createMessageNotifications(message, userId);
             }
           }
 
@@ -817,6 +830,7 @@ export class MeeshySocketIOManager {
             // Enregistrer l'utilisateur
             this.connectedUsers.set(user.id, user);
             this.socketToUser.set(socket.id, user.id);
+            this._addUserSocket(user.id, socket.id);
 
             // Mettre à jour l'état en ligne dans la base de données et broadcaster
             await this.maintenanceService.updateUserOnlineStatus(user.id, true, true);
@@ -916,6 +930,7 @@ export class MeeshySocketIOManager {
             // Cela permet au MessagingService de détecter correctement le type d'authentification
             this.connectedUsers.set(user.id, user);
             this.socketToUser.set(socket.id, participant.sessionToken); // Utiliser sessionToken au lieu de user.id
+            this._addUserSocket(user.id, socket.id);
 
             // CORRECTION: Mettre à jour l'état en ligne dans la base de données pour les anonymes et broadcaster
             await this.maintenanceService.updateAnonymousOnlineStatus(user.id, true, true);
@@ -1549,6 +1564,7 @@ export class MeeshySocketIOManager {
           console.error(`❌ Error checking/leaving active calls for user ${userId}:`, error);
         }
 
+        this._removeUserSocket(userId, socket.id);
         this.connectedUsers.delete(userId);
         this.socketToUser.delete(socket.id);
 
@@ -2404,6 +2420,88 @@ export class MeeshySocketIOManager {
    */
   getConnectedUsers(): string[] {
     return Array.from(this.connectedUsers.keys());
+  }
+
+  /**
+   * Créer des notifications pour un nouveau message
+   */
+  private async _createMessageNotifications(message: any, senderId: string): Promise<void> {
+    try {
+      // Récupérer les membres de la conversation
+      const conversationMembers = await this.prisma.conversationMember.findMany({
+        where: {
+          conversationId: message.conversationId,
+          userId: {
+            not: message.senderId // Exclure l'expéditeur des notifications
+          }
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true
+            }
+          }
+        }
+      });
+
+      // Récupérer les informations de l'expéditeur
+      let senderUsername = 'Unknown';
+      let senderAvatar: string | undefined;
+
+      if (message.sender) {
+        senderUsername = message.sender.displayName || message.sender.username || 'Unknown';
+        senderAvatar = message.sender.avatar || undefined;
+      } else if (message.anonymousSender) {
+        const fullName = `${message.anonymousSender.firstName || ''} ${message.anonymousSender.lastName || ''}`.trim();
+        senderUsername = fullName || message.anonymousSender.username || 'Anonymous';
+      }
+
+      // Créer une notification pour chaque membre (sauf l'expéditeur)
+      for (const member of conversationMembers) {
+        await this.notificationService.createMessageNotification({
+          recipientId: member.userId,
+          senderId: message.senderId || '',
+          senderUsername,
+          senderAvatar,
+          messageContent: message.content,
+          conversationId: message.conversationId,
+          messageId: message.id
+        });
+      }
+
+      console.log(`📢 [NOTIFICATIONS] ${conversationMembers.length} notifications créées pour le message ${message.id}`);
+    } catch (error) {
+      console.error('❌ [NOTIFICATIONS] Erreur création notifications message:', error);
+    }
+  }
+
+  /**
+   * Ajoute un socket au mapping utilisateur -> sockets
+   */
+  private _addUserSocket(userId: string, socketId: string): void {
+    if (!this.userSockets.has(userId)) {
+      this.userSockets.set(userId, new Set());
+    }
+    this.userSockets.get(userId)!.add(socketId);
+    console.log(`📌 [USER_SOCKETS] Socket ${socketId} ajouté pour utilisateur ${userId}. Total: ${this.userSockets.get(userId)!.size}`);
+  }
+
+  /**
+   * Supprime un socket du mapping utilisateur -> sockets
+   */
+  private _removeUserSocket(userId: string, socketId: string): void {
+    const userSocketsSet = this.userSockets.get(userId);
+    if (userSocketsSet) {
+      userSocketsSet.delete(socketId);
+      console.log(`📌 [USER_SOCKETS] Socket ${socketId} supprimé pour utilisateur ${userId}. Restant: ${userSocketsSet.size}`);
+
+      // Si l'utilisateur n'a plus de sockets, supprimer l'entrée
+      if (userSocketsSet.size === 0) {
+        this.userSockets.delete(userId);
+        console.log(`📌 [USER_SOCKETS] Aucun socket restant pour ${userId}, suppression de l'entrée`);
+      }
+    }
   }
 
   async healthCheck(): Promise<boolean> {
