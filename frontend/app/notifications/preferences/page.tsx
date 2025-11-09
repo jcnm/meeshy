@@ -7,7 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Settings, Bell, Clock } from '@/lib/icons';
+import { Settings, Bell, Clock, MessageSquare, PhoneMissed, Users } from '@/lib/icons';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
@@ -190,8 +190,9 @@ function NotificationPreferencesContent() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label htmlFor="newMessage">
-                  <span className="font-medium">💬 Nouveaux messages</span>
+                <Label htmlFor="newMessage" className="flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4" />
+                  <span className="font-medium">Nouveaux messages</span>
                 </Label>
                 <Switch
                   id="newMessage"
@@ -200,8 +201,9 @@ function NotificationPreferencesContent() {
                 />
               </div>
               <div className="flex items-center justify-between">
-                <Label htmlFor="missedCall">
-                  <span className="font-medium">📞 Appels manqués</span>
+                <Label htmlFor="missedCall" className="flex items-center gap-2">
+                  <PhoneMissed className="h-4 w-4" />
+                  <span className="font-medium">Appels manqués</span>
                 </Label>
                 <Switch
                   id="missedCall"
@@ -210,8 +212,9 @@ function NotificationPreferencesContent() {
                 />
               </div>
               <div className="flex items-center justify-between">
-                <Label htmlFor="conversation">
-                  <span className="font-medium">👥 Activité de conversation</span>
+                <Label htmlFor="conversation" className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  <span className="font-medium">Activité de conversation</span>
                 </Label>
                 <Switch
                   id="conversation"
@@ -220,8 +223,9 @@ function NotificationPreferencesContent() {
                 />
               </div>
               <div className="flex items-center justify-between">
-                <Label htmlFor="system">
-                  <span className="font-medium">⚙️ Notifications système</span>
+                <Label htmlFor="system" className="flex items-center gap-2">
+                  <Settings className="h-4 w-4" />
+                  <span className="font-medium">Notifications système</span>
                 </Label>
                 <Switch
                   id="system"
