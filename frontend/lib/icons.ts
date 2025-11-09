@@ -19,7 +19,7 @@ import {
   Send,
   Share,
   Mail,
-  
+
   // UI Controls
   ChevronDown,
   ChevronUp,
@@ -29,7 +29,7 @@ import {
   ArrowRight,
   ArrowUp,
   ArrowLeft,
-  
+
   // Status & Feedback
   Loader2,
   CheckCircle2,
@@ -38,7 +38,7 @@ import {
   AlertTriangle,
   Timer,
   Printer,
-  
+
   // Content & Media
   Languages,
   Globe,
@@ -48,7 +48,7 @@ import {
   Brain,
   TrendingUp,
   Sparkles,
-  
+
   // Editing & Actions
   Edit,
   Trash2,
@@ -58,17 +58,20 @@ import {
   Lock,
   Ghost,
   Zap,
-  
+
   // Business & Categories
   Building2,
   GraduationCap,
-  
+
+  // Communication
+  PhoneMissed,
+
   // Social Media
   Youtube,
   Twitter,
   Linkedin,
   Instagram,
-  
+
 } from 'lucide-react';
 
 // Re-export pour utilisation dans l'application
@@ -120,6 +123,7 @@ export {
   Zap,
   Building2,
   GraduationCap,
+  PhoneMissed,
   Youtube,
   Twitter,
   Linkedin,
@@ -127,7 +131,7 @@ export {
 };
 
 // Types pour l'auto-complétion
-export type IconName = 
+export type IconName =
   | 'MessageSquare'
   | 'Bell'
   | 'Search'
@@ -171,6 +175,7 @@ export type IconName =
   | 'Zap'
   | 'Building2'
   | 'GraduationCap'
+  | 'PhoneMissed'
   | 'Youtube'
   | 'Twitter'
   | 'Linkedin'
@@ -222,11 +227,12 @@ export const getIcon = (name: IconName) => {
     Zap,
     Building2,
     GraduationCap,
+    PhoneMissed,
     Youtube,
     Twitter,
     Linkedin,
     Instagram,
   };
-  
+
   return icons[name];
 };
