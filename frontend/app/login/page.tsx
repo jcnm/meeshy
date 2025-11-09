@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/use-auth';
 import { LargeLogo } from '@/components/branding';
+import { authManager } from '@/services/auth-manager.service';
 
 // Composants inline légers pour éviter les imports lourds
 const SimpleCard = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
