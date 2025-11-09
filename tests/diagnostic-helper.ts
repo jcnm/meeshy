@@ -22,7 +22,6 @@ const colors = {
 };
 
 function log(color: keyof typeof colors, message: string) {
-  console.log(`${colors[color]}${message}${colors.reset}`);
 }
 
 /**

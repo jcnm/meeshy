@@ -99,8 +99,6 @@ export function CallManager() {
    * Handle incoming call
    */
   const handleIncomingCall = useCallback(async (event: CallInitiatedEvent) => {
-    console.log('🚨🚨🚨 [CallManager] INCOMING CALL RECEIVED 🚨🚨🚨', event);
-    console.log('🚨 [CallManager] User state:', { hasUser: !!user, userId: user?.id });
 
     // Wait for user to be loaded
     if (!user) {
@@ -110,7 +108,6 @@ export function CallManager() {
       return;
     }
 
-    console.log('✅ [CallManager] User loaded, processing call');
     logger.info('[CallManager]', 'Incoming call - callId: ' + event.callId, {
       callId: event.callId,
       initiatorId: event.initiator.userId,
@@ -195,7 +192,6 @@ export function CallManager() {
    */
   const handleParticipantLeft = useCallback(
     (event: CallParticipantLeftEvent) => {
-      console.log('📞 [CallManager] 🚨 PARTICIPANT LEFT EVENT RECEIVED 🚨', event);
       logger.info('[CallManager]', 'Participant left - callId: ' + event.callId + ', participantId: ' + event.participantId, {
         userId: event.userId,
         anonymousId: event.anonymousId,
@@ -205,10 +201,8 @@ export function CallManager() {
       // Use userId for WebRTC cleanup (peer connections and streams are tracked by userId)
       const userIdForCleanup = event.userId || event.anonymousId;
 
-      console.log('🔍 [CallManager] User ID for cleanup:', userIdForCleanup);
 
       if (userIdForCleanup) {
-        console.log('🧹 [CallManager] Removing remote stream and peer connection for:', userIdForCleanup);
         // Remove their stream and peer connection (tracked by userId)
         removeRemoteStream(userIdForCleanup);
         removePeerConnection(userIdForCleanup);
@@ -399,11 +393,6 @@ export function CallManager() {
         return false;
       }
 
-      console.log('🎧 [CallManager] Setting up Socket.IO call listeners', {
-        socketId: socket.id,
-        connected: socket.connected,
-        userId: user.id
-      });
       logger.info('[CallManager]', 'Setting up Socket.IO listeners', {
         socketId: socket.id
       });
@@ -419,7 +408,6 @@ export function CallManager() {
       // DEBUG: Add catch-all listener to see ALL socket events
       debugListenerRef = (eventName: string, ...args: any[]) => {
         if (eventName.startsWith('call:')) {
-          console.log(`🔔 [CallManager] Socket event received: ${eventName}`, args);
         }
       };
       (socket as any).onAny(debugListenerRef);
@@ -432,11 +420,6 @@ export function CallManager() {
       (socket as any).on('call:media-toggled', handleMediaToggle);
       (socket as any).on('call:error', handleCallError);
 
-      console.log('✅ [CallManager] All call listeners registered', {
-        socketId: socket.id,
-        userId: user.id,
-        listenersRegistered: true
-      });
       logger.info('[CallManager]', '✅ All call listeners registered', {
         socketId: socket.id,
         userId: user.id

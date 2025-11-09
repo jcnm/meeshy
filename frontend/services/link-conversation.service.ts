@@ -147,23 +147,15 @@ export class LinkConversationService {
       throw new Error(`Identifiant invalide: ${identifier} (type: ${identifierInfo.type})`);
     }
     
-    console.log('[LinkConversationService] Analyse de l\'identifiant:', {
-      identifier,
-      type: identifierInfo.type,
-      isValid: identifierInfo.isValid
-    });
     
     // Préparer les headers d'authentification
     const headers: Record<string, string> = {};
     
     if (sessionToken) {
-      console.log('[LinkConversationService] Authentification avec sessionToken');
       headers['X-Session-Token'] = sessionToken;
     } else if (authToken) {
-      console.log('[LinkConversationService] Authentification avec token');
       headers['Authorization'] = `Bearer ${authToken}`;
     } else {
-      console.log('[LinkConversationService] Aucune authentification');
     }
     
     // L'endpoint API /api/links/:id accepte les deux types d'identifiants
@@ -173,7 +165,6 @@ export class LinkConversationService {
     url.searchParams.append('limit', limit.toString());
     url.searchParams.append('offset', offset.toString());
 
-    console.log('[LinkConversationService] Requête vers:', endpoint);
 
     try {
       const response = await fetch(url.toString(), {
@@ -191,7 +182,6 @@ export class LinkConversationService {
         throw new Error(data.message || 'Erreur lors de la récupération des données');
       }
 
-      console.log('[LinkConversationService] Données récupérées avec succès');
       return data.data;
     } catch (error) {
       console.error('[LinkConversationService] Erreur lors de la récupération:', error);
@@ -200,7 +190,6 @@ export class LinkConversationService {
       const fallbacks = generateFallbackIdentifiers(identifier);
       
       if (fallbacks.length > 0) {
-        console.log('[LinkConversationService] Tentative avec fallbacks:', fallbacks);
         
         for (const fallbackIdentifier of fallbacks) {
           try {
@@ -218,12 +207,10 @@ export class LinkConversationService {
               const fallbackData = await fallbackResponse.json();
               
               if (fallbackData.success) {
-                console.log('[LinkConversationService] Succès avec fallback:', fallbackIdentifier);
                 return fallbackData.data;
               }
             }
           } catch (fallbackError) {
-            console.log('[LinkConversationService] Échec avec fallback:', fallbackIdentifier);
             // Continuer avec le prochain fallback
           }
         }

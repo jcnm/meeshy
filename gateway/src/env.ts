@@ -16,9 +16,7 @@ const baseConf = dotenv.config({ path: envPath });
 let localConf;
 if (fs.existsSync(envLocalPath)) {
   localConf = dotenv.config({ path: envLocalPath });
-  console.log('[ENV] Loaded .env.local for local development');
 } else {
-  console.log('[ENV] No .env.local found, using .env only');
 }
 
 export default localConf || baseConf;

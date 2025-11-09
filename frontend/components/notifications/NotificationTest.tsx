@@ -24,7 +24,6 @@ export function NotificationTest() {
 
     // Simuler la réception d'une notification
     showToast(testNotification);
-    console.log(`Notification de test ${type} créée:`, testNotification);
   };
 
   const testNotifications = [

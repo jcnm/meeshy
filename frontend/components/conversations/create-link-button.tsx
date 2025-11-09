@@ -113,7 +113,6 @@ export function CreateLinkButton({
     setGeneratedLink(null);
     setGeneratedToken(null);
     setLinkSummaryData(null);
-    console.log('Lien de partage créé avec succès !');
     onLinkCreated?.();
   };
 

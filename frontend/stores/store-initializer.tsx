@@ -23,7 +23,6 @@ export function StoreInitializer({ children }: StoreInitializerProps) {
     const initializeStores = async () => {
       try {
         if (process.env.NODE_ENV === 'development') {
-          console.log('[STORE_INITIALIZER] Initializing all stores...');
         }
         
         // Initialize app and auth in parallel
@@ -39,19 +38,15 @@ export function StoreInitializer({ children }: StoreInitializerProps) {
         
         if (user?.systemLanguage) {
           // Utilisateur connecté : utiliser sa préférence backend
-          console.log('[STORE_INITIALIZER] Using user language preference:', user.systemLanguage);
           languageStore.setInterfaceLanguage(user.systemLanguage);
         } else if (!hasPersistedLanguage) {
           // Aucune préférence sauvegardée : détecter la langue du navigateur
-          console.log('[STORE_INITIALIZER] No saved preference, detecting browser language');
           detectBrowserLanguage();
         } else {
           // Préférence déjà sauvegardée dans localStorage : ne rien faire
-          console.log('[STORE_INITIALIZER] Using persisted language preference:', languageStore.currentInterfaceLanguage);
         }
         
         if (process.env.NODE_ENV === 'development') {
-          console.log('[STORE_INITIALIZER] All stores initialized successfully');
         }
         
       } catch (error) {

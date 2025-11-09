@@ -140,7 +140,6 @@ export class AffiliateTrackingService {
         });
       } catch (friendRequestError) {
         // Ignorer l'erreur si la demande d'amitié existe déjà
-        console.log('Demande d\'amitié déjà existante ou erreur:', friendRequestError);
       }
 
       // Marquer la session comme convertie si elle existe
@@ -167,7 +166,6 @@ export class AffiliateTrackingService {
             });
           }
         } catch (sessionError) {
-          console.log('Erreur mise à jour session:', sessionError);
         }
       }
 
@@ -333,7 +331,6 @@ export class AffiliateTrackingService {
         }
       });
 
-      console.log(`Nettoyage: ${deletedSessions.count} sessions d'affiliation expirées supprimées`);
       return { success: true, deletedCount: deletedSessions.count };
     } catch (error) {
       console.error('Erreur nettoyage sessions:', error);

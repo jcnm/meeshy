@@ -17,15 +17,12 @@ async function fixShareLinkIdentifiers() {
   const client = new MongoClient(mongoUrl);
   
   try {
-    console.log('🔗 Connexion à MongoDB...');
     await client.connect();
-    console.log('✅ Connecté à MongoDB\n');
     
     const db = client.db();
     const shareLinksColl = db.collection('ConversationShareLink');
     const conversationsColl = db.collection('Conversation');
     
-    console.log('🔍 Recherche des ConversationShareLink sans identifier...\n');
     
     // Trouver tous les liens sans identifier (null, undefined ou vide)
     const linksWithoutIdentifier = await shareLinksColl.find({
@@ -36,10 +33,8 @@ async function fixShareLinkIdentifiers() {
       ]
     }).toArray();
     
-    console.log(`📊 Liens sans identifier trouvés: ${linksWithoutIdentifier.length}\n`);
     
     if (linksWithoutIdentifier.length === 0) {
-      console.log('✨ Aucune correction nécessaire - tout est en ordre !');
       return;
     }
     
@@ -48,8 +43,6 @@ async function fixShareLinkIdentifiers() {
     
     for (const link of linksWithoutIdentifier) {
       try {
-        console.log(`🔧 Correction du lien ${link._id}`);
-        console.log(`   linkId: ${link.linkId}`);
         
         // Récupérer la conversation
         const conversation = await conversationsColl.findOne({
@@ -57,12 +50,10 @@ async function fixShareLinkIdentifiers() {
         });
         
         if (!conversation) {
-          console.log(`   ⚠️  Conversation non trouvée: ${link.conversationId}`);
           errorCount++;
           continue;
         }
         
-        console.log(`   Conversation: ${conversation.identifier}`);
         
         // Générer le nouvel identifier
         let newIdentifier = generateIdentifier(conversation.identifier, link.linkId);
@@ -77,7 +68,6 @@ async function fixShareLinkIdentifiers() {
           counter++;
         }
         
-        console.log(`   Nouvel identifier: ${newIdentifier}`);
         
         // Mettre à jour le document
         await shareLinksColl.updateOne(
@@ -85,7 +75,6 @@ async function fixShareLinkIdentifiers() {
           { $set: { identifier: newIdentifier } }
         );
         
-        console.log(`   ✅ Lien mis à jour\n`);
         fixedCount++;
         
       } catch (error) {
@@ -94,16 +83,8 @@ async function fixShareLinkIdentifiers() {
       }
     }
     
-    console.log('\n═══════════════════════════════════════════════');
-    console.log('📊 RÉSUMÉ');
-    console.log('═══════════════════════════════════════════════');
-    console.log(`✅ Liens corrigés: ${fixedCount}`);
-    console.log(`❌ Erreurs: ${errorCount}`);
-    console.log(`📋 Total trouvés: ${linksWithoutIdentifier.length}`);
-    console.log('═══════════════════════════════════════════════\n');
     
     if (fixedCount > 0) {
-      console.log('🎉 Base de données nettoyée avec succès !');
     }
     
   } catch (error) {
@@ -111,14 +92,12 @@ async function fixShareLinkIdentifiers() {
     throw error;
   } finally {
     await client.close();
-    console.log('\n🔌 Connexion MongoDB fermée');
   }
 }
 
 // Exécuter le script
 fixShareLinkIdentifiers()
   .then(() => {
-    console.log('\n✅ Script terminé avec succès\n');
     process.exit(0);
   })
   .catch((error) => {

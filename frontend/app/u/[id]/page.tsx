@@ -119,14 +119,9 @@ export default function ProfilePage({ params }: ProfilePageProps) {
 
     try {
       // Log user data for debugging
-      console.log('[ProfilePage] Creating conversation with users:', {
-        currentUser: { id: currentUser.id, username: currentUser.username, displayName: currentUser.displayName },
-        targetUser: { id: user.id, username: user.username, displayName: user.displayName }
-      });
 
       // Créer le nom de la conversation avec les deux usernames
       const conversationName = `${getUserUsername(currentUser)} & ${getUserUsername(user)}`;
-      console.log('[ProfilePage] Conversation name:', conversationName);
       
       const response = await conversationsService.createConversation({
         type: 'direct',

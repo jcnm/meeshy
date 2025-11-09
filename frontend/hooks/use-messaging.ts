@@ -230,7 +230,6 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
           replyToId,
           error: errorMessage,
         });
-        console.log('💾 Message sauvegardé en échec:', failedMsgId);
         
         // Toast avec action de restauration
         toast.error(errorMessage, {
@@ -281,12 +280,6 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
       // Déterminer la langue source
       const sourceLanguage = originalLanguage || currentUser?.systemLanguage || 'fr';
       
-      console.log('[MESSAGING] 📎 Envoi message avec attachments:', {
-        content: content.substring(0, 50),
-        attachmentCount: attachmentIds.length,
-        sourceLanguage,
-        conversationId
-      });
 
       // Envoyer via Socket.IO avec attachments
       // Note: conversationId est géré par socketMessaging (useSocketIOMessaging hook)
@@ -299,7 +292,6 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
 
       if (success) {
         stopTyping();
-        console.log('[MESSAGING] ✅ Message avec attachments envoyé avec succès');
         onMessageSent?.(content, sourceLanguage);
         return true;
       } else {
@@ -319,7 +311,6 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
           replyToId,
           error: errorMessage,
         });
-        console.log('💾 Message avec attachments sauvegardé en échec:', failedMsgId);
         
         // Toast avec action de restauration
         toast.error(errorMessage, {

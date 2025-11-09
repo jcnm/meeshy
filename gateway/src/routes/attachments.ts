@@ -41,7 +41,6 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
         const isAnonymous = authContext.isAnonymous;
 
         // Récupérer les fichiers uploadés et leurs métadonnées
-        console.log('[AttachmentRoutes] 📥 Starting file parsing...');
         const parts = request.parts();
         const files: Array<{
           buffer: Buffer;
@@ -53,11 +52,9 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
 
         let fileIndex = 0;
         for await (const part of parts) {
-          console.log('[AttachmentRoutes] 📦 Part received:', { type: part.type, filename: part.type === 'file' ? part.filename : 'N/A', fieldname: part.fieldname });
 
           if (part.type === 'file') {
             const buffer = await part.toBuffer();
-            console.log('[AttachmentRoutes] 📄 File buffered:', { filename: part.filename, size: buffer.length });
             files.push({
               buffer,
               filename: part.filename,
@@ -72,16 +69,13 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
             try {
               const metadata = JSON.parse(metadataValue as string);
               metadataMap.set(index, metadata);
-              console.log('[AttachmentRoutes] 📋 Métadonnées reçues pour fichier', index, ':', metadata);
             } catch (error) {
               console.warn('[AttachmentRoutes] ⚠️ Impossible de parser les métadonnées:', error);
             }
           }
         }
 
-        console.log('[AttachmentRoutes] 📊 Total files collected:', files.length);
         if (files.length === 0) {
-          console.log('[AttachmentRoutes] ❌ No files provided');
           return reply.status(400).send({
             success: false,
             error: 'No files provided',
@@ -125,11 +119,6 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
           }
         }
 
-        console.log('[AttachmentRoutes] 📤 Uploading files:', {
-          count: files.length,
-          files: files.map(f => ({ name: f.filename, size: f.size, type: f.mimeType })),
-          hasMetadata: metadataMap.size > 0,
-        });
 
         // Upload tous les fichiers avec métadonnées si fournies
         const results = await attachmentService.uploadMultiple(
@@ -140,10 +129,6 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
           metadataMap.size > 0 ? metadataMap : undefined
         );
 
-        console.log('[AttachmentRoutes] ✅ Upload results:', {
-          count: results.length,
-          results: results.map(r => ({ id: r.id, fileName: r.fileName })),
-        });
 
         return reply.send({
           success: true,
@@ -484,11 +469,6 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
           hasPermission = attachment.uploadedBy === userId && attachment.isAnonymous;
 
           if (!hasPermission) {
-            console.log('[AttachmentRoutes] Permission denied for anonymous user:', {
-              userId,
-              attachmentOwner: attachment.uploadedBy,
-              attachmentIsAnonymous: attachment.isAnonymous
-            });
           }
         } else {
           // Utilisateur authentifié:
@@ -500,11 +480,6 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
           hasPermission = attachment.uploadedBy === userId || isAdmin;
 
           if (!hasPermission) {
-            console.log('[AttachmentRoutes] Permission denied for authenticated user:', {
-              userId,
-              attachmentOwner: attachment.uploadedBy,
-              isAdmin
-            });
           }
         }
 
@@ -518,11 +493,6 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
         // Supprimer l'attachment (fichier physique + DB entry)
         await attachmentService.deleteAttachment(attachmentId);
 
-        console.log('[AttachmentRoutes] Attachment deleted successfully:', {
-          attachmentId,
-          userId,
-          isAnonymous
-        });
 
         return reply.send({
           success: true,
@@ -559,16 +529,8 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        console.log('[AttachmentRoutes] GET /conversations/:conversationId/attachments - Début');
         
         const authContext = (request as any).authContext;
-        console.log('[AttachmentRoutes] AuthContext:', {
-          hasAuthContext: !!authContext,
-          isAuthenticated: authContext?.isAuthenticated,
-          isAnonymous: authContext?.isAnonymous,
-          userId: authContext?.userId,
-          hasAnonymousParticipant: !!authContext?.anonymousParticipant
-        });
         
         if (!authContext || (!authContext.isAuthenticated && !authContext.isAnonymous)) {
           console.error('[AttachmentRoutes] ❌ Authentification requise');
@@ -585,12 +547,6 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
           offset?: number;
         };
         
-        console.log('[AttachmentRoutes] Paramètres:', {
-          conversationId,
-          type: query.type,
-          limit: query.limit,
-          offset: query.offset
-        });
 
         // Vérifier que l'utilisateur a accès à cette conversation
         if (authContext.isAuthenticated) {
@@ -611,10 +567,6 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
           }
         } else if (authContext.isAnonymous && authContext.anonymousParticipant) {
           // Utilisateur anonyme - vérifier qu'il a accès à cette conversation via son shareLink
-          console.log('[AttachmentRoutes] Vérification accès anonyme:', {
-            anonymousParticipantId: authContext.anonymousParticipant.id,
-            conversationIdRequested: conversationId
-          });
           
           const participant = await (fastify as any).prisma.anonymousParticipant.findUnique({
             where: { id: authContext.anonymousParticipant.id },
@@ -628,13 +580,6 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
             },
           });
 
-          console.log('[AttachmentRoutes] Participant trouvé:', {
-            hasParticipant: !!participant,
-            participantConversationId: participant?.conversationId,
-            requestedConversationId: conversationId,
-            match: participant?.conversationId === conversationId,
-            allowViewHistory: participant?.shareLink?.allowViewHistory
-          });
 
           if (!participant) {
             console.error('[AttachmentRoutes] ❌ Participant non trouvé');
@@ -663,10 +608,8 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
             });
           }
           
-          console.log('[AttachmentRoutes] ✅ Accès anonyme autorisé');
         }
 
-        console.log('[AttachmentRoutes] ✅ Accès autorisé, récupération attachments...');
         
         const attachments = await attachmentService.getConversationAttachments(
           conversationId,
@@ -677,10 +620,6 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
           }
         );
 
-        console.log('[AttachmentRoutes] ✅ Attachments récupérés:', {
-          count: attachments.length,
-          attachments: attachments.map(a => ({ id: a.id, fileName: a.fileName }))
-        });
 
         return reply.send({
           success: true,

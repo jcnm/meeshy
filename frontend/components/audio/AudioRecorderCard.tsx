@@ -146,7 +146,6 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => {
         track.stop();
-        console.log('🎤 Microphone track stopped:', track.label);
       });
     }
 

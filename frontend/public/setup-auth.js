@@ -1,6 +1,5 @@
 // Script pour configurer l'authentification automatiquement avec un token valide
 const setupAuth = async () => {
-  console.log('🔐 Configuration de l\'authentification...');
   
   try {
     // Login avec les credentials admin pour obtenir un token valide
@@ -31,9 +30,6 @@ const setupAuth = async () => {
     localStorage.setItem('auth_token', token);
     localStorage.setItem('user', JSON.stringify(user));
     
-    console.log('✅ Authentification configurée avec succès');
-    console.log('👤 Utilisateur connecté:', user.username, '(' + user.role + ')');
-    console.log('🔄 Rechargement de la page...');
     
     // Recharger la page après un court délai
     setTimeout(() => {

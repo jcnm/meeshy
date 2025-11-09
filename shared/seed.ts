@@ -133,10 +133,8 @@ function getTranslation(text: string, sourceLang: string, targetLang: string): s
 }
 
 async function main() {
-  console.log('🌱 Début du seeding...');
 
   // Vérifier si les données de seed existent déjà
-  console.log('🔍 Vérification des données existantes...');
   const existingUsers = await prisma.user.findMany({
     where: {
       email: {
@@ -154,8 +152,6 @@ async function main() {
   });
 
   if (existingUsers.length > 0) {
-    console.log(`⚠️  ${existingUsers.length} utilisateurs seed détectés`);
-    console.log('🧹 Nettoyage sélectif des données de seed...');
     
     // Récupérer les IDs des utilisateurs seed
     const seedUserIds = existingUsers.map(u => u.id);
@@ -196,14 +192,11 @@ async function main() {
       where: { id: { in: seedUserIds } }
     });
     
-    console.log('✅ Données de seed nettoyées');
   } else {
-    console.log('✅ Aucune donnée de seed existante détectée');
   }
 
   // ================== CRÉER 7 UTILISATEURS MULTILINGUES ==================
   
-  console.log('👥 Création des utilisateurs...');
   
   // 1. Utilisateur français (Admin)
   const alice = await prisma.user.create({
@@ -335,11 +328,9 @@ async function main() {
   });
 
   const users = [alice, bob, carlos, dieter, li, yuki, maria];
-  console.log('✅ 7 utilisateurs multilingues créés');
 
   // ================== CRÉER LA CONVERSATION 'ANY' (STREAM GLOBAL) ==================
   
-  console.log('💭 Création de la conversation "meeshy"...');
   
   // Créer la conversation globale "Meeshy" accessible à tous
   const anyConversation = await prisma.conversation.upsert({
@@ -366,11 +357,9 @@ async function main() {
     });
   }
 
-  console.log('✅ Conversation "meeshy" créée avec tous les utilisateurs');
 
   // ================== CRÉER 31 MESSAGES AVEC TRADUCTIONS ==================
   
-  console.log('💬 Création des messages avec traductions...');
   
   const messages = [];
   
@@ -417,7 +406,6 @@ async function main() {
     }
   }
 
-  console.log(`✅ ${messages.length} messages créés avec traductions complètes`);
 
   // ================== STATISTIQUES FINALES ==================
   
@@ -426,39 +414,6 @@ async function main() {
   const totalTranslations = await prisma.messageTranslation.count();
   const totalConversations = await prisma.conversation.count();
 
-  console.log(`
-📊 === STATISTIQUES DU SEEDING ===
-👥 Utilisateurs créés: ${totalUsers}
-💬 Messages créés: ${totalMessages}
-🌐 Traductions créées: ${totalTranslations}
-💭 Conversations: ${totalConversations}
-
-🎯 === DÉTAILS DES UTILISATEURS ===
-🇫🇷 Alice Dubois (alice@meeshy.me) - Français - Admin
-🇺🇸 Bob Johnson (bob@meeshy.me) - Anglais - User  
-🇪🇸 Carlos García (carlos@meeshy.me) - Espagnol - User
-🇩🇪 Dieter Schmidt (dieter@meeshy.me) - Allemand - User
-🇨🇳 Li Wei (li@meeshy.me) - Chinois - User
-🇯🇵 Yuki Tanaka (yuki@meeshy.me) - Japonais - User
-🇵🇹 Maria Silva (maria@meeshy.me) - Portugais - User
-
-🔑 === INFORMATIONS DE CONNEXION ===
-Mot de passe pour tous: password123
-
-📱 === CONVERSATION 'ANY' ===
-ID: any
-Type: GLOBAL 
-Messages: ${totalMessages} (tous avec traductions)
-Langues: FR, EN, ES, DE, ZH, JA, PT
-
-🌟 === PRÊT POUR LES TESTS ===
-✓ Multi-language real-time messaging
-✓ Automatic translation system  
-✓ 7 diverse user profiles
-✓ Rich multilingual conversation data
-✓ Au moins un message par utilisateur
-✓ Traductions vers toutes les langues des membres
-  `);
 }
 
 main()

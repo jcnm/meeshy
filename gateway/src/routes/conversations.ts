@@ -236,7 +236,6 @@ async function ensureUniqueShareLinkIdentifier(prisma: any, baseIdentifier: stri
 // Prisma et TranslationService sont décorés et fournis par le serveur principal
 
 
-
 // Fonction utilitaire pour prédire le type de modèle
 function getPredictedModelType(textLength: number): 'basic' | 'medium' | 'premium' {
   if (textLength < 20) return 'basic';
@@ -1294,7 +1293,6 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       if (trackingLinks.length > 0) {
         const tokens = trackingLinks.map(link => link.token);
         await trackingLinkService.updateTrackingLinksMessageId(tokens, message.id);
-        console.log(`[CONVERSATION] Updated messageId for ${tokens.length} tracking link(s)`);
       }
 
       // Mettre à jour le timestamp de la conversation
@@ -1322,7 +1320,6 @@ export async function conversationRoutes(fastify: FastifyInstance) {
           messageType,
           replyToId
         } as any);
-        console.log(`Translations queued via TranslationService for message ${message.id} in conversation ${conversationId}`);
       } catch (error) {
         console.error('[GATEWAY] Error queuing translations via TranslationService:', error);
         // Ne pas faire échouer l'envoi du message si la traduction échoue
@@ -1653,7 +1650,6 @@ export async function conversationRoutes(fastify: FastifyInstance) {
             messageId: messageId
           }
         });
-        console.log(`🗑️ [GATEWAY] ${deletedCount} traductions supprimées pour le message ${messageId}`);
         
         // Créer un objet message pour la retraduction
         const messageForRetranslation = {
@@ -1666,7 +1662,6 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         
         // Déclencher la retraduction via la méthode privée existante
         await (translationService as any)._processRetranslationAsync(messageId, messageForRetranslation);
-        console.log('[GATEWAY] Retraduction initiée pour le message:', messageId);
 
       } catch (translationError) {
         console.error('[GATEWAY] Erreur lors de la retraduction:', translationError);
@@ -1689,7 +1684,6 @@ export async function conversationRoutes(fastify: FastifyInstance) {
             ...updatedMessage,
             conversationId
           });
-          console.log(`✅ [CONVERSATIONS] Message édité diffusé à la conversation ${conversationId}`);
         }
       } catch (socketError) {
         console.error('[CONVERSATIONS] Erreur lors de la diffusion Socket.IO:', socketError);
@@ -1789,11 +1783,9 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
       // Supprimer les attachments et leurs fichiers physiques
       if (existingMessage.attachments && existingMessage.attachments.length > 0) {
-        console.log(`🗑️ [CONVERSATIONS] Suppression de ${existingMessage.attachments.length} attachments pour le message ${messageId}`);
         for (const attachment of existingMessage.attachments) {
           try {
             await attachmentService.deleteAttachment(attachment.id);
-            console.log(`✅ [CONVERSATIONS] Attachment ${attachment.id} supprimé avec succès`);
           } catch (error) {
             console.error(`❌ [CONVERSATIONS] Erreur lors de la suppression de l'attachment ${attachment.id}:`, error);
             // Continuer même en cas d'erreur pour supprimer les autres
@@ -1833,7 +1825,6 @@ export async function conversationRoutes(fastify: FastifyInstance) {
             messageId,
             conversationId
           });
-          console.log(`✅ [CONVERSATIONS] Message supprimé diffusé à la conversation ${conversationId}`);
         }
       } catch (socketError) {
         console.error('[CONVERSATIONS] Erreur lors de la diffusion Socket.IO:', socketError);
@@ -2331,16 +2322,6 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       // Combiner les participants authentifiés et anonymes
       const allParticipants = [...formattedParticipants, ...formattedAnonymousParticipants];
 
-      console.log('[GATEWAY] 📊 Participants récupérés pour conversation:', conversationId, {
-        authenticated: formattedParticipants.length,
-        anonymous: formattedAnonymousParticipants.length,
-        total: allParticipants.length
-      });
-      console.log('[GATEWAY] 👥 Liste des participants:', allParticipants.map(p => ({
-        id: p.id,
-        username: p.username,
-        displayName: p.displayName, 
-      })));
 
       reply.send({
         success: true,
@@ -2746,13 +2727,6 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       
       const currentUserId = authRequest.authContext.userId;
 
-      console.log('[GATEWAY] Update conversation request:', {
-        conversationId: id,
-        currentUserId,
-        title,
-        description,
-        type
-      });
 
       // Résoudre l'ID de conversation réel
       const conversationId = await resolveConversationId(id);
@@ -2776,24 +2750,12 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       });
 
       if (!membership) {
-        console.log('[GATEWAY] User not found in conversation members:', {
-          conversationId: id,
-          currentUserId,
-          membership: null
-        });
         return reply.status(403).send({
           success: false,
           error: 'Accès non autorisé à cette conversation'
         });
       }
 
-      console.log('[GATEWAY] User membership found:', {
-        conversationId: id,
-        currentUserId,
-        userRole: membership.user.role,
-        memberRole: membership.role,
-        isActive: membership.isActive
-      });
 
       // Pour la modification du nom, permettre à tous les membres de la conversation
       // Seuls les admins ou créateurs peuvent modifier le type de conversation

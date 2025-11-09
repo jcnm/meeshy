@@ -76,7 +76,6 @@ export const useLanguageStore = create<LanguageStore>()(
           }
           
           if (process.env.NODE_ENV === 'development') {
-            console.log('[LANGUAGE_STORE] Setting interface language:', language);
           }
           set({ currentInterfaceLanguage: language });
         },
@@ -90,14 +89,12 @@ export const useLanguageStore = create<LanguageStore>()(
           }
           
           if (process.env.NODE_ENV === 'development') {
-            console.log('[LANGUAGE_STORE] Setting message language:', language);
           }
           set({ currentMessageLanguage: language });
         },
 
         setCustomDestinationLanguage: (language: string) => {
           if (process.env.NODE_ENV === 'development') {
-            console.log('[LANGUAGE_STORE] Setting custom destination language:', language);
           }
           set((state) => ({
             userLanguageConfig: {
@@ -109,7 +106,6 @@ export const useLanguageStore = create<LanguageStore>()(
 
         updateLanguageConfig: (config: Partial<UserLanguageConfig>) => {
           if (process.env.NODE_ENV === 'development') {
-            console.log('[LANGUAGE_STORE] Updating language config:', config);
           }
           set((state) => ({
             userLanguageConfig: {
@@ -122,7 +118,6 @@ export const useLanguageStore = create<LanguageStore>()(
         detectAndSetBrowserLanguage: () => {
           const browserLang = detectBrowserLanguage();
           if (process.env.NODE_ENV === 'development') {
-            console.log('[LANGUAGE_STORE] Detected browser language:', browserLang);
           }
           
           set({
@@ -146,13 +141,11 @@ export const useLanguageStore = create<LanguageStore>()(
         migrate: (persistedState: any, version: number) => {
           // Si l'état persisté est invalide ou incomplet, retourner l'état initial
           if (!persistedState || typeof persistedState !== 'object') {
-            console.log('[LANGUAGE_STORE] Invalid persisted state, using initial state');
             return initialState;
           }
 
           // Si la version est différente, fusionner avec l'état par défaut
           if (version !== 1) {
-            console.log('[LANGUAGE_STORE] Migrating from version', version, 'to 1');
             return {
               ...initialState,
               ...persistedState,

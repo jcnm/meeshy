@@ -171,41 +171,25 @@ export function printWebSocketDiagnostics(): void {
   const diagnostics = getWebSocketDiagnostics();
   
   console.group('🔍 DIAGNOSTICS WEBSOCKET');
-  console.log('📅 Timestamp:', diagnostics.timestamp);
   
   console.group('👤 État Utilisateur');
-  console.log('Utilisateur présent:', diagnostics.userState.hasUser ? '✅' : '❌');
   if (diagnostics.userState.hasUser) {
-    console.log('User ID:', diagnostics.userState.userId);
-    console.log('Username:', diagnostics.userState.username);
   }
   console.groupEnd();
   
   console.group('🔐 Tokens');
-  console.log('Auth Token:', diagnostics.tokens.hasAuthToken ? '✅' : '❌');
   if (diagnostics.tokens.hasAuthToken) {
-    console.log('  Valide:', diagnostics.tokens.authTokenValid ? '✅' : '❌');
-    console.log('  Preview:', diagnostics.tokens.authTokenPreview);
   }
-  console.log('Session Token:', diagnostics.tokens.hasSessionToken ? '✅' : '❌');
   if (diagnostics.tokens.hasSessionToken) {
-    console.log('  Preview:', diagnostics.tokens.sessionTokenPreview);
   }
   console.groupEnd();
   
   console.group('🔌 État Socket');
-  console.log('Socket créée:', diagnostics.socketState.hasSocket ? '✅' : '❌');
-  console.log('Socket authentifiée:', diagnostics.socketState.isConnected ? '✅' : '❌');
   if (diagnostics.socketState.socketId) {
-    console.log('Socket ID:', diagnostics.socketState.socketId);
-    console.log('Transport:', diagnostics.socketState.transport);
   }
   console.groupEnd();
   
   console.group('⚙️ Configuration');
-  console.log('Server URL:', diagnostics.configuration.serverUrl);
-  console.log('Current Path:', diagnostics.configuration.currentPath);
-  console.log('Is Public Path:', diagnostics.configuration.isPublicPath);
   console.groupEnd();
   
   console.group('💡 Recommandations');

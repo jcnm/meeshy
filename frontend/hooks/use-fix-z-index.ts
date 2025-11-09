@@ -75,12 +75,6 @@ export function useFixRadixZIndex() {
       });
 
       if (popoverContents.length > 0 || dropdownContents.length > 0 || tooltipContents.length > 0) {
-        console.log('🎯 Z-Index appliqués:', {
-          popovers: popoverContents.length,
-          dropdowns: dropdownContents.length,
-          tooltips: tooltipContents.length,
-          portals: portals.length
-        });
       }
     };
 
@@ -143,7 +137,6 @@ export function useFixTranslationPopoverZIndex() {
         });
       } catch (error) {
         // Silencieusement ignorer les erreurs de manipulation DOM
-        console.debug('Error fixing translation popover z-index:', error);
       }
     };
 
@@ -165,7 +158,6 @@ export function useFixTranslationPopoverZIndex() {
         attributeFilter: ['data-state']
       });
     } catch (error) {
-      console.debug('Error setting up MutationObserver:', error);
     }
 
     return () => {
@@ -173,7 +165,6 @@ export function useFixTranslationPopoverZIndex() {
         observer.disconnect();
       } catch (error) {
         // Ignorer les erreurs de déconnexion
-        console.debug('Error disconnecting observer:', error);
       }
     };
   }, []);

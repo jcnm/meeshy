@@ -30,16 +30,9 @@ export function useUserStatusRealtime() {
   const updateUserStatus = useUserStore(state => state.updateUserStatus);
 
   useEffect(() => {
-    console.log('[useUserStatusRealtime] Setting up USER_STATUS listener');
 
     // S'abonner aux événements USER_STATUS
     const unsubscribe = socketService.onUserStatus((event: UserStatusEvent) => {
-      console.log('[useUserStatusRealtime] USER_STATUS received:', {
-        userId: event.userId,
-        username: event.username,
-        isOnline: event.isOnline,
-        timestamp: new Date().toISOString()
-      });
 
       // Mettre à jour le store global
       updateUserStatus(event.userId, {
@@ -50,7 +43,6 @@ export function useUserStatusRealtime() {
     });
 
     return () => {
-      console.log('[useUserStatusRealtime] Cleaning up USER_STATUS listener');
       unsubscribe();
     };
   }, [updateUserStatus]);

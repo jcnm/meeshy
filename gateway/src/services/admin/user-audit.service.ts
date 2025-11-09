@@ -56,7 +56,6 @@ export class UserAuditService {
 
     // Also log to console in development
     if (process.env.NODE_ENV === 'development') {
-      console.log('[AUDIT LOG]', JSON.stringify(auditLog, null, 2));
     }
 
     return auditLog;

@@ -30,7 +30,6 @@ export function AnonymousRedirect({
       
       if (storedShareLinkId) {
         // Rediriger vers la conversation en cours
-        console.log('[AnonymousRedirect] Redirection vers la conversation anonyme:', storedShareLinkId);
         router.push(`/chat/${storedShareLinkId}`);
       }
       // Si pas de conversation en cours, rester sur la page actuelle

@@ -65,7 +65,6 @@ export const MessageReactions: React.FC<MessageReactionsProps> = React.memo(({
 
   // Debug: log reactions data (disabled to stop infinite loop)
   // React.useEffect(() => {
-  //   console.log('🔍 [MessageReactions] Component state:', {
   //     messageId,
   //     conversationId,
   //     reactions: reactions.length,

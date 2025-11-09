@@ -15,7 +15,6 @@ const translationsCache = new Map<string, Record<string, any>>();
 export function clearTranslationsCache() {
   translationsCache.clear();
   if (process.env.NODE_ENV === 'development') {
-    console.log('[i18n] Cache cleared');
   }
 }
 
@@ -57,7 +56,6 @@ export function useI18n(namespace: string = 'common', options: UseI18nOptions = 
     // Vérifier le cache d'abord (seulement en production)
     if (useCache && translationsCache.has(cacheKey)) {
       if (process.env.NODE_ENV === 'development') {
-        console.log(`[i18n] ✅ Using cached translations for ${locale}/${ns}`);
       }
       return translationsCache.get(cacheKey)!;
     }

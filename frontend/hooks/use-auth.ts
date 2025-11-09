@@ -18,7 +18,6 @@ import { authManager } from '@/services/auth-manager.service';
 // Fonction helper pour les logs de développement
 const devLog = (message: string, ...args: any[]) => {
   if (process.env.NODE_ENV === 'development') {
-    console.log(message, ...args);
   }
 };
 

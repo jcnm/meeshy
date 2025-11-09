@@ -21,7 +21,6 @@ class MeeshyLogger implements Logger {
   }
 
   info(message: string, ...args: any[]): void {
-    console.log(this.formatMessage('info', message, ...args));
   }
 
   error(message: string, ...args: any[]): void {
@@ -34,7 +33,6 @@ class MeeshyLogger implements Logger {
 
   debug(message: string, ...args: any[]): void {
     if (process.env.NODE_ENV === 'development' || process.env.DEBUG === 'true') {
-      console.debug(this.formatMessage('debug', message, ...args));
     }
   }
 }

@@ -62,7 +62,6 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
         const anonymousSession = authManager.getAnonymousSession();
 
         if (authToken || (anonymousSession && anonymousSession.token)) {
-          console.log('[SIGNIN_PAGE] Session active détectée, vérification backend...');
 
           // Vérifier que la session est valide côté backend
           const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://gate.meeshy.me';
@@ -82,19 +81,16 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
                                  localStorage.getItem('anonymous_current_link_id');
 
               if (shareLinkId) {
-                console.log('[SIGNIN_PAGE] Utilisateur anonyme - redirection vers /chat/' + shareLinkId);
                 window.location.href = `/chat/${shareLinkId}`;
                 return;
               }
             }
 
             // Session valide (utilisateur membre), rediriger vers la page d'accueil
-            console.log('[SIGNIN_PAGE] Session valide, redirection vers /', { returnUrl: returnUrl || '/' });
             window.location.href = returnUrl || '/';
             return;
           } else {
             // Session invalide, nettoyer toutes les données
-            console.log('[SIGNIN_PAGE] Session invalide, nettoyage des données...');
             authManager.clearAllSessions();
           }
         }
@@ -203,7 +199,6 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
 
     setIsLoading(true);
     try {
-      console.log('[SIGNIN_PAGE] Tentative d\'inscription:', { username: formData.username, email: formData.email });
       
       const response = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.REGISTER), {
         method: 'POST',
@@ -219,7 +214,6 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
       }
 
       const data = await response.json();
-      console.log('[SIGNIN_PAGE] Réponse inscription:', data);
 
       if (data.success && data.data?.user && data.data?.token) {
         // Stocker les données d'authentification via authManager (source unique)

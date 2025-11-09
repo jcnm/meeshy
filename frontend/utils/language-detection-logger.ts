@@ -12,20 +12,11 @@ export function logLanguageDetectionInfo(): void {
   
   try {
     // Informations du navigateur
-    console.log('📱 Navigator Info:', {
-      language: navigator.language,
-      languages: navigator.languages,
-      userAgent: navigator.userAgent.substring(0, 100) + '...'
-    });
 
     // Langues supportées par Meeshy
     const supportedInterfaceLanguages = ['en', 'fr', 'pt'];
     const supportedTranslationLanguages = ['en', 'fr', 'es', 'de', 'ru', 'zh', 'ja', 'ar', 'hi', 'pt', 'it', 'sv'];
 
-    console.log('🔧 Supported Languages:', {
-      interface: supportedInterfaceLanguages,
-      translation: supportedTranslationLanguages
-    });
 
     // Analyse des langues du navigateur
     const browserLanguages = navigator.languages || [navigator.language || 'en'];
@@ -39,20 +30,11 @@ export function logLanguageDetectionInfo(): void {
       };
     });
 
-    console.log('🔍 Browser Languages Analysis:', languageAnalysis);
 
     // Recommendations
     const recommendedInterface = languageAnalysis.find(lang => lang.supportsInterface)?.code || 'en';
     const recommendedTranslation = languageAnalysis.find(lang => lang.supportsTranslation)?.code || 'en';
 
-    console.log('💡 Recommendations:', {
-      interfaceLanguage: recommendedInterface,
-      systemLanguage: recommendedTranslation,
-      explanation: {
-        interface: `Best match for interface from: ${supportedInterfaceLanguages.join(', ')}`,
-        translation: `Best match for translation from: ${supportedTranslationLanguages.join(', ')}`
-      }
-    });
 
     // Configuration actuelle en localStorage
     const currentConfig = {
@@ -61,15 +43,8 @@ export function logLanguageDetectionInfo(): void {
       preferredLanguage: localStorage.getItem('meeshy-preferred-language')
     };
 
-    console.log('💾 Current Stored Config:', currentConfig);
 
     // Suggestions d'amélioration
-    console.log('🎯 Detection Strategy:', {
-      step1: 'Check localStorage for saved preferences',
-      step2: 'Auto-detect from navigator.languages (ordered by preference)',
-      step3: 'Fallback to English for interface, English for system',
-      step4: 'Save detected preferences for future visits'
-    });
 
   } catch (error) {
     console.error('❌ Error in language detection logging:', error);
@@ -91,11 +66,6 @@ export function logLanguageDetectionSummary(): void {
     .map(lang => lang.split('-')[0].toLowerCase())
     .find(code => supportedInterfaceLanguages.includes(code)) || 'en';
 
-  console.log('🌐 Language Detection:', {
-    browser: browserLanguages[0],
-    detected: detectedInterface,
-    fallback: detectedInterface === 'en' ? 'Using fallback' : 'Auto-detected'
-  });
 }
 
 /**
@@ -119,7 +89,6 @@ export function testLanguageDetection(): void {
   ];
 
   testCases.forEach((languages, index) => {
-    console.log(`Test ${index + 1}: Browser languages = [${languages.join(', ')}]`);
     
     const detectedInterface = languages
       .map(lang => lang.split('-')[0].toLowerCase())
@@ -129,7 +98,6 @@ export function testLanguageDetection(): void {
       .map(lang => lang.split('-')[0].toLowerCase())
       .find(code => ['en', 'fr', 'es', 'de', 'ru', 'zh', 'ja', 'ar', 'hi', 'pt', 'it', 'sv'].includes(code)) || 'en';
 
-    console.log(`  → Interface: ${detectedInterface}, System: ${detectedSystem}`);
   });
 
   console.groupEnd();

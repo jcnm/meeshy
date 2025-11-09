@@ -69,13 +69,6 @@ export const useFailedMessagesStore = create<FailedMessagesState>()(
           failedMessages: [...state.failedMessages, newMessage],
         }));
 
-        console.log('💾 Message sauvegardé en échec:', {
-          id,
-          conversationId: message.conversationId,
-          contentLength: message.content.length,
-          hasAttachments: message.attachmentIds.length > 0,
-          hasReplyTo: !!message.replyToId,
-        });
 
         return id;
       },
@@ -84,7 +77,6 @@ export const useFailedMessagesStore = create<FailedMessagesState>()(
         set((state) => ({
           failedMessages: state.failedMessages.filter((msg) => msg.id !== id),
         }));
-        console.log('🗑️  Message en échec supprimé:', id);
       },
 
       getFailedMessage: (id) => {
@@ -110,10 +102,8 @@ export const useFailedMessagesStore = create<FailedMessagesState>()(
               (msg) => msg.conversationId !== conversationId
             ),
           }));
-          console.log('🗑️  Messages en échec supprimés pour la conversation:', conversationId);
         } else {
           set({ failedMessages: [] });
-          console.log('🗑️  Tous les messages en échec supprimés');
         }
       },
 
@@ -135,7 +125,6 @@ export const useFailedMessagesStore = create<FailedMessagesState>()(
           localStorage.removeItem('meeshy-failed-messages');
         }
 
-        console.log('[FAILED_MESSAGES] All failed messages cleared - clean slate');
       },
     }),
     {

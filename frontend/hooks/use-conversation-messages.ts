@@ -68,24 +68,11 @@ export function useConversationMessages(
 
   // Fonction pour charger les messages
   const loadMessagesInternal = useCallback(async (isLoadMore = false) => {
-    console.log('[useConversationMessages] 📥 DEBUT loadMessagesInternal:', {
-      conversationId,
-      isLoadMore,
-      enabled,
-      hasCurrentUser: !!currentUser,
-      currentOffset: offsetRef.current
-    });
 
     if (!conversationId || !currentUser || !enabled) {
-      console.log('[useConversationMessages] ❌ Conditions non remplies, abandon:', {
-        hasConversationId: !!conversationId,
-        hasCurrentUser: !!currentUser,
-        enabled
-      });
       return;
     }
 
-    console.log('[useConversationMessages] ✅ Chargement des messages pour conversation:', conversationId);
 
     // Annuler la requête précédente si elle existe
     if (abortControllerRef.current) {
@@ -136,7 +123,6 @@ export function useConversationMessages(
         throw new Error('Configuration invalide pour charger les messages');
       }
 
-      console.log('[useConversationMessages] 🌐 Appel API endpoint:', endpoint);
 
       const response = await apiService.get<{ success: boolean; data: { messages: Message[] } }>(
         endpoint,
@@ -159,17 +145,6 @@ export function useConversationMessages(
       const hasMoreMessages = (data.data as any).hasMore || false;
 
       // Log des traductions reçues pour debugging
-      console.log(`📥 [useConversationMessages] Messages chargés:`, {
-        count: newMessages.length,
-        offset: currentOffset,
-        hasMore: hasMoreMessages,
-        translationsStats: newMessages.map(m => ({
-          messageId: m.id.substring(0, 8),
-          hasTranslations: !!(m.translations && m.translations.length > 0),
-          translationsCount: m.translations?.length || 0,
-          languages: m.translations?.map((t: any) => t.targetLanguage || t.language).join(', ') || 'none'
-        }))
-      });
 
       if (isLoadMore) {
         // Sauvegarder la position de scroll et la hauteur AVANT d'ajouter les messages
@@ -353,12 +328,6 @@ export function useConversationMessages(
       const container = actualContainerRef.current;
       
       if (process.env.NODE_ENV === 'development') {
-        console.log('[useConversationMessages] 🎯 Scroll listener attached:', {
-          scrollDirection,
-          threshold,
-          containerHeight: container.clientHeight,
-          scrollHeight: container.scrollHeight
-        });
       }
     
     const handleScroll = () => {
@@ -369,7 +338,6 @@ export function useConversationMessages(
       // CORRECTION: Ne pas charger avant que le scroll initial ne soit effectué
       // Cela évite de charger des messages anciens avant que l'utilisateur ne soit scrollé au bon endroit
       if (!initialScrollDoneRef.current && scrollDirection === 'up') {
-        console.log('[useConversationMessages] ⏸️ Scroll initial pas encore effectué, ignoré');
         return;
       }
 
@@ -393,11 +361,6 @@ export function useConversationMessages(
         // Protection contre les conteneurs trop petits
         if (clientHeight >= scrollHeight || scrollHeight <= clientHeight + threshold) {
           if (process.env.NODE_ENV === 'development') {
-            console.log('[useConversationMessages] ⚠️ Container too small, skipping load:', {
-              clientHeight,
-              scrollHeight,
-              threshold
-            });
           }
           return;
         }
@@ -408,30 +371,16 @@ export function useConversationMessages(
         if (scrollDirection === 'up') {
           shouldLoadMore = scrollTop <= threshold;
           if (process.env.NODE_ENV === 'development') {
-            console.log('[useConversationMessages] 📏 Scroll UP detection:', {
-              scrollTop,
-              threshold,
-              shouldLoadMore
-            });
           }
         } else {
           const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
           shouldLoadMore = distanceFromBottom <= threshold;
           if (process.env.NODE_ENV === 'development') {
-            console.log('[useConversationMessages] 📏 Scroll DOWN detection:', {
-              scrollTop,
-              scrollHeight,
-              clientHeight,
-              distanceFromBottom,
-              threshold,
-              shouldLoadMore
-            });
           }
         }
 
         if (shouldLoadMore) {
           if (process.env.NODE_ENV === 'development') {
-            console.log('[useConversationMessages] 🚀 Loading more messages...');
           }
           loadMore();
         }
@@ -441,12 +390,10 @@ export function useConversationMessages(
       container.addEventListener('scroll', handleScroll, { passive: true });
       
       if (process.env.NODE_ENV === 'development') {
-        console.log('[useConversationMessages] ✅ Scroll listener registered successfully');
       }
       
       return () => {
         if (process.env.NODE_ENV === 'development') {
-          console.log('[useConversationMessages] 🧹 Cleaning up scroll listener');
         }
         container.removeEventListener('scroll', handleScroll);
         if (scrollTimeoutRef.current) {
@@ -463,7 +410,6 @@ export function useConversationMessages(
   // Réinitialiser le flag de scroll initial quand la conversation change
   useEffect(() => {
     initialScrollDoneRef.current = false;
-    console.log('[useConversationMessages] 🔄 Changement de conversation - réinitialisation du flag scroll initial');
   }, [conversationId]);
 
   // Chargement initial
@@ -479,7 +425,6 @@ export function useConversationMessages(
       // Attendre un peu que ConversationMessages effectue le scroll vers le bas
       const timer = setTimeout(() => {
         initialScrollDoneRef.current = true;
-        console.log('[useConversationMessages] ✅ Scroll initial marqué comme effectué');
       }, 500); // Délai pour laisser le temps au scrollToBottom() de s'exécuter
       return () => clearTimeout(timer);
     } else if (scrollDirection === 'down') {

@@ -32,7 +32,6 @@ const colors = {
 };
 
 function log(color: keyof typeof colors, prefix: string, message: string) {
-  console.log(`${colors[color]}${prefix}${colors.reset} ${message}`);
 }
 
 interface AuthResponse {
@@ -377,72 +376,42 @@ class NoDuplicateTranslationsTest {
   async generateReport(): Promise<void> {
     const elapsed = Date.now() - this.testStartTime;
 
-    console.log('\n' + '='.repeat(80));
-    console.log(`${colors.bright}${colors.blue}RAPPORT DE VÉRIFICATION - DOUBLONS DE TRADUCTIONS${colors.reset}`);
-    console.log('='.repeat(80) + '\n');
 
     // 1. Informations générales
-    console.log(`${colors.blue}📋 INFORMATIONS GÉNÉRALES${colors.reset}`);
-    console.log(`  Message ID: ${this.messageId || 'N/A'}`);
-    console.log(`  Conversation: ${this.conversationId}`);
-    console.log(`  Temps total: ${elapsed}ms`);
-    console.log('');
 
     // 2. Traductions reçues via WebSocket
-    console.log(`${colors.blue}📡 TRADUCTIONS WEBSOCKET${colors.reset}`);
-    console.log(`  Total: ${this.receivedTranslations.size}`);
-    console.log(`  Langues: ${Array.from(this.receivedTranslations.keys()).join(', ')}`);
     
     // Vérifier les doublons WebSocket
     let wsHasDuplicates = false;
     for (const [lang, translation] of this.receivedTranslations) {
       if (translation.eventCount > 1) {
         wsHasDuplicates = true;
-        console.log(`  ${colors.red}❌ ${lang}: reçu ${translation.eventCount} fois (DOUBLON!)${colors.reset}`);
       } else {
-        console.log(`  ${colors.green}✅ ${lang}: reçu 1 fois${colors.reset}`);
       }
     }
-    console.log('');
 
     // 3. Vérification base de données
     const { hasDuplicates, dbTranslations, duplicateGroups } = await this.verifyDatabase();
     
-    console.log(`${colors.blue}🗄️  TRADUCTIONS EN BASE DE DONNÉES${colors.reset}`);
-    console.log(`  Total: ${dbTranslations.length}`);
     
     const uniqueLanguages = new Set(dbTranslations.map(t => t.targetLanguage));
-    console.log(`  Langues uniques: ${uniqueLanguages.size}`);
-    console.log(`  Langues: ${Array.from(uniqueLanguages).join(', ')}`);
-    console.log('');
 
     if (hasDuplicates) {
-      console.log(`  ${colors.red}${colors.bright}❌ DOUBLONS DÉTECTÉS EN BASE!${colors.reset}`);
       for (const [lang, translations] of duplicateGroups) {
-        console.log(`    - ${lang}: ${translations.length} entrées`);
       }
     } else {
-      console.log(`  ${colors.green}${colors.bright}✅ Aucun doublon en base${colors.reset}`);
     }
-    console.log('');
 
     // 4. Cohérence
     const { isConsistent, issues } = this.verifyConsistency(dbTranslations);
     
-    console.log(`${colors.blue}🔍 COHÉRENCE DES DONNÉES${colors.reset}`);
     if (isConsistent) {
-      console.log(`  ${colors.green}✅ Données cohérentes${colors.reset}`);
     } else {
-      console.log(`  ${colors.red}❌ Incohérences détectées: ${issues.length}${colors.reset}`);
       issues.forEach(issue => {
-        console.log(`    - ${issue}`);
       });
     }
-    console.log('');
 
     // 5. VERDICT FINAL
-    console.log(`${colors.blue}${colors.bright}📋 VERDICT FINAL${colors.reset}`);
-    console.log('');
 
     const allChecks = [
       { name: 'Aucun doublon WebSocket', passed: !wsHasDuplicates },
@@ -454,37 +423,24 @@ class NoDuplicateTranslationsTest {
     allChecks.forEach(check => {
       const icon = check.passed ? '✅' : '❌';
       const color = check.passed ? 'green' : 'red';
-      console.log(`  ${colors[color]}${icon} ${check.name}${colors.reset}`);
     });
 
-    console.log('');
 
     const allPassed = allChecks.every(c => c.passed);
     
     if (allPassed) {
-      console.log(`  ${colors.green}${colors.bright}✅ TEST RÉUSSI - Aucun doublon détecté!${colors.reset}`);
-      console.log(`  ${colors.green}Les corrections fonctionnent correctement.${colors.reset}`);
     } else {
-      console.log(`  ${colors.red}${colors.bright}❌ TEST ÉCHOUÉ - Des problèmes ont été détectés${colors.reset}`);
       
       if (wsHasDuplicates) {
-        console.log(`  ${colors.yellow}→ Problème: Doublons reçus via WebSocket${colors.reset}`);
-        console.log(`    Vérifier la déduplication dans MeeshySocketIOManager`);
       }
       
       if (hasDuplicates) {
-        console.log(`  ${colors.yellow}→ Problème: Doublons en base de données${colors.reset}`);
-        console.log(`    Vérifier _saveTranslationToDatabase dans TranslationService`);
-        console.log(`    L'index unique MongoDB est-il créé?`);
       }
       
       if (!isConsistent) {
-        console.log(`  ${colors.yellow}→ Problème: Incohérences entre WebSocket et DB${colors.reset}`);
-        console.log(`    Vérifier la logique de diffusion et de sauvegarde`);
       }
     }
 
-    console.log('\n' + '='.repeat(80) + '\n');
   }
 
   /**
@@ -530,11 +486,6 @@ class NoDuplicateTranslationsTest {
 
 // Point d'entrée
 async function main() {
-  console.log('\n');
-  console.log('='.repeat(80));
-  console.log(`${colors.bright}${colors.magenta}TEST: VÉRIFICATION ABSENCE DE DOUBLONS${colors.reset}`);
-  console.log('='.repeat(80));
-  console.log('\n');
 
   const conversationId = process.argv[2] || 'meeshy';
   const username = process.argv[3] || 'admin';
@@ -543,7 +494,6 @@ async function main() {
   log('cyan', '🚀 [MAIN]', `Conversation: ${conversationId}`);
   log('cyan', '🚀 [MAIN]', `User: ${username}`);
   log('cyan', '🚀 [MAIN]', `Gateway: ${GATEWAY_URL}`);
-  console.log('');
 
   const test = new NoDuplicateTranslationsTest(conversationId);
   

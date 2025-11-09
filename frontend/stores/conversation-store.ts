@@ -375,7 +375,6 @@ export const useConversationStore = create<ConversationStore>()(
       },
 
       setTyping: (conversationId: string, isTyping: boolean) => {
-        console.log(`[CONVERSATION_STORE] Set typing: ${conversationId}, ${isTyping}`);
       },
 
       addTypingUser: (conversationId: string, userId: string) => {

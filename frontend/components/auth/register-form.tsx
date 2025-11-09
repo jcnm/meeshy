@@ -136,11 +136,9 @@ export function RegisterForm({
             setTimeout(() => {
               if (currentPath === '/') {
                 // Sur la page d'accueil, recharger la page pour afficher la conversation meeshy
-                console.log('[REGISTER_FORM] Sur la page d\'accueil, rechargement de la page');
                 window.location.reload();
               } else {
                 // Sur les autres pages, redirection normale vers le dashboard
-                console.log('[REGISTER_FORM] Redirection vers dashboard');
                 router.push('/dashboard');
               }
             }, 100);

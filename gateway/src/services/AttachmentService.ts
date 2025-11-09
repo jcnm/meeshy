@@ -87,13 +87,6 @@ export class AttachmentService {
       console.error('[AttachmentService] ❌ Impossible de déterminer PUBLIC_URL, utilisation du fallback localhost');
     }
     
-    console.log('[AttachmentService] Configuration:', {
-      environment: process.env.NODE_ENV || 'development',
-      publicUrl: this.publicUrl,
-      uploadBasePath: this.uploadBasePath,
-      domain: process.env.DOMAIN,
-      publicUrlSource: process.env.PUBLIC_URL ? 'PUBLIC_URL env var' : 'auto-detected'
-    });
     
     // Validation en production
     if (isProduction && this.publicUrl.includes('localhost')) {
@@ -218,10 +211,6 @@ export class AttachmentService {
         channels: format.numberOfChannels || 1, // Nombre de canaux (mono=1, stereo=2)
       };
 
-      console.log('[AttachmentService] Métadonnées audio extraites:', {
-        filePath: audioPath,
-        ...audioMetadata,
-      });
 
       return audioMetadata;
     } catch (error) {
@@ -258,15 +247,6 @@ export class AttachmentService {
     messageId?: string,
     providedMetadata?: any
   ): Promise<UploadResult> {
-    console.log('[AttachmentService] uploadFile - Début', {
-      filename: file.filename,
-      mimeType: file.mimeType,
-      size: file.size,
-      userId,
-      isAnonymous,
-      messageId,
-      hasProvidedMetadata: !!providedMetadata,
-    });
 
     // Valider le fichier
     const validation = this.validateFile(file);
@@ -274,19 +254,15 @@ export class AttachmentService {
       console.error('[AttachmentService] ❌ Validation échouée:', validation.error);
       throw new Error(validation.error);
     }
-    console.log('[AttachmentService] ✅ Validation OK');
 
     // Générer le chemin
     const filePath = this.generateFilePath(userId, file.filename);
-    console.log('[AttachmentService] Chemin généré:', filePath);
     
     // Sauvegarder le fichier
     await this.saveFile(file.buffer, filePath);
-    console.log('[AttachmentService] ✅ Fichier sauvegardé');
 
     // Déterminer le type
     const attachmentType = getAttachmentType(file.mimeType);
-    console.log('[AttachmentService] Type détecté:', attachmentType);
 
     // Préparer les métadonnées
     const metadata: AttachmentMetadata = {};
@@ -307,14 +283,12 @@ export class AttachmentService {
       // Utiliser les métadonnées fournies par le frontend si disponibles (Web Audio API)
       // Sinon, extraire avec music-metadata (peut échouer sur WebM mal encodé)
       if (providedMetadata && providedMetadata.duration !== undefined) {
-        console.log('[AttachmentService] ✅ Utilisation des métadonnées fournies par le frontend:', providedMetadata);
         metadata.duration = Math.round(providedMetadata.duration);
         metadata.bitrate = providedMetadata.bitrate || 0;
         metadata.sampleRate = providedMetadata.sampleRate || 0;
         metadata.codec = providedMetadata.codec || 'unknown';
         metadata.channels = providedMetadata.channels || 1;
       } else {
-        console.log('[AttachmentService] 📋 Extraction des métadonnées audio avec music-metadata...');
         const audioMeta = await this.extractAudioMetadata(filePath);
         metadata.duration = audioMeta.duration;
         metadata.bitrate = audioMeta.bitrate;
@@ -322,7 +296,6 @@ export class AttachmentService {
         metadata.codec = audioMeta.codec;
         metadata.channels = audioMeta.channels;
       }
-      console.log('[AttachmentService] Métadonnées audio finales:', metadata);
     }
 
     // Générer les URLs
@@ -357,11 +330,6 @@ export class AttachmentService {
       },
     });
 
-    console.log('[AttachmentService] ✅ Record Prisma créé:', {
-      id: attachment.id,
-      fileName: attachment.fileName,
-      fileSize: attachment.fileSize,
-    });
 
     const result = {
       id: attachment.id,
@@ -384,12 +352,6 @@ export class AttachmentService {
       createdAt: attachment.createdAt,
     };
 
-    console.log('[AttachmentService] uploadFile - Fin, returning:', {
-      id: result.id,
-      fileName: result.fileName,
-      fileSize: result.fileSize,
-      hasAllFields: !!(result.id && result.fileName && result.mimeType),
-    });
 
     return result;
   }
@@ -404,28 +366,14 @@ export class AttachmentService {
     messageId?: string,
     metadataMap?: Map<number, any>
   ): Promise<UploadResult[]> {
-    console.log('[AttachmentService] uploadMultiple - Début', {
-      filesCount: files.length,
-      userId,
-      isAnonymous,
-      messageId,
-      hasMetadata: !!metadataMap,
-    });
 
     const results: UploadResult[] = [];
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       try {
-        console.log('[AttachmentService] Uploading file:', file.filename);
         const fileMetadata = metadataMap?.get(i);
         const result = await this.uploadFile(file, userId, isAnonymous, messageId, fileMetadata);
-        console.log('[AttachmentService] Upload result:', {
-          id: result.id,
-          fileName: result.fileName,
-          fileSize: result.fileSize,
-          hadMetadata: !!fileMetadata,
-        });
         results.push(result);
       } catch (error) {
         console.error('[AttachmentService] ❌ Erreur upload fichier:', {
@@ -437,10 +385,6 @@ export class AttachmentService {
       }
     }
 
-    console.log('[AttachmentService] uploadMultiple - Fin', {
-      resultsCount: results.length,
-      results: results.map(r => ({ id: r.id, fileName: r.fileName })),
-    });
 
     return results;
   }

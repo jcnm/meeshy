@@ -62,7 +62,6 @@ export function logZIndexReport() {
   
   console.group('📊 Hiérarchie configurée');
   Object.entries(Z_INDEX).forEach(([key, value]) => {
-    console.log(`  ${key.padEnd(25)} : ${value}`);
   });
   console.groupEnd();
   
@@ -72,23 +71,14 @@ export function logZIndexReport() {
   const tooltips = document.querySelectorAll('[data-radix-tooltip-content]');
   const portals = document.querySelectorAll('[data-radix-portal]');
   
-  console.log(`  Popovers actifs     : ${popovers.length}`);
-  console.log(`  Dropdowns actifs    : ${dropdowns.length}`);
-  console.log(`  Tooltips actifs     : ${tooltips.length}`);
-  console.log(`  Portails actifs     : ${portals.length}`);
   console.groupEnd();
   
   console.group('⚠️ Problèmes détectés');
   const issues = validateRadixZIndexes();
   
   if (issues.length === 0) {
-    console.log('  ✅ Aucun problème détecté !');
   } else {
     issues.forEach((issue, index) => {
-      console.log(`  ${index + 1}. ${issue.issue}`);
-      console.log(`     Actuel: ${issue.currentZIndex}, Attendu: ${issue.expectedZIndex}`);
-      console.log(`     Position: ${issue.position}`);
-      console.log(`     Element:`, issue.element);
     });
   }
   console.groupEnd();
@@ -134,7 +124,6 @@ export function enableZIndexDebugMode() {
     }
   `;
   document.head.appendChild(style);
-  console.log('🎨 Mode debug z-index activé');
 }
 
 /**
@@ -144,7 +133,6 @@ export function disableZIndexDebugMode() {
   const style = document.getElementById('z-index-debug');
   if (style) {
     style.remove();
-    console.log('🎨 Mode debug z-index désactivé');
   }
 }
 
@@ -158,11 +146,6 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
     debug: enableZIndexDebugMode,
     stopDebug: disableZIndexDebugMode,
     help: () => {
-      console.log('🛠️ Utilitaires Z-Index Meeshy:');
-      console.log('  window.meeshyZIndex.report()      - Afficher le rapport complet');
-      console.log('  window.meeshyZIndex.validate()    - Valider les z-index');
-      console.log('  window.meeshyZIndex.debug()       - Activer mode debug visuel');
-      console.log('  window.meeshyZIndex.stopDebug()   - Désactiver mode debug');
     }
   };
 }

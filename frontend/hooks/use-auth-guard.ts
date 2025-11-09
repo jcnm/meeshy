@@ -24,14 +24,11 @@ export function useAuthGuard(options: UseAuthGuardOptions = {}) {
   useEffect(() => {
     // Attendre que la vérification d'authentification soit terminée
     if (!isChecking && !hasChecked) {
-      console.log('[AUTH_GUARD] Vérification terminée:', { isAuthenticated, requireAuth });
       
       if (requireAuth && !isAuthenticated) {
-        console.log('[AUTH_GUARD] Redirection vers', redirectTo);
         router.push(redirectTo);
         onAuthFailure?.();
       } else if (requireAuth && isAuthenticated) {
-        console.log('[AUTH_GUARD] Utilisateur authentifié:', user?.username);
         onAuthSuccess?.();
       }
       

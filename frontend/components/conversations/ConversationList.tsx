@@ -583,7 +583,6 @@ export function ConversationList({
       return bTime - aTime;
     });
 
-    // console.log('[ConversationList] Filtrage et tri des conversations:', {
     //   total: conversations.length,
     //   filtered: sorted.length,
     //   searchQuery,
@@ -700,7 +699,6 @@ export function ConversationList({
       (entries) => {
         const first = entries[0];
         if (first.isIntersecting) {
-          console.log('📜 [Pagination] Trigger détecté - chargement de plus de conversations');
           onLoadMore();
         }
       },

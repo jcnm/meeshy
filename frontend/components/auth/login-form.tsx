@@ -35,8 +35,6 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
     setIsLoading(true);
     try {
-      console.log('[LOGIN_FORM] Tentative de connexion pour:', formData.username);
-      console.log('[LOGIN_FORM] URL de connexion:', buildApiUrl(API_ENDPOINTS.AUTH.LOGIN));
       
       const response = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.LOGIN), {
         method: 'POST',
@@ -49,7 +47,6 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         }),
       });
 
-      console.log('[LOGIN_FORM] Status de la réponse:', response.status, response.statusText);
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -58,7 +55,6 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       }
 
       const result = await response.json();
-      console.log('[LOGIN_FORM] Réponse API:', result);
 
       // Gérer les différents formats de réponse
       let userData, token;
@@ -82,7 +78,6 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       }
 
       if (userData && token) {
-        console.log('[LOGIN_FORM] Connexion réussie pour:', userData.username);
         toast.success(t('login.success.loginSuccess'));
         
         // Use useAuth hook for authentication
@@ -101,15 +96,12 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
           setTimeout(() => {
             if (currentPath === '/') {
               // Sur la page d'accueil, recharger la page pour afficher la conversation meeshy
-              console.log('[LOGIN_FORM] Sur la page d\'accueil, rechargement de la page');
               window.location.reload();
             } else if (returnUrl) {
               // Redirection avec rechargement forcé vers returnUrl
-              console.log('[LOGIN_FORM] Redirection avec rechargement vers returnUrl:', returnUrl);
               window.location.href = returnUrl;
             } else {
               // Redirection avec rechargement forcé vers dashboard
-              console.log('[LOGIN_FORM] Redirection avec rechargement vers dashboard');
               window.location.href = '/dashboard';
             }
           }, 100);

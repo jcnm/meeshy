@@ -663,7 +663,6 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                       )}
                       enableTracking={true}
                       onLinkClick={(url, isTracking) => {
-                        console.log(`Link clicked: ${url} (tracking: ${isTracking})`);
                       }}
                     />
                   </motion.div>

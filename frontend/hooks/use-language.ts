@@ -77,19 +77,15 @@ export function useLanguage(): UseLanguageReturn {
       if (typeof window === 'undefined') return 'en';
 
       try {
-        console.log('[LANGUAGE_DETECTION] Starting user language detection...');
         
         // Détecter la langue préférée de l'utilisateur
         const userPreferredLanguage = await getUserPreferredLanguage();
-        console.log('[LANGUAGE_DETECTION] User preferred language:', userPreferredLanguage);
         
         // Détecter la meilleure langue d'interface
         const bestInterfaceLanguage = await detectBestInterfaceLanguage();
-        console.log('[LANGUAGE_DETECTION] Best interface language:', bestInterfaceLanguage);
         
         // Détecter la locale préférée
         const detectedLocale = detectUserPreferredLocale();
-        console.log('[LANGUAGE_DETECTION] Detected locale:', detectedLocale);
         
         return bestInterfaceLanguage || userPreferredLanguage || 'en';
       } catch (error) {
@@ -110,22 +106,18 @@ export function useLanguage(): UseLanguageReturn {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    console.log('[LANGUAGE_DETECTION] Starting browser language detection...');
 
     // Obtenir les langues du navigateur
     const browserLangs = navigator.languages || [navigator.language];
     setBrowserLanguages(browserLangs);
-    console.log('[LANGUAGE_DETECTION] Browser languages:', browserLangs);
 
     // Détecter la langue du système
     const systemLanguage = navigator.language || 'en';
     setDetectedSystemLanguage(systemLanguage);
-    console.log('[LANGUAGE_DETECTION] System language:', systemLanguage);
 
     // Détecter la meilleure langue d'interface
     try {
       const bestLanguage = detectBestInterfaceLanguage();
-      console.log('[LANGUAGE_DETECTION] Best interface language:', bestLanguage);
       setDetectedInterfaceLanguage(bestLanguage);
       setIsDetectionComplete(true);
     } catch (error) {

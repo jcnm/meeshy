@@ -112,19 +112,15 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
 
   // Charger les conversations d'une communauté
   const loadCommunityConversations = useCallback(async (communityId: string) => {
-    console.log('[DEBUG] 🚀 loadCommunityConversations called with communityId:', communityId);
     
     try {
       setIsLoadingConversations(true);
-      console.log('[DEBUG] Loading conversations for community:', communityId);
       
       const response = await communitiesService.getCommunityConversations(communityId);
-      console.log('[DEBUG] Community conversations response:', response);
       
       // L'API retourne {success: true, data: [...]} donc nous devons extraire response.data.data
       if (response.data && typeof response.data === 'object' && 'data' in response.data) {
         const rawConversations = (response.data as any).data;
-        console.log('[DEBUG] Raw conversations from API:', rawConversations);
         
         // Mapper les conversations pour corriger les incohérences de format
         const mappedConversations = rawConversations.map((conv: any) => ({
@@ -137,11 +133,9 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
           members: conv.members || []
         }));
         
-        console.log('[DEBUG] ✅ Setting mapped conversations:', mappedConversations);
         setCommunityConversations(mappedConversations || []);
       } else if (Array.isArray(response.data)) {
         // Fallback si la réponse est directement un array
-        console.log('[DEBUG] Setting community conversations (direct array):', response.data);
         const mappedConversations = response.data.map((conv: any) => ({
           ...conv,
           participants: conv.members || [],
@@ -150,7 +144,6 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
         }));
         setCommunityConversations(mappedConversations);
       } else {
-        console.log('[DEBUG] No conversations data in response');
         setCommunityConversations([]);
       }
     } catch (error) {
@@ -167,26 +160,20 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
     try {
       const token = authManager.getAuthToken();
       if (!token) {
-        console.log('No auth token found');
         return;
       }
       
-      console.log('Loading groups with token:', token.substring(0, 20) + '...');
       const response = await fetch(buildApiUrl(API_ENDPOINTS.GROUP.LIST), {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      console.log('Groups API response:', response.status, response.statusText);
       
       if (response.ok) {
         const result = await response.json();
-        console.log('Groups API result:', result);
         // L'API retourne {success: true, data: [...]}
         const data = result.success ? result.data : result;
-        console.log('Groups data:', data);
         setGroups(Array.isArray(data) ? data : []);
       } else if (response.status === 401) {
-        console.log('Unauthorized, removing token');
         authManager.clearAllSessions();
         router.push('/');
       } else {
@@ -202,12 +189,10 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
 
   // Charger les détails d'un groupe
   const loadGroupDetails = useCallback(async (identifier: string) => {
-    console.log('[DEBUG] loadGroupDetails called with identifier:', identifier);
     
     try {
       const token = authManager.getAuthToken();
       if (!token) {
-        console.log('[DEBUG] No auth token found');
         toast.error('Token d\'authentification manquant. Veuillez vous reconnecter.');
         return;
       }
@@ -220,16 +205,13 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
         return;
       }
 
-      console.log('[DEBUG] Fetching group details from API:', `/communities/${identifier}`);
       const response = await fetch(buildApiUrl(`/communities/${identifier}`), {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      console.log('[DEBUG] API response status:', response.status);
       
       if (response.ok) {
         const result = await response.json();
-        console.log('[DEBUG] API response data:', result);
         const data = result.success ? result.data : result;
         setSelectedGroup(data);
         
@@ -242,7 +224,6 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
         
         // Gérer les erreurs d'authentification spécifiquement
         if (response.status === 401 || response.status === 403) {
-          console.log('[DEBUG] Authentication error, clearing auth data');
           authManager.clearAllSessions();
           toast.error('Session expirée. Veuillez vous reconnecter.');
           // Rediriger vers la page de connexion
@@ -296,7 +277,6 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
 
   // Sélectionner un groupe depuis la liste
   const handleSelectGroup = useCallback((group: Group) => {
-    console.log('[DEBUG] handleSelectGroup called with:', group);
     
     try {
       setSelectedGroup(group);
@@ -309,7 +289,6 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
       // L'identifiant contient déjà mshy_ depuis le serveur
       const identifier = group.identifier || '';
       
-      console.log('[DEBUG] Navigating to:', `/groups/${identifier}`);
       router.push(`/groups/${identifier}`);
     } catch (error) {
       console.error('[ERROR] handleSelectGroup failed:', error);
@@ -405,36 +384,29 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
 
   // Gérer la sélection depuis l'URL
   useEffect(() => {
-    console.log('[DEBUG] Selection useEffect triggered:', { selectedGroupIdentifier, groupsLength: groups.length });
     
     if (selectedGroupIdentifier && groups.length > 0) {
-      console.log('[DEBUG] Looking for group with identifier:', selectedGroupIdentifier);
       
       // Chercher d'abord par identifiant exact (avec ou sans mshy_)
       let group = groups.find(g => g.identifier === selectedGroupIdentifier);
-      console.log('[DEBUG] Found group with exact identifier:', group?.name);
       
       // Si pas trouvé et que l'identifiant ne commence pas par mshy_, essayer avec le préfixe
       if (!group && !selectedGroupIdentifier.startsWith('mshy_')) {
         group = groups.find(g => g.identifier === `mshy_${selectedGroupIdentifier}`);
-        console.log('[DEBUG] Found group with mshy_ prefix:', group?.name);
       }
       
       // Si pas trouvé et que l'identifiant commence par mshy_, essayer sans le préfixe
       if (!group && selectedGroupIdentifier.startsWith('mshy_')) {
         const cleanIdentifier = selectedGroupIdentifier.replace(/^mshy_/, '');
         group = groups.find(g => g.identifier === cleanIdentifier);
-        console.log('[DEBUG] Found group with clean identifier:', group?.name);
       }
       
       if (group) {
-        console.log('[DEBUG] Setting selected group:', group.name);
         setSelectedGroup(group);
         if (isMobile) {
           setShowGroupsList(false);
         }
       } else {
-        console.log('[DEBUG] Group not found in list, loading from API');
         // Essayer de charger depuis l'API avec l'identifiant tel quel
         loadGroupDetails(selectedGroupIdentifier);
       }

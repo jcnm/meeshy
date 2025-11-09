@@ -83,7 +83,6 @@ export class NotificationService {
    */
   public async initialize(config: NotificationServiceConfig): Promise<void> {
     if (this.isConnected) {
-      console.log('🔔 Service de notifications déjà connecté');
       return;
     }
 
@@ -98,7 +97,6 @@ export class NotificationService {
 
       this.setupEventListeners();
       
-      console.log('🔔 Service de notifications initialisé');
     } catch (error) {
       console.error('❌ Erreur lors de l\'initialisation du service de notifications:', error);
       config.onError?.(error as Error);
@@ -112,13 +110,11 @@ export class NotificationService {
     if (!this.socket || !this.config) return;
 
     this.socket.on('connect', () => {
-      console.log('🔔 Connecté au service de notifications');
       this.isConnected = true;
       this.config?.onConnect?.();
     });
 
     this.socket.on('disconnect', () => {
-      console.log('🔔 Déconnecté du service de notifications');
       this.isConnected = false;
       this.config?.onDisconnect?.();
     });
@@ -163,7 +159,6 @@ export class NotificationService {
    * Traite une notification générique (nouveau système avec avatar et preview)
    */
   private handleGenericNotification(data: any): void {
-    console.log('📢 Notification générique reçue:', data);
 
     const notification: Notification = {
       id: data.id,
@@ -439,7 +434,6 @@ export class NotificationService {
       this.socket = null;
       this.isConnected = false;
       this.config = null;
-      console.log('🔔 Service de notifications déconnecté');
     }
   }
 

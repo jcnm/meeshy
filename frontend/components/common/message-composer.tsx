@@ -213,7 +213,6 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       const response = await AttachmentService.uploadText(text, token);
       if (response.success && response.attachment) {
         setUploadedAttachments(prev => [...prev, response.attachment]);
-        console.log('✅ Texte collé créé comme attachment:', fileName);
       }
     } catch (error) {
       console.error('❌ Erreur création text attachment:', error);
@@ -261,8 +260,6 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     const attachmentIds = currentAttachments.map(att => att.id);
     const mimeTypes = currentAttachments.map(att => att.mimeType);
 
-    console.log('📎 Notification parent - IDs d\'attachments:', attachmentIds);
-    console.log('📎 MIME types:', mimeTypes);
 
     if (onAttachmentsChange) {
       onAttachmentsChange(attachmentIds, mimeTypes);
@@ -276,9 +273,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   const handleFilesSelected = useCallback(async (files: File[]) => {
     if (files.length === 0) return;
 
-    console.log('📎 handleFilesSelected appelé avec', files.length, 'fichier(s)');
     files.forEach((file, i) => {
-      console.log(`  Fichier ${i + 1}:`, file.name, '|', file.type, '|', file.size, 'bytes');
     });
 
     // Filtrer les doublons basés sur nom, taille et date de modification
@@ -288,14 +283,11 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       ...uploadedAttachments.map(att => `${att.originalName}_${att.fileSize}_${new Date(att.uploadedAt).getTime()}`)
     ]);
 
-    console.log('🔍 Signatures existantes:', Array.from(existingFileSignatures));
 
     const uniqueFiles = files.filter(file => {
       const signature = `${file.name}_${file.size}_${file.lastModified}`;
-      console.log(`🔍 Vérification fichier: ${signature}`);
       const isDuplicate = existingFileSignatures.has(signature);
       if (isDuplicate) {
-        console.log(`❌ DOUBLON détecté: ${file.name}`);
       }
       return !isDuplicate;
     });
@@ -307,11 +299,9 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
           ? t('attachmentDuplicate.single')
           : t('attachmentDuplicate.multiple', { count: duplicateCount })
       );
-      console.log(`⚠️ ${duplicateCount} fichier(s) dupliqué(s) ignoré(s)`);
     }
 
     if (uniqueFiles.length === 0) {
-      console.log('❌ Tous les fichiers sont des doublons');
       return;
     }
 
@@ -319,10 +309,8 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     const currentTotalAttachments = selectedFiles.length + uploadedAttachments.length;
     const newTotalAttachments = currentTotalAttachments + uniqueFiles.length;
 
-    console.log(`📊 Limite attachements: ${currentTotalAttachments} actuel + ${uniqueFiles.length} nouveau = ${newTotalAttachments}/50`);
 
     if (newTotalAttachments > 50) {
-      console.log(`❌ Limite de 50 attachements dépassée: tentative d'ajouter ${newTotalAttachments} fichiers (max 50)`);
       setAttemptedCount(newTotalAttachments); // Stocker le nombre tenté pour affichage dans la modale
       setShowAttachmentLimitModal(true);
       return;
@@ -339,32 +327,25 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       return;
     }
 
-    console.log('✅ Validation réussie');
 
     setSelectedFiles(prev => {
       const newFiles = [...prev, ...uniqueFiles];
-      console.log('📁 selectedFiles mis à jour:', newFiles.length, 'fichiers au total');
       return newFiles;
     });
     setIsUploading(true);
 
-    console.log('📎 Début upload de', uniqueFiles.length, 'fichier(s)');
 
     try {
       // Upload les fichiers
       const response = await AttachmentService.uploadFiles(uniqueFiles, token);
 
-      console.log('📎 Réponse upload:', response);
 
       if (response.success && response.attachments) {
-        console.log('✅ Upload réussi:', response.attachments.length, 'attachment(s)');
         response.attachments.forEach((att, i) => {
-          console.log(`  Attachment ${i + 1}:`, att.id, '|', att.fileName, '|', att.mimeType);
         });
 
         setUploadedAttachments(prev => {
           const newAttachments = [...prev, ...response.attachments];
-          console.log('📎 uploadedAttachments mis à jour:', newAttachments.length, 'attachments au total');
           return newAttachments;
         });
       } else {
@@ -381,7 +362,6 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       }
     } finally {
       setIsUploading(false);
-      console.log('📎 isUploading = false');
     }
   }, [token, selectedFiles, uploadedAttachments, t]);
 
@@ -433,9 +413,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     // Si l'attachment a un ID (déjà uploadé), le supprimer du backend
     if (attachmentToDelete?.id) {
       try {
-        console.log('[MessageComposer] Suppression attachment:', attachmentToDelete.id);
         await AttachmentService.deleteAttachment(attachmentToDelete.id, token);
-        console.log('[MessageComposer] ✅ Attachment supprimé du backend');
       } catch (error) {
         console.error('[MessageComposer] ❌ Erreur suppression attachment:', error);
         toast.error('Impossible de supprimer le fichier');
@@ -464,7 +442,6 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
 
   // Handler pour le changement d'état d'enregistrement - mémorisé
   const handleRecordingStateChange = useCallback((recording: boolean) => {
-    console.log('🔄 État enregistrement changé:', recording);
     setIsRecording(recording);
   }, []);
 
@@ -517,7 +494,6 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
 
   // Handler pour supprimer l'enregistrement audio - mémorisé
   const handleRemoveAudioRecording = useCallback(() => {
-    console.log('[MessageComposer] Suppression de l\'enregistrement en cours');
 
     // Fermer le recorder et reset tous les états audio
     setShowAudioRecorder(false);
@@ -529,7 +505,6 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
 
   // Handler appelé AVANT que l'enregistrement s'arrête (depuis le bouton STOP du AudioRecorderCard)
   const handleBeforeStop = useCallback(() => {
-    console.log('🛑 Bouton STOP du AudioRecorderCard cliqué - préparation upload');
     // Activer le flag pour uploader après l'arrêt
     shouldUploadAfterStopRef.current = true;
   }, []);
@@ -538,7 +513,6 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   const handleMicrophoneClick = useCallback(async () => {
     // Si un enregistrement est EN COURS
     if (showAudioRecorder && isRecording) {
-      console.log('⏹️ Enregistrement arrêté via bouton micro');
 
       // Activer le flag pour uploader après l'arrêt
       shouldUploadAfterStopRef.current = true;
@@ -558,12 +532,10 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       const extension = getAudioFileExtension(currentAudioBlobRef.current.blob.type);
       const filename = `audio_${Date.now()}.${extension}`;
 
-      console.log('📁 Création fichier en mode lecture:', filename, 'avec MIME type:', cleanMimeType);
       const audioFile = new File([currentAudioBlobRef.current.blob], filename, { type: cleanMimeType });
 
       // Upload le fichier via handleFilesSelected
       await handleFilesSelected([audioFile]);
-      console.log('✅ Audio en lecture uploadé');
 
       // Reset et fermer le recorder
       currentAudioBlobRef.current = null;
@@ -578,14 +550,12 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       setShowAudioRecorder(true);
       setAudioRecorderKey(prev => prev + 1);
       setIsRecording(true);
-      console.log('🎤 Démarrage nouvel enregistrement');
     }
   }, [showAudioRecorder, isRecording, handleFilesSelected, getAudioFileExtension]);
 
   // Handler pour l'envoi de message
   // Note: Le bouton est désactivé pendant l'enregistrement, donc pas besoin de gérer ce cas
   const handleSendMessage = useCallback(() => {
-    console.log('📤 Envoi du message');
     onSend();
   }, [onSend]);
 

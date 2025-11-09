@@ -51,7 +51,6 @@ export default function TestLinksPage() {
                     content={msg.content}
                     enableTracking={true}
                     onLinkClick={(url, isTracking) => {
-                      console.log('Link clicked!', { url, isTracking });
                       alert(`Link clicked: ${url}\nIs tracking: ${isTracking}`);
                     }}
                   />

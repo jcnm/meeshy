@@ -43,14 +43,6 @@ export function getConversationIdType(id: string): 'objectId' | 'identifier' | '
 export function logConversationIdDebug(id: string, context: string = '') {
   const type = getConversationIdType(id);
   
-  console.log(`🔍 [${context}] Conversation ID Debug:`, {
-    id,
-    type,
-    isObjectId: type === 'objectId',
-    isIdentifier: type === 'identifier',
-    length: id?.length,
-    context
-  });
   
   return type;
 }

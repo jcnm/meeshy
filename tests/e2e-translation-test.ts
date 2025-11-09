@@ -29,7 +29,6 @@ const colors = {
 };
 
 function log(color: keyof typeof colors, prefix: string, message: string) {
-  console.log(`${colors[color]}${prefix}${colors.reset} ${message}`);
 }
 
 interface TestUser {
@@ -369,20 +368,10 @@ class TranslationE2ETest {
     const totalElapsed = Date.now() - this.testStartTime;
     log('cyan', '⏱️  [ANALYZE]', `Temps total: ${totalElapsed}ms`);
 
-    console.log('\n' + '='.repeat(80));
-    console.log(`${colors.bright}RÉSULTATS DU TEST${colors.reset}`);
-    console.log('='.repeat(80) + '\n');
 
     // 1. Statistiques globales
-    console.log(`${colors.blue}📊 STATISTIQUES GLOBALES${colors.reset}`);
-    console.log(`  Message envoyé: ${this.sentMessageId || 'N/A'}`);
-    console.log(`  Utilisateurs connectés: ${this.testUsers.length}`);
-    console.log(`  Langues attendues: ${this.expectedLanguages.size}`);
-    console.log(`  Langues reçues: ${this.receivedTranslationLanguages.size}`);
-    console.log('');
 
     // 2. Détails par utilisateur
-    console.log(`${colors.blue}👥 RÉCEPTION PAR UTILISATEUR${colors.reset}`);
     
     this.testUsers.forEach(user => {
       const relevantTranslations = user.receivedTranslations.filter(
@@ -392,43 +381,29 @@ class TranslationE2ETest {
         m => m.messageId === this.sentMessageId
       );
 
-      console.log(`\n  ${colors.cyan}${user.username}${colors.reset} (${user.systemLanguage}):`);
-      console.log(`    Messages originaux reçus: ${relevantMessages.length}`);
-      console.log(`    Traductions reçues: ${relevantTranslations.length}`);
       
       if (relevantTranslations.length > 0) {
-        console.log(`    Langues de traduction:`);
         const languagesReceived = new Set(relevantTranslations.map(t => t.targetLanguage));
         languagesReceived.forEach(lang => {
-          console.log(`      - ${lang}`);
         });
       } else {
-        console.log(`    ${colors.yellow}⚠️  Aucune traduction reçue${colors.reset}`);
       }
     });
 
-    console.log('');
 
     // 3. Comparaison attendu vs reçu
-    console.log(`${colors.blue}🔍 COMPARAISON ATTENDU VS REÇU${colors.reset}`);
     
     const missingLanguages = Array.from(this.expectedLanguages).filter(
       lang => !this.receivedTranslationLanguages.has(lang)
     );
     
-    console.log(`  Langues attendues: ${Array.from(this.expectedLanguages).join(', ')}`);
-    console.log(`  Langues reçues: ${Array.from(this.receivedTranslationLanguages).join(', ')}`);
     
     if (missingLanguages.length > 0) {
-      console.log(`  ${colors.red}❌ Langues manquantes: ${missingLanguages.join(', ')}${colors.reset}`);
     } else {
-      console.log(`  ${colors.green}✅ Toutes les langues reçues${colors.reset}`);
     }
 
-    console.log('');
 
     // 4. Vérification en base de données
-    console.log(`${colors.blue}🗄️  VÉRIFICATION BASE DE DONNÉES${colors.reset}`);
     
     if (this.sentMessageId) {
       const dbTranslations = await this.prisma.messageTranslation.findMany({
@@ -441,12 +416,9 @@ class TranslationE2ETest {
         }
       });
 
-      console.log(`  Traductions en base: ${dbTranslations.length}`);
       
       if (dbTranslations.length > 0) {
-        console.log(`  Langues en base:`);
         dbTranslations.forEach(translation => {
-          console.log(`    - ${translation.targetLanguage}: "${translation.translatedContent.substring(0, 50)}..."`);
         });
       }
 
@@ -457,14 +429,11 @@ class TranslationE2ETest {
       );
 
       if (notReceivedViaSocket.length > 0) {
-        console.log(`  ${colors.yellow}⚠️  Traductions en base mais non reçues via WebSocket: ${notReceivedViaSocket.join(', ')}${colors.reset}`);
       }
     }
 
-    console.log('');
 
     // 5. Verdict final
-    console.log(`${colors.blue}📋 VERDICT FINAL${colors.reset}`);
     
     const allUsersReceivedMessage = this.testUsers.every(
       user => user.receivedMessages.some(m => m.messageId === this.sentMessageId)
@@ -476,39 +445,28 @@ class TranslationE2ETest {
 
     const allLanguagesReceived = missingLanguages.length === 0;
 
-    console.log(`  Message original diffusé à tous: ${allUsersReceivedMessage ? colors.green + '✅' : colors.red + '❌'}${colors.reset}`);
-    console.log(`  Traductions diffusées à tous: ${allUsersReceivedTranslations ? colors.green + '✅' : colors.red + '❌'}${colors.reset}`);
-    console.log(`  Toutes les langues traduites: ${allLanguagesReceived ? colors.green + '✅' : colors.red + '❌'}${colors.reset}`);
 
     if (allUsersReceivedMessage && allUsersReceivedTranslations && allLanguagesReceived) {
-      console.log(`\n  ${colors.green}${colors.bright}✅ TEST RÉUSSI - Toutes les traductions ont été reçues${colors.reset}`);
     } else {
-      console.log(`\n  ${colors.red}${colors.bright}❌ TEST ÉCHOUÉ - Des traductions sont manquantes${colors.reset}`);
       
       // Diagnostics supplémentaires
-      console.log(`\n  ${colors.yellow}🔍 DIAGNOSTICS:${colors.reset}`);
       
       if (!allUsersReceivedMessage) {
         const usersWithoutMessage = this.testUsers.filter(
           user => !user.receivedMessages.some(m => m.messageId === this.sentMessageId)
         );
-        console.log(`    - Utilisateurs n'ayant pas reçu le message original: ${usersWithoutMessage.map(u => u.username).join(', ')}`);
       }
 
       if (!allUsersReceivedTranslations) {
         const usersWithoutTranslations = this.testUsers.filter(
           user => !user.receivedTranslations.some(t => t.messageId === this.sentMessageId)
         );
-        console.log(`    - Utilisateurs n'ayant reçu aucune traduction: ${usersWithoutTranslations.map(u => u.username).join(', ')}`);
       }
 
       if (!allLanguagesReceived) {
-        console.log(`    - Langues manquantes: ${missingLanguages.join(', ')}`);
-        console.log(`    - Problème probable: Le service de traduction ne génère pas toutes les langues attendues`);
       }
     }
 
-    console.log('\n' + '='.repeat(80) + '\n');
   }
 
   /**
@@ -551,11 +509,6 @@ class TranslationE2ETest {
 
 // Exécution du test
 async function main() {
-  console.log('\n');
-  console.log('='.repeat(80));
-  console.log(`${colors.bright}${colors.blue}TEST END-TO-END: TRADUCTIONS MULTILINGUES MEESHY${colors.reset}`);
-  console.log('='.repeat(80));
-  console.log('\n');
 
   const conversationId = process.argv[2] || TEST_CONVERSATION_ID;
   

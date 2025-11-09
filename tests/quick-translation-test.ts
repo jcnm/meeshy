@@ -24,10 +24,6 @@ interface TranslationEvent {
 }
 
 async function quickTest(conversationId: string): Promise<void> {
-  console.log('🚀 Démarrage du test rapide...\n');
-  console.log(`📍 Gateway: ${GATEWAY_URL}`);
-  console.log(`📍 Conversation: ${conversationId}`);
-  console.log(`👤 User: ${TEST_USER_ID} (${TEST_USER_LANGUAGE})\n`);
 
   return new Promise((resolve, reject) => {
     let messageId: string | null = null;
@@ -46,18 +42,14 @@ async function quickTest(conversationId: string): Promise<void> {
 
     // Timeout global
     const globalTimeout = setTimeout(() => {
-      console.log('\n❌ Timeout global (30s)');
       socket.disconnect();
       reject(new Error('Timeout'));
     }, 30000);
 
     // Connexion établie
     socket.on('connect', () => {
-      console.log('✅ Connecté au WebSocket');
-      console.log(`📍 Socket ID: ${socket.id}\n`);
 
       // Rejoindre la conversation
-      console.log(`🔗 Rejoindre la conversation ${conversationId}...`);
       socket.emit('conversation:join', { conversationId });
 
       // Attendre un peu puis envoyer le message
@@ -69,12 +61,10 @@ async function quickTest(conversationId: string): Promise<void> {
           messageType: 'text'
         };
 
-        console.log(`📤 Envoi du message: "${testMessage.content}"\n`);
         socket.emit('message:send', testMessage);
 
         // Timeout pour les traductions
         timeout = setTimeout(() => {
-          console.log('\n⏱️  Fin de l\'attente des traductions\n');
           printResults();
           cleanup();
         }, 10000);
@@ -84,22 +74,17 @@ async function quickTest(conversationId: string): Promise<void> {
     // Message envoyé avec succès
     socket.on('message:sent', (data: any) => {
       messageId = data.messageId;
-      console.log(`✅ Message envoyé: ${messageId}`);
-      console.log(`📊 Status: ${data.status}\n`);
     });
 
     // Message original reçu
     socket.on('message:new', (data: any) => {
-      console.log(`📨 Message original reçu: ${data.id || data.messageId}`);
     });
 
     // Traduction reçue
     socket.on('message:translation', (data: TranslationEvent) => {
-      console.log(`\n🌐 Traduction reçue pour message ${data.messageId}`);
       
       if (data.translations && Array.isArray(data.translations)) {
         data.translations.forEach(translation => {
-          console.log(`  ➜ ${translation.targetLanguage}: "${translation.translatedContent.substring(0, 60)}..."`);
           receivedTranslations.push(translation.targetLanguage);
         });
       }
@@ -117,27 +102,13 @@ async function quickTest(conversationId: string): Promise<void> {
     });
 
     socket.on('disconnect', (reason) => {
-      console.log(`\n🔌 Déconnecté: ${reason}`);
     });
 
     function printResults() {
-      console.log('='.repeat(60));
-      console.log('📊 RÉSULTATS');
-      console.log('='.repeat(60));
-      console.log(`Message ID: ${messageId || 'N/A'}`);
-      console.log(`Traductions reçues: ${receivedTranslations.length}`);
       
       if (receivedTranslations.length > 0) {
-        console.log(`Langues: ${[...new Set(receivedTranslations)].join(', ')}`);
-        console.log('\n✅ Au moins une traduction a été reçue');
       } else {
-        console.log('\n❌ Aucune traduction reçue');
-        console.log('\n🔍 Possibles causes:');
-        console.log('  - Le service de traduction n\'est pas démarré');
-        console.log('  - La conversation n\'a qu\'un seul participant');
-        console.log('  - Les traductions ne sont pas diffusées correctement');
       }
-      console.log('='.repeat(60) + '\n');
     }
 
     function cleanup() {
@@ -155,8 +126,6 @@ async function main() {
   
   if (!conversationId) {
     console.error('❌ Erreur: ID de conversation requis');
-    console.log('\nUsage: ts-node quick-translation-test.ts <conversationId>');
-    console.log('Exemple: ts-node quick-translation-test.ts meeshy\n');
     process.exit(1);
   }
 

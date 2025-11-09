@@ -25,7 +25,6 @@ export function CreateLinkButton({
 
   const handleLinkCreated = () => {
     setIsModalOpen(false);
-    console.log('Lien de partage créé avec succès !');
     onLinkCreated?.();
   };
 

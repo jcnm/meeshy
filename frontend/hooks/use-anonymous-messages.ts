@@ -98,7 +98,6 @@ export function useAnonymousMessages(linkId: string) {
       
       setMessages(prev => [...prev, newMessage]);
       
-      console.log('Message envoyé');
       return true;
     } catch (error) {
       console.error('Erreur envoi message anonyme:', error);

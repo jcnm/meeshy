@@ -88,7 +88,6 @@ function QuickLoginPageContent() {
                            localStorage.getItem('anonymous_current_link_id');
 
         if (shareLinkId) {
-          console.log('[LOGIN] Utilisateur anonyme - redirection vers /chat/' + shareLinkId);
           router.replace(`/chat/${shareLinkId}`);
           return;
         }
@@ -131,7 +130,6 @@ function QuickLoginPageContent() {
         authLogin(data.data.user, data.data.token);
 
         // Notification de succès simple
-        console.log(t('login.success.loginSuccess'));
 
         // CORRECTION CRITIQUE: Forcer un hard redirect pour rafraîchir complètement l'état
         // router.replace() ne force pas le rechargement de tous les composants

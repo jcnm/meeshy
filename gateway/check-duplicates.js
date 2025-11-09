@@ -5,7 +5,6 @@ const prisma = new PrismaClient();
 
 async function checkDuplicates() {
   try {
-    console.log('🔍 Recherche de doublons de traductions...\n');
     
     // Récupérer toutes les traductions
     const allTranslations = await prisma.messageTranslation.findMany({
@@ -16,7 +15,6 @@ async function checkDuplicates() {
       ]
     });
     
-    console.log(`📊 Total de traductions en base: ${allTranslations.length}\n`);
     
     // Grouper par messageId + targetLanguage
     const groups = new Map();
@@ -37,42 +35,30 @@ async function checkDuplicates() {
       .slice(0, 20); // Limiter à 20 pour l'affichage
     
     if (duplicates.length === 0) {
-      console.log('✅ Aucun doublon trouvé!\n');
       return;
     }
     
-    console.log(`❌ ${duplicates.length} groupe(s) de doublons trouvés (sur les 20 premiers):\n`);
     
     let totalDuplicates = 0;
     duplicates.forEach(([key, translations], idx) => {
       const [messageId, targetLanguage] = key.split('_');
-      console.log(`${idx + 1}. Message: ${messageId.substring(0, 12)}...`);
-      console.log(`   Langue: ${targetLanguage}`);
-      console.log(`   Nombre de traductions: ${translations.length}`);
-      console.log(`   Doublons:`);
       
       translations.forEach((t, tIdx) => {
-        console.log(`     [${tIdx + 1}] ID: ${t.id.substring(0, 12)}... - ${t.createdAt.toISOString()}`);
-        console.log(`         Contenu: "${t.translatedContent.substring(0, 50)}..."`);
       });
-      console.log('');
       
       totalDuplicates += (translations.length - 1);
     });
     
-    console.log(`📊 Total de traductions en trop (dans les 20 premiers groupes): ${totalDuplicates}\n`);
     
     // Compter le total de groupes avec doublons
     const allDuplicateGroups = Array.from(groups.entries())
       .filter(([key, translations]) => translations.length > 1);
     
-    console.log(`📊 Total de groupes de messages avec doublons: ${allDuplicateGroups.length}\n`);
     
     const totalAllDuplicates = allDuplicateGroups.reduce((sum, [key, translations]) => {
       return sum + (translations.length - 1);
     }, 0);
     
-    console.log(`📊 Total de traductions en trop dans toute la base: ${totalAllDuplicates}\n`);
     
   } catch (error) {
     console.error('❌ Erreur:', error);

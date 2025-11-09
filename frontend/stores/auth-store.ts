@@ -95,12 +95,10 @@ export const useAuthStore = create<AuthStore>()(
           }
 
           if (process.env.NODE_ENV === 'development') {
-            console.log('[AUTH_STORE] Auth state cleared');
           }
         },
 
         logout: async () => {
-          console.log('[AUTH_STORE] Logging out user');
 
           // NOUVEAU: Utiliser AuthManager pour nettoyage centralisé
           // Import dynamique pour éviter circular deps
@@ -153,20 +151,17 @@ export const useAuthStore = create<AuthStore>()(
             const { authToken, refreshToken, sessionExpiry, user } = get();
 
             if (process.env.NODE_ENV === 'development') {
-              console.log('[AUTH_STORE] Initializing - Token:', !!authToken, 'User:', !!user);
             }
 
             if (authToken && user) {
               // Check if session is expired
               if (sessionExpiry && sessionExpiry < new Date()) {
                 if (process.env.NODE_ENV === 'development') {
-                  console.log('[AUTH_STORE] Session expired, attempting refresh');
                 }
                 
                 const refreshed = await get().refreshSession();
                 if (!refreshed) {
                   if (process.env.NODE_ENV === 'development') {
-                    console.log('[AUTH_STORE] Refresh failed, clearing auth');
                   }
                   get().clearAuth();
                   return;
@@ -174,7 +169,6 @@ export const useAuthStore = create<AuthStore>()(
               }
 
               if (process.env.NODE_ENV === 'development') {
-                console.log('[AUTH_STORE] User authenticated:', user.username);
               }
               set({ isAuthenticated: true });
             } else {

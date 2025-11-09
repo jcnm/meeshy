@@ -442,7 +442,6 @@ export class TrackingLinkService {
       return { processedContent: content, trackingLinks: [] };
     }
 
-    console.log(`[TrackingLinkService] Found ${matches.length} link(s) in message`);
 
     // Traiter chaque lien
     for (const url of matches) {
@@ -451,7 +450,6 @@ export class TrackingLinkService {
       mshyShortRegex.lastIndex = 0;
       
       if (trackingLinkRegex.test(url) || mshyShortRegex.test(url)) {
-        console.log(`[TrackingLinkService] Skipping existing tracking link: ${url}`);
         continue;
       }
 
@@ -461,7 +459,6 @@ export class TrackingLinkService {
 
         if (!trackingLink) {
           // Créer un nouveau lien de tracking
-          console.log(`[TrackingLinkService] Creating tracking link for: ${url}`);
           trackingLink = await this.createTrackingLink({
             originalUrl: url,
             conversationId,
@@ -469,7 +466,6 @@ export class TrackingLinkService {
             createdBy
           });
         } else {
-          console.log(`[TrackingLinkService] Reusing existing tracking link: ${trackingLink.token}`);
         }
 
         trackingLinks.push(trackingLink);
@@ -478,14 +474,12 @@ export class TrackingLinkService {
         const replacement = `m+${trackingLink.token}`;
         processedContent = processedContent.replace(url, replacement);
 
-        console.log(`[TrackingLinkService] Replaced ${url} with ${replacement}`);
       } catch (error) {
         console.error(`[TrackingLinkService] Error processing link ${url}:`, error);
         // En cas d'erreur, on garde le lien original
       }
     }
 
-    console.log(`[TrackingLinkService] Message processed: ${trackingLinks.length} tracking link(s) created/reused`);
 
     return { processedContent, trackingLinks };
   }
@@ -505,7 +499,6 @@ export class TrackingLinkService {
       }
     });
 
-    console.log(`[TrackingLinkService] Updated messageId for ${tokens.length} tracking link(s)`);
   }
 }
 

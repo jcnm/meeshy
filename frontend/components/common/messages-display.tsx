@@ -89,17 +89,9 @@ export function MessagesDisplay({
 
   // Fonction pour déterminer la langue d'affichage préférée pour un message
   const getPreferredDisplayLanguage = useCallback((message: any): string => {
-    console.log(`🔍 [MESSAGES-DISPLAY] Calcul de la langue préférée pour message ${message.id.substring(0, 8)}:`, {
-      originalLanguage: message.originalLanguage,
-      userLanguage,
-      hasTranslations: !!(message.translations && message.translations.length > 0),
-      translationsCount: message.translations?.length || 0,
-      availableLanguages: message.translations?.map((t: any) => t.language || t.targetLanguage).join(', ') || 'none'
-    });
     
     // Si le message est dans la langue de l'utilisateur, l'afficher tel quel
     if (message.originalLanguage === userLanguage) {
-      console.log(`✅ [MESSAGES-DISPLAY] Message ${message.id.substring(0, 8)} déjà en ${userLanguage} (original)`);
       return message.originalLanguage;
     }
     
@@ -109,16 +101,9 @@ export function MessagesDisplay({
     );
     
     if (userLanguageTranslation) {
-      console.log(`🌐 [MESSAGES-DISPLAY] Traduction trouvée pour ${message.id.substring(0, 8)} en ${userLanguage}`, {
-        hasTranslatedContent: !!userLanguageTranslation.translatedContent,
-        hasContent: !!userLanguageTranslation.content,
-        translatedContentPreview: userLanguageTranslation.translatedContent?.substring(0, 50) || 'none',
-        contentPreview: userLanguageTranslation.content?.substring(0, 50) || 'none'
-      });
       return userLanguage;
     }
     
-    console.log(`⚠️ [MESSAGES-DISPLAY] Pas de traduction en ${userLanguage} pour ${message.id.substring(0, 8)}, affichage en ${message.originalLanguage || 'fr'}`);
     // Sinon, afficher dans la langue originale
     return message.originalLanguage || 'fr';
   }, [userLanguage]);
@@ -134,7 +119,6 @@ export function MessagesDisplay({
 
       // Bloquer UNIQUEMENT si c'est la MÊME traduction (même message + même langue)
       if (isAlreadyTranslating) {
-        console.log(`⏸️ [MessagesDisplay] Traduction déjà en cours pour ${messageId} → ${targetLanguage}`);
         toast.info(t('translation.translationAlreadyInProgress'));
         return;
       }
@@ -172,7 +156,6 @@ export function MessagesDisplay({
       // La vraie traduction sera reçue via WebSocket (événement MESSAGE_TRANSLATION)
       // et traitée par le callback onTranslation du composant parent
       
-      console.log(`🔄 [MessagesDisplay] Traduction demandée pour ${messageId} vers ${targetLanguage}`, result);
       
       // Garder l'état "isTranslating" actif jusqu'à réception de la vraie traduction via WebSocket
       // L'état sera désactivé dans le callback onTranslation quand la traduction arrivera
@@ -285,7 +268,6 @@ export function MessagesDisplay({
           
           // Si une traduction dans la langue utilisateur est disponible et qu'on ne l'affiche pas encore
           if (userLanguageTranslation && currentState.currentDisplayLanguage !== userLanguage) {
-            console.log(`🔄 [AUTO-TRANSLATION] Nouvelle traduction détectée pour ${message.id} en ${userLanguage}`);
             messagesToUpdate[message.id] = userLanguage;
           }
         }

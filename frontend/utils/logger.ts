@@ -83,9 +83,7 @@ class Logger {
   info(tag: string, message: string, data?: any): void {
     if (this.shouldLog(LogLevel.INFO)) {
       if (data !== undefined) {
-        console.log(`${tag} ${message}`, data);
       } else {
-        console.log(`${tag} ${message}`);
       }
     }
   }
@@ -96,9 +94,7 @@ class Logger {
   debug(tag: string, message: string, data?: any): void {
     if (this.shouldLog(LogLevel.DEBUG)) {
       if (data !== undefined) {
-        console.log(`${tag} ${message}`, data);
       } else {
-        console.log(`${tag} ${message}`);
       }
     }
   }
@@ -109,7 +105,6 @@ class Logger {
    */
   log(message: string, ...args: any[]): void {
     if (this.config.enabled) {
-      console.log(message, ...args);
     }
   }
 }

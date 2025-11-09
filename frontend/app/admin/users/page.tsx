@@ -46,13 +46,6 @@ export default function AdminUsersPage() {
   // Fonction de chargement des données - définie avant les useEffect qui l'utilisent
   const loadUsersData = useCallback(async (showLoader = true) => {
     try {
-      console.log('[Admin Users] Appel API avec params:', {
-        page: currentPage,
-        size: pageSize,
-        search: debouncedSearch,
-        role: roleFilter,
-        status: statusFilter
-      });
 
       // Ne montrer le loader que lors du chargement initial ou sur demande
       if (showLoader) {
@@ -63,16 +56,11 @@ export default function AdminUsersPage() {
         adminService.getUsers(currentPage, pageSize, debouncedSearch, roleFilter, statusFilter)
       ]);
 
-      console.log('[Admin Users] Réponse API complète:', usersResponse);
-      console.log('[Admin Users] usersResponse.data:', usersResponse.data);
 
       // Le backend retourne {success: true, data: {...}}, donc il faut accéder à .data.data
       const dashboardData = dashboardResponse.data?.data || dashboardResponse.data;
       const usersData = usersResponse.data?.data || usersResponse.data;
 
-      console.log('[Admin Users] usersData extrait:', usersData);
-      console.log('[Admin Users] usersData.users:', usersData?.users);
-      console.log('[Admin Users] Nombre d\'utilisateurs:', usersData?.users?.length || 0);
 
       if (dashboardData) {
         setStats({
@@ -84,11 +72,9 @@ export default function AdminUsersPage() {
       }
 
       if (usersData) {
-        console.log('[Admin Users] Mise à jour de users avec:', usersData.users || []);
         setUsers(usersData.users || []);
         const total = usersData.pagination?.total || 0;
         setTotalPages(Math.max(1, Math.ceil(total / pageSize)));
-        console.log('[Admin Users] Total pages calculé:', Math.max(1, Math.ceil(total / pageSize)));
       }
     } catch (error) {
       console.error('Erreur lors du chargement des données utilisateurs:', error);
@@ -109,13 +95,6 @@ export default function AdminUsersPage() {
 
   // Charger les données uniquement quand nécessaire
   useEffect(() => {
-    console.log('[Admin Users] Chargement avec filtres:', {
-      currentPage,
-      pageSize,
-      debouncedSearch,
-      roleFilter,
-      statusFilter
-    });
     // Utiliser le loader seulement pour le premier chargement
     loadUsersData(isInitialLoad);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -127,21 +106,18 @@ export default function AdminUsersPage() {
   };
 
   const handlePageSizeChange = (newSize: number) => {
-    console.log('[Admin Users] Changement de pageSize:', { ancien: pageSize, nouveau: newSize });
     setCurrentPage(1);
     setPageSize(newSize);
     // Le useEffect avec les dépendances correctes se chargera du rechargement
   };
 
   const handlePreviousPage = () => {
-    console.log('[Admin Users] Clic sur Précédent, page actuelle:', currentPage);
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
     }
   };
 
   const handleNextPage = () => {
-    console.log('[Admin Users] Clic sur Suivant, page actuelle:', currentPage, 'total:', totalPages);
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
     }

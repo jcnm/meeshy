@@ -62,7 +62,6 @@ export const useUserStore = create<UserStoreState>((set, get) => ({
 
     if (!user) {
       // L'utilisateur n'est pas dans le store, ignorer silencieusement
-      console.debug('[UserStore] updateUserStatus: user not found in store:', userId);
       return;
     }
 
@@ -83,13 +82,6 @@ export const useUserStore = create<UserStoreState>((set, get) => ({
       p.id === userId ? updatedUser : p
     );
 
-    console.log('[UserStore] User status updated:', {
-      userId,
-      username: updatedUser.username,
-      isOnline: updatedUser.isOnline,
-      updates,
-      timestamp: new Date().toISOString()
-    });
 
     set({
       usersMap: newUsersMap,

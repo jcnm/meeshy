@@ -169,7 +169,6 @@ test.describe('User Status Realtime E2E', () => {
       // Should update within 100ms (accounting for network latency, allow up to 500ms)
       expect(updateTime).toBeLessThan(500);
 
-      console.log(`Status update time: ${updateTime}ms`);
 
       // Verify tooltip shows offline
       await userAIndicator.hover();

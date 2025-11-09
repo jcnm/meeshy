@@ -4,7 +4,6 @@ const prisma = new PrismaClient();
 
 async function cleanupZombieCall() {
   try {
-    console.log('🔍 Recherche de l\'appel zombie...');
 
     const zombieCall = await prisma.callSession.findFirst({
       where: {
@@ -16,11 +15,9 @@ async function cleanupZombieCall() {
     });
 
     if (!zombieCall) {
-      console.log('✅ Aucun appel zombie trouvé');
       return;
     }
 
-    console.log('🧟 Appel zombie trouvé:', zombieCall);
 
     // Marquer comme terminé
     await prisma.callSession.update({
@@ -32,7 +29,6 @@ async function cleanupZombieCall() {
       }
     });
 
-    console.log('✅ Appel zombie nettoyé avec succès');
   } catch (error) {
     console.error('❌ Erreur:', error);
   } finally {

@@ -123,8 +123,6 @@ export default function JoinConversationPage() {
 
   // Debug: Log currentUser pour voir ce qu'on a
   useEffect(() => {
-    console.log('[JOIN_PAGE] currentUser:', currentUser);
-    console.log('[JOIN_PAGE] isChecking:', isChecking);
   }, [currentUser, isChecking]);
 
   useEffect(() => {
@@ -218,11 +216,9 @@ export default function JoinConversationPage() {
 
   // Wrapper function for auth success that handles dialog state management
   const onAuthSuccess = (user: User, token: string) => {
-    console.log('[JOIN_PAGE] onAuthSuccess - Connexion réussie, fermeture du dialog');
     setAuthMode('welcome');
     
     // Automatiquement rejoindre la conversation après la connexion
-    console.log('[JOIN_PAGE] Exécution automatique de joinConversation après connexion');
     setTimeout(() => {
       joinConversation();
     }, 500); // Petit délai pour laisser le temps au dialog de se fermer et à l'état d'être mis à jour
@@ -338,12 +334,6 @@ export default function JoinConversationPage() {
       const anonymousSession = authManager.getAnonymousSession();
       const sessionToken = anonymousSession?.token;
       
-      console.log('[JOIN_CONVERSATION] Debug auth:', {
-        linkId,
-        hasAuthToken: !!authToken,
-        hasSessionToken: !!sessionToken,
-        isAnonymous
-      });
 
       // Préparer les headers selon le type d'authentification
       const headers: Record<string, string> = {};
@@ -356,7 +346,6 @@ export default function JoinConversationPage() {
 
       // Si l'utilisateur a un session token (participant anonyme), rediriger directement
       if (isAnonymous && sessionToken) {
-        console.log('[JOIN_CONVERSATION] Utilisateur anonyme avec session token, redirection directe');
         // Pour les utilisateurs anonymes, utiliser directement le linkId de l'URL
         // Cela garantit que nous utilisons toujours le bon identifiant de lien
         router.push(`/chat/${linkId}`);
@@ -365,7 +354,6 @@ export default function JoinConversationPage() {
 
       // Si l'utilisateur a un access token, vérifier s'il est déjà membre
       if (authToken) {
-        console.log('[JOIN_CONVERSATION] Utilisateur avec access token, vérification membre');
         
         // D'abord, récupérer les informations du lien pour obtenir le conversationShareLinkId
         let conversationShareLinkId: string;
@@ -375,7 +363,6 @@ export default function JoinConversationPage() {
             throw new Error('Impossible de récupérer les informations du lien');
           }
           conversationShareLinkId = linkInfo.data.id; // C'est le conversationShareLinkId
-          console.log('[JOIN_CONVERSATION] conversationShareLinkId récupéré:', conversationShareLinkId);
         } catch (error) {
           console.error('[JOIN_CONVERSATION] Erreur récupération linkInfo:', error);
           toast.error(t('linkError'));
@@ -393,7 +380,6 @@ export default function JoinConversationPage() {
           
           if (chatResult.success && chatResult.data.userType === 'member') {
             // Utilisateur membre authentifié - rediriger directement vers la conversation
-            console.log('[JOIN_CONVERSATION] Utilisateur membre, redirection vers conversation');
             toast.success(t('redirecting'));
             // Pour les utilisateurs authentifiés, rediriger vers la page de conversation normale
             // Utiliser l'ID de la conversation depuis les données reçues
@@ -401,7 +387,6 @@ export default function JoinConversationPage() {
             return;
           } else if (chatResult.success && chatResult.data.userType === 'authenticated_non_member') {
             // Utilisateur authentifié mais pas membre - continuer vers l'endpoint de jointure
-            console.log('[JOIN_CONVERSATION] Utilisateur authentifié mais pas membre, peut rejoindre');
           }
         } else {
           console.error('[JOIN_CONVERSATION] Erreur GET /links:', chatResponse.status);
@@ -410,7 +395,6 @@ export default function JoinConversationPage() {
         }
 
         // Si ce n'est pas un membre, essayer de joindre via l'endpoint de jointure
-        console.log('[JOIN_CONVERSATION] Tentative de jointure via POST /conversations/join');
         const response = await fetch(`${buildApiUrl('/conversations/join')}/${linkId}`, {
           method: 'POST',
           headers: {
@@ -420,7 +404,6 @@ export default function JoinConversationPage() {
 
         if (response.ok) {
           const result = await response.json();
-          console.log('[JOIN_CONVERSATION] Jointure réussie:', result);
           toast.success(t('redirecting'));
           // Pour les utilisateurs authentifiés, rediriger vers la page de conversation normale
           // Utiliser l'ID de la conversation retourné par l'API

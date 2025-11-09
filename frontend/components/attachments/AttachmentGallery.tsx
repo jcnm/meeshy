@@ -192,9 +192,6 @@ export function AttachmentGallery({
       try {
         // Si des attachments sont fournis en props, les utiliser directement
         if (providedAttachments && providedAttachments.length > 0) {
-          console.log('[AttachmentGallery] Utilisation des attachments fournis:', {
-            count: providedAttachments.length
-          });
           setAttachments(providedAttachments);
 
           // Si un attachment initial est spécifié, trouver son index
@@ -208,7 +205,6 @@ export function AttachmentGallery({
           }
         } else {
           // Sinon, charger via l'API (mode legacy)
-          console.log('[AttachmentGallery] Chargement via API...');
           const response = await AttachmentService.getConversationAttachments(
             conversationId,
             { type: 'image', limit: 100 },

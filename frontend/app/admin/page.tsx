@@ -79,16 +79,13 @@ const AdminDashboard: React.FC = () => {
   const loadAdminStats = async () => {
     try {
       const response = await adminService.getDashboardStats();
-      console.log('[ADMIN] Réponse API reçue:', response);
       // Le backend retourne { data: { success: true, data: DashboardData } }
       // Donc response.data contient { success: true, data: DashboardData }
       if (response.data && (response.data as any).success && (response.data as any).data) {
         const dashData = (response.data as any).data;
-        console.log('[ADMIN] Données dashboard extraites:', dashData);
         setDashboardData(dashData);
       } else if (response.data) {
         // Cas où les données sont directement dans response.data (pas de wrapping)
-        console.log('[ADMIN] Données dashboard directes:', response.data);
         setDashboardData(response.data);
       }
     } catch (error) {
@@ -139,20 +136,13 @@ const AdminDashboard: React.FC = () => {
 
         // Vérifier les permissions admin
         const hasAdminAccess = userData.permissions?.canAccessAdmin || false;
-        console.log('[ADMIN] Vérification permissions:', {
-          role: userData.role,
-          permissions: userData.permissions,
-          canAccessAdmin: hasAdminAccess
-        });
 
         if (!hasAdminAccess) {
-          console.log('[ADMIN] Accès refusé - permissions insuffisantes');
           router.push('/dashboard');
           toast.error('Accès non autorisé à l\'administration');
           return;
         }
 
-        console.log('[ADMIN] Accès autorisé - utilisateur:', userData.username, 'rôle:', userData.role);
 
         // Charger les vraies données admin
         await loadAdminStats();

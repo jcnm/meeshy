@@ -78,7 +78,6 @@ function LandingPageContent() {
       localStorage.setItem('meeshy_affiliate_token', affiliateToken);
       
       if (process.env.NODE_ENV === 'development') {
-        console.log('[LANDING] Token d\'affiliation détecté:', affiliateToken);
       }
     }
   }, []);
@@ -111,29 +110,16 @@ function LandingPageContent() {
   const hasAuthToken = !!authManager.getAuthToken();
   
   if (process.env.NODE_ENV === 'development') {
-    console.log('[LANDING] État utilisateur:', {
-      hasUser: !!user,
-      isAnonymous,
-      hasAuthToken,
-      userId: user?.id,
-      username: user?.username
-    });
   }
   
   // Si l'utilisateur a un token d'authentification ET un utilisateur, afficher BubbleStreamPage
   if (user && hasAuthToken) {
     if (process.env.NODE_ENV === 'development') {
-      console.log('[LANDING] ✅ Utilisateur authentifié détecté, affichage BubbleStreamPage', {
-        username: user.username,
-        hasAuthToken,
-        userId: user.id
-      });
     }
     
     // Nettoyer les données anonymes si elles existent (l'utilisateur est authentifié)
     if (isAnonymous) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('[LANDING] Nettoyage des données anonymes pour utilisateur authentifié');
       }
       localStorage.removeItem('anonymous_session_token');
       localStorage.removeItem('anonymous_participant');
@@ -143,7 +129,6 @@ function LandingPageContent() {
     }
     
     if (process.env.NODE_ENV === 'development') {
-      console.log('[LANDING] 🎨 Rendu du DashboardLayout avec BubbleStreamPage');
     }
     return (
       <div className="h-screen overflow-hidden flex flex-col">
@@ -163,7 +148,6 @@ function LandingPageContent() {
   }
   
   if (process.env.NODE_ENV === 'development') {
-    console.log('[LANDING] ⚠️ Pas d\'utilisateur authentifié, affichage landing page');
   }
 
   // Pour les utilisateurs anonymes et non connectés, afficher la landing page

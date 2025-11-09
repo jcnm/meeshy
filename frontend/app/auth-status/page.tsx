@@ -130,11 +130,6 @@ export default function AuthStatusPage() {
               
               <button 
                 onClick={() => {
-                  console.log('=== DEBUG AUTH STATE ===');
-                  console.log('useUser:', { user, isAuthChecking });
-                  console.log('useAuth:', { isAuthenticated: useAuthAuthenticated, isChecking: useAuthChecking });
-                  console.log('useAuthGuard:', { isAuthenticated: guardAuthenticated, isChecking: guardChecking });
-                  console.log('localStorage:', localStorageData);
                 }}
                 className="w-full p-2 bg-gray-500 text-white rounded hover:bg-gray-600"
               >

@@ -62,7 +62,6 @@ class WebSocketService {
     const sessionToken = authManager.getAnonymousSession()?.token;
     
     if (!authToken && !sessionToken) {
-      console.log('🔒 [WS] Pas de token, connexion différée');
       return;
     }
     
@@ -80,7 +79,6 @@ class WebSocketService {
     const authToken = authManager.getAuthToken();
     const sessionToken = authManager.getAnonymousSession()?.token;
     
-    console.log('🔌 [WS] Connexion au WebSocket...');
     
     // Déterminer l'URL du gateway
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -138,7 +136,6 @@ class WebSocketService {
     // Déconnexion
     this.socket.on('disconnect', (reason) => {
       this.isAuthenticated = false;
-      console.log('🔌 [WS] Déconnecté:', reason);
       
       // Reconnexion auto après 2s
       if (reason !== 'io client disconnect') {
@@ -160,13 +157,11 @@ class WebSocketService {
     
     // Messages supprimés
     this.socket.on(SERVER_EVENTS.MESSAGE_DELETED, (data: any) => {
-      console.log('🗑️ [WS] Message supprimé:', data.messageId);
       this.deleteListeners.forEach(listener => listener(data.messageId));
     });
     
     // Traductions
     this.socket.on(SERVER_EVENTS.MESSAGE_TRANSLATION, (data: any) => {
-      console.log('🌐 [WS] Traduction reçue:', data.messageId);
       this.translationListeners.forEach(listener => listener(data));
     });
     
@@ -223,7 +218,6 @@ class WebSocketService {
       return;
     }
     
-    console.log('🚪 [WS] Join conversation:', conversationId);
     this.socket.emit(CLIENT_EVENTS.CONVERSATION_JOIN, { conversationId });
   }
 
@@ -236,7 +230,6 @@ class WebSocketService {
       return;
     }
     
-    console.log('🚪 [WS] Leave conversation:', conversationId);
     this.socket.emit(CLIENT_EVENTS.CONVERSATION_LEAVE, { conversationId });
   }
 
@@ -252,7 +245,6 @@ class WebSocketService {
     }
     
     return new Promise((resolve) => {
-      console.log('📤 [WS] Envoi message:', { conversationId, language });
       
       const timeout = setTimeout(() => {
         console.error('❌ [WS] Timeout envoi message');
@@ -296,7 +288,6 @@ class WebSocketService {
     }
     
     return new Promise((resolve) => {
-      console.log('📤📎 [WS] Envoi message avec attachments:', attachmentIds.length);
       
       this.socket!.emit(CLIENT_EVENTS.MESSAGE_SEND_WITH_ATTACHMENTS, {
         conversationId,
@@ -364,7 +355,6 @@ class WebSocketService {
    * ÉTAPE 7: Reconnexion
    */
   public reconnect(): void {
-    console.log('🔄 [WS] Reconnexion...');
     
     if (this.socket) {
       this.socket.disconnect();

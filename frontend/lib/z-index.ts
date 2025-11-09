@@ -101,7 +101,6 @@ export const useZIndexDebug = () => {
   const logZIndexHierarchy = () => {
     console.group('🎯 Hiérarchie Z-Index Meeshy');
     Object.entries(Z_INDEX).forEach(([key, value]) => {
-      console.log(`${key}: ${value}`);
     });
     console.groupEnd();
   };
@@ -111,7 +110,6 @@ export const useZIndexDebug = () => {
     const zIndex = computedStyle.zIndex;
     const position = computedStyle.position;
     
-    console.log(`Element z-index: ${zIndex}, position: ${position}`, element);
     return { zIndex, position, element };
   };
 

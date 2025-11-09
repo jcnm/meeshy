@@ -48,7 +48,6 @@ export function ProtectedRoute({
 
     // Si nous avons un token mais pas d'utilisateur après vérification, nettoyer les données
     if (requireAuth && !user && token && !isAuthChecking) {
-      console.log('[PROTECTED_ROUTE] Token présent mais utilisateur absent, nettoyage des données');
       forceLogout?.();
       router.push(redirectTo);
       return;

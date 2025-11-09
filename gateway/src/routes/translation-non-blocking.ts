@@ -41,25 +41,15 @@ export async function translationRoutes(fastify: FastifyInstance, options: any) 
     throw new Error('MessagingService not provided to translation routes');
   }
 
-  console.log('🚀 [GATEWAY] Initialisation des routes de traduction NON-BLOQUANTES...');
 
   // ===== ROUTE PRINCIPALE NON-BLOQUANTE =====
   fastify.post<{ Body: TranslateRequest }>('/translate', async (request: FastifyRequest<{ Body: TranslateRequest }>, reply: FastifyReply) => {
     try {
       const validatedData = TranslateRequestSchema.parse(request.body);
       
-      console.log(`🌐 [GATEWAY] Nouvelle requête de traduction reçue (non-bloquante):`, {
-        text: validatedData.text?.substring(0, 50) + (validatedData.text?.length > 50 ? '...' : ''),
-        sourceLanguage: validatedData.source_language,
-        targetLanguage: validatedData.target_language,
-        modelType: validatedData.model_type || 'basic',
-        messageId: validatedData.message_id,
-        conversationId: validatedData.conversation_id
-      });
 
       // ===== CAS 1: RETRADUCTION D'UN MESSAGE EXISTANT =====
       if (validatedData.message_id) {
-        console.log(`🔄 [GATEWAY] Retraduction du message ${validatedData.message_id}`);
         
         // Récupérer le message depuis la base de données
         const existingMessage = await fastify.prisma.message.findUnique({
@@ -77,13 +67,6 @@ export async function translationRoutes(fastify: FastifyInstance, options: any) 
           });
         }
 
-        console.log(`📄 [GATEWAY] Message récupéré de la BDD:`, {
-          id: existingMessage.id,
-          content: existingMessage.content,
-          originalLanguage: existingMessage.originalLanguage,
-          conversationId: existingMessage.conversationId,
-          senderId: existingMessage.senderId
-        });
 
         // Préparer les données de traduction
         const messageData = {
@@ -95,7 +78,6 @@ export async function translationRoutes(fastify: FastifyInstance, options: any) 
           modelType: validatedData.model_type || 'basic'
         };
 
-        console.log(`📤 [GATEWAY] Transmission vers Translator (retraduction):`, messageData);
 
         // DÉCLENCHEMENT NON-BLOQUANT - pas d'await !
         translationService.handleNewMessage(messageData).catch((error: any) => {
@@ -114,7 +96,6 @@ export async function translationRoutes(fastify: FastifyInstance, options: any) 
 
       // ===== CAS 2: NOUVEAU MESSAGE =====
       else {
-        console.log(`✨ [GATEWAY] Nouveau message pour conversation ${validatedData.conversation_id}`);
         
         if (!validatedData.conversation_id) {
           return reply.status(400).send({
@@ -140,7 +121,6 @@ export async function translationRoutes(fastify: FastifyInstance, options: any) 
           }
           
           resolvedConversationId = conversation.id;
-          console.log(`🔍 [GATEWAY] Conversation ID résolu: ${validatedData.conversation_id} -> ${resolvedConversationId}`);
         }
 
         // Utiliser le MessagingService pour sauvegarder le message (même pipeline que WebSocket)
@@ -153,7 +133,6 @@ export async function translationRoutes(fastify: FastifyInstance, options: any) 
           anonymousDisplayName: undefined
         };
 
-        console.log(`📤 [GATEWAY] Utilisation du MessagingService pour nouveau message:`, messageRequest);
 
         // DÉCLENCHEMENT NON-BLOQUANT - pas d'await !
         messagingService.handleMessage(
@@ -227,7 +206,6 @@ export async function translationRoutes(fastify: FastifyInstance, options: any) 
     try {
       const { identifier } = request.params;
       
-      console.log(`🔍 [GATEWAY] Recherche conversation avec identifiant: ${identifier}`);
       
       // Chercher la conversation par identifiant
       const conversation = await fastify.prisma.conversation.findFirst({
@@ -255,7 +233,6 @@ export async function translationRoutes(fastify: FastifyInstance, options: any) 
         });
       }
       
-      console.log(`✅ [GATEWAY] Conversation trouvée: ${conversation.id}`);
       
       return reply.send({
         success: true,
@@ -281,5 +258,4 @@ export async function translationRoutes(fastify: FastifyInstance, options: any) 
     }
   });
 
-  console.log('✅ [GATEWAY] Routes de traduction NON-BLOQUANTES initialisées');
 }

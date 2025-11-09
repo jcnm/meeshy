@@ -543,7 +543,6 @@ export class ConversationsService {
     } catch (error) {
       // Vérifier si l'erreur est due à l'annulation
       if (error instanceof Error && error.name === 'AbortError') {
-        console.log('🚫 Requête getMessages annulée pour:', conversationId);
         // Retourner une erreur spéciale pour indiquer l'annulation
         throw new Error('REQUEST_CANCELLED');
       }
@@ -618,14 +617,12 @@ export class ConversationsService {
         params.limit = filters.limit.toString();
       }
 
-      console.log('[ConversationsService] Récupération des participants pour conversation:', conversationId, 'avec filtres:', filters);
       
       const response = await apiService.get<{ success: boolean; data: User[] }>(
         `/api/conversations/${conversationId}/participants`,
         params
       );
       
-      console.log('[ConversationsService] Réponse reçue:', response);
       return response.data.data || [];
     } catch (error) {
       console.error('[ConversationsService] Erreur lors de la récupération des participants:', error);
@@ -656,7 +653,6 @@ export class ConversationsService {
     }>;
   }> {
     try {
-      console.log('[ConversationsService] 📥 Récupération des participants pour:', conversationId);
 
       // Récupérer tous les participants via l'endpoint /api/conversations/:conversationId/participants
       const response = await apiService.get<{
@@ -669,14 +665,8 @@ export class ConversationsService {
         }>;
       }>(`/api/conversations/${conversationId}/participants`);
 
-      console.log('[ConversationsService] 📊 Réponse brute de l\'API:', {
-        success: response.data.success,
-        dataLength: response.data.data?.length || 0,
-        data: response.data.data
-      });
 
       const allParticipants = response.data.data || [];
-      console.log('[ConversationsService] 🔍 Tous les participants reçus:', allParticipants.length);
 
       // Séparer les participants authentifiés et anonymes
       const authenticatedParticipants: User[] = [];
@@ -694,13 +684,6 @@ export class ConversationsService {
       }> = [];
       
       allParticipants.forEach((participant, index) => {
-        console.log(`[ConversationsService] 👤 Participant ${index + 1}:`, {
-          id: participant.id,
-          username: participant.username,
-          displayName: participant.displayName,
-          isAnonymous: participant.isAnonymous,
-          role: participant.role
-        });
 
         if (participant.isAnonymous) {
           anonymousParticipants.push({
@@ -720,20 +703,6 @@ export class ConversationsService {
         }
       });
 
-      console.log('[ConversationsService] ✅ Résultat de la séparation:', {
-        authenticated: authenticatedParticipants.length,
-        anonymous: anonymousParticipants.length,
-        total: authenticatedParticipants.length + anonymousParticipants.length
-      });
-      console.log('[ConversationsService] 📝 Participants authentifiés:', authenticatedParticipants.map(p => ({
-        id: p.id,
-        username: p.username,
-        displayName: p.displayName
-      })));
-      console.log('[ConversationsService] 👻 Participants anonymes:', anonymousParticipants.map(p => ({
-        id: p.id,
-        username: p.username
-      })));
 
       return {
         authenticatedParticipants,

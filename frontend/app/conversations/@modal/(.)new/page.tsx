@@ -10,7 +10,6 @@ export default function NewConversationModal() {
   const router = useRouter();
 
   const handleConversationCreated = (conversationId: string) => {
-    console.log('Conversation créée avec succès');
     router.push(`/conversations/${conversationId}`);
   };
 

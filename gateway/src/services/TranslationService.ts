@@ -63,7 +63,6 @@ export class TranslationService extends EventEmitter {
   constructor(prisma: PrismaClient) {
     super(); // Appel au constructeur EventEmitter
     this.prisma = prisma;
-    console.log('[GATEWAY] 🚀 TranslationService initialisé avec architecture PUB/SUB');
   }
 
   /**
@@ -102,15 +101,12 @@ export class TranslationService extends EventEmitter {
     try {
       // ⚠️ IMPORTANT: Éviter la double initialisation qui créerait des listeners multiples
       if (this.isInitialized) {
-        console.log('[GATEWAY] ⚠️  TranslationService déjà initialisé, skip');
         return;
       }
       
-      console.log('[GATEWAY] 🔧 Initialisation TranslationService...');
       
       // Utiliser le singleton ZMQ
       this.zmqClient = await ZMQSingleton.getInstance();
-      console.log('[GATEWAY] ✅ ZMQ Client obtenu:', this.zmqClient ? 'OK' : 'NULL');
       
       // ⚠️ CORRECTION DOUBLONS: Retirer les anciens listeners AVANT d'en ajouter de nouveaux
       this.zmqClient.removeAllListeners('translationCompleted');
@@ -120,15 +116,10 @@ export class TranslationService extends EventEmitter {
       this.zmqClient.on('translationCompleted', this._handleTranslationCompleted.bind(this));
       this.zmqClient.on('translationError', this._handleTranslationError.bind(this));
       
-      console.log('[GATEWAY] 📡 Listeners enregistrés:', {
-        translationCompleted: this.zmqClient.listenerCount('translationCompleted'),
-        translationError: this.zmqClient.listenerCount('translationError')
-      });
       
       // Test de réception après initialisation
       setTimeout(async () => {
         try {
-          console.log('[GATEWAY] 🧪 Test de réception après initialisation...');
           await this.zmqClient.testReception();
         } catch (error) {
           console.error('[GATEWAY] ❌ Erreur test réception:', error);
@@ -136,7 +127,6 @@ export class TranslationService extends EventEmitter {
       }, 3000);
       
       this.isInitialized = true;
-      console.log('[GATEWAY] ✅ TranslationService initialisé avec succès');
     } catch (error) {
       console.error('[GATEWAY] ❌ Erreur initialisation TranslationService:', error);
       throw error;
@@ -152,14 +142,12 @@ export class TranslationService extends EventEmitter {
   async handleNewMessage(messageData: MessageData): Promise<{ messageId: string; status: string }> {
     try {
       const startTime = Date.now();
-      console.log(`📝 Traitement message pour conversation ${messageData.conversationId}`);
       
       let messageId: string;
       let isRetranslation = false;
       
       // Vérifier si c'est une retraduction (message avec ID existant)
       if (messageData.id) {
-        console.log(`🔄 Retraduction détectée pour le message ${messageData.id}`);
         messageId = messageData.id;
         isRetranslation = true;
         
@@ -172,19 +160,15 @@ export class TranslationService extends EventEmitter {
           throw new Error(`Message ${messageData.id} non trouvé en base de données`);
         }
         
-        console.log(`✅ Message existant trouvé: ${messageData.id}`);
       } else {
         // Nouveau message - sauvegarder en base
-        console.log(`📝 Nouveau message - sauvegarde en base`);
         const savedMessage = await this._saveMessageToDatabase(messageData);
         messageId = savedMessage.id;
         this.stats.messages_saved++;
-        console.log(`✅ Nouveau message sauvegardé: ${messageId}`);
       }
       
       // 2. LIBÉRER LE CLIENT IMMÉDIATEMENT
       const processingTime = Date.now() - startTime;
-      console.log(`⚡ [PERF] Message traité en ${processingTime}ms (sauvegarde seule)`);
       
       const response = {
         messageId: messageId,
@@ -193,24 +177,19 @@ export class TranslationService extends EventEmitter {
       };
       
       // 3. TRAITER LES TRADUCTIONS EN ASYNCHRONE (non-bloquant)
-      console.log(`🔄 [TranslationService] Déclenchement traitement asynchrone pour ${messageId}...`);
       setImmediate(async () => {
         try {
-          console.log(`🔄 [TranslationService] Début traitement asynchrone...`);
           if (isRetranslation) {
             // Pour une retraduction, on utilise les données du message existant
-            console.log(`🔄 [TranslationService] Traitement retraduction avec modelType: ${(messageData as any).modelType || 'auto'}...`);
             await this._processRetranslationAsync(messageId, messageData);
           } else {
             // Pour un nouveau message, on récupère les données complètes
-            console.log(`🔄 [TranslationService] Traitement nouveau message...`);
             const savedMessage = await this.prisma.message.findFirst({
               where: { id: messageId }
             });
             if (savedMessage) {
               // Passer la langue cible ET le modelType spécifiés par le client
               const requestedModelType = (messageData as any).modelType;
-              console.log(`🎨 [TranslationService] Transmission modelType: ${requestedModelType || 'auto'}`);
               await this._processTranslationsAsync(savedMessage, messageData.targetLanguage, requestedModelType);
             } else {
               console.error(`❌ [TranslationService] Message ${messageId} non trouvé en base`);
@@ -239,7 +218,6 @@ export class TranslationService extends EventEmitter {
       });
       
       if (!existingConversation) {
-        console.log(`📝 Création automatique de la conversation ${messageData.conversationId}`);
         
         // Générer un identifiant unique pour la conversation
         const conversationIdentifier = this.generateConversationIdentifier(`Conversation ${messageData.conversationId}`);
@@ -290,9 +268,6 @@ export class TranslationService extends EventEmitter {
   private async _processTranslationsAsync(message: any, targetLanguage?: string, modelType?: string) {
     try {
       const startTime = Date.now();
-      console.log(`🔄 Démarrage traitement asynchrone des traductions pour ${message.id}`);
-      console.log(`🔧 ZMQ Client disponible:`, this.zmqClient ? 'OUI' : 'NON');
-      console.log(`🎨 ModelType demandé:`, modelType || 'auto');
       
       if (!this.zmqClient) {
         console.error('[GATEWAY] ❌ ZMQ Client non disponible pour les traductions');
@@ -305,13 +280,11 @@ export class TranslationService extends EventEmitter {
       if (targetLanguage) {
         // Utiliser la langue cible spécifiée par le client
         targetLanguages = [targetLanguage];
-        console.log(`🎯 Langue cible spécifiée par le client: ${targetLanguage}`);
       } else {
         // Extraire les langues de la conversation (comportement par défaut)
         targetLanguages = await this._extractConversationLanguages(message.conversationId);
         
         if (targetLanguages.length === 0) {
-          console.log(`ℹ️ Aucune langue cible trouvée pour la conversation ${message.conversationId}`);
         }
       }
       
@@ -319,17 +292,14 @@ export class TranslationService extends EventEmitter {
       const filteredTargetLanguages = targetLanguages.filter(targetLang => {
         const sourceLang = message.originalLanguage;
         if (sourceLang && sourceLang !== 'auto' && sourceLang === targetLang) {
-          console.log(`🔄 [TranslationService] Langue identique filtrée: ${sourceLang} → ${targetLang}`);
           return false;
         }
         return true;
       });
 
-      console.log(`🌍 Langues cibles finales (après filtrage): ${filteredTargetLanguages.join(', ')}`);
 
       // Si aucune langue cible après filtrage, ne pas envoyer de requête
       if (filteredTargetLanguages.length === 0) {
-        console.log(`✅ [TranslationService] Aucune traduction nécessaire pour ${message.id} (langues identiques)`);
         return;
       }
       
@@ -337,7 +307,6 @@ export class TranslationService extends EventEmitter {
       // Priorité: 1) modelType passé en paramètre, 2) modelType du message, 3) auto-détection
       const finalModelType = modelType || (message as any).modelType || ((message.content?.length ?? 0) < 80 ? 'medium' : 'premium');
       
-      console.log(`🎨 [TranslationService] ModelType final: ${finalModelType} (demandé: ${modelType || 'auto'}, message: ${(message as any).modelType || 'N/A'}, auto: ${(message.content?.length ?? 0) < 80 ? 'medium' : 'premium'})`);
       
       // 3. ENVOYER LA REQUÊTE DE TRADUCTION VIA ZMQ
       const request: TranslationRequest = {
@@ -349,12 +318,10 @@ export class TranslationService extends EventEmitter {
         modelType: finalModelType
       };
       
-      console.log(`📤 Tentative d'envoi de requête ZMQ avec modelType: ${finalModelType}...`);
       const taskId = await this.zmqClient.sendTranslationRequest(request);
       this.stats.translation_requests_sent++;
       
       const processingTime = Date.now() - startTime;
-      console.log(`⚡ [PERF] Traductions préparées et envoyées en ${processingTime}ms (taskId: ${taskId}, ${filteredTargetLanguages.length} langues, model: ${finalModelType})`);
       
     } catch (error) {
       console.error(`❌ Erreur traitement asynchrone: ${error}`);
@@ -370,12 +337,6 @@ export class TranslationService extends EventEmitter {
    */
   private async _processRetranslationAsync(messageId: string, messageData: MessageData) {
     try {
-      console.log(`🔄 [TranslationService] Démarrage retraduction pour le message ${messageId}`);
-      console.log(`🔍 [TranslationService] Données de retraduction:`, {
-        messageId,
-        targetLanguage: messageData.targetLanguage,
-        modelType: (messageData as any).modelType
-      });
       
       // Récupérer le message existant depuis la base
       const existingMessage = await this.prisma.message.findFirst({
@@ -392,13 +353,11 @@ export class TranslationService extends EventEmitter {
       if (messageData.targetLanguage) {
         // Utiliser la langue cible spécifiée par le client
         targetLanguages = [messageData.targetLanguage];
-        console.log(`🎯 Langue cible spécifiée pour retraduction: ${messageData.targetLanguage}`);
       } else {
         // Extraire les langues de la conversation (comportement par défaut)
         targetLanguages = await this._extractConversationLanguages(existingMessage.conversationId);
         
         if (targetLanguages.length === 0) {
-          console.log(`ℹ️ Aucune langue cible trouvée pour la retraduction de ${messageId}`);
         }
       }
       
@@ -406,17 +365,14 @@ export class TranslationService extends EventEmitter {
       const filteredTargetLanguages = targetLanguages.filter(targetLang => {
         const sourceLang = existingMessage.originalLanguage;
         if (sourceLang && sourceLang !== 'auto' && sourceLang === targetLang) {
-          console.log(`🔄 [TranslationService] Langue identique filtrée pour retraduction: ${sourceLang} → ${targetLang}`);
           return false;
         }
         return true;
       });
       
-      console.log(`🌍 Langues cibles pour retraduction (après filtrage): ${filteredTargetLanguages.join(', ')}`);
       
       // Si aucune langue cible après filtrage, ne pas envoyer de requête
       if (filteredTargetLanguages.length === 0) {
-        console.log(`✅ [TranslationService] Aucune retraduction nécessaire pour ${messageId} (langues identiques)`);
         return;
       }
       
@@ -426,10 +382,6 @@ export class TranslationService extends EventEmitter {
       const autoModelType = (existingMessage.content?.length ?? 0) < 80 ? 'medium' : 'premium';
       const finalModelType = requestedModelType || autoModelType;
       
-      console.log(`🎨 [TranslationService] ModelType pour retraduction:`);
-      console.log(`   Demandé: ${requestedModelType || 'N/A'}`);
-      console.log(`   Auto: ${autoModelType}`);
-      console.log(`   Final: ${finalModelType}`);
       
       // 3. SUPPRIMER LES ANCIENNES TRADUCTIONS POUR LES LANGUES CIBLES
       // Cela permet de remplacer les traductions existantes par les nouvelles
@@ -442,7 +394,6 @@ export class TranslationService extends EventEmitter {
             }
           }
         });
-        console.log(`🗑️  [TranslationService] ${deleteResult.count} anciennes traductions supprimées pour retraduction`);
       }
       
       // 4. ENVOYER LA REQUÊTE DE RETRADUCTION VIA ZMQ
@@ -455,11 +406,9 @@ export class TranslationService extends EventEmitter {
         modelType: finalModelType
       };
       
-      console.log(`📤 [TranslationService] Envoi requête de retraduction avec modelType: ${finalModelType}`);
       const taskId = await this.zmqClient.sendTranslationRequest(request);
       this.stats.translation_requests_sent++;
       
-      console.log(`✅ [TranslationService] Requête de retraduction envoyée: ${taskId} (${filteredTargetLanguages.length} langues, model: ${finalModelType})`);
       
     } catch (error) {
       console.error(`❌ Erreur retraduction: ${error}`);
@@ -483,7 +432,6 @@ export class TranslationService extends EventEmitter {
       const cached = this.conversationLanguagesCache.get(conversationId);
       
       if (cached && (now - cached.timestamp) < this.LANGUAGES_CACHE_TTL) {
-        console.log(`⚡ [TranslationService] Langues récupérées depuis le cache pour ${conversationId}: ${cached.languages.join(', ')}`);
         return cached.languages;
       }
       
@@ -566,7 +514,6 @@ export class TranslationService extends EventEmitter {
       }
       
       const queryTime = Date.now() - startTime;
-      console.log(`🌍 [TranslationService] Langues extraites pour conversation ${conversationId}: ${allLanguages.join(', ')} (${allLanguages.length} langues uniques, ${queryTime}ms)`);
       
       return allLanguages;
       
@@ -605,7 +552,6 @@ export class TranslationService extends EventEmitter {
       
       // Vérifier si ce taskId a déjà été traité (évite les doublons accidentels)
       if (this.processedTasks.has(taskKey)) {
-        console.log(`🔄 [TranslationService] Task déjà traité, ignoré: ${taskKey}`);
         return;
       }
       
@@ -618,15 +564,6 @@ export class TranslationService extends EventEmitter {
         this.processedTasks.delete(firstKey);
       }
       
-      console.log(`📥 [TranslationService] Traduction reçue: ${data.result.messageId} -> ${data.targetLanguage} (taskId: ${data.taskId})`);
-      console.log(`🔧 [TranslationService] Informations techniques:`);
-      console.log(`   📋 Modèle: ${data.result.translatorModel || 'unknown'}`);
-      console.log(`   📋 Worker: ${data.result.workerId || 'unknown'}`);
-      console.log(`   📋 Pool: ${data.result.poolType || 'unknown'}`);
-      console.log(`   📋 Performance: ${data.result.translationTime || 0}ms`);
-      console.log(`   📋 Queue: ${data.result.queueTime || 0}ms`);
-      console.log(`   📋 Mémoire: ${data.result.memoryUsage || 0}MB`);
-      console.log(`   📋 CPU: ${data.result.cpuUsage || 0}%`);
       
       this.stats.translations_received++;
       
@@ -634,7 +571,6 @@ export class TranslationService extends EventEmitter {
       let translationId: string | null = null;
       try {
         translationId = await this._saveTranslationToDatabase(data.result, data.metadata);
-        console.log(`💾 [TranslationService] Traduction sauvegardée en base: ${data.result.messageId} -> ${data.targetLanguage} (ID: ${translationId})`);
       } catch (error) {
         console.error(`❌ [TranslationService] Erreur sauvegarde traduction: ${error}`);
         // Continuer même si la sauvegarde échoue
@@ -648,7 +584,6 @@ export class TranslationService extends EventEmitter {
       await this._incrementUserTranslationStats(data.result.messageId);
       
       // Émettre événement avec métadonnées et ID de traduction
-      console.log(`📡 [TranslationService] Émission événement translationReady pour ${data.result.messageId} -> ${data.targetLanguage} (ID: ${translationId})`);
       this.emit('translationReady', {
         taskId: data.taskId,
         result: data.result,
@@ -658,7 +593,6 @@ export class TranslationService extends EventEmitter {
       });
       
       const processingTime = Date.now() - startTime;
-      console.log(`⚡ [PERF] Traduction traitée et émise en ${processingTime}ms (${data.result.messageId} -> ${data.targetLanguage})`);
       
     } catch (error) {
       console.error(`❌ [TranslationService] Erreur traitement: ${error}`);
@@ -688,7 +622,6 @@ export class TranslationService extends EventEmitter {
   }
 
 
-
   /**
    * Incrémente le compteur de traductions pour l'utilisateur qui a envoyé le message
    */
@@ -715,7 +648,6 @@ export class TranslationService extends EventEmitter {
           }
         });
         
-        console.log(`📊 [TranslationService] Compteur de traductions incrémenté pour l'utilisateur ${message.senderId}`);
       }
     } catch (error) {
       console.error(`❌ [TranslationService] Erreur lors de l'incrémentation des stats: ${error}`);
@@ -736,7 +668,6 @@ export class TranslationService extends EventEmitter {
   private async _saveTranslationToDatabase(result: TranslationResult, metadata?: any): Promise<string> {
     try {
       const startTime = Date.now();
-      console.log(`💾 [TranslationService] Sauvegarde traduction: ${result.messageId} -> ${result.targetLanguage}`);
       
       // Créer la clé de cache unique
       const cacheKey = `${result.messageId}_${result.sourceLanguage}_${result.targetLanguage}`;
@@ -764,7 +695,6 @@ export class TranslationService extends EventEmitter {
             id: { in: idsToDelete }
           }
         });
-        console.log(`🧹 [TranslationService] ${idsToDelete.length} doublons supprimés`);
       }
 
       // OPTIMISATION: Utiliser upsert avec une clé unique composée
@@ -796,7 +726,6 @@ export class TranslationService extends EventEmitter {
       });
       
       const queryTime = Date.now() - startTime;
-      console.log(`✅ [TranslationService] Traduction sauvegardée: ${result.messageId} -> ${result.targetLanguage} (ID: ${translation.id}, Model: ${modelInfo}, ${queryTime}ms)`);
       
       return translation.id;
 
@@ -865,7 +794,6 @@ export class TranslationService extends EventEmitter {
   }
 
 
-
   async getTranslation(messageId: string, targetLanguage: string, sourceLanguage?: string): Promise<TranslationResult | null> {
     try {
       // Vérifier d'abord le cache mémoire
@@ -875,12 +803,10 @@ export class TranslationService extends EventEmitter {
       const cachedResult = this.memoryCache.get(cacheKey);
       
       if (cachedResult) {
-        console.log(`💾 Traduction trouvée en cache: ${messageId} -> ${targetLanguage}`);
         return cachedResult;
       }
       
       // Si pas en cache, chercher dans la base de données
-      console.log(`🔍 [TranslationService] Recherche traduction en base: ${messageId} -> ${targetLanguage}`);
       
       const dbTranslation = await this.prisma.messageTranslation.findFirst({
         where: {
@@ -905,11 +831,9 @@ export class TranslationService extends EventEmitter {
         // Mettre en cache pour les prochaines requêtes
         this._addToCache(cacheKey, result);
         
-        console.log(`✅ [TranslationService] Traduction trouvée en base: ${messageId} -> ${targetLanguage}`);
         return result;
       }
       
-      console.log(`📋 [TranslationService] Traduction non trouvée: ${messageId} -> ${targetLanguage}`);
       return null;
       
     } catch (error) {
@@ -928,7 +852,6 @@ export class TranslationService extends EventEmitter {
     modelType: string = 'basic'
   ): Promise<TranslationResult> {
     try {
-      console.log(`🌐 [REST] Traduction directe: '${text.substring(0, 50)}...' (${sourceLanguage} → ${targetLanguage})`);
       
       // Créer une requête de traduction
       const request: TranslationRequest = {
@@ -944,7 +867,6 @@ export class TranslationService extends EventEmitter {
       const taskId = await this.zmqClient.sendTranslationRequest(request);
       this.stats.translation_requests_sent++;
       
-      console.log(`📤 [REST] Requête envoyée, taskId: ${taskId}, attente de la réponse...`);
       
       // Attendre la réponse via un événement
       const response = await new Promise<TranslationResult>((resolve, reject) => {
@@ -958,7 +880,6 @@ export class TranslationService extends EventEmitter {
             this.zmqClient.removeListener('translationCompleted', handleResponse);
             this.zmqClient.removeListener('translationError', handleError);
             
-            console.log(`📥 [REST] Réponse reçue:`, data);
             
             resolve(data.result);
           }
@@ -1019,11 +940,9 @@ export class TranslationService extends EventEmitter {
   async close(): Promise<void> {
     try {
       await this.zmqClient.close();
-      console.log('[GATEWAY] ✅ TranslationService fermé');
     } catch (error) {
       console.error(`❌ Erreur fermeture TranslationService: ${error}`);
     }
   }
 }
-
 

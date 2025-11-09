@@ -60,7 +60,6 @@ describe('Status System - Performance & Load Tests', () => {
 
       try {
         // Create 100 test users
-        console.log(`Creating ${userCount} test users...`);
 
         for (let i = 0; i < userCount; i++) {
           const user = await prisma.user.create({
@@ -75,10 +74,8 @@ describe('Status System - Performance & Load Tests', () => {
           users.push(user);
         }
 
-        console.log(`Users created in ${Date.now() - startTime}ms`);
 
         // Connect all users simultaneously
-        console.log(`Connecting ${userCount} users...`);
         const connectionStart = Date.now();
 
         const connectionPromises = users.map((user) => {
@@ -103,14 +100,12 @@ describe('Status System - Performance & Load Tests', () => {
         await Promise.all(connectionPromises);
 
         const connectionTime = Date.now() - connectionStart;
-        console.log(`All users connected in ${connectionTime}ms`);
 
         // Should connect within 10 seconds
         expect(connectionTime).toBeLessThan(10000);
 
         // Average time per connection
         const avgConnectionTime = connectionTime / userCount;
-        console.log(`Average connection time: ${avgConnectionTime.toFixed(2)}ms per user`);
 
         // Should be less than 100ms per user
         expect(avgConnectionTime).toBeLessThan(100);
@@ -130,7 +125,6 @@ describe('Status System - Performance & Load Tests', () => {
 
       } finally {
         // Cleanup
-        console.log('Cleaning up...');
 
         clients.forEach(client => client.disconnect());
         await sleep(1000);
@@ -229,7 +223,6 @@ describe('Status System - Performance & Load Tests', () => {
         await sleep(3000);
 
         const broadcastTime = Date.now() - broadcastStart;
-        console.log(`Broadcast to ${broadcastsReceived.size}/${observerCount} users in ${broadcastTime}ms`);
 
         // Should reach at least 90% of users
         expect(broadcastsReceived.size).toBeGreaterThanOrEqual(observerCount * 0.9);
@@ -316,8 +309,6 @@ describe('Status System - Performance & Load Tests', () => {
         // The number of actual DB updates should be << requestCount
         // Expected: ~1-2 updates (throttled to 1 per minute)
 
-        console.log(`Initial lastActiveAt: ${initialUser!.lastActiveAt}`);
-        console.log(`Final lastActiveAt: ${finalUser!.lastActiveAt}`);
 
         // In production, verify throttling prevents DB overload
         // This is more of an architectural test
@@ -334,7 +325,6 @@ describe('Status System - Performance & Load Tests', () => {
       const users: any[] = [];
 
       try {
-        console.log(`Creating ${userCount} users for query test...`);
 
         // Create users in batches
         const batchSize = 100;
@@ -361,7 +351,6 @@ describe('Status System - Performance & Load Tests', () => {
           users.push(...createdUsers);
         }
 
-        console.log(`Users created. Testing query performance...`);
 
         // Test: Query all users' online status
         const queryStart = Date.now();
@@ -379,15 +368,12 @@ describe('Status System - Performance & Load Tests', () => {
         });
 
         const queryTime = Date.now() - queryStart;
-        console.log(`Queried ${userCount} users in ${queryTime}ms`);
 
         // Should complete within 1 second
         expect(queryTime).toBeLessThan(1000);
 
-        console.log(`Found ${onlineUsers.length} online users`);
 
       } finally {
-        console.log('Cleaning up query test users...');
         await prisma.user.deleteMany({
           where: {
             id: { in: users.map(u => u.id) }
@@ -447,7 +433,6 @@ describe('Status System - Performance & Load Tests', () => {
         const finalMemory = process.memoryUsage().heapUsed;
         const memoryIncrease = (finalMemory - initialMemory) / 1024 / 1024;
 
-        console.log(`Memory increase after ${cycles} cycles: ${memoryIncrease.toFixed(2)} MB`);
 
         // Should not increase by more than 50MB
         expect(memoryIncrease).toBeLessThan(50);

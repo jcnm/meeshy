@@ -91,7 +91,6 @@ export function ConversationLinksSection({ conversationId }: ConversationLinksSe
       setIsLoading(true);
       const token = authManager.getAuthToken();
       if (!token) {
-        console.log('[ConversationLinksSection] Aucun token d\'authentification trouvé, impossible de charger les liens');
         setLinks([]);
         return;
       }
@@ -111,10 +110,8 @@ export function ConversationLinksSection({ conversationId }: ConversationLinksSe
           setLinks([]);
         }
       } else if (response.status === 401) {
-        console.log('[ConversationLinksSection] Token d\'authentification invalide, impossible de charger les liens');
         setLinks([]);
       } else if (response.status === 404) {
-        console.log('[ConversationLinksSection] Aucun lien trouvé pour cette conversation');
         setLinks([]);
       } else {
         const errorData = await response.json().catch(() => ({}));
@@ -134,9 +131,7 @@ export function ConversationLinksSection({ conversationId }: ConversationLinksSe
     const result = await copyToClipboard(linkUrl);
     
     if (result.success) {
-      console.log('Lien copié dans le presse-papiers');
     } else {
-      console.log(result.message);
     }
   };
 

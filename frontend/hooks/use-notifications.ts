@@ -54,17 +54,14 @@ export const useNotifications = (): UseNotificationsReturn => {
     if (isAuthenticated && user) {
       const token = authManager.getAuthToken();
       if (token) {
-        console.log('Initialisation du service de notifications pour:', user.username);
         
         notificationService.initialize({
           token,
           userId: user.id,
           onConnect: () => {
-            console.log('Service de notifications connecté');
             setIsConnected(true);
           },
           onDisconnect: () => {
-            console.log('Service de notifications déconnecté');
             setIsConnected(false);
           },
           onError: (error) => {
@@ -72,12 +69,10 @@ export const useNotifications = (): UseNotificationsReturn => {
             setIsConnected(false);
           },
           onNotificationReceived: (notification) => {
-            console.log('Nouvelle notification reçue:', notification);
             updateNotifications();
             showToast(notification);
           },
           onCountsUpdated: (newCounts) => {
-            console.log('Compteurs de notifications mis à jour:', newCounts);
             setCounts(newCounts);
           }
         });

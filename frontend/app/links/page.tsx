@@ -212,7 +212,6 @@ export default function LinksPage() {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('[Links Page] Tracking links chargés:', data);
         if (append) {
           setTrackingLinks(prev => [...prev, ...(data.data?.trackingLinks || [])]);
         } else {
@@ -718,7 +717,6 @@ export default function LinksPage() {
           /* Tracking Links Content */
           <div className="space-y-6">
             {(() => {
-              console.log('[Links Page] Render tracking links:', { isLoading, trackingLinksCount: trackingLinks.length });
               return null;
             })()}
             {isLoading ? (

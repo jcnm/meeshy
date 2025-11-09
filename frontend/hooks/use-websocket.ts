@@ -46,11 +46,9 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
   useEffect(() => {
     if (!conversationId) return;
     
-    console.log('🚪 [HOOK] Join conversation:', conversationId);
     webSocketService.joinConversation(conversationId);
     
     return () => {
-      console.log('🚪 [HOOK] Leave conversation:', conversationId);
       webSocketService.leaveConversation(conversationId);
     };
   }, [conversationId]);

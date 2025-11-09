@@ -319,15 +319,6 @@ export async function adminRoutes(fastify: FastifyInstance) {
       const limitNum = parseInt(limit, 10);
       const offset = (pageNum - 1) * limitNum;
 
-      console.log('[Admin Users API] Query params reçus:', {
-        rawQuery: request.query,
-        page: pageNum,
-        limit: limitNum,
-        offset,
-        search,
-        role,
-        status
-      });
 
       // Construire les filtres
       const where: any = {};
@@ -399,12 +390,6 @@ export async function adminRoutes(fastify: FastifyInstance) {
         fastify.prisma.user.count({ where })
       ]);
 
-      console.log('[Admin Users API] Résultats:', {
-        usersCount: users.length,
-        totalCount,
-        firstUserId: users[0]?.id,
-        lastUserId: users[users.length - 1]?.id
-      });
 
       return reply.send({
         success: true,

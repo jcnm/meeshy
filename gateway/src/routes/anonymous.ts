@@ -96,7 +96,6 @@ export async function anonymousRoutes(fastify: FastifyInstance) {
       const body = joinAnonymousSchema.parse(request.body);
       const clientIP = request.ip || (request.headers['x-forwarded-for'] as string) || '127.0.0.1';
 
-      console.log(`🔗 Tentative de rejoindre anonymement le lien: ${linkId}`);
 
       // 1. Vérifier que le lien existe et est valide
       const shareLink = await fastify.prisma.conversationShareLink.findUnique({
@@ -336,7 +335,6 @@ export async function anonymousRoutes(fastify: FastifyInstance) {
         }
       });
 
-      console.log(`✅ Participant anonyme créé: ${anonymousParticipant.username} (${anonymousParticipant.id})`);
 
       return reply.status(201).send({
         success: true,

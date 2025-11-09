@@ -40,13 +40,8 @@ export function useManualStatusRefresh(conversationId: string | null) {
 
     setIsRefreshing(true);
     try {
-      console.log('[ManualStatusRefresh] Fetching participants manually...');
       const participants = await conversationsService.getParticipants(conversationId);
       setParticipants(participants);
-      console.log('[ManualStatusRefresh] Participants refreshed manually:', {
-        count: participants.length,
-        timestamp: new Date().toISOString()
-      });
     } catch (error) {
       console.error('[ManualStatusRefresh] Error refreshing participants:', error);
       throw error; // Laisser l'appelant gérer l'erreur

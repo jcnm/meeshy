@@ -131,14 +131,11 @@ export default async function TrackingLinkPage({ params }: TrackingLinkPageProps
     ipAddress: ip,
   };
 
-  console.log(`[TrackingLink] Recording click for token: ${token}`);
-  console.log(`[TrackingLink] Click data:`, clickData);
 
   // Enregistrer le clic et récupérer l'URL originale
   const originalUrl = await recordClickAndGetUrl(token, clickData);
 
   if (originalUrl) {
-    console.log(`[TrackingLink] Redirecting to: ${originalUrl}`);
     redirect(originalUrl);
   } else {
     console.error(`[TrackingLink] Failed to get original URL for token: ${token}`);

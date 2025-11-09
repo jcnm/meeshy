@@ -310,7 +310,6 @@ class AdvancedTranslationService extends EventEmitter {
     batch.status = 'processing';
     batch.processedAt = startTime;
 
-    console.log(`🔄 Traitement batch ${batch.id}: ${batch.requests.length} requêtes`);
 
     // Grouper les requêtes par langue source pour optimiser
     const groupedRequests = new Map<string, BatchTranslationRequest[]>();
@@ -356,7 +355,6 @@ class AdvancedTranslationService extends EventEmitter {
     requests: BatchTranslationRequest[],
     batch: TranslationBatch
   ): Promise<void> {
-    console.log(`🌐 Traitement groupe ${sourceLanguage}: ${requests.length} requêtes`);
 
     for (const request of requests) {
       try {
@@ -402,7 +400,6 @@ class AdvancedTranslationService extends EventEmitter {
    * Gérer les réponses de traduction
    */
   private handleTranslationResponse(messageId: string, translations: TranslationData[]) {
-    console.log(`📥 Réponse traduction reçue: ${messageId}, ${translations.length} traductions`);
 
     // Mettre en cache les résultats
     translations.forEach(translation => {
@@ -474,7 +471,6 @@ class AdvancedTranslationService extends EventEmitter {
    */
   clearCache() {
     this.translationCache.clear();
-    console.log('🗑️ Cache de traduction vidé');
   }
 
   /**

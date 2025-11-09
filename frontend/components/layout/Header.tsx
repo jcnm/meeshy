@@ -62,7 +62,6 @@ export function Header({
   const setInterfaceLanguage = useLanguageStore(state => state.setInterfaceLanguage);
 
   const handleLanguageChange = (languageCode: string) => {
-    console.log('🔄 [Header] Changing language to:', languageCode);
     setInterfaceLanguage(languageCode);
     // La langue de l'interface change automatiquement sans reload
   };

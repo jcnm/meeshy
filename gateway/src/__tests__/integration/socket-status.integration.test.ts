@@ -43,7 +43,6 @@ describe('Socket.IO Status Integration', () => {
       httpServer.listen(0, () => {
         const address = httpServer.address() as AddressInfo;
         serverPort = address.port;
-        console.log(`Test Socket.IO server listening on port ${serverPort}`);
         resolve();
       });
     });

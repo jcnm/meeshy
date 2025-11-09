@@ -143,7 +143,6 @@ export async function translateMessage(
   const cacheKey = getCacheKey(text, sourceLang, targetLang);
   const cached = translationCache.get(cacheKey);
   if (cached) {
-    console.log('✅ Traduction trouvée dans le cache');
     return cached;
   }
 
@@ -161,7 +160,6 @@ export async function translateMessage(
     // Mettre en cache le résultat
     if (translatedText && translatedText !== text) {
       translationCache.set(cacheKey, translatedText);
-      console.log(`✅ Traduction mise en cache: "${text}" → "${translatedText}"`);
     }
     
     return translatedText;
@@ -170,7 +168,6 @@ export async function translateMessage(
     
     // En cas d'erreur, essayer avec un modèle de base
     try {
-      console.log('🔄 Tentative de traduction avec un modèle de base...');
       
       const result = await translationService.translateText({
         text,
@@ -184,7 +181,6 @@ export async function translateMessage(
       // Mettre en cache le résultat
       if (translatedText && translatedText !== text) {
         translationCache.set(cacheKey, translatedText);
-        console.log(`✅ Traduction de secours réussie: "${translatedText}"`);
       }
       
       return translatedText;

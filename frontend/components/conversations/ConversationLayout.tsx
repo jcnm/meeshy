@@ -73,36 +73,18 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
   // Log quand localSelectedConversationId change
   useEffect(() => {
-    console.log(`[ConversationLayout-${instanceId}] 🔄 localSelectedConversationId CHANGED:`, localSelectedConversationId);
   }, [localSelectedConversationId, instanceId]);
 
   // Utiliser l'ID depuis l'URL ou l'état local
   const effectiveSelectedId = selectedConversationId || localSelectedConversationId;
   
   const selectedConversation = useMemo(() => {
-    console.log(`[ConversationLayout-${instanceId}] 🔍 useMemo selectedConversation RECALCULE:`, {
-      effectiveSelectedId,
-      conversationsCount: conversations.length,
-      conversationsFirstId: conversations[0]?.id,
-      conversationsFirstTitle: conversations[0]?.title
-    });
 
     if (!effectiveSelectedId || !conversations.length) {
-      console.log(`[ConversationLayout-${instanceId}] ❌ Pas d'ID effectif ou pas de conversations`);
       return null;
     }
 
     const found = conversations.find(c => c.id === effectiveSelectedId);
-    console.log(`[ConversationLayout-${instanceId}] 🎯 Résultat find:`, {
-      effectiveSelectedId,
-      found: !!found,
-      foundId: found?.id,
-      foundTitle: found?.title,
-      foundIdentifier: found?.identifier,
-      allIds: conversations.map(c => c.id),
-      searchedId: effectiveSelectedId,
-      match: found ? 'TROUVE' : 'PAS TROUVE'
-    });
 
     return found || null;
   }, [effectiveSelectedId, conversations, instanceId]);
@@ -194,13 +176,11 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
     // CRITIQUE: Ne mettre à jour QUE si les valeurs ont vraiment changé
     if (idsString !== prevAttachmentIdsRef.current) {
-      console.log('🔄 [ConversationLayout] Mise à jour attachmentIds:', ids);
       setAttachmentIds(ids);
       prevAttachmentIdsRef.current = idsString;
     }
 
     if (mimeTypesString !== prevMimeTypesRef.current) {
-      console.log('🔄 [ConversationLayout] Mise à jour mimeTypes:', mimeTypes);
       setAttachmentMimeTypes(mimeTypes);
       prevMimeTypesRef.current = mimeTypesString;
     }
@@ -303,31 +283,19 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
     // Callback pour gérer les événements de frappe
   const handleUserTyping = useCallback((userId: string, username: string, isTyping: boolean, typingConversationId: string) => {
-    console.log('[ConversationLayout] 👤 Événement de frappe REÇU:', {
-      userId,
-      username,
-      isTyping,
-      typingConversationId,
-      selectedConversationId: selectedConversationIdRef.current,
-      currentUserId: user?.id,
-      willIgnore: !user || userId === user.id || typingConversationId !== selectedConversationIdRef.current
-    });
 
     if (!user || userId === user.id) return; // Ignorer nos propres événements
 
     // FIX: Filtrer les événements typing par conversation
     if (typingConversationId !== selectedConversationIdRef.current) {
-      console.log('[ConversationLayout] 🚫 Événement de frappe ignoré (autre conversation)');
       return;
     }
 
-    console.log('[ConversationLayout] ✅ Traitement événement de frappe (pas ignoré)');
 
     setTypingUsers(prev => {
       if (isTyping) {
         // Ajouter l'utilisateur s'il n'est pas déjà dans la liste
         if (prev.some(u => u.id === userId)) {
-          console.log('[ConversationLayout] 📝 Utilisateur déjà dans la liste, pas d\'ajout');
           return prev;
         }
 
@@ -351,11 +319,9 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
           displayName = `Utilisateur ${userId.slice(-6)}`;
         }
 
-        console.log('[ConversationLayout] ➕ Ajout utilisateur tapant:', { userId, displayName });
         return [...prev, { id: userId, displayName }];
       } else {
         // Retirer l'utilisateur de la liste
-        console.log('[ConversationLayout] ➖ Retrait utilisateur tapant:', { userId });
         return prev.filter(u => u.id !== userId);
       }
     });
@@ -373,7 +339,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     currentUser: user || undefined,
     onUserTyping: handleUserTyping,
     onMessageEdited: useCallback((message: any) => {
-      console.log('✏️ [ConversationLayout] Message édité reçu via Socket.IO:', message.id);
       // Utiliser la ref au lieu de selectedConversation?.id
       if (message.conversationId === selectedConversationIdRef.current) {
         updateMessage(message.id, message);
@@ -381,7 +346,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       }
     }, [updateMessage, tCommon]),
     onMessageDeleted: useCallback((messageId: string) => {
-      console.log('🗑️ [ConversationLayout] Message supprimé reçu via Socket.IO:', messageId);
       removeMessage(messageId);
       toast.info(tCommon('messages.messageDeletedByOther'));
     }, [removeMessage, tCommon]),
@@ -399,15 +363,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         message.conversationId === normalizedConvId &&
         message.conversationId === currentConvId;
 
-      console.log(`[ConversationLayout-${instanceId}] 🔥 NOUVEAU MESSAGE VIA WEBSOCKET:`, {
-        messageId: message.id,
-        content: message.content?.substring(0, 50),
-        senderId: message.senderId,
-        messageConvId: message.conversationId,
-        selectedConversationId: currentConvId,
-        normalizedConvId: normalizedConvId,
-        shouldAdd: isForCurrentConversation
-      });
 
       // Mettre à jour la liste des conversations pour refléter le nouveau message
       // CORRECTION: Faire AVANT le filtrage pour que TOUS les messages mettent à jour la liste
@@ -416,12 +371,10 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
         if (conversationIndex === -1) {
           // Conversation non trouvée dans la liste
-          console.log(`[ConversationLayout-${instanceId}] ⚠️ Conversation ${message.conversationId} non trouvée dans la liste - refresh nécessaire`);
 
           // Déclencher un refresh asynchrone de la liste pour inclure cette conversation
           // Utiliser setTimeout pour ne pas bloquer le traitement du message
           setTimeout(() => {
-            console.log(`[ConversationLayout-${instanceId}] 🔄 Rafraîchissement de la liste des conversations...`);
             refreshConversations();
           }, 100);
 
@@ -442,12 +395,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         // Ajouter la conversation mise à jour en première position
         const newConversations = [updatedConversation, ...updatedConversations];
 
-        console.log(`[ConversationLayout-${instanceId}] 📋 Liste des conversations mise à jour:`, {
-          conversationId: message.conversationId,
-          previousPosition: conversationIndex,
-          newPosition: 0,
-          lastMessagePreview: message.content?.substring(0, 30)
-        });
 
         return newConversations;
       });
@@ -455,24 +402,13 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       // Ajouter le message à la vue seulement si c'est pour la conversation actuelle
       if (isForCurrentConversation) {
         const wasAdded = addMessage(message);
-        console.log(`[ConversationLayout-${instanceId}] Message ajouté à la vue:`, wasAdded);
       } else {
-        console.log(`[ConversationLayout-${instanceId}] Message ignoré pour la vue (autre conversation)`);
       }
     }, [addMessage, instanceId, setConversations, refreshConversations]),
     onTranslation: useCallback((messageId: string, translations: any[]) => {
-      console.log('🌐 [ConversationLayoutV2] Traductions reçues pour message:', messageId, translations);
       
       // Mettre à jour le message avec les nouvelles traductions en utilisant une fonction de transformation
       updateMessage(messageId, (prevMessage) => {
-        console.log('🔄 [ConversationLayoutV2] Mise à jour des traductions pour message:', messageId, {
-          currentTranslations: prevMessage.translations?.length || 0,
-          newTranslations: translations.length,
-          translationsReceived: translations.map(t => ({ 
-            lang: t.targetLanguage || t.language, 
-            content: (t.translatedContent || t.content)?.substring(0, 30) + '...' 
-          }))
-        });
 
         // Fusionner les nouvelles traductions avec les existantes
         const existingTranslations = prevMessage.translations || [];
@@ -507,21 +443,13 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
           if (existingIndex >= 0) {
             // Remplacer la traduction existante
-            console.log('🔄 [ConversationLayoutV2] Remplacement traduction existante:', targetLang);
             updatedTranslations[existingIndex] = translationObject;
           } else {
             // Ajouter la nouvelle traduction
-            console.log('➕ [ConversationLayoutV2] Ajout nouvelle traduction:', targetLang);
             updatedTranslations.push(translationObject);
           }
         });
 
-        console.log('✅ [ConversationLayoutV2] Traductions mises à jour:', {
-          messageId,
-          before: existingTranslations.length,
-          after: updatedTranslations.length,
-          languages: updatedTranslations.map(t => t.targetLanguage)
-        });
 
         return {
           ...prevMessage,
@@ -537,7 +465,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
           .filter((lang): lang is string => Boolean(lang) && !prev.includes(lang));
 
         if (newLanguages.length > 0) {
-          console.log('📝 [ConversationLayoutV2] Ajout nouvelles langues utilisées:', newLanguages);
           return [...prev, ...newLanguages];
         }
         return prev;
@@ -559,12 +486,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       const isMobileView = window.innerWidth < 768;
       setIsMobile(isMobileView);
       
-      console.log(`[ConversationLayout-${instanceId}] Détection mobile:`, {
-        isMobileView,
-        hasSelectedConversation: !!selectedConversation,
-        selectedConversationId: selectedConversation?.id,
-        urlId: selectedConversationId
-      });
     };
 
     checkMobile();
@@ -577,11 +498,9 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     if (isMobile) {
       if (selectedConversation?.id) {
         // Il y a une conversation sélectionnée → masquer la liste
-        console.log(`[ConversationLayout-${instanceId}] Mobile: conversation sélectionnée, masquer liste`);
         setShowConversationList(false);
       } else {
         // Pas de conversation sélectionnée → afficher la liste
-        console.log(`[ConversationLayout-${instanceId}] Mobile: pas de conversation, afficher liste`);
         setShowConversationList(true);
       }
     } else {
@@ -593,7 +512,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   // Si on arrive avec une URL /conversations/:id, initialiser la sélection locale
   useEffect(() => {
     if (selectedConversationId && !localSelectedConversationId) {
-      console.log(`[ConversationLayout-${instanceId}] URL avec ID détecté, initialisation sélection locale:`, selectedConversationId);
       setLocalSelectedConversationId(selectedConversationId);
     }
   }, [selectedConversationId, instanceId]);
@@ -606,10 +524,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     if (currentConversationId !== previousComposerConversationIdRef.current) {
       const previousId = previousComposerConversationIdRef.current;
 
-      console.log(`[ConversationLayout-${instanceId}] 🔄 Changement de conversation (composer):`, {
-        previous: previousId,
-        current: currentConversationId
-      });
 
       // Sauvegarder l'état du composer de la conversation précédente
       if (previousId) {
@@ -622,11 +536,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         };
 
         composerStatesRef.current.set(previousId, composerState);
-        console.log(`[ConversationLayout-${instanceId}] 💾 Sauvegarde composer state pour ${previousId}:`, {
-          messageLength: composerState.message.length,
-          attachmentsCount: composerState.attachmentIds.length,
-          hasReply: !!composerState.replyTo
-        });
       }
 
       // Restaurer l'état du composer de la nouvelle conversation
@@ -634,11 +543,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         const savedState = composerStatesRef.current.get(currentConversationId);
 
         if (savedState) {
-          console.log(`[ConversationLayout-${instanceId}] 📥 Restauration composer state pour ${currentConversationId}:`, {
-            messageLength: savedState.message.length,
-            attachmentsCount: savedState.attachmentIds.length,
-            hasReply: !!savedState.replyTo
-          });
 
           setNewMessage(savedState.message);
           setAttachmentIds(savedState.attachmentIds);
@@ -651,7 +555,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
           }
         } else {
           // Pas de brouillon sauvegardé, réinitialiser
-          console.log(`[ConversationLayout-${instanceId}] 🆕 Nouvelle conversation, réinitialisation composer`);
           setNewMessage('');
           setAttachmentIds([]);
           setAttachmentMimeTypes([]);
@@ -668,20 +571,13 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   // Le chargement des conversations est maintenant géré par le hook useConversationsPagination
   // Cette fonction n'est plus nécessaire mais gardée pour compatibilité
   const loadConversations = useCallback(async () => {
-    console.log('[ConversationLayout] Rafraîchissement des conversations via hook de pagination');
     refreshConversations();
   }, [refreshConversations]);
 
   // Chargement des participants
   const loadParticipants = useCallback(async (conversationId: string) => {
     try {
-      console.log(`[ConversationLayout] 📥 Chargement des participants pour: ${conversationId}`);
       const participantsData = await conversationsService.getAllParticipants(conversationId);
-      console.log(`[ConversationLayout] 📊 Participants reçus:`, {
-        authenticated: participantsData.authenticatedParticipants.length,
-        anonymous: participantsData.anonymousParticipants.length,
-        total: participantsData.authenticatedParticipants.length + participantsData.anonymousParticipants.length
-      });
 
       const allParticipants: ThreadMember[] = [
         ...participantsData.authenticatedParticipants.map(user => ({
@@ -742,13 +638,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       
       const uniqueParticipants = Array.from(participantsMap.values());
 
-      console.log(`[ConversationLayout] ✅ Participants uniques après déduplication: ${uniqueParticipants.length}`);
-      console.log(`[ConversationLayout] 👥 Liste des participants:`, uniqueParticipants.map(p => ({
-        id: p.userId,
-        name: p.user.displayName || p.user.username,
-        role: p.role,
-        isAnonymous: p.isAnonymous
-      })));
 
       setParticipants(uniqueParticipants);
     } catch (error) {
@@ -760,18 +649,14 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   // Fonction pour charger une conversation directement
   const loadDirectConversation = useCallback(async (conversationId: string) => {
     try {
-      console.log(`[ConversationLayout-${instanceId}] Chargement direct de la conversation:`, conversationId);
       const directConversation = await conversationsService.getConversation(conversationId);
-      console.log(`[ConversationLayout-${instanceId}] Conversation chargée directement:`, directConversation);
       
       // Ajouter à la liste - useMemo se chargera de la sélectionner automatiquement
       setConversations(prev => {
         const exists = prev.find(c => c.id === directConversation.id);
         if (exists) {
-          console.log(`[ConversationLayout-${instanceId}] Conversation déjà dans la liste`);
           return prev;
         }
-        console.log(`[ConversationLayout-${instanceId}] Ajout conversation à la liste`);
         return [directConversation, ...prev];
       });
     } catch (error) {
@@ -784,7 +669,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     if (effectiveSelectedId && !isLoading && conversations.length > 0) {
       const found = conversations.find(c => c.id === effectiveSelectedId);
       if (!found) {
-        console.log(`[ConversationLayout-${instanceId}] Conversation ${effectiveSelectedId} non trouvée, chargement direct`);
         loadDirectConversation(effectiveSelectedId);
       }
     }
@@ -807,33 +691,19 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
   // Sélection d'une conversation (dynamique ou par URL)
   const handleSelectConversation = useCallback((conversation: Conversation) => {
-    console.log(`[ConversationLayout-${instanceId}] 🎯 SELECTION CONVERSATION:`, {
-      conversationClicked_id: conversation.id,
-      conversationClicked_title: conversation.title,
-      conversationClicked_type: conversation.type,
-      conversationClicked_identifier: conversation.identifier,
-      currentEffectiveId: effectiveSelectedId,
-      currentSelectedConversation_id: selectedConversation?.id,
-      currentSelectedConversation_title: selectedConversation?.title,
-      mode: selectedConversationId ? 'url' : 'dynamic',
-      allConversationsIds: conversations.map(c => ({ id: c.id, title: c.title }))
-    });
 
     if (effectiveSelectedId === conversation.id) {
-      console.log(`[ConversationLayout-${instanceId}] ⚠️ Conversation déjà sélectionnée, ignore`);
       return;
     }
 
     // Mode dynamique : mise à jour de l'état local SANS changer l'URL
     if (!selectedConversationId) {
-      console.log(`[ConversationLayout-${instanceId}] 📝 Mode dynamique: setLocalSelectedConversationId à:`, conversation.id);
       setLocalSelectedConversationId(conversation.id);
 
       // Mise à jour de l'URL dans l'historique sans recharger
       window.history.replaceState(null, '', '/conversations');
     } else {
       // Mode URL : navigation classique (pour compatibilité)
-      console.log(`[ConversationLayout-${instanceId}] 🔗 Mode URL: navigation vers:`, `/conversations/${conversation.id}`);
       router.push(`/conversations/${conversation.id}`);
     }
 
@@ -844,14 +714,12 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   const handleBackToList = useCallback(() => {
     // Si on est en mode dynamique, juste effacer la sélection locale
     if (!selectedConversationId && localSelectedConversationId) {
-      console.log(`[ConversationLayout-${instanceId}] Mode dynamique: effacer sélection locale`);
       setLocalSelectedConversationId(null);
       if (isMobile) {
         setShowConversationList(true);
       }
     } else if (selectedConversationId) {
       // Mode URL : navigation vers la liste sans ID
-      console.log(`[ConversationLayout-${instanceId}] Mode URL: retour à /conversations`);
       router.push('/conversations');
     } else if (isMobile) {
       // Mobile sans sélection : afficher la liste
@@ -861,7 +729,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
   // Afficher les détails d'une conversation (depuis le menu)
   const handleShowDetails = useCallback((conversation: Conversation) => {
-    console.log(`[ConversationLayout-${instanceId}] Affichage détails conversation:`, conversation.id);
 
     // Sélectionner la conversation d'abord
     if (effectiveSelectedId !== conversation.id) {
@@ -874,7 +741,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
   // Start video call
   const handleStartCall = useCallback(async () => {
-    console.log('🎥🎥🎥 [ConversationLayout] handleStartCall CLICKED 🎥🎥🎥');
     logger.debug('[ConversationLayout]', '🎥 handleStartCall called', {
       hasConversation: !!selectedConversation,
       conversationId: selectedConversation?.id,
@@ -895,12 +761,10 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       return;
     }
 
-    console.log('✅ [ConversationLayout] Starting video call for conversation:', selectedConversation.id);
     logger.info('[ConversationLayout]', 'Starting video call - conversationId: ' + selectedConversation.id);
 
     // SAFARI FIX: Request media permissions IMMEDIATELY in user gesture context
     // Safari blocks getUserMedia() if not called synchronously from user interaction
-    console.log('🎤📹 [ConversationLayout] Requesting media permissions (Safari-compatible)...');
     logger.debug('[ConversationLayout]', 'Requesting media permissions in click handler for Safari compatibility');
 
     let stream: MediaStream | null = null;
@@ -921,10 +785,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         },
       });
 
-      console.log('✅ [ConversationLayout] Media permissions granted!', {
-        audioTracks: stream.getAudioTracks().length,
-        videoTracks: stream.getVideoTracks().length,
-      });
       logger.info('[ConversationLayout]', 'Media permissions granted', {
         audioTracks: stream.getAudioTracks().length,
         videoTracks: stream.getVideoTracks().length,
@@ -935,11 +795,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
       // Continue with call initiation
       const socket = meeshySocketIOService.getSocket();
-      console.log('🔌 [ConversationLayout] Socket status:', {
-        hasSocket: !!socket,
-        isConnected: socket?.connected,
-        socketId: socket?.id
-      });
       logger.debug('[ConversationLayout]', '🔌 Socket status', {
         hasSocket: !!socket,
         isConnected: socket?.connected,
@@ -977,13 +832,11 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         },
       };
 
-      console.log('📤 [ConversationLayout] Emitting call:initiate event:', callData);
       logger.info('[ConversationLayout]', '📤 Emitting call:initiate', callData);
 
       // Emit call:initiate event
       (socket as any).emit('call:initiate', callData);
 
-      console.log('✅ [ConversationLayout] call:initiate event sent successfully');
       toast.success('Starting call...');
 
       // Set up cleanup listener for errors
@@ -1003,7 +856,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                                      errorMessage.includes('CALL_ALREADY_ACTIVE');
 
         if (isCallAlreadyActive) {
-          console.log('🔄 [ConversationLayout] Call already active - forcing cleanup and retry');
           toast.info('Cleaning up previous call...');
 
           // Force leave any existing calls in the conversation
@@ -1013,7 +865,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
           // Wait 500ms then retry
           setTimeout(() => {
-            console.log('🔄 [ConversationLayout] Retrying call initiation after cleanup');
             (socket as any).emit('call:initiate', callData);
             toast.success('Retrying call...');
           }, 500);
@@ -1029,7 +880,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         if (preauthorizedStream) {
           preauthorizedStream.getTracks().forEach((track: MediaStreamTrack) => {
             track.stop();
-            console.log('🛑 [ConversationLayout] Stopped track:', track.kind);
           });
           delete (window as any).__preauthorizedMediaStream;
         }
@@ -1086,7 +936,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
   // Naviguer vers un message spécifique
   const handleNavigateToMessage = useCallback((messageId: string) => {
-    console.log('🔍 Navigation vers le message:', messageId);
 
     const messageElement = document.getElementById(`message-${messageId}`);
 
@@ -1176,14 +1025,12 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
   // Handler pour ouvrir la galerie d'images
   const handleImageClick = useCallback((attachmentId: string) => {
-    console.log('🖼️ [ConversationLayout] Clic sur image:', attachmentId);
     setSelectedAttachmentId(attachmentId);
     setGalleryOpen(true);
   }, []);
 
   // Handler pour naviguer vers un message depuis la galerie
   const handleNavigateToMessageFromGallery = useCallback((messageId: string) => {
-    console.log('🖼️ [ConversationLayout] Navigation vers le message depuis la galerie:', messageId);
     
     // Fermer la galerie
     setGalleryOpen(false);
@@ -1205,16 +1052,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
     const hasAttachments = attachmentIds.length > 0;
 
-    console.log('[ConversationLayout] handleSendMessage appelé:', {
-      content,
-      selectedConversationId: selectedConversation?.id,
-      hasSocketMessaging: !!sendMessageViaSocket,
-      hasUser: !!user,
-      selectedLanguage,
-      replyToId,
-      attachmentCount: attachmentIds.length,
-      hasAttachments
-    });
 
     if (!selectedConversation?.id || !user) {
       console.error('[ConversationLayout] Pas de conversation sélectionnée ou pas d\'utilisateur');
@@ -1251,18 +1088,15 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
       // Envoyer avec ou sans attachments
       if (hasAttachments && sendMessageWithAttachmentsViaSocket) {
-        console.log('[ConversationLayout] 📎 Envoi avec attachments:', currentAttachmentIds);
         await sendMessageWithAttachmentsViaSocket(content, currentAttachmentIds, currentAttachmentMimeTypes, selectedLanguage, replyToId);
       } else {
         await sendMessageViaSocket(content, selectedLanguage, replyToId);
       }
 
-      console.log('[ConversationLayout] Message envoyé avec succès - en attente du retour serveur');
 
       // CORRECTION MAJEURE: Marquer la conversation comme lue après l'envoi d'un message
       if (selectedConversation?.id) {
         conversationsService.markAsRead(selectedConversation.id).then(() => {
-          console.log('[ConversationLayout] ✅ Conversation marquée comme lue après envoi de message');
 
           // Mettre à jour localement le unreadCount de cette conversation
           setConversations(prev => prev.map(conv =>
@@ -1292,7 +1126,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       // SÉCURITÉ: Nettoyer le composer state sauvegardé pour cette conversation
       if (selectedConversation?.id) {
         composerStatesRef.current.delete(selectedConversation.id);
-        console.log(`[ConversationLayout] 🗑️ Composer state nettoyé pour ${selectedConversation.id}`);
       }
 
       // Scroller vers le bas immédiatement après l'envoi
@@ -1369,7 +1202,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   
   // Handler pour restaurer un message en échec dans le compositeur
   const handleRestoreFailedMessage = useCallback((failedMsg: FailedMessage) => {
-    console.log('🔄 Restauration du message en échec:', failedMsg.id);
     
     // Restaurer le contenu
     setNewMessage(failedMsg.content);
@@ -1399,7 +1231,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
   // Handler pour renvoyer automatiquement un message en échec
   const handleRetryFailedMessage = useCallback(async (failedMsg: FailedMessage): Promise<boolean> => {
-    console.log('🔄 Renvoi automatique du message:', failedMsg.id);
     
     if (!selectedConversation?.id || !user) {
       toast.error('Impossible de renvoyer: conversation ou utilisateur manquant');
@@ -1407,10 +1238,8 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     }
     
     // Forcer la reconnexion WebSocket avant de renvoyer
-    console.log('🔌 Vérification connexion WebSocket...');
     const diagnostics = meeshySocketIOService.getConnectionDiagnostics();
     if (!diagnostics.isConnected) {
-      console.log('🔌 Reconnexion WebSocket nécessaire...');
       meeshySocketIOService.reconnect();
       // Attendre un peu que la reconnexion s'établisse
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -1439,7 +1268,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       }
       
       if (success) {
-        console.log('✅ Message renvoyé avec succès');
         return true;
       } else {
         console.error('❌ Échec du renvoi du message');
@@ -1479,7 +1307,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         return;
       }
       
-      console.log('[ConversationLayout] Connexion perdue, tentative de reconnexion...');
       hasAttemptedReconnect.current = true;
       
       // Attendre un peu avant de reconnecter pour éviter les boucles
@@ -1522,7 +1349,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   // Charger une conversation directement si elle n'est pas dans la liste
   useEffect(() => {
     if (selectedConversationId && user && conversations.length > 0 && !selectedConversation?.id) {
-      console.log(`[ConversationLayout-${instanceId}] Conversation non trouvée dans la liste, chargement direct:`, selectedConversationId);
       loadDirectConversation(selectedConversationId);
     }
   }, [selectedConversationId, user, conversations.length, selectedConversation?.id, loadDirectConversation, instanceId]);
@@ -1538,7 +1364,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
     // Charger les participants seulement si l'ID a vraiment changé
     if (currentId && currentId !== previousId) {
-      console.log(`[ConversationLayout-${instanceId}] Changement de conversation: ${previousId} → ${currentId}`);
       loadParticipants(currentId);
       // Vider les anciens messages SEULEMENT quand on change réellement de conversation
       clearMessages();
@@ -1552,10 +1377,8 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       // });
     } else if (currentId === previousId && currentId) {
       // Même conversation, pas de rechargement
-      console.log(`[ConversationLayout-${instanceId}] Même conversation, pas de rechargement: ${currentId}`);
     } else if (!currentId && previousId) {
       // Pas de conversation sélectionnée (retour à la liste)
-      console.log(`[ConversationLayout-${instanceId}] Retour à la liste, reset previousId`);
       previousConversationIdRef.current = null;
     }
   }, [selectedConversation?.id, loadParticipants, clearMessages, instanceId]);
@@ -1581,7 +1404,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
       // Si on est à moins de 100px du bottom (ou déjà au bottom) et qu'on n'a pas encore marqué
       if (distanceFromBottom < 100 && !hasMarkedAsRead) {
-        console.log('[ConversationLayout] 📍 Utilisateur au dernier message, marquage comme lu dans 500ms');
 
         // Utiliser un debounce de 500ms pour éviter les appels répétés
         if (markAsReadTimeout) {
@@ -1593,7 +1415,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
           // Marquer la conversation comme lue
           conversationsService.markAsRead(conversationId).then(() => {
-            console.log('[ConversationLayout] ✅ Conversation marquée comme lue (scroll)');
 
             // Mettre à jour localement le unreadCount
             setConversations(prev => prev.map(conv =>

@@ -47,7 +47,6 @@ function getPredictedModelType(textLength: number): 'basic' | 'medium' | 'premiu
 }
 
 
-
 export async function translationRoutes(fastify: FastifyInstance) {
   // Récupérer le service de traduction depuis les options
   const translationService = (fastify as any).translationService;
@@ -61,14 +60,6 @@ export async function translationRoutes(fastify: FastifyInstance) {
     try {
       const validatedData = TranslateRequestSchema.parse(request.body);
       
-      console.log(`🌐 [GATEWAY] Nouvelle requête de traduction reçue:`, {
-        text: validatedData.text,
-        sourceLanguage: validatedData.source_language,
-        targetLanguage: validatedData.target_language,
-        modelType: validatedData.model_type || 'basic',
-        messageId: validatedData.message_id,
-        conversationId: validatedData.conversation_id
-      });
       
       const startTime = Date.now();
       
@@ -78,10 +69,8 @@ export async function translationRoutes(fastify: FastifyInstance) {
       // Gérer les deux cas : nouveau message vs retraduction
       if (validatedData.message_id) {
         // Cas 1: Retraduction d'un message existant
-        console.log(`🔄 [GATEWAY] Retraduction du message ${validatedData.message_id}`);
         
         // Récupérer le message depuis la base de données
-        console.log(`🔍 [GATEWAY] Recherche du message ${validatedData.message_id} en base...`);
         const existingMessage = await fastify.prisma.message.findUnique({
           where: { id: validatedData.message_id },
           include: {
@@ -93,12 +82,6 @@ export async function translationRoutes(fastify: FastifyInstance) {
           }
         });
         
-        console.log(`🔍 [GATEWAY] Message trouvé:`, existingMessage ? {
-          id: existingMessage.id,
-          content: existingMessage.content?.substring(0, 50) + '...',
-          originalLanguage: existingMessage.originalLanguage,
-          conversationId: existingMessage.conversationId
-        } : 'NULL');
         
         if (!existingMessage) {
           return reply.status(404).send({
@@ -126,7 +109,6 @@ export async function translationRoutes(fastify: FastifyInstance) {
         // OPTIMISATION: Éviter la traduction si source = target (après récupération du message)
         if (messageSourceLanguage && messageSourceLanguage !== 'auto' && 
             messageSourceLanguage === validatedData.target_language) {
-          console.log(`🔄 [GATEWAY] Langues identiques (${messageSourceLanguage} → ${validatedData.target_language}), pas de traduction nécessaire`);
           return reply.send({
             success: true,
             data: {
@@ -176,7 +158,6 @@ export async function translationRoutes(fastify: FastifyInstance) {
         
         if (!translationResult) {
           // Fallback seulement si la traduction n'est pas disponible après le timeout
-          console.log(`⚠️ [GATEWAY] Timeout de traduction après ${maxWaitTime}ms, utilisation du fallback`);
           result = {
             translatedText: `[${validatedData.target_language.toUpperCase()}] ${messageText}`,
             sourceLanguage: messageSourceLanguage,
@@ -186,13 +167,11 @@ export async function translationRoutes(fastify: FastifyInstance) {
             modelType: 'fallback'
           };
         } else {
-          console.log(`✅ [GATEWAY] Traduction reçue après ${waitedTime}ms`);
           result = translationResult;
         }
         
       } else {
         // Cas 2: Nouveau message (comportement WebSocket)
-        console.log(`📝 [GATEWAY] Nouveau message pour conversation ${validatedData.conversation_id}`);
         
         if (!validatedData.conversation_id) {
           return reply.status(400).send({
@@ -234,7 +213,6 @@ export async function translationRoutes(fastify: FastifyInstance) {
         
         if (!translationResult2) {
           // Fallback seulement si la traduction n'est pas disponible après le timeout
-          console.log(`⚠️ [GATEWAY] Timeout de traduction après ${maxWaitTime2}ms, utilisation du fallback`);
           result = {
             translatedText: `[${validatedData.target_language.toUpperCase()}] ${validatedData.text}`,
             sourceLanguage: validatedData.source_language || 'auto',
@@ -244,20 +222,12 @@ export async function translationRoutes(fastify: FastifyInstance) {
             modelType: 'fallback'
           };
         } else {
-          console.log(`✅ [GATEWAY] Traduction reçue après ${waitedTime2}ms`);
           result = translationResult2;
         }
       }
 
       const processingTime = (Date.now() - startTime) / 1000;
 
-      console.log(`✅ [GATEWAY] Traduction terminée en ${processingTime}s:`, {
-        messageId: messageId,
-        original: validatedData.text,
-        translated: result?.translatedText || 'N/A',
-        modelUsed: result?.modelType || 'N/A',
-        confidence: result?.confidenceScore || 0
-      });
 
       return {
         success: true,

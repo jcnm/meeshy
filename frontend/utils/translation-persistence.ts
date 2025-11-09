@@ -112,7 +112,6 @@ export function cleanupExpiredTranslations(): void {
     keysToRemove.forEach(key => localStorage.removeItem(key));
     
     if (keysToRemove.length > 0) {
-      console.log(`🧹 Nettoyage: ${keysToRemove.length} traductions expirées supprimées`);
     }
   } catch (error) {
     console.warn('Erreur lors du nettoyage des traductions:', error);

@@ -20,7 +20,6 @@ export function CreateConversationPage() {
   }, [user]);
 
   const handleConversationCreated = (conversationId: string) => {
-    console.log(t('conversationCreated'));
     router.push(`/conversations/${conversationId}`);
   };
 

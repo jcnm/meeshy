@@ -176,7 +176,6 @@ export class AuthService {
                 isActive: true
               }
             });
-            console.log(`[AUTH] ✅ Utilisateur "${user.username}" ajouté automatiquement à la conversation globale "meeshy"`);
           }
         } else {
           console.warn('[AUTH] ⚠️ Conversation globale "meeshy" non trouvée - impossible d\'ajouter l\'utilisateur');

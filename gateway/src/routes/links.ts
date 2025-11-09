@@ -299,15 +299,6 @@ export async function linksRoutes(fastify: FastifyInstance) {
       const userId = user.id;
       const userRole = user.role;
 
-      console.log('[CREATE_LINK] Tentative création lien:', {
-        userId,
-        userRole,
-        body: {
-          conversationId: body.conversationId,
-          name: body.name,
-          hasDescription: !!body.description
-        }
-      });
 
       let conversationId = body.conversationId;
 
@@ -339,7 +330,6 @@ export async function linksRoutes(fastify: FastifyInstance) {
         }
 
         if (!member) {
-          console.log('[CREATE_LINK] Utilisateur non membre de la conversation:', { userId, conversationId });
           return reply.status(403).send({ 
             success: false, 
             message: "Vous n'êtes pas membre de cette conversation" 
@@ -382,19 +372,8 @@ export async function linksRoutes(fastify: FastifyInstance) {
 
         // Pour tous les autres types de conversations (group, public, etc.),
         // n'importe qui ayant accès à la conversation peut créer des liens
-        console.log('[CREATE_LINK] Utilisateur autorisé à créer un lien:', { 
-          userId, 
-          conversationId, 
-          conversationType,
-          memberRole: member.role 
-        });
       } else if (body.newConversation) {
         // Créer une nouvelle conversation avec les données fournies
-        console.log('[CREATE_LINK] Création nouvelle conversation avec données:', { 
-          userId, 
-          userRole,
-          newConversation: body.newConversation
-        });
         
         // Préparer les membres (créateur + membres ajoutés)
         const membersToCreate = [
@@ -438,15 +417,8 @@ export async function linksRoutes(fastify: FastifyInstance) {
         });
         conversationId = conversation.id;
         
-        console.log('[CREATE_LINK] Nouvelle conversation créée:', { 
-          conversationId, 
-          title: conversation.title,
-          membersCount: membersToCreate.length,
-          creatorRole: UserRoleEnum.CREATOR 
-        });
       } else {
         // Créer une nouvelle conversation de type public (legacy)
-        console.log('[CREATE_LINK] Création nouvelle conversation legacy pour utilisateur:', { userId, userRole });
         
         // Générer un identifiant unique pour la conversation
         const conversationIdentifier = generateConversationIdentifier(body.name || 'Shared Conversation');
@@ -467,11 +439,6 @@ export async function linksRoutes(fastify: FastifyInstance) {
         });
         conversationId = conversation.id;
         
-        console.log('[CREATE_LINK] Nouvelle conversation créée:', { 
-          conversationId, 
-          title: conversation.title,
-          creatorRole: UserRoleEnum.CREATOR 
-        });
       }
 
       // Générer le linkId initial
@@ -882,34 +849,11 @@ export async function linksRoutes(fastify: FastifyInstance) {
       }));
 
       // Log des traductions pour debugging
-      console.log(`📥 [LINKS_GET] Messages formatés avec traductions:`, {
-        messagesCount: formattedMessages.length,
-        translationsStats: formattedMessages.map((m: any) => ({
-          messageId: m.id.substring(0, 8),
-          hasTranslations: !!(m.translations && m.translations.length > 0),
-          translationsCount: m.translations?.length || 0,
-          languages: m.translations?.map((t: any) => t.targetLanguage).join(', ') || 'none'
-        }))
-      });
 
       // Déterminer le type d'utilisateur et les données de l'utilisateur actuel
       let userType: 'anonymous' | 'member';
       let currentUser: any = null;
 
-      console.log('[LINKS_GET] Debug authentification:', {
-        isAuthenticated: hybridRequest.isAuthenticated,
-        hasUser: !!hybridRequest.user,
-        isAnonymous: hybridRequest.isAnonymous,
-        hasAnonymousParticipant: !!hybridRequest.anonymousParticipant,
-        user: hybridRequest.user ? {
-          id: hybridRequest.user.id,
-          username: hybridRequest.user.username
-        } : null,
-        anonymousParticipant: hybridRequest.anonymousParticipant ? {
-          id: hybridRequest.anonymousParticipant.id,
-          username: hybridRequest.anonymousParticipant.username
-        } : null
-      });
 
       if (hybridRequest.isAuthenticated && hybridRequest.user) {
         const isMember = shareLink.conversation.members.some(
@@ -930,7 +874,6 @@ export async function linksRoutes(fastify: FastifyInstance) {
             canSendImages: true
           }
         };
-        console.log('[LINKS_GET] Utilisateur authentifié défini:', currentUser);
       } else if (hybridRequest.isAnonymous && hybridRequest.anonymousParticipant) {
         userType = 'anonymous';
         const participant = hybridRequest.anonymousParticipant;
@@ -948,9 +891,7 @@ export async function linksRoutes(fastify: FastifyInstance) {
             canSendImages: participant.canSendImages
           }
         };
-        console.log('[LINKS_GET] Participant anonyme défini:', currentUser);
       } else {
-        console.log('[LINKS_GET] Aucune authentification détectée, currentUser reste null');
         // Pour les utilisateurs non authentifiés, on peut quand même retourner les informations de base
         // mais sans currentUser
       }
@@ -1273,15 +1214,6 @@ export async function linksRoutes(fastify: FastifyInstance) {
       }));
 
       // Log des traductions pour debugging
-      console.log(`📥 [LINKS/:identifier/messages] Messages formatés:`, {
-        messagesCount: formattedMessages.length,
-        translationsStats: formattedMessages.map((m: any) => ({
-          messageId: m.id.substring(0, 8),
-          hasTranslations: !!(m.translations && m.translations.length > 0),
-          translationsCount: m.translations?.length || 0,
-          languages: m.translations?.map((t: any) => t.targetLanguage).join(', ') || 'none'
-        }))
-      });
 
       return reply.send({
         success: true,
@@ -1398,13 +1330,11 @@ export async function linksRoutes(fastify: FastifyInstance) {
       }
 
       // ÉTAPE 1: Traiter les liens dans le message AVANT la sauvegarde
-      console.log('[LINKS] Processing links in anonymous message before saving...');
       const { processedContent, trackingLinks } = await trackingLinkService.processMessageLinks({
         content: body.content,
         conversationId: anonymousParticipant.shareLink.conversationId,
         createdBy: undefined // Message anonyme
       });
-      console.log(`[LINKS] Processed content: ${trackingLinks.length} tracking link(s) created`);
 
       // ÉTAPE 2: Créer le message avec le contenu transformé
       const message = await fastify.prisma.message.create({
@@ -1433,7 +1363,6 @@ export async function linksRoutes(fastify: FastifyInstance) {
       if (trackingLinks.length > 0) {
         const tokens = trackingLinks.map(link => link.token);
         await trackingLinkService.updateTrackingLinksMessageId(tokens, message.id);
-        console.log(`[LINKS] Updated messageId for ${tokens.length} tracking link(s)`);
       }
 
       // Émettre l'événement WebSocket
@@ -1596,13 +1525,11 @@ export async function linksRoutes(fastify: FastifyInstance) {
       }
 
       // ÉTAPE 1: Traiter les liens dans le message AVANT la sauvegarde
-      console.log('[LINKS_AUTH] Processing links in authenticated message before saving...');
       const { processedContent, trackingLinks } = await trackingLinkService.processMessageLinks({
         content: body.content,
         conversationId: shareLink.conversationId,
         createdBy: userId
       });
-      console.log(`[LINKS_AUTH] Processed content: ${trackingLinks.length} tracking link(s) created`);
 
       // ÉTAPE 2: Créer le message avec le contenu transformé
       const message = await fastify.prisma.message.create({
@@ -1633,7 +1560,6 @@ export async function linksRoutes(fastify: FastifyInstance) {
       if (trackingLinks.length > 0) {
         const tokens = trackingLinks.map(link => link.token);
         await trackingLinkService.updateTrackingLinksMessageId(tokens, message.id);
-        console.log(`[LINKS_AUTH] Updated messageId for ${tokens.length} tracking link(s)`);
       }
 
       // Émettre l'événement WebSocket
@@ -2276,5 +2202,4 @@ export async function linksRoutes(fastify: FastifyInstance) {
     }
   });
 }
-
 

@@ -440,7 +440,6 @@ export function CreateLinkModalV2({
 
       if (response.ok) {
         const data = await response.json();
-        console.log('[CREATE_LINK_V2] Réponse API:', data);
         
         const linkToken = data.data?.linkId || data.linkId;
         if (!linkToken) {

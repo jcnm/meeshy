@@ -53,7 +53,6 @@ export function useConversationsPagination(
         setIsLoading(true);
       }
       
-      console.log(`📄 [Pagination] Chargement conversations: offset=${currentOffset}, limit=${limit}`);
       
       // Utiliser le service avec pagination
       const result = await conversationsService.getConversations({
@@ -62,7 +61,6 @@ export function useConversationsPagination(
         skipCache: append // Ne pas utiliser le cache pour les pages suivantes
       });
       
-      console.log(`✅ [Pagination] Chargé ${result.conversations.length} conversations (total: ${result.pagination.total}, hasMore: ${result.pagination.hasMore})`);
       
       if (append) {
         setConversations(prev => [...prev, ...result.conversations]);
@@ -98,12 +96,10 @@ export function useConversationsPagination(
    */
   const loadMore = useCallback(() => {
     if (!hasMore || isLoadingMore || isLoading) {
-      console.log('⚠️ [Pagination] LoadMore ignoré:', { hasMore, isLoadingMore, isLoading });
       return;
     }
     
     const nextOffset = offset + limit;
-    console.log(`➡️ [Pagination] LoadMore: offset ${offset} → ${nextOffset}`);
     setOffset(nextOffset);
     loadConversations(nextOffset, true);
   }, [hasMore, isLoadingMore, isLoading, offset, limit, loadConversations]);
@@ -112,7 +108,6 @@ export function useConversationsPagination(
    * Rafraîchit la liste complète
    */
   const refresh = useCallback(() => {
-    console.log('🔄 [Pagination] Refresh complet');
     setOffset(0);
     setHasMore(true);
     setConversations([]);

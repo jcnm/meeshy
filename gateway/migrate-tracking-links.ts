@@ -8,12 +8,10 @@ import { PrismaClient } from '../shared/prisma/client';
 const prisma = new PrismaClient();
 
 async function migrateTrackingLinks() {
-  console.log('🔄 Migration des liens de tracking...\n');
 
   try {
     // 1. Compter tous les liens
     const totalCount = await prisma.trackingLink.count();
-    console.log(`📊 Total de liens de tracking: ${totalCount}`);
 
     // 2. Trouver les liens avec l'ancien format
     const linksToUpdate = await prisma.trackingLink.findMany({
@@ -24,10 +22,8 @@ async function migrateTrackingLinks() {
       }
     });
 
-    console.log(`📝 Liens à mettre à jour: ${linksToUpdate.length}\n`);
 
     if (linksToUpdate.length === 0) {
-      console.log('✅ Aucun lien à mettre à jour. Migration terminée!');
       return;
     }
 
@@ -44,13 +40,11 @@ async function migrateTrackingLinks() {
         });
 
         updatedCount++;
-        console.log(`✅ [${updatedCount}/${linksToUpdate.length}] ${link.shortUrl} → ${newShortUrl}`);
       } catch (error) {
         console.error(`❌ Erreur lors de la mise à jour du lien ${link.id}:`, error);
       }
     }
 
-    console.log(`\n✅ Migration terminée: ${updatedCount}/${linksToUpdate.length} liens mis à jour`);
 
   } catch (error) {
     console.error('❌ Erreur lors de la migration:', error);

@@ -65,12 +65,10 @@ export function useMessageReactions({
    */
   const refreshReactions = useCallback(async () => {
     if (!enabled || !messageId) {
-      console.log('🚫 [useMessageReactions] refreshReactions ignoré:', { enabled, messageId });
       return;
     }
 
     try {
-      // console.log('🔄 [useMessageReactions] Demande de synchronisation pour message:', messageId);
       setIsLoading(true);
       setError(null);
 
@@ -110,19 +108,11 @@ export function useMessageReactions({
   const addReaction = useCallback(async (emoji: string): Promise<boolean> => {
     if (!enabled || !messageId) return false;
 
-    console.log('🎯 [useMessageReactions] addReaction called:', {
-      emoji,
-      messageId,
-      currentUserId,
-      isAnonymous,
-      enabled
-    });
 
     // CORRECTION CRITIQUE: Ne PAS ajouter si déjà présente dans userReactions
     // Évite le double comptage avec l'événement WebSocket
     const alreadyReacted = userReactions.includes(emoji);
     if (alreadyReacted) {
-      console.log('[useMessageReactions] Réaction déjà présente, ignoré');
       return true; // Retourner succès car la réaction existe déjà
     }
 
@@ -168,18 +158,12 @@ export function useMessageReactions({
         throw new Error('Socket not connected');
       }
 
-      console.log('📤 [useMessageReactions] Sending REACTION_ADD to server:', {
-        messageId,
-        emoji,
-        socketConnected: !!socket.connected
-      });
 
       return new Promise((resolve) => {
         socket.emit(
           CLIENT_EVENTS.REACTION_ADD,
           { messageId, emoji },
           (response: any) => {
-            console.log('📥 [useMessageReactions] Server response:', response);
             
             if (response.success) {
               resolve(true);
@@ -358,7 +342,6 @@ export function useMessageReactions({
     const handleReactionRemoved = (event: ReactionUpdateEvent) => {
       if (event.messageId !== messageId) return;
 
-      console.log('🗑️ Réaction retirée (temps-réel):', event);
 
       setReactions(prev => {
         if (event.aggregation.count === 0) {
@@ -384,15 +367,12 @@ export function useMessageReactions({
     };
 
     // S'abonner aux événements
-    // console.log('🔔 [useMessageReactions] S\'abonne aux événements pour message:', messageId);
     
     const unsubAdded = meeshySocketIOService.onReactionAdded(handleReactionAdded);
     const unsubRemoved = meeshySocketIOService.onReactionRemoved(handleReactionRemoved);
     
-    // console.log('✅ [useMessageReactions] Abonnement confirmé pour message:', messageId);
 
     return () => {
-      // console.log('🔕 [useMessageReactions] Se désabonne des événements pour message:', messageId);
       unsubAdded();
       unsubRemoved();
     };

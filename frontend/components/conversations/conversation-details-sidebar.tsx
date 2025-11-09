@@ -867,7 +867,6 @@ interface ConversationDetailsSidebarProps {
 }
 
 
-
 export function ConversationDetailsSidebar({
   conversation,
   currentUser,
@@ -957,7 +956,6 @@ export function ConversationDetailsSidebar({
           .sort((a, b) => b.count - a.count);
         
         setActiveLanguageStats(userStats);
-        console.log('👥 Statistiques langues participants calculées:', userStats);
         
         // Calculer les utilisateurs actifs
         const activeParticipants = conversation.participants
@@ -994,23 +992,10 @@ export function ConversationDetailsSidebar({
       const otherParticipant = conv.participants?.find(p => p.userId !== currentUser.id);
       const participantUser = (otherParticipant as any)?.user;
       const avatarUrl = participantUser?.avatar;
-      console.log('[ConversationDetailsSidebar] Direct conversation avatar:', {
-        conversationId: conv.id,
-        otherParticipant: otherParticipant ? 'Found' : 'Not found',
-        participantUser: participantUser ? 'Found' : 'Not found',
-        avatarUrl
-      });
       return avatarUrl;
     }
     // Pour les conversations de groupe/public/global, retourner l'image de la conversation
     const avatarUrl = conv.image || conv.avatar;
-    console.log('[ConversationDetailsSidebar] Group conversation avatar:', {
-      conversationId: conv.id,
-      type: conv.type,
-      image: conv.image,
-      avatar: conv.avatar,
-      avatarUrl
-    });
     return avatarUrl;
   };
 

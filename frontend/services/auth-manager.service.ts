@@ -69,7 +69,6 @@ class AuthManager {
 
   private constructor() {
     if (process.env.NODE_ENV === 'development') {
-      console.log('[AUTH_MANAGER] Instance créée');
     }
   }
 
@@ -144,7 +143,6 @@ class AuthManager {
     expiresIn?: number
   ): void {
     if (process.env.NODE_ENV === 'development') {
-      console.log('[AUTH_MANAGER] Setting credentials for:', user.username);
     }
 
     // 1. CRITIQUE: Nettoyer TOUTES les sessions précédentes
@@ -155,7 +153,6 @@ class AuthManager {
     useAuthStore.getState().setTokens(authToken, refreshToken, expiresIn);
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('[AUTH_MANAGER] Credentials set successfully');
     }
   }
 
@@ -166,7 +163,6 @@ class AuthManager {
     useAuthStore.getState().setTokens(authToken, refreshToken, expiresIn);
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('[AUTH_MANAGER] Tokens updated');
     }
   }
 
@@ -177,7 +173,6 @@ class AuthManager {
     useAuthStore.getState().setUser(user);
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('[AUTH_MANAGER] User updated');
     }
   }
 
@@ -213,7 +208,6 @@ class AuthManager {
     }
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('[AUTH_MANAGER] Clearing all sessions...');
     }
 
     try {
@@ -238,7 +232,6 @@ class AuthManager {
       this.clearAuthCookies();
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('[AUTH_MANAGER] All sessions cleared - clean slate');
       }
     } catch (error) {
       console.error('[AUTH_MANAGER] Error clearing sessions:', error);
@@ -302,7 +295,6 @@ class AuthManager {
     );
 
     if (success && process.env.NODE_ENV === 'development') {
-      console.log('[AUTH_MANAGER] Anonymous session set, expires in', expiresInHours, 'hours');
     } else if (!success) {
       console.warn('[AUTH_MANAGER] Could not save anonymous session (storage unavailable)');
     }
@@ -324,7 +316,6 @@ class AuthManager {
       // Vérifier expiration
       if (Date.now() > session.expiresAt) {
         if (process.env.NODE_ENV === 'development') {
-          console.log('[AUTH_MANAGER] Anonymous session expired, clearing');
         }
         this.clearAnonymousSessions();
         return null;

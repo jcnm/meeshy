@@ -115,26 +115,20 @@ export function GroupsLayoutResponsive({ selectedGroupIdentifier }: GroupsLayout
     try {
       const token = authManager.getAuthToken();
       if (!token) {
-        console.log('No auth token found');
         return;
       }
       
-      console.log('Loading groups with token:', token.substring(0, 20) + '...');
       const response = await fetch(buildApiUrl(API_ENDPOINTS.GROUP.LIST), {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      console.log('Groups API response:', response.status, response.statusText);
       
       if (response.ok) {
         const result = await response.json();
-        console.log('Groups API result:', result);
         // L'API retourne {success: true, data: [...]}
         const data = result.success ? result.data : result;
-        console.log('Groups data:', data);
         setGroups(Array.isArray(data) ? data : []);
       } else if (response.status === 401) {
-        console.log('Unauthorized, removing token');
         authManager.clearAllSessions();
         router.push('/');
       } else {

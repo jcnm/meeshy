@@ -33,7 +33,6 @@ async function generateUniqueIdentifier(conversationIdentifier, linkId) {
 }
 
 async function fixShareLinkIdentifiers() {
-  console.log('🔍 Recherche des ConversationShareLink sans identifier...\n');
   
   try {
     // Trouver tous les liens de partage
@@ -45,7 +44,6 @@ async function fixShareLinkIdentifiers() {
       }
     });
     
-    console.log(`📊 Total de liens trouvés: ${shareLinks.length}\n`);
     
     let fixedCount = 0;
     let alreadyOkCount = 0;
@@ -53,8 +51,6 @@ async function fixShareLinkIdentifiers() {
     for (const link of shareLinks) {
       // Vérifier si identifier est null, undefined ou vide
       if (!link.identifier || link.identifier === '' || link.identifier === 'null') {
-        console.log(`🔧 Correction du lien ${link.id} (linkId: ${link.linkId})`);
-        console.log(`   Conversation: ${link.conversation.identifier}`);
         
         // Générer un identifier unique
         const newIdentifier = await generateUniqueIdentifier(
@@ -62,7 +58,6 @@ async function fixShareLinkIdentifiers() {
           link.linkId
         );
         
-        console.log(`   Nouvel identifier: ${newIdentifier}`);
         
         // Mettre à jour le lien
         await prisma.conversationShareLink.update({
@@ -70,25 +65,15 @@ async function fixShareLinkIdentifiers() {
           data: { identifier: newIdentifier }
         });
         
-        console.log(`   ✅ Lien mis à jour\n`);
         fixedCount++;
       } else {
         alreadyOkCount++;
       }
     }
     
-    console.log('\n═══════════════════════════════════════════════');
-    console.log('📊 RÉSUMÉ');
-    console.log('═══════════════════════════════════════════════');
-    console.log(`✅ Liens corrigés: ${fixedCount}`);
-    console.log(`✓  Liens déjà OK: ${alreadyOkCount}`);
-    console.log(`📋 Total: ${shareLinks.length}`);
-    console.log('═══════════════════════════════════════════════\n');
     
     if (fixedCount > 0) {
-      console.log('🎉 Base de données nettoyée avec succès !');
     } else {
-      console.log('✨ Aucune correction nécessaire - tout est en ordre !');
     }
     
   } catch (error) {
@@ -102,7 +87,6 @@ async function fixShareLinkIdentifiers() {
 // Exécuter le script
 fixShareLinkIdentifiers()
   .then(() => {
-    console.log('\n✅ Script terminé avec succès\n');
     process.exit(0);
   })
   .catch((error) => {

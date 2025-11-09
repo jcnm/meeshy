@@ -52,7 +52,6 @@ export class Ringtone {
       // Preload the audio
       this.htmlAudio.load();
 
-      console.log('[Ringtone] HTML Audio fallback initialized for iOS');
     } catch (error) {
       console.error('[Ringtone] Failed to initialize HTML Audio:', error);
     }
@@ -74,7 +73,6 @@ export class Ringtone {
 
       // Use HTML Audio fallback on iOS
       if (this.useHTMLAudioFallback && this.htmlAudio) {
-        console.log('[Ringtone] Using HTML Audio fallback');
 
         try {
           // Reset audio to beginning
@@ -94,7 +92,6 @@ export class Ringtone {
         }
       } else {
         // Use Web Audio API on desktop
-        console.log('[Ringtone] Using Web Audio API');
         await this.playWithWebAudio();
       }
     } catch (error) {
@@ -148,7 +145,6 @@ export class Ringtone {
         }
       }, 2000);
 
-      console.log('[Ringtone] Vibration started');
     } catch (error) {
       console.warn('[Ringtone] Vibration failed:', error);
     }
@@ -295,7 +291,6 @@ export async function unlockAudio(): Promise<void> {
       audio.pause();
       audio.currentTime = 0;
       audio.muted = false;
-      console.log('[Ringtone] Audio unlocked for iOS');
     }
   } catch (error) {
     console.warn('[Ringtone] Audio unlock failed (may not be needed):', error);

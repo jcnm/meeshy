@@ -79,7 +79,6 @@ export class TranslationCache {
         // Vérifier si l'entrée n'est pas expirée
         const now = Date.now();
         if (now - entry.timestamp < this.TTL * 1000) {
-          console.log(`✅ [Cache] Traduction trouvée pour: "${text.substring(0, 50)}..."`);
           return entry;
         } else {
           // Supprimer l'entrée expirée
@@ -112,7 +111,6 @@ export class TranslationCache {
       };
       
       await this.redis.setex(cacheKey, this.TTL, JSON.stringify(entry));
-      console.log(`💾 [Cache] Traduction mise en cache: "${text.substring(0, 50)}..."`);
     } catch (error) {
       console.error(`❌ [Cache] Erreur mise en cache: ${error}`);
     }
@@ -226,7 +224,6 @@ export class TranslationCache {
         }
       }
       
-      console.log(`🧹 [Cache] ${deletedCount} entrées expirées supprimées`);
       return deletedCount;
     } catch (error) {
       console.error(`❌ [Cache] Erreur nettoyage cache: ${error}`);

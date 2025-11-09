@@ -39,13 +39,11 @@ export function MessageWithLinks({
   // Gérer le clic sur un lien
   const handleLinkClick = useCallback(
     async (e: React.MouseEvent<HTMLAnchorElement>, part: ParsedLink) => {
-      console.log('[MessageWithLinks] Link clicked:', part);
       const isTracking = part.type === 'tracking-link' || part.type === 'mshy-link';
 
       // Si c'est un lien de tracking (mshy:// ou meeshy.me/l/<token>) et que le tracking est activé
       if (isTracking && enableTracking && part.token) {
         e.preventDefault();
-        console.log('[MessageWithLinks] Recording tracking link click for token:', part.token);
 
         try {
           // Enregistrer le clic

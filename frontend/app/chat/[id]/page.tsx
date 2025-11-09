@@ -34,11 +34,6 @@ export default function ChatLinkPage() {
         const sessionToken = anonymousSession?.token;
         const authToken = authManager.getAuthToken();
         
-        console.log('[ChatLinkPage] Chargement avec:', { 
-          id, 
-          hasSessionToken: !!sessionToken, 
-          hasAuthToken: !!authToken 
-        });
         
         // id peut être un linkId ou un conversationShareLinkId
         const data = await LinkConversationService.getConversationData(id, {
@@ -81,11 +76,9 @@ export default function ChatLinkPage() {
       // Vérifier si l'id ressemble à un lien d'invitation (commence par "mshy_")
       if (id && id.startsWith('mshy_')) {
         // Rediriger vers /join/{id} pour permettre à l'utilisateur de rejoindre
-        console.log('[ChatLinkPage] Redirection vers /join/' + id);
         router.push(`/join/${id}`);
       } else {
         // Sinon, rediriger vers l'accueil
-        console.log('[ChatLinkPage] Redirection vers l\'accueil');
         router.push('/');
       }
     }

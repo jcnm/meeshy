@@ -106,7 +106,6 @@ export class MeeshySocketIOManager {
       allowEIO3: true
     });
 
-    console.log('[GATEWAY] 🚀 MeeshySocketIOManager initialisé avec MessagingService et CallEventsHandler');
   }
 
   /**
@@ -118,7 +117,6 @@ export class MeeshySocketIOManager {
       // Si c'est un ObjectId MongoDB (24 caractères hex)
       if (/^[0-9a-fA-F]{24}$/.test(conversationId)) {
         // C'est déjà un ObjectId, le retourner directement
-        console.log(`🔄 [NORMALIZE] ObjectId ${conversationId} → ${conversationId} (invariant)`);
         return conversationId;
       }
       
@@ -129,12 +127,10 @@ export class MeeshySocketIOManager {
       });
       
       if (conversation) {
-        console.log(`🔄 [NORMALIZE] Identifier ${conversationId} → ObjectId ${conversation.id}`);
         return conversation.id; // Retourner l'ObjectId
       }
       
       // Si non trouvé, retourner tel quel (peut-être un ObjectId invalide ou identifier inconnu)
-      console.log(`⚠️ [NORMALIZE] Conversation non trouvée pour: ${conversationId}, retour tel quel`);
       return conversationId;
     } catch (error) {
       console.error('❌ [NORMALIZE] Erreur normalisation:', error);
@@ -163,11 +159,8 @@ export class MeeshySocketIOManager {
       this._ensureOnlineStatsTicker();
       
       // Démarrer les tâches de maintenance
-      console.log('[GATEWAY] 🚀 Tentative de démarrage des tâches de maintenance...');
       try {
-        console.log('[GATEWAY] 🔧 MaintenanceService instance:', !!this.maintenanceService);
         await this.maintenanceService.startMaintenanceTasks();
-        console.log('[GATEWAY] ✅ Tâches de maintenance démarrées avec succès');
       } catch (error) {
         console.error('[GATEWAY] ❌ Erreur lors du démarrage des tâches de maintenance:', error);
         console.error('[GATEWAY] ❌ Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
@@ -175,7 +168,6 @@ export class MeeshySocketIOManager {
       
       // Note: Les événements de traduction sont gérés via le singleton ZMQ
       
-      console.log('[GATEWAY] ✅ MeeshySocketIOManager initialisé avec succès');
       
     } catch (error) {
       console.error('[GATEWAY] ❌ Erreur initialisation MeeshySocketIOManager:', error);
@@ -185,7 +177,6 @@ export class MeeshySocketIOManager {
 
   private _setupSocketEvents(): void {
     this.io.on('connection', (socket) => {
-      console.log(`🔌 Nouvelle connexion: ${socket.id}`);
       this.stats.total_connections++;
       this.stats.active_connections++;
       
@@ -206,13 +197,8 @@ export class MeeshySocketIOManager {
         replyToId?: string;
       }, callback?: (response: SocketIOResponse<{ messageId: string }>) => void) => {
         try {
-          console.log(`📨 [MESSAGE_SEND] Réception message de socket ${socket.id}`);
-          console.log(`  ├─ Conversation: ${data.conversationId}`);
-          console.log(`  ├─ Content length: ${data.content?.length || 0}`);
-          console.log(`  └─ Socket mappings: socketToUser has ${this.socketToUser.size} entries`);
 
           const userId = this.socketToUser.get(socket.id);
-          console.log(`  └─ UserId trouvé: ${userId || 'NULL'}`);
 
           if (!userId) {
             console.error(`❌ [MESSAGE_SEND] Socket ${socket.id} non authentifié`);
@@ -228,7 +214,6 @@ export class MeeshySocketIOManager {
             return;
           }
 
-          console.log(`✓ [MESSAGE_SEND] UserId ${userId} authentifié pour socket ${socket.id}`);
 
           // Validation de la longueur du message
           const validation = validateMessageLength(data.content);
@@ -293,24 +278,11 @@ export class MeeshySocketIOManager {
             }
           };
 
-          console.log(`📝 [WEBSOCKET] Nouveau message via MessagingService de ${userId} dans ${data.conversationId}`);
 
           // PHASE 3.1.1: Extraction des tokens d'authentification pour détection robuste
           const jwtToken = this.extractJWTToken(socket);
           const sessionToken = this.extractSessionToken(socket);
 
-          console.log(`🔐 [AUTH] Type détecté: ${jwtToken ? 'JWT' : sessionToken ? 'Session' : 'Unknown'}`);
-          console.log(`🔐 [AUTH] Token details:`, {
-            hasJWT: !!jwtToken,
-            hasSession: !!sessionToken,
-            jwtPreview: jwtToken ? jwtToken.substring(0, 20) + '...' : 'none',
-            sessionPreview: sessionToken ? sessionToken.substring(0, 20) + '...' : 'none',
-            socketAuth: socket.handshake?.auth,
-            socketHeaders: {
-              authorization: socket.handshake?.headers?.authorization ? 'present' : 'missing',
-              sessionToken: socket.handshake?.headers?.['x-session-token'] ? 'present' : 'missing'
-            }
-          });
 
           // PHASE 3.1: Utilisation du MessagingService unifié avec contexte d'auth
           const response: MessageResponse = await this.messagingService.handleMessage(
@@ -528,7 +500,6 @@ export class MeeshySocketIOManager {
             }
           };
 
-          console.log(`📎 [WEBSOCKET] Nouveau message avec ${data.attachmentIds.length} attachments de ${userId} dans ${data.conversationId}`);
 
           const jwtToken = this.extractJWTToken(socket);
           const sessionToken = this.extractSessionToken(socket);
@@ -614,10 +585,6 @@ export class MeeshySocketIOManager {
             });
             
             if (message) {
-              console.log(`📤 [BROADCAST] Envoi message avec ${message.attachments?.length || 0} attachments et replyTo:`, {
-                hasReplyTo: !!(message as any).replyTo,
-                replyToId: message.replyToId
-              });
 
               // Utiliser la méthode _broadcastNewMessage pour un formatting cohérent
               const messageWithTimestamp = {
@@ -660,7 +627,6 @@ export class MeeshySocketIOManager {
           // Pré-charger/rafraîchir les stats - utiliser l'ID original pour Prisma
           this._sendConversationStatsToSocket(socket, data.conversationId).catch(() => {});
         }
-        console.log(`👥 Socket ${socket.id} rejoint ${room} (original: ${data.conversationId} → normalized: ${normalizedId})`);
       });
 
       // Gestion des rooms conversation: leave
@@ -675,7 +641,6 @@ export class MeeshySocketIOManager {
             userId 
           });
         }
-        console.log(`👥 Socket ${socket.id} quitte ${room} (original: ${data.conversationId})`);
       });
 
       // Setup video/audio call events (Phase 1A: P2P MVP)
@@ -733,23 +698,9 @@ export class MeeshySocketIOManager {
   }
 
   private async _handleTokenAuthentication(socket: any): Promise<void> {
-    console.log('');
-    console.log('╔═══════════════════════════════════════════════════════════════╗');
-    console.log('║  🔐 DÉBUT AUTHENTIFICATION SOCKET                             ║');
-    console.log('╚═══════════════════════════════════════════════════════════════╝');
-    console.log(`  🆔 Socket ID: ${socket.id}`);
-    console.log(`  ⏰ Timestamp: ${new Date().toISOString()}`);
-    console.log('');
     
     try {
       // Debug complet de socket.handshake
-      console.log('  📋 DONNÉES HANDSHAKE:');
-      console.log('  ├─ Has Handshake:', !!socket.handshake);
-      console.log('  ├─ Available Headers:', Object.keys(socket.handshake?.headers || {}));
-      console.log('  ├─ Auth Object:', socket.handshake?.auth);
-      console.log('  ├─ Query Params:', socket.handshake?.query);
-      console.log('  └─ Client Address:', socket.handshake?.address);
-      console.log('');
 
       // Récupérer les tokens depuis différentes sources avec types précis
       const authToken = socket.handshake?.headers?.authorization?.replace('Bearer ', '') || 
@@ -762,33 +713,13 @@ export class MeeshySocketIOManager {
       const tokenType = socket.handshake?.auth?.tokenType;
       const sessionType = socket.handshake?.auth?.sessionType;
       
-      console.log('  🔑 EXTRACTION DES TOKENS:');
-      console.log('  ├─ JWT Token:', {
-        found: !!authToken,
-        type: tokenType || 'unknown',
-        length: authToken?.length || 0,
-        preview: authToken ? authToken.substring(0, 30) + '...' : 'N/A',
-        source: authToken ? (socket.handshake?.headers?.authorization ? 'header' : 'auth') : 'none'
-      });
-      console.log('  └─ Session Token:', {
-        found: !!sessionToken,
-        type: sessionType || 'unknown',
-        length: sessionToken?.length || 0,
-        preview: sessionToken ? sessionToken.substring(0, 30) + '...' : 'N/A',
-        source: sessionToken ? (socket.handshake?.headers?.['x-session-token'] ? 'header' : 'auth') : 'none'
-      });
-      console.log('');
 
       // Tentative d'authentification avec Bearer token (utilisateur authentifié)
       if (authToken && (!tokenType || tokenType === 'jwt')) {
-        console.log('  🔐 TENTATIVE AUTHENTIFICATION JWT...');
         try {
           const jwtSecret = process.env.JWT_SECRET || 'default-secret';
           const decoded = jwt.verify(authToken, jwtSecret) as any;
           
-          console.log('  ✓ Token JWT vérifié avec succès');
-          console.log('    ├─ User ID:', decoded.userId);
-          console.log('    └─ Token Type:', tokenType || 'jwt');
 
           // Récupérer l'utilisateur depuis la base de données
           const dbUser = await this.prisma.user.findUnique({
@@ -802,10 +733,6 @@ export class MeeshySocketIOManager {
           });
 
           if (dbUser && dbUser.isActive) {
-            console.log('  ✓ Utilisateur trouvé en base de données');
-            console.log('    ├─ Username:', dbUser.username);
-            console.log('    ├─ Language:', dbUser.systemLanguage);
-            console.log('    └─ Active:', dbUser.isActive);
             
             // Créer l'utilisateur Socket.IO
             const user: SocketUser = {
@@ -821,7 +748,6 @@ export class MeeshySocketIOManager {
               // Déconnecter l'ancienne socket
               const oldSocket = this.io.sockets.sockets.get(existingUser.socketId);
               if (oldSocket) {
-                console.log(`  🔄 Déconnexion ancienne socket ${existingUser.socketId}`);
                 oldSocket.disconnect(true);
               }
               this.socketToUser.delete(existingUser.socketId);
@@ -841,47 +767,26 @@ export class MeeshySocketIOManager {
             // Rejoindre la room globale si elle existe (conversation "meeshy")
             try {
               socket.join(`conversation_any`);
-              console.log(`  👥 Rejoint conversation globale "meeshy"`);
             } catch {}
 
             // CORRECTION CRITIQUE: Émettre l'événement AUTHENTICATED IMMÉDIATEMENT
-            console.log('');
-            console.log('  📤 ÉMISSION ÉVÉNEMENT AUTHENTICATED...');
             const authResponse = { 
               success: true, 
               user: { id: user.id, language: user.language, isAnonymous: false } 
             };
-            console.log('    ├─ Event:', SERVER_EVENTS.AUTHENTICATED);
-            console.log('    ├─ Success:', authResponse.success);
-            console.log('    └─ User:', authResponse.user);
             
             socket.emit(SERVER_EVENTS.AUTHENTICATED, authResponse);
             
-            console.log('');
-            console.log('╔═══════════════════════════════════════════════════════════════╗');
-            console.log('║  ✅ AUTHENTIFICATION JWT RÉUSSIE                              ║');
-            console.log('╚═══════════════════════════════════════════════════════════════╝');
-            console.log(`  👤 User: ${dbUser.username} (${user.id})`);
-            console.log(`  🔌 Socket: ${socket.id}`);
-            console.log(`  ⏰ Timestamp: ${new Date().toISOString()}`);
-            console.log('');
             
             return; // Authentification réussie
           } else {
-            console.log('  ❌ Utilisateur non trouvé ou inactif');
-            console.log('    └─ User ID:', decoded.userId);
           }
         } catch (jwtError: any) {
-          console.log('  ❌ Erreur vérification JWT');
-          console.log('    ├─ Error:', jwtError.message);
-          console.log('    └─ Tentative avec session token...');
         }
       }
 
       // Tentative d'authentification avec session token (participant anonyme)
       if (sessionToken && (!sessionType || sessionType === 'anonymous')) {
-        console.log('  🔐 TENTATIVE AUTHENTIFICATION SESSION TOKEN...');
-        console.log('    └─ Type:', sessionType || 'anonymous');
         
         const participant = await this.prisma.anonymousParticipant.findUnique({
           where: { sessionToken },
@@ -900,10 +805,6 @@ export class MeeshySocketIOManager {
         if (participant && participant.isActive && participant.shareLink.isActive) {
           // Vérifier l'expiration du lien
           if (!participant.shareLink.expiresAt || participant.shareLink.expiresAt > new Date()) {
-            console.log('  ✓ Session token valide');
-            console.log('    ├─ Participant ID:', participant.id);
-            console.log('    ├─ Link ID:', participant.shareLink.linkId);
-            console.log('    └─ Language:', participant.language);
             
             // Créer l'utilisateur Socket.IO anonyme
             const user: SocketUser = {
@@ -919,7 +820,6 @@ export class MeeshySocketIOManager {
             if (existingUser && existingUser.socketId !== socket.id) {
               const oldSocket = this.io.sockets.sockets.get(existingUser.socketId);
               if (oldSocket) {
-                console.log(`  🔄 Déconnexion ancienne socket ${existingUser.socketId}`);
                 oldSocket.disconnect(true);
               }
               this.socketToUser.delete(existingUser.socketId);
@@ -939,51 +839,25 @@ export class MeeshySocketIOManager {
             try {
               const conversationRoom = `conversation_${participant.shareLink.id}`;
               socket.join(conversationRoom);
-              console.log(`  👥 Rejoint conversation ${conversationRoom}`);
             } catch {}
 
             // CORRECTION CRITIQUE: Émettre l'événement AUTHENTICATED IMMÉDIATEMENT
-            console.log('');
-            console.log('  📤 ÉMISSION ÉVÉNEMENT AUTHENTICATED...');
             const authResponse = { 
               success: true, 
               user: { id: user.id, language: user.language, isAnonymous: true } 
             };
-            console.log('    ├─ Event:', SERVER_EVENTS.AUTHENTICATED);
-            console.log('    ├─ Success:', authResponse.success);
-            console.log('    └─ User:', authResponse.user);
             
             socket.emit(SERVER_EVENTS.AUTHENTICATED, authResponse);
             
-            console.log('');
-            console.log('╔═══════════════════════════════════════════════════════════════╗');
-            console.log('║  ✅ AUTHENTIFICATION ANONYME RÉUSSIE                          ║');
-            console.log('╚═══════════════════════════════════════════════════════════════╝');
-            console.log(`  👤 Participant: ${user.id}`);
-            console.log(`  🔌 Socket: ${socket.id}`);
-            console.log(`  ⏰ Timestamp: ${new Date().toISOString()}`);
-            console.log('');
             
             return; // Authentification anonyme réussie
           } else {
-            console.log('  ❌ Lien de partage expiré');
-            console.log('    ├─ Participant ID:', participant.id);
-            console.log('    └─ Expired at:', participant.shareLink.expiresAt);
           }
         } else {
-          console.log('  ❌ Participant anonyme non trouvé ou inactif');
         }
       }
 
       // Aucune authentification valide trouvée
-      console.log('');
-      console.log('╔═══════════════════════════════════════════════════════════════╗');
-      console.log('║  ❌ ÉCHEC AUTHENTIFICATION                                     ║');
-      console.log('╚═══════════════════════════════════════════════════════════════╝');
-      console.log(`  🔌 Socket: ${socket.id}`);
-      console.log('  ⚠️ Aucun token valide trouvé');
-      console.log('  📤 Émission AUTHENTICATED avec success: false');
-      console.log('');
       
       // CORRECTION CRITIQUE: Émettre l'événement AUTHENTICATED avec échec
       const failureResponse = { 
@@ -997,14 +871,6 @@ export class MeeshySocketIOManager {
       });
 
     } catch (error: any) {
-      console.log('');
-      console.log('╔═══════════════════════════════════════════════════════════════╗');
-      console.log('║  ❌ ERREUR DURANT AUTHENTIFICATION                            ║');
-      console.log('╚═══════════════════════════════════════════════════════════════╝');
-      console.log(`  🔌 Socket: ${socket.id}`);
-      console.log('  ⚠️ Error:', error.message);
-      console.log('  📤 Émission AUTHENTICATED avec success: false');
-      console.log('');
       
       // CORRECTION CRITIQUE: Émettre l'événement AUTHENTICATED avec erreur
       socket.emit(SERVER_EVENTS.AUTHENTICATED, { 
@@ -1026,7 +892,6 @@ export class MeeshySocketIOManager {
           const jwtSecret = process.env.JWT_SECRET || 'default-secret';
           const decoded = jwt.verify(data.sessionToken, jwtSecret) as any;
           
-          console.log(`🔐 Token JWT vérifié pour utilisateur: ${decoded.userId}`);
           
           // Récupérer l'utilisateur depuis la base de données
           const dbUser = await this.prisma.user.findUnique({
@@ -1046,12 +911,9 @@ export class MeeshySocketIOManager {
               isAnonymous: false,
               language: data.language || dbUser.systemLanguage
             };
-            console.log(`✅ Utilisateur authentifié: ${user.id}`);
           } else {
-            console.log(`❌ Utilisateur ${decoded.userId} non trouvé ou inactif`);
           }
         } catch (jwtError) {
-          console.log(`⚠️ Token JWT invalide, tentative comme sessionToken anonyme`);
           
           // Si ce n'est pas un JWT valide, essayer comme sessionToken anonyme
           const anonymousUser = await this.prisma.anonymousParticipant.findUnique({
@@ -1078,12 +940,9 @@ export class MeeshySocketIOManager {
                 language: data.language || anonymousUser.language || 'fr',
                 sessionToken: anonymousUser.sessionToken
               };
-              console.log(`✅ Participant anonyme authentifié: ${user.id}`);
             } else {
-              console.log(`❌ Lien de partage expiré pour participant ${anonymousUser.id}`);
             }
           } else {
-            console.log(`❌ Participant anonyme non trouvé ou inactif`);
           }
         }
       } else if (data.userId) {
@@ -1110,7 +969,6 @@ export class MeeshySocketIOManager {
           // Déconnecter l'ancienne socket
           const oldSocket = this.io.sockets.sockets.get(existingUser.socketId);
           if (oldSocket) {
-            console.log(`🔄 Déconnexion de l'ancienne socket ${existingUser.socketId} pour ${user.isAnonymous ? 'anonyme' : 'utilisateur'} ${user.id}`);
             oldSocket.disconnect(true);
           }
           this.socketToUser.delete(existingUser.socketId);
@@ -1134,15 +992,12 @@ export class MeeshySocketIOManager {
         // Rejoindre la room globale "meeshy"
         try {
           socket.join(`conversation_any`);
-          console.log(`👥 Utilisateur ${user.id} rejoint conversation globale "meeshy"`);
         } catch {}
         
         socket.emit(SERVER_EVENTS.AUTHENTICATED, { success: true, user: { id: user.id, language: user.language } });
-        console.log(`✅ Utilisateur authentifié: ${user.id} (${user.isAnonymous ? 'anonyme' : 'connecté'})`);
         
       } else {
         socket.emit(SERVER_EVENTS.AUTHENTICATED, { success: false, error: 'Authentication failed' });
-        console.log(`❌ Échec authentification pour socket ${socket.id}`);
       }
       
     } catch (error) {
@@ -1153,7 +1008,6 @@ export class MeeshySocketIOManager {
 
   private async _joinUserConversations(socket: any, userId: string, isAnonymous: boolean) {
     try {
-      console.log(`📊 [JOIN_CONVERSATIONS] Début pour userId: ${userId} (anonyme: ${isAnonymous})`);
 
       let conversations: any[] = [];
 
@@ -1163,23 +1017,19 @@ export class MeeshySocketIOManager {
           where: { id: userId },
           select: { conversationId: true }
         });
-        console.log(`📊 [JOIN_CONVERSATIONS] Trouvé ${conversations.length} conversations pour utilisateur anonyme ${userId}`);
       } else {
         // Conversations pour utilisateurs authentifiés
         conversations = await this.prisma.conversationMember.findMany({
           where: { userId: userId, isActive: true },
           select: { conversationId: true }
         });
-        console.log(`📊 [JOIN_CONVERSATIONS] Trouvé ${conversations.length} conversations pour utilisateur ${userId}`);
       }
 
       // Rejoindre les rooms Socket.IO
       for (const conv of conversations) {
         socket.join(`conversation_${conv.conversationId}`);
-        console.log(`👥 [JOIN_CONVERSATIONS] Utilisateur ${userId} rejoint conversation_${conv.conversationId}`);
       }
 
-      console.log(`✅ [JOIN_CONVERSATIONS] Terminé - ${conversations.length} rooms rejointes pour ${userId}`);
 
     } catch (error) {
       console.error(`❌ [JOIN_CONVERSATIONS] Erreur jointure conversations pour ${userId}:`, error);
@@ -1200,7 +1050,6 @@ export class MeeshySocketIOManager {
         throw new Error('User not authenticated');
       }
       
-      console.log(`📝 Nouveau message de ${userId} dans ${data.conversationId}: ${data.content.substring(0, 50)}...`);
       
       // Préparer les données du message
       const connectedUser = this.connectedUsers.get(userId);
@@ -1316,7 +1165,6 @@ export class MeeshySocketIOManager {
       // S'assurer que l'auteur reçoit aussi (au cas où il ne serait pas dans la room encore)
       socket.emit(SERVER_EVENTS.MESSAGE_NEW, messagePayload);
       
-      console.log(`✅ Message ${result.messageId} sauvegardé et diffusé à la conversation ${data.conversationId}`);
       
       // 4. ENVOYER LES NOTIFICATIONS DE MESSAGE
       const senderId = saved?.senderId || saved?.anonymousSenderId;
@@ -1346,7 +1194,6 @@ export class MeeshySocketIOManager {
         return;
       }
       
-      console.log(`🌍 Demande de traduction: ${data.messageId} -> ${data.targetLanguage}`);
       
       // Récupérer la traduction (depuis le cache ou la base de données)
       const translation = await this.translationService.getTranslation(data.messageId, data.targetLanguage);
@@ -1360,7 +1207,6 @@ export class MeeshySocketIOManager {
         });
         
         this.stats.translations_sent++;
-        console.log(`✅ Traduction envoyée: ${data.messageId} -> ${data.targetLanguage}`);
         
       } else {
         socket.emit(SERVER_EVENTS.TRANSLATION_ERROR, {
@@ -1369,7 +1215,6 @@ export class MeeshySocketIOManager {
           error: 'Translation not available'
         });
         
-        console.log(`⚠️ Traduction non disponible: ${data.messageId} -> ${data.targetLanguage}`);
       }
       
     } catch (error) {
@@ -1383,13 +1228,6 @@ export class MeeshySocketIOManager {
     try {
       const { result, targetLanguage } = data;
       
-      console.log(`📤 [SocketIOManager] Envoi traduction aux clients: ${result.messageId} -> ${targetLanguage}`);
-      console.log(`🔍 [SocketIOManager] Données de traduction:`, {
-        messageId: result.messageId,
-        translatedText: result.translatedText?.substring(0, 50) + '...',
-        targetLanguage,
-        confidenceScore: result.confidenceScore
-      });
       
       // Récupérer la conversation du message pour broadcast
       let conversationIdForBroadcast: string | null = null;
@@ -1421,12 +1259,6 @@ export class MeeshySocketIOManager {
         }]
       };
       
-      console.log(`🔍 [SocketIOManager] Format de traduction préparé:`, {
-        messageId: translationData.messageId,
-        translationsCount: translationData.translations.length,
-        targetLanguage: translationData.translations[0].targetLanguage,
-        translatedTextPreview: translationData.translations[0].translatedContent.substring(0, 50) + '...'
-      });
       
       // Diffuser dans la room de conversation (méthode principale et UNIQUE)
       if (conversationIdForBroadcast) {
@@ -1436,32 +1268,15 @@ export class MeeshySocketIOManager {
         const roomClients = this.io.sockets.adapter.rooms.get(roomName);
         const clientCount = roomClients ? roomClients.size : 0;
         
-        console.log(`📡 [SocketIOManager] Broadcasting traduction vers room ${roomName} (${clientCount} clients) - original: ${conversationIdForBroadcast}`);
-        console.log(`🔍 [SocketIOManager] Détails de la diffusion WebSocket:`, {
-          roomName,
-          clientCount,
-          eventType: SERVER_EVENTS.MESSAGE_TRANSLATION,
-          messageId: result.messageId,
-          targetLanguage,
-          translatedTextLength: result.translatedText?.length || 0,
-          modelType: result.translationModel || result.modelType,
-          hasTranslationData: !!translationData,
-          translationsArrayLength: translationData.translations.length
-        });
         
         // Log des clients dans la room pour debug
         if (clientCount > 0 && roomClients) {
           const clientSocketIds = Array.from(roomClients);
-          console.log(`👥 [SocketIOManager] Clients dans la room ${roomName}:`, clientSocketIds.map(sid => {
-            const user = this.socketToUser.get(sid);
-            return user ? `${user} (${sid.substr(0, 8)})` : `unknown (${sid.substr(0, 8)})`;
-          }));
         }
         
         this.io.to(roomName).emit(SERVER_EVENTS.MESSAGE_TRANSLATION, translationData);
         this.stats.translations_sent += clientCount;
         
-        console.log(`✅ [SocketIOManager] Traduction ${result.messageId} -> ${targetLanguage} diffusée vers ${clientCount} clients dans la room`);
       } else {
         console.warn(`⚠️ [SocketIOManager] Aucune conversation trouvée pour le message ${result.messageId}`);
         
@@ -1478,7 +1293,6 @@ export class MeeshySocketIOManager {
         }
         
         if (directSendCount > 0) {
-          console.log(`📡 [SocketIOManager] Fallback: Traduction envoyée directement à ${directSendCount} utilisateurs (pas de room)`);
         }
       }
       
@@ -1545,7 +1359,6 @@ export class MeeshySocketIOManager {
           });
 
           if (activeParticipations.length > 0) {
-            console.log(`📞 User ${userId} disconnected while in ${activeParticipations.length} active call(s). Auto-leaving...`);
 
             for (const participation of activeParticipations) {
               try {
@@ -1554,7 +1367,6 @@ export class MeeshySocketIOManager {
                   callId: participation.callSessionId,
                   userId
                 });
-                console.log(`✅ User ${userId} auto-left call ${participation.callSessionId}`);
               } catch (error) {
                 console.error(`❌ Error auto-leaving call ${participation.callSessionId}:`, error);
               }
@@ -1571,15 +1383,12 @@ export class MeeshySocketIOManager {
         // CORRECTION: Mettre à jour l'état en ligne/hors ligne selon le type d'utilisateur et broadcaster
         if (isAnonymous) {
           await this.maintenanceService.updateAnonymousOnlineStatus(userId, false, true);
-          console.log(`🔌 Déconnexion participant anonyme: ${userId} (socket: ${socket.id})`);
         } else {
           await this.maintenanceService.updateUserOnlineStatus(userId, false, true);
-          console.log(`🔌 Déconnexion utilisateur: ${userId} (socket: ${socket.id})`);
         }
       } else {
         // Cette socket était déjà remplacée, juste nettoyer socketToUser
         this.socketToUser.delete(socket.id);
-        console.log(`🔌 Déconnexion socket obsolète ignorée: ${socket.id} pour utilisateur ${userId}`);
       }
     }
 
@@ -1614,7 +1423,6 @@ export class MeeshySocketIOManager {
             isOnline
           });
           
-          console.log(`📡 [STATUS] Statut participant anonyme ${displayName} broadcasté: ${isOnline ? 'en ligne' : 'hors ligne'}`);
         }
       } else {
         const user = await this.prisma.user.findUnique({
@@ -1645,7 +1453,6 @@ export class MeeshySocketIOManager {
             });
           }
           
-          console.log(`📡 [STATUS] Statut utilisateur ${displayName} broadcasté dans ${user.conversations.length} conversations: ${isOnline ? 'en ligne' : 'hors ligne'}`);
         }
       }
     } catch (error) {
@@ -1727,7 +1534,6 @@ export class MeeshySocketIOManager {
 
       const room = `conversation_${normalizedId}`;
 
-      console.log(`⌨️ [TYPING] ${displayName} ${connectedUser.isAnonymous ? '(anonyme)' : ''} commence à taper dans ${room} (original: ${data.conversationId})`);
 
       // Émettre vers tous les autres utilisateurs de la conversation (sauf l'émetteur)
       socket.to(room).emit(SERVER_EVENTS.TYPING_START, typingEvent);
@@ -1811,7 +1617,6 @@ export class MeeshySocketIOManager {
 
       const room = `conversation_${normalizedId}`;
 
-      console.log(`⌨️ [TYPING] ${displayName} ${connectedUser.isAnonymous ? '(anonyme)' : ''} arrête de taper dans ${room} (original: ${data.conversationId})`);
 
       // Émettre vers tous les autres utilisateurs de la conversation (sauf l'émetteur)
       socket.to(room).emit(SERVER_EVENTS.TYPING_STOP, typingEvent);
@@ -1869,13 +1674,10 @@ export class MeeshySocketIOManager {
       // Normaliser l'ID de conversation pour le broadcast ET le payload
       const normalizedId = await this.normalizeConversationId(conversationId);
 
-      console.log(`[PHASE 3.1] 📤 Broadcasting message ${message.id} vers conversation ${normalizedId} (original: ${conversationId})`);
-      console.log(`[DEBUG] message.conversationId AVANT normalisation: ${message.conversationId}`);
 
       // CORRECTION CRITIQUE: Remplacer message.conversationId par l'ObjectId normalisé
       // car le message en base peut contenir l'identifier au lieu de l'ObjectId
       (message as any).conversationId = normalizedId;
-      console.log(`[DEBUG] message.conversationId APRÈS normalisation: ${message.conversationId}`);
       
       // OPTIMISATION: Récupérer les traductions et les stats en parallèle (non-bloquant)
       // Les stats seront envoyées séparément si elles prennent du temps
@@ -2025,13 +1827,10 @@ export class MeeshySocketIOManager {
       // 2. S'assurer que l'auteur reçoit aussi (au cas où il ne serait pas dans la room encore)
       if (senderSocket) {
         senderSocket.emit(SERVER_EVENTS.MESSAGE_NEW, messagePayload);
-        console.log(`📤 [PHASE 3.1] Message ${message.id} envoyé directement à l'auteur via socket`);
       } else {
-        console.log(`⚠️ [PHASE 3.1] Socket de l'auteur non fourni, broadcast room seulement`);
       }
 
       const roomClients = this.io.sockets.adapter.rooms.get(room);
-      console.log(`✅ [PHASE 3.1] Message ${message.id} broadcasté vers ${room} (${roomClients?.size || 0} clients)`);
       
       // Envoyer les notifications de message pour les utilisateurs non connectés à la conversation
       const isAnonymousSender = !!message.anonymousSenderId;
@@ -2104,34 +1903,11 @@ export class MeeshySocketIOManager {
     callback?: (response: SocketIOResponse<any>) => void
   ): Promise<void> {
     try {
-      console.log('🎯 [_handleReactionAdd] Called with:', {
-        socketId: socket.id,
-        messageId: data.messageId,
-        emoji: data.emoji
-      });
 
       const userId = this.socketToUser.get(socket.id);
-      console.log('🔍 [_handleReactionAdd] User lookup:', {
-        userId,
-        hasSocketMapping: this.socketToUser.has(socket.id),
-        socketToUserSize: this.socketToUser.size
-      });
 
       if (!userId) {
         console.error('❌ [_handleReactionAdd] No userId found for socket:', socket.id);
-        console.log('📋 [_handleReactionAdd] Current socketToUser mappings:', 
-          Array.from(this.socketToUser.entries()).map(([sid, uid]) => ({
-            socketId: sid.substring(0, 8) + '...',
-            userId: uid.substring(0, 8) + '...'
-          }))
-        );
-        console.log('📋 [_handleReactionAdd] Current connectedUsers:', 
-          Array.from(this.connectedUsers.entries()).map(([uid, user]) => ({
-            userId: uid.substring(0, 8) + '...',
-            isAnonymous: user.isAnonymous,
-            hasSessionToken: !!user.sessionToken
-          }))
-        );
         
         const errorResponse: SocketIOResponse<any> = {
           success: false,
@@ -2145,12 +1921,6 @@ export class MeeshySocketIOManager {
       const isAnonymous = user?.isAnonymous || false;
       const sessionToken = user?.sessionToken;
 
-      console.log('👤 [_handleReactionAdd] User info:', {
-        userId: userId.substring(0, 8) + '...',
-        isAnonymous,
-        hasSessionToken: !!sessionToken,
-        sessionTokenPreview: sessionToken?.substring(0, 8) + '...'
-      });
 
       // Importer le ReactionService
       const { ReactionService } = await import('../services/ReactionService.js');
@@ -2197,17 +1967,9 @@ export class MeeshySocketIOManager {
 
       if (message) {
         const normalizedConversationId = await this.normalizeConversationId(message.conversationId);
-        console.log(`📡 [REACTION_ADDED] Broadcasting à la room:`, {
-          conversationId: normalizedConversationId,
-          messageId: data.messageId,
-          emoji: data.emoji,
-          userId: userId,
-          updateEvent: updateEvent
-        });
         
         this.io.to(normalizedConversationId).emit(SERVER_EVENTS.REACTION_ADDED, updateEvent);
         
-        console.log(`✨ Réaction ajoutée et broadcastée: ${data.emoji} sur message ${data.messageId} par ${userId}`);
       } else {
         console.error(`❌ [REACTION_ADDED] Message ${data.messageId} non trouvé, impossible de broadcaster`);
       }
@@ -2292,7 +2054,6 @@ export class MeeshySocketIOManager {
         this.io.to(normalizedConversationId).emit(SERVER_EVENTS.REACTION_REMOVED, updateEvent);
       }
 
-      console.log(`🗑️ Réaction retirée: ${data.emoji} sur message ${data.messageId} par ${userId}`);
     } catch (error: any) {
       console.error('❌ Erreur lors de la suppression de réaction:', error);
       const errorResponse: SocketIOResponse<any> = {
@@ -2312,7 +2073,6 @@ export class MeeshySocketIOManager {
     callback?: (response: SocketIOResponse<any>) => void
   ): Promise<void> {
     try {
-      console.log(`🔄 [REACTION_SYNC] Demande de synchronisation pour message ${messageId} par socket ${socket.id}`);
       
       const userId = this.socketToUser.get(socket.id);
       if (!userId) {
@@ -2329,7 +2089,6 @@ export class MeeshySocketIOManager {
       const isAnonymous = user?.isAnonymous || false;
       const sessionToken = user?.sessionToken;
 
-      console.log(`👤 [REACTION_SYNC] Utilisateur: ${userId}, isAnonymous: ${isAnonymous}`);
 
       // Importer le ReactionService
       const { ReactionService } = await import('../services/ReactionService.js');
@@ -2342,13 +2101,6 @@ export class MeeshySocketIOManager {
         currentAnonymousUserId: isAnonymous && sessionToken ? sessionToken : undefined
       });
 
-      console.log(`✅ [REACTION_SYNC] Réactions récupérées:`, {
-        messageId,
-        reactionsCount: reactionSync.reactions.length,
-        userReactionsCount: reactionSync.userReactions.length,
-        reactions: reactionSync.reactions,
-        userReactions: reactionSync.userReactions
-      });
 
       // Envoyer la réponse au client
       const successResponse: SocketIOResponse<any> = {
@@ -2357,7 +2109,6 @@ export class MeeshySocketIOManager {
       };
       if (callback) callback(successResponse);
 
-      console.log(`🔄 Synchronisation des réactions pour message ${messageId} terminée pour ${userId}`);
     } catch (error: any) {
       console.error('❌ Erreur lors de la synchronisation des réactions:', error);
       const errorResponse: SocketIOResponse<any> = {
@@ -2379,7 +2130,6 @@ export class MeeshySocketIOManager {
       const socket = this.io.sockets.sockets.get(user.socketId);
       if (socket) {
         socket.disconnect(true);
-        console.log(`🔌 Utilisateur ${userId} déconnecté par admin`);
         return true;
       }
     }
@@ -2470,7 +2220,6 @@ export class MeeshySocketIOManager {
         });
       }
 
-      console.log(`📢 [NOTIFICATIONS] ${conversationMembers.length} notifications créées pour le message ${message.id}`);
     } catch (error) {
       console.error('❌ [NOTIFICATIONS] Erreur création notifications message:', error);
     }
@@ -2484,7 +2233,6 @@ export class MeeshySocketIOManager {
       this.userSockets.set(userId, new Set());
     }
     this.userSockets.get(userId)!.add(socketId);
-    console.log(`📌 [USER_SOCKETS] Socket ${socketId} ajouté pour utilisateur ${userId}. Total: ${this.userSockets.get(userId)!.size}`);
   }
 
   /**
@@ -2494,12 +2242,10 @@ export class MeeshySocketIOManager {
     const userSocketsSet = this.userSockets.get(userId);
     if (userSocketsSet) {
       userSocketsSet.delete(socketId);
-      console.log(`📌 [USER_SOCKETS] Socket ${socketId} supprimé pour utilisateur ${userId}. Restant: ${userSocketsSet.size}`);
 
       // Si l'utilisateur n'a plus de sockets, supprimer l'entrée
       if (userSocketsSet.size === 0) {
         this.userSockets.delete(userId);
-        console.log(`📌 [USER_SOCKETS] Aucun socket restant pour ${userId}, suppression de l'entrée`);
       }
     }
   }
@@ -2524,7 +2270,6 @@ export class MeeshySocketIOManager {
       
       await this.translationService.close();
       this.io.close();
-      console.log('[GATEWAY] ✅ MeeshySocketIOManager fermé');
     } catch (error) {
       console.error(`❌ Erreur fermeture MeeshySocketIOManager: ${error}`);
     }

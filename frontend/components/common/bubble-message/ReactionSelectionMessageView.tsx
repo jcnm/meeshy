@@ -166,7 +166,6 @@ export const ReactionSelectionMessageView = memo(function ReactionSelectionMessa
       // Ajouter la réaction via le hook
       const success = await addReaction(emoji);
       
-      console.log('[ReactionSelection] addReaction result:', success, 'emoji:', emoji);
       
       // Toujours notifier le parent pour fermer la vue
       // Le parent gérera la fermeture via exitMode()

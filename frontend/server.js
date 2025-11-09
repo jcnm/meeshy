@@ -40,11 +40,7 @@ app.prepare().then(() => {
       process.exit(1);
     })
     .listen(port, '0.0.0.0', () => {
-      console.log(`> ✅ Ready on https://${hostname}:${port}`);
-      console.log(`> 📱 Access from network: https://${localIp}:${port}`);
-      console.log(`> 💻 Access locally: https://localhost:${port}`);
       if (domain !== 'localhost') {
-        console.log(`> 🌐 Custom domain: https://${domain}:${port}`);
       }
     });
 });

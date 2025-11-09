@@ -72,7 +72,6 @@ function loadConfiguration(): Config {
   const nodeEnv = process.env.NODE_ENV || 'development';
   const isDev = nodeEnv === 'development';
   const dbUrl = process.env.DATABASE_URL || '';
-  console.log(`[GATEWAY] Loading configuration for environment: ${dbUrl}`);
   return {
     nodeEnv,
     isDev,
@@ -749,7 +748,6 @@ class MeeshyServer {
     ║  📱 Network:      ${protocol}://${localIp}:${config.port}${' '.repeat(38 - protocol.length - localIp.length - config.port.toString().length)} ║
     ╚══════════════════════════════════════════════════════════════════╝
         `.trim();
-        console.log(`[GATEWAY] ${banner}`);
         logger.info(`🔌 WebSocket: ${wsProtocol}://localhost:${config.port}`);
       }else{
         logger.info(`🌐 Local access only (no custom domain configured)`);
@@ -769,13 +767,11 @@ class MeeshyServer {
     ║  📱 Network:      ${protocol}://${localIp}:${config.port}${' '.repeat(38 - protocol.length - localIp.length - config.port.toString().length)} ║
     ╚══════════════════════════════════════════════════════════════════╝
         `.trim();
-        console.log(`[GATEWAY] ${banner}`);
         logger.info(`🔌 WebSocket: ${wsProtocol}://gate.${domain}:${config.port}`);
       }
       
     }
   }
-
 
 
   public async start(): Promise<void> {

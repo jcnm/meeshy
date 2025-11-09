@@ -221,13 +221,11 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
     // CRITIQUE: Ne mettre à jour QUE si les valeurs ont vraiment changé
     if (idsString !== prevAttachmentIdsRef.current) {
-      console.log('🔄 [BubbleStreamPage] Mise à jour attachmentIds:', ids);
       setAttachmentIds(ids);
       prevAttachmentIdsRef.current = idsString;
     }
 
     if (mimeTypesString !== prevMimeTypesRef.current) {
-      console.log('🔄 [BubbleStreamPage] Mise à jour mimeTypes:', mimeTypes);
       setAttachmentMimeTypes(mimeTypes);
       prevMimeTypesRef.current = mimeTypesString;
     }
@@ -237,7 +235,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
   // Debug: log quand attachmentIds change
   useEffect(() => {
-    console.log('📎 [BubbleStreamPage] attachmentIds mis à jour:', attachmentIds);
   }, [attachmentIds]);
   
   // Détection mobile
@@ -282,7 +279,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
   // Handler pour naviguer vers un message depuis la galerie
   const handleNavigateToMessageFromGallery = useCallback((messageId: string) => {
-    console.log('🖼️ Navigation vers le message depuis la galerie:', messageId);
     
     // Fermer la galerie
     setGalleryOpen(false);
@@ -305,7 +301,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           messageElement.classList.remove('ring-2', 'ring-blue-500', 'ring-offset-2');
         }, 2000);
         
-        console.log('✅ Scroll vers le message effectué');
       } else {
         console.warn('⚠️ Message non trouvé dans le DOM:', messageId);
       }
@@ -362,7 +357,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   }, []);
 
   const handleNavigateToMessage = useCallback((messageId: string) => {
-    console.log('🔍 Navigation vers le message:', messageId);
     
     // Chercher l'élément du message dans le DOM
     const messageElement = document.getElementById(`message-${messageId}`);
@@ -420,7 +414,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     }, []);
     
     if (uniqueUsers.length !== users.length) {
-      console.log(`🔧 Déduplication: ${users.length} → ${uniqueUsers.length} utilisateurs`);
     }
     
     return uniqueUsers;
@@ -437,7 +430,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       // Pour les sessions anonymes, ne pas charger les participants via l'API
       // car les participants sont déjà inclus dans les données de la conversation partagée
       if (isAnonymousMode) {
-        console.log('[BubbleStreamPage] Session anonyme - pas de chargement des participants via API');
         return;
       }
       
@@ -456,7 +448,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       // Pour les sessions anonymes, ne pas charger les participants via l'API
       // car les participants sont déjà inclus dans les données de la conversation partagée
       if (isAnonymousMode) {
-        console.log('[BubbleStreamPage] Session anonyme - pas de chargement des participants via API');
         return [];
       }
       
@@ -495,10 +486,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     // Le client peut être connecté à plusieurs rooms, il faut filtrer pour n'afficher
     // que les indicateurs de frappe de la conversation actuelle
     if (typingConversationId !== conversationIdRef.current) {
-      console.log('[BubbleStreamPage] 🚫 Événement de frappe ignoré (autre conversation):', {
-        typingConversationId,
-        currentConversationId: conversationIdRef.current
-      });
       return;
     }
 
@@ -543,16 +530,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   }, []);
 
   const handleTranslation = useCallback((messageId: string, translations: any[]) => {
-    console.log(`🌍 [BubbleStreamPage] Traduction reçue via WebSocket:`, {
-      messageId,
-      translationsCount: translations.length,
-      translations: translations.map(t => ({
-        targetLanguage: t.targetLanguage || t.language,
-        contentPreview: (t.translatedContent || t.content)?.substring(0, 50) + '...',
-        hasTranslatedContent: !!t.translatedContent,
-        hasContent: !!t.content
-      }))
-    });
     
     // Mettre à jour le message avec les nouvelles traductions
     updateMessageTranslations(messageId, (prevMessage) => {
@@ -561,11 +538,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         return prevMessage;
       }
       
-      console.log(`🔍 [BubbleStreamPage] Message avant mise à jour des traductions:`, {
-        messageId: prevMessage.id,
-        existingTranslationsCount: prevMessage.translations?.length || 0,
-        originalLanguage: prevMessage.originalLanguage
-      });
       
       // Fusionner les nouvelles traductions avec les existantes
       const existingTranslations = prevMessage.translations || [];
@@ -612,14 +584,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         translations: updatedTranslations
       };
       
-      console.log(`✅ [BubbleStreamPage] Message après mise à jour des traductions:`, {
-        messageId: updatedMessage.id,
-        updatedTranslationsCount: updatedTranslations.length,
-        translationsPreview: updatedTranslations.map(t => ({
-          language: t.targetLanguage,
-          contentLength: t.translatedContent?.length || 0
-        }))
-      });
       
       return updatedMessage;
     });
@@ -668,7 +632,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   // Écouter l'événement CONVERSATION_JOINED pour obtenir l'ObjectId normalisé
   useEffect(() => {
     const unsubscribe = meeshySocketIOService.onConversationJoined((data: { conversationId: string; userId: string }) => {
-      console.log('[BubbleStreamPage] 🔗 CONVERSATION_JOINED reçu:', data);
       normalizedConversationIdRef.current = data.conversationId;
     });
 
@@ -686,11 +649,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   // Handler pour les nouveaux messages reçus via WebSocket avec traductions optimisées
   // CRITIQUE: Utiliser des REFS pour éviter les re-créations et désinscriptions
   const handleNewMessage = useCallback((message: Message) => {
-    console.log('[BubbleStreamPage] 🔥 NOUVEAU MESSAGE REÇU:', {
-      messageId: message.id,
-      content: message.content?.substring(0, 50),
-      conversationId: message.conversationId
-    });
 
     // FILTRAGE SIMPLIFIÉ: Le backend envoie maintenant TOUJOURS l'ObjectId normalisé
     // Plus besoin de triple comparaison ni de getCurrentConversationIdentifier()
@@ -700,19 +658,11 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     // Comparer avec l'ObjectId normalisé reçu lors du CONVERSATION_JOINED
     const shouldAccept = message.conversationId === normalizedConvId;
 
-    console.log('[BubbleStreamPage] Filtrage:', {
-      messageConvId: message.conversationId,
-      propConvId: currentConvId,
-      normalizedConvId,
-      shouldAccept
-    });
 
     if (!shouldAccept) {
-      console.log('[BubbleStreamPage] ❌ Message IGNORÉ (autre conversation)');
       return;
     }
 
-    console.log('[BubbleStreamPage] ✅ Message ACCEPTÉ');
 
     // Message reçu via WebSocket
 
@@ -764,20 +714,12 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     // CAS 2: CORRECTION MAJEURE - Si c'est un message d'un AUTRE utilisateur anonyme
     // et que anonymousSender manque, l'enrichir depuis activeUsers
     else if (message.anonymousSenderId && !message.anonymousSender) {
-      console.log('[BubbleStreamPage] 🔍 Message anonyme sans anonymousSender détecté, recherche dans activeUsers...', {
-        anonymousSenderId: message.anonymousSenderId,
-        activeUsersCount: activeUsersRef.current.length
-      });
 
       // CORRECTION: Utiliser activeUsersRef.current au lieu de activeUsers
       // pour éviter les problèmes de closure stale dans le callback
       const senderUser = activeUsersRef.current.find(u => u.id === message.anonymousSenderId);
 
       if (senderUser) {
-        console.log('[BubbleStreamPage] ✅ Utilisateur anonyme trouvé, enrichissement du message:', {
-          username: senderUser.username,
-          id: senderUser.id
-        });
 
         enrichedMessage.anonymousSender = {
           id: senderUser.id,
@@ -844,12 +786,10 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     currentUser: user,
     onNewMessage: handleNewMessage,
     onMessageEdited: (message: Message) => {
-      console.log('✏️ [BubbleStreamPage] Message édité reçu via Socket.IO:', message.id);
       updateMessageTranslations(message.id, message);
       toast.info(tCommon('messages.messageEditedByOther'));
     },
     onMessageDeleted: (messageId: string) => {
-      console.log('🗑️ [BubbleStreamPage] Message supprimé reçu via Socket.IO:', messageId);
       removeMessage(messageId);
       toast.info(tCommon('messages.messageDeletedByOther'));
     },
@@ -967,7 +907,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       return;
     }
     
-    console.log('Initialisation de la connexion WebSocket...');
     
     // Attendre que les traductions soient chargées avant d'afficher les toasts
     if (isLoadingTranslations) {
@@ -985,20 +924,10 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     // Délai pour vérifier la connexion établie
     const initTimeout = setTimeout(() => {
       const newDiagnostics = getDiagnostics();
-      console.log('Diagnostic après délai:', newDiagnostics);
       
       if (connectionStatus.isConnected && connectionStatus.hasSocket && !hasShownConnectionToast) {
-        console.log(`✅ ${t('bubbleStream.websocketConnected')}`);
-        console.log(`${t('bubbleStream.connected')}`);
         setHasShownConnectionToast(true);
       } else if (!connectionStatus.isConnected || !connectionStatus.hasSocket) {
-        console.log('WebSocket non connecté après délai');
-        console.log('Diagnostic de connexion:', {
-          hasSocket: connectionStatus.hasSocket,
-          isConnected: connectionStatus.isConnected,
-          hasToken: !!authManager.getAuthToken(),
-          wsUrl: (typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_WS_URL || 'ws://meeshy.me/api') : 'ws://gateway:3000') + '/ws'
-        });
         // Toast de connexion supprimé pour éviter les notifications intrusives
       }
     }, 3000);
@@ -1017,7 +946,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     
     // Afficher le toast de confirmation UNE SEULE FOIS
     if (connectionStatus.isConnected && connectionStatus.hasSocket && !hasShownConnectionToast) {
-      console.log(`✅ ${t('bubbleStream.websocketConnected')}`);
       setHasShownConnectionToast(true);
     }
   }, [connectionStatus.isConnected, connectionStatus.hasSocket, hasShownConnectionToast, t]);
@@ -1050,7 +978,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           }
         },
         (error) => {
-          console.log('Géolocalisation non disponible');
         }
       );
     }
@@ -1061,7 +988,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     if (newMessage.trim().length > 15) { // Seuil plus élevé pour une meilleure détection
       const detectedLang = detectLanguage(newMessage);
       setDetectedLanguage(detectedLang);
-      console.log('Langue détectée:', detectedLang, '(affichage informatif uniquement)');
     }
   }, [newMessage]);
 
@@ -1073,7 +999,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         return (messages as Message[]).find(msg => msg.id === messageId);
       };
       meeshySocketIOService.setGetMessageByIdCallback(getMessageById);
-      console.log(`🔗 [CALLBACK] Callback getMessageById défini (${messages.length} messages disponibles)`);
     }
   }, [messages]);
 
@@ -1088,7 +1013,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     const availableLanguageCodes = languageChoices.map(choice => choice.code);
     if (!availableLanguageCodes.includes(selectedInputLanguage)) {
       // Si la langue sélectionnée n'est plus dans les choix, revenir à la langue système
-      console.log('Langue sélectionnée non disponible, retour à la langue système:', user.systemLanguage);
       setSelectedInputLanguage(user.systemLanguage || 'fr');
     }
   }, [languageChoices, selectedInputLanguage, user.systemLanguage]);
@@ -1133,7 +1057,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   // Charger les messages existants dès que possible, sans attendre la connexion WebSocket
   useEffect(() => {
     if (conversationId && !hasLoadedMessages) {
-      console.log('Chargement initial des messages depuis la base de données...');
       // Charger immédiatement les messages existants via HTTP API
       refreshMessages();
       setHasLoadedMessages(true);
@@ -1149,10 +1072,8 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
     if (connectionStatus.isConnected) {
       setHasEstablishedConnection(true);
-      console.log(`${t('bubbleStream.websocketEstablished')}`);
       
       if (!hasShownConnectionToast) {
-        console.log(`${t('bubbleStream.connected')}`);
         setHasShownConnectionToast(true);
       }
     }
@@ -1274,15 +1195,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     const replyToId = useReplyStore.getState().replyingTo?.id;
     const hasAttachments = attachmentIds.length > 0;
     
-    console.log('📤 Envoi du message avec langue sélectionnée:', {
-      content: messageContent.substring(0, 50) + '...',
-      sourceLanguage: selectedInputLanguage,
-      languageChoice: languageChoices.find(choice => choice.code === selectedInputLanguage),
-      replyToId: replyToId || 'none',
-      attachmentCount: attachmentIds.length,
-      attachmentIds: attachmentIds,
-      hasAttachments: hasAttachments
-    });
     
     // Arrêter immédiatement l'indicateur de frappe lors de l'envoi
     if (isTyping) {
@@ -1326,7 +1238,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     try {
       // Vérifier l'état de la connexion avant l'envoi
       if (!connectionStatus.isConnected) {
-        console.log('⚠️ WebSocket non connecté - Impossible d\'envoyer le message');
         // Toast de connexion supprimé pour éviter les notifications intrusives
         // Restaurer le message pour permettre un nouvel essai
         setNewMessage(messageContent);
@@ -1346,18 +1257,10 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           attachmentCount: currentAttachmentIds.length
         };
         
-        console.log('📤 Envoi du message avec métadonnées de langue:', messageWithLanguage);
         
         // Envoyer le message avec ou sans attachments selon le cas
         if (hasAttachments) {
-          console.log('📎 Envoi du message AVEC attachments:', {
-            messageContent,
-            attachmentIds: currentAttachmentIds,
-            sourceLanguage: selectedInputLanguage,
-            replyToId
-          });
         } else {
-          console.log('📝 Envoi du message SANS attachments');
         }
         
         const sendResult = hasAttachments
@@ -1365,11 +1268,9 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           : await sendMessageToService(messageContent, selectedInputLanguage, replyToId);
         
         if (sendResult) {
-          console.log('✅ Message envoyé via WebSocket avec succès');
           toast.success(tCommon('messages.messageSent'));
           
           // Log pour le debug - La langue source sera utilisée côté serveur
-          console.log(`🔤 Langue source du message: ${selectedInputLanguage} (détectée: ${detectedLanguage})`);
           
           // Scroll automatique vers le HAUT pour voir le message envoyé (scrollDirection='down')
           // Utiliser plusieurs tentatives pour s'assurer que le scroll fonctionne
@@ -1440,19 +1341,12 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   const handleTyping = (value: string) => {
     setNewMessage(value);
     
-    console.log('[BubbleStreamPage] 📝 handleTyping:', { 
-      valueLength: value.length,
-      hasTrim: !!value.trim(),
-      isTyping,
-      hasConversationId: !!conversationId
-    });
     
     // Gérer l'indicateur de frappe avec timeout
     if (value.trim()) {
       // Si l'utilisateur tape et qu'il n'était pas déjà en train de taper
       if (!isTyping) {
         setIsTyping(true);
-        console.log('[BubbleStreamPage] 🟢 Appel startTyping()');
         startTyping();
       }
       
@@ -1464,7 +1358,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       // Arrêter la frappe après 3 secondes d'inactivité
       typingTimeoutRef.current = setTimeout(() => {
         setIsTyping(false);
-        console.log('[BubbleStreamPage] 🔴 Appel stopTyping() après timeout');
         stopTyping();
       }, TYPING_STOP_DELAY);
       
@@ -1472,7 +1365,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       // Si le champ est vide, arrêter immédiatement la frappe
       if (isTyping) {
         setIsTyping(false);
-        console.log('[BubbleStreamPage] 🔴 Appel stopTyping() (champ vide)');
         stopTyping();
       }
       

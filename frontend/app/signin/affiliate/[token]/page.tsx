@@ -30,7 +30,6 @@ export default function AffiliateSigninPage({ params }: AffiliateSigninPageProps
         document.cookie = `meeshy_affiliate_token=${token}; max-age=${30 * 24 * 60 * 60}; path=/; samesite=lax`;
         
         if (process.env.NODE_ENV === 'development') {
-          console.log('[AFFILIATE] Token sauvegardé:', token);
         }
       }
     });

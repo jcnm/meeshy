@@ -136,13 +136,6 @@ export const isDebug = config.env.debug;
 // Fonction pour afficher la configuration (utile pour le debugging)
 export const logConfig = () => {
   if (isDebug) {
-    console.log('🔧 Configuration Meeshy:');
-    console.log(`  • Frontend: ${config.frontend.url}`);
-    console.log(`  • Backend: ${config.backend.url}`);
-    console.log(`  • Translation: ${config.translation.url}`);
-    console.log(`  • Environment: ${config.env.nodeEnv}`);
-    console.log(`  • Debug: ${config.env.debug}`);
-    console.log(`  • Languages: ${config.languages.supported.join(', ')}`);
   }
 };
 
@@ -237,7 +230,6 @@ export const getBackendUrl = (): string => {
     
     if (isDev) {
       // En développement local, utiliser http://localhost:3000 (gateway)
-      console.log('🔧 [CONFIG] Développement local détecté, utilisation de http://localhost:3000');
       return 'http://localhost:3000';
     }
     
@@ -271,14 +263,12 @@ export const getWebSocketUrl = (): string => {
     
     if (isDev) {
       // En développement local, utiliser ws://localhost:4000
-      console.log('🔧 [CONFIG] Développement local détecté, utilisation de ws://localhost:3000');
       return 'ws://localhost:3000';
     }
     
     // Derive from backend if WS not provided
     const backendUrl = getBackendUrl();
     const wsUrl = backendUrl.replace(/^http(s?):\/\//, (_m, s) => (s ? 'wss://' : 'ws://'));
-    console.log('🔧 [CONFIG] URL WebSocket dérivée:', wsUrl);
     return trimSlashes(wsUrl);
   }
   // Côté serveur (SSR) - utiliser INTERNAL_WS_URL

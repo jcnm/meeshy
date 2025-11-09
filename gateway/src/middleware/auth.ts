@@ -337,7 +337,6 @@ export function createUnifiedAuthMiddleware(
       // Attacher le contexte à la requête
       (request as UnifiedAuthRequest).authContext = authContext;
 
-      console.log(`[UnifiedAuth] ${authContext.type.toUpperCase()} - ${authContext.displayName} (${authContext.userId})`);
 
     } catch (error) {
       console.error('[UnifiedAuth] Authentication failed:', error);
@@ -470,7 +469,6 @@ export async function authenticate(request: FastifyRequest, reply: FastifyReply)
 export function requireRole(allowedRoles: string | string[]) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      console.log('[GATEWAY] Role verification - to be implemented', allowedRoles);
     } catch (error) {
       reply.code(403).send({ error: 'Insufficient permissions' });
     }
@@ -482,9 +480,7 @@ export const requireModerator = requireRole(['BIGBOSS', 'ADMIN', 'MODO']);
 export const requireAnalyst = requireRole(['BIGBOSS', 'ADMIN', 'ANALYST']);
 
 export async function requireEmailVerification(request: FastifyRequest, reply: FastifyReply) {
-  console.log('[GATEWAY] Email verification - to be implemented');
 }
 
 export async function requireActiveAccount(request: FastifyRequest, reply: FastifyReply) {
-  console.log('[GATEWAY] Account status verification - to be implemented');
 }

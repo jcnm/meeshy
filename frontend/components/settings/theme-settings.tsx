@@ -33,8 +33,6 @@ export function ThemeSettings() {
   
   // Debug: afficher la langue actuelle
   useEffect(() => {
-    console.log('🔍 [ThemeSettings] Current interface language:', currentInterfaceLanguage);
-    console.log('🔍 [ThemeSettings] Available languages:', getSupportedLanguages());
   }, [currentInterfaceLanguage, getSupportedLanguages]);
   
   const [config, setConfig] = useState<ThemeConfig>({
@@ -69,7 +67,6 @@ export function ThemeSettings() {
   };
 
   const handleInterfaceLanguageChange = (languageCode: string) => {
-    console.log('🔄 [ThemeSettings] Changing language to:', languageCode);
     setInterfaceLanguage(languageCode);
     toast.success(t('theme.interfaceLanguageUpdated'));
  };

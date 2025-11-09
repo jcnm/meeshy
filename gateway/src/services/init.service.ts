@@ -31,10 +31,8 @@ export class InitService {
     }
     
     if (forceReset) {
-      console.log('[INIT] 🔄 FORCE_DB_RESET=true détecté - Réinitialisation forcée de la base de données...');
       await this.resetDatabase();
     } else {
-      console.log('[INIT] 🚀 Démarrage de l\'initialisation de la base de données...');
     }
 
     try {
@@ -53,14 +51,12 @@ export class InitService {
       // 5. S'assurer que tous les utilisateurs sont membres de la conversation meeshy
       await this.ensureAllUsersInMeeshyConversation();
 
-      console.log('[INIT] ✅ Initialisation de la base de données terminée avec succès');
     } catch (error) {
       console.error('[INIT] ❌ Erreur lors de l\'initialisation:', error);
       console.error('[INIT] 💡 Détails de l\'erreur:', error.message);
       
       // En mode développement, on ne fait pas échouer le serveur
       if (process.env.NODE_ENV === 'development') {
-        console.log('[INIT] ⚠️ Mode développement: Continuation sans initialisation de la base');
         return;
       }
       
@@ -72,7 +68,6 @@ export class InitService {
    * Crée la conversation globale "meeshy"
    */
   private async createGlobalConversation(): Promise<void> {
-    console.log('[INIT] 🔍 Vérification de la conversation globale "meeshy"...');
 
     try {
       let existingConversation = await this.prisma.conversation.findFirst({
@@ -80,11 +75,9 @@ export class InitService {
       });
 
       if (existingConversation) {
-        console.log('[INIT] ✅ Conversation globale "meeshy" existe déjà');
         return;
       }
 
-      console.log('[INIT] 🆕 Création de la conversation globale "meeshy"...');
 
       const newConversation = await this.prisma.conversation.create({
         data: {
@@ -100,7 +93,6 @@ export class InitService {
 
       this.globalConversationId = newConversation.id;
 
-      console.log('[INIT] ✅ Conversation globale "meeshy" créée avec succès');
     } catch (error) {
       console.error('[INIT] ❌ Erreur lors de la création de la conversation globale:', error);
       throw error;
@@ -111,7 +103,6 @@ export class InitService {
    * Crée les utilisateurs par défaut
    */
   private async createDefaultUsers(): Promise<void> {
-    console.log('[INIT] 🔍 Vérification des utilisateurs par défaut...');
 
     try {
       // 1. Créer l'utilisateur Bigboss (Meeshy Sama)
@@ -120,7 +111,6 @@ export class InitService {
       // 2. Créer l'utilisateur Admin Manager
       await this.createAdminUser();
 
-      console.log('[INIT] ✅ Utilisateurs par défaut vérifiés/créés avec succès');
     } catch (error) {
       console.error('[INIT] ❌ Erreur lors de la création des utilisateurs par défaut:', error);
       throw error;
@@ -142,7 +132,6 @@ export class InitService {
     const regionalLanguage = process.env.MEESHY_REGIONAL_LANGUAGE || 'fr'; // CONFIGURABLE
     const customDestinationLanguage = process.env.MEESHY_CUSTOM_DESTINATION_LANGUAGE || 'pt'; // CONFIGURABLE
 
-    console.log(`[INIT] 🔍 Vérification de l'utilisateur Bigboss "${username}" (${firstName} ${lastName})...`);
 
     try {
       const existingUser = await this.prisma.user.findFirst({
@@ -150,11 +139,9 @@ export class InitService {
       });
 
       if (existingUser) {
-        console.log(`[INIT] ✅ Utilisateur Bigboss "${username}" existe déjà`);
         return;
       }
 
-      console.log(`[INIT] 🆕 Création de l'utilisateur Bigboss "${username}" (${firstName} ${lastName})...`);
 
       // Créer l'utilisateur via l'API de création de compte
       const userData = {
@@ -191,7 +178,6 @@ export class InitService {
         }
       });
 
-      console.log(`[INIT] ✅ Utilisateur Bigboss "${username}" (${firstName} ${lastName}) créé avec succès - Rôle: ${role}`);
     } catch (error) {
       console.error(`[INIT] ❌ Erreur lors de la création de l'utilisateur Bigboss "${username}":`, error);
       throw error;
@@ -213,7 +199,6 @@ export class InitService {
     const regionalLanguage = process.env.ADMIN_REGIONAL_LANGUAGE || 'de'; // CONFIGURABLE
     const customDestinationLanguage = process.env.ADMIN_CUSTOM_DESTINATION_LANGUAGE || 'zh'; // CONFIGURABLE
 
-    console.log(`[INIT] 🔍 Vérification de l'utilisateur Admin "${username}"...`);
 
     try {
       const existingUser = await this.prisma.user.findFirst({
@@ -221,7 +206,6 @@ export class InitService {
       });
 
       if (existingUser) {
-        console.log(`[INIT] ✅ Utilisateur Admin "${username}" existe déjà`);
         
         // Mettre à jour le rôle vers ADMIN et les langues configurables
         await this.prisma.user.update({
@@ -234,9 +218,7 @@ export class InitService {
           }
         });
         
-        console.log(`[INIT] ✅ Rôle et langues de l'utilisateur Admin "${username}" mis à jour`);
       } else {
-        console.log(`[INIT] 🆕 Création de l'utilisateur Admin "${username}"...`);
 
         // Créer l'utilisateur via l'API de création de compte
         const userData = {
@@ -267,7 +249,6 @@ export class InitService {
       const userId = existingUser ? existingUser.id : (await this.prisma.user.findFirst({ where: { username } }))!.id;
       await this.addUserToMeeshyConversation(userId, username);
 
-      console.log(`[INIT] ✅ Utilisateur Admin "${username}" configuré avec succès`);
     } catch (error) {
       console.error(`[INIT] ❌ Erreur lors de la configuration de l'utilisateur Admin "${username}":`, error);
       throw error;
@@ -278,7 +259,6 @@ export class InitService {
    * Réinitialise complètement la base de données
    */
   private async resetDatabase(): Promise<void> {
-    console.log('[INIT] 🧹 Suppression de toutes les données existantes...');
     
     try {
       // Utiliser $runCommandRaw pour drop les collections directement
@@ -297,16 +277,13 @@ export class InitService {
           await this.prisma.$runCommandRaw({
             drop: collection
           });
-          console.log(`[INIT] ✓ Collection ${collection} supprimée`);
         } catch (error: any) {
           // Ignorer l'erreur si la collection n'existe pas (code 26)
           if (error.code !== 26 && error.code !== 'P2010') {
-            console.log(`[INIT] ⚠️ Erreur lors de la suppression de ${collection}:`, error.message);
           }
         }
       }
       
-      console.log('[INIT] ✅ Base de données réinitialisée avec succès');
     } catch (error) {
       console.error('[INIT] ❌ Erreur lors de la réinitialisation de la base de données:', error);
       throw error;
@@ -328,7 +305,6 @@ export class InitService {
     const regionalLanguage = process.env.ATABETH_REGIONAL_LANGUAGE || 'en';
     const customDestinationLanguage = process.env.ATABETH_CUSTOM_DESTINATION_LANGUAGE || 'es';
 
-    console.log(`[INIT] 🔍 Vérification de l'utilisateur André Tabeth "${username}" (${firstName} ${lastName})...`);
 
     try {
       const existingUser = await this.prisma.user.findFirst({
@@ -336,11 +312,9 @@ export class InitService {
       });
 
       if (existingUser) {
-        console.log(`[INIT] ✅ Utilisateur André Tabeth "${username}" existe déjà`);
         return;
       }
 
-      console.log(`[INIT] 🆕 Création de l'utilisateur André Tabeth "${username}" (${firstName} ${lastName})...`);
 
       // Créer l'utilisateur via l'API de création de compte
       const userData = {
@@ -369,7 +343,6 @@ export class InitService {
       // Ajouter l'utilisateur à la conversation globale meeshy
       await this.addUserToMeeshyConversation(user.id, username);
 
-      console.log(`[INIT] ✅ Utilisateur André Tabeth "${username}" (${firstName} ${lastName}) créé avec succès - Rôle: ${role}`);
     } catch (error) {
       console.error(`[INIT] ❌ Erreur lors de la création de l'utilisateur André Tabeth "${username}":`, error);
       throw error;
@@ -387,7 +360,6 @@ export class InitService {
       });
 
       if (!globalConversation) {
-        console.log(`[INIT] ⚠️ Conversation globale "meeshy" non trouvée, impossible d'ajouter l'utilisateur "${username}"`);
         return;
       }
 
@@ -415,9 +387,7 @@ export class InitService {
           }
         });
         
-        console.log(`[INIT] ✅ Utilisateur "${username}" ajouté à la conversation meeshy avec le rôle ${role}`);
       } else {
-        console.log(`[INIT] ✅ Utilisateur "${username}" est déjà membre de la conversation meeshy`);
       }
     } catch (error) {
       console.error(`[INIT] ❌ Erreur lors de l'ajout de l'utilisateur "${username}" à la conversation meeshy:`, error);
@@ -429,7 +399,6 @@ export class InitService {
    * S'assure que tous les utilisateurs existants sont membres de la conversation meeshy
    */
   private async ensureAllUsersInMeeshyConversation(): Promise<void> {
-    console.log('[INIT] 🔍 Vérification que tous les utilisateurs sont membres de la conversation meeshy...');
 
     try {
       // Récupérer tous les utilisateurs actifs
@@ -441,7 +410,6 @@ export class InitService {
         await this.addUserToMeeshyConversation(user.id, user.username);
       }
 
-      console.log(`[INIT] ✅ Vérification terminée pour ${users.length} utilisateurs`);
     } catch (error) {
       console.error('[INIT] ❌ Erreur lors de la vérification des membres de la conversation meeshy:', error);
       throw error;
@@ -452,7 +420,6 @@ export class InitService {
    * Crée les conversations supplémentaires (directe et de groupe)
    */
   private async createAdditionalConversations(): Promise<void> {
-    console.log('[INIT] 🔍 Création des conversations supplémentaires...');
 
     try {
       // Récupérer les utilisateurs
@@ -461,7 +428,6 @@ export class InitService {
       const meeshyUser = await this.prisma.user.findFirst({ where: { username: 'meeshy' } });
 
       if (!adminUser || !atabethUser || !meeshyUser) {
-        console.log('[INIT] ⚠️ Impossible de créer les conversations supplémentaires - utilisateurs manquants');
         return;
       }
 
@@ -471,7 +437,6 @@ export class InitService {
       // 2. Créer la conversation de groupe entre atabeth, admin et meeshy
       await this.createGroupConversation([atabethUser.id, adminUser.id, meeshyUser.id]);
 
-      console.log('[INIT] ✅ Conversations supplémentaires créées avec succès');
     } catch (error) {
       console.error('[INIT] ❌ Erreur lors de la création des conversations supplémentaires:', error);
       throw error;
@@ -482,7 +447,6 @@ export class InitService {
    * Crée une conversation directe entre deux utilisateurs
    */
   private async createDirectConversation(userId1: string, userId2: string): Promise<void> {
-    console.log('[INIT] 🔍 Création de la conversation directe...');
 
     try {
       // Générer un identifiant unique pour la conversation directe
@@ -494,7 +458,6 @@ export class InitService {
       });
 
       if (existingConversation) {
-        console.log('[INIT] ✅ Conversation directe existe déjà');
         this.directConversationId = existingConversation.id;
         return;
       }
@@ -533,7 +496,6 @@ export class InitService {
         ]
       });
 
-      console.log('[INIT] ✅ Conversation directe créée avec succès');
     } catch (error) {
       console.error('[INIT] ❌ Erreur lors de la création de la conversation directe:', error);
       throw error;
@@ -544,7 +506,6 @@ export class InitService {
    * Crée une conversation de groupe entre plusieurs utilisateurs
    */
   private async createGroupConversation(userIds: string[]): Promise<void> {
-    console.log('[INIT] 🔍 Création de la conversation de groupe...');
 
     try {
       // Générer un identifiant unique pour la conversation de groupe
@@ -556,7 +517,6 @@ export class InitService {
       });
 
       if (existingConversation) {
-        console.log('[INIT] ✅ Conversation de groupe existe déjà');
         this.groupConversationId = existingConversation.id;
         return;
       }
@@ -588,7 +548,6 @@ export class InitService {
         data: membersData
       });
 
-      console.log('[INIT] ✅ Conversation de groupe créée avec succès');
     } catch (error) {
       console.error('[INIT] ❌ Erreur lors de la création de la conversation de groupe:', error);
       throw error;
@@ -609,7 +568,6 @@ export class InitService {
     }
     
     if (forceReset) {
-      console.log('[INIT] 🔄 FORCE_DB_RESET=true - Initialisation forcée requise');
       return true;
     }
 
@@ -658,9 +616,7 @@ export class InitService {
       const needsInit = !globalConversation || !bigbossUser || !adminUser || !atabethUser || !bigbossMember || !adminMember;
       
       if (needsInit) {
-        console.log('[INIT] 🔍 Initialisation requise - éléments manquants détectés');
       } else {
-        console.log('[INIT] ✅ Base de données déjà initialisée - aucune action requise');
       }
       
       return needsInit;

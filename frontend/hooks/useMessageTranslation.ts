@@ -71,7 +71,6 @@ export const useMessageTranslation = () => {
       return result;
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        console.log('Translation aborted');
         return null;
       }
       
