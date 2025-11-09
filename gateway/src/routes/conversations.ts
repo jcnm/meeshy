@@ -2339,8 +2339,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       console.log('[GATEWAY] 👥 Liste des participants:', allParticipants.map(p => ({
         id: p.id,
         username: p.username,
-        displayName: p.displayName,
-        isAnonymous: p.isAnonymous || false
+        displayName: p.displayName, 
       })));
 
       reply.send({
