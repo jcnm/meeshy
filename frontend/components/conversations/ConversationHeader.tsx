@@ -311,7 +311,7 @@ export function ConversationHeader({
   }, [conversation.id, t]);
 
   return (
-    <div className="flex items-center justify-between p-4 border-b border-border bg-card">
+    <div className="flex items-center justify-between p-4 border-b border-border bg-card min-h-[72px]">
       <div className="flex items-center gap-3 flex-1 min-w-0">
         {/* Bouton retour (mobile ou desktop avec showBackButton) */}
         {(isMobile || showBackButton) && (
@@ -326,10 +326,11 @@ export function ConversationHeader({
           </Button>
         )}
 
-        {/* Avatar - Only show for non-direct conversations, clickable for moderators+ */}
-        {conversation.type !== 'direct' && (
-          <div className="relative flex-shrink-0">
-            {canModifyConversationImage() ? (
+        {/* Avatar - Pour toutes les conversations */}
+        <div className="relative flex-shrink-0">
+          {conversation.type !== 'direct' ? (
+            /* Avatar pour conversations de groupe/public/global */
+            canModifyConversationImage() ? (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -361,42 +362,41 @@ export function ConversationHeader({
                   {getConversationAvatar()}
                 </AvatarFallback>
               </Avatar>
-            )}
-          </div>
-        )}
+            )
+          ) : (
+            /* Avatar pour conversations directes avec indicateur de statut */
+            isOtherParticipantAnonymous() ? (
+              <div
+                className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center"
+                role="img"
+                aria-label={t('conversationHeader.anonymousUser') || 'Utilisateur anonyme'}
+              >
+                <Ghost className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+              </div>
+            ) : (
+              <>
+                <Avatar className="h-10 w-10" aria-label={`${getConversationName()} avatar`}>
+                  <AvatarImage src={getConversationAvatarUrl()} alt={`${getConversationName()} avatar`} />
+                  <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                    {getConversationAvatar()}
+                  </AvatarFallback>
+                </Avatar>
+                {/* Indicateur de statut pour conversations directes */}
+                <OnlineIndicator
+                  isOnline={getOtherParticipantStatus() === 'online'}
+                  status={getOtherParticipantStatus()}
+                  size="md"
+                  className="absolute -bottom-0.5 -right-0.5 ring-2 ring-card"
+                />
+              </>
+            )
+          )}
+        </div>
 
         {/* Infos de la conversation */}
         <div className="flex-1 min-w-0">
-          <h2 className="font-semibold text-base truncate flex items-center gap-1.5">
-            {/* For direct conversations, show interlocutor avatar before name */}
-            {conversation.type === 'direct' && (
-              <div className="relative flex-shrink-0">
-                {isOtherParticipantAnonymous() ? (
-                  <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                    <Ghost className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                  </div>
-                ) : (
-                  <>
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={getConversationAvatarUrl()} />
-                      <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                        {getConversationAvatar()}
-                      </AvatarFallback>
-                    </Avatar>
-                    {/* Status indicator for direct conversations - only show if online (green) or away (orange), not offline (grey) */}
-                    {getOtherParticipantStatus() !== 'offline' && (
-                      <OnlineIndicator
-                        isOnline={getOtherParticipantStatus() === 'online'}
-                        status={getOtherParticipantStatus()}
-                        size="md"
-                        className="absolute -bottom-0.5 -right-0.5"
-                      />
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-            <span className="truncate">{getConversationName()}</span>
+          <h2 className="font-semibold text-base truncate" id="conversation-title" aria-label={`Conversation: ${getConversationName()}`}>
+            {getConversationName()}
           </h2>
 
           {/* Show participant info and typing only for non-direct conversations */}
