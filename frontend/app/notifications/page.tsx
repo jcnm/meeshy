@@ -28,10 +28,12 @@ import { NotificationTest } from '@/components/notifications/NotificationTest';
 import { useI18n } from '@/hooks/useI18n';
 import type { Notification } from '@/services/notification.service';
 import { AuthGuard } from '@/components/auth/AuthGuard';
+import { NotificationFilters, type NotificationType } from '@/components/notifications/NotificationFilters';
 
 function NotificationsPageContent() {
   const { t } = useI18n('notifications');
   const router = useRouter();
+  const [selectedFilter, setSelectedFilter] = useState<NotificationType>('all');
   const {
     notifications,
     unreadNotifications,
@@ -43,6 +45,20 @@ function NotificationsPageContent() {
     clearAll,
     isConnected
   } = useNotifications();
+
+  // Filtrer les notifications selon le type sélectionné
+  const filteredNotifications = selectedFilter === 'all'
+    ? notifications
+    : notifications.filter(n => n.type === selectedFilter);
+
+  // Calculer les compteurs par type
+  const typeCounts = {
+    all: notifications.length,
+    new_message: notifications.filter(n => n.type === 'new_message').length,
+    missed_call: notifications.filter(n => n.type === 'missed_call').length,
+    system: notifications.filter(n => n.type === 'system').length,
+    conversation: notifications.filter(n => n.type === 'conversation').length,
+  };
   
   // Les préférences seront gérées dans une version future
 
@@ -178,13 +194,13 @@ function NotificationsPageContent() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => console.log('Préférences - à implémenter')}
+              onClick={() => router.push('/notifications/preferences')}
               className="hidden sm:flex"
             >
               <Settings className="h-4 w-4 mr-2" />
               {t('preferences')}
             </Button>
-            
+
             {unreadCount > 0 && (
               <Button
                 variant="outline"
@@ -198,6 +214,13 @@ function NotificationsPageContent() {
             )}
           </div>
         </div>
+
+        {/* Filtres par type */}
+        <NotificationFilters
+          selectedType={selectedFilter}
+          onTypeChange={setSelectedFilter}
+          counts={typeCounts}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Notifications List */}
@@ -218,7 +241,13 @@ function NotificationsPageContent() {
               </Card>
             ) : (
               <div className="space-y-3">
-                {notifications.map((notification) => (
+                {filteredNotifications.length === 0 ? (
+                  <Card>
+                    <CardContent className="flex flex-col items-center justify-center py-12">
+                      <p className="text-gray-600">Aucune notification de ce type</p>
+                    </CardContent>
+                  </Card>
+                ) : filteredNotifications.map((notification) => (
                   <Card
                     key={notification.id}
                     className={`hover:shadow-md transition-shadow cursor-pointer ${!notification.isRead ? 'border-l-4 border-l-blue-500' : ''}`}
