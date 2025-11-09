@@ -200,8 +200,16 @@ function LandingPageContent() {
             {t('hero.subtitle')}
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+
+            {/* Bouton Connexion */}
+            <Link href="/login">
+              <Button size="lg" variant="outline" className="flex items-center space-x-2">
+                <LogIn className="h-5 w-5" />
+                <span>{t('hero.login')}</span>
+              </Button>
+            </Link>
+
             {/* Bouton Inscription */}
             <Link href="/signin">
               <Button size="lg" className="flex items-center space-x-2">
@@ -210,7 +218,7 @@ function LandingPageContent() {
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            
+
             {/* Language Selector */}
             <LanguageSelector
               value={locale}
