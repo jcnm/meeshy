@@ -497,8 +497,7 @@ export class NotificationService {
         const response = await fetch(`${API_CONFIG.getApiUrl()}/notifications/${notificationId}/read`, {
           method: 'PATCH',
           headers: {
-            'Authorization': `Bearer ${this.config.token}`,
-            'Content-Type': 'application/json'
+            'Authorization': `Bearer ${this.config.token}`
           }
         });
 
@@ -539,8 +538,7 @@ export class NotificationService {
         const response = await fetch(`${API_CONFIG.getApiUrl()}/notifications/read-all`, {
           method: 'PATCH',
           headers: {
-            'Authorization': `Bearer ${this.config.token}`,
-            'Content-Type': 'application/json'
+            'Authorization': `Bearer ${this.config.token}`
           }
         });
 
