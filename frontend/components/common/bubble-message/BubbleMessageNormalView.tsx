@@ -251,6 +251,11 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
     // Sinon, le popover normal s'ouvre
   };
 
+  const handleQuickReaction = useCallback((emoji: string) => {
+    // Ajouter la réaction directement via le hook
+    addReaction(emoji);
+  }, [addReaction]);
+
   const handleCopyMessage = useCallback(async () => {
     try {
       // Générer l'URL du message selon le contexte actuel
@@ -713,6 +718,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
             canDeleteMessage={canDeleteMessage()}
             onReply={onReplyMessage ? () => onReplyMessage(message) : undefined}
             onReaction={handleReactionClick}
+            onQuickReaction={handleQuickReaction}
             onCopy={handleCopyMessage}
             onReport={canReportMessage() ? handleReportMessage : undefined}
             onEdit={canModifyMessage() ? handleEditMessage : undefined}

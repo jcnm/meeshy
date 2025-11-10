@@ -21,6 +21,15 @@ import { cn } from '@/lib/utils';
 import { useSingleTap } from '@/hooks/use-single-tap';
 import type { Message } from '@shared/types/conversation';
 
+// 30 emojis les plus fréquemment utilisés pour les réactions (6x5 grid)
+const FREQUENT_REACTIONS = [
+  '❤️', '👍', '😂', '😮', '😢', '🙏',
+  '🎉', '🔥', '👏', '💯', '✨', '💪',
+  '😍', '🤔', '😊', '👌', '💙', '🌟',
+  '😎', '🥳', '🤗', '😴', '🙌', '💜',
+  '🚀', '⭐', '💖', '😇', '🤩', '💚',
+];
+
 interface MessageActionsBarProps {
   message: Message;
   isOwnMessage: boolean;
@@ -29,6 +38,7 @@ interface MessageActionsBarProps {
   canDeleteMessage: boolean;
   onReply?: () => void;
   onReaction: () => void;
+  onQuickReaction?: (emoji: string) => void;
   onCopy: () => void;
   onReport?: () => void;
   onEdit?: () => void;
@@ -58,6 +68,7 @@ export const MessageActionsBar = memo(function MessageActionsBar({
   canDeleteMessage,
   onReply,
   onReaction,
+  onQuickReaction,
   onCopy,
   onReport,
   onEdit,
@@ -75,6 +86,7 @@ export const MessageActionsBar = memo(function MessageActionsBar({
 }: MessageActionsBarProps) {
   const router = useRouter();
   const [isTranslationMenuOpen, setIsTranslationMenuOpen] = useState(false);
+  const [isReactionMenuOpen, setIsReactionMenuOpen] = useState(false);
 
   const handleLanguageSwitch = useCallback((langCode: string) => {
     // Close menu IMMEDIATELY before switching to prevent flickering from re-renders
@@ -91,6 +103,17 @@ export const MessageActionsBar = memo(function MessageActionsBar({
       : originalLanguage;
     onLanguageSwitch(targetLang);
   }, [currentDisplayLanguage, originalLanguage, userLanguage, onLanguageSwitch]);
+
+  const handleQuickReaction = useCallback((emoji: string) => {
+    // Close menu IMMEDIATELY before adding reaction
+    setIsReactionMenuOpen(false);
+    // Add reaction after menu starts closing
+    setTimeout(() => {
+      if (onQuickReaction) {
+        onQuickReaction(emoji);
+      }
+    }, 50);
+  }, [onQuickReaction]);
 
   // Détecter si le message n'a que des attachments (pas de texte)
   const hasOnlyAttachments = useMemo(() => {
@@ -307,29 +330,67 @@ export const MessageActionsBar = memo(function MessageActionsBar({
           </Tooltip>
         )}
 
-        {/* Bouton réaction */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              {...useSingleTap(onReaction)}
-              style={{
-                width: '24px',
-                height: '24px',
-                minWidth: '24px',
-                minHeight: '24px'
-              }}
-              className="p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
-              aria-label={t('addReaction')}
-            >
-              <Smile className="h-3.5 w-3.5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{t('addReaction')}</p>
-          </TooltipContent>
-        </Tooltip>
+        {/* Menu réactions rapides */}
+        <DropdownMenu open={isReactionMenuOpen} onOpenChange={setIsReactionMenuOpen}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    minWidth: '24px',
+                    minHeight: '24px'
+                  }}
+                  className="p-0 rounded-full transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
+                  aria-label={t('addReaction')}
+                >
+                  <Smile className="h-3.5 w-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t('addReaction')}</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <DropdownMenuContent
+            align="start"
+            side="top"
+            sideOffset={8}
+            className="w-64 p-2"
+          >
+            {/* Grille 6x5 de réactions fréquentes */}
+            <div className="grid grid-cols-6 gap-1 mb-2">
+              {FREQUENT_REACTIONS.map((emoji, index) => (
+                <button
+                  key={`${emoji}-${index}`}
+                  onClick={() => handleQuickReaction(emoji)}
+                  className="w-9 h-9 flex items-center justify-center rounded-md text-2xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus-visible:ring-2 focus-visible:ring-blue-500"
+                  title={emoji}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+
+            {/* Séparateur + bouton pour ouvrir l'emoji picker complet */}
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-2">
+              <button
+                onClick={() => {
+                  setIsReactionMenuOpen(false);
+                  onReaction();
+                }}
+                className="w-full flex items-center justify-center gap-2 p-2 rounded-md text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
+              >
+                <Smile className="h-3.5 w-3.5" />
+                <span>{t('moreReactions') || 'Plus de réactions'}</span>
+              </button>
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* Menu trois points - Toujours visible */}
         <DropdownMenu>
