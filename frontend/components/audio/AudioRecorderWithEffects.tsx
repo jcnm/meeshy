@@ -423,29 +423,37 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
     <>
       {/* Panneau des effets audio - Portail pour afficher au-dessus de tout */}
       {isMounted && showEffectsPanel && createPortal(
-        <div
-          className="fixed z-[9999]"
-          style={{
-            bottom: `${window.innerHeight - panelPosition.top}px`,
-            left: `${panelPosition.left}px`,
-            maxWidth: '90vw',
-          }}
-        >
+        <>
           {/* Overlay pour fermer au clic à l'extérieur */}
           <div
-            className="fixed inset-0 -z-10"
+            className="fixed inset-0 bg-black/50 z-[9998]"
             onClick={() => setShowEffectsPanel(false)}
           />
-          <AudioEffectsPanel
-            effectsState={effectsState}
-            onToggleEffect={toggleEffect}
-            onUpdateParams={updateEffectParams}
-            onLoadPreset={loadPreset}
-            currentPreset={currentPreset}
-            availablePresets={availablePresets}
-            availableBackSounds={availableBackSounds}
-          />
-        </div>,
+
+          {/* Panneau centré sur mobile, positionné près du bouton sur desktop */}
+          <div
+            className="fixed z-[9999] md:absolute"
+            style={{
+              // Mobile: centré horizontalement et verticalement
+              left: '50%',
+              top: '50%',
+              transform: 'translate(-50%, -50%)',
+              maxWidth: '95vw',
+              maxHeight: '85vh',
+              width: 'auto',
+            }}
+          >
+            <AudioEffectsPanel
+              effectsState={effectsState}
+              onToggleEffect={toggleEffect}
+              onUpdateParams={updateEffectParams}
+              onLoadPreset={loadPreset}
+              currentPreset={currentPreset}
+              availablePresets={availablePresets}
+              availableBackSounds={availableBackSounds}
+            />
+          </div>
+        </>,
         document.body
       )}
 
