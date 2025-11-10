@@ -90,7 +90,7 @@ export class NotificationService {
     try {
       console.log('📥 Chargement des notifications initiales...');
 
-      const response = await fetch(`${API_CONFIG.getApiUrl()}/notifications?limit=100`, {
+      const response = await fetch(`${API_CONFIG.getApiUrl()}/notifications?limit=1000`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
