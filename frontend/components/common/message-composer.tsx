@@ -833,23 +833,10 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         </Button>
 
         {/* Localisation */}
-        {location && !isUploading && (
+        {location && (
           <div className="flex items-center space-x-1">
             <MapPin className="h-[22px] w-[22px] sm:h-[22px] sm:w-[22px]" />
             <span className="hidden sm:inline">{location}</span>
-          </div>
-        )}
-
-        {/* Indicateur d'upload */}
-        {isUploading && (
-          <div className="flex items-center space-x-1 text-blue-600 dark:text-blue-400">
-            <Loader2 className="h-[22px] w-[22px] sm:h-[22px] sm:w-[22px] animate-spin" />
-            <span className="hidden sm:inline">
-              {selectedFiles.length > 1
-                ? t('uploadingMultiple', { count: selectedFiles.length })
-                : t('uploading')
-              }
-            </span>
           </div>
         )}
       </div>

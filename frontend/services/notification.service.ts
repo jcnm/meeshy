@@ -95,7 +95,15 @@ export class NotificationService {
       });
 
       if (!response.ok) {
-        console.error('❌ Erreur lors du chargement des notifications:', response.statusText);
+        const errorText = await response.text();
+        console.error('❌ Erreur HTTP lors du chargement des notifications:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorText
+        });
+
+        // Continue initialization even if loading fails (will use Socket.IO notifications)
+        console.warn('⚠️ Continuant sans notifications initiales - les nouvelles notifications seront reçues via Socket.IO');
         return;
       }
 

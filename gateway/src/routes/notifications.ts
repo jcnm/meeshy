@@ -89,10 +89,22 @@ export async function notificationRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
+      // Log détaillé pour diagnostiquer l'erreur 500
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : '';
+
+      fastify.log.error({
+        error: errorMessage,
+        stack: errorStack,
+        userId: (request.user as any)?.userId,
+        query: request.query
+      }, 'Get notifications error');
+
       logError(fastify.log, 'Get notifications error:', error);
       return reply.status(500).send({
         success: false,
-        message: 'Erreur interne du serveur'
+        message: 'Erreur interne du serveur',
+        error: process.env.NODE_ENV === 'development' ? errorMessage : undefined
       });
     }
   });
