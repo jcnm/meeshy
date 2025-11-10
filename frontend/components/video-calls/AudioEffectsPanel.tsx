@@ -41,6 +41,23 @@ import type {
   VoiceCoderPreset,
 } from '@shared/types/video-call';
 
+// Helper component pour label avec tooltip
+const LabelWithTooltip = ({ label, tooltip }: { label: React.ReactNode; tooltip: string }) => (
+  <div className="flex items-center gap-1">
+    <Label className="text-gray-300 text-[10px] font-semibold">{label}</Label>
+    <Popover>
+      <PopoverTrigger asChild>
+        <button type="button" className="text-gray-400 hover:text-white transition-colors">
+          <Info className="w-3 h-3" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-56 bg-gray-800 border-gray-600 text-white text-[10px] p-2">
+        {tooltip}
+      </PopoverContent>
+    </Popover>
+  </div>
+);
+
 interface AudioEffectsPanelProps {
   effectsState: AudioEffectsState;
   onToggleEffect: (type: AudioEffectType) => void;
@@ -167,16 +184,10 @@ export function AudioEffectsPanel({
             )}
             {/* Rapidité de correction */}
             <div>
-              <Label className="text-gray-300 text-[10px] font-semibold">
-                Rapidité de correction ({effectsState.voiceCoder.params.retuneSpeed}%)
-              </Label>
-              <p className="text-gray-500 text-[9px] mb-0.5">
-                {effectsState.voiceCoder.params.retuneSpeed < 30
-                  ? 'Très naturel et doux'
-                  : effectsState.voiceCoder.params.retuneSpeed < 70
-                  ? 'Équilibré'
-                  : 'Rapide et robotique'}
-              </p>
+              <LabelWithTooltip
+                label={`Rapidité de correction (${effectsState.voiceCoder.params.retuneSpeed}%)`}
+                tooltip="Vitesse de correction de la justesse. Lent (0-30%) = très naturel et doux. Moyen (30-70%) = équilibré. Rapide (70-100%) = effet robotique."
+              />
               <Slider
                 value={[effectsState.voiceCoder.params.retuneSpeed]}
                 min={0}
@@ -245,10 +256,10 @@ export function AudioEffectsPanel({
 
             {/* Force de l'effet */}
             <div>
-              <Label className="text-gray-300 text-[10px]">Force de l'effet ({effectsState.voiceCoder.params.strength}%)</Label>
-              <p className="text-gray-500 text-[9px] mb-0.5">
-                Plus élevé = voix plus parfaite, moins naturelle
-              </p>
+              <LabelWithTooltip
+                label={`Force de l'effet (${effectsState.voiceCoder.params.strength}%)`}
+                tooltip="Intensité de l'auto-tune. Plus élevé = voix plus parfaite mais moins naturelle. Recommandé : 30-50% pour un effet subtil."
+              />
               <Slider
                 value={[effectsState.voiceCoder.params.strength]}
                 min={0}
@@ -264,10 +275,10 @@ export function AudioEffectsPanel({
 
             {/* Expression naturelle */}
             <div>
-              <Label className="text-gray-300 text-[10px]">Expression naturelle ({effectsState.voiceCoder.params.naturalVibrato}%)</Label>
-              <p className="text-gray-500 text-[9px] mb-0.5">
-                Garde les variations naturelles de votre voix
-              </p>
+              <LabelWithTooltip
+                label={`Expression naturelle (${effectsState.voiceCoder.params.naturalVibrato}%)`}
+                tooltip="Préserve les variations et le vibrato naturel de votre voix. Plus élevé = plus d'expression et d'émotion conservées."
+              />
               <Slider
                 value={[effectsState.voiceCoder.params.naturalVibrato]}
                 min={0}
@@ -283,10 +294,10 @@ export function AudioEffectsPanel({
 
             {/* Hauteur globale */}
             <div>
-              <Label className="text-gray-300 text-[10px]">Hauteur de voix ({effectsState.voiceCoder.params.pitch > 0 ? '+' : ''}{effectsState.voiceCoder.params.pitch})</Label>
-              <p className="text-gray-500 text-[9px] mb-0.5">
-                Chanter plus aigu (+) ou plus grave (-)
-              </p>
+              <LabelWithTooltip
+                label={`Hauteur de voix (${effectsState.voiceCoder.params.pitch > 0 ? '+' : ''}${effectsState.voiceCoder.params.pitch})`}
+                tooltip="Transpose votre voix vers l'aigu (+) ou le grave (-). Exemple : +3 = 3 demi-tons plus aigu."
+              />
               <Slider
                 value={[effectsState.voiceCoder.params.pitch]}
                 min={-12}
@@ -332,10 +343,10 @@ export function AudioEffectsPanel({
 
           <div className={cn('space-y-1', !effectsState.babyVoice.enabled && 'opacity-50')}>
             <div>
-              <Label className="text-gray-300 text-[10px]">Hauteur de voix (+{effectsState.babyVoice.params.pitch})</Label>
-              <p className="text-gray-500 text-[9px] mb-0.5">
-                Plus élevé = voix plus aiguë et enfantine
-              </p>
+              <LabelWithTooltip
+                label={`Hauteur de voix (+${effectsState.babyVoice.params.pitch})`}
+                tooltip="Plus élevé = voix plus aiguë et enfantine. Recommandé : 8-12 pour un effet bébé."
+              />
               <Slider
                 value={[effectsState.babyVoice.params.pitch]}
                 min={6}
@@ -350,10 +361,10 @@ export function AudioEffectsPanel({
             </div>
 
             <div>
-              <Label className="text-gray-300 text-[10px]">Timbre ({effectsState.babyVoice.params.formant.toFixed(1)}x)</Label>
-              <p className="text-gray-500 text-[9px] mb-0.5">
-                Change la couleur de la voix
-              </p>
+              <LabelWithTooltip
+                label={`Timbre (${effectsState.babyVoice.params.formant.toFixed(1)}x)`}
+                tooltip="Change la couleur et le timbre de la voix pour simuler des cordes vocales plus courtes."
+              />
               <Slider
                 value={[effectsState.babyVoice.params.formant * 10]}
                 min={12}
@@ -368,10 +379,10 @@ export function AudioEffectsPanel({
             </div>
 
             <div>
-              <Label className="text-gray-300 text-[10px]">Souffle ({effectsState.babyVoice.params.breathiness}%)</Label>
-              <p className="text-gray-500 text-[9px] mb-0.5">
-                Ajoute un effet de souffle doux
-              </p>
+              <LabelWithTooltip
+                label={`Souffle (${effectsState.babyVoice.params.breathiness}%)`}
+                tooltip="Ajoute un effet de souffle doux et aérien caractéristique d'une voix d'enfant."
+              />
               <Slider
                 value={[effectsState.babyVoice.params.breathiness]}
                 min={0}
@@ -402,10 +413,10 @@ export function AudioEffectsPanel({
 
           <div className={cn('space-y-1', !effectsState.demonVoice.enabled && 'opacity-50')}>
             <div>
-              <Label className="text-gray-300 text-[10px]">Hauteur de voix ({effectsState.demonVoice.params.pitch})</Label>
-              <p className="text-gray-500 text-[9px] mb-0.5">
-                Plus bas = voix plus grave et effrayante
-              </p>
+              <LabelWithTooltip
+                label={`Hauteur de voix (${effectsState.demonVoice.params.pitch})`}
+                tooltip="Plus bas = voix plus grave et effrayante. -10 à -12 pour un effet démoniaque intense."
+              />
               <Slider
                 value={[effectsState.demonVoice.params.pitch]}
                 min={-12}
@@ -420,10 +431,10 @@ export function AudioEffectsPanel({
             </div>
 
             <div>
-              <Label className="text-gray-300 text-[10px]">Distorsion ({effectsState.demonVoice.params.distortion}%)</Label>
-              <p className="text-gray-500 text-[9px] mb-0.5">
-                Ajoute une texture agressive
-              </p>
+              <LabelWithTooltip
+                label={`Distorsion (${effectsState.demonVoice.params.distortion}%)`}
+                tooltip="Ajoute une texture agressive et rugueuse à la voix."
+              />
               <Slider
                 value={[effectsState.demonVoice.params.distortion]}
                 min={0}
@@ -438,10 +449,10 @@ export function AudioEffectsPanel({
             </div>
 
             <div>
-              <Label className="text-gray-300 text-[10px]">Écho ({effectsState.demonVoice.params.reverb}%)</Label>
-              <p className="text-gray-500 text-[9px] mb-0.5">
-                Effet de cathédrale sombre
-              </p>
+              <LabelWithTooltip
+                label={`Écho (${effectsState.demonVoice.params.reverb}%)`}
+                tooltip="Effet de réverbération comme dans une cathédrale sombre et profonde."
+              />
               <Slider
                 value={[effectsState.demonVoice.params.reverb]}
                 min={0}
@@ -506,10 +517,10 @@ export function AudioEffectsPanel({
             </div>
 
             <div>
-              <Label className="text-gray-300 text-[10px]">Volume ({effectsState.backSound.params.volume}%)</Label>
-              <p className="text-gray-500 text-[9px] mb-0.5">
-                Ajuste le volume de la musique de fond
-              </p>
+              <LabelWithTooltip
+                label={`Volume (${effectsState.backSound.params.volume}%)`}
+                tooltip="Ajuste le volume de la musique de fond mixée avec votre voix."
+              />
               <Slider
                 value={[effectsState.backSound.params.volume]}
                 min={0}
