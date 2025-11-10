@@ -166,7 +166,7 @@ export function useAudioEffects({ inputStream, onOutputStreamReady }: UseAudioEf
    */
   const rebuildAudioGraph = useCallback(() => {
     if (!inputNodeRef.current || !mediaStreamDestinationRef.current) {
-      logger.warn('[useAudioEffects]', 'Audio nodes not initialized');
+      // Silently return if nodes not initialized yet - this is expected during initialization
       return;
     }
 
