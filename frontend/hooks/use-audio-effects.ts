@@ -58,7 +58,7 @@ const DEFAULT_DEMON_VOICE: DemonVoiceParams = {
 };
 
 const DEFAULT_BACK_SOUND: BackSoundParams = {
-  soundFile: BACK_SOUNDS[0].id,
+  soundFile: BACK_SOUNDS.length > 0 ? BACK_SOUNDS[0].id : '', // Empty string si aucun son disponible
   volume: 20,
   loopMode: 'N_TIMES',
   loopValue: 1,
