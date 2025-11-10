@@ -15,7 +15,7 @@ import { useTextAttachmentDetection } from '@/hooks/useTextAttachmentDetection';
 import { AttachmentService } from '@/services/attachmentService';
 import { UploadedAttachmentResponse } from '@/shared/types/attachment';
 import { toast } from 'sonner';
-import { AudioRecorderCard } from '@/components/audio/AudioRecorderCard';
+import { AudioRecorderWithEffects } from '@/components/audio/AudioRecorderWithEffects';
 import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
 
 interface MessageComposerProps {
@@ -727,14 +727,13 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
               disabled={isUploading}
               audioRecorderSlot={
                 showAudioRecorder ? (
-                  <AudioRecorderCard
+                  <AudioRecorderWithEffects
                     key={audioRecorderKey}
                     ref={audioRecorderRef}
                     onRecordingComplete={handleAudioRecordingComplete}
                     onRecordingStateChange={handleRecordingStateChange}
                     onRemove={handleRemoveAudioRecording}
                     onStop={handleBeforeStop}
-                    autoStart={true}
                     maxDuration={600}
                   />
                 ) : undefined
