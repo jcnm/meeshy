@@ -872,11 +872,23 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       }, 2000);
 
       const errorCleanupHandler = (error: any) => {
+        // Check if error has meaningful content
+        const errorMessage = error?.message || String(error) || '';
+        const isEmptyError = !errorMessage || errorMessage === '[object Object]' || errorMessage === '{}';
+
+        // Ignore empty errors and "not in this call" errors (normal after leaving)
+        if (isEmptyError ||
+            errorMessage.includes('You are not in this call') ||
+            errorMessage.includes('not in this call')) {
+          logger.debug('[ConversationLayout]', 'Ignoring expected/empty call error', { error });
+          clearTimeout(errorCleanupTimeout);
+          return;
+        }
+
         console.error('❌ [ConversationLayout] Call error received:', error);
         logger.error('[ConversationLayout]', 'Call error received', { error });
 
         // Check if error is "call already active"
-        const errorMessage = error?.message || String(error) || '';
         const isCallAlreadyActive = errorMessage.includes('A call is already active') ||
                                      errorMessage.includes('CALL_ALREADY_ACTIVE');
 
