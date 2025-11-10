@@ -160,6 +160,13 @@ export const APP_CONFIG = {
 
 };
 
+// API Configuration for consistent API URL usage
+export const API_CONFIG = {
+  getApiUrl: () => {
+    return `${getBackendUrl()}/api`;
+  }
+};
+
 export default config;
 
 // URLs d'API fréquemment utilisées
