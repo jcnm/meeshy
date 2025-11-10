@@ -16,9 +16,15 @@ import {
   PhoneMissed,
   Trash2,
   Search,
-  X,
-  Filter
+  X
 } from '@/lib/icons';
+import {
+  Filter,
+  ArrowUpDown,
+  Clock,
+  CheckSquare,
+  Square
+} from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
 import { useNotifications } from '@/hooks/use-notifications';
@@ -30,11 +36,16 @@ import { NotificationFilters, type NotificationType } from '@/components/notific
 import { cn } from '@/lib/utils';
 import { AttachmentDetails } from '@/components/attachments/AttachmentDetails';
 
+type SortOption = 'date-desc' | 'date-asc' | 'unread-first' | 'type';
+
 function NotificationsPageContent() {
   const { t } = useI18n('notifications');
   const router = useRouter();
   const [selectedFilter, setSelectedFilter] = useState<NotificationType>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortOption, setSortOption] = useState<SortOption>('date-desc');
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedNotifications, setSelectedNotifications] = useState<Set<string>>(new Set());
   const {
     notifications,
     unreadNotifications,
@@ -47,7 +58,7 @@ function NotificationsPageContent() {
     isConnected
   } = useNotifications();
 
-  // Filtrer et rechercher dans les notifications
+  // Filtrer, rechercher et trier les notifications
   const filteredNotifications = useMemo(() => {
     let filtered = notifications;
 
@@ -72,8 +83,72 @@ function NotificationsPageContent() {
       });
     }
 
-    return filtered;
-  }, [notifications, selectedFilter, searchQuery]);
+    // Trier les notifications
+    const sorted = [...filtered].sort((a, b) => {
+      switch (sortOption) {
+        case 'date-asc':
+          return a.timestamp.getTime() - b.timestamp.getTime();
+        case 'date-desc':
+          return b.timestamp.getTime() - a.timestamp.getTime();
+        case 'unread-first':
+          if (a.isRead === b.isRead) {
+            return b.timestamp.getTime() - a.timestamp.getTime();
+          }
+          return a.isRead ? 1 : -1;
+        case 'type':
+          if (a.type === b.type) {
+            return b.timestamp.getTime() - a.timestamp.getTime();
+          }
+          return a.type.localeCompare(b.type);
+        default:
+          return b.timestamp.getTime() - a.timestamp.getTime();
+      }
+    });
+
+    return sorted;
+  }, [notifications, selectedFilter, searchQuery, sortOption]);
+
+  // Gestion de la sélection
+  const toggleSelection = (notificationId: string) => {
+    const newSelection = new Set(selectedNotifications);
+    if (newSelection.has(notificationId)) {
+      newSelection.delete(notificationId);
+    } else {
+      newSelection.add(notificationId);
+    }
+    setSelectedNotifications(newSelection);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedNotifications.size === filteredNotifications.length) {
+      setSelectedNotifications(new Set());
+    } else {
+      setSelectedNotifications(new Set(filteredNotifications.map(n => n.id)));
+    }
+  };
+
+  const markSelectedAsRead = async () => {
+    for (const id of selectedNotifications) {
+      await markAsRead(id);
+    }
+    setSelectedNotifications(new Set());
+    setSelectionMode(false);
+  };
+
+  const deleteSelected = async () => {
+    for (const id of selectedNotifications) {
+      await removeNotification(id);
+    }
+    setSelectedNotifications(new Set());
+    setSelectionMode(false);
+  };
+
+  // Réinitialiser la sélection si on quitte le mode sélection
+  useEffect(() => {
+    if (!selectionMode) {
+      setSelectedNotifications(new Set());
+    }
+  }, [selectionMode]);
 
   // Calculer les compteurs par type
   const typeCounts = useMemo(() => ({
@@ -206,27 +281,94 @@ function NotificationsPageContent() {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => router.push('/notifications/preferences')}
-                    className="hidden sm:flex"
-                  >
-                    <Settings className="h-4 w-4 mr-2" />
-                    {t('preferences')}
-                  </Button>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {/* Mode sélection et actions groupées */}
+                  {selectionMode ? (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectionMode(false)}
+                        className="flex items-center gap-2"
+                      >
+                        <X className="h-4 w-4" />
+                        <span className="hidden sm:inline">Annuler</span>
+                      </Button>
 
-                  {unreadCount > 0 && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={markAllAsRead}
-                      className="flex items-center gap-2"
-                    >
-                      <CheckCheck className="h-4 w-4" />
-                      <span className="hidden sm:inline">{t('markAllRead')}</span>
-                    </Button>
+                      {selectedNotifications.size > 0 && (
+                        <>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={markSelectedAsRead}
+                            className="flex items-center gap-2"
+                          >
+                            <Check className="h-4 w-4" />
+                            <span className="hidden sm:inline">Marquer comme lu ({selectedNotifications.size})</span>
+                            <span className="sm:hidden">{selectedNotifications.size}</span>
+                          </Button>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={deleteSelected}
+                            className="flex items-center gap-2 text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            <span className="hidden sm:inline">Supprimer ({selectedNotifications.size})</span>
+                          </Button>
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {/* Menu de tri */}
+                      <select
+                        value={sortOption}
+                        onChange={(e) => setSortOption(e.target.value as SortOption)}
+                        className="h-9 px-3 rounded-md border border-input bg-background text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
+                      >
+                        <option value="date-desc">Plus récentes</option>
+                        <option value="date-asc">Plus anciennes</option>
+                        <option value="unread-first">Non lues d'abord</option>
+                        <option value="type">Par type</option>
+                      </select>
+
+                      {/* Bouton de sélection */}
+                      {totalCount > 0 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectionMode(true)}
+                          className="flex items-center gap-2"
+                        >
+                          <CheckSquare className="h-4 w-4" />
+                          <span className="hidden sm:inline">Sélectionner</span>
+                        </Button>
+                      )}
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => router.push('/notifications/preferences')}
+                        className="hidden sm:flex"
+                      >
+                        <Settings className="h-4 w-4 mr-2" />
+                        {t('preferences')}
+                      </Button>
+
+                      {unreadCount > 0 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={markAllAsRead}
+                          className="flex items-center gap-2"
+                        >
+                          <CheckCheck className="h-4 w-4" />
+                          <span className="hidden sm:inline">{t('markAllRead')}</span>
+                        </Button>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
@@ -269,6 +411,32 @@ function NotificationsPageContent() {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               {/* Liste des notifications - 3 colonnes sur large écran */}
               <div className="lg:col-span-3">
+                {/* Bouton "Tout sélectionner" en mode sélection */}
+                {selectionMode && filteredNotifications.length > 0 && (
+                  <div className="mb-4 flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={toggleSelectAll}
+                      className="flex items-center gap-2"
+                    >
+                      {selectedNotifications.size === filteredNotifications.length ? (
+                        <CheckSquare className="h-4 w-4" />
+                      ) : (
+                        <Square className="h-4 w-4" />
+                      )}
+                      <span>
+                        {selectedNotifications.size === filteredNotifications.length
+                          ? 'Tout désélectionner'
+                          : 'Tout sélectionner'}
+                      </span>
+                    </Button>
+                    <span className="text-sm text-muted-foreground">
+                      {selectedNotifications.size} / {filteredNotifications.length} sélectionné{selectedNotifications.size > 1 ? 's' : ''}
+                    </span>
+                  </div>
+                )}
+
                 {totalCount === 0 ? (
                   <Card>
                     <CardContent className="flex flex-col items-center justify-center py-16 sm:py-24">
@@ -296,17 +464,47 @@ function NotificationsPageContent() {
                   </Card>
                 ) : (
                   <div className="space-y-2">
-                    {filteredNotifications.map((notification) => (
+                    {filteredNotifications.map((notification, index) => (
                       <Card
                         key={notification.id}
                         className={cn(
-                          "hover:shadow-md transition-all cursor-pointer border",
-                          !notification.isRead && "border-l-4 border-l-primary bg-accent/5"
+                          "hover:shadow-md transition-all duration-300 cursor-pointer border group",
+                          !notification.isRead && "border-l-4 border-l-primary bg-accent/5",
+                          selectedNotifications.has(notification.id) && "ring-2 ring-primary bg-accent/10",
+                          "animate-in fade-in slide-in-from-bottom-2"
                         )}
-                        onClick={() => handleNotificationClick(notification)}
+                        style={{
+                          animationDelay: `${index * 30}ms`,
+                          animationFillMode: 'backwards'
+                        }}
+                        onClick={(e) => {
+                          if (selectionMode) {
+                            e.preventDefault();
+                            toggleSelection(notification.id);
+                          } else {
+                            handleNotificationClick(notification);
+                          }
+                        }}
                       >
                         <CardContent className="p-3 sm:p-4">
                           <div className="flex items-start gap-3">
+                            {/* Checkbox en mode sélection */}
+                            {selectionMode && (
+                              <div className="flex items-center pt-2">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleSelection(notification.id);
+                                  }}
+                                  className="w-5 h-5 rounded border-2 border-primary flex items-center justify-center hover:bg-accent transition-colors"
+                                >
+                                  {selectedNotifications.has(notification.id) && (
+                                    <Check className="h-4 w-4 text-primary" />
+                                  )}
+                                </button>
+                              </div>
+                            )}
+
                             {/* Avatar ou icône */}
                             {notification.senderAvatar || notification.senderId ? (
                               <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
