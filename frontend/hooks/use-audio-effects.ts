@@ -1,17 +1,18 @@
 /**
- * USE AUDIO EFFECTS HOOK
- * Manages Web Audio API processing for voice effects
+ * USE AUDIO EFFECTS HOOK - PROFESSIONAL IMPLEMENTATION
+ * Manages Tone.js audio processing for voice effects
  *
  * Provides:
- * - Audio effect processing pipeline
+ * - Professional audio effect processing pipeline
  * - Real-time parameter updates
  * - Effect enable/disable
- * - Multiple effect chaining
+ * - Multiple effect chaining with Tone.js
  */
 
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import * as Tone from 'tone';
 import { logger } from '@/utils/logger';
 import {
   createAudioEffectProcessor,
@@ -36,6 +37,10 @@ const DEFAULT_VOICE_CODER: VoiceCoderParams = {
   pitch: 0,
   harmonization: false,
   strength: 50,
+  retuneSpeed: 50, // Medium speed - balance between natural and responsive
+  scale: 'chromatic', // All notes allowed by default
+  key: 'C', // C major/minor
+  naturalVibrato: 30, // Preserve some natural vibrato
 };
 
 const DEFAULT_BABY_VOICE: BabyVoiceParams = {
@@ -63,16 +68,17 @@ export interface UseAudioEffectsOptions {
 }
 
 export function useAudioEffects({ inputStream, onOutputStreamReady }: UseAudioEffectsOptions) {
-  // Audio context and nodes
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const sourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
-  const destinationNodeRef = useRef<MediaStreamAudioDestinationNode | null>(null);
+  // Tone.js nodes
+  const inputNodeRef = useRef<Tone.UserMedia | null>(null);
+  const outputNodeRef = useRef<Tone.Destination | null>(null);
+  const mediaStreamDestinationRef = useRef<MediaStreamAudioDestinationNode | null>(null);
 
   // Effect processors
   const processorsRef = useRef<Map<AudioEffectType, AudioEffectProcessor>>(new Map());
 
   // Output stream
   const [outputStream, setOutputStream] = useState<MediaStream | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Effects state
   const [effectsState, setEffectsState] = useState<AudioEffectsState>({
@@ -99,94 +105,99 @@ export function useAudioEffects({ inputStream, onOutputStreamReady }: UseAudioEf
   });
 
   /**
-   * Initialize audio context and pipeline
+   * Initialize Tone.js audio pipeline
    */
-  const initializeAudioPipeline = useCallback(() => {
+  const initializeAudioPipeline = useCallback(async () => {
     if (!inputStream) {
       logger.warn('[useAudioEffects]', 'No input stream available');
       return;
     }
 
+    if (isInitialized) {
+      logger.debug('[useAudioEffects]', 'Already initialized');
+      return;
+    }
+
     try {
-      // Create audio context if needed
-      if (!audioContextRef.current) {
-        audioContextRef.current = new AudioContext();
-        logger.debug('[useAudioEffects]', 'AudioContext created', {
-          sampleRate: audioContextRef.current.sampleRate,
-        });
+      // Start Tone.js audio context
+      await Tone.start();
+      logger.debug('[useAudioEffects]', 'Tone.js started', {
+        sampleRate: Tone.context.sampleRate,
+      });
+
+      // Create Tone.js UserMedia from input stream
+      // We need to connect the MediaStream to Tone's context
+      const audioContext = Tone.context.rawContext as AudioContext;
+      const source = audioContext.createMediaStreamSource(inputStream);
+
+      // Create Tone nodes
+      inputNodeRef.current = new Tone.Gain(1) as any;
+
+      // Connect native source to Tone input
+      source.connect((inputNodeRef.current as any).input);
+
+      // Create MediaStreamDestination for output
+      mediaStreamDestinationRef.current = audioContext.createMediaStreamDestination();
+
+      // Connect input directly to destination initially (no effects)
+      if (inputNodeRef.current) {
+        (inputNodeRef.current as any).connect(mediaStreamDestinationRef.current);
       }
-
-      const context = audioContextRef.current;
-
-      // Create source from input stream
-      if (!sourceNodeRef.current) {
-        sourceNodeRef.current = context.createMediaStreamSource(inputStream);
-        logger.debug('[useAudioEffects]', 'Source node created');
-      }
-
-      // Create destination
-      if (!destinationNodeRef.current) {
-        destinationNodeRef.current = context.createMediaStreamDestination();
-        logger.debug('[useAudioEffects]', 'Destination node created');
-      }
-
-      // Initially, connect source directly to destination (no effects)
-      sourceNodeRef.current.connect(destinationNodeRef.current);
 
       // Set output stream
-      const newOutputStream = destinationNodeRef.current.stream;
+      const newOutputStream = mediaStreamDestinationRef.current.stream;
       setOutputStream(newOutputStream);
       onOutputStreamReady?.(newOutputStream);
 
-      logger.info('[useAudioEffects]', 'Audio pipeline initialized');
+      setIsInitialized(true);
+      logger.info('[useAudioEffects]', 'Audio pipeline initialized with Tone.js');
     } catch (error) {
       logger.error('[useAudioEffects]', 'Failed to initialize audio pipeline', { error });
     }
-  }, [inputStream, onOutputStreamReady]);
+  }, [inputStream, onOutputStreamReady, isInitialized]);
 
   /**
    * Rebuild audio graph with enabled effects
    */
   const rebuildAudioGraph = useCallback(() => {
-    if (!audioContextRef.current || !sourceNodeRef.current || !destinationNodeRef.current) {
-      logger.warn('[useAudioEffects]', 'Audio context not initialized');
+    if (!inputNodeRef.current || !mediaStreamDestinationRef.current) {
+      logger.warn('[useAudioEffects]', 'Audio nodes not initialized');
       return;
     }
 
     logger.debug('[useAudioEffects]', 'Rebuilding audio graph');
 
     // Disconnect everything
-    sourceNodeRef.current.disconnect();
+    inputNodeRef.current.disconnect();
     processorsRef.current.forEach((processor) => {
       processor.disconnect();
     });
 
-    // Get enabled effects
+    // Get enabled effects in order
     const enabledEffects = Object.values(effectsState).filter((effect) => effect.enabled);
 
     if (enabledEffects.length === 0) {
       // No effects enabled, connect directly
-      sourceNodeRef.current.connect(destinationNodeRef.current);
+      (inputNodeRef.current as any).connect(mediaStreamDestinationRef.current);
       logger.debug('[useAudioEffects]', 'No effects enabled, direct connection');
       return;
     }
 
-    // Chain effects
-    let currentNode: AudioNode = sourceNodeRef.current;
+    // Chain effects: input -> effect1 -> effect2 -> ... -> destination
+    let currentNode: any = inputNodeRef.current;
 
     for (const effect of enabledEffects) {
       const processor = processorsRef.current.get(effect.type);
       if (processor) {
-        // Create intermediate gain node
-        const intermediateNode = audioContextRef.current.createGain();
-        currentNode.connect(intermediateNode);
-        processor.connect(intermediateNode);
-        currentNode = intermediateNode;
+        // Connect current node to processor input
+        currentNode.connect(processor.inputNode);
+        // Move to processor output for next connection
+        currentNode = processor.outputNode;
       }
     }
 
-    // Connect last node to destination
-    currentNode.connect(destinationNodeRef.current);
+    // Connect last effect to destination
+    currentNode.connect(mediaStreamDestinationRef.current);
 
     logger.debug('[useAudioEffects]', 'Audio graph rebuilt', {
       enabledEffects: enabledEffects.map((e) => e.type),
@@ -199,16 +210,18 @@ export function useAudioEffects({ inputStream, onOutputStreamReady }: UseAudioEf
   const toggleEffect = useCallback((effectType: AudioEffectType) => {
     setEffectsState((prev) => {
       const effectKey = getEffectKey(effectType);
+      const newEnabled = !prev[effectKey].enabled;
+
+      logger.debug('[useAudioEffects]', 'Effect toggled', { effectType, enabled: newEnabled });
+
       return {
         ...prev,
         [effectKey]: {
           ...prev[effectKey],
-          enabled: !prev[effectKey].enabled,
+          enabled: newEnabled,
         },
       };
     });
-
-    logger.debug('[useAudioEffects]', 'Effect toggled', { effectType });
   }, []);
 
   /**
@@ -229,32 +242,29 @@ export function useAudioEffects({ inputStream, onOutputStreamReady }: UseAudioEf
     ) => {
       setEffectsState((prev) => {
         const effectKey = getEffectKey(effectType);
+        const newParams = {
+          ...prev[effectKey].params,
+          ...params,
+        };
+
+        // Update processor if exists
+        const processor = processorsRef.current.get(effectType);
+        if (processor) {
+          processor.updateParams(newParams);
+        }
+
+        logger.debug('[useAudioEffects]', 'Effect params updated', { effectType, params });
+
         return {
           ...prev,
           [effectKey]: {
             ...prev[effectKey],
-            params: {
-              ...prev[effectKey].params,
-              ...params,
-            },
+            params: newParams,
           },
         };
       });
-
-      // Update processor if exists
-      const processor = processorsRef.current.get(effectType);
-      if (processor) {
-        const effectKey = getEffectKey(effectType);
-        const updatedParams = {
-          ...effectsState[effectKey].params,
-          ...params,
-        };
-        processor.updateParams(updatedParams);
-      }
-
-      logger.debug('[useAudioEffects]', 'Effect params updated', { effectType, params });
     },
-    [effectsState]
+    []
   );
 
   /**
@@ -262,8 +272,6 @@ export function useAudioEffects({ inputStream, onOutputStreamReady }: UseAudioEf
    */
   const getOrCreateProcessor = useCallback(
     (effectType: AudioEffectType): AudioEffectProcessor | null => {
-      if (!audioContextRef.current || !inputStream) return null;
-
       let processor = processorsRef.current.get(effectType);
 
       if (!processor) {
@@ -273,8 +281,6 @@ export function useAudioEffects({ inputStream, onOutputStreamReady }: UseAudioEf
         try {
           processor = createAudioEffectProcessor(
             effectType as any,
-            audioContextRef.current,
-            inputStream,
             effectConfig.params as any
           );
 
@@ -292,27 +298,23 @@ export function useAudioEffects({ inputStream, onOutputStreamReady }: UseAudioEf
 
       return processor;
     },
-    [inputStream, effectsState]
+    [effectsState]
   );
 
   /**
    * Initialize audio pipeline when input stream is available
    */
   useEffect(() => {
-    if (inputStream) {
+    if (inputStream && !isInitialized) {
       initializeAudioPipeline();
     }
 
     return () => {
       // Cleanup on unmount
-      if (sourceNodeRef.current) {
-        sourceNodeRef.current.disconnect();
-        sourceNodeRef.current = null;
-      }
-
-      if (destinationNodeRef.current) {
-        destinationNodeRef.current.disconnect();
-        destinationNodeRef.current = null;
+      if (inputNodeRef.current) {
+        inputNodeRef.current.disconnect();
+        inputNodeRef.current.dispose();
+        inputNodeRef.current = null;
       }
 
       processorsRef.current.forEach((processor) => {
@@ -320,17 +322,16 @@ export function useAudioEffects({ inputStream, onOutputStreamReady }: UseAudioEf
       });
       processorsRef.current.clear();
 
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-        audioContextRef.current = null;
-      }
+      setIsInitialized(false);
     };
-  }, [inputStream, initializeAudioPipeline]);
+  }, [inputStream, isInitialized, initializeAudioPipeline]);
 
   /**
    * Rebuild audio graph when effects change
    */
   useEffect(() => {
+    if (!isInitialized) return;
+
     // Create processors for enabled effects
     Object.values(effectsState).forEach((effect) => {
       if (effect.enabled) {
@@ -340,12 +341,14 @@ export function useAudioEffects({ inputStream, onOutputStreamReady }: UseAudioEf
 
     // Rebuild graph
     rebuildAudioGraph();
-  }, [effectsState, getOrCreateProcessor, rebuildAudioGraph]);
+  }, [effectsState, getOrCreateProcessor, rebuildAudioGraph, isInitialized]);
 
   /**
-   * Load background sound when selected
+   * Load background sound when enabled or changed
    */
   useEffect(() => {
+    if (!isInitialized) return;
+
     if (effectsState.backSound.enabled) {
       const processor = processorsRef.current.get('back-sound') as BackSoundProcessor | undefined;
       if (processor) {
@@ -368,7 +371,7 @@ export function useAudioEffects({ inputStream, onOutputStreamReady }: UseAudioEf
         processor.stop();
       }
     }
-  }, [effectsState.backSound.enabled, effectsState.backSound.params.soundFile]);
+  }, [effectsState.backSound.enabled, effectsState.backSound.params.soundFile, isInitialized]);
 
   return {
     outputStream,

@@ -63,31 +63,31 @@ export function AudioEffectsPanel({
     <div
       className={cn(
         'bg-gradient-to-br from-gray-900/95 via-black/95 to-purple-900/95',
-        'backdrop-blur-xl rounded-2xl p-6 max-h-[85vh] overflow-y-auto',
+        'backdrop-blur-xl rounded-xl p-4 max-h-[70vh] overflow-y-auto',
         'border border-white/10 shadow-2xl',
         'animate-in slide-in-from-bottom duration-300',
         className
       )}
     >
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-            <span className="text-2xl">🎭</span>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+            <span className="text-xl">🎭</span>
           </div>
           <div>
-            <h3 className="text-white text-xl font-bold">Audio Effects</h3>
-            <p className="text-gray-400 text-xs">Transform your voice in real-time</p>
+            <h3 className="text-white text-lg font-bold">Effets Audio</h3>
+            <p className="text-gray-400 text-[10px]">Transformez votre voix</p>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {/* Voice Coder Effect */}
-        <Card className="bg-gradient-to-br from-blue-900/40 to-blue-800/20 border-blue-500/30 p-5 hover:border-blue-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">🎵</span>
-              <Label className="text-white font-medium">Voice Coder</Label>
+        <Card className="bg-gradient-to-br from-blue-900/40 to-blue-800/20 border-blue-500/30 p-3 hover:border-blue-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-1.5">
+              <span className="text-lg">🎵</span>
+              <Label className="text-white font-medium text-sm">Perfect Voice</Label>
             </div>
             <Switch
               checked={effectsState.voiceCoder.enabled}
@@ -95,24 +95,91 @@ export function AudioEffectsPanel({
             />
           </div>
 
-          <div className={cn('space-y-3', !effectsState.voiceCoder.enabled && 'opacity-50')}>
+          <div className={cn('space-y-2', !effectsState.voiceCoder.enabled && 'opacity-50')}>
+            {/* Rapidité de correction */}
             <div>
-              <Label className="text-gray-300 text-sm">Pitch ({effectsState.voiceCoder.params.pitch} semitones)</Label>
+              <Label className="text-gray-300 text-xs font-semibold">
+                Rapidité de correction ({effectsState.voiceCoder.params.retuneSpeed}%)
+              </Label>
+              <p className="text-gray-500 text-[9px] mb-0.5">
+                {effectsState.voiceCoder.params.retuneSpeed < 30
+                  ? 'Très naturel et doux'
+                  : effectsState.voiceCoder.params.retuneSpeed < 70
+                  ? 'Équilibré'
+                  : 'Rapide et robotique'}
+              </p>
               <Slider
-                value={[effectsState.voiceCoder.params.pitch]}
-                min={-12}
-                max={12}
-                step={1}
+                value={[effectsState.voiceCoder.params.retuneSpeed]}
+                min={0}
+                max={100}
+                step={5}
                 onValueChange={([value]) =>
-                  onUpdateParams('voice-coder', { pitch: value })
+                  onUpdateParams('voice-coder', { retuneSpeed: value })
                 }
                 disabled={!effectsState.voiceCoder.enabled}
-                className="mt-2"
+                className="mt-1"
               />
             </div>
 
+            {/* Gamme & Tonalité */}
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label className="text-gray-300 text-xs">Gamme</Label>
+                <Select
+                  value={effectsState.voiceCoder.params.scale}
+                  onValueChange={(value: 'chromatic' | 'major' | 'minor' | 'pentatonic') =>
+                    onUpdateParams('voice-coder', { scale: value })
+                  }
+                  disabled={!effectsState.voiceCoder.enabled}
+                >
+                  <SelectTrigger className="mt-1 bg-gray-800 border-gray-600 text-white h-7 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="chromatic">Toutes les notes</SelectItem>
+                    <SelectItem value="major">Majeure (joyeux)</SelectItem>
+                    <SelectItem value="minor">Mineure (triste)</SelectItem>
+                    <SelectItem value="pentatonic">Pentatonique</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-gray-300 text-xs">Tonalité</Label>
+                <Select
+                  value={effectsState.voiceCoder.params.key}
+                  onValueChange={(value: 'C' | 'C#' | 'D' | 'D#' | 'E' | 'F' | 'F#' | 'G' | 'G#' | 'A' | 'A#' | 'B') =>
+                    onUpdateParams('voice-coder', { key: value })
+                  }
+                  disabled={!effectsState.voiceCoder.enabled}
+                >
+                  <SelectTrigger className="mt-1 bg-gray-800 border-gray-600 text-white h-7 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="C">Do (C)</SelectItem>
+                    <SelectItem value="C#">Do# (C#)</SelectItem>
+                    <SelectItem value="D">Ré (D)</SelectItem>
+                    <SelectItem value="D#">Ré# (D#)</SelectItem>
+                    <SelectItem value="E">Mi (E)</SelectItem>
+                    <SelectItem value="F">Fa (F)</SelectItem>
+                    <SelectItem value="F#">Fa# (F#)</SelectItem>
+                    <SelectItem value="G">Sol (G)</SelectItem>
+                    <SelectItem value="G#">Sol# (G#)</SelectItem>
+                    <SelectItem value="A">La (A)</SelectItem>
+                    <SelectItem value="A#">La# (A#)</SelectItem>
+                    <SelectItem value="B">Si (B)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Force de l'effet */}
             <div>
-              <Label className="text-gray-300 text-sm">Strength ({effectsState.voiceCoder.params.strength}%)</Label>
+              <Label className="text-gray-300 text-xs">Force de l'effet ({effectsState.voiceCoder.params.strength}%)</Label>
+              <p className="text-gray-500 text-[9px] mb-0.5">
+                Plus élevé = voix plus parfaite, moins naturelle
+              </p>
               <Slider
                 value={[effectsState.voiceCoder.params.strength]}
                 min={0}
@@ -122,12 +189,54 @@ export function AudioEffectsPanel({
                   onUpdateParams('voice-coder', { strength: value })
                 }
                 disabled={!effectsState.voiceCoder.enabled}
-                className="mt-2"
+                className="mt-1"
               />
             </div>
 
+            {/* Expression naturelle */}
+            <div>
+              <Label className="text-gray-300 text-xs">Expression naturelle ({effectsState.voiceCoder.params.naturalVibrato}%)</Label>
+              <p className="text-gray-500 text-[9px] mb-0.5">
+                Garde les variations naturelles de votre voix
+              </p>
+              <Slider
+                value={[effectsState.voiceCoder.params.naturalVibrato]}
+                min={0}
+                max={100}
+                step={5}
+                onValueChange={([value]) =>
+                  onUpdateParams('voice-coder', { naturalVibrato: value })
+                }
+                disabled={!effectsState.voiceCoder.enabled}
+                className="mt-1"
+              />
+            </div>
+
+            {/* Hauteur globale */}
+            <div>
+              <Label className="text-gray-300 text-xs">Hauteur de voix ({effectsState.voiceCoder.params.pitch > 0 ? '+' : ''}{effectsState.voiceCoder.params.pitch})</Label>
+              <p className="text-gray-500 text-[9px] mb-0.5">
+                Chanter plus aigu (+) ou plus grave (-)
+              </p>
+              <Slider
+                value={[effectsState.voiceCoder.params.pitch]}
+                min={-12}
+                max={12}
+                step={1}
+                onValueChange={([value]) =>
+                  onUpdateParams('voice-coder', { pitch: value })
+                }
+                disabled={!effectsState.voiceCoder.enabled}
+                className="mt-1"
+              />
+            </div>
+
+            {/* Harmonisation */}
             <div className="flex items-center justify-between">
-              <Label className="text-gray-300 text-sm">Harmonization</Label>
+              <div>
+                <Label className="text-gray-300 text-xs">Harmonies vocales</Label>
+                <p className="text-gray-500 text-[9px]">Ajoute des voix d'accompagnement</p>
+              </div>
               <Switch
                 checked={effectsState.voiceCoder.params.harmonization}
                 onCheckedChange={(checked) =>
@@ -140,11 +249,11 @@ export function AudioEffectsPanel({
         </Card>
 
         {/* Baby Voice Effect */}
-        <Card className="bg-gradient-to-br from-pink-900/40 to-pink-800/20 border-pink-500/30 p-5 hover:border-pink-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-pink-500/20">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">👶</span>
-              <Label className="text-white font-medium">Baby Voice</Label>
+        <Card className="bg-gradient-to-br from-pink-900/40 to-pink-800/20 border-pink-500/30 p-3 hover:border-pink-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-pink-500/20">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-1.5">
+              <span className="text-lg">👶</span>
+              <Label className="text-white font-medium text-sm">Voix d'Enfant</Label>
             </div>
             <Switch
               checked={effectsState.babyVoice.enabled}
@@ -152,9 +261,12 @@ export function AudioEffectsPanel({
             />
           </div>
 
-          <div className={cn('space-y-3', !effectsState.babyVoice.enabled && 'opacity-50')}>
+          <div className={cn('space-y-2', !effectsState.babyVoice.enabled && 'opacity-50')}>
             <div>
-              <Label className="text-gray-300 text-sm">Pitch (+{effectsState.babyVoice.params.pitch} semitones)</Label>
+              <Label className="text-gray-300 text-xs">Hauteur de voix (+{effectsState.babyVoice.params.pitch})</Label>
+              <p className="text-gray-500 text-[9px] mb-0.5">
+                Plus élevé = voix plus aiguë et enfantine
+              </p>
               <Slider
                 value={[effectsState.babyVoice.params.pitch]}
                 min={6}
@@ -164,12 +276,15 @@ export function AudioEffectsPanel({
                   onUpdateParams('baby-voice', { pitch: value })
                 }
                 disabled={!effectsState.babyVoice.enabled}
-                className="mt-2"
+                className="mt-1"
               />
             </div>
 
             <div>
-              <Label className="text-gray-300 text-sm">Formant ({effectsState.babyVoice.params.formant.toFixed(1)}x)</Label>
+              <Label className="text-gray-300 text-xs">Timbre ({effectsState.babyVoice.params.formant.toFixed(1)}x)</Label>
+              <p className="text-gray-500 text-[9px] mb-0.5">
+                Change la couleur de la voix
+              </p>
               <Slider
                 value={[effectsState.babyVoice.params.formant * 10]}
                 min={12}
@@ -179,12 +294,15 @@ export function AudioEffectsPanel({
                   onUpdateParams('baby-voice', { formant: value / 10 })
                 }
                 disabled={!effectsState.babyVoice.enabled}
-                className="mt-2"
+                className="mt-1"
               />
             </div>
 
             <div>
-              <Label className="text-gray-300 text-sm">Breathiness ({effectsState.babyVoice.params.breathiness}%)</Label>
+              <Label className="text-gray-300 text-xs">Souffle ({effectsState.babyVoice.params.breathiness}%)</Label>
+              <p className="text-gray-500 text-[9px] mb-0.5">
+                Ajoute un effet de souffle doux
+              </p>
               <Slider
                 value={[effectsState.babyVoice.params.breathiness]}
                 min={0}
@@ -194,18 +312,18 @@ export function AudioEffectsPanel({
                   onUpdateParams('baby-voice', { breathiness: value })
                 }
                 disabled={!effectsState.babyVoice.enabled}
-                className="mt-2"
+                className="mt-1"
               />
             </div>
           </div>
         </Card>
 
         {/* Demon Voice Effect */}
-        <Card className="bg-gradient-to-br from-red-900/40 to-red-800/20 border-red-500/30 p-5 hover:border-red-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-red-500/20">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">😈</span>
-              <Label className="text-white font-medium">Demon Voice</Label>
+        <Card className="bg-gradient-to-br from-red-900/40 to-red-800/20 border-red-500/30 p-3 hover:border-red-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-red-500/20">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-1.5">
+              <span className="text-lg">😈</span>
+              <Label className="text-white font-medium text-sm">Voix de Démon</Label>
             </div>
             <Switch
               checked={effectsState.demonVoice.enabled}
@@ -213,9 +331,12 @@ export function AudioEffectsPanel({
             />
           </div>
 
-          <div className={cn('space-y-3', !effectsState.demonVoice.enabled && 'opacity-50')}>
+          <div className={cn('space-y-2', !effectsState.demonVoice.enabled && 'opacity-50')}>
             <div>
-              <Label className="text-gray-300 text-sm">Pitch ({effectsState.demonVoice.params.pitch} semitones)</Label>
+              <Label className="text-gray-300 text-xs">Hauteur de voix ({effectsState.demonVoice.params.pitch})</Label>
+              <p className="text-gray-500 text-[9px] mb-0.5">
+                Plus bas = voix plus grave et effrayante
+              </p>
               <Slider
                 value={[effectsState.demonVoice.params.pitch]}
                 min={-12}
@@ -225,12 +346,15 @@ export function AudioEffectsPanel({
                   onUpdateParams('demon-voice', { pitch: value })
                 }
                 disabled={!effectsState.demonVoice.enabled}
-                className="mt-2"
+                className="mt-1"
               />
             </div>
 
             <div>
-              <Label className="text-gray-300 text-sm">Distortion ({effectsState.demonVoice.params.distortion}%)</Label>
+              <Label className="text-gray-300 text-xs">Distorsion ({effectsState.demonVoice.params.distortion}%)</Label>
+              <p className="text-gray-500 text-[9px] mb-0.5">
+                Ajoute une texture agressive
+              </p>
               <Slider
                 value={[effectsState.demonVoice.params.distortion]}
                 min={0}
@@ -240,12 +364,15 @@ export function AudioEffectsPanel({
                   onUpdateParams('demon-voice', { distortion: value })
                 }
                 disabled={!effectsState.demonVoice.enabled}
-                className="mt-2"
+                className="mt-1"
               />
             </div>
 
             <div>
-              <Label className="text-gray-300 text-sm">Reverb ({effectsState.demonVoice.params.reverb}%)</Label>
+              <Label className="text-gray-300 text-xs">Écho ({effectsState.demonVoice.params.reverb}%)</Label>
+              <p className="text-gray-500 text-[9px] mb-0.5">
+                Effet de cathédrale sombre
+              </p>
               <Slider
                 value={[effectsState.demonVoice.params.reverb]}
                 min={0}
@@ -255,18 +382,18 @@ export function AudioEffectsPanel({
                   onUpdateParams('demon-voice', { reverb: value })
                 }
                 disabled={!effectsState.demonVoice.enabled}
-                className="mt-2"
+                className="mt-1"
               />
             </div>
           </div>
         </Card>
 
         {/* Back Sound Effect */}
-        <Card className="bg-gradient-to-br from-green-900/40 to-green-800/20 border-green-500/30 p-5 hover:border-green-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-green-500/20">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">🎶</span>
-              <Label className="text-white font-medium">Back Sound</Label>
+        <Card className="bg-gradient-to-br from-green-900/40 to-green-800/20 border-green-500/30 p-3 hover:border-green-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-green-500/20">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-1.5">
+              <span className="text-lg">🎶</span>
+              <Label className="text-white font-medium text-sm">Musique de Fond</Label>
             </div>
             <Switch
               checked={effectsState.backSound.enabled}
@@ -274,9 +401,9 @@ export function AudioEffectsPanel({
             />
           </div>
 
-          <div className={cn('space-y-3', !effectsState.backSound.enabled && 'opacity-50')}>
+          <div className={cn('space-y-2', !effectsState.backSound.enabled && 'opacity-50')}>
             <div>
-              <Label className="text-gray-300 text-sm">Sound</Label>
+              <Label className="text-gray-300 text-xs">Ambiance sonore</Label>
               <Select
                 value={effectsState.backSound.params.soundFile}
                 onValueChange={(value) =>
@@ -298,7 +425,10 @@ export function AudioEffectsPanel({
             </div>
 
             <div>
-              <Label className="text-gray-300 text-sm">Volume ({effectsState.backSound.params.volume}%)</Label>
+              <Label className="text-gray-300 text-xs">Volume ({effectsState.backSound.params.volume}%)</Label>
+              <p className="text-gray-500 text-[9px] mb-0.5">
+                Ajuste le volume de la musique de fond
+              </p>
               <Slider
                 value={[effectsState.backSound.params.volume]}
                 min={0}
@@ -308,12 +438,12 @@ export function AudioEffectsPanel({
                   onUpdateParams('back-sound', { volume: value })
                 }
                 disabled={!effectsState.backSound.enabled}
-                className="mt-2"
+                className="mt-1"
               />
             </div>
 
             <div>
-              <Label className="text-gray-300 text-sm">Loop Mode</Label>
+              <Label className="text-gray-300 text-xs">Mode de lecture</Label>
               <Select
                 value={effectsState.backSound.params.loopMode}
                 onValueChange={(value: 'N_TIMES' | 'N_MINUTES') =>
@@ -325,15 +455,15 @@ export function AudioEffectsPanel({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="N_TIMES">N Times</SelectItem>
-                  <SelectItem value="N_MINUTES">N Minutes</SelectItem>
+                  <SelectItem value="N_TIMES">Nombre de fois</SelectItem>
+                  <SelectItem value="N_MINUTES">Durée en minutes</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label className="text-gray-300 text-sm">
-                {effectsState.backSound.params.loopMode === 'N_TIMES' ? 'Times' : 'Minutes'} ({effectsState.backSound.params.loopValue})
+              <Label className="text-gray-300 text-xs">
+                {effectsState.backSound.params.loopMode === 'N_TIMES' ? 'Répétitions' : 'Minutes'} ({effectsState.backSound.params.loopValue})
               </Label>
               <Slider
                 value={[effectsState.backSound.params.loopValue]}
@@ -344,7 +474,7 @@ export function AudioEffectsPanel({
                   onUpdateParams('back-sound', { loopValue: value })
                 }
                 disabled={!effectsState.backSound.enabled}
-                className="mt-2"
+                className="mt-1"
               />
             </div>
           </div>

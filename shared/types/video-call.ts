@@ -120,9 +120,13 @@ export type LoopMode = 'N_TIMES' | 'N_MINUTES';
  * Paramètres pour l'effet Voice Coder (auto-tune)
  */
 export interface VoiceCoderParams {
-  readonly pitch: number;           // -12 à +12 semitones
+  readonly pitch: number;           // -12 à +12 semitones (transpose)
   readonly harmonization: boolean;  // Ajouter harmonies
-  readonly strength: number;        // 0-100%, intensité correction
+  readonly strength: number;        // 0-100%, intensité correction (mix)
+  readonly retuneSpeed: number;     // 0-100%, vitesse de correction (0=lent/naturel, 100=rapide/robotique)
+  readonly scale: 'chromatic' | 'major' | 'minor' | 'pentatonic'; // Gamme musicale
+  readonly key: 'C' | 'C#' | 'D' | 'D#' | 'E' | 'F' | 'F#' | 'G' | 'G#' | 'A' | 'A#' | 'B'; // Tonalité
+  readonly naturalVibrato: number;  // 0-100%, préservation du vibrato naturel
 }
 
 /**
