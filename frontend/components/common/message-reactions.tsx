@@ -55,20 +55,27 @@ export const MessageReactions: React.FC<MessageReactionsProps> = React.memo(({
   const [animatingEmojis, setAnimatingEmojis] = React.useState<Set<string>>(new Set());
   const [loadedEmojis, setLoadedEmojis] = React.useState<Set<string>>(new Set());
 
-  // Utiliser le hook externe si fourni, sinon créer un hook interne
-  const internalHook = useMessageReactions({
+  // Un seul hook useMessageReactions : soit externe (partagé), soit interne
+  // Si externalReactionsHook est fourni, on l'utilise directement
+  // Sinon, on crée notre propre instance du hook
+  const shouldCreateInternalHook = !externalReactionsHook;
+
+  const internalReactionsHook = useMessageReactions({
     messageId,
     currentUserId: isAnonymous ? currentAnonymousUserId : currentUserId,
     isAnonymous,
-    enabled: !externalReactionsHook // Désactiver si hook externe fourni
+    enabled: shouldCreateInternalHook
   });
+
+  // Utiliser le hook externe s'il existe, sinon le hook interne
+  const reactionsHook = externalReactionsHook || internalReactionsHook;
 
   const {
     reactions,
     toggleReaction,
     isLoading,
     userReactions
-  } = externalReactionsHook || internalHook;
+  } = reactionsHook;
 
   // Debug: log reactions data (disabled to stop infinite loop)
   // React.useEffect(() => {
