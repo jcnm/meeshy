@@ -227,6 +227,7 @@ model Message {
   translations    MessageTranslation[]
   attachments     MessageAttachment[]
   reactions       Reaction[]            @relation("MessageReactions")
+  notifications   Notification[]        @relation("NotificationMessage")
   replyTo         Message?              @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   replies         Message[]             @relation("MessageReplies")
   anonymousSender AnonymousParticipant? @relation("AnonymousMessageSender", fields: [anonymousSenderId], references: [id])
@@ -278,8 +279,17 @@ model MessageAttachment {
   duration   Int? // Durée en secondes
   bitrate    Int? // Débit en bps (bits per second)
   sampleRate Int? // Fréquence d'échantillonnage en Hz (ex: 44100, 48000)
-  codec      String? // Codec audio/vidéo (ex: "opus", "aac", "vorbis", "h264")
+  codec      String? // Codec audio/vidéo (ex: "opus", "aac", "vorbis", "h264", "vp8", "vp9", "av1")
   channels   Int? // Nombre de canaux audio (1: mono, 2: stereo)
+
+  // Métadonnées spécifiques vidéo
+  fps Float? // Frames per second pour vidéos
+
+  // Métadonnées spécifiques documents/PDF
+  pageCount Int? // Nombre de pages pour PDF et documents
+
+  // Métadonnées spécifiques code/texte
+  lineCount Int? // Nombre de lignes pour fichiers texte/code
 
   // Métadonnées générales
   uploadedBy  String  @db.ObjectId // ID utilisateur ou anonyme
@@ -390,11 +400,13 @@ model Notification {
   messageId      String? @db.ObjectId
   callSessionId  String? @db.ObjectId
 
-  user User @relation(fields: [userId], references: [id])
+  user    User     @relation(fields: [userId], references: [id])
+  message Message? @relation("NotificationMessage", fields: [messageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([userId, isRead])
   @@index([userId, type])
   @@index([createdAt])
+  @@index([messageId])
 }
 
 /// Préférences de notifications par utilisateur

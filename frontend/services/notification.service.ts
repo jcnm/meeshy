@@ -6,6 +6,8 @@
 import { io, Socket } from 'socket.io-client';
 import { APP_CONFIG, API_CONFIG } from '@/lib/config';
 
+import type { Attachment } from '@shared/types/attachment';
+
 export interface Notification {
   id: string;
   type: 'message' | 'system' | 'user_action' | 'conversation' | 'translation' | 'new_message' | 'missed_call';
@@ -20,6 +22,7 @@ export interface Notification {
   senderUsername?: string;
   senderAvatar?: string;
   messagePreview?: string;
+  attachments?: Attachment[];
   timestamp: Date;
   isRead: boolean;
   translations?: {
@@ -124,6 +127,7 @@ export class NotificationService {
             senderUsername: notif.senderUsername,
             senderAvatar: notif.senderAvatar,
             messagePreview: notif.messagePreview,
+            attachments: notif.message?.attachments || [],
             timestamp: new Date(notif.createdAt),
             isRead: notif.isRead || false,
             data: notif.data
@@ -251,6 +255,7 @@ export class NotificationService {
       senderUsername: data.senderUsername,
       senderAvatar: data.senderAvatar,
       messagePreview: data.messagePreview,
+      attachments: data.message?.attachments || data.attachments || [],
       timestamp: new Date(data.createdAt || Date.now()),
       isRead: data.isRead || false,
       translations: data.translations

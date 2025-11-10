@@ -28,6 +28,7 @@ import type { Notification } from '@/services/notification.service';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { NotificationFilters, type NotificationType } from '@/components/notifications/NotificationFilters';
 import { cn } from '@/lib/utils';
+import { AttachmentDetails } from '@/components/attachments/AttachmentDetails';
 
 function NotificationsPageContent() {
   const { t } = useI18n('notifications');
@@ -342,13 +343,38 @@ function NotificationsPageContent() {
                                 </Badge>
                               </div>
 
-                              {/* Message preview */}
-                              <p className={cn(
-                                "text-sm mb-2 line-clamp-2",
-                                !notification.isRead ? 'text-foreground' : 'text-muted-foreground'
-                              )}>
-                                {notification.messagePreview || notification.message}
-                              </p>
+                              {/* Message preview or attachment details */}
+                              {notification.attachments && notification.attachments.length > 0 ? (
+                                <div className="mb-2 space-y-1">
+                                  {notification.attachments.map((attachment) => (
+                                    <div key={attachment.id} className="flex items-center gap-2">
+                                      <AttachmentDetails
+                                        attachment={attachment}
+                                        className={cn(
+                                          "text-sm",
+                                          !notification.isRead ? 'text-foreground' : 'text-muted-foreground'
+                                        )}
+                                        iconSize="sm"
+                                      />
+                                    </div>
+                                  ))}
+                                  {notification.messagePreview && (
+                                    <p className={cn(
+                                      "text-sm line-clamp-1 mt-1",
+                                      !notification.isRead ? 'text-foreground' : 'text-muted-foreground'
+                                    )}>
+                                      {notification.messagePreview}
+                                    </p>
+                                  )}
+                                </div>
+                              ) : (
+                                <p className={cn(
+                                  "text-sm mb-2 line-clamp-2",
+                                  !notification.isRead ? 'text-foreground' : 'text-muted-foreground'
+                                )}>
+                                  {notification.messagePreview || notification.message}
+                                </p>
+                              )}
 
                               <div className="flex items-center justify-between">
                                 <p className="text-xs text-muted-foreground">

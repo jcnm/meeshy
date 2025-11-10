@@ -227,6 +227,7 @@ model Message {
   translations      MessageTranslation[]
   attachments       MessageAttachment[]
   reactions         Reaction[]            @relation("MessageReactions")
+  notifications     Notification[]        @relation("NotificationMessage")
   replyTo           Message?              @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   replies           Message[]             @relation("MessageReplies")
   anonymousSender   AnonymousParticipant? @relation("AnonymousMessageSender", fields: [anonymousSenderId], references: [id])
@@ -400,10 +401,12 @@ model Notification {
   callSessionId  String?   @db.ObjectId
 
   user      User      @relation(fields: [userId], references: [id])
+  message   Message?  @relation("NotificationMessage", fields: [messageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([userId, isRead])
   @@index([userId, type])
   @@index([createdAt])
+  @@index([messageId])
 }
 
 /// Préférences de notifications par utilisateur
