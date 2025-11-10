@@ -51,7 +51,12 @@ const LabelWithTooltip = ({ label, tooltip }: { label: React.ReactNode; tooltip:
           <Info className="w-3 h-3" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-56 bg-gray-800 border-gray-600 text-white text-[10px] p-2">
+      <PopoverContent
+        className="w-56 bg-gray-800 border-gray-600 text-white text-[10px] p-2"
+        side="top"
+        align="start"
+        sideOffset={5}
+      >
         {tooltip}
       </PopoverContent>
     </Popover>
@@ -151,10 +156,10 @@ export function AudioEffectsPanel({
             {/* Preset Selector */}
             {availablePresets && onLoadPreset && (
               <div>
-                <Label className="text-gray-300 text-[10px] font-semibold">Configuration rapide</Label>
-                <p className="text-gray-500 text-[9px] mb-0.5">
-                  Choisissez un style prédéfini ou personnalisez
-                </p>
+                <LabelWithTooltip
+                  label="Configuration rapide"
+                  tooltip="Choisissez un style prédéfini adapté à votre usage, ou personnalisez vos propres réglages."
+                />
                 <Select
                   value={currentPreset || 'correction-subtile'}
                   onValueChange={(value: VoiceCoderPreset) => onLoadPreset(value)}
@@ -182,23 +187,83 @@ export function AudioEffectsPanel({
                 </Select>
               </div>
             )}
-            {/* Rapidité de correction */}
-            <div>
-              <LabelWithTooltip
-                label={`Rapidité de correction (${effectsState.voiceCoder.params.retuneSpeed}%)`}
-                tooltip="Vitesse de correction de la justesse. Lent (0-30%) = très naturel et doux. Moyen (30-70%) = équilibré. Rapide (70-100%) = effet robotique."
-              />
-              <Slider
-                value={[effectsState.voiceCoder.params.retuneSpeed]}
-                min={0}
-                max={100}
-                step={5}
-                onValueChange={([value]) =>
-                  onUpdateParams('voice-coder', { retuneSpeed: value })
-                }
-                disabled={!effectsState.voiceCoder.enabled}
-                className="mt-1"
-              />
+            {/* Sliders principaux en grille 2x2 */}
+            <div className="grid grid-cols-2 gap-2">
+              {/* Rapidité de correction */}
+              <div>
+                <LabelWithTooltip
+                  label={`Rapidité (${effectsState.voiceCoder.params.retuneSpeed}%)`}
+                  tooltip="Vitesse de correction de la justesse. Lent (0-30%) = très naturel et doux. Moyen (30-70%) = équilibré. Rapide (70-100%) = effet robotique."
+                />
+                <Slider
+                  value={[effectsState.voiceCoder.params.retuneSpeed]}
+                  min={0}
+                  max={100}
+                  step={5}
+                  onValueChange={([value]) =>
+                    onUpdateParams('voice-coder', { retuneSpeed: value })
+                  }
+                  disabled={!effectsState.voiceCoder.enabled}
+                  className="mt-1"
+                />
+              </div>
+
+              {/* Force de l'effet */}
+              <div>
+                <LabelWithTooltip
+                  label={`Force (${effectsState.voiceCoder.params.strength}%)`}
+                  tooltip="Intensité de l'auto-tune. Plus élevé = voix plus parfaite mais moins naturelle. Recommandé : 30-50% pour un effet subtil."
+                />
+                <Slider
+                  value={[effectsState.voiceCoder.params.strength]}
+                  min={0}
+                  max={100}
+                  step={5}
+                  onValueChange={([value]) =>
+                    onUpdateParams('voice-coder', { strength: value })
+                  }
+                  disabled={!effectsState.voiceCoder.enabled}
+                  className="mt-1"
+                />
+              </div>
+
+              {/* Expression naturelle */}
+              <div>
+                <LabelWithTooltip
+                  label={`Expression (${effectsState.voiceCoder.params.naturalVibrato}%)`}
+                  tooltip="Préserve les variations et le vibrato naturel de votre voix. Plus élevé = plus d'expression et d'émotion conservées."
+                />
+                <Slider
+                  value={[effectsState.voiceCoder.params.naturalVibrato]}
+                  min={0}
+                  max={100}
+                  step={5}
+                  onValueChange={([value]) =>
+                    onUpdateParams('voice-coder', { naturalVibrato: value })
+                  }
+                  disabled={!effectsState.voiceCoder.enabled}
+                  className="mt-1"
+                />
+              </div>
+
+              {/* Hauteur globale */}
+              <div>
+                <LabelWithTooltip
+                  label={`Hauteur (${effectsState.voiceCoder.params.pitch > 0 ? '+' : ''}${effectsState.voiceCoder.params.pitch})`}
+                  tooltip="Transpose votre voix vers l'aigu (+) ou le grave (-). Exemple : +3 = 3 demi-tons plus aigu."
+                />
+                <Slider
+                  value={[effectsState.voiceCoder.params.pitch]}
+                  min={-12}
+                  max={12}
+                  step={1}
+                  onValueChange={([value]) =>
+                    onUpdateParams('voice-coder', { pitch: value })
+                  }
+                  disabled={!effectsState.voiceCoder.enabled}
+                  className="mt-1"
+                />
+              </div>
             </div>
 
             {/* Gamme & Tonalité */}
@@ -254,69 +319,12 @@ export function AudioEffectsPanel({
               </div>
             </div>
 
-            {/* Force de l'effet */}
-            <div>
-              <LabelWithTooltip
-                label={`Force de l'effet (${effectsState.voiceCoder.params.strength}%)`}
-                tooltip="Intensité de l'auto-tune. Plus élevé = voix plus parfaite mais moins naturelle. Recommandé : 30-50% pour un effet subtil."
-              />
-              <Slider
-                value={[effectsState.voiceCoder.params.strength]}
-                min={0}
-                max={100}
-                step={5}
-                onValueChange={([value]) =>
-                  onUpdateParams('voice-coder', { strength: value })
-                }
-                disabled={!effectsState.voiceCoder.enabled}
-                className="mt-1"
-              />
-            </div>
-
-            {/* Expression naturelle */}
-            <div>
-              <LabelWithTooltip
-                label={`Expression naturelle (${effectsState.voiceCoder.params.naturalVibrato}%)`}
-                tooltip="Préserve les variations et le vibrato naturel de votre voix. Plus élevé = plus d'expression et d'émotion conservées."
-              />
-              <Slider
-                value={[effectsState.voiceCoder.params.naturalVibrato]}
-                min={0}
-                max={100}
-                step={5}
-                onValueChange={([value]) =>
-                  onUpdateParams('voice-coder', { naturalVibrato: value })
-                }
-                disabled={!effectsState.voiceCoder.enabled}
-                className="mt-1"
-              />
-            </div>
-
-            {/* Hauteur globale */}
-            <div>
-              <LabelWithTooltip
-                label={`Hauteur de voix (${effectsState.voiceCoder.params.pitch > 0 ? '+' : ''}${effectsState.voiceCoder.params.pitch})`}
-                tooltip="Transpose votre voix vers l'aigu (+) ou le grave (-). Exemple : +3 = 3 demi-tons plus aigu."
-              />
-              <Slider
-                value={[effectsState.voiceCoder.params.pitch]}
-                min={-12}
-                max={12}
-                step={1}
-                onValueChange={([value]) =>
-                  onUpdateParams('voice-coder', { pitch: value })
-                }
-                disabled={!effectsState.voiceCoder.enabled}
-                className="mt-1"
-              />
-            </div>
-
             {/* Harmonisation */}
             <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-gray-300 text-[10px]">Harmonies vocales</Label>
-                <p className="text-gray-500 text-[9px]">Ajoute des voix d'accompagnement</p>
-              </div>
+              <LabelWithTooltip
+                label="Harmonies vocales"
+                tooltip="Ajoute des voix d'accompagnement harmoniques à votre voix principale pour un effet chorale."
+              />
               <Switch
                 checked={effectsState.voiceCoder.params.harmonization}
                 onCheckedChange={(checked) =>
