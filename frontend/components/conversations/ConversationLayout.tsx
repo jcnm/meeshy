@@ -7,6 +7,7 @@ import { useI18n } from '@/hooks/useI18n';
 import { useConversationMessages } from '@/hooks/use-conversation-messages';
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { useConversationsPagination } from '@/hooks/use-conversations-pagination';
+import { useNotifications } from '@/hooks/use-notifications';
 import { conversationsService } from '@/services/conversations.service';
 import { messageService } from '@/services/message.service';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -95,6 +96,30 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   // Utiliser l'état de chargement du hook de pagination
   const isLoading = isLoadingConversations;
   const [selectedLanguage, setSelectedLanguage] = useState('fr');
+
+  // Hook pour gérer les notifications
+  const { notifications, markAsRead } = useNotifications();
+
+  // Ref pour tracker les notifications déjà marquées
+  const markedNotificationsRef = useRef<Set<string>>(new Set());
+
+  // Marquer les notifications de la conversation comme lues quand on l'ouvre
+  useEffect(() => {
+    if (!effectiveSelectedId) return;
+
+    // Trouver toutes les notifications non lues liées à cette conversation
+    const conversationNotifications = notifications.filter(
+      n => n.conversationId === effectiveSelectedId &&
+           !n.isRead &&
+           !markedNotificationsRef.current.has(n.id)
+    );
+
+    // Marquer chaque notification comme lue
+    conversationNotifications.forEach(notification => {
+      markedNotificationsRef.current.add(notification.id);
+      markAsRead(notification.id);
+    });
+  }, [effectiveSelectedId, notifications, markAsRead]);
 
   // États modaux et UI
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
