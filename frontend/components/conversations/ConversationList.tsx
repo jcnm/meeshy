@@ -367,6 +367,12 @@ const ConversationItem = memo(function ConversationItem({
                         {attachment.duration && (
                           <span className="text-xs">• {Math.floor(attachment.duration / 60)}:{(attachment.duration % 60).toString().padStart(2, '0')}</span>
                         )}
+                        {attachment.width && attachment.height && (
+                          <span className="text-xs">• {attachment.width}×{attachment.height}</span>
+                        )}
+                        {attachment.fps && (
+                          <span className="text-xs">• {attachment.fps}fps</span>
+                        )}
                       </>
                     );
                   } else if (mimeType.startsWith('audio/')) {
@@ -384,6 +390,9 @@ const ConversationItem = memo(function ConversationItem({
                       <>
                         <span className="inline-flex text-orange-500">📄</span>
                         <span>PDF</span>
+                        {attachment.pageCount && (
+                          <span className="text-xs">• {attachment.pageCount} page{attachment.pageCount > 1 ? 's' : ''}</span>
+                        )}
                       </>
                     );
                   } else if (mimeType.includes('code') || mimeType.includes('javascript') || mimeType.includes('typescript') || mimeType.includes('python')) {
@@ -391,6 +400,9 @@ const ConversationItem = memo(function ConversationItem({
                       <>
                         <span className="inline-flex text-green-500">💻</span>
                         <span>Code</span>
+                        {attachment.lineCount && (
+                          <span className="text-xs">• {attachment.lineCount} ligne{attachment.lineCount > 1 ? 's' : ''}</span>
+                        )}
                       </>
                     );
                   } else {

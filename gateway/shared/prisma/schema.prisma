@@ -281,6 +281,16 @@ model MessageAttachment {
   codec           String?  // Codec audio/vidéo (ex: "opus", "aac", "vorbis", "h264")
   channels        Int?     // Nombre de canaux audio (1: mono, 2: stereo)
 
+  // Métadonnées spécifiques vidéo
+  fps             Float?   // Frames per second pour vidéos
+  videoCodec      String?  // Codec vidéo spécifique (ex: "h264", "vp8", "vp9", "av1")
+
+  // Métadonnées spécifiques documents/PDF
+  pageCount       Int?     // Nombre de pages pour PDF et documents
+
+  // Métadonnées spécifiques code/texte
+  lineCount       Int?     // Nombre de lignes pour fichiers texte/code
+
   // Métadonnées générales
   uploadedBy      String   @db.ObjectId // ID utilisateur ou anonyme
   isAnonymous     Boolean  @default(false)

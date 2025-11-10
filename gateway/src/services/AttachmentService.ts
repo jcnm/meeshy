@@ -9,14 +9,16 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { parseFile } from 'music-metadata';
-import { 
-  Attachment, 
-  AttachmentType, 
+import * as pdfParse from 'pdf-parse';
+import * as ffmpeg from 'fluent-ffmpeg';
+import {
+  Attachment,
+  AttachmentType,
   AttachmentMetadata,
   getAttachmentType,
   getSizeLimit,
   UPLOAD_LIMITS,
-  ACCEPTED_MIME_TYPES 
+  ACCEPTED_MIME_TYPES
 } from '../../shared/types/attachment';
 
 export interface FileToUpload {
@@ -231,6 +233,128 @@ export class AttachmentService {
   }
 
   /**
+   * Extrait les métadonnées d'un fichier PDF
+   * Retourne le nombre de pages
+   */
+  async extractPdfMetadata(pdfPath: string): Promise<{ pageCount: number }> {
+    try {
+      const fullPath = path.join(this.uploadBasePath, pdfPath);
+      const dataBuffer = await fs.readFile(fullPath);
+      const data = await pdfParse(dataBuffer);
+
+      return {
+        pageCount: data.numpages || 0,
+      };
+    } catch (error) {
+      console.error('[AttachmentService] Erreur extraction métadonnées PDF:', {
+        filePath: pdfPath,
+        error: error instanceof Error ? error.message : error,
+      });
+
+      return {
+        pageCount: 0,
+      };
+    }
+  }
+
+  /**
+   * Extrait les métadonnées d'un fichier vidéo
+   * Retourne durée, dimensions, fps, codec, bitrate
+   */
+  async extractVideoMetadata(videoPath: string): Promise<{
+    duration: number;
+    width: number;
+    height: number;
+    fps: number;
+    videoCodec: string;
+    bitrate: number;
+  }> {
+    try {
+      const fullPath = path.join(this.uploadBasePath, videoPath);
+
+      return new Promise((resolve, reject) => {
+        ffmpeg.ffprobe(fullPath, (err, metadata) => {
+          if (err) {
+            console.error('[AttachmentService] Erreur ffprobe:', err);
+            reject(err);
+            return;
+          }
+
+          const videoStream = metadata.streams?.find((s) => s.codec_type === 'video');
+
+          if (!videoStream) {
+            resolve({
+              duration: 0,
+              width: 0,
+              height: 0,
+              fps: 0,
+              videoCodec: 'unknown',
+              bitrate: 0,
+            });
+            return;
+          }
+
+          // Calculer le FPS
+          let fps = 0;
+          if (videoStream.r_frame_rate) {
+            const [num, den] = videoStream.r_frame_rate.split('/').map(Number);
+            fps = den ? num / den : 0;
+          }
+
+          resolve({
+            duration: Math.round(metadata.format?.duration || 0),
+            width: videoStream.width || 0,
+            height: videoStream.height || 0,
+            fps: Math.round(fps * 100) / 100, // Arrondir à 2 décimales
+            videoCodec: videoStream.codec_name || 'unknown',
+            bitrate: parseInt(metadata.format?.bit_rate || '0', 10),
+          });
+        });
+      });
+    } catch (error) {
+      console.error('[AttachmentService] Erreur extraction métadonnées vidéo:', {
+        filePath: videoPath,
+        error: error instanceof Error ? error.message : error,
+      });
+
+      return {
+        duration: 0,
+        width: 0,
+        height: 0,
+        fps: 0,
+        videoCodec: 'unknown',
+        bitrate: 0,
+      };
+    }
+  }
+
+  /**
+   * Compte le nombre de lignes dans un fichier texte/code
+   */
+  async extractTextMetadata(textPath: string): Promise<{ lineCount: number }> {
+    try {
+      const fullPath = path.join(this.uploadBasePath, textPath);
+      const content = await fs.readFile(fullPath, 'utf-8');
+
+      // Compter le nombre de lignes (séparer par \n)
+      const lines = content.split('\n').length;
+
+      return {
+        lineCount: lines,
+      };
+    } catch (error) {
+      console.error('[AttachmentService] Erreur extraction métadonnées texte:', {
+        filePath: textPath,
+        error: error instanceof Error ? error.message : error,
+      });
+
+      return {
+        lineCount: 0,
+      };
+    }
+  }
+
+  /**
    * Génère une URL publique pour un fichier
    */
   getAttachmentUrl(filePath: string): string {
@@ -298,6 +422,29 @@ export class AttachmentService {
       }
     }
 
+    // Si c'est une vidéo, extraire les métadonnées vidéo complètes
+    if (attachmentType === 'video') {
+      const videoMeta = await this.extractVideoMetadata(filePath);
+      metadata.duration = videoMeta.duration;
+      metadata.width = videoMeta.width;
+      metadata.height = videoMeta.height;
+      metadata.fps = videoMeta.fps;
+      metadata.videoCodec = videoMeta.videoCodec;
+      metadata.bitrate = videoMeta.bitrate;
+    }
+
+    // Si c'est un PDF, extraire le nombre de pages
+    if (attachmentType === 'document' && file.mimeType === 'application/pdf') {
+      const pdfMeta = await this.extractPdfMetadata(filePath);
+      metadata.pageCount = pdfMeta.pageCount;
+    }
+
+    // Si c'est du texte ou du code, compter le nombre de lignes
+    if (attachmentType === 'text' || attachmentType === 'code') {
+      const textMeta = await this.extractTextMetadata(filePath);
+      metadata.lineCount = textMeta.lineCount;
+    }
+
     // Générer les URLs
     const fileUrl = this.getAttachmentUrl(filePath);
     const thumbnailUrl = thumbnailPath ? this.getAttachmentUrl(thumbnailPath) : undefined;
@@ -325,6 +472,10 @@ export class AttachmentService {
         sampleRate: metadata.sampleRate,
         codec: metadata.codec,
         channels: metadata.channels,
+        fps: metadata.fps,
+        videoCodec: metadata.videoCodec,
+        pageCount: metadata.pageCount,
+        lineCount: metadata.lineCount,
         uploadedBy: userId,
         isAnonymous: isAnonymous,
       },
@@ -347,6 +498,10 @@ export class AttachmentService {
       sampleRate: attachment.sampleRate || undefined,
       codec: attachment.codec || undefined,
       channels: attachment.channels || undefined,
+      fps: attachment.fps || undefined,
+      videoCodec: attachment.videoCodec || undefined,
+      pageCount: attachment.pageCount || undefined,
+      lineCount: attachment.lineCount || undefined,
       uploadedBy: attachment.uploadedBy,
       isAnonymous: attachment.isAnonymous,
       createdAt: attachment.createdAt,

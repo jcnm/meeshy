@@ -85,6 +85,10 @@ export interface Attachment {
   readonly sampleRate?: number;
   readonly codec?: string;
   readonly channels?: number;
+  readonly fps?: number;
+  readonly videoCodec?: string;
+  readonly pageCount?: number;
+  readonly lineCount?: number;
   readonly uploadedBy: string;
   readonly isAnonymous: boolean;
   readonly createdAt: string;
@@ -111,6 +115,10 @@ export interface AttachmentMetadata {
   sampleRate?: number;
   codec?: string;
   channels?: number;
+  fps?: number;
+  videoCodec?: string;
+  pageCount?: number;
+  lineCount?: number;
   thumbnailGenerated?: boolean;
 }
 

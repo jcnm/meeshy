@@ -86,13 +86,17 @@ export function AttachmentDetails({
         const dimensions = attachment.width && attachment.height
           ? `${attachment.width}×${attachment.height}`
           : null;
+        const fps = attachment.fps ? `${attachment.fps}fps` : null;
+        const codec = attachment.videoCodec || attachment.codec;
 
         return {
           icon: <FileVideo className={iconSizeClass} />,
           iconColor: 'text-red-500',
           details: [
             duration && <span key="duration" className="flex items-center gap-1"><Clock className="h-3 w-3" />{duration}</span>,
-            dimensions && <span key="dimensions">{dimensions}</span>
+            dimensions && <span key="dimensions">{dimensions}</span>,
+            fps && <span key="fps">{fps}</span>,
+            codec && <span key="codec" className="uppercase text-xs">{codec}</span>
           ].filter(Boolean)
         };
       }
@@ -114,31 +118,32 @@ export function AttachmentDetails({
       }
 
       case 'document': {
-        // Pour les documents, afficher le nombre de pages si disponible (à implémenter côté backend)
-        // Pour l'instant, afficher la taille du fichier
         const fileSize = formatFileSize(attachment.fileSize);
         const isPdf = attachment.mimeType === 'application/pdf';
+        const pageCount = attachment.pageCount;
 
         return {
           icon: <FileText className={iconSizeClass} />,
           iconColor: 'text-orange-500',
           details: [
             isPdf && <span key="pdf">PDF</span>,
+            pageCount && <span key="pages" className="flex items-center gap-1"><FileCheck className="h-3 w-3" />{pageCount} page{pageCount > 1 ? 's' : ''}</span>,
             fileSize && <span key="size">{fileSize}</span>
           ].filter(Boolean)
         };
       }
 
       case 'code': {
-        // Pour le code, afficher le nombre de lignes si disponible (à implémenter côté backend)
         const fileSize = formatFileSize(attachment.fileSize);
         const extension = attachment.originalName.split('.').pop()?.toUpperCase() || 'CODE';
+        const lineCount = attachment.lineCount;
 
         return {
           icon: <FileCode className={iconSizeClass} />,
           iconColor: 'text-green-500',
           details: [
             <span key="ext">{extension}</span>,
+            lineCount && <span key="lines" className="flex items-center gap-1"><AlignLeft className="h-3 w-3" />{lineCount} ligne{lineCount > 1 ? 's' : ''}</span>,
             fileSize && <span key="size">{fileSize}</span>
           ].filter(Boolean)
         };
@@ -146,12 +151,14 @@ export function AttachmentDetails({
 
       case 'text': {
         const fileSize = formatFileSize(attachment.fileSize);
+        const lineCount = attachment.lineCount;
 
         return {
           icon: <AlignLeft className={iconSizeClass} />,
           iconColor: 'text-gray-500',
           details: [
             <span key="text">TXT</span>,
+            lineCount && <span key="lines">{lineCount} ligne{lineCount > 1 ? 's' : ''}</span>,
             fileSize && <span key="size">{fileSize}</span>
           ].filter(Boolean)
         };
