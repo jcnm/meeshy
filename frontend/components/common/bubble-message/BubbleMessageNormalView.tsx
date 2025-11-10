@@ -26,7 +26,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { formatRelativeDate } from '@/utils/date-format';
+import { formatRelativeDate, formatFullDate } from '@/utils/date-format';
 import {
   Tooltip,
   TooltipContent,
@@ -256,9 +256,9 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
       // Générer l'URL du message selon le contexte actuel
       const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
       const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
-      
+
       let messageUrl: string;
-      
+
       if (conversationId) {
         // Si on est déjà dans /chat/, utiliser /chat/, sinon utiliser /conversations/
         if (currentPath.startsWith('/chat/')) {
@@ -269,20 +269,29 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
       } else {
         messageUrl = `${baseUrl}/message/${message.id}`;
       }
-      
-      // Contenu à copier avec le lien
-      const contentToCopy = `${displayContent}\n\n${messageUrl}`;
-      
+
+      // Obtenir le nom de l'expéditeur
+      const senderUser = message.anonymousSender || message.sender;
+      const senderName = senderUser
+        ? getUserDisplayName(senderUser, tBubble('anonymous'))
+        : tBubble('unknownUser');
+
+      // Formater la date complète
+      const fullDate = formatFullDate(message.createdAt);
+
+      // Contenu à copier avec tous les détails
+      const contentToCopy = `${fullDate} par ${senderName} :\n${displayContent}\n\n${messageUrl}`;
+
       // Copier dans le presse-papiers
       await navigator.clipboard.writeText(contentToCopy);
-      
+
       // Afficher une notification de succès
       toast.success(tBubble('messageCopied'));
     } catch (error) {
       console.error('Failed to copy message:', error);
       toast.error(tBubble('copyFailed'));
     }
-  }, [displayContent, conversationId, message.id, tBubble]);
+  }, [displayContent, conversationId, message, tBubble]);
 
   // Copier uniquement le lien du message (pour attachments seuls)
   const handleCopyMessageLink = useCallback(async () => {

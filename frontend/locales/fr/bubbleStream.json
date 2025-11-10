@@ -52,6 +52,7 @@
     "minutesAgo": "il y a {minutes}min",
     "hoursAgo": "il y a {hours}h",
     "daysAgo": "il y a {days}j",
+    "yesterday": "Hier {time}",
     "maxModelReached": "Modèle de traduction maximum déjà atteint",
     "retranslatingTo": "Retraduction en {language} (modèle {model})",
     "upgradeError": "Erreur lors de la demande d'amélioration",

@@ -83,15 +83,11 @@ export function formatRelativeDate(
     return `${capitalizedDay} ${time}`;
   }
 
-  // Plus ancien (>= 7 jours) : afficher la date complète
-  return messageDate
-    .toLocaleDateString('fr-FR', {
-      weekday: 'short',
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    })
-    .replace(/\s/g, '. ');
+  // Plus ancien (>= 7 jours) : afficher la date complète simplifiée
+  const day = messageDate.toLocaleDateString('fr-FR', { day: 'numeric' });
+  const month = messageDate.toLocaleDateString('fr-FR', { month: 'short' });
+  const year = messageDate.toLocaleDateString('fr-FR', { year: 'numeric' });
+  return `${day} ${month} ${year}`;
 }
 
 /**
@@ -155,13 +151,31 @@ export function formatConversationDate(
     return `${capitalizedDay} ${time}`;
   }
 
-  // Si c'est plus ancien, afficher la date complète
-  return messageDate
-    .toLocaleDateString('fr-FR', {
-      weekday: 'short',
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    })
-    .replace(/\s/g, '. ');
+  // Si c'est plus ancien, afficher la date complète simplifiée
+  const day = messageDate.toLocaleDateString('fr-FR', { day: 'numeric' });
+  const month = messageDate.toLocaleDateString('fr-FR', { month: 'short' });
+  const year = messageDate.toLocaleDateString('fr-FR', { year: 'numeric' });
+  return `${day} ${month} ${year}`;
+}
+
+/**
+ * Formate une date complète pour la copie de message
+ * Format : "lundi 4 novembre 2025 à 14:30"
+ *
+ * @param date - La date à formater
+ * @returns La date formatée en texte complet
+ */
+export function formatFullDate(date: Date | string): string {
+  const messageDate = typeof date === 'string' ? new Date(date) : date;
+
+  const weekday = messageDate.toLocaleDateString('fr-FR', { weekday: 'long' });
+  const day = messageDate.toLocaleDateString('fr-FR', { day: 'numeric' });
+  const month = messageDate.toLocaleDateString('fr-FR', { month: 'long' });
+  const year = messageDate.toLocaleDateString('fr-FR', { year: 'numeric' });
+  const time = messageDate.toLocaleTimeString('fr-FR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  return `${weekday} ${day} ${month} ${year} à ${time}`;
 }
