@@ -143,19 +143,46 @@ function NotificationsPageContent() {
     const diffDays = Math.floor(diffHours / 24);
 
     if (diffMinutes < 1) return t('timeAgo.now');
-    if (diffMinutes < 60) return t('timeAgo.minute', { count: diffMinutes });
-    if (diffHours < 24) return t('timeAgo.hour', { count: diffHours });
-    if (diffDays < 7) return t('timeAgo.day', { count: diffDays });
-    return date.toLocaleDateString();
+
+    // Remplacer manuellement le placeholder {count}
+    if (diffMinutes < 60) {
+      const template = t('timeAgo.minute');
+      return template.replace('{count}', diffMinutes.toString());
+    }
+
+    if (diffHours < 24) {
+      const template = t('timeAgo.hour');
+      return template.replace('{count}', diffHours.toString());
+    }
+
+    if (diffDays < 7) {
+      const template = t('timeAgo.day');
+      return template.replace('{count}', diffDays.toString());
+    }
+
+    // Pour les dates plus anciennes, utiliser un format court
+    const day = date.toLocaleDateString('fr-FR', { day: 'numeric' });
+    const month = date.toLocaleDateString('fr-FR', { month: 'short' });
+    const year = date.getFullYear();
+    const currentYear = now.getFullYear();
+
+    // N'afficher l'année que si différente de l'année en cours
+    return currentYear === year ? `${day} ${month}` : `${day} ${month} ${year}`;
   };
 
   const getUnreadCountMessage = () => {
     if (unreadCount > 0) {
       const key = unreadCount === 1 ? 'unreadCount.single' : 'unreadCount.plural';
-      return t(key, { count: unreadCount, total: totalCount });
+      const template = t(key);
+      return template
+        .replace('{count}', unreadCount.toString())
+        .replace('{total}', totalCount.toString());
     } else if (totalCount > 0) {
       const plural = totalCount > 1 ? 's' : '';
-      return t('unreadCount.allRead', { total: totalCount, plural });
+      const template = t('unreadCount.allRead');
+      return template
+        .replace('{total}', totalCount.toString())
+        .replace('{plural}', plural);
     } else {
       return t('unreadCount.empty');
     }
