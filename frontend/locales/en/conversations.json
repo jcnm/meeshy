@@ -108,7 +108,9 @@
       "unarchived": "Conversation unarchived",
       "pinError": "Error pinning conversation",
       "muteError": "Error changing notifications",
-      "archiveError": "Error archiving conversation"
+      "archiveError": "Error archiving conversation",
+      "startVideoCall": "Start video call",
+      "menuActions": "Actions"
     },
     "conversationUI": {
       "participants": "Participants",

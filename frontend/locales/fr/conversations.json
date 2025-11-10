@@ -114,7 +114,9 @@
       "unarchived": "Conversation désarchivée",
       "pinError": "Erreur lors de l'épinglage",
       "muteError": "Erreur lors du changement des notifications",
-      "archiveError": "Erreur lors de l'archivage"
+      "archiveError": "Erreur lors de l'archivage",
+      "startVideoCall": "Démarrer un appel vidéo",
+      "menuActions": "Actions"
     },
     "conversationUI": {
       "participants": "Participants",

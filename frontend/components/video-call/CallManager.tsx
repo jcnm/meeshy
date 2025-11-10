@@ -99,6 +99,14 @@ export function CallManager() {
    * Handle incoming call
    */
   const handleIncomingCall = useCallback(async (event: CallInitiatedEvent) => {
+    console.log('🔔 [CallManager] call:initiated event received', {
+      callId: event.callId,
+      initiator: event.initiator,
+      participants: event.participants,
+      conversationId: event.conversationId,
+      currentUser: user?.id,
+      userLoaded: !!user
+    });
 
     // Wait for user to be loaded
     if (!user) {
@@ -117,6 +125,11 @@ export function CallManager() {
 
     // Check if current user is the initiator
     const isInitiator = user.id === event.initiator.userId;
+    console.log('🔍 [CallManager] isInitiator check:', {
+      currentUserId: user.id,
+      initiatorId: event.initiator.userId,
+      isInitiator
+    });
 
     if (isInitiator) {
       // I am the initiator - check if already in call to avoid duplicate
@@ -148,6 +161,10 @@ export function CallManager() {
       toast.success('Call started - waiting for participants...');
     } else {
       // I am being called - show notification
+      console.log('📞 [CallManager] Setting incomingCall state - should show CallNotification', {
+        callId: event.callId,
+        from: event.initiator.username
+      });
       logger.info('[CallManager]', 'Incoming call from ' + event.initiator.username);
       setIncomingCall(event);
 
@@ -368,28 +385,48 @@ export function CallManager() {
   /**
    * Setup Socket.IO listeners
    * Poll for socket availability and re-setup listeners when it becomes available
+   * Uses exponential backoff and retry limits to prevent infinite loops
    */
   useEffect(() => {
     let isSubscribed = true;
-    let checkInterval: NodeJS.Timeout;
+    let retryTimeoutId: NodeJS.Timeout | null = null;
     let debugListenerRef: ((eventName: string, ...args: any[]) => void) | null = null;
+    let retryCount = 0;
+    const MAX_RETRIES = 30; // Stop after 30 attempts
+    let lastLogTime = 0;
+    const LOG_THROTTLE_MS = 5000; // Only log every 5 seconds to avoid spam
 
     const setupListeners = () => {
       // Wait for user to be loaded before setting up listeners
       if (!user || !user.id) {
-        logger.warn('[CallManager]', 'User not loaded yet, waiting before setting up listeners...');
+        const now = Date.now();
+        // Throttle logging to avoid spam
+        if (now - lastLogTime > LOG_THROTTLE_MS) {
+          logger.warn('[CallManager]', 'User not loaded yet, waiting before setting up listeners...');
+          lastLogTime = now;
+        }
         return false;
       }
 
       const socket = meeshySocketIOService.getSocket();
 
       if (!socket) {
-        logger.warn('[CallManager]', 'No socket available, will retry...');
+        const now = Date.now();
+        // Throttle logging to avoid spam
+        if (now - lastLogTime > LOG_THROTTLE_MS) {
+          logger.warn('[CallManager]', 'No socket available, will retry...');
+          lastLogTime = now;
+        }
         return false;
       }
 
       if (!socket.connected) {
-        logger.warn('[CallManager]', 'Socket not connected, will retry...');
+        const now = Date.now();
+        // Throttle logging to avoid spam
+        if (now - lastLogTime > LOG_THROTTLE_MS) {
+          logger.warn('[CallManager]', 'Socket not connected, will retry...');
+          lastLogTime = now;
+        }
         return false;
       }
 
@@ -408,6 +445,7 @@ export function CallManager() {
       // DEBUG: Add catch-all listener to see ALL socket events
       debugListenerRef = (eventName: string, ...args: any[]) => {
         if (eventName.startsWith('call:')) {
+          console.log('📡 [CallManager] Socket event received:', eventName, args);
         }
       };
       (socket as any).onAny(debugListenerRef);
@@ -420,6 +458,11 @@ export function CallManager() {
       (socket as any).on('call:media-toggled', handleMediaToggle);
       (socket as any).on('call:error', handleCallError);
 
+      console.log('✅ [CallManager] All call listeners registered', {
+        socketId: socket.id,
+        userId: user.id,
+        listenersCount: 6
+      });
       logger.info('[CallManager]', '✅ All call listeners registered', {
         socketId: socket.id,
         userId: user.id
@@ -428,22 +471,38 @@ export function CallManager() {
       return true;
     };
 
-    // Try to setup listeners immediately
-    const success = setupListeners();
+    const attemptSetup = () => {
+      if (!isSubscribed) return;
 
-    // If not successful, poll every second until socket is available
-    if (!success && isSubscribed) {
-      checkInterval = setInterval(() => {
-        if (isSubscribed && setupListeners()) {
-          clearInterval(checkInterval);
+      const success = setupListeners();
+
+      if (!success) {
+        retryCount++;
+
+        // Stop retrying after MAX_RETRIES attempts
+        if (retryCount > MAX_RETRIES) {
+          logger.error('[CallManager]', `Failed to setup listeners after ${MAX_RETRIES} attempts. Stopping retries. Check that user is logged in and socket is connected.`);
+          return;
         }
-      }, 1000);
-    }
+
+        // Exponential backoff: 1s, 1.5s, 2.25s, 3.375s, ... max 5s
+        const delay = Math.min(1000 * Math.pow(1.5, retryCount - 1), 5000);
+
+        retryTimeoutId = setTimeout(attemptSetup, delay);
+      } else {
+        if (retryCount > 0) {
+          logger.info('[CallManager]', `✅ Listeners setup successful after ${retryCount} retries`);
+        }
+      }
+    };
+
+    // Start initial attempt
+    attemptSetup();
 
     return () => {
       isSubscribed = false;
-      if (checkInterval) {
-        clearInterval(checkInterval);
+      if (retryTimeoutId) {
+        clearTimeout(retryTimeoutId);
       }
 
       // Cleanup listeners
@@ -486,6 +545,17 @@ export function CallManager() {
       }
     };
   }, [isInCall, reset, clearCallTimeout]);
+
+  // Debug render state
+  console.log('🎨 [CallManager] Rendering:', {
+    incomingCall: !!incomingCall,
+    incomingCallId: incomingCall?.callId,
+    isInCall,
+    currentCallId: currentCall?.id,
+    userId: user?.id,
+    willShowNotification: !!incomingCall,
+    willShowInterface: !!(isInCall && currentCall && user?.id)
+  });
 
   return (
     <>
