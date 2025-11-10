@@ -8,25 +8,45 @@
     "quickActions": "Actions rapides",
     "service": "Service",
     "systemStatus": "État du système",
+    "search": "Rechercher dans les notifications...",
+    "noResults": "Aucune notification trouvée",
     "empty": {
       "title": "Aucune notification",
       "description": "Vous n'avez aucune nouvelle notification pour le moment"
     },
     "types": {
       "message": "Message",
+      "new_message": "Nouveau message",
+      "missed_call": "Appel manqué",
       "mention": "Mention",
       "invitation": "Invitation",
-      "system": "Système"
+      "system": "Système",
+      "conversation": "Conversation",
+      "translation": "Traduction"
     },
     "unreadCount": {
       "empty": "Aucune notification non lue",
-      "allRead": "Toutes les notifications ont été lues"
+      "single": "{count} notification non lue sur {total}",
+      "plural": "{count} notifications non lues sur {total}",
+      "allRead": "{total} notification{plural} (toutes lues)"
     },
     "timeAgo": {
       "now": "À l'instant",
-      "minute": "minute",
-      "hour": "heure",
-      "day": "jour"
+      "minute": "il y a {count} minute",
+      "hour": "il y a {count} heure",
+      "day": "il y a {count} jour"
+    },
+    "attachments": {
+      "audio": "Audio",
+      "video": "Vidéo",
+      "document": "Document",
+      "image": "Image",
+      "code": "Code",
+      "text": "Texte",
+      "duration": "{duration}",
+      "pages": "{count} pages",
+      "lines": "{count} lignes",
+      "dimensions": "{width}x{height}"
     },
     "actions": {
       "markAsRead": "Marquer comme lu",

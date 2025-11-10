@@ -8,6 +8,8 @@
     "totalNotifications": "Total notifications",
     "unread": "Unread",
     "quickActions": "Quick Actions",
+    "search": "Search in notifications...",
+    "noResults": "No notifications found",
     "timeAgo": {
       "now": "Just now",
       "minute": "{count} minute ago",
@@ -15,6 +17,8 @@
       "day": "{count} day ago"
     },
     "unreadCount": {
+      "single": "{count} unread notification out of {total}",
+      "plural": "{count} unread notifications out of {total}",
       "allRead": "{total} notification{plural} (all read)",
       "empty": "No notifications"
     },
@@ -23,10 +27,26 @@
       "description": "You don't have any notifications yet. They will appear here when you receive them."
     },
     "types": {
-      "message": "New message",
+      "message": "Message",
+      "new_message": "New message",
+      "missed_call": "Missed call",
       "mention": "You were mentioned",
       "invitation": "Invitation received",
-      "system": "System notification"
+      "system": "System notification",
+      "conversation": "Conversation",
+      "translation": "Translation"
+    },
+    "attachments": {
+      "audio": "Audio",
+      "video": "Video",
+      "document": "Document",
+      "image": "Image",
+      "code": "Code",
+      "text": "Text",
+      "duration": "{duration}",
+      "pages": "{count} pages",
+      "lines": "{count} lines",
+      "dimensions": "{width}x{height}"
     },
     "actions": {
       "markAsRead": "Mark as read",
