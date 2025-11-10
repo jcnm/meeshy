@@ -3,13 +3,14 @@
  * Uses Tone.js for high-quality real-time voice effects
  *
  * Implements 4 audio effects:
- * 1. Voice Coder (auto-tune with harmonization)
+ * 1. Voice Coder (REAL auto-tune with pitch detection & correction)
  * 2. Baby Voice (high pitch with formant shift)
  * 3. Demon Voice (low pitch with distortion and reverb)
  * 4. Back Sound Code (background music)
  */
 
 import * as Tone from 'tone';
+import { PitchDetector } from 'pitchy';
 import type {
   VoiceCoderParams,
   BabyVoiceParams,
@@ -30,8 +31,55 @@ export interface AudioEffectProcessor {
 }
 
 /**
- * Voice Coder Effect - Auto-tune with pitch correction
- * Uses Tone.PitchShift for professional pitch shifting
+ * Musical scales for auto-tune
+ */
+const SCALES = {
+  chromatic: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], // All notes
+  major: [0, 2, 4, 5, 7, 9, 11], // Major scale
+  minor: [0, 2, 3, 5, 7, 8, 10], // Natural minor
+  pentatonic: [0, 2, 4, 7, 9], // Pentatonic major
+};
+
+/**
+ * Convert frequency to MIDI note number
+ */
+function frequencyToMidi(frequency: number): number {
+  return 12 * Math.log2(frequency / 440) + 69;
+}
+
+/**
+ * Convert MIDI note to frequency
+ */
+function midiToFrequency(midi: number): number {
+  return 440 * Math.pow(2, (midi - 69) / 12);
+}
+
+/**
+ * Find closest note in scale
+ */
+function snapToScale(midiNote: number, scale: number[], transpose: number = 0): number {
+  const noteInOctave = ((midiNote % 12) + 12) % 12;
+  const octave = Math.floor(midiNote / 12);
+
+  // Find closest note in scale
+  let closestNote = scale[0];
+  let minDistance = Math.abs(noteInOctave - closestNote);
+
+  for (const scaleNote of scale) {
+    const distance = Math.abs(noteInOctave - scaleNote);
+    if (distance < minDistance) {
+      minDistance = distance;
+      closestNote = scaleNote;
+    }
+  }
+
+  // Reconstruct MIDI note
+  return octave * 12 + closestNote + transpose;
+}
+
+/**
+ * Voice Coder Effect - REAL Auto-tune with pitch detection
+ * Detects pitch and corrects to nearest note in scale
  */
 export class VoiceCoderProcessor implements AudioEffectProcessor {
   inputNode: Tone.Gain;
@@ -40,6 +88,13 @@ export class VoiceCoderProcessor implements AudioEffectProcessor {
   private chorus: Tone.Chorus;
   private wetDry: Tone.CrossFade;
   private params: VoiceCoderParams;
+
+  // Pitch detection
+  private analyser: AnalyserNode;
+  private pitchDetector: PitchDetector<Float32Array> | null = null;
+  private detectionBuffer: Float32Array;
+  private animationFrame: number | null = null;
+  private currentPitchShift: number = 0;
 
   constructor(params: VoiceCoderParams) {
     this.params = params;
@@ -50,9 +105,9 @@ export class VoiceCoderProcessor implements AudioEffectProcessor {
 
     // Pitch shifter for auto-tune effect
     this.pitchShift = new Tone.PitchShift({
-      pitch: params.pitch,
-      windowSize: 0.1, // Smaller = more responsive, larger = better quality
-      delayTime: 0, // No delay
+      pitch: 0, // Will be updated dynamically
+      windowSize: 0.03, // Small window for responsive correction
+      delayTime: 0,
       feedback: 0,
     });
 
@@ -68,8 +123,24 @@ export class VoiceCoderProcessor implements AudioEffectProcessor {
     // Wet/Dry mix for strength control
     this.wetDry = new Tone.CrossFade(params.strength / 100);
 
-    // Connect nodes
+    // Setup pitch detection
+    const audioContext = Tone.context.rawContext as AudioContext;
+    this.analyser = audioContext.createAnalyser();
+    this.analyser.fftSize = 2048;
+    this.detectionBuffer = new Float32Array(this.analyser.fftSize);
+
+    // Connect input to analyser for pitch detection
+    (this.inputNode as any).connect(this.analyser);
+
+    // Initialize pitch detector
+    this.pitchDetector = PitchDetector.forFloat32Array(this.analyser.fftSize);
+    this.pitchDetector.clarityThreshold = 0.6; // Minimum clarity for detection
+
+    // Connect processing chain
     this.setupRouting();
+
+    // Start pitch detection loop
+    this.startPitchDetection();
   }
 
   private setupRouting(): void {
@@ -78,6 +149,9 @@ export class VoiceCoderProcessor implements AudioEffectProcessor {
     this.pitchShift.disconnect();
     this.chorus.disconnect();
     this.wetDry.disconnect();
+
+    // Reconnect to analyser
+    (this.inputNode as any).connect(this.analyser);
 
     if (this.params.harmonization) {
       // Route: input -> pitchShift -> chorus -> wetDry -> output
@@ -97,6 +171,57 @@ export class VoiceCoderProcessor implements AudioEffectProcessor {
     this.wetDry.connect(this.outputNode);
   }
 
+  /**
+   * Real-time pitch detection and correction
+   */
+  private startPitchDetection(): void {
+    const detectPitch = () => {
+      if (!this.pitchDetector) return;
+
+      // Get audio data
+      this.analyser.getFloatTimeDomainData(this.detectionBuffer);
+
+      // Detect pitch
+      const [frequency, clarity] = this.pitchDetector.findPitch(
+        this.detectionBuffer,
+        Tone.context.sampleRate
+      );
+
+      // If we detected a clear pitch
+      if (clarity > 0.9 && frequency > 80 && frequency < 1000) {
+        // Convert to MIDI
+        const detectedMidi = frequencyToMidi(frequency);
+
+        // Snap to scale (chromatic = all notes allowed)
+        const targetMidi = snapToScale(detectedMidi, SCALES.chromatic, this.params.pitch);
+
+        // Calculate correction needed (in semitones)
+        const correctionNeeded = targetMidi - detectedMidi;
+
+        // Apply correction with smoothing
+        const smoothingFactor = 0.3; // Lower = smoother
+        this.currentPitchShift =
+          this.currentPitchShift * (1 - smoothingFactor) +
+          correctionNeeded * smoothingFactor;
+
+        // Apply to pitch shifter
+        this.pitchShift.pitch = this.currentPitchShift;
+      }
+
+      // Continue detection loop
+      this.animationFrame = requestAnimationFrame(detectPitch);
+    };
+
+    detectPitch();
+  }
+
+  private stopPitchDetection(): void {
+    if (this.animationFrame !== null) {
+      cancelAnimationFrame(this.animationFrame);
+      this.animationFrame = null;
+    }
+  }
+
   connect(destination: Tone.ToneAudioNode | AudioNode): void {
     this.outputNode.connect(destination as any);
   }
@@ -109,9 +234,6 @@ export class VoiceCoderProcessor implements AudioEffectProcessor {
     const needsReroute = this.params.harmonization !== params.harmonization;
     this.params = params;
 
-    // Update pitch shift
-    this.pitchShift.pitch = params.pitch;
-
     // Update wet/dry mix for strength
     this.wetDry.fade.value = params.strength / 100;
 
@@ -122,10 +244,12 @@ export class VoiceCoderProcessor implements AudioEffectProcessor {
   }
 
   destroy(): void {
+    this.stopPitchDetection();
     this.disconnect();
     this.pitchShift.dispose();
     this.chorus.dispose();
     this.wetDry.dispose();
+    this.analyser.disconnect();
     this.inputNode.dispose();
     this.outputNode.dispose();
   }
