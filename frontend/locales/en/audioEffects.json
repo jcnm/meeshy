@@ -2,6 +2,8 @@
   "audioEffects": {
     "title": "Audio Effects",
     "subtitle": "Transform your voice",
+    "selectEffect": "Select an effect",
+    "disableAll": "Disable all effects",
 
     "voiceCoder": {
       "title": "Perfect Voice",
@@ -75,7 +77,7 @@
     },
 
     "backSound": {
-      "title": "Background Music",
+      "title": "Background Ambiance",
       "uploadLabel": "Load audio file",
       "uploadDescription": "Preset sounds are not yet available. Upload your own MP3/WAV file",
       "uploadButton": "Load audio",
@@ -85,6 +87,7 @@
       },
       "loopMode": {
         "label": "Playback mode",
+        "tooltip": "Choose how to repeat the audio: a specific number of times or for a duration in minutes",
         "nTimes": "Number of times",
         "nMinutes": "Duration in minutes"
       },

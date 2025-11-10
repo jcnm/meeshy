@@ -2,6 +2,8 @@
   "audioEffects": {
     "title": "Effets Audio",
     "subtitle": "Transformez votre voix",
+    "selectEffect": "Sélectionner un effet",
+    "disableAll": "Désactiver tous les effets",
 
     "voiceCoder": {
       "title": "Perfect Voice",
@@ -75,7 +77,7 @@
     },
 
     "backSound": {
-      "title": "Musique de Fond",
+      "title": "Ambiance de Fond",
       "uploadLabel": "Charger un fichier audio",
       "uploadDescription": "Les sons prédéfinis ne sont pas encore disponibles. Chargez votre propre fichier MP3/WAV",
       "uploadButton": "Charger un audio",
@@ -85,6 +87,7 @@
       },
       "loopMode": {
         "label": "Mode de lecture",
+        "tooltip": "Choisissez comment répéter l'audio : un nombre de fois spécifique ou pendant une durée en minutes",
         "nTimes": "Nombre de fois",
         "nMinutes": "Durée en minutes"
       },

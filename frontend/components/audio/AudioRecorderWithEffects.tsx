@@ -432,7 +432,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
 
           {/* Panneau centré sur mobile, positionné près du bouton sur desktop */}
           <div
-            className="fixed z-[9999] md:absolute"
+            className="fixed z-[9999] md:absolute w-[95vw] md:w-[800px]"
             style={{
               // Mobile: centré horizontalement et verticalement
               left: '50%',
@@ -440,7 +440,6 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
               transform: 'translate(-50%, -50%)',
               maxWidth: '95vw',
               maxHeight: '85vh',
-              width: 'auto',
             }}
           >
             <AudioEffectsPanel
