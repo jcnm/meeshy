@@ -10,7 +10,7 @@
  * @version 1.0.0
  */
 
-import { PrismaClient } from '../../shared/client';
+import { PrismaClient } from '../shared/prisma/client';
 import { logger } from '../utils/logger';
 
 export interface StatusUpdateMetrics {

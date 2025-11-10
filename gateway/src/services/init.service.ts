@@ -1,4 +1,4 @@
-import { PrismaClient } from '../../shared/client';
+import { PrismaClient } from '../shared/prisma/client';
 import { AuthService } from './auth.service';
 import { UserRoleEnum } from '../../shared/types';
 

@@ -3,7 +3,7 @@
  * Script de migration forcée pour initialiser les champs de sécurité
  */
 import '../src/env';
-import { PrismaClient } from '../../shared/client';
+import { PrismaClient } from '../shared/prisma/client';
 
 const prisma = new PrismaClient();
 

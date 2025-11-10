@@ -8,7 +8,7 @@
  * - Validation (DIRECT/GROUP conversations only)
  */
 
-import { PrismaClient, CallMode, CallStatus, ParticipantRole, Prisma } from '../../shared/client';
+import { PrismaClient, CallMode, CallStatus, ParticipantRole, Prisma } from '../shared/prisma/client';
 import { logger } from '../utils/logger';
 import { CALL_ERROR_CODES } from '../../shared/types/video-call';
 import { TURNCredentialService } from './TURNCredentialService';

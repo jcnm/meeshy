@@ -4,7 +4,7 @@
  * Centralise la logique de messaging avec les champs disponibles dans le schéma
  */
 
-import { PrismaClient, Message } from '../../shared/client';
+import { PrismaClient, Message } from '../shared/prisma/client';
 import type { 
   MessageRequest, 
   MessageResponse, 
