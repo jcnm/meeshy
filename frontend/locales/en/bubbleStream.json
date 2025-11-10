@@ -42,6 +42,7 @@
     "addFavorite": "Add to favorites",
     "removeFavorite": "Remove from favorites",
     "addReaction": "Add reaction",
+    "moreReactions": "More reactions",
     "copied": "Copied to clipboard",
     "copyFailed": "Copy failed",
     "copyMessage": "Copy message",

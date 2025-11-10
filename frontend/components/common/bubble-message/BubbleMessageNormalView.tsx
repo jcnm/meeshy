@@ -134,15 +134,15 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
   const [hoveredEmoji, setHoveredEmoji] = useState<string | null>(null);
   const [deletedAttachmentIds, setDeletedAttachmentIds] = useState<string[]>([]);
   const messageRef = useRef<HTMLDivElement>(null);
-  
-  // Hook pour gérer les réactions (comme dans l'original)
-  const { addReaction } = useMessageReactions({
+
+  // Hook centralisé pour gérer les réactions - sera partagé avec MessageReactions via props
+  const messageReactionsHook = useMessageReactions({
     messageId: message.id,
     currentUserId: isAnonymous ? currentAnonymousUserId : (currentUser?.id || ''),
     isAnonymous,
     enabled: !!currentUser || !!currentAnonymousUserId
   });
-  
+
   // Hook pour fixer les z-index des popovers
   useFixTranslationPopoverZIndex();
 
@@ -252,9 +252,9 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
   };
 
   const handleQuickReaction = useCallback((emoji: string) => {
-    // Ajouter la réaction directement via le hook
-    addReaction(emoji);
-  }, [addReaction]);
+    // Ajouter la réaction directement via le hook centralisé
+    messageReactionsHook.addReaction(emoji);
+  }, [messageReactionsHook]);
 
   const handleCopyMessage = useCallback(async () => {
     try {
@@ -530,6 +530,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                         currentAnonymousUserId={currentAnonymousUserId}
                         isAnonymous={isAnonymous}
                         showAddButton={false}
+                        externalReactionsHook={messageReactionsHook}
                       />
                     </div>
                   </div>
@@ -704,6 +705,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
               currentAnonymousUserId={currentAnonymousUserId}
               isAnonymous={isAnonymous}
               showAddButton={false}
+              externalReactionsHook={messageReactionsHook}
             />
           </div>
         </div>

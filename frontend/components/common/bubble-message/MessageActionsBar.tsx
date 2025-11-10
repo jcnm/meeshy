@@ -3,6 +3,7 @@
 import { memo, useCallback, useState, useMemo } from 'react';
 import { Smile, Copy, MessageCircle, Flag, Trash2, MoreVertical, Edit, Languages, CheckCircle2, AlertTriangle, HelpCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -365,14 +366,17 @@ export const MessageActionsBar = memo(function MessageActionsBar({
             {/* Grille 6x5 de réactions fréquentes */}
             <div className="grid grid-cols-6 gap-1 mb-2">
               {FREQUENT_REACTIONS.map((emoji, index) => (
-                <button
+                <motion.button
                   key={`${emoji}-${index}`}
                   onClick={() => handleQuickReaction(emoji)}
+                  whileHover={{ scale: 1.2 }}
+                  whileTap={{ scale: 0.9 }}
+                  transition={{ duration: 0.1 }}
                   className="w-9 h-9 flex items-center justify-center rounded-md text-2xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus-visible:ring-2 focus-visible:ring-blue-500"
                   title={emoji}
                 >
                   {emoji}
-                </button>
+                </motion.button>
               ))}
             </div>
 
@@ -386,7 +390,7 @@ export const MessageActionsBar = memo(function MessageActionsBar({
                 className="w-full flex items-center justify-center gap-2 p-2 rounded-md text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
               >
                 <Smile className="h-3.5 w-3.5" />
-                <span>{t('moreReactions') || 'Plus de réactions'}</span>
+                <span>{t('moreReactions')}</span>
               </button>
             </div>
           </DropdownMenuContent>

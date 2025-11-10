@@ -18,6 +18,8 @@ interface MessageReactionsProps {
   maxVisibleReactions?: number;
   showAddButton?: boolean;
   onAddReactionClick?: () => void;
+  // Hook externe optionnel pour partager l'état entre composants
+  externalReactionsHook?: ReturnType<typeof useMessageReactions>;
 }
 
 /**
@@ -43,6 +45,7 @@ export const MessageReactions: React.FC<MessageReactionsProps> = React.memo(({
   maxVisibleReactions = 10,
   showAddButton = true,
   onAddReactionClick,
+  externalReactionsHook,
 }) => {
   const { t } = useI18n('reactions');
   const [isInitialLoad, setIsInitialLoad] = React.useState(true);
@@ -51,17 +54,21 @@ export const MessageReactions: React.FC<MessageReactionsProps> = React.memo(({
   const [reactionCounts, setReactionCounts] = React.useState<Record<string, number>>({});
   const [animatingEmojis, setAnimatingEmojis] = React.useState<Set<string>>(new Set());
   const [loadedEmojis, setLoadedEmojis] = React.useState<Set<string>>(new Set());
-  
-  const { 
-    reactions, 
-    toggleReaction, 
-    isLoading,
-    userReactions
-  } = useMessageReactions({
+
+  // Utiliser le hook externe si fourni, sinon créer un hook interne
+  const internalHook = useMessageReactions({
     messageId,
     currentUserId: isAnonymous ? currentAnonymousUserId : currentUserId,
-    isAnonymous
+    isAnonymous,
+    enabled: !externalReactionsHook // Désactiver si hook externe fourni
   });
+
+  const {
+    reactions,
+    toggleReaction,
+    isLoading,
+    userReactions
+  } = externalReactionsHook || internalHook;
 
   // Debug: log reactions data (disabled to stop infinite loop)
   // React.useEffect(() => {
