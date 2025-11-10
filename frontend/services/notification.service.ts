@@ -55,8 +55,10 @@ export class NotificationService {
   private static instance: NotificationService;
   private socket: Socket | null = null;
   private isConnected = false;
+  private isInitializing = false; // Prevent race conditions
   private config: NotificationServiceConfig | null = null;
   private notifications: Map<string, Notification> = new Map();
+  private readonly MAX_NOTIFICATIONS = 500; // Prevent unbounded growth
   private counts: NotificationCounts = {
     total: 0,
     unread: 0,
@@ -135,13 +137,21 @@ export class NotificationService {
    * Initialise le service de notifications
    */
   public async initialize(config: NotificationServiceConfig): Promise<void> {
-    if (this.isConnected) {
+    // Prevent race conditions - check if already connected or initializing
+    if (this.isConnected || this.isInitializing) {
+      console.log('🔔 Service de notifications déjà initialisé ou en cours d\'initialisation');
       return;
     }
 
+    this.isInitializing = true;
     this.config = config;
 
     try {
+      // Disconnect any existing socket first
+      if (this.socket) {
+        this.cleanupSocket();
+      }
+
       // Charger les notifications initiales depuis l'API
       await this.loadInitialNotifications(config.token);
 
@@ -157,6 +167,8 @@ export class NotificationService {
     } catch (error) {
       console.error('❌ Erreur lors de l\'initialisation du service de notifications:', error);
       config.onError?.(error as Error);
+    } finally {
+      this.isInitializing = false;
     }
   }
 
@@ -324,9 +336,36 @@ export class NotificationService {
 
   /**
    * Ajoute une notification et met à jour les compteurs
+   * Implémente une éviction LRU pour éviter la croissance illimitée
    */
   private addNotification(notification: Notification): void {
     this.notifications.set(notification.id, notification);
+
+    // LRU eviction: if we exceed MAX_NOTIFICATIONS, remove oldest read notifications
+    if (this.notifications.size > this.MAX_NOTIFICATIONS) {
+      const notificationsArray = Array.from(this.notifications.values());
+
+      // Sort by: read first (prioritize removing read), then by oldest timestamp
+      const sorted = notificationsArray.sort((a, b) => {
+        // Read notifications first
+        if (a.isRead !== b.isRead) {
+          return a.isRead ? -1 : 1;
+        }
+        // Then by oldest timestamp
+        return a.timestamp.getTime() - b.timestamp.getTime();
+      });
+
+      // Calculate how many to remove (20% of MAX for batch efficiency)
+      const toRemoveCount = Math.ceil(this.MAX_NOTIFICATIONS * 0.2);
+
+      // Remove oldest notifications
+      for (let i = 0; i < toRemoveCount && i < sorted.length; i++) {
+        this.notifications.delete(sorted[i].id);
+      }
+
+      console.log(`🗑️ Éviction LRU: ${toRemoveCount} anciennes notifications supprimées`);
+    }
+
     this.updateCountsFromNotifications();
     this.config?.onNotificationReceived?.(notification);
   }
@@ -528,13 +567,35 @@ export class NotificationService {
   }
 
   /**
+   * Nettoie les listeners du socket (prévient les memory leaks)
+   */
+  private cleanupSocket(): void {
+    if (this.socket) {
+      // Remove all event listeners to prevent memory leaks
+      this.socket.removeAllListeners('connect');
+      this.socket.removeAllListeners('disconnect');
+      this.socket.removeAllListeners('connect_error');
+      this.socket.removeAllListeners('notification');
+      this.socket.removeAllListeners('newMessageNotification');
+      this.socket.removeAllListeners('systemNotification');
+      this.socket.removeAllListeners('conversationNotification');
+      this.socket.removeAllListeners('translationNotification');
+      this.socket.removeAllListeners('notificationCountsUpdate');
+
+      // Disconnect the socket
+      this.socket.disconnect();
+      this.socket = null;
+    }
+  }
+
+  /**
    * Déconnecte le service
    */
   public disconnect(): void {
     if (this.socket) {
-      this.socket.disconnect();
-      this.socket = null;
+      this.cleanupSocket();
       this.isConnected = false;
+      this.isInitializing = false;
       this.config = null;
     }
   }
