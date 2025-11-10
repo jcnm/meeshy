@@ -1,0 +1,102 @@
+{
+  "audioEffects": {
+    "title": "Audio Effects",
+    "subtitle": "Transform your voice",
+
+    "voiceCoder": {
+      "title": "Perfect Voice",
+      "description": "Automatic pitch correction for perfect singing",
+      "quickConfig": {
+        "label": "Quick Config",
+        "tooltip": "Choose a preset suited to your needs, or customize your own settings"
+      },
+      "retuneSpeed": {
+        "label": "Speed",
+        "tooltip": "Pitch correction speed. Slow (0-30%) = very natural and smooth. Medium (30-70%) = balanced. Fast (70-100%) = robotic effect"
+      },
+      "strength": {
+        "label": "Strength",
+        "tooltip": "Auto-tune intensity. Higher = more perfect voice but less natural. Recommended: 30-50% for subtle effect"
+      },
+      "naturalVibrato": {
+        "label": "Expression",
+        "tooltip": "Preserves natural variations and vibrato in your voice. Higher = more expression and emotion preserved"
+      },
+      "pitch": {
+        "label": "Pitch",
+        "tooltip": "Transpose your voice up (+) or down (-). Example: +3 = 3 semitones higher"
+      },
+      "scale": {
+        "label": "Scale",
+        "chromatic": "All notes",
+        "major": "Major (happy)",
+        "minor": "Minor (sad)",
+        "pentatonic": "Pentatonic"
+      },
+      "key": {
+        "label": "Key"
+      },
+      "harmonization": {
+        "label": "Vocal Harmonies",
+        "tooltip": "Adds harmonic backing vocals to your main voice for a choir effect"
+      }
+    },
+
+    "babyVoice": {
+      "title": "Baby Voice",
+      "pitch": {
+        "label": "Voice Pitch",
+        "tooltip": "Higher = more high-pitched and childlike voice. Recommended: 8-12 for baby effect"
+      },
+      "formant": {
+        "label": "Timbre",
+        "tooltip": "Changes voice color and timbre to simulate shorter vocal cords"
+      },
+      "breathiness": {
+        "label": "Breathiness",
+        "tooltip": "Adds a soft, airy breath effect characteristic of a child's voice"
+      }
+    },
+
+    "demonVoice": {
+      "title": "Demon Voice",
+      "pitch": {
+        "label": "Voice Pitch",
+        "tooltip": "Lower = deeper and scarier voice. -10 to -12 for intense demonic effect"
+      },
+      "distortion": {
+        "label": "Distortion",
+        "tooltip": "Adds aggressive and rough texture to the voice"
+      },
+      "reverb": {
+        "label": "Echo",
+        "tooltip": "Reverberation effect like in a dark, deep cathedral"
+      }
+    },
+
+    "backSound": {
+      "title": "Background Music",
+      "uploadLabel": "Load audio file",
+      "uploadDescription": "Preset sounds are not yet available. Upload your own MP3/WAV file",
+      "uploadButton": "Load audio",
+      "volume": {
+        "label": "Volume",
+        "tooltip": "Adjusts the volume of background music mixed with your voice"
+      },
+      "loopMode": {
+        "label": "Playback mode",
+        "nTimes": "Number of times",
+        "nMinutes": "Duration in minutes"
+      },
+      "loopValue": {
+        "labelTimes": "Repetitions",
+        "labelMinutes": "Minutes"
+      }
+    },
+
+    "presets": {
+      "custom": "Custom",
+      "customDescription": "Your own settings"
+    }
+  }
+}
