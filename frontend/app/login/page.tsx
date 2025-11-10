@@ -6,6 +6,7 @@ import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/use-auth';
 import { LargeLogo } from '@/components/branding';
 import { authManager } from '@/services/auth-manager.service';
+import { buildApiUrl } from '@/lib/config';
 
 // Composants inline légers pour éviter les imports lourds
 const SimpleCard = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
@@ -94,7 +95,7 @@ function QuickLoginPageContent() {
       }
 
       // Utilisateur membre authentifié - redirection normale
-      const redirectUrl = returnUrl || '/';
+      const redirectUrl = returnUrl || '/dashboard';
       router.replace(redirectUrl);
     }
   }, [isAuthenticated, isChecking, returnUrl, router]);
@@ -110,10 +111,9 @@ function QuickLoginPageContent() {
     setIsLoading(true);
     
     try {
-      // Construire l'URL de l'API
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://gate.meeshy.me';
-      const apiUrl = `${backendUrl}/api/auth/login`;
-      
+      // Construire l'URL de l'API en utilisant buildApiUrl()
+      const apiUrl = buildApiUrl('/auth/login');
+
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -133,7 +133,7 @@ function QuickLoginPageContent() {
 
         // CORRECTION CRITIQUE: Forcer un hard redirect pour rafraîchir complètement l'état
         // router.replace() ne force pas le rechargement de tous les composants
-        const redirectUrl = returnUrl || '/';
+        const redirectUrl = returnUrl || '/dashboard';
 
         // Utiliser window.location.href pour un vrai reload qui force tous les composants à se réinitialiser
         window.location.href = redirectUrl;

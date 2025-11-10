@@ -230,31 +230,31 @@ export const getBackendUrl = (): string => {
     // Vérifier d'abord les variables d'environnement
     const fromEnv = process.env.NEXT_PUBLIC_BACKEND_URL;
     if (fromEnv) return trimSlashes(fromEnv);
-    
+
     // CORRECTION: Détection automatique localhost en développement
     const currentHost = window.location.hostname;
     const isDev = currentHost === 'localhost' || currentHost === '127.0.0.1';
-    
+
     if (isDev) {
       // En développement local, utiliser http://localhost:3000 (gateway)
       return 'http://localhost:3000';
     }
-    
-    // En production, utiliser l'URL de production
-    return 'https://gate.meeshy.me';
+
+    // En production, utiliser config.backend.url au lieu d'une URL hardcodée
+    return trimSlashes(config.backend.url);
   }
-  // Côté serveur (SSR) - utiliser INTERNAL_BACKEND_URL
-  return trimSlashes(process.env.INTERNAL_BACKEND_URL || 'https://gate.meeshy.me');
+  // Côté serveur (SSR) - utiliser INTERNAL_BACKEND_URL ou config.backend.url
+  return trimSlashes(process.env.INTERNAL_BACKEND_URL || config.backend.url);
 };
 
 // HTTP base URL for the Frontend - Gère automatiquement client/serveur
 export const getFrontendUrl = (): string => {
   if (isBrowser()) {
     // Côté client (navigateur) - utiliser l'URL actuelle ou NEXT_PUBLIC_FRONTEND_URL
-    return trimSlashes(window.location.origin || process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://meeshy.me');
+    return trimSlashes(window.location.origin || process.env.NEXT_PUBLIC_FRONTEND_URL || config.frontend.url);
   }
-  // Côté serveur (SSR) - utiliser NEXT_PUBLIC_FRONTEND_URL
-  return trimSlashes(process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://meeshy.me');
+  // Côté serveur (SSR) - utiliser NEXT_PUBLIC_FRONTEND_URL ou config.frontend.url
+  return trimSlashes(process.env.NEXT_PUBLIC_FRONTEND_URL || config.frontend.url);
 };
 
 // WebSocket base URL for the Gateway - Gère automatiquement client/serveur

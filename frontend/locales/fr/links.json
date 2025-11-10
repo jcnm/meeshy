@@ -26,7 +26,8 @@
       "status": "Statut",
       "all": "Tous",
       "active": "Actifs",
-      "inactive": "Inactifs"
+      "inactive": "Inactifs",
+      "expired": "Expirés"
     },
     "tabs": {
       "shareLinks": "Liens de partage",

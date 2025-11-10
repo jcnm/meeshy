@@ -64,8 +64,7 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
         if (authToken || (anonymousSession && anonymousSession.token)) {
 
           // Vérifier que la session est valide côté backend
-          const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://gate.meeshy.me';
-          const response = await fetch(`${backendUrl}/api/auth/me`, {
+          const response = await fetch(buildApiUrl('/auth/me'), {
             headers: {
               'Authorization': `Bearer ${authToken || anonymousSession?.token}`
             }
@@ -87,7 +86,7 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
             }
 
             // Session valide (utilisateur membre), rediriger vers la page d'accueil
-            window.location.href = returnUrl || '/';
+            window.location.href = returnUrl || '/dashboard';
             return;
           } else {
             // Session invalide, nettoyer toutes les données
@@ -246,7 +245,7 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
         toast.success(`${t('register.success.welcome', { name: formData.firstName })} ${formData.firstName}!`);
 
         // CORRECTION CRITIQUE: Forcer un hard redirect pour rafraîchir complètement l'état
-        const redirectUrl = returnUrl || '/';
+        const redirectUrl = returnUrl || '/dashboard';
         window.location.href = redirectUrl;
       } else {
         throw new Error('Invalid response data');
