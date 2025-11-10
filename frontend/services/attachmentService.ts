@@ -66,7 +66,7 @@ export class AttachmentService {
           if (event.lengthComputable) {
             const percentage = Math.round((event.loaded / event.total) * 100);
             onProgress(percentage, event.loaded, event.total);
-            console.log(`📊 Upload progress: ${percentage}% (${event.loaded}/${event.total} bytes)`);
+            // Note: Le log est géré dans le callback pour éviter de ralentir ici
           }
         });
       }
