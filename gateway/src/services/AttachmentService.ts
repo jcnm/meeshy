@@ -429,7 +429,7 @@ export class AttachmentService {
       metadata.width = videoMeta.width;
       metadata.height = videoMeta.height;
       metadata.fps = videoMeta.fps;
-      metadata.videoCodec = videoMeta.videoCodec;
+      metadata.videoCodec = videoMeta.videoCodec; // Stocker dans videoCodec pour les vidéos
       metadata.bitrate = videoMeta.bitrate;
     }
 
