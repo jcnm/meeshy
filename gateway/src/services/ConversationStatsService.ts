@@ -1,4 +1,4 @@
-import { PrismaClient } from '../../shared/prisma/client';
+import { PrismaClient } from '../../shared/client';
 
 export interface OnlineUserInfo {
   id: string;

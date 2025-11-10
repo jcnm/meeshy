@@ -7,7 +7,7 @@
  * - Gérer le formatage et la troncature du contenu
  */
 
-import { PrismaClient } from '../../shared/prisma/client';
+import { PrismaClient } from '../../shared/client';
 import { logger } from '../utils/logger';
 import type { Server as SocketIOServer } from 'socket.io';
 

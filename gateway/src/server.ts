@@ -17,7 +17,7 @@ import helmet from '@fastify/helmet';
 import jwt from '@fastify/jwt';
 import sensible from '@fastify/sensible'; // Ajout pour httpErrors
 import multipart from '@fastify/multipart';
-import { PrismaClient } from '../shared/prisma/client';
+import { PrismaClient } from '../../shared/client';
 import winston from 'winston';
 import * as fs from 'fs';
 import * as path from 'path';

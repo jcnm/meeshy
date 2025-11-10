@@ -4,7 +4,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { PrismaClient } from '../../shared/prisma/client';
+import { PrismaClient } from '../../shared/client';
 import { ZMQTranslationClient, TranslationRequest, TranslationResult } from './zmq-translation-client';
 import { ZMQSingleton } from './zmq-singleton';
 

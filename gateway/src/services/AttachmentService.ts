@@ -3,7 +3,7 @@
  * Gère l'upload, le stockage, les miniatures et la suppression de fichiers
  */
 
-import { PrismaClient } from '../../shared/prisma/client';
+import { PrismaClient } from '../../shared/client';
 import sharp from 'sharp';
 import { promises as fs } from 'fs';
 import path from 'path';

@@ -5,7 +5,7 @@
  * des réactions avec support utilisateurs authentifiés et anonymes
  */
 
-import { PrismaClient, Reaction } from '../../shared/prisma/client';
+import { PrismaClient, Reaction } from '../../shared/client';
 import type {
   ReactionData,
   ReactionAggregation,

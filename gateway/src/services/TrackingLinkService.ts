@@ -1,4 +1,4 @@
-import { PrismaClient } from '../../shared/prisma/client';
+import { PrismaClient } from '../../shared/client';
 import { TrackingLink, TrackingLinkClick } from '../../shared/types/tracking-link';
 
 /**
