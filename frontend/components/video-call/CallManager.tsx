@@ -99,6 +99,14 @@ export function CallManager() {
    * Handle incoming call
    */
   const handleIncomingCall = useCallback(async (event: CallInitiatedEvent) => {
+    console.log('🔔 [CallManager] call:initiated event received', {
+      callId: event.callId,
+      initiator: event.initiator,
+      participants: event.participants,
+      conversationId: event.conversationId,
+      currentUser: user?.id,
+      userLoaded: !!user
+    });
 
     // Wait for user to be loaded
     if (!user) {
@@ -117,6 +125,11 @@ export function CallManager() {
 
     // Check if current user is the initiator
     const isInitiator = user.id === event.initiator.userId;
+    console.log('🔍 [CallManager] isInitiator check:', {
+      currentUserId: user.id,
+      initiatorId: event.initiator.userId,
+      isInitiator
+    });
 
     if (isInitiator) {
       // I am the initiator - check if already in call to avoid duplicate
@@ -148,6 +161,10 @@ export function CallManager() {
       toast.success('Call started - waiting for participants...');
     } else {
       // I am being called - show notification
+      console.log('📞 [CallManager] Setting incomingCall state - should show CallNotification', {
+        callId: event.callId,
+        from: event.initiator.username
+      });
       logger.info('[CallManager]', 'Incoming call from ' + event.initiator.username);
       setIncomingCall(event);
 
@@ -428,6 +445,7 @@ export function CallManager() {
       // DEBUG: Add catch-all listener to see ALL socket events
       debugListenerRef = (eventName: string, ...args: any[]) => {
         if (eventName.startsWith('call:')) {
+          console.log('📡 [CallManager] Socket event received:', eventName, args);
         }
       };
       (socket as any).onAny(debugListenerRef);
@@ -440,6 +458,11 @@ export function CallManager() {
       (socket as any).on('call:media-toggled', handleMediaToggle);
       (socket as any).on('call:error', handleCallError);
 
+      console.log('✅ [CallManager] All call listeners registered', {
+        socketId: socket.id,
+        userId: user.id,
+        listenersCount: 6
+      });
       logger.info('[CallManager]', '✅ All call listeners registered', {
         socketId: socket.id,
         userId: user.id
@@ -522,6 +545,17 @@ export function CallManager() {
       }
     };
   }, [isInCall, reset, clearCallTimeout]);
+
+  // Debug render state
+  console.log('🎨 [CallManager] Rendering:', {
+    incomingCall: !!incomingCall,
+    incomingCallId: incomingCall?.callId,
+    isInCall,
+    currentCallId: currentCall?.id,
+    userId: user?.id,
+    willShowNotification: !!incomingCall,
+    willShowInterface: !!(isInCall && currentCall && user?.id)
+  });
 
   return (
     <>
