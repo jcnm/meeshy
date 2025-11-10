@@ -74,6 +74,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
   const requestDataIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const rawStreamRef = useRef<MediaStream | null>(null); // Stream du micro brut
   const [rawStream, setRawStream] = useState<MediaStream | null>(null); // State pour trigger useAudioEffects
+  const processedAudioStreamRef = useRef<MediaStream | null>(null); // Ref pour accéder à la dernière valeur
 
   const effectiveDuration = Math.min(maxDuration, MAX_ALLOWED_DURATION);
 
@@ -193,15 +194,47 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
       rawStreamRef.current = newRawStream;
       setRawStream(newRawStream); // Trigger useAudioEffects
 
-      // Attendre un peu que useAudioEffects initialise si des effets sont actifs
-      if (audioEffectsActive) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-      }
+      // Attendre que useAudioEffects initialise et produise le processedAudioStream
+      let streamToRecord = newRawStream;
 
-      // IMPORTANT: Si des effets sont actifs ET que processedAudioStream est prêt, l'utiliser
-      const streamToRecord = audioEffectsActive && processedAudioStream
-        ? processedAudioStream
-        : newRawStream;
+      if (audioEffectsActive) {
+        console.log('🎭 [AudioRecorder] Waiting for processedAudioStream to be ready...');
+
+        // Attendre activement que processedAudioStream soit prêt avec des audio tracks
+        const maxWaitTime = 3000; // 3 secondes maximum
+        const checkInterval = 100; // Vérifier toutes les 100ms
+        const startWait = Date.now();
+
+        while (Date.now() - startWait < maxWaitTime) {
+          // Vérifier la ref pour avoir la valeur la plus récente
+          const currentProcessedStream = processedAudioStreamRef.current;
+
+          // Vérifier si processedAudioStream existe et a des audio tracks
+          if (currentProcessedStream && currentProcessedStream.getAudioTracks().length > 0) {
+            console.log('✅ [AudioRecorder] processedAudioStream is ready!', {
+              tracks: currentProcessedStream.getAudioTracks().length,
+              waitTime: Date.now() - startWait
+            });
+            streamToRecord = currentProcessedStream;
+            break;
+          }
+
+          // Attendre avant de vérifier à nouveau
+          await new Promise(resolve => setTimeout(resolve, checkInterval));
+        }
+
+        // Si après le timeout le stream n'est pas prêt, avertir et utiliser le stream brut
+        if (streamToRecord === newRawStream) {
+          const currentProcessedStream = processedAudioStreamRef.current;
+          console.warn('⚠️ [AudioRecorder] processedAudioStream not ready after 3s, using raw stream', {
+            processedAudioStreamExists: !!currentProcessedStream,
+            audioTracksCount: currentProcessedStream?.getAudioTracks().length || 0
+          });
+          toast.warning('Effets audio non appliqués - stream non prêt');
+        }
+      } else {
+        console.log('🎤 [AudioRecorder] No effects active, using raw stream');
+      }
 
       const mediaRecorder = new MediaRecorder(streamToRecord, {
         mimeType,
@@ -291,6 +324,11 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
     setIsMounted(true);
     return () => setIsMounted(false);
   }, []);
+
+  // Mettre à jour la ref processedAudioStream pour y accéder dans les closures
+  useEffect(() => {
+    processedAudioStreamRef.current = processedAudioStream;
+  }, [processedAudioStream]);
 
   // Calculer et mettre à jour la position du panneau
   const updatePanelPosition = useCallback(() => {
