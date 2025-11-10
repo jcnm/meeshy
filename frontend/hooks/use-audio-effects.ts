@@ -37,6 +37,10 @@ const DEFAULT_VOICE_CODER: VoiceCoderParams = {
   pitch: 0,
   harmonization: false,
   strength: 50,
+  retuneSpeed: 50, // Medium speed - balance between natural and responsive
+  scale: 'chromatic', // All notes allowed by default
+  key: 'C', // C major/minor
+  naturalVibrato: 30, // Preserve some natural vibrato
 };
 
 const DEFAULT_BABY_VOICE: BabyVoiceParams = {

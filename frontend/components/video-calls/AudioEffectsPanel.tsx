@@ -87,7 +87,7 @@ export function AudioEffectsPanel({
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
               <span className="text-lg">🎵</span>
-              <Label className="text-white font-medium text-sm">Voice Coder</Label>
+              <Label className="text-white font-medium text-sm">Perfect Voice</Label>
             </div>
             <Switch
               checked={effectsState.voiceCoder.enabled}
@@ -96,23 +96,87 @@ export function AudioEffectsPanel({
           </div>
 
           <div className={cn('space-y-2', !effectsState.voiceCoder.enabled && 'opacity-50')}>
+            {/* Retune Speed - MOST IMPORTANT */}
             <div>
-              <Label className="text-gray-300 text-xs">Pitch ({effectsState.voiceCoder.params.pitch} semitones)</Label>
+              <Label className="text-gray-300 text-xs font-semibold">
+                Retune Speed ({effectsState.voiceCoder.params.retuneSpeed}%)
+              </Label>
+              <p className="text-gray-500 text-[9px] mb-0.5">
+                {effectsState.voiceCoder.params.retuneSpeed < 30
+                  ? 'Natural & Smooth'
+                  : effectsState.voiceCoder.params.retuneSpeed < 70
+                  ? 'Balanced'
+                  : 'Fast & Robotic'}
+              </p>
               <Slider
-                value={[effectsState.voiceCoder.params.pitch]}
-                min={-12}
-                max={12}
-                step={1}
+                value={[effectsState.voiceCoder.params.retuneSpeed]}
+                min={0}
+                max={100}
+                step={5}
                 onValueChange={([value]) =>
-                  onUpdateParams('voice-coder', { pitch: value })
+                  onUpdateParams('voice-coder', { retuneSpeed: value })
                 }
                 disabled={!effectsState.voiceCoder.enabled}
                 className="mt-1"
               />
             </div>
 
+            {/* Scale & Key Selection */}
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label className="text-gray-300 text-xs">Scale</Label>
+                <Select
+                  value={effectsState.voiceCoder.params.scale}
+                  onValueChange={(value: 'chromatic' | 'major' | 'minor' | 'pentatonic') =>
+                    onUpdateParams('voice-coder', { scale: value })
+                  }
+                  disabled={!effectsState.voiceCoder.enabled}
+                >
+                  <SelectTrigger className="mt-1 bg-gray-800 border-gray-600 text-white h-7 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="chromatic">Chromatic</SelectItem>
+                    <SelectItem value="major">Major</SelectItem>
+                    <SelectItem value="minor">Minor</SelectItem>
+                    <SelectItem value="pentatonic">Pentatonic</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-gray-300 text-xs">Key</Label>
+                <Select
+                  value={effectsState.voiceCoder.params.key}
+                  onValueChange={(value: 'C' | 'C#' | 'D' | 'D#' | 'E' | 'F' | 'F#' | 'G' | 'G#' | 'A' | 'A#' | 'B') =>
+                    onUpdateParams('voice-coder', { key: value })
+                  }
+                  disabled={!effectsState.voiceCoder.enabled}
+                >
+                  <SelectTrigger className="mt-1 bg-gray-800 border-gray-600 text-white h-7 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="C">C</SelectItem>
+                    <SelectItem value="C#">C#</SelectItem>
+                    <SelectItem value="D">D</SelectItem>
+                    <SelectItem value="D#">D#</SelectItem>
+                    <SelectItem value="E">E</SelectItem>
+                    <SelectItem value="F">F</SelectItem>
+                    <SelectItem value="F#">F#</SelectItem>
+                    <SelectItem value="G">G</SelectItem>
+                    <SelectItem value="G#">G#</SelectItem>
+                    <SelectItem value="A">A</SelectItem>
+                    <SelectItem value="A#">A#</SelectItem>
+                    <SelectItem value="B">B</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Auto-Tune Mix */}
             <div>
-              <Label className="text-gray-300 text-xs">Strength ({effectsState.voiceCoder.params.strength}%)</Label>
+              <Label className="text-gray-300 text-xs">Auto-Tune Mix ({effectsState.voiceCoder.params.strength}%)</Label>
               <Slider
                 value={[effectsState.voiceCoder.params.strength]}
                 min={0}
@@ -126,6 +190,39 @@ export function AudioEffectsPanel({
               />
             </div>
 
+            {/* Natural Vibrato */}
+            <div>
+              <Label className="text-gray-300 text-xs">Natural Vibrato ({effectsState.voiceCoder.params.naturalVibrato}%)</Label>
+              <Slider
+                value={[effectsState.voiceCoder.params.naturalVibrato]}
+                min={0}
+                max={100}
+                step={5}
+                onValueChange={([value]) =>
+                  onUpdateParams('voice-coder', { naturalVibrato: value })
+                }
+                disabled={!effectsState.voiceCoder.enabled}
+                className="mt-1"
+              />
+            </div>
+
+            {/* Transpose */}
+            <div>
+              <Label className="text-gray-300 text-xs">Transpose ({effectsState.voiceCoder.params.pitch > 0 ? '+' : ''}{effectsState.voiceCoder.params.pitch} semitones)</Label>
+              <Slider
+                value={[effectsState.voiceCoder.params.pitch]}
+                min={-12}
+                max={12}
+                step={1}
+                onValueChange={([value]) =>
+                  onUpdateParams('voice-coder', { pitch: value })
+                }
+                disabled={!effectsState.voiceCoder.enabled}
+                className="mt-1"
+              />
+            </div>
+
+            {/* Harmonization */}
             <div className="flex items-center justify-between">
               <Label className="text-gray-300 text-xs">Harmonization</Label>
               <Switch

@@ -41,6 +41,24 @@ const SCALES = {
 };
 
 /**
+ * Key offsets in semitones from C
+ */
+const KEY_OFFSETS: Record<string, number> = {
+  'C': 0,
+  'C#': 1,
+  'D': 2,
+  'D#': 3,
+  'E': 4,
+  'F': 5,
+  'F#': 6,
+  'G': 7,
+  'G#': 8,
+  'A': 9,
+  'A#': 10,
+  'B': 11,
+};
+
+/**
  * Convert frequency to MIDI note number
  */
 function frequencyToMidi(frequency: number): number {
@@ -192,14 +210,35 @@ export class VoiceCoderProcessor implements AudioEffectProcessor {
         // Convert to MIDI
         const detectedMidi = frequencyToMidi(frequency);
 
-        // Snap to scale (chromatic = all notes allowed)
-        const targetMidi = snapToScale(detectedMidi, SCALES.chromatic, this.params.pitch);
+        // Get key offset
+        const keyOffset = KEY_OFFSETS[this.params.key] || 0;
+
+        // Get scale pattern
+        const scale = SCALES[this.params.scale] || SCALES.chromatic;
+
+        // Snap to scale with key offset and transpose
+        const targetMidi = snapToScale(detectedMidi, scale, this.params.pitch + keyOffset);
 
         // Calculate correction needed (in semitones)
-        const correctionNeeded = targetMidi - detectedMidi;
+        let correctionNeeded = targetMidi - detectedMidi;
+
+        // Apply natural vibrato preservation
+        // Vibrato is typically < 0.5 semitones, so we allow small variations
+        const vibratoThreshold = (this.params.naturalVibrato / 100) * 0.5;
+        if (Math.abs(correctionNeeded) < vibratoThreshold) {
+          // Within vibrato range, reduce or skip correction
+          correctionNeeded *= (1 - this.params.naturalVibrato / 100);
+        }
+
+        // Calculate smoothing based on retune speed
+        // retuneSpeed: 0 = very slow (natural), 100 = instant (robotic)
+        // Smoothing factor: high value = slow response, low value = fast response
+        const minSmoothing = 0.05; // Very responsive (robotic)
+        const maxSmoothing = 0.8; // Very slow (natural)
+        const smoothingFactor =
+          maxSmoothing - (this.params.retuneSpeed / 100) * (maxSmoothing - minSmoothing);
 
         // Apply correction with smoothing
-        const smoothingFactor = 0.3; // Lower = smoother
         this.currentPitchShift =
           this.currentPitchShift * (1 - smoothingFactor) +
           correctionNeeded * smoothingFactor;
