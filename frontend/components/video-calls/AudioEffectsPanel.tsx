@@ -16,6 +16,7 @@ import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
+import { useI18n } from '@/hooks/useI18n';
 import {
   Select,
   SelectContent,
@@ -40,30 +41,6 @@ import type {
   AudioEffectType,
   VoiceCoderPreset,
 } from '@shared/types/video-call';
-
-// Helper component pour label avec tooltip
-const LabelWithTooltip = ({ label, tooltip }: { label: React.ReactNode; tooltip: string }) => (
-  <div className="flex items-center gap-1">
-    <Label className="text-gray-300 text-[10px] font-semibold">{label}</Label>
-    <Popover>
-      <PopoverTrigger asChild>
-        <button type="button" className="text-gray-400 hover:text-white transition-colors">
-          <Info className="w-3 h-3" />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent
-        className="w-56 bg-gray-800 border-gray-600 text-white text-[10px] p-2 z-[10000]"
-        side="bottom"
-        align="center"
-        sideOffset={5}
-        avoidCollisions={true}
-        collisionPadding={10}
-      >
-        {tooltip}
-      </PopoverContent>
-    </Popover>
-  </div>
-);
 
 interface AudioEffectsPanelProps {
   effectsState: AudioEffectsState;
@@ -97,6 +74,32 @@ export function AudioEffectsPanel({
   availableBackSounds,
   className,
 }: AudioEffectsPanelProps) {
+  const { t } = useI18n('audioEffects');
+
+  // Helper component pour label avec tooltip
+  const LabelWithTooltip = ({ label, tooltip }: { label: React.ReactNode; tooltip: string }) => (
+    <div className="flex items-center gap-1">
+      <Label className="text-gray-300 text-[10px] font-semibold">{label}</Label>
+      <Popover>
+        <PopoverTrigger asChild>
+          <button type="button" className="text-gray-400 hover:text-white transition-colors">
+            <Info className="w-3 h-3" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent
+          className="w-56 bg-gray-800 border-gray-600 text-white text-[10px] p-2 z-[10000]"
+          side="bottom"
+          align="center"
+          sideOffset={5}
+          avoidCollisions={true}
+          collisionPadding={10}
+        >
+          {tooltip}
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+
   return (
     <div
       className={cn(
@@ -113,8 +116,8 @@ export function AudioEffectsPanel({
             <span className="text-sm">🎭</span>
           </div>
           <div>
-            <h3 className="text-white text-sm font-bold">Effets Audio</h3>
-            <p className="text-gray-400 text-[8px]">Transformez votre voix</p>
+            <h3 className="text-white text-sm font-bold">{t('audioEffects.title')}</h3>
+            <p className="text-gray-400 text-[8px]">{t('audioEffects.subtitle')}</p>
           </div>
         </div>
       </div>
@@ -125,7 +128,7 @@ export function AudioEffectsPanel({
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-1">
               <span className="text-sm">🎵</span>
-              <Label className="text-white font-medium text-[11px]">Perfect Voice</Label>
+              <Label className="text-white font-medium text-[11px]">{t('audioEffects.voiceCoder.title')}</Label>
               {/* Tooltip Info - visible sur mobile */}
               <Popover>
                 <PopoverTrigger asChild>
@@ -159,8 +162,8 @@ export function AudioEffectsPanel({
             {availablePresets && onLoadPreset && (
               <div>
                 <LabelWithTooltip
-                  label="Configuration rapide"
-                  tooltip="Choisissez un style prédéfini adapté à votre usage, ou personnalisez vos propres réglages."
+                  label={t('audioEffects.voiceCoder.quickConfig.label')}
+                  tooltip={t('audioEffects.voiceCoder.quickConfig.tooltip')}
                 />
                 <Select
                   value={currentPreset || 'correction-subtile'}
@@ -181,8 +184,8 @@ export function AudioEffectsPanel({
                     ))}
                     <SelectItem value="custom">
                       <div className="flex flex-col">
-                        <span className="font-medium">Personnalisé</span>
-                        <span className="text-[10px] text-gray-400">Vos propres réglages</span>
+                        <span className="font-medium">{t("audioEffects.presets.custom")}</span>
+                        <span className="text-[10px] text-gray-400">{t("audioEffects.presets.customDescription")}</span>
                       </div>
                     </SelectItem>
                   </SelectContent>
@@ -194,8 +197,8 @@ export function AudioEffectsPanel({
               {/* Rapidité de correction */}
               <div>
                 <LabelWithTooltip
-                  label={`Rapidité (${effectsState.voiceCoder.params.retuneSpeed}%)`}
-                  tooltip="Vitesse de correction de la justesse. Lent (0-30%) = très naturel et doux. Moyen (30-70%) = équilibré. Rapide (70-100%) = effet robotique."
+                  label={`${t('audioEffects.voiceCoder.retuneSpeed.label')} (${effectsState.voiceCoder.params.retuneSpeed}%)`}
+                  tooltip={t('audioEffects.voiceCoder.retuneSpeed.tooltip')}
                 />
                 <Slider
                   value={[effectsState.voiceCoder.params.retuneSpeed]}
@@ -213,8 +216,8 @@ export function AudioEffectsPanel({
               {/* Force de l'effet */}
               <div>
                 <LabelWithTooltip
-                  label={`Force (${effectsState.voiceCoder.params.strength}%)`}
-                  tooltip="Intensité de l'auto-tune. Plus élevé = voix plus parfaite mais moins naturelle. Recommandé : 30-50% pour un effet subtil."
+                  label={`${t('audioEffects.voiceCoder.strength.label')} (${effectsState.voiceCoder.params.strength}%)`}
+                  tooltip={t('audioEffects.voiceCoder.strength.tooltip')}
                 />
                 <Slider
                   value={[effectsState.voiceCoder.params.strength]}
@@ -232,8 +235,8 @@ export function AudioEffectsPanel({
               {/* Expression naturelle */}
               <div>
                 <LabelWithTooltip
-                  label={`Expression (${effectsState.voiceCoder.params.naturalVibrato}%)`}
-                  tooltip="Préserve les variations et le vibrato naturel de votre voix. Plus élevé = plus d'expression et d'émotion conservées."
+                  label={`${t('audioEffects.voiceCoder.naturalVibrato.label')} (${effectsState.voiceCoder.params.naturalVibrato}%)`}
+                  tooltip={t('audioEffects.voiceCoder.naturalVibrato.tooltip')}
                 />
                 <Slider
                   value={[effectsState.voiceCoder.params.naturalVibrato]}
@@ -251,8 +254,8 @@ export function AudioEffectsPanel({
               {/* Hauteur globale */}
               <div>
                 <LabelWithTooltip
-                  label={`Hauteur (${effectsState.voiceCoder.params.pitch > 0 ? '+' : ''}${effectsState.voiceCoder.params.pitch})`}
-                  tooltip="Transpose votre voix vers l'aigu (+) ou le grave (-). Exemple : +3 = 3 demi-tons plus aigu."
+                  label={`${t('audioEffects.voiceCoder.pitch.label')} (${effectsState.voiceCoder.params.pitch > 0 ? '+' : ''}${effectsState.voiceCoder.params.pitch})`}
+                  tooltip={t("audioEffects.voiceCoder.pitch.tooltip")}
                 />
                 <Slider
                   value={[effectsState.voiceCoder.params.pitch]}
@@ -271,7 +274,7 @@ export function AudioEffectsPanel({
             {/* Gamme & Tonalité */}
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <Label className="text-gray-300 text-[10px]">Gamme</Label>
+                <Label className="text-gray-300 text-[10px]">{t("audioEffects.voiceCoder.scale.label")}</Label>
                 <Select
                   value={effectsState.voiceCoder.params.scale}
                   onValueChange={(value: 'chromatic' | 'major' | 'minor' | 'pentatonic') =>
@@ -283,16 +286,16 @@ export function AudioEffectsPanel({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="chromatic">Toutes les notes</SelectItem>
-                    <SelectItem value="major">Majeure (joyeux)</SelectItem>
-                    <SelectItem value="minor">Mineure (triste)</SelectItem>
-                    <SelectItem value="pentatonic">Pentatonique</SelectItem>
+                    <SelectItem value="chromatic">{t("audioEffects.voiceCoder.scale.chromatic")}</SelectItem>
+                    <SelectItem value="major">{t("audioEffects.voiceCoder.scale.major")}</SelectItem>
+                    <SelectItem value="minor">{t("audioEffects.voiceCoder.scale.minor")}</SelectItem>
+                    <SelectItem value="pentatonic">{t("audioEffects.voiceCoder.scale.pentatonic")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
-                <Label className="text-gray-300 text-[10px]">Tonalité</Label>
+                <Label className="text-gray-300 text-[10px]">{t("audioEffects.voiceCoder.key.label")}</Label>
                 <Select
                   value={effectsState.voiceCoder.params.key}
                   onValueChange={(value: 'C' | 'C#' | 'D' | 'D#' | 'E' | 'F' | 'F#' | 'G' | 'G#' | 'A' | 'A#' | 'B') =>
@@ -324,8 +327,8 @@ export function AudioEffectsPanel({
             {/* Harmonisation */}
             <div className="flex items-center justify-between">
               <LabelWithTooltip
-                label="Harmonies vocales"
-                tooltip="Ajoute des voix d'accompagnement harmoniques à votre voix principale pour un effet chorale."
+                label={t("audioEffects.voiceCoder.harmonization.label")}
+                tooltip={t("audioEffects.voiceCoder.harmonization.tooltip")}
               />
               <Switch
                 checked={effectsState.voiceCoder.params.harmonization}
@@ -343,7 +346,7 @@ export function AudioEffectsPanel({
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-1">
               <span className="text-lg">👶</span>
-              <Label className="text-white font-medium text-[11px]">Voix d'Enfant</Label>
+              <Label className="text-white font-medium text-[11px]">{t('audioEffects.babyVoice.title')}</Label>
             </div>
             <Switch
               checked={effectsState.babyVoice.enabled}
@@ -354,8 +357,8 @@ export function AudioEffectsPanel({
           <div className={cn('space-y-1', !effectsState.babyVoice.enabled && 'opacity-50')}>
             <div>
               <LabelWithTooltip
-                label={`Hauteur de voix (+${effectsState.babyVoice.params.pitch})`}
-                tooltip="Plus élevé = voix plus aiguë et enfantine. Recommandé : 8-12 pour un effet bébé."
+                label={`${t("audioEffects.babyVoice.pitch.label")} (+${effectsState.babyVoice.params.pitch})`}
+                tooltip={t("audioEffects.babyVoice.pitch.tooltip")}
               />
               <Slider
                 value={[effectsState.babyVoice.params.pitch]}
@@ -372,8 +375,8 @@ export function AudioEffectsPanel({
 
             <div>
               <LabelWithTooltip
-                label={`Timbre (${effectsState.babyVoice.params.formant.toFixed(1)}x)`}
-                tooltip="Change la couleur et le timbre de la voix pour simuler des cordes vocales plus courtes."
+                label={`${t("audioEffects.babyVoice.formant.label")} (${effectsState.babyVoice.params.formant.toFixed(1)}x)`}
+                tooltip={t("audioEffects.babyVoice.formant.tooltip")}
               />
               <Slider
                 value={[effectsState.babyVoice.params.formant * 10]}
@@ -390,8 +393,8 @@ export function AudioEffectsPanel({
 
             <div>
               <LabelWithTooltip
-                label={`Souffle (${effectsState.babyVoice.params.breathiness}%)`}
-                tooltip="Ajoute un effet de souffle doux et aérien caractéristique d'une voix d'enfant."
+                label={`${t("audioEffects.babyVoice.breathiness.label")} (${effectsState.babyVoice.params.breathiness}%)`}
+                tooltip={t("audioEffects.babyVoice.breathiness.tooltip")}
               />
               <Slider
                 value={[effectsState.babyVoice.params.breathiness]}
@@ -413,7 +416,7 @@ export function AudioEffectsPanel({
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-1">
               <span className="text-lg">😈</span>
-              <Label className="text-white font-medium text-[11px]">Voix de Démon</Label>
+              <Label className="text-white font-medium text-[11px]">{t('audioEffects.demonVoice.title')}</Label>
             </div>
             <Switch
               checked={effectsState.demonVoice.enabled}
@@ -424,8 +427,8 @@ export function AudioEffectsPanel({
           <div className={cn('space-y-1', !effectsState.demonVoice.enabled && 'opacity-50')}>
             <div>
               <LabelWithTooltip
-                label={`Hauteur de voix (${effectsState.demonVoice.params.pitch})`}
-                tooltip="Plus bas = voix plus grave et effrayante. -10 à -12 pour un effet démoniaque intense."
+                label={`${t("audioEffects.demonVoice.pitch.label")} (${effectsState.demonVoice.params.pitch})`}
+                tooltip={t("audioEffects.demonVoice.pitch.tooltip")}
               />
               <Slider
                 value={[effectsState.demonVoice.params.pitch]}
@@ -442,8 +445,8 @@ export function AudioEffectsPanel({
 
             <div>
               <LabelWithTooltip
-                label={`Distorsion (${effectsState.demonVoice.params.distortion}%)`}
-                tooltip="Ajoute une texture agressive et rugueuse à la voix."
+                label={`${t("audioEffects.demonVoice.distortion.label")} (${effectsState.demonVoice.params.distortion}%)`}
+                tooltip={t("audioEffects.demonVoice.distortion.tooltip")}
               />
               <Slider
                 value={[effectsState.demonVoice.params.distortion]}
@@ -460,8 +463,8 @@ export function AudioEffectsPanel({
 
             <div>
               <LabelWithTooltip
-                label={`Écho (${effectsState.demonVoice.params.reverb}%)`}
-                tooltip="Effet de réverbération comme dans une cathédrale sombre et profonde."
+                label={`${t("audioEffects.demonVoice.reverb.label")} (${effectsState.demonVoice.params.reverb}%)`}
+                tooltip={t("audioEffects.demonVoice.reverb.tooltip")}
               />
               <Slider
                 value={[effectsState.demonVoice.params.reverb]}
@@ -483,7 +486,7 @@ export function AudioEffectsPanel({
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-1">
               <span className="text-lg">🎶</span>
-              <Label className="text-white font-medium text-[11px]">Musique de Fond</Label>
+              <Label className="text-white font-medium text-[11px]">{t('audioEffects.backSound.title')}</Label>
             </div>
             <Switch
               checked={effectsState.backSound.enabled}
@@ -493,9 +496,9 @@ export function AudioEffectsPanel({
 
           <div className={cn('space-y-1', !effectsState.backSound.enabled && 'opacity-50')}>
             <div>
-              <Label className="text-gray-300 text-[10px]">Charger un fichier audio</Label>
+              <Label className="text-gray-300 text-[10px]">{t("audioEffects.backSound.uploadLabel")}</Label>
               <p className="text-gray-400 text-[8px] mb-1">
-                Les sons prédéfinis ne sont pas encore disponibles. Chargez votre propre fichier MP3/WAV.
+                {t("audioEffects.backSound.uploadDescription")}
               </p>
               <label
                 htmlFor="audio-file-upload"
@@ -508,7 +511,7 @@ export function AudioEffectsPanel({
                 )}
               >
                 <Upload className="w-3 h-3" />
-                <span>Charger un audio</span>
+                <span>{t("audioEffects.backSound.uploadButton")}</span>
               </label>
               <input
                 id="audio-file-upload"
@@ -528,8 +531,8 @@ export function AudioEffectsPanel({
 
             <div>
               <LabelWithTooltip
-                label={`Volume (${effectsState.backSound.params.volume}%)`}
-                tooltip="Ajuste le volume de la musique de fond mixée avec votre voix."
+                label={`${t("audioEffects.backSound.volume.label")} (${effectsState.backSound.params.volume}%)`}
+                tooltip={t("audioEffects.backSound.volume.tooltip")}
               />
               <Slider
                 value={[effectsState.backSound.params.volume]}
@@ -545,7 +548,7 @@ export function AudioEffectsPanel({
             </div>
 
             <div>
-              <Label className="text-gray-300 text-[10px]">Mode de lecture</Label>
+              <Label className="text-gray-300 text-[10px]">{t("audioEffects.backSound.loopMode.label")}</Label>
               <Select
                 value={effectsState.backSound.params.loopMode}
                 onValueChange={(value: 'N_TIMES' | 'N_MINUTES') =>
@@ -557,15 +560,15 @@ export function AudioEffectsPanel({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="N_TIMES">Nombre de fois</SelectItem>
-                  <SelectItem value="N_MINUTES">Durée en minutes</SelectItem>
+                  <SelectItem value="N_TIMES">{t("audioEffects.backSound.loopMode.nTimes")}</SelectItem>
+                  <SelectItem value="N_MINUTES">{t("audioEffects.backSound.loopMode.nMinutes")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div>
               <Label className="text-gray-300 text-xs">
-                {effectsState.backSound.params.loopMode === 'N_TIMES' ? 'Répétitions' : 'Minutes'} ({effectsState.backSound.params.loopValue})
+                {effectsState.backSound.params.loopMode === 'N_TIMES' ? t('audioEffects.backSound.loopValue.labelTimes') : t('audioEffects.backSound.loopValue.labelMinutes')} ({effectsState.backSound.params.loopValue})
               </Label>
               <Slider
                 value={[effectsState.backSound.params.loopValue]}
