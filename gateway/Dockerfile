@@ -120,6 +120,7 @@ COPY --chown=gateway:nodejs docker-entrypoint.sh ./
 
 # Build de l'application avec nettoyage
 RUN echo "🔧 Génération du client Prisma Node.js..." \
+    && sed -i '/output.*=.*"\.\/client"/d' ./shared/prisma/schema.prisma \
     && npx prisma generate --schema=./shared/prisma/schema.prisma \
     && echo "✅ Client Prisma Node.js généré avec succès" \
     && echo "🏗️  Building TypeScript application..." \
