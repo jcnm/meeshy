@@ -350,7 +350,7 @@ export function useAudioEffects({ inputStream, onOutputStreamReady }: UseAudioEf
     }
 
     return () => {
-      // Cleanup on unmount
+      // Cleanup on unmount or when inputStream changes
       if (inputNodeRef.current) {
         inputNodeRef.current.disconnect();
         inputNodeRef.current.dispose();
@@ -362,9 +362,14 @@ export function useAudioEffects({ inputStream, onOutputStreamReady }: UseAudioEf
       });
       processorsRef.current.clear();
 
-      setIsInitialized(false);
+      // Reset initialization flag when stream changes
+      if (inputStream) {
+        setIsInitialized(false);
+      }
     };
-  }, [inputStream, isInitialized, initializeAudioPipeline]);
+    // Only depend on inputStream - isInitialized is used for conditional logic
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inputStream]);
 
   /**
    * Rebuild audio graph when effects change
@@ -381,7 +386,10 @@ export function useAudioEffects({ inputStream, onOutputStreamReady }: UseAudioEf
 
     // Rebuild graph
     rebuildAudioGraph();
-  }, [effectsState, getOrCreateProcessor, rebuildAudioGraph, isInitialized]);
+    // Only depend on effectsState and isInitialized
+    // getOrCreateProcessor and rebuildAudioGraph are stable callbacks
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectsState, isInitialized]);
 
   /**
    * Load background sound when enabled or changed
