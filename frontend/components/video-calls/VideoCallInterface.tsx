@@ -166,6 +166,85 @@ export function VideoCallInterface({ callId }: VideoCallInterfaceProps) {
     });
   }, [currentCall?.participants?.length, currentCall?.initiatorId, user?.id, createOffer]);
 
+  // Keep track of peer connections to detect when new ones are added
+  const [peerConnectionsCount, setPeerConnectionsCount] = useState(0);
+
+  // Monitor peer connections changes
+  useEffect(() => {
+    const unsubscribe = useCallStore.subscribe(
+      (state) => state.peerConnections.size,
+      (size) => setPeerConnectionsCount(size)
+    );
+    return unsubscribe;
+  }, []);
+
+  // Apply audio effects to outgoing stream
+  // Replace audio tracks in all peer connections when processed audio stream changes or new connections are added
+  useEffect(() => {
+    if (!processedAudioStream || !localStream) return;
+
+    const peerConnections = useCallStore.getState().peerConnections;
+    if (peerConnections.size === 0) {
+      logger.debug('[VideoCallInterface]', 'No peer connections yet, audio effects will be applied when connections are created');
+      return;
+    }
+
+    // Get the processed audio track
+    const processedAudioTracks = processedAudioStream.getAudioTracks();
+    if (processedAudioTracks.length === 0) {
+      logger.warn('[VideoCallInterface]', 'No audio tracks in processed stream');
+      return;
+    }
+
+    const newAudioTrack = processedAudioTracks[0];
+    logger.info('[VideoCallInterface]', 'Replacing audio tracks in peer connections with processed audio', {
+      audioEffectsActive,
+      trackId: newAudioTrack.id,
+      peerConnectionsCount
+    });
+
+    // Replace audio track in all peer connections
+    peerConnections.forEach((peerConnection, participantId) => {
+      const senders = peerConnection.getSenders();
+      const audioSender = senders.find(sender => sender.track?.kind === 'audio');
+
+      if (audioSender) {
+        audioSender.replaceTrack(newAudioTrack)
+          .then(() => {
+            logger.debug('[VideoCallInterface]', 'Audio track replaced successfully', { participantId });
+          })
+          .catch((error) => {
+            logger.error('[VideoCallInterface]', 'Failed to replace audio track', { participantId, error });
+          });
+      } else {
+        logger.warn('[VideoCallInterface]', 'No audio sender found for participant', { participantId });
+      }
+    });
+
+    // Cleanup: when effect is disabled or component unmounts, restore original audio
+    return () => {
+      if (!audioEffectsActive && localStream) {
+        const originalAudioTracks = localStream.getAudioTracks();
+        if (originalAudioTracks.length > 0) {
+          const originalAudioTrack = originalAudioTracks[0];
+          logger.info('[VideoCallInterface]', 'Restoring original audio track');
+
+          peerConnections.forEach((peerConnection, participantId) => {
+            const senders = peerConnection.getSenders();
+            const audioSender = senders.find(sender => sender.track?.kind === 'audio');
+
+            if (audioSender) {
+              audioSender.replaceTrack(originalAudioTrack)
+                .catch((error) => {
+                  logger.error('[VideoCallInterface]', 'Failed to restore original audio track', { participantId, error });
+                });
+            }
+          });
+        }
+      }
+    };
+  }, [processedAudioStream, localStream, audioEffectsActive, peerConnectionsCount]);
+
   // Cleanup on unmount and page unload
   useEffect(() => {
     const cleanup = () => {
