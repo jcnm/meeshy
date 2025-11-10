@@ -174,27 +174,49 @@ export class CallEventsHandler {
         });
         socket.emit(CALL_EVENTS.INITIATED, initiatedEvent);
 
-        // ALSO broadcast to conversation room to ensure initiator receives it
-        const roomName = `conversation_${data.conversationId}`;
-        const socketsInRoom = await io.in(roomName).fetchSockets();
-        const initiatorInRoom = socketsInRoom.find(s => s.id === socket.id);
-
-        logger.info('📡 Broadcasting call:initiated to conversation room', {
-          roomName,
-          socketsCount: socketsInRoom.length,
-          socketIds: socketsInRoom.map(s => s.id),
-          initiatorSocketId: socket.id,
-          initiatorInConversationRoom: !!initiatorInRoom
+        // Get all conversation members and send to their sockets directly
+        const conversationMembers = await this.prisma.conversationMember.findMany({
+          where: {
+            conversationId: data.conversationId,
+            leftAt: null
+          },
+          select: {
+            userId: true
+          }
         });
 
-        io.to(roomName).emit(
-          CALL_EVENTS.INITIATED,
-          initiatedEvent
-        );
+        const memberUserIds = conversationMembers.map(m => m.userId);
+        logger.info('📋 Conversation members to notify', {
+          conversationId: data.conversationId,
+          memberUserIds
+        });
 
-        logger.info('✅ Socket: Call initiated and broadcasted', {
+        // Send call:initiated to ALL member sockets (not just those in the room)
+        const allSockets = await io.fetchSockets();
+        let notifiedSocketsCount = 0;
+
+        for (const memberSocket of allSockets) {
+          const socketUserId = getUserId(memberSocket.id);
+          if (socketUserId && memberUserIds.includes(socketUserId)) {
+            memberSocket.emit(CALL_EVENTS.INITIATED, initiatedEvent);
+            notifiedSocketsCount++;
+            logger.debug('📤 Sent call:initiated to member socket', {
+              socketId: memberSocket.id,
+              userId: socketUserId
+            });
+          }
+        }
+
+        // ALSO broadcast to conversation room for backwards compatibility
+        const roomName = `conversation_${data.conversationId}`;
+        io.to(roomName).emit(CALL_EVENTS.INITIATED, initiatedEvent);
+
+        logger.info('✅ Socket: Call initiated and broadcasted to all members', {
           callId: callSession.id,
-          conversationId: data.conversationId
+          conversationId: data.conversationId,
+          totalMembers: memberUserIds.length,
+          notifiedSockets: notifiedSocketsCount,
+          roomName
         });
       } catch (error: any) {
         logger.error('❌ Socket: Error initiating call', error);
