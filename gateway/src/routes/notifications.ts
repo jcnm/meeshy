@@ -81,6 +81,16 @@ export async function notificationRoutes(fastify: FastifyInstance) {
         }
       });
 
+      fastify.log.info(`📥 [BACKEND] Chargement notifications: userId=${userId}, total=${totalCount}, unread=${unreadCount}, returned=${notifications.length}`);
+
+      // Log détaillé des états isRead
+      const readStats = notifications.reduce((acc, n) => {
+        acc[n.isRead ? 'read' : 'unread']++;
+        return acc;
+      }, { read: 0, unread: 0 });
+
+      fastify.log.info(`📥 [BACKEND] États des notifications retournées: lues=${readStats.read}, non lues=${readStats.unread}`);
+
       return reply.send({
         success: true,
         data: {
@@ -124,21 +134,28 @@ export async function notificationRoutes(fastify: FastifyInstance) {
       const { id } = request.params as { id: string };
       const { userId } = request.user as any;
 
+      fastify.log.info(`📖 [BACKEND] Requête marquage notification comme lue: notificationId=${id}, userId=${userId}`);
+
       const notification = await fastify.prisma.notification.findFirst({
         where: { id, userId }
       });
 
       if (!notification) {
+        fastify.log.warn(`⚠️ [BACKEND] Notification non trouvée: notificationId=${id}, userId=${userId}`);
         return reply.status(404).send({
           success: false,
           message: 'Notification non trouvée'
         });
       }
 
+      fastify.log.info(`📖 [BACKEND] Notification trouvée, isRead actuel: ${notification.isRead}`);
+
       await fastify.prisma.notification.update({
         where: { id },
         data: { isRead: true }
       });
+
+      fastify.log.info(`✅ [BACKEND] Notification ${id} marquée comme lue dans MongoDB`);
 
       return reply.send({
         success: true,
@@ -161,13 +178,27 @@ export async function notificationRoutes(fastify: FastifyInstance) {
     try {
       const { userId } = request.user as any;
 
-      await fastify.prisma.notification.updateMany({
+      fastify.log.info(`📖 [BACKEND] Requête marquage de TOUTES les notifications comme lues: userId=${userId}`);
+
+      // Compter d'abord le nombre de notifications non lues
+      const unreadCount = await fastify.prisma.notification.count({
+        where: {
+          userId,
+          isRead: false
+        }
+      });
+
+      fastify.log.info(`📖 [BACKEND] Nombre de notifications non lues à marquer: ${unreadCount}`);
+
+      const result = await fastify.prisma.notification.updateMany({
         where: {
           userId,
           isRead: false
         },
         data: { isRead: true }
       });
+
+      fastify.log.info(`✅ [BACKEND] ${result.count} notifications marquées comme lues dans MongoDB`);
 
       return reply.send({
         success: true,
