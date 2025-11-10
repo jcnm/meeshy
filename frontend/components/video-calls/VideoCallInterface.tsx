@@ -68,7 +68,10 @@ export function VideoCallInterface({ callId }: VideoCallInterfaceProps) {
     effectsState,
     toggleEffect,
     updateEffectParams,
+    loadPreset,
+    currentPreset,
     availableBackSounds,
+    availablePresets,
   } = useAudioEffects({
     inputStream: localStream,
   });
@@ -410,6 +413,9 @@ export function VideoCallInterface({ callId }: VideoCallInterfaceProps) {
             effectsState={effectsState}
             onToggleEffect={toggleEffect}
             onUpdateParams={updateEffectParams}
+            onLoadPreset={loadPreset}
+            currentPreset={currentPreset}
+            availablePresets={availablePresets}
             availableBackSounds={availableBackSounds}
           />
         </div>

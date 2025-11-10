@@ -130,6 +130,16 @@ export interface VoiceCoderParams {
 }
 
 /**
+ * Presets pour Perfect Voice
+ */
+export type VoiceCoderPreset =
+  | 'voix-naturelle'
+  | 'pop-star'
+  | 'effet-robot'
+  | 'correction-subtile'
+  | 'custom';
+
+/**
  * Paramètres pour l'effet Baby Voice
  */
 export interface BabyVoiceParams {

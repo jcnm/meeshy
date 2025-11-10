@@ -21,6 +21,7 @@ import {
   DemonVoiceProcessor,
   BackSoundProcessor,
   BACK_SOUNDS,
+  VOICE_CODER_PRESETS,
   type AudioEffectProcessor,
 } from '@/utils/audio-effects';
 import type {
@@ -30,6 +31,7 @@ import type {
   DemonVoiceParams,
   BackSoundParams,
   AudioEffectsState,
+  VoiceCoderPreset,
 } from '@shared/types/video-call';
 
 // Default parameters for each effect
@@ -79,6 +81,9 @@ export function useAudioEffects({ inputStream, onOutputStreamReady }: UseAudioEf
   // Output stream
   const [outputStream, setOutputStream] = useState<MediaStream | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+
+  // Current preset for Perfect Voice
+  const [currentPreset, setCurrentPreset] = useState<VoiceCoderPreset>('correction-subtile');
 
   // Effects state
   const [effectsState, setEffectsState] = useState<AudioEffectsState>({
@@ -253,6 +258,11 @@ export function useAudioEffects({ inputStream, onOutputStreamReady }: UseAudioEf
           processor.updateParams(newParams);
         }
 
+        // If updating voice coder params, set preset to 'custom'
+        if (effectType === 'voice-coder') {
+          setCurrentPreset('custom');
+        }
+
         logger.debug('[useAudioEffects]', 'Effect params updated', { effectType, params });
 
         return {
@@ -266,6 +276,36 @@ export function useAudioEffects({ inputStream, onOutputStreamReady }: UseAudioEf
     },
     []
   );
+
+  /**
+   * Load a preset for Perfect Voice
+   */
+  const loadPreset = useCallback((preset: VoiceCoderPreset) => {
+    if (preset === 'custom') return;
+
+    const presetConfig = VOICE_CODER_PRESETS[preset];
+    if (!presetConfig) {
+      logger.error('[useAudioEffects]', 'Invalid preset', { preset });
+      return;
+    }
+
+    logger.debug('[useAudioEffects]', 'Loading preset', { preset });
+
+    setCurrentPreset(preset);
+    setEffectsState((prev) => ({
+      ...prev,
+      voiceCoder: {
+        ...prev.voiceCoder,
+        params: presetConfig.params,
+      },
+    }));
+
+    // Update processor if exists
+    const processor = processorsRef.current.get('voice-coder');
+    if (processor) {
+      processor.updateParams(presetConfig.params);
+    }
+  }, []);
 
   /**
    * Create or get processor for effect type
@@ -378,7 +418,10 @@ export function useAudioEffects({ inputStream, onOutputStreamReady }: UseAudioEf
     effectsState,
     toggleEffect,
     updateEffectParams,
+    loadPreset,
+    currentPreset,
     availableBackSounds: BACK_SOUNDS,
+    availablePresets: VOICE_CODER_PRESETS,
   };
 }
 
