@@ -31,6 +31,7 @@ import type {
   DemonVoiceParams,
   BackSoundParams,
   AudioEffectType,
+  VoiceCoderPreset,
 } from '@shared/types/video-call';
 
 interface AudioEffectsPanelProps {
@@ -48,6 +49,9 @@ interface AudioEffectsPanelProps {
         : BackSoundParams
     >
   ) => void;
+  onLoadPreset?: (preset: VoiceCoderPreset) => void;
+  currentPreset?: VoiceCoderPreset;
+  availablePresets?: Record<string, { name: string; description: string; params: VoiceCoderParams }>;
   availableBackSounds: readonly { id: string; name: string; url: string }[];
   className?: string;
 }
@@ -56,6 +60,9 @@ export function AudioEffectsPanel({
   effectsState,
   onToggleEffect,
   onUpdateParams,
+  onLoadPreset,
+  currentPreset,
+  availablePresets,
   availableBackSounds,
   className,
 }: AudioEffectsPanelProps) {
@@ -96,6 +103,40 @@ export function AudioEffectsPanel({
           </div>
 
           <div className={cn('space-y-2', !effectsState.voiceCoder.enabled && 'opacity-50')}>
+            {/* Preset Selector */}
+            {availablePresets && onLoadPreset && (
+              <div>
+                <Label className="text-gray-300 text-xs font-semibold">Configuration rapide</Label>
+                <p className="text-gray-500 text-[9px] mb-0.5">
+                  Choisissez un style prédéfini ou personnalisez
+                </p>
+                <Select
+                  value={currentPreset || 'correction-subtile'}
+                  onValueChange={(value: VoiceCoderPreset) => onLoadPreset(value)}
+                  disabled={!effectsState.voiceCoder.enabled}
+                >
+                  <SelectTrigger className="mt-1 bg-gray-800 border-gray-600 text-white h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(availablePresets).map(([key, preset]) => (
+                      <SelectItem key={key} value={key}>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{preset.name}</span>
+                          <span className="text-[10px] text-gray-400">{preset.description}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="custom">
+                      <div className="flex flex-col">
+                        <span className="font-medium">Personnalisé</span>
+                        <span className="text-[10px] text-gray-400">Vos propres réglages</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             {/* Rapidité de correction */}
             <div>
               <Label className="text-gray-300 text-xs font-semibold">
