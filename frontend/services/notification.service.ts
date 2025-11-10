@@ -479,50 +479,96 @@ export class NotificationService {
    */
   public async markAsRead(notificationId: string): Promise<void> {
     const notification = this.notifications.get(notificationId);
-    if (notification && !notification.isRead) {
-      notification.isRead = true;
-      this.updateCountsFromNotifications();
-
-      // Synchroniser avec le backend
-      if (this.config?.token) {
-        try {
-          await fetch(`${API_CONFIG.getApiUrl()}/notifications/${notificationId}/read`, {
-            method: 'PATCH',
-            headers: {
-              'Authorization': `Bearer ${this.config.token}`,
-              'Content-Type': 'application/json'
-            }
-          });
-        } catch (error) {
-          console.error('❌ Erreur lors de la synchronisation de la notification:', error);
-        }
-      }
+    if (!notification) {
+      console.warn(`⚠️ Notification ${notificationId} introuvable dans la Map locale`);
+      return;
     }
-  }
 
-  /**
-   * Marque toutes les notifications comme lues
-   */
-  public async markAllAsRead(): Promise<void> {
-    for (const notification of this.notifications.values()) {
-      notification.isRead = true;
+    if (notification.isRead) {
+      console.log(`ℹ️ Notification ${notificationId} déjà marquée comme lue`);
+      return;
     }
-    this.updateCountsFromNotifications();
 
-    // Synchroniser avec le backend
+    console.log(`📖 Marquage notification ${notificationId} comme lue...`);
+
+    // Synchroniser d'abord avec le backend
     if (this.config?.token) {
       try {
-        await fetch(`${API_CONFIG.getApiUrl()}/notifications/read-all`, {
+        const response = await fetch(`${API_CONFIG.getApiUrl()}/notifications/${notificationId}/read`, {
           method: 'PATCH',
           headers: {
             'Authorization': `Bearer ${this.config.token}`,
             'Content-Type': 'application/json'
           }
         });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`❌ Erreur HTTP ${response.status} lors du marquage:`, errorText);
+          return;
+        }
+
+        console.log(`✅ Notification ${notificationId} marquée comme lue sur le backend`);
       } catch (error) {
-        console.error('❌ Erreur lors de la synchronisation des notifications:', error);
+        console.error('❌ Erreur réseau lors de la synchronisation:', error);
+        return;
       }
     }
+
+    // Mettre à jour localement après succès backend
+    notification.isRead = true;
+    this.updateCountsFromNotifications();
+
+    // Notifier les callbacks pour forcer le re-render
+    if (this.config?.onCountsUpdated) {
+      this.config.onCountsUpdated(this.counts);
+    }
+
+    console.log(`✅ Notification ${notificationId} marquée comme lue localement`);
+  }
+
+  /**
+   * Marque toutes les notifications comme lues
+   */
+  public async markAllAsRead(): Promise<void> {
+    console.log('📖 Marquage de toutes les notifications comme lues...');
+
+    // Synchroniser d'abord avec le backend
+    if (this.config?.token) {
+      try {
+        const response = await fetch(`${API_CONFIG.getApiUrl()}/notifications/read-all`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${this.config.token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`❌ Erreur HTTP ${response.status} lors du marquage global:`, errorText);
+          return;
+        }
+
+        console.log('✅ Toutes les notifications marquées comme lues sur le backend');
+      } catch (error) {
+        console.error('❌ Erreur réseau lors de la synchronisation globale:', error);
+        return;
+      }
+    }
+
+    // Mettre à jour localement après succès backend
+    for (const notification of this.notifications.values()) {
+      notification.isRead = true;
+    }
+    this.updateCountsFromNotifications();
+
+    // Notifier les callbacks pour forcer le re-render
+    if (this.config?.onCountsUpdated) {
+      this.config.onCountsUpdated(this.counts);
+    }
+
+    console.log('✅ Toutes les notifications marquées comme lues localement');
   }
 
   /**
