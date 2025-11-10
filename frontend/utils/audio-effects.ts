@@ -1,6 +1,6 @@
 /**
- * AUDIO EFFECTS UTILITIES
- * Web Audio API processing for voice effects
+ * AUDIO EFFECTS UTILITIES - PROFESSIONAL IMPLEMENTATION
+ * Uses Tone.js for high-quality real-time voice effects
  *
  * Implements 4 audio effects:
  * 1. Voice Coder (auto-tune with harmonization)
@@ -9,6 +9,7 @@
  * 4. Back Sound Code (background music)
  */
 
+import * as Tone from 'tone';
 import type {
   VoiceCoderParams,
   BabyVoiceParams,
@@ -20,72 +21,113 @@ import type {
  * Audio effect processor interface
  */
 export interface AudioEffectProcessor {
-  connect(destination: AudioNode): void;
+  inputNode: Tone.ToneAudioNode;
+  outputNode: Tone.ToneAudioNode;
+  connect(destination: Tone.ToneAudioNode | AudioNode): void;
   disconnect(): void;
   updateParams(params: any): void;
   destroy(): void;
 }
 
 /**
- * Voice Coder Effect - Auto-tune with harmonization
+ * Voice Coder Effect - Auto-tune with pitch correction
+ * Uses Tone.PitchShift for professional pitch shifting
  */
 export class VoiceCoderProcessor implements AudioEffectProcessor {
-  private context: AudioContext;
-  private inputNode: MediaStreamAudioSourceNode;
-  private outputNode: GainNode;
-  private pitchShiftNode: GainNode | null = null;
+  inputNode: Tone.Gain;
+  outputNode: Tone.Gain;
+  private pitchShift: Tone.PitchShift;
+  private chorus: Tone.Chorus;
+  private wetDry: Tone.CrossFade;
   private params: VoiceCoderParams;
 
-  constructor(
-    context: AudioContext,
-    inputStream: MediaStream,
-    params: VoiceCoderParams
-  ) {
-    this.context = context;
+  constructor(params: VoiceCoderParams) {
     this.params = params;
 
     // Create audio nodes
-    this.inputNode = context.createMediaStreamSource(inputStream);
-    this.outputNode = context.createGain();
+    this.inputNode = new Tone.Gain(1);
+    this.outputNode = new Tone.Gain(1);
 
-    // Initialize pitch shift (simplified implementation)
-    // For production, use Tone.js or similar library for proper pitch shifting
-    this.pitchShiftNode = context.createGain();
+    // Pitch shifter for auto-tune effect
+    this.pitchShift = new Tone.PitchShift({
+      pitch: params.pitch,
+      windowSize: 0.1, // Smaller = more responsive, larger = better quality
+      delayTime: 0, // No delay
+      feedback: 0,
+    });
 
-    this.setupPitchShift();
-    this.connect(this.outputNode);
+    // Chorus for harmonization
+    this.chorus = new Tone.Chorus({
+      frequency: 1.5,
+      delayTime: 3.5,
+      depth: 0.7,
+      type: 'sine',
+      spread: 180,
+    }).start();
+
+    // Wet/Dry mix for strength control
+    this.wetDry = new Tone.CrossFade(params.strength / 100);
+
+    // Connect nodes
+    this.setupRouting();
   }
 
-  private setupPitchShift(): void {
-    if (!this.pitchShiftNode) return;
+  private setupRouting(): void {
+    // Disconnect everything first
+    this.inputNode.disconnect();
+    this.pitchShift.disconnect();
+    this.chorus.disconnect();
+    this.wetDry.disconnect();
 
-    // Simplified pitch shift using gain
-    // In production, implement FFT-based pitch shifting or use Tone.js
-    const pitchFactor = Math.pow(2, this.params.pitch / 12);
-    this.pitchShiftNode.gain.value = pitchFactor * (this.params.strength / 100);
-  }
-
-  connect(destination: AudioNode): void {
-    if (this.pitchShiftNode) {
-      this.inputNode.connect(this.pitchShiftNode);
-      this.pitchShiftNode.connect(destination);
+    if (this.params.harmonization) {
+      // Route: input -> pitchShift -> chorus -> wetDry -> output
+      this.inputNode.connect(this.pitchShift);
+      this.pitchShift.connect(this.chorus);
+      this.chorus.connect(this.wetDry.b);
+    } else {
+      // Route: input -> pitchShift -> wetDry -> output
+      this.inputNode.connect(this.pitchShift);
+      this.pitchShift.connect(this.wetDry.b);
     }
+
+    // Connect dry signal
+    this.inputNode.connect(this.wetDry.a);
+
+    // Connect to output
+    this.wetDry.connect(this.outputNode);
+  }
+
+  connect(destination: Tone.ToneAudioNode | AudioNode): void {
+    this.outputNode.connect(destination as any);
   }
 
   disconnect(): void {
-    if (this.pitchShiftNode) {
-      this.pitchShiftNode.disconnect();
-    }
-    this.inputNode.disconnect();
+    this.outputNode.disconnect();
   }
 
   updateParams(params: VoiceCoderParams): void {
+    const needsReroute = this.params.harmonization !== params.harmonization;
     this.params = params;
-    this.setupPitchShift();
+
+    // Update pitch shift
+    this.pitchShift.pitch = params.pitch;
+
+    // Update wet/dry mix for strength
+    this.wetDry.fade.value = params.strength / 100;
+
+    // Re-route if harmonization changed
+    if (needsReroute) {
+      this.setupRouting();
+    }
   }
 
   destroy(): void {
     this.disconnect();
+    this.pitchShift.dispose();
+    this.chorus.dispose();
+    this.wetDry.dispose();
+    this.inputNode.dispose();
+    this.outputNode.dispose();
   }
 }
 
@@ -93,71 +135,81 @@ export class VoiceCoderProcessor implements AudioEffectProcessor {
  * Baby Voice Effect - High pitch with formant shift
  */
 export class BabyVoiceProcessor implements AudioEffectProcessor {
-  private context: AudioContext;
-  private inputNode: MediaStreamAudioSourceNode;
-  private outputNode: GainNode;
-  private pitchNode: GainNode;
-  private formantNode: BiquadFilterNode;
-  private breathinessNode: GainNode;
+  inputNode: Tone.Gain;
+  outputNode: Tone.Gain;
+  private pitchShift: Tone.PitchShift;
+  private filter: Tone.Filter;
+  private noiseGain: Tone.Gain;
+  private noise: Tone.Noise;
   private params: BabyVoiceParams;
 
-  constructor(
-    context: AudioContext,
-    inputStream: MediaStream,
-    params: BabyVoiceParams
-  ) {
-    this.context = context;
+  constructor(params: BabyVoiceParams) {
     this.params = params;
 
-    // Create audio nodes
-    this.inputNode = context.createMediaStreamSource(inputStream);
-    this.outputNode = context.createGain();
-    this.pitchNode = context.createGain();
-    this.formantNode = context.createBiquadFilter();
-    this.breathinessNode = context.createGain();
+    // Create nodes
+    this.inputNode = new Tone.Gain(1);
+    this.outputNode = new Tone.Gain(1);
 
-    this.setupEffect();
+    // Pitch shift up for baby voice
+    this.pitchShift = new Tone.PitchShift({
+      pitch: params.pitch,
+      windowSize: 0.05, // Smaller window for more natural baby voice
+      delayTime: 0,
+      feedback: 0,
+    });
+
+    // High-pass filter for formant shifting (makes voice brighter/thinner)
+    this.filter = new Tone.Filter({
+      type: 'highpass',
+      frequency: 800 * params.formant,
+      Q: 1,
+      rolloff: -12,
+    });
+
+    // Noise for breathiness
+    this.noise = new Tone.Noise('pink').start();
+    this.noiseGain = new Tone.Gain(params.breathiness / 500); // Very subtle
+
+    // Connect: input -> pitchShift -> filter -> output
+    this.inputNode.connect(this.pitchShift);
+    this.pitchShift.connect(this.filter);
+    this.filter.connect(this.outputNode);
+
+    // Add breathiness noise
+    this.noise.connect(this.noiseGain);
+    this.noiseGain.connect(this.outputNode);
   }
 
-  private setupEffect(): void {
-    // Pitch shift (simplified)
-    const pitchFactor = Math.pow(2, this.params.pitch / 12);
-    this.pitchNode.gain.value = pitchFactor;
-
-    // Formant shift using high-pass filter
-    this.formantNode.type = 'highpass';
-    this.formantNode.frequency.value = 1000 * this.params.formant;
-    this.formantNode.Q.value = 1;
-
-    // Breathiness (add subtle noise)
-    this.breathinessNode.gain.value = this.params.breathiness / 100;
-
-    // Connect nodes
-    this.inputNode.connect(this.pitchNode);
-    this.pitchNode.connect(this.formantNode);
-    this.formantNode.connect(this.breathinessNode);
-    this.breathinessNode.connect(this.outputNode);
-  }
-
-  connect(destination: AudioNode): void {
-    this.outputNode.connect(destination);
+  connect(destination: Tone.ToneAudioNode | AudioNode): void {
+    this.outputNode.connect(destination as any);
   }
 
   disconnect(): void {
     this.outputNode.disconnect();
-    this.breathinessNode.disconnect();
-    this.formantNode.disconnect();
-    this.pitchNode.disconnect();
-    this.inputNode.disconnect();
   }
 
   updateParams(params: BabyVoiceParams): void {
     this.params = params;
-    this.setupEffect();
+
+    // Update pitch
+    this.pitchShift.pitch = params.pitch;
+
+    // Update formant (filter frequency)
+    this.filter.frequency.value = 800 * params.formant;
+
+    // Update breathiness
+    this.noiseGain.gain.value = params.breathiness / 500;
   }
 
   destroy(): void {
     this.disconnect();
+    this.pitchShift.dispose();
+    this.filter.dispose();
+    this.noise.stop();
+    this.noise.dispose();
+    this.noiseGain.dispose();
+    this.inputNode.dispose();
+    this.outputNode.dispose();
   }
 }
 
@@ -165,204 +217,193 @@ export class BabyVoiceProcessor implements AudioEffectProcessor {
  * Demon Voice Effect - Low pitch with distortion and reverb
  */
 export class DemonVoiceProcessor implements AudioEffectProcessor {
-  private context: AudioContext;
-  private inputNode: MediaStreamAudioSourceNode;
-  private outputNode: GainNode;
-  private pitchNode: GainNode;
-  private distortionNode: WaveShaperNode;
-  private reverbNode: ConvolverNode | GainNode; // Fallback to gain if convolver not available
+  inputNode: Tone.Gain;
+  outputNode: Tone.Gain;
+  private pitchShift: Tone.PitchShift;
+  private distortion: Tone.Distortion;
+  private reverb: Tone.Reverb;
+  private filter: Tone.Filter;
   private params: DemonVoiceParams;
 
-  constructor(
-    context: AudioContext,
-    inputStream: MediaStream,
-    params: DemonVoiceParams
-  ) {
-    this.context = context;
+  constructor(params: DemonVoiceParams) {
     this.params = params;
 
-    // Create audio nodes
-    this.inputNode = context.createMediaStreamSource(inputStream);
-    this.outputNode = context.createGain();
-    this.pitchNode = context.createGain();
-    this.distortionNode = context.createWaveShaper();
+    // Create nodes
+    this.inputNode = new Tone.Gain(1);
+    this.outputNode = new Tone.Gain(0.7); // Reduce overall gain to prevent clipping
 
-    // Try to create convolver, fallback to gain
-    try {
-      this.reverbNode = context.createConvolver();
-    } catch {
-      this.reverbNode = context.createGain();
-    }
+    // Pitch shift down for demon voice
+    this.pitchShift = new Tone.PitchShift({
+      pitch: params.pitch,
+      windowSize: 0.1,
+      delayTime: 0,
+      feedback: 0,
+    });
 
-    this.setupEffect();
+    // Distortion for grit
+    this.distortion = new Tone.Distortion({
+      distortion: params.distortion / 100,
+      oversample: '4x',
+    });
+
+    // Low-pass filter to make it darker/more menacing
+    this.filter = new Tone.Filter({
+      type: 'lowpass',
+      frequency: 2000,
+      Q: 0.5,
+      rolloff: -24,
+    });
+
+    // Reverb for cathedral/demonic effect
+    this.reverb = new Tone.Reverb({
+      decay: 3 + (params.reverb / 100) * 5, // 3-8 seconds
+      wet: params.reverb / 200, // Mix amount
+    });
+
+    // Generate reverb impulse response
+    this.reverb.generate();
+
+    // Connect: input -> pitchShift -> distortion -> filter -> reverb -> output
+    this.inputNode.connect(this.pitchShift);
+    this.pitchShift.connect(this.distortion);
+    this.distortion.connect(this.filter);
+    this.filter.connect(this.reverb);
+    this.reverb.connect(this.outputNode);
   }
 
-  private setupEffect(): void {
-    // Pitch shift down
-    const pitchFactor = Math.pow(2, this.params.pitch / 12);
-    this.pitchNode.gain.value = pitchFactor;
-
-    // Distortion using waveshaper
-    const amount = this.params.distortion / 100;
-    const curve = this.makeDistortionCurve(amount);
-    this.distortionNode.curve = curve;
-    this.distortionNode.oversample = '4x';
-
-    // Reverb (simplified implementation)
-    if ('buffer' in this.reverbNode) {
-      // Create impulse response for reverb
-      const reverbTime = (this.params.reverb / 100) * 3; // Max 3 seconds
-      const impulse = this.createReverbImpulse(reverbTime);
-      this.reverbNode.buffer = impulse;
-    } else {
-      // Fallback: just use gain
-      (this.reverbNode as GainNode).gain.value = this.params.reverb / 100;
-    }
-
-    // Connect nodes
-    this.inputNode.connect(this.pitchNode);
-    this.pitchNode.connect(this.distortionNode);
-    this.distortionNode.connect(this.reverbNode);
-    this.reverbNode.connect(this.outputNode);
-  }
-
-  private makeDistortionCurve(amount: number): Float32Array {
-    const samples = 44100;
-    const curve = new Float32Array(samples);
-    const deg = Math.PI / 180;
-
-    for (let i = 0; i < samples; i++) {
-      const x = (i * 2) / samples - 1;
-      curve[i] = ((3 + amount) * x * 20 * deg) / (Math.PI + amount * Math.abs(x));
-    }
-
-    return curve;
-  }
-
-  private createReverbImpulse(duration: number): AudioBuffer {
-    const sampleRate = this.context.sampleRate;
-    const length = sampleRate * duration;
-    const impulse = this.context.createBuffer(2, length, sampleRate);
-
-    for (let channel = 0; channel < 2; channel++) {
-      const channelData = impulse.getChannelData(channel);
-      for (let i = 0; i < length; i++) {
-        channelData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 2);
-      }
-    }
-
-    return impulse;
-  }
-
-  connect(destination: AudioNode): void {
-    this.outputNode.connect(destination);
+  connect(destination: Tone.ToneAudioNode | AudioNode): void {
+    this.outputNode.connect(destination as any);
   }
 
   disconnect(): void {
     this.outputNode.disconnect();
-    this.reverbNode.disconnect();
-    this.distortionNode.disconnect();
-    this.pitchNode.disconnect();
-    this.inputNode.disconnect();
   }
 
   updateParams(params: DemonVoiceParams): void {
     this.params = params;
-    this.setupEffect();
+
+    // Update pitch
+    this.pitchShift.pitch = params.pitch;
+
+    // Update distortion
+    this.distortion.distortion = params.distortion / 100;
+
+    // Update reverb
+    this.reverb.decay = 3 + (params.reverb / 100) * 5;
+    this.reverb.wet.value = params.reverb / 200;
   }
 
   destroy(): void {
     this.disconnect();
+    this.pitchShift.dispose();
+    this.distortion.dispose();
+    this.filter.dispose();
+    this.reverb.dispose();
+    this.inputNode.dispose();
+    this.outputNode.dispose();
   }
 }
 
 /**
  * Back Sound Code Effect - Background music/sound
+ * Plays background audio that mixes with voice
  */
 export class BackSoundProcessor implements AudioEffectProcessor {
-  private context: AudioContext;
-  private outputNode: GainNode;
-  private sourceNode: AudioBufferSourceNode | null = null;
-  private gainNode: GainNode;
+  inputNode: Tone.Gain;
+  outputNode: Tone.Gain;
+  private player: Tone.Player | null = null;
+  private playerGain: Tone.Gain;
   private params: BackSoundParams;
-  private audioBuffer: AudioBuffer | null = null;
   private startTime: number = 0;
-  private loopCount: number = 0;
+  private stopTimeout: number | null = null;
 
-  constructor(
-    context: AudioContext,
-    params: BackSoundParams
-  ) {
-    this.context = context;
+  constructor(params: BackSoundParams) {
     this.params = params;
 
     // Create nodes
-    this.outputNode = context.createGain();
-    this.gainNode = context.createGain();
-    this.gainNode.gain.value = params.volume / 100;
+    this.inputNode = new Tone.Gain(1);
+    this.outputNode = new Tone.Gain(1);
+    this.playerGain = new Tone.Gain(params.volume / 100);
 
-    // Connect gain to output
-    this.gainNode.connect(this.outputNode);
+    // Connect voice input directly to output
+    this.inputNode.connect(this.outputNode);
+
+    // Player will be connected when loaded
+    this.playerGain.connect(this.outputNode);
   }
 
   async loadSound(url: string): Promise<void> {
     try {
-      const response = await fetch(url);
-      const arrayBuffer = await response.arrayBuffer();
-      this.audioBuffer = await this.context.decodeAudioData(arrayBuffer);
+      // Dispose old player if exists
+      if (this.player) {
+        this.player.stop();
+        this.player.dispose();
+      }
+
+      // Create new player
+      this.player = new Tone.Player({
+        url,
+        loop: true,
+        volume: -10, // Reduce volume to blend better
+        fadeIn: 0.5,
+        fadeOut: 0.5,
+      }).toDestination();
+
+      // Connect player to gain
+      this.player.connect(this.playerGain);
+
+      // Wait for buffer to load
+      await Tone.loaded();
     } catch (error) {
       console.error('[BackSoundProcessor] Failed to load sound:', error);
       throw error;
     }
   }
 
-  play(): void {
-    if (!this.audioBuffer) {
-      console.warn('[BackSoundProcessor] No audio buffer loaded');
+  async play(): Promise<void> {
+    if (!this.player || !this.player.loaded) {
+      console.warn('[BackSoundProcessor] Player not loaded');
       return;
     }
 
-    this.stop();
+    // Clear any existing stop timeout
+    if (this.stopTimeout !== null) {
+      clearTimeout(this.stopTimeout);
+      this.stopTimeout = null;
+    }
 
-    // Create new source
-    this.sourceNode = this.context.createBufferSource();
-    this.sourceNode.buffer = this.audioBuffer;
-    this.sourceNode.connect(this.gainNode);
+    // Start playback
+    await Tone.start(); // Resume audio context if needed
+    this.player.start();
+    this.startTime = Tone.now();
 
-    // Setup looping based on mode
-    if (this.params.loopMode === 'N_TIMES') {
-      this.sourceNode.loop = true;
-      this.loopCount = 0;
-      this.startTime = this.context.currentTime;
-
-      // Stop after N loops
-      const duration = this.audioBuffer.duration * this.params.loopValue;
-      this.sourceNode.start(0, 0, duration);
-    } else {
-      // N_MINUTES mode
-      this.sourceNode.loop = true;
-      this.startTime = this.context.currentTime;
-
-      // Stop after N minutes
-      const duration = this.params.loopValue * 60;
-      this.sourceNode.start(0, 0, duration);
+    // Setup automatic stop based on loop mode
+    if (this.params.loopMode === 'N_TIMES' && this.player.buffer) {
+      const duration = this.player.buffer.duration * this.params.loopValue * 1000;
+      this.stopTimeout = window.setTimeout(() => {
+        this.stop();
+      }, duration);
+    } else if (this.params.loopMode === 'N_MINUTES') {
+      const duration = this.params.loopValue * 60 * 1000;
+      this.stopTimeout = window.setTimeout(() => {
+        this.stop();
+      }, duration);
     }
   }
 
   stop(): void {
-    if (this.sourceNode) {
-      try {
-        this.sourceNode.stop();
-      } catch {
-        // Already stopped
-      }
-      this.sourceNode.disconnect();
-      this.sourceNode = null;
+    if (this.player) {
+      this.player.stop();
+    }
+
+    if (this.stopTimeout !== null) {
+      clearTimeout(this.stopTimeout);
+      this.stopTimeout = null;
     }
   }
 
-  connect(destination: AudioNode): void {
-    this.outputNode.connect(destination);
+  connect(destination: Tone.ToneAudioNode | AudioNode): void {
+    this.outputNode.connect(destination as any);
   }
 
   disconnect(): void {
@@ -377,18 +418,23 @@ export class BackSoundProcessor implements AudioEffectProcessor {
     this.params = params;
 
     if (volumeChanged) {
-      this.gainNode.gain.value = params.volume / 100;
+      this.playerGain.gain.rampTo(params.volume / 100, 0.1);
     }
 
-    if (soundChanged) {
-      // Will need to reload and restart
-      this.stop();
-    }
+    // Sound change will be handled externally by reloading
   }
 
   destroy(): void {
     this.stop();
     this.disconnect();
+
+    if (this.player) {
+      this.player.dispose();
+    }
+
+    this.playerGain.dispose();
+    this.inputNode.dispose();
+    this.outputNode.dispose();
   }
 }
 
@@ -397,43 +443,33 @@ export class BackSoundProcessor implements AudioEffectProcessor {
  */
 export function createAudioEffectProcessor(
   type: 'voice-coder',
-  context: AudioContext,
-  inputStream: MediaStream,
   params: VoiceCoderParams
 ): VoiceCoderProcessor;
 export function createAudioEffectProcessor(
   type: 'baby-voice',
-  context: AudioContext,
-  inputStream: MediaStream,
   params: BabyVoiceParams
 ): BabyVoiceProcessor;
 export function createAudioEffectProcessor(
   type: 'demon-voice',
-  context: AudioContext,
-  inputStream: MediaStream,
   params: DemonVoiceParams
 ): DemonVoiceProcessor;
 export function createAudioEffectProcessor(
   type: 'back-sound',
-  context: AudioContext,
-  inputStream: MediaStream,
   params: BackSoundParams
 ): BackSoundProcessor;
 export function createAudioEffectProcessor(
   type: string,
-  context: AudioContext,
-  inputStream: MediaStream,
   params: any
 ): AudioEffectProcessor {
   switch (type) {
     case 'voice-coder':
-      return new VoiceCoderProcessor(context, inputStream, params);
+      return new VoiceCoderProcessor(params);
     case 'baby-voice':
-      return new BabyVoiceProcessor(context, inputStream, params);
+      return new BabyVoiceProcessor(params);
     case 'demon-voice':
-      return new DemonVoiceProcessor(context, inputStream, params);
+      return new DemonVoiceProcessor(params);
     case 'back-sound':
-      return new BackSoundProcessor(context, params);
+      return new BackSoundProcessor(params);
     default:
       throw new Error(`Unknown effect type: ${type}`);
   }
