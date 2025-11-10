@@ -446,37 +446,3 @@ export type AgentEvent =
   | { type: 'metrics_updated'; metrics: ConversationMetrics; timestamp: Date }
 
 export type EventHandler = (event: AgentEvent) => void | Promise<void>
-
-// ===== ERRORS =====
-
-export class AgentError extends Error {
-  constructor(
-    message: string,
-    public code: string,
-    public recoverable: boolean = true
-  ) {
-    super(message)
-    this.name = 'AgentError'
-  }
-}
-
-export class ConfigurationError extends AgentError {
-  constructor(message: string) {
-    super(message, 'CONFIG_ERROR', false)
-    this.name = 'ConfigurationError'
-  }
-}
-
-export class ApiError extends AgentError {
-  constructor(message: string, public statusCode?: number) {
-    super(message, 'API_ERROR', true)
-    this.name = 'ApiError'
-  }
-}
-
-export class AnalysisError extends AgentError {
-  constructor(message: string) {
-    super(message, 'ANALYSIS_ERROR', true)
-    this.name = 'AnalysisError'
-  }
-}
