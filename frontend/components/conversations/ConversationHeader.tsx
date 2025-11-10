@@ -311,16 +311,20 @@ export function ConversationHeader({
   }, [conversation.id, t]);
 
   return (
-    <div className="flex items-center justify-between p-4 border-b border-border bg-card">
-      <div className="flex items-center gap-3 flex-1 min-w-0">
+    <header
+      className="flex items-center justify-between px-3 py-3 sm:px-4 sm:py-4 border-b border-border bg-card min-h-[68px] sm:min-h-[72px]"
+      role="banner"
+      aria-label={t('conversationHeader.title') || 'En-tête de conversation'}
+    >
+      <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0 py-1">
         {/* Bouton retour (mobile ou desktop avec showBackButton) */}
         {(isMobile || showBackButton) && (
           <Button
             size="icon"
             variant="ghost"
             onClick={onBackToList}
-            className="flex-shrink-0 h-9 w-9"
-            aria-label={t('conversationHeader.backToList')}
+            className="flex-shrink-0 h-9 w-9 mt-0.5"
+            aria-label={t('conversationHeader.backToList') || 'Retour à la liste'}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -328,26 +332,28 @@ export function ConversationHeader({
 
         {/* Avatar - Only show for non-direct conversations, clickable for moderators+ */}
         {conversation.type !== 'direct' && (
-          <div className="relative flex-shrink-0">
+          <div className="relative flex-shrink-0 mt-0.5">
             {canModifyConversationImage() ? (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div
-                      className="cursor-pointer group relative"
+                    <button
+                      type="button"
+                      className="cursor-pointer group relative rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                       onClick={() => setIsImageUploadDialogOpen(true)}
+                      aria-label={t('conversationHeader.changeImage') || 'Changer l\'image de la conversation'}
                     >
-                      <Avatar className="h-10 w-10 ring-2 ring-transparent group-hover:ring-primary/50 transition-all">
-                        <AvatarImage src={getConversationAvatarUrl()} />
-                        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                      <Avatar className="h-9 w-9 sm:h-10 sm:w-10 ring-2 ring-transparent group-hover:ring-primary/50 transition-all">
+                        <AvatarImage src={getConversationAvatarUrl()} alt={getConversationName()} />
+                        <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs sm:text-sm">
                           {getConversationAvatar()}
                         </AvatarFallback>
                       </Avatar>
                       {/* Overlay avec icône camera au survol */}
                       <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Image className="h-4 w-4 text-white" />
+                        <Image className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" aria-hidden="true" />
                       </div>
-                    </div>
+                    </button>
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>{t('conversationHeader.changeImage') || 'Changer l\'image'}</p>
@@ -355,9 +361,9 @@ export function ConversationHeader({
                 </Tooltip>
               </TooltipProvider>
             ) : (
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={getConversationAvatarUrl()} />
-                <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+              <Avatar className="h-9 w-9 sm:h-10 sm:w-10">
+                <AvatarImage src={getConversationAvatarUrl()} alt={getConversationName()} />
+                <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs sm:text-sm">
                   {getConversationAvatar()}
                 </AvatarFallback>
               </Avatar>
@@ -366,38 +372,48 @@ export function ConversationHeader({
         )}
 
         {/* Infos de la conversation */}
-        <div className="flex-1 min-w-0">
-          <h2 className="font-semibold text-base truncate flex items-center gap-1.5">
+        <div className="flex-1 min-w-0 self-center">
+          <div className="flex items-start gap-2 mb-1">
             {/* For direct conversations, show interlocutor avatar before name */}
             {conversation.type === 'direct' && (
-              <div className="relative flex-shrink-0">
+              <div className="relative flex-shrink-0 pb-1">
                 {isOtherParticipantAnonymous() ? (
-                  <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                    <Ghost className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                  <div
+                    className="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center"
+                    role="img"
+                    aria-label={t('conversationHeader.anonymousUser') || 'Utilisateur anonyme'}
+                  >
+                    <Ghost className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" aria-hidden="true" />
                   </div>
                 ) : (
                   <>
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={getConversationAvatarUrl()} />
-                      <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                    <Avatar className="h-9 w-9 sm:h-10 sm:w-10">
+                      <AvatarImage
+                        src={getConversationAvatarUrl()}
+                        alt={`${getConversationName()} avatar`}
+                      />
+                      <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs sm:text-sm">
                         {getConversationAvatar()}
                       </AvatarFallback>
                     </Avatar>
                     {/* Status indicator for direct conversations - only show if online (green) or away (orange), not offline (grey) */}
                     {getOtherParticipantStatus() !== 'offline' && (
-                      <OnlineIndicator
-                        isOnline={getOtherParticipantStatus() === 'online'}
-                        status={getOtherParticipantStatus()}
-                        size="md"
-                        className="absolute -bottom-0.5 -right-0.5"
-                      />
+                      <div className="absolute -bottom-0 -right-0">
+                        <OnlineIndicator
+                          isOnline={getOtherParticipantStatus() === 'online'}
+                          status={getOtherParticipantStatus()}
+                          size="md"
+                        />
+                      </div>
                     )}
                   </>
                 )}
               </div>
             )}
-            <span className="truncate">{getConversationName()}</span>
-          </h2>
+            <h2 className="font-semibold text-sm sm:text-base truncate flex-1 min-w-0 pt-0.5">
+              <span className="truncate">{getConversationName()}</span>
+            </h2>
+          </div>
 
           {/* Show participant info and typing only for non-direct conversations */}
           {conversation.type !== 'direct' ? (
@@ -436,7 +452,7 @@ export function ConversationHeader({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-1 flex-shrink-0">
+      <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0 self-center">
         {/* Video Call Button - Only for direct conversations and moderator+ users */}
         {conversation.type === 'direct' && onStartCall && canUseVideoCalls() && (
           <TooltipProvider>
@@ -446,14 +462,14 @@ export function ConversationHeader({
                   size="icon"
                   variant="ghost"
                   onClick={onStartCall}
-                  className="h-9 w-9 hover:bg-blue-500 hover:text-white transition-colors"
-                  aria-label="Start video call"
+                  className="h-8 w-8 sm:h-9 sm:w-9 hover:bg-blue-500 hover:text-white transition-colors"
+                  aria-label={t('conversationHeader.startVideoCall') || 'Démarrer un appel vidéo'}
                 >
-                  <Video className="h-5 w-5" />
+                  <Video className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Start Video Call</p>
+                <p>{t('conversationHeader.startVideoCall') || 'Démarrer un appel vidéo'}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -498,9 +514,11 @@ export function ConversationHeader({
             <Button
               size="icon"
               variant="ghost"
-              className="h-9 w-9"
+              className="h-8 w-8 sm:h-9 sm:w-9"
+              aria-label={t('conversationHeader.menuActions') || 'Menu des actions'}
             >
-              <MoreVertical className="h-5 w-5" />
+              <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+              <span className="sr-only">{t('conversationHeader.menuActions') || 'Menu des actions'}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
@@ -570,6 +588,6 @@ export function ConversationHeader({
         isUploading={isUploadingImage}
         conversationTitle={conversation.title || conversation.id}
       />
-    </div>
+    </header>
   );
 }
