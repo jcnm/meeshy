@@ -75,8 +75,8 @@ export function AudioEffectsPanel({
             <span className="text-xl">🎭</span>
           </div>
           <div>
-            <h3 className="text-white text-lg font-bold">Audio Effects</h3>
-            <p className="text-gray-400 text-[10px]">Transform your voice</p>
+            <h3 className="text-white text-lg font-bold">Effets Audio</h3>
+            <p className="text-gray-400 text-[10px]">Transformez votre voix</p>
           </div>
         </div>
       </div>
@@ -96,17 +96,17 @@ export function AudioEffectsPanel({
           </div>
 
           <div className={cn('space-y-2', !effectsState.voiceCoder.enabled && 'opacity-50')}>
-            {/* Retune Speed - MOST IMPORTANT */}
+            {/* Rapidité de correction */}
             <div>
               <Label className="text-gray-300 text-xs font-semibold">
-                Retune Speed ({effectsState.voiceCoder.params.retuneSpeed}%)
+                Rapidité de correction ({effectsState.voiceCoder.params.retuneSpeed}%)
               </Label>
               <p className="text-gray-500 text-[9px] mb-0.5">
                 {effectsState.voiceCoder.params.retuneSpeed < 30
-                  ? 'Natural & Smooth'
+                  ? 'Très naturel et doux'
                   : effectsState.voiceCoder.params.retuneSpeed < 70
-                  ? 'Balanced'
-                  : 'Fast & Robotic'}
+                  ? 'Équilibré'
+                  : 'Rapide et robotique'}
               </p>
               <Slider
                 value={[effectsState.voiceCoder.params.retuneSpeed]}
@@ -121,10 +121,10 @@ export function AudioEffectsPanel({
               />
             </div>
 
-            {/* Scale & Key Selection */}
+            {/* Gamme & Tonalité */}
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <Label className="text-gray-300 text-xs">Scale</Label>
+                <Label className="text-gray-300 text-xs">Gamme</Label>
                 <Select
                   value={effectsState.voiceCoder.params.scale}
                   onValueChange={(value: 'chromatic' | 'major' | 'minor' | 'pentatonic') =>
@@ -136,16 +136,16 @@ export function AudioEffectsPanel({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="chromatic">Chromatic</SelectItem>
-                    <SelectItem value="major">Major</SelectItem>
-                    <SelectItem value="minor">Minor</SelectItem>
-                    <SelectItem value="pentatonic">Pentatonic</SelectItem>
+                    <SelectItem value="chromatic">Toutes les notes</SelectItem>
+                    <SelectItem value="major">Majeure (joyeux)</SelectItem>
+                    <SelectItem value="minor">Mineure (triste)</SelectItem>
+                    <SelectItem value="pentatonic">Pentatonique</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
-                <Label className="text-gray-300 text-xs">Key</Label>
+                <Label className="text-gray-300 text-xs">Tonalité</Label>
                 <Select
                   value={effectsState.voiceCoder.params.key}
                   onValueChange={(value: 'C' | 'C#' | 'D' | 'D#' | 'E' | 'F' | 'F#' | 'G' | 'G#' | 'A' | 'A#' | 'B') =>
@@ -157,26 +157,29 @@ export function AudioEffectsPanel({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="C">C</SelectItem>
-                    <SelectItem value="C#">C#</SelectItem>
-                    <SelectItem value="D">D</SelectItem>
-                    <SelectItem value="D#">D#</SelectItem>
-                    <SelectItem value="E">E</SelectItem>
-                    <SelectItem value="F">F</SelectItem>
-                    <SelectItem value="F#">F#</SelectItem>
-                    <SelectItem value="G">G</SelectItem>
-                    <SelectItem value="G#">G#</SelectItem>
-                    <SelectItem value="A">A</SelectItem>
-                    <SelectItem value="A#">A#</SelectItem>
-                    <SelectItem value="B">B</SelectItem>
+                    <SelectItem value="C">Do (C)</SelectItem>
+                    <SelectItem value="C#">Do# (C#)</SelectItem>
+                    <SelectItem value="D">Ré (D)</SelectItem>
+                    <SelectItem value="D#">Ré# (D#)</SelectItem>
+                    <SelectItem value="E">Mi (E)</SelectItem>
+                    <SelectItem value="F">Fa (F)</SelectItem>
+                    <SelectItem value="F#">Fa# (F#)</SelectItem>
+                    <SelectItem value="G">Sol (G)</SelectItem>
+                    <SelectItem value="G#">Sol# (G#)</SelectItem>
+                    <SelectItem value="A">La (A)</SelectItem>
+                    <SelectItem value="A#">La# (A#)</SelectItem>
+                    <SelectItem value="B">Si (B)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
-            {/* Auto-Tune Mix */}
+            {/* Force de l'effet */}
             <div>
-              <Label className="text-gray-300 text-xs">Auto-Tune Mix ({effectsState.voiceCoder.params.strength}%)</Label>
+              <Label className="text-gray-300 text-xs">Force de l'effet ({effectsState.voiceCoder.params.strength}%)</Label>
+              <p className="text-gray-500 text-[9px] mb-0.5">
+                Plus élevé = voix plus parfaite, moins naturelle
+              </p>
               <Slider
                 value={[effectsState.voiceCoder.params.strength]}
                 min={0}
@@ -190,9 +193,12 @@ export function AudioEffectsPanel({
               />
             </div>
 
-            {/* Natural Vibrato */}
+            {/* Expression naturelle */}
             <div>
-              <Label className="text-gray-300 text-xs">Natural Vibrato ({effectsState.voiceCoder.params.naturalVibrato}%)</Label>
+              <Label className="text-gray-300 text-xs">Expression naturelle ({effectsState.voiceCoder.params.naturalVibrato}%)</Label>
+              <p className="text-gray-500 text-[9px] mb-0.5">
+                Garde les variations naturelles de votre voix
+              </p>
               <Slider
                 value={[effectsState.voiceCoder.params.naturalVibrato]}
                 min={0}
@@ -206,9 +212,12 @@ export function AudioEffectsPanel({
               />
             </div>
 
-            {/* Transpose */}
+            {/* Hauteur globale */}
             <div>
-              <Label className="text-gray-300 text-xs">Transpose ({effectsState.voiceCoder.params.pitch > 0 ? '+' : ''}{effectsState.voiceCoder.params.pitch} semitones)</Label>
+              <Label className="text-gray-300 text-xs">Hauteur de voix ({effectsState.voiceCoder.params.pitch > 0 ? '+' : ''}{effectsState.voiceCoder.params.pitch})</Label>
+              <p className="text-gray-500 text-[9px] mb-0.5">
+                Chanter plus aigu (+) ou plus grave (-)
+              </p>
               <Slider
                 value={[effectsState.voiceCoder.params.pitch]}
                 min={-12}
@@ -222,9 +231,12 @@ export function AudioEffectsPanel({
               />
             </div>
 
-            {/* Harmonization */}
+            {/* Harmonisation */}
             <div className="flex items-center justify-between">
-              <Label className="text-gray-300 text-xs">Harmonization</Label>
+              <div>
+                <Label className="text-gray-300 text-xs">Harmonies vocales</Label>
+                <p className="text-gray-500 text-[9px]">Ajoute des voix d'accompagnement</p>
+              </div>
               <Switch
                 checked={effectsState.voiceCoder.params.harmonization}
                 onCheckedChange={(checked) =>
@@ -241,7 +253,7 @@ export function AudioEffectsPanel({
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
               <span className="text-lg">👶</span>
-              <Label className="text-white font-medium text-sm">Baby Voice</Label>
+              <Label className="text-white font-medium text-sm">Voix d'Enfant</Label>
             </div>
             <Switch
               checked={effectsState.babyVoice.enabled}
@@ -251,7 +263,10 @@ export function AudioEffectsPanel({
 
           <div className={cn('space-y-2', !effectsState.babyVoice.enabled && 'opacity-50')}>
             <div>
-              <Label className="text-gray-300 text-xs">Pitch (+{effectsState.babyVoice.params.pitch} semitones)</Label>
+              <Label className="text-gray-300 text-xs">Hauteur de voix (+{effectsState.babyVoice.params.pitch})</Label>
+              <p className="text-gray-500 text-[9px] mb-0.5">
+                Plus élevé = voix plus aiguë et enfantine
+              </p>
               <Slider
                 value={[effectsState.babyVoice.params.pitch]}
                 min={6}
@@ -266,7 +281,10 @@ export function AudioEffectsPanel({
             </div>
 
             <div>
-              <Label className="text-gray-300 text-xs">Formant ({effectsState.babyVoice.params.formant.toFixed(1)}x)</Label>
+              <Label className="text-gray-300 text-xs">Timbre ({effectsState.babyVoice.params.formant.toFixed(1)}x)</Label>
+              <p className="text-gray-500 text-[9px] mb-0.5">
+                Change la couleur de la voix
+              </p>
               <Slider
                 value={[effectsState.babyVoice.params.formant * 10]}
                 min={12}
@@ -281,7 +299,10 @@ export function AudioEffectsPanel({
             </div>
 
             <div>
-              <Label className="text-gray-300 text-xs">Breathiness ({effectsState.babyVoice.params.breathiness}%)</Label>
+              <Label className="text-gray-300 text-xs">Souffle ({effectsState.babyVoice.params.breathiness}%)</Label>
+              <p className="text-gray-500 text-[9px] mb-0.5">
+                Ajoute un effet de souffle doux
+              </p>
               <Slider
                 value={[effectsState.babyVoice.params.breathiness]}
                 min={0}
@@ -302,7 +323,7 @@ export function AudioEffectsPanel({
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
               <span className="text-lg">😈</span>
-              <Label className="text-white font-medium text-sm">Demon Voice</Label>
+              <Label className="text-white font-medium text-sm">Voix de Démon</Label>
             </div>
             <Switch
               checked={effectsState.demonVoice.enabled}
@@ -312,7 +333,10 @@ export function AudioEffectsPanel({
 
           <div className={cn('space-y-2', !effectsState.demonVoice.enabled && 'opacity-50')}>
             <div>
-              <Label className="text-gray-300 text-xs">Pitch ({effectsState.demonVoice.params.pitch} semitones)</Label>
+              <Label className="text-gray-300 text-xs">Hauteur de voix ({effectsState.demonVoice.params.pitch})</Label>
+              <p className="text-gray-500 text-[9px] mb-0.5">
+                Plus bas = voix plus grave et effrayante
+              </p>
               <Slider
                 value={[effectsState.demonVoice.params.pitch]}
                 min={-12}
@@ -327,7 +351,10 @@ export function AudioEffectsPanel({
             </div>
 
             <div>
-              <Label className="text-gray-300 text-xs">Distortion ({effectsState.demonVoice.params.distortion}%)</Label>
+              <Label className="text-gray-300 text-xs">Distorsion ({effectsState.demonVoice.params.distortion}%)</Label>
+              <p className="text-gray-500 text-[9px] mb-0.5">
+                Ajoute une texture agressive
+              </p>
               <Slider
                 value={[effectsState.demonVoice.params.distortion]}
                 min={0}
@@ -342,7 +369,10 @@ export function AudioEffectsPanel({
             </div>
 
             <div>
-              <Label className="text-gray-300 text-xs">Reverb ({effectsState.demonVoice.params.reverb}%)</Label>
+              <Label className="text-gray-300 text-xs">Écho ({effectsState.demonVoice.params.reverb}%)</Label>
+              <p className="text-gray-500 text-[9px] mb-0.5">
+                Effet de cathédrale sombre
+              </p>
               <Slider
                 value={[effectsState.demonVoice.params.reverb]}
                 min={0}
@@ -363,7 +393,7 @@ export function AudioEffectsPanel({
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
               <span className="text-lg">🎶</span>
-              <Label className="text-white font-medium text-sm">Back Sound</Label>
+              <Label className="text-white font-medium text-sm">Musique de Fond</Label>
             </div>
             <Switch
               checked={effectsState.backSound.enabled}
@@ -373,7 +403,7 @@ export function AudioEffectsPanel({
 
           <div className={cn('space-y-2', !effectsState.backSound.enabled && 'opacity-50')}>
             <div>
-              <Label className="text-gray-300 text-xs">Sound</Label>
+              <Label className="text-gray-300 text-xs">Ambiance sonore</Label>
               <Select
                 value={effectsState.backSound.params.soundFile}
                 onValueChange={(value) =>
@@ -396,6 +426,9 @@ export function AudioEffectsPanel({
 
             <div>
               <Label className="text-gray-300 text-xs">Volume ({effectsState.backSound.params.volume}%)</Label>
+              <p className="text-gray-500 text-[9px] mb-0.5">
+                Ajuste le volume de la musique de fond
+              </p>
               <Slider
                 value={[effectsState.backSound.params.volume]}
                 min={0}
@@ -410,7 +443,7 @@ export function AudioEffectsPanel({
             </div>
 
             <div>
-              <Label className="text-gray-300 text-xs">Loop Mode</Label>
+              <Label className="text-gray-300 text-xs">Mode de lecture</Label>
               <Select
                 value={effectsState.backSound.params.loopMode}
                 onValueChange={(value: 'N_TIMES' | 'N_MINUTES') =>
@@ -422,15 +455,15 @@ export function AudioEffectsPanel({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="N_TIMES">N Times</SelectItem>
-                  <SelectItem value="N_MINUTES">N Minutes</SelectItem>
+                  <SelectItem value="N_TIMES">Nombre de fois</SelectItem>
+                  <SelectItem value="N_MINUTES">Durée en minutes</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div>
               <Label className="text-gray-300 text-xs">
-                {effectsState.backSound.params.loopMode === 'N_TIMES' ? 'Times' : 'Minutes'} ({effectsState.backSound.params.loopValue})
+                {effectsState.backSound.params.loopMode === 'N_TIMES' ? 'Répétitions' : 'Minutes'} ({effectsState.backSound.params.loopValue})
               </Label>
               <Slider
                 value={[effectsState.backSound.params.loopValue]}
