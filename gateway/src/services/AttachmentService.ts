@@ -9,7 +9,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { parseFile } from 'music-metadata';
-import * as pdfParse from 'pdf-parse';
+import { PDFParse } from 'pdf-parse';
 import * as ffmpeg from 'fluent-ffmpeg';
 import {
   Attachment,
@@ -240,10 +240,12 @@ export class AttachmentService {
     try {
       const fullPath = path.join(this.uploadBasePath, pdfPath);
       const dataBuffer = await fs.readFile(fullPath);
-      const data = await pdfParse(dataBuffer);
+      const parser = new PDFParse({ data: dataBuffer });
+      const result = await parser.getInfo();
+      await parser.destroy();
 
       return {
-        pageCount: data.numpages || 0,
+        pageCount: result.total || 0,
       };
     } catch (error) {
       console.error('[AttachmentService] Erreur extraction métadonnées PDF:', {
@@ -307,7 +309,7 @@ export class AttachmentService {
             height: videoStream.height || 0,
             fps: Math.round(fps * 100) / 100, // Arrondir à 2 décimales
             videoCodec: videoStream.codec_name || 'unknown',
-            bitrate: parseInt(metadata.format?.bit_rate || '0', 10),
+            bitrate: parseInt(String(metadata.format?.bit_rate || 0), 10),
           });
         });
       });
