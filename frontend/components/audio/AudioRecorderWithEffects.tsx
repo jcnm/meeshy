@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
+import { createPortal } from 'react-dom';
 import { Square, Trash2, Mic, Loader2, Radio } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAudioEffects } from '@/hooks/use-audio-effects';
@@ -61,8 +62,11 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
   const [isInitializing, setIsInitializing] = useState(false);
   const [audioFormat, setAudioFormat] = useState<string>('WEBM');
   const [showEffectsPanel, setShowEffectsPanel] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const [panelPosition, setPanelPosition] = useState({ top: 0, left: 0 });
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const buttonEffectsRef = useRef<HTMLButtonElement>(null);
   const chunksRef = useRef<Blob[]>([]);
   const startTimeRef = useRef<number>(0);
   const animationFrameRef = useRef<number | null>(null);
@@ -282,6 +286,40 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
     isRecording: () => isRecording
   }), [stopRecording, isRecording]);
 
+  // Détecter le montage du composant pour le portail
+  useEffect(() => {
+    setIsMounted(true);
+    return () => setIsMounted(false);
+  }, []);
+
+  // Calculer et mettre à jour la position du panneau
+  const updatePanelPosition = useCallback(() => {
+    if (!buttonEffectsRef.current) return;
+
+    const rect = buttonEffectsRef.current.getBoundingClientRect();
+    setPanelPosition({
+      top: rect.top - 10,
+      left: rect.left,
+    });
+  }, []);
+
+  // Mettre à jour la position lors de l'ouverture du panneau et lors du scroll/resize
+  useEffect(() => {
+    if (!showEffectsPanel) return;
+
+    // Mettre à jour la position immédiatement
+    updatePanelPosition();
+
+    // Puis lors du scroll/resize
+    window.addEventListener('scroll', updatePanelPosition, true);
+    window.addEventListener('resize', updatePanelPosition);
+
+    return () => {
+      window.removeEventListener('scroll', updatePanelPosition, true);
+      window.removeEventListener('resize', updatePanelPosition);
+    };
+  }, [showEffectsPanel, updatePanelPosition]);
+
   // Cleanup
   useEffect(() => {
     return () => {
@@ -344,10 +382,22 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
 
   // État: Prêt à enregistrer OU En cours d'enregistrement
   return (
-    <div className="relative group pt-2 pb-1">
-      {/* Panneau des effets audio */}
-      {showEffectsPanel && (
-        <div className="absolute bottom-full left-0 right-0 mb-2 z-50">
+    <>
+      {/* Panneau des effets audio - Portail pour afficher au-dessus de tout */}
+      {isMounted && showEffectsPanel && createPortal(
+        <div
+          className="fixed z-[9999]"
+          style={{
+            bottom: `${window.innerHeight - panelPosition.top}px`,
+            left: `${panelPosition.left}px`,
+            maxWidth: '90vw',
+          }}
+        >
+          {/* Overlay pour fermer au clic à l'extérieur */}
+          <div
+            className="fixed inset-0 -z-10"
+            onClick={() => setShowEffectsPanel(false)}
+          />
           <AudioEffectsPanel
             effectsState={effectsState}
             onToggleEffect={toggleEffect}
@@ -357,10 +407,12 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
             availablePresets={availablePresets}
             availableBackSounds={availableBackSounds}
           />
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* Composant principal */}
+      <div className="relative group pt-2 pb-1">
+        {/* Composant principal */}
       <div className={`relative flex flex-row items-center justify-between gap-2 w-full h-24 rounded-lg px-3 py-2 border-2 ${
         isRecording
           ? 'bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/30 dark:to-orange-900/30 border-red-400 dark:border-red-500'
@@ -368,6 +420,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
       }`}>
         {/* Gauche: Bouton effets audio */}
         <button
+          ref={buttonEffectsRef}
           onClick={() => setShowEffectsPanel(!showEffectsPanel)}
           className={`relative flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center transition-all ${
             audioEffectsActive
@@ -436,7 +489,8 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
           <Trash2 className="w-3 h-3" />
         </button>
       )}
-    </div>
+      </div>
+    </>
   );
 });
 
