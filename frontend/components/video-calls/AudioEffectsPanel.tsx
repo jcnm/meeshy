@@ -52,10 +52,12 @@ const LabelWithTooltip = ({ label, tooltip }: { label: React.ReactNode; tooltip:
         </button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-56 bg-gray-800 border-gray-600 text-white text-[10px] p-2"
-        side="top"
-        align="start"
+        className="w-56 bg-gray-800 border-gray-600 text-white text-[10px] p-2 z-[10000]"
+        side="bottom"
+        align="center"
         sideOffset={5}
+        avoidCollisions={true}
+        collisionPadding={10}
       >
         {tooltip}
       </PopoverContent>
@@ -99,7 +101,7 @@ export function AudioEffectsPanel({
     <div
       className={cn(
         'bg-gradient-to-br from-gray-900/95 via-black/95 to-purple-900/95',
-        'backdrop-blur-xl rounded-lg p-2 max-h-[70vh] overflow-y-auto',
+        'backdrop-blur-xl rounded-lg p-2 max-h-full overflow-y-auto',
         'border border-white/10 shadow-2xl',
         'animate-in slide-in-from-bottom duration-300',
         className
