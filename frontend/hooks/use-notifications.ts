@@ -95,14 +95,14 @@ export const useNotifications = (): UseNotificationsReturn => {
   }, []);
 
   // Marquer une notification comme lue
-  const markAsRead = useCallback((notificationId: string) => {
-    notificationService.markAsRead(notificationId);
+  const markAsRead = useCallback(async (notificationId: string) => {
+    await notificationService.markAsRead(notificationId);
     updateNotifications();
   }, [updateNotifications]);
 
   // Marquer toutes les notifications comme lues
-  const markAllAsRead = useCallback(() => {
-    notificationService.markAllAsRead();
+  const markAllAsRead = useCallback(async () => {
+    await notificationService.markAllAsRead();
     updateNotifications();
   }, [updateNotifications]);
 
