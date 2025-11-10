@@ -7,7 +7,7 @@
  * - Logging cleanup statistics
  */
 
-import { PrismaClient, CallStatus } from '../shared/prisma/client';
+import { PrismaClient, CallStatus } from '@prisma/client';
 import { logger } from '../utils/logger';
 
 export class CallCleanupService {

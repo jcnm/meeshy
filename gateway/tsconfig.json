@@ -26,7 +26,7 @@
       "@meeshy/shared": ["../shared/dist/index.d.ts"],
       "@meeshy/shared/*": ["../shared/dist/*"],
       "@shared/*": ["./shared/*"],
-      "@prisma/client": ["../shared/client"]
+      "@prisma/client": ["./shared/prisma/client"]
     },
     "declaration": true,
     "declarationMap": true,

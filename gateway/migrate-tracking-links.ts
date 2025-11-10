@@ -3,7 +3,7 @@
  * Convertit de "meeshy.me/l/<token>" vers "/l/<token>" pour flexibilité du domaine
  */
 
-import { PrismaClient } from '../shared/prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 

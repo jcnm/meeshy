@@ -8,7 +8,7 @@
  */
 
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { PrismaClient } from '../shared/prisma/client';
+import { PrismaClient } from '@prisma/client';
 import type { AuthenticationContext, AuthenticationType } from '../../shared/types';
 import jwt from 'jsonwebtoken';
 import { StatusService } from '../services/status.service';

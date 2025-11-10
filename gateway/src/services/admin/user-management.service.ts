@@ -1,4 +1,4 @@
-import { PrismaClient } from '../../../shared/prisma/client';
+import { PrismaClient } from '@prisma/client';
 import {
   FullUser,
   UserFilters,

@@ -13,7 +13,7 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from
 import { Server as HTTPServer, createServer } from 'http';
 import { AddressInfo } from 'net';
 import { io as ioClient, Socket as ClientSocket } from 'socket.io-client';
-import { PrismaClient } from '../../../shared/prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { MeeshySocketIOManager } from '../../socketio/MeeshySocketIOManager';
 import { MaintenanceService } from '../../services/maintenance.service';
 import { AttachmentService } from '../../services/AttachmentService';
