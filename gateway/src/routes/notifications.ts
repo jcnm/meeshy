@@ -60,7 +60,14 @@ export async function notificationRoutes(fastify: FastifyInstance) {
         where: whereClause,
         orderBy: { createdAt: 'desc' },
         skip: offset,
-        take: limitNum
+        take: limitNum,
+        include: {
+          message: {
+            include: {
+              attachments: true
+            }
+          }
+        }
       });
 
       const totalCount = await fastify.prisma.notification.count({

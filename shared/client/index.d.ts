@@ -4024,6 +4024,7 @@ export namespace Prisma {
     translations: number
     attachments: number
     reactions: number
+    notifications: number
     replies: number
   }
 
@@ -4033,6 +4034,7 @@ export namespace Prisma {
     translations?: boolean | MessageCountOutputTypeCountTranslationsArgs
     attachments?: boolean | MessageCountOutputTypeCountAttachmentsArgs
     reactions?: boolean | MessageCountOutputTypeCountReactionsArgs
+    notifications?: boolean | MessageCountOutputTypeCountNotificationsArgs
     replies?: boolean | MessageCountOutputTypeCountRepliesArgs
   }
 
@@ -4080,6 +4082,13 @@ export namespace Prisma {
    */
   export type MessageCountOutputTypeCountReactionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ReactionWhereInput
+  }
+
+  /**
+   * MessageCountOutputType without action
+   */
+  export type MessageCountOutputTypeCountNotificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: NotificationWhereInput
   }
 
   /**
@@ -11536,6 +11545,7 @@ export namespace Prisma {
     translations?: boolean | Message$translationsArgs<ExtArgs>
     attachments?: boolean | Message$attachmentsArgs<ExtArgs>
     reactions?: boolean | Message$reactionsArgs<ExtArgs>
+    notifications?: boolean | Message$notificationsArgs<ExtArgs>
     replyTo?: boolean | Message$replyToArgs<ExtArgs>
     replies?: boolean | Message$repliesArgs<ExtArgs>
     anonymousSender?: boolean | Message$anonymousSenderArgs<ExtArgs>
@@ -11570,6 +11580,7 @@ export namespace Prisma {
     translations?: boolean | Message$translationsArgs<ExtArgs>
     attachments?: boolean | Message$attachmentsArgs<ExtArgs>
     reactions?: boolean | Message$reactionsArgs<ExtArgs>
+    notifications?: boolean | Message$notificationsArgs<ExtArgs>
     replyTo?: boolean | Message$replyToArgs<ExtArgs>
     replies?: boolean | Message$repliesArgs<ExtArgs>
     anonymousSender?: boolean | Message$anonymousSenderArgs<ExtArgs>
@@ -11586,6 +11597,7 @@ export namespace Prisma {
       translations: Prisma.$MessageTranslationPayload<ExtArgs>[]
       attachments: Prisma.$MessageAttachmentPayload<ExtArgs>[]
       reactions: Prisma.$ReactionPayload<ExtArgs>[]
+      notifications: Prisma.$NotificationPayload<ExtArgs>[]
       replyTo: Prisma.$MessagePayload<ExtArgs> | null
       replies: Prisma.$MessagePayload<ExtArgs>[]
       anonymousSender: Prisma.$AnonymousParticipantPayload<ExtArgs> | null
@@ -11978,6 +11990,7 @@ export namespace Prisma {
     translations<T extends Message$translationsArgs<ExtArgs> = {}>(args?: Subset<T, Message$translationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageTranslationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     attachments<T extends Message$attachmentsArgs<ExtArgs> = {}>(args?: Subset<T, Message$attachmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageAttachmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     reactions<T extends Message$reactionsArgs<ExtArgs> = {}>(args?: Subset<T, Message$reactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    notifications<T extends Message$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, Message$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     replyTo<T extends Message$replyToArgs<ExtArgs> = {}>(args?: Subset<T, Message$replyToArgs<ExtArgs>>): Prisma__MessageClient<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     replies<T extends Message$repliesArgs<ExtArgs> = {}>(args?: Subset<T, Message$repliesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     anonymousSender<T extends Message$anonymousSenderArgs<ExtArgs> = {}>(args?: Subset<T, Message$anonymousSenderArgs<ExtArgs>>): Prisma__AnonymousParticipantClient<$Result.GetResult<Prisma.$AnonymousParticipantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -12513,6 +12526,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ReactionScalarFieldEnum | ReactionScalarFieldEnum[]
+  }
+
+  /**
+   * Message.notifications
+   */
+  export type Message$notificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    where?: NotificationWhereInput
+    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
+    cursor?: NotificationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
   }
 
   /**
@@ -13703,6 +13740,9 @@ export namespace Prisma {
     bitrate: number | null
     sampleRate: number | null
     channels: number | null
+    fps: number | null
+    pageCount: number | null
+    lineCount: number | null
   }
 
   export type MessageAttachmentSumAggregateOutputType = {
@@ -13713,6 +13753,9 @@ export namespace Prisma {
     bitrate: number | null
     sampleRate: number | null
     channels: number | null
+    fps: number | null
+    pageCount: number | null
+    lineCount: number | null
   }
 
   export type MessageAttachmentMinAggregateOutputType = {
@@ -13733,6 +13776,9 @@ export namespace Prisma {
     sampleRate: number | null
     codec: string | null
     channels: number | null
+    fps: number | null
+    pageCount: number | null
+    lineCount: number | null
     uploadedBy: string | null
     isAnonymous: boolean | null
     createdAt: Date | null
@@ -13756,6 +13802,9 @@ export namespace Prisma {
     sampleRate: number | null
     codec: string | null
     channels: number | null
+    fps: number | null
+    pageCount: number | null
+    lineCount: number | null
     uploadedBy: string | null
     isAnonymous: boolean | null
     createdAt: Date | null
@@ -13779,6 +13828,9 @@ export namespace Prisma {
     sampleRate: number
     codec: number
     channels: number
+    fps: number
+    pageCount: number
+    lineCount: number
     uploadedBy: number
     isAnonymous: number
     createdAt: number
@@ -13795,6 +13847,9 @@ export namespace Prisma {
     bitrate?: true
     sampleRate?: true
     channels?: true
+    fps?: true
+    pageCount?: true
+    lineCount?: true
   }
 
   export type MessageAttachmentSumAggregateInputType = {
@@ -13805,6 +13860,9 @@ export namespace Prisma {
     bitrate?: true
     sampleRate?: true
     channels?: true
+    fps?: true
+    pageCount?: true
+    lineCount?: true
   }
 
   export type MessageAttachmentMinAggregateInputType = {
@@ -13825,6 +13883,9 @@ export namespace Prisma {
     sampleRate?: true
     codec?: true
     channels?: true
+    fps?: true
+    pageCount?: true
+    lineCount?: true
     uploadedBy?: true
     isAnonymous?: true
     createdAt?: true
@@ -13848,6 +13909,9 @@ export namespace Prisma {
     sampleRate?: true
     codec?: true
     channels?: true
+    fps?: true
+    pageCount?: true
+    lineCount?: true
     uploadedBy?: true
     isAnonymous?: true
     createdAt?: true
@@ -13871,6 +13935,9 @@ export namespace Prisma {
     sampleRate?: true
     codec?: true
     channels?: true
+    fps?: true
+    pageCount?: true
+    lineCount?: true
     uploadedBy?: true
     isAnonymous?: true
     createdAt?: true
@@ -13982,6 +14049,9 @@ export namespace Prisma {
     sampleRate: number | null
     codec: string | null
     channels: number | null
+    fps: number | null
+    pageCount: number | null
+    lineCount: number | null
     uploadedBy: string
     isAnonymous: boolean
     createdAt: Date
@@ -14025,6 +14095,9 @@ export namespace Prisma {
     sampleRate?: boolean
     codec?: boolean
     channels?: boolean
+    fps?: boolean
+    pageCount?: boolean
+    lineCount?: boolean
     uploadedBy?: boolean
     isAnonymous?: boolean
     createdAt?: boolean
@@ -14052,13 +14125,16 @@ export namespace Prisma {
     sampleRate?: boolean
     codec?: boolean
     channels?: boolean
+    fps?: boolean
+    pageCount?: boolean
+    lineCount?: boolean
     uploadedBy?: boolean
     isAnonymous?: boolean
     createdAt?: boolean
     metadata?: boolean
   }
 
-  export type MessageAttachmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "messageId" | "fileName" | "originalName" | "mimeType" | "fileSize" | "filePath" | "fileUrl" | "width" | "height" | "thumbnailPath" | "thumbnailUrl" | "duration" | "bitrate" | "sampleRate" | "codec" | "channels" | "uploadedBy" | "isAnonymous" | "createdAt" | "metadata", ExtArgs["result"]["messageAttachment"]>
+  export type MessageAttachmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "messageId" | "fileName" | "originalName" | "mimeType" | "fileSize" | "filePath" | "fileUrl" | "width" | "height" | "thumbnailPath" | "thumbnailUrl" | "duration" | "bitrate" | "sampleRate" | "codec" | "channels" | "fps" | "pageCount" | "lineCount" | "uploadedBy" | "isAnonymous" | "createdAt" | "metadata", ExtArgs["result"]["messageAttachment"]>
   export type MessageAttachmentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     message?: boolean | MessageDefaultArgs<ExtArgs>
   }
@@ -14086,6 +14162,9 @@ export namespace Prisma {
       sampleRate: number | null
       codec: string | null
       channels: number | null
+      fps: number | null
+      pageCount: number | null
+      lineCount: number | null
       uploadedBy: string
       isAnonymous: boolean
       createdAt: Date
@@ -14503,6 +14582,9 @@ export namespace Prisma {
     readonly sampleRate: FieldRef<"MessageAttachment", 'Int'>
     readonly codec: FieldRef<"MessageAttachment", 'String'>
     readonly channels: FieldRef<"MessageAttachment", 'Int'>
+    readonly fps: FieldRef<"MessageAttachment", 'Float'>
+    readonly pageCount: FieldRef<"MessageAttachment", 'Int'>
+    readonly lineCount: FieldRef<"MessageAttachment", 'Int'>
     readonly uploadedBy: FieldRef<"MessageAttachment", 'String'>
     readonly isAnonymous: FieldRef<"MessageAttachment", 'Boolean'>
     readonly createdAt: FieldRef<"MessageAttachment", 'DateTime'>
@@ -19236,6 +19318,7 @@ export namespace Prisma {
     messageId?: boolean
     callSessionId?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    message?: boolean | Notification$messageArgs<ExtArgs>
   }, ExtArgs["result"]["notification"]>
 
 
@@ -19265,12 +19348,14 @@ export namespace Prisma {
   export type NotificationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "type" | "title" | "content" | "data" | "priority" | "isRead" | "emailSent" | "pushSent" | "expiresAt" | "createdAt" | "senderId" | "senderUsername" | "senderAvatar" | "messagePreview" | "conversationId" | "messageId" | "callSessionId", ExtArgs["result"]["notification"]>
   export type NotificationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    message?: boolean | Notification$messageArgs<ExtArgs>
   }
 
   export type $NotificationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Notification"
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
+      message: Prisma.$MessagePayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -19668,6 +19753,7 @@ export namespace Prisma {
   export interface Prisma__NotificationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    message<T extends Notification$messageArgs<ExtArgs> = {}>(args?: Subset<T, Notification$messageArgs<ExtArgs>>): Prisma__MessageClient<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -20083,6 +20169,25 @@ export namespace Prisma {
      * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
      */
     options?: InputJsonValue
+  }
+
+  /**
+   * Notification.message
+   */
+  export type Notification$messageArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Message
+     */
+    select?: MessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Message
+     */
+    omit?: MessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageInclude<ExtArgs> | null
+    where?: MessageWhereInput
   }
 
   /**
@@ -39886,6 +39991,9 @@ export namespace Prisma {
     sampleRate: 'sampleRate',
     codec: 'codec',
     channels: 'channels',
+    fps: 'fps',
+    pageCount: 'pageCount',
+    lineCount: 'lineCount',
     uploadedBy: 'uploadedBy',
     isAnonymous: 'isAnonymous',
     createdAt: 'createdAt',
@@ -41279,6 +41387,7 @@ export namespace Prisma {
     translations?: MessageTranslationListRelationFilter
     attachments?: MessageAttachmentListRelationFilter
     reactions?: ReactionListRelationFilter
+    notifications?: NotificationListRelationFilter
     replyTo?: XOR<MessageNullableScalarRelationFilter, MessageWhereInput> | null
     replies?: MessageListRelationFilter
     anonymousSender?: XOR<AnonymousParticipantNullableScalarRelationFilter, AnonymousParticipantWhereInput> | null
@@ -41306,6 +41415,7 @@ export namespace Prisma {
     translations?: MessageTranslationOrderByRelationAggregateInput
     attachments?: MessageAttachmentOrderByRelationAggregateInput
     reactions?: ReactionOrderByRelationAggregateInput
+    notifications?: NotificationOrderByRelationAggregateInput
     replyTo?: MessageOrderByWithRelationInput
     replies?: MessageOrderByRelationAggregateInput
     anonymousSender?: AnonymousParticipantOrderByWithRelationInput
@@ -41336,6 +41446,7 @@ export namespace Prisma {
     translations?: MessageTranslationListRelationFilter
     attachments?: MessageAttachmentListRelationFilter
     reactions?: ReactionListRelationFilter
+    notifications?: NotificationListRelationFilter
     replyTo?: XOR<MessageNullableScalarRelationFilter, MessageWhereInput> | null
     replies?: MessageListRelationFilter
     anonymousSender?: XOR<AnonymousParticipantNullableScalarRelationFilter, AnonymousParticipantWhereInput> | null
@@ -41487,6 +41598,9 @@ export namespace Prisma {
     sampleRate?: IntNullableFilter<"MessageAttachment"> | number | null
     codec?: StringNullableFilter<"MessageAttachment"> | string | null
     channels?: IntNullableFilter<"MessageAttachment"> | number | null
+    fps?: FloatNullableFilter<"MessageAttachment"> | number | null
+    pageCount?: IntNullableFilter<"MessageAttachment"> | number | null
+    lineCount?: IntNullableFilter<"MessageAttachment"> | number | null
     uploadedBy?: StringFilter<"MessageAttachment"> | string
     isAnonymous?: BoolFilter<"MessageAttachment"> | boolean
     createdAt?: DateTimeFilter<"MessageAttachment"> | Date | string
@@ -41512,6 +41626,9 @@ export namespace Prisma {
     sampleRate?: SortOrder
     codec?: SortOrder
     channels?: SortOrder
+    fps?: SortOrder
+    pageCount?: SortOrder
+    lineCount?: SortOrder
     uploadedBy?: SortOrder
     isAnonymous?: SortOrder
     createdAt?: SortOrder
@@ -41540,6 +41657,9 @@ export namespace Prisma {
     sampleRate?: IntNullableFilter<"MessageAttachment"> | number | null
     codec?: StringNullableFilter<"MessageAttachment"> | string | null
     channels?: IntNullableFilter<"MessageAttachment"> | number | null
+    fps?: FloatNullableFilter<"MessageAttachment"> | number | null
+    pageCount?: IntNullableFilter<"MessageAttachment"> | number | null
+    lineCount?: IntNullableFilter<"MessageAttachment"> | number | null
     uploadedBy?: StringFilter<"MessageAttachment"> | string
     isAnonymous?: BoolFilter<"MessageAttachment"> | boolean
     createdAt?: DateTimeFilter<"MessageAttachment"> | Date | string
@@ -41565,6 +41685,9 @@ export namespace Prisma {
     sampleRate?: SortOrder
     codec?: SortOrder
     channels?: SortOrder
+    fps?: SortOrder
+    pageCount?: SortOrder
+    lineCount?: SortOrder
     uploadedBy?: SortOrder
     isAnonymous?: SortOrder
     createdAt?: SortOrder
@@ -41597,6 +41720,9 @@ export namespace Prisma {
     sampleRate?: IntNullableWithAggregatesFilter<"MessageAttachment"> | number | null
     codec?: StringNullableWithAggregatesFilter<"MessageAttachment"> | string | null
     channels?: IntNullableWithAggregatesFilter<"MessageAttachment"> | number | null
+    fps?: FloatNullableWithAggregatesFilter<"MessageAttachment"> | number | null
+    pageCount?: IntNullableWithAggregatesFilter<"MessageAttachment"> | number | null
+    lineCount?: IntNullableWithAggregatesFilter<"MessageAttachment"> | number | null
     uploadedBy?: StringWithAggregatesFilter<"MessageAttachment"> | string
     isAnonymous?: BoolWithAggregatesFilter<"MessageAttachment"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"MessageAttachment"> | Date | string
@@ -41893,6 +42019,7 @@ export namespace Prisma {
     messageId?: StringNullableFilter<"Notification"> | string | null
     callSessionId?: StringNullableFilter<"Notification"> | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    message?: XOR<MessageNullableScalarRelationFilter, MessageWhereInput> | null
   }
 
   export type NotificationOrderByWithRelationInput = {
@@ -41916,6 +42043,7 @@ export namespace Prisma {
     messageId?: SortOrder
     callSessionId?: SortOrder
     user?: UserOrderByWithRelationInput
+    message?: MessageOrderByWithRelationInput
   }
 
   export type NotificationWhereUniqueInput = Prisma.AtLeast<{
@@ -41942,6 +42070,7 @@ export namespace Prisma {
     messageId?: StringNullableFilter<"Notification"> | string | null
     callSessionId?: StringNullableFilter<"Notification"> | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    message?: XOR<MessageNullableScalarRelationFilter, MessageWhereInput> | null
   }, "id">
 
   export type NotificationOrderByWithAggregationInput = {
@@ -44608,6 +44737,7 @@ export namespace Prisma {
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
     attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
     reactions?: ReactionCreateNestedManyWithoutMessageInput
+    notifications?: NotificationCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
     anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
@@ -44635,6 +44765,7 @@ export namespace Prisma {
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
     attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
     reactions?: ReactionUncheckedCreateNestedManyWithoutMessageInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
 
@@ -44653,6 +44784,7 @@ export namespace Prisma {
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
     attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
     reactions?: ReactionUpdateManyWithoutMessageNestedInput
+    notifications?: NotificationUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
     anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
@@ -44679,6 +44811,7 @@ export namespace Prisma {
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
     attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
     reactions?: ReactionUncheckedUpdateManyWithoutMessageNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
 
@@ -44830,6 +44963,9 @@ export namespace Prisma {
     sampleRate?: number | null
     codec?: string | null
     channels?: number | null
+    fps?: number | null
+    pageCount?: number | null
+    lineCount?: number | null
     uploadedBy: string
     isAnonymous?: boolean
     createdAt?: Date | string
@@ -44855,6 +44991,9 @@ export namespace Prisma {
     sampleRate?: number | null
     codec?: string | null
     channels?: number | null
+    fps?: number | null
+    pageCount?: number | null
+    lineCount?: number | null
     uploadedBy: string
     isAnonymous?: boolean
     createdAt?: Date | string
@@ -44877,6 +45016,9 @@ export namespace Prisma {
     sampleRate?: NullableIntFieldUpdateOperationsInput | number | null
     codec?: NullableStringFieldUpdateOperationsInput | string | null
     channels?: NullableIntFieldUpdateOperationsInput | number | null
+    fps?: NullableFloatFieldUpdateOperationsInput | number | null
+    pageCount?: NullableIntFieldUpdateOperationsInput | number | null
+    lineCount?: NullableIntFieldUpdateOperationsInput | number | null
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -44901,6 +45043,9 @@ export namespace Prisma {
     sampleRate?: NullableIntFieldUpdateOperationsInput | number | null
     codec?: NullableStringFieldUpdateOperationsInput | string | null
     channels?: NullableIntFieldUpdateOperationsInput | number | null
+    fps?: NullableFloatFieldUpdateOperationsInput | number | null
+    pageCount?: NullableIntFieldUpdateOperationsInput | number | null
+    lineCount?: NullableIntFieldUpdateOperationsInput | number | null
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -44925,6 +45070,9 @@ export namespace Prisma {
     sampleRate?: number | null
     codec?: string | null
     channels?: number | null
+    fps?: number | null
+    pageCount?: number | null
+    lineCount?: number | null
     uploadedBy: string
     isAnonymous?: boolean
     createdAt?: Date | string
@@ -44947,6 +45095,9 @@ export namespace Prisma {
     sampleRate?: NullableIntFieldUpdateOperationsInput | number | null
     codec?: NullableStringFieldUpdateOperationsInput | string | null
     channels?: NullableIntFieldUpdateOperationsInput | number | null
+    fps?: NullableFloatFieldUpdateOperationsInput | number | null
+    pageCount?: NullableIntFieldUpdateOperationsInput | number | null
+    lineCount?: NullableIntFieldUpdateOperationsInput | number | null
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -44970,6 +45121,9 @@ export namespace Prisma {
     sampleRate?: NullableIntFieldUpdateOperationsInput | number | null
     codec?: NullableStringFieldUpdateOperationsInput | string | null
     channels?: NullableIntFieldUpdateOperationsInput | number | null
+    fps?: NullableFloatFieldUpdateOperationsInput | number | null
+    pageCount?: NullableIntFieldUpdateOperationsInput | number | null
+    lineCount?: NullableIntFieldUpdateOperationsInput | number | null
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -45226,9 +45380,9 @@ export namespace Prisma {
     senderAvatar?: string | null
     messagePreview?: string | null
     conversationId?: string | null
-    messageId?: string | null
     callSessionId?: string | null
     user: UserCreateNestedOneWithoutNotificationsInput
+    message?: MessageCreateNestedOneWithoutNotificationsInput
   }
 
   export type NotificationUncheckedCreateInput = {
@@ -45269,9 +45423,9 @@ export namespace Prisma {
     senderAvatar?: NullableStringFieldUpdateOperationsInput | string | null
     messagePreview?: NullableStringFieldUpdateOperationsInput | string | null
     conversationId?: NullableStringFieldUpdateOperationsInput | string | null
-    messageId?: NullableStringFieldUpdateOperationsInput | string | null
     callSessionId?: NullableStringFieldUpdateOperationsInput | string | null
     user?: UserUpdateOneRequiredWithoutNotificationsNestedInput
+    message?: MessageUpdateOneWithoutNotificationsNestedInput
   }
 
   export type NotificationUncheckedUpdateInput = {
@@ -45333,7 +45487,6 @@ export namespace Prisma {
     senderAvatar?: NullableStringFieldUpdateOperationsInput | string | null
     messagePreview?: NullableStringFieldUpdateOperationsInput | string | null
     conversationId?: NullableStringFieldUpdateOperationsInput | string | null
-    messageId?: NullableStringFieldUpdateOperationsInput | string | null
     callSessionId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
@@ -48102,6 +48255,9 @@ export namespace Prisma {
     sampleRate?: SortOrder
     codec?: SortOrder
     channels?: SortOrder
+    fps?: SortOrder
+    pageCount?: SortOrder
+    lineCount?: SortOrder
     uploadedBy?: SortOrder
     isAnonymous?: SortOrder
     createdAt?: SortOrder
@@ -48116,6 +48272,9 @@ export namespace Prisma {
     bitrate?: SortOrder
     sampleRate?: SortOrder
     channels?: SortOrder
+    fps?: SortOrder
+    pageCount?: SortOrder
+    lineCount?: SortOrder
   }
 
   export type MessageAttachmentMaxOrderByAggregateInput = {
@@ -48136,6 +48295,9 @@ export namespace Prisma {
     sampleRate?: SortOrder
     codec?: SortOrder
     channels?: SortOrder
+    fps?: SortOrder
+    pageCount?: SortOrder
+    lineCount?: SortOrder
     uploadedBy?: SortOrder
     isAnonymous?: SortOrder
     createdAt?: SortOrder
@@ -48159,6 +48321,9 @@ export namespace Prisma {
     sampleRate?: SortOrder
     codec?: SortOrder
     channels?: SortOrder
+    fps?: SortOrder
+    pageCount?: SortOrder
+    lineCount?: SortOrder
     uploadedBy?: SortOrder
     isAnonymous?: SortOrder
     createdAt?: SortOrder
@@ -48172,6 +48337,9 @@ export namespace Prisma {
     bitrate?: SortOrder
     sampleRate?: SortOrder
     channels?: SortOrder
+    fps?: SortOrder
+    pageCount?: SortOrder
+    lineCount?: SortOrder
   }
   export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
     | PatchUndefined<
@@ -51054,6 +51222,13 @@ export namespace Prisma {
     connect?: ReactionWhereUniqueInput | ReactionWhereUniqueInput[]
   }
 
+  export type NotificationCreateNestedManyWithoutMessageInput = {
+    create?: XOR<NotificationCreateWithoutMessageInput, NotificationUncheckedCreateWithoutMessageInput> | NotificationCreateWithoutMessageInput[] | NotificationUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutMessageInput | NotificationCreateOrConnectWithoutMessageInput[]
+    createMany?: NotificationCreateManyMessageInputEnvelope
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+  }
+
   export type MessageCreateNestedOneWithoutRepliesInput = {
     create?: XOR<MessageCreateWithoutRepliesInput, MessageUncheckedCreateWithoutRepliesInput>
     connectOrCreate?: MessageCreateOrConnectWithoutRepliesInput
@@ -51118,6 +51293,13 @@ export namespace Prisma {
     connectOrCreate?: ReactionCreateOrConnectWithoutMessageInput | ReactionCreateOrConnectWithoutMessageInput[]
     createMany?: ReactionCreateManyMessageInputEnvelope
     connect?: ReactionWhereUniqueInput | ReactionWhereUniqueInput[]
+  }
+
+  export type NotificationUncheckedCreateNestedManyWithoutMessageInput = {
+    create?: XOR<NotificationCreateWithoutMessageInput, NotificationUncheckedCreateWithoutMessageInput> | NotificationCreateWithoutMessageInput[] | NotificationUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutMessageInput | NotificationCreateOrConnectWithoutMessageInput[]
+    createMany?: NotificationCreateManyMessageInputEnvelope
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
   }
 
   export type MessageUncheckedCreateNestedManyWithoutReplyToInput = {
@@ -51195,6 +51377,20 @@ export namespace Prisma {
     update?: ReactionUpdateWithWhereUniqueWithoutMessageInput | ReactionUpdateWithWhereUniqueWithoutMessageInput[]
     updateMany?: ReactionUpdateManyWithWhereWithoutMessageInput | ReactionUpdateManyWithWhereWithoutMessageInput[]
     deleteMany?: ReactionScalarWhereInput | ReactionScalarWhereInput[]
+  }
+
+  export type NotificationUpdateManyWithoutMessageNestedInput = {
+    create?: XOR<NotificationCreateWithoutMessageInput, NotificationUncheckedCreateWithoutMessageInput> | NotificationCreateWithoutMessageInput[] | NotificationUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutMessageInput | NotificationCreateOrConnectWithoutMessageInput[]
+    upsert?: NotificationUpsertWithWhereUniqueWithoutMessageInput | NotificationUpsertWithWhereUniqueWithoutMessageInput[]
+    createMany?: NotificationCreateManyMessageInputEnvelope
+    set?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    disconnect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    delete?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    update?: NotificationUpdateWithWhereUniqueWithoutMessageInput | NotificationUpdateWithWhereUniqueWithoutMessageInput[]
+    updateMany?: NotificationUpdateManyWithWhereWithoutMessageInput | NotificationUpdateManyWithWhereWithoutMessageInput[]
+    deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
   }
 
   export type MessageUpdateOneWithoutRepliesNestedInput = {
@@ -51317,6 +51513,20 @@ export namespace Prisma {
     update?: ReactionUpdateWithWhereUniqueWithoutMessageInput | ReactionUpdateWithWhereUniqueWithoutMessageInput[]
     updateMany?: ReactionUpdateManyWithWhereWithoutMessageInput | ReactionUpdateManyWithWhereWithoutMessageInput[]
     deleteMany?: ReactionScalarWhereInput | ReactionScalarWhereInput[]
+  }
+
+  export type NotificationUncheckedUpdateManyWithoutMessageNestedInput = {
+    create?: XOR<NotificationCreateWithoutMessageInput, NotificationUncheckedCreateWithoutMessageInput> | NotificationCreateWithoutMessageInput[] | NotificationUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutMessageInput | NotificationCreateOrConnectWithoutMessageInput[]
+    upsert?: NotificationUpsertWithWhereUniqueWithoutMessageInput | NotificationUpsertWithWhereUniqueWithoutMessageInput[]
+    createMany?: NotificationCreateManyMessageInputEnvelope
+    set?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    disconnect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    delete?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    update?: NotificationUpdateWithWhereUniqueWithoutMessageInput | NotificationUpdateWithWhereUniqueWithoutMessageInput[]
+    updateMany?: NotificationUpdateManyWithWhereWithoutMessageInput | NotificationUpdateManyWithWhereWithoutMessageInput[]
+    deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
   }
 
   export type MessageUncheckedUpdateManyWithoutReplyToNestedInput = {
@@ -51522,12 +51732,28 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type MessageCreateNestedOneWithoutNotificationsInput = {
+    create?: XOR<MessageCreateWithoutNotificationsInput, MessageUncheckedCreateWithoutNotificationsInput>
+    connectOrCreate?: MessageCreateOrConnectWithoutNotificationsInput
+    connect?: MessageWhereUniqueInput
+  }
+
   export type UserUpdateOneRequiredWithoutNotificationsNestedInput = {
     create?: XOR<UserCreateWithoutNotificationsInput, UserUncheckedCreateWithoutNotificationsInput>
     connectOrCreate?: UserCreateOrConnectWithoutNotificationsInput
     upsert?: UserUpsertWithoutNotificationsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutNotificationsInput, UserUpdateWithoutNotificationsInput>, UserUncheckedUpdateWithoutNotificationsInput>
+  }
+
+  export type MessageUpdateOneWithoutNotificationsNestedInput = {
+    create?: XOR<MessageCreateWithoutNotificationsInput, MessageUncheckedCreateWithoutNotificationsInput>
+    connectOrCreate?: MessageCreateOrConnectWithoutNotificationsInput
+    upsert?: MessageUpsertWithoutNotificationsInput
+    disconnect?: boolean
+    delete?: MessageWhereInput | boolean
+    connect?: MessageWhereUniqueInput
+    update?: XOR<XOR<MessageUpdateToOneWithWhereWithoutNotificationsInput, MessageUpdateWithoutNotificationsInput>, MessageUncheckedUpdateWithoutNotificationsInput>
   }
 
   export type UserCreateNestedOneWithoutNotificationPreferenceInput = {
@@ -52877,6 +53103,7 @@ export namespace Prisma {
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
     attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
     reactions?: ReactionCreateNestedManyWithoutMessageInput
+    notifications?: NotificationCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
     anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
@@ -52902,6 +53129,7 @@ export namespace Prisma {
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
     attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
     reactions?: ReactionUncheckedCreateNestedManyWithoutMessageInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
 
@@ -52958,8 +53186,8 @@ export namespace Prisma {
     senderAvatar?: string | null
     messagePreview?: string | null
     conversationId?: string | null
-    messageId?: string | null
     callSessionId?: string | null
+    message?: MessageCreateNestedOneWithoutNotificationsInput
   }
 
   export type NotificationUncheckedCreateWithoutUserInput = {
@@ -54489,6 +54717,7 @@ export namespace Prisma {
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
     attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
     reactions?: ReactionCreateNestedManyWithoutMessageInput
+    notifications?: NotificationCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
     anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
@@ -54514,6 +54743,7 @@ export namespace Prisma {
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
     attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
     reactions?: ReactionUncheckedCreateNestedManyWithoutMessageInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
 
@@ -55767,6 +55997,7 @@ export namespace Prisma {
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
     attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
     reactions?: ReactionCreateNestedManyWithoutMessageInput
+    notifications?: NotificationCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
     sender?: UserCreateNestedOneWithoutSentMessagesInput
@@ -55792,6 +56023,7 @@ export namespace Prisma {
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
     attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
     reactions?: ReactionUncheckedCreateNestedManyWithoutMessageInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
 
@@ -56150,6 +56382,9 @@ export namespace Prisma {
     sampleRate?: number | null
     codec?: string | null
     channels?: number | null
+    fps?: number | null
+    pageCount?: number | null
+    lineCount?: number | null
     uploadedBy: string
     isAnonymous?: boolean
     createdAt?: Date | string
@@ -56173,6 +56408,9 @@ export namespace Prisma {
     sampleRate?: number | null
     codec?: string | null
     channels?: number | null
+    fps?: number | null
+    pageCount?: number | null
+    lineCount?: number | null
     uploadedBy: string
     isAnonymous?: boolean
     createdAt?: Date | string
@@ -56215,6 +56453,57 @@ export namespace Prisma {
     data: ReactionCreateManyMessageInput | ReactionCreateManyMessageInput[]
   }
 
+  export type NotificationCreateWithoutMessageInput = {
+    id?: string
+    type: string
+    title: string
+    content: string
+    data?: string | null
+    priority?: string
+    isRead?: boolean
+    emailSent?: boolean
+    pushSent?: boolean
+    expiresAt?: Date | string | null
+    createdAt?: Date | string
+    senderId?: string | null
+    senderUsername?: string | null
+    senderAvatar?: string | null
+    messagePreview?: string | null
+    conversationId?: string | null
+    callSessionId?: string | null
+    user: UserCreateNestedOneWithoutNotificationsInput
+  }
+
+  export type NotificationUncheckedCreateWithoutMessageInput = {
+    id?: string
+    userId: string
+    type: string
+    title: string
+    content: string
+    data?: string | null
+    priority?: string
+    isRead?: boolean
+    emailSent?: boolean
+    pushSent?: boolean
+    expiresAt?: Date | string | null
+    createdAt?: Date | string
+    senderId?: string | null
+    senderUsername?: string | null
+    senderAvatar?: string | null
+    messagePreview?: string | null
+    conversationId?: string | null
+    callSessionId?: string | null
+  }
+
+  export type NotificationCreateOrConnectWithoutMessageInput = {
+    where: NotificationWhereUniqueInput
+    create: XOR<NotificationCreateWithoutMessageInput, NotificationUncheckedCreateWithoutMessageInput>
+  }
+
+  export type NotificationCreateManyMessageInputEnvelope = {
+    data: NotificationCreateManyMessageInput | NotificationCreateManyMessageInput[]
+  }
+
   export type MessageCreateWithoutRepliesInput = {
     id?: string
     content: string
@@ -56231,6 +56520,7 @@ export namespace Prisma {
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
     attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
     reactions?: ReactionCreateNestedManyWithoutMessageInput
+    notifications?: NotificationCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
     sender?: UserCreateNestedOneWithoutSentMessagesInput
@@ -56257,6 +56547,7 @@ export namespace Prisma {
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
     attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
     reactions?: ReactionUncheckedCreateNestedManyWithoutMessageInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutMessageInput
   }
 
   export type MessageCreateOrConnectWithoutRepliesInput = {
@@ -56280,6 +56571,7 @@ export namespace Prisma {
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
     attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
     reactions?: ReactionCreateNestedManyWithoutMessageInput
+    notifications?: NotificationCreateNestedManyWithoutMessageInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
     anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
     sender?: UserCreateNestedOneWithoutSentMessagesInput
@@ -56305,6 +56597,7 @@ export namespace Prisma {
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
     attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
     reactions?: ReactionUncheckedCreateNestedManyWithoutMessageInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
 
@@ -56657,6 +56950,9 @@ export namespace Prisma {
     sampleRate?: IntNullableFilter<"MessageAttachment"> | number | null
     codec?: StringNullableFilter<"MessageAttachment"> | string | null
     channels?: IntNullableFilter<"MessageAttachment"> | number | null
+    fps?: FloatNullableFilter<"MessageAttachment"> | number | null
+    pageCount?: IntNullableFilter<"MessageAttachment"> | number | null
+    lineCount?: IntNullableFilter<"MessageAttachment"> | number | null
     uploadedBy?: StringFilter<"MessageAttachment"> | string
     isAnonymous?: BoolFilter<"MessageAttachment"> | boolean
     createdAt?: DateTimeFilter<"MessageAttachment"> | Date | string
@@ -56677,6 +56973,22 @@ export namespace Prisma {
   export type ReactionUpdateManyWithWhereWithoutMessageInput = {
     where: ReactionScalarWhereInput
     data: XOR<ReactionUpdateManyMutationInput, ReactionUncheckedUpdateManyWithoutMessageInput>
+  }
+
+  export type NotificationUpsertWithWhereUniqueWithoutMessageInput = {
+    where: NotificationWhereUniqueInput
+    update: XOR<NotificationUpdateWithoutMessageInput, NotificationUncheckedUpdateWithoutMessageInput>
+    create: XOR<NotificationCreateWithoutMessageInput, NotificationUncheckedCreateWithoutMessageInput>
+  }
+
+  export type NotificationUpdateWithWhereUniqueWithoutMessageInput = {
+    where: NotificationWhereUniqueInput
+    data: XOR<NotificationUpdateWithoutMessageInput, NotificationUncheckedUpdateWithoutMessageInput>
+  }
+
+  export type NotificationUpdateManyWithWhereWithoutMessageInput = {
+    where: NotificationScalarWhereInput
+    data: XOR<NotificationUpdateManyMutationInput, NotificationUncheckedUpdateManyWithoutMessageInput>
   }
 
   export type MessageUpsertWithoutRepliesInput = {
@@ -56705,6 +57017,7 @@ export namespace Prisma {
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
     attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
     reactions?: ReactionUpdateManyWithoutMessageNestedInput
+    notifications?: NotificationUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
     sender?: UserUpdateOneWithoutSentMessagesNestedInput
@@ -56730,6 +57043,7 @@ export namespace Prisma {
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
     attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
     reactions?: ReactionUncheckedUpdateManyWithoutMessageNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageUpsertWithWhereUniqueWithoutReplyToInput = {
@@ -57014,6 +57328,7 @@ export namespace Prisma {
     statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
     attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
     reactions?: ReactionCreateNestedManyWithoutMessageInput
+    notifications?: NotificationCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
     anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
@@ -57040,6 +57355,7 @@ export namespace Prisma {
     statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
     attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
     reactions?: ReactionUncheckedCreateNestedManyWithoutMessageInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
 
@@ -57073,6 +57389,7 @@ export namespace Prisma {
     statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
     attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
     reactions?: ReactionUpdateManyWithoutMessageNestedInput
+    notifications?: NotificationUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
     anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
@@ -57098,6 +57415,7 @@ export namespace Prisma {
     statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
     attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
     reactions?: ReactionUncheckedUpdateManyWithoutMessageNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
 
@@ -57116,6 +57434,7 @@ export namespace Prisma {
     statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
     reactions?: ReactionCreateNestedManyWithoutMessageInput
+    notifications?: NotificationCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
     anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
@@ -57142,6 +57461,7 @@ export namespace Prisma {
     statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
     reactions?: ReactionUncheckedCreateNestedManyWithoutMessageInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
 
@@ -57175,6 +57495,7 @@ export namespace Prisma {
     statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
     reactions?: ReactionUpdateManyWithoutMessageNestedInput
+    notifications?: NotificationUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
     anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
@@ -57200,6 +57521,7 @@ export namespace Prisma {
     statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
     reactions?: ReactionUncheckedUpdateManyWithoutMessageNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
 
@@ -57347,6 +57669,7 @@ export namespace Prisma {
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
     attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
     reactions?: ReactionCreateNestedManyWithoutMessageInput
+    notifications?: NotificationCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
     anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
@@ -57373,6 +57696,7 @@ export namespace Prisma {
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
     attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
     reactions?: ReactionUncheckedCreateNestedManyWithoutMessageInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
 
@@ -57396,6 +57720,7 @@ export namespace Prisma {
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
     attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
     reactions?: ReactionCreateNestedManyWithoutMessageInput
+    notifications?: NotificationCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
     anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
@@ -57422,6 +57747,7 @@ export namespace Prisma {
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
     attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
     reactions?: ReactionUncheckedCreateNestedManyWithoutMessageInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
 
@@ -57588,6 +57914,7 @@ export namespace Prisma {
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
     attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
     reactions?: ReactionUpdateManyWithoutMessageNestedInput
+    notifications?: NotificationUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
     anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
@@ -57613,6 +57940,7 @@ export namespace Prisma {
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
     attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
     reactions?: ReactionUncheckedUpdateManyWithoutMessageNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
 
@@ -57641,6 +57969,7 @@ export namespace Prisma {
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
     attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
     reactions?: ReactionUpdateManyWithoutMessageNestedInput
+    notifications?: NotificationUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
     anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
@@ -57666,6 +57995,7 @@ export namespace Prisma {
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
     attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
     reactions?: ReactionUncheckedUpdateManyWithoutMessageNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
 
@@ -57684,6 +58014,7 @@ export namespace Prisma {
     statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
     attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
+    notifications?: NotificationCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
     anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
@@ -57710,6 +58041,7 @@ export namespace Prisma {
     statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
     attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
 
@@ -57931,6 +58263,7 @@ export namespace Prisma {
     statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
     attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
+    notifications?: NotificationUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
     anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
@@ -57956,6 +58289,7 @@ export namespace Prisma {
     statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
     attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
 
@@ -59176,6 +59510,57 @@ export namespace Prisma {
     create: XOR<UserCreateWithoutNotificationsInput, UserUncheckedCreateWithoutNotificationsInput>
   }
 
+  export type MessageCreateWithoutNotificationsInput = {
+    id?: string
+    content: string
+    originalLanguage?: string
+    messageType?: string
+    isEdited?: boolean
+    editedAt?: Date | string | null
+    isDeleted?: boolean
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    status?: MessageStatusCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
+    translations?: MessageTranslationCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
+    reactions?: ReactionCreateNestedManyWithoutMessageInput
+    replyTo?: MessageCreateNestedOneWithoutRepliesInput
+    replies?: MessageCreateNestedManyWithoutReplyToInput
+    anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
+    sender?: UserCreateNestedOneWithoutSentMessagesInput
+    conversation: ConversationCreateNestedOneWithoutMessagesInput
+  }
+
+  export type MessageUncheckedCreateWithoutNotificationsInput = {
+    id?: string
+    conversationId: string
+    senderId?: string | null
+    anonymousSenderId?: string | null
+    content: string
+    originalLanguage?: string
+    messageType?: string
+    isEdited?: boolean
+    editedAt?: Date | string | null
+    isDeleted?: boolean
+    deletedAt?: Date | string | null
+    replyToId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    status?: MessageStatusUncheckedCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
+    translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
+    reactions?: ReactionUncheckedCreateNestedManyWithoutMessageInput
+    replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
+  }
+
+  export type MessageCreateOrConnectWithoutNotificationsInput = {
+    where: MessageWhereUniqueInput
+    create: XOR<MessageCreateWithoutNotificationsInput, MessageUncheckedCreateWithoutNotificationsInput>
+  }
+
   export type UserUpsertWithoutNotificationsInput = {
     update: XOR<UserUpdateWithoutNotificationsInput, UserUncheckedUpdateWithoutNotificationsInput>
     create: XOR<UserCreateWithoutNotificationsInput, UserUncheckedCreateWithoutNotificationsInput>
@@ -59307,6 +59692,61 @@ export namespace Prisma {
     callParticipations?: CallParticipantUncheckedUpdateManyWithoutUserNestedInput
     conversationPrefs?: UserConversationPreferencesUncheckedUpdateManyWithoutUserNestedInput
     conversationCategories?: UserConversationCategoryUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type MessageUpsertWithoutNotificationsInput = {
+    update: XOR<MessageUpdateWithoutNotificationsInput, MessageUncheckedUpdateWithoutNotificationsInput>
+    create: XOR<MessageCreateWithoutNotificationsInput, MessageUncheckedCreateWithoutNotificationsInput>
+    where?: MessageWhereInput
+  }
+
+  export type MessageUpdateToOneWithWhereWithoutNotificationsInput = {
+    where?: MessageWhereInput
+    data: XOR<MessageUpdateWithoutNotificationsInput, MessageUncheckedUpdateWithoutNotificationsInput>
+  }
+
+  export type MessageUpdateWithoutNotificationsInput = {
+    content?: StringFieldUpdateOperationsInput | string
+    originalLanguage?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    isEdited?: BoolFieldUpdateOperationsInput | boolean
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: MessageStatusUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
+    translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
+    reactions?: ReactionUpdateManyWithoutMessageNestedInput
+    replyTo?: MessageUpdateOneWithoutRepliesNestedInput
+    replies?: MessageUpdateManyWithoutReplyToNestedInput
+    anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
+    sender?: UserUpdateOneWithoutSentMessagesNestedInput
+    conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
+  }
+
+  export type MessageUncheckedUpdateWithoutNotificationsInput = {
+    conversationId?: StringFieldUpdateOperationsInput | string
+    senderId?: NullableStringFieldUpdateOperationsInput | string | null
+    anonymousSenderId?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: StringFieldUpdateOperationsInput | string
+    originalLanguage?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    isEdited?: BoolFieldUpdateOperationsInput | boolean
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: MessageStatusUncheckedUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
+    translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
+    reactions?: ReactionUncheckedUpdateManyWithoutMessageNestedInput
+    replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
 
   export type UserCreateWithoutNotificationPreferenceInput = {
@@ -65193,6 +65633,7 @@ export namespace Prisma {
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
     attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
     reactions?: ReactionUpdateManyWithoutMessageNestedInput
+    notifications?: NotificationUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
     anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
@@ -65217,6 +65658,7 @@ export namespace Prisma {
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
     attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
     reactions?: ReactionUncheckedUpdateManyWithoutMessageNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
 
@@ -65275,8 +65717,8 @@ export namespace Prisma {
     senderAvatar?: NullableStringFieldUpdateOperationsInput | string | null
     messagePreview?: NullableStringFieldUpdateOperationsInput | string | null
     conversationId?: NullableStringFieldUpdateOperationsInput | string | null
-    messageId?: NullableStringFieldUpdateOperationsInput | string | null
     callSessionId?: NullableStringFieldUpdateOperationsInput | string | null
+    message?: MessageUpdateOneWithoutNotificationsNestedInput
   }
 
   export type NotificationUncheckedUpdateWithoutUserInput = {
@@ -66081,6 +66523,7 @@ export namespace Prisma {
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
     attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
     reactions?: ReactionUpdateManyWithoutMessageNestedInput
+    notifications?: NotificationUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
     anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
@@ -66105,6 +66548,7 @@ export namespace Prisma {
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
     attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
     reactions?: ReactionUncheckedUpdateManyWithoutMessageNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
 
@@ -66380,6 +66824,7 @@ export namespace Prisma {
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
     attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
     reactions?: ReactionUpdateManyWithoutMessageNestedInput
+    notifications?: NotificationUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
     sender?: UserUpdateOneWithoutSentMessagesNestedInput
@@ -66404,6 +66849,7 @@ export namespace Prisma {
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
     attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
     reactions?: ReactionUncheckedUpdateManyWithoutMessageNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
 
@@ -66542,6 +66988,9 @@ export namespace Prisma {
     sampleRate?: number | null
     codec?: string | null
     channels?: number | null
+    fps?: number | null
+    pageCount?: number | null
+    lineCount?: number | null
     uploadedBy: string
     isAnonymous?: boolean
     createdAt?: Date | string
@@ -66555,6 +67004,27 @@ export namespace Prisma {
     emoji: string
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type NotificationCreateManyMessageInput = {
+    id?: string
+    userId: string
+    type: string
+    title: string
+    content: string
+    data?: string | null
+    priority?: string
+    isRead?: boolean
+    emailSent?: boolean
+    pushSent?: boolean
+    expiresAt?: Date | string | null
+    createdAt?: Date | string
+    senderId?: string | null
+    senderUsername?: string | null
+    senderAvatar?: string | null
+    messagePreview?: string | null
+    conversationId?: string | null
+    callSessionId?: string | null
   }
 
   export type MessageCreateManyReplyToInput = {
@@ -66664,6 +67134,9 @@ export namespace Prisma {
     sampleRate?: NullableIntFieldUpdateOperationsInput | number | null
     codec?: NullableStringFieldUpdateOperationsInput | string | null
     channels?: NullableIntFieldUpdateOperationsInput | number | null
+    fps?: NullableFloatFieldUpdateOperationsInput | number | null
+    pageCount?: NullableIntFieldUpdateOperationsInput | number | null
+    lineCount?: NullableIntFieldUpdateOperationsInput | number | null
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -66686,6 +67159,9 @@ export namespace Prisma {
     sampleRate?: NullableIntFieldUpdateOperationsInput | number | null
     codec?: NullableStringFieldUpdateOperationsInput | string | null
     channels?: NullableIntFieldUpdateOperationsInput | number | null
+    fps?: NullableFloatFieldUpdateOperationsInput | number | null
+    pageCount?: NullableIntFieldUpdateOperationsInput | number | null
+    lineCount?: NullableIntFieldUpdateOperationsInput | number | null
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -66708,6 +67184,9 @@ export namespace Prisma {
     sampleRate?: NullableIntFieldUpdateOperationsInput | number | null
     codec?: NullableStringFieldUpdateOperationsInput | string | null
     channels?: NullableIntFieldUpdateOperationsInput | number | null
+    fps?: NullableFloatFieldUpdateOperationsInput | number | null
+    pageCount?: NullableIntFieldUpdateOperationsInput | number | null
+    lineCount?: NullableIntFieldUpdateOperationsInput | number | null
     uploadedBy?: StringFieldUpdateOperationsInput | string
     isAnonymous?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -66738,6 +67217,66 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type NotificationUpdateWithoutMessageInput = {
+    type?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    data?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: StringFieldUpdateOperationsInput | string
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    emailSent?: BoolFieldUpdateOperationsInput | boolean
+    pushSent?: BoolFieldUpdateOperationsInput | boolean
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    senderId?: NullableStringFieldUpdateOperationsInput | string | null
+    senderUsername?: NullableStringFieldUpdateOperationsInput | string | null
+    senderAvatar?: NullableStringFieldUpdateOperationsInput | string | null
+    messagePreview?: NullableStringFieldUpdateOperationsInput | string | null
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    callSessionId?: NullableStringFieldUpdateOperationsInput | string | null
+    user?: UserUpdateOneRequiredWithoutNotificationsNestedInput
+  }
+
+  export type NotificationUncheckedUpdateWithoutMessageInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    data?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: StringFieldUpdateOperationsInput | string
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    emailSent?: BoolFieldUpdateOperationsInput | boolean
+    pushSent?: BoolFieldUpdateOperationsInput | boolean
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    senderId?: NullableStringFieldUpdateOperationsInput | string | null
+    senderUsername?: NullableStringFieldUpdateOperationsInput | string | null
+    senderAvatar?: NullableStringFieldUpdateOperationsInput | string | null
+    messagePreview?: NullableStringFieldUpdateOperationsInput | string | null
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    callSessionId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type NotificationUncheckedUpdateManyWithoutMessageInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    data?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: StringFieldUpdateOperationsInput | string
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    emailSent?: BoolFieldUpdateOperationsInput | boolean
+    pushSent?: BoolFieldUpdateOperationsInput | boolean
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    senderId?: NullableStringFieldUpdateOperationsInput | string | null
+    senderUsername?: NullableStringFieldUpdateOperationsInput | string | null
+    senderAvatar?: NullableStringFieldUpdateOperationsInput | string | null
+    messagePreview?: NullableStringFieldUpdateOperationsInput | string | null
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    callSessionId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
   export type MessageUpdateWithoutReplyToInput = {
     content?: StringFieldUpdateOperationsInput | string
     originalLanguage?: StringFieldUpdateOperationsInput | string
@@ -66753,6 +67292,7 @@ export namespace Prisma {
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
     attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
     reactions?: ReactionUpdateManyWithoutMessageNestedInput
+    notifications?: NotificationUpdateManyWithoutMessageNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
     anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
     sender?: UserUpdateOneWithoutSentMessagesNestedInput
@@ -66777,6 +67317,7 @@ export namespace Prisma {
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
     attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
     reactions?: ReactionUncheckedUpdateManyWithoutMessageNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
 

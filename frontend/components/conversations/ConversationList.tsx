@@ -341,7 +341,86 @@ const ConversationItem = memo(function ConversationItem({
             {getSenderName(conversation.lastMessage) && (
               <span className="font-medium">{getSenderName(conversation.lastMessage)}: </span>
             )}
-            {conversation.lastMessage.content}
+            {/* Si le message a un attachement et pas de contenu texte, afficher les détails de l'attachement */}
+            {conversation.lastMessage.attachments && conversation.lastMessage.attachments.length > 0 && !conversation.lastMessage.content ? (
+              <span className="flex items-center gap-1.5">
+                {(() => {
+                  const attachment = conversation.lastMessage.attachments[0];
+                  const mimeType = attachment.mimeType || '';
+
+                  // Déterminer le type et l'icône
+                  if (mimeType.startsWith('image/')) {
+                    return (
+                      <>
+                        <span className="inline-flex text-blue-500">📷</span>
+                        <span>Image</span>
+                        {attachment.width && attachment.height && (
+                          <span className="text-xs">• {attachment.width}×{attachment.height}</span>
+                        )}
+                      </>
+                    );
+                  } else if (mimeType.startsWith('video/')) {
+                    return (
+                      <>
+                        <span className="inline-flex text-red-500">🎥</span>
+                        <span>Vidéo</span>
+                        {attachment.duration && (
+                          <span className="text-xs">• {Math.floor(attachment.duration / 60)}:{(attachment.duration % 60).toString().padStart(2, '0')}</span>
+                        )}
+                        {attachment.width && attachment.height && (
+                          <span className="text-xs">• {attachment.width}×{attachment.height}</span>
+                        )}
+                        {attachment.fps && (
+                          <span className="text-xs">• {attachment.fps}fps</span>
+                        )}
+                      </>
+                    );
+                  } else if (mimeType.startsWith('audio/')) {
+                    return (
+                      <>
+                        <span className="inline-flex text-purple-500">🎵</span>
+                        <span>Audio</span>
+                        {attachment.duration && (
+                          <span className="text-xs">• {Math.floor(attachment.duration / 60)}:{(attachment.duration % 60).toString().padStart(2, '0')}</span>
+                        )}
+                      </>
+                    );
+                  } else if (mimeType === 'application/pdf') {
+                    return (
+                      <>
+                        <span className="inline-flex text-orange-500">📄</span>
+                        <span>PDF</span>
+                        {attachment.pageCount && (
+                          <span className="text-xs">• {attachment.pageCount} page{attachment.pageCount > 1 ? 's' : ''}</span>
+                        )}
+                      </>
+                    );
+                  } else if (mimeType.includes('code') || mimeType.includes('javascript') || mimeType.includes('typescript') || mimeType.includes('python')) {
+                    return (
+                      <>
+                        <span className="inline-flex text-green-500">💻</span>
+                        <span>Code</span>
+                        {attachment.lineCount && (
+                          <span className="text-xs">• {attachment.lineCount} ligne{attachment.lineCount > 1 ? 's' : ''}</span>
+                        )}
+                      </>
+                    );
+                  } else {
+                    return (
+                      <>
+                        <span className="inline-flex text-gray-500">📎</span>
+                        <span>Fichier</span>
+                      </>
+                    );
+                  }
+                })()}
+                {conversation.lastMessage.attachments.length > 1 && (
+                  <span className="text-xs">+{conversation.lastMessage.attachments.length - 1}</span>
+                )}
+              </span>
+            ) : (
+              conversation.lastMessage.content
+            )}
           </p>
         )}
       </div>

@@ -278,8 +278,18 @@ model MessageAttachment {
   duration        Int?     // Durée en secondes
   bitrate         Int?     // Débit en bps (bits per second)
   sampleRate      Int?     // Fréquence d'échantillonnage en Hz (ex: 44100, 48000)
-  codec           String?  // Codec audio/vidéo (ex: "opus", "aac", "vorbis", "h264")
+  codec           String?  // Codec audio (ex: "opus", "aac", "vorbis", "mp3")
   channels        Int?     // Nombre de canaux audio (1: mono, 2: stereo)
+
+  // Métadonnées spécifiques vidéo
+  fps             Float?   // Frames per second pour vidéos
+  videoCodec      String?  // Codec vidéo (ex: "h264", "h265", "vp8", "vp9", "av1")
+
+  // Métadonnées spécifiques documents/PDF
+  pageCount       Int?     // Nombre de pages pour PDF et documents
+
+  // Métadonnées spécifiques code/texte
+  lineCount       Int?     // Nombre de lignes pour fichiers texte/code
 
   // Métadonnées générales
   uploadedBy      String   @db.ObjectId // ID utilisateur ou anonyme
