@@ -74,9 +74,9 @@ export function NotificationCenter({ className = '' }: NotificationCenterProps) 
     if (!notification.isRead) {
       markAsRead(notification.id);
     }
-    
+
     if (notification.conversationId) {
-      window.location.href = `/chat/${notification.conversationId}`;
+      window.location.href = `/conversations/${notification.conversationId}`;
     }
   };
 

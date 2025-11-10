@@ -95,15 +95,15 @@ function NotificationsPageContent() {
     if (notification.conversationId) {
       // Si c'est une notification de message avec un messageId, naviguer vers le message spécifique
       if (notification.messageId) {
-        router.push(`/chat/${notification.conversationId}?messageId=${notification.messageId}`);
+        router.push(`/conversations/${notification.conversationId}?messageId=${notification.messageId}`);
       } else {
         // Sinon, juste naviguer vers la conversation
-        router.push(`/chat/${notification.conversationId}`);
+        router.push(`/conversations/${notification.conversationId}`);
       }
     } else if (notification.callSessionId) {
       // Pour les appels manqués, naviguer vers la conversation
       if (notification.conversationId) {
-        router.push(`/chat/${notification.conversationId}`);
+        router.push(`/conversations/${notification.conversationId}`);
       }
     }
   };
@@ -191,16 +191,6 @@ function NotificationsPageContent() {
           </div>
 
           <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push('/notifications/preferences')}
-              className="hidden sm:flex"
-            >
-              <Settings className="h-4 w-4 mr-2" />
-              {t('preferences')}
-            </Button>
-
             {unreadCount > 0 && (
               <Button
                 variant="outline"
@@ -222,9 +212,9 @@ function NotificationsPageContent() {
           counts={typeCounts}
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="w-full">
           {/* Notifications List */}
-          <div className="lg:col-span-2">
+          <div className="w-full">
             {totalCount === 0 ? (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12">
@@ -328,42 +318,6 @@ function NotificationsPageContent() {
                 ))}
               </div>
             )}
-          </div>
-
-          {/* Sidebar */}
-          <div className="hidden lg:block space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Settings className="h-5 w-5" />
-                  <span>{t('systemStatus')}</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">{t('service')}</span>
-                  <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">{t('totalNotifications')}</span>
-                  <Badge variant="secondary">{totalCount}</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">{t('unread')}</span>
-                  <Badge variant={unreadCount > 0 ? "destructive" : "secondary"}>{unreadCount}</Badge>
-                </div>
-              </CardContent>
-            </Card>
-            
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('quickActions')}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <NotificationTest />
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>

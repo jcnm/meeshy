@@ -397,7 +397,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
 
   return (
     <TooltipProvider>
-      {/* Container with 70/30 grid layout */}
+      {/* Container with 80% mobile / 60% desktop width limit */}
       <motion.div
         id={`message-${message.id}`}
         ref={messageRef}
@@ -406,12 +406,12 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
           isOwnMessage ? "" : ""
         )}
       >
-        {/* Empty space for sent messages (30% = 3 columns) */}
-        {isOwnMessage && <div className="col-span-3" />}
+        {/* Empty space for sent messages (20% mobile = 2 cols / 40% desktop = 4 cols) */}
+        {isOwnMessage && <div className="col-span-2 sm:col-span-4" />}
 
-        {/* Message content area (70% = 7 columns) */}
+        {/* Message content area (80% mobile = 8 cols / 60% desktop = 6 cols) */}
         <div className={cn(
-          "col-span-7 flex gap-1 sm:gap-1.5",
+          "col-span-8 sm:col-span-6 flex gap-1 sm:gap-1.5",
           isOwnMessage ? "flex-row-reverse" : "flex-row"
         )}>
         {/* Avatar on side - cliquable pour voir en grand */}
