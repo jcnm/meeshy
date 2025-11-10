@@ -4,7 +4,7 @@
  */
 
 import { io, Socket } from 'socket.io-client';
-import { APP_CONFIG } from '@/lib/config';
+import { APP_CONFIG, API_CONFIG } from '@/lib/config';
 
 export interface Notification {
   id: string;
@@ -79,6 +79,59 @@ export class NotificationService {
   }
 
   /**
+   * Charge les notifications initiales depuis l'API
+   */
+  private async loadInitialNotifications(token: string): Promise<void> {
+    try {
+      console.log('📥 Chargement des notifications initiales...');
+
+      const response = await fetch(`${API_CONFIG.getApiUrl()}/notifications?limit=100`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        console.error('❌ Erreur lors du chargement des notifications:', response.statusText);
+        return;
+      }
+
+      const data = await response.json();
+
+      if (data.success && data.data && data.data.notifications) {
+        // Charger les notifications dans le Map
+        data.data.notifications.forEach((notif: any) => {
+          const notification: Notification = {
+            id: notif.id,
+            type: notif.type,
+            title: notif.title,
+            message: notif.content || notif.message || '',
+            conversationId: notif.conversationId,
+            messageId: notif.messageId,
+            callSessionId: notif.callSessionId,
+            senderId: notif.senderId,
+            senderUsername: notif.senderUsername,
+            senderAvatar: notif.senderAvatar,
+            messagePreview: notif.messagePreview,
+            timestamp: new Date(notif.createdAt),
+            isRead: notif.isRead || false,
+            data: notif.data
+          };
+          this.notifications.set(notification.id, notification);
+        });
+
+        // Mettre à jour les compteurs
+        this.updateCountsFromNotifications();
+
+        console.log(`✅ ${data.data.notifications.length} notifications chargées (${data.data.unreadCount} non lues)`);
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors du chargement des notifications initiales:', error);
+    }
+  }
+
+  /**
    * Initialise le service de notifications
    */
   public async initialize(config: NotificationServiceConfig): Promise<void> {
@@ -87,8 +140,11 @@ export class NotificationService {
     }
 
     this.config = config;
-    
+
     try {
+      // Charger les notifications initiales depuis l'API
+      await this.loadInitialNotifications(config.token);
+
       this.socket = io(APP_CONFIG.getBackendUrl(), {
         auth: { token: config.token },
         transports: ['websocket'],
@@ -96,7 +152,8 @@ export class NotificationService {
       });
 
       this.setupEventListeners();
-      
+
+      console.log('🔔 Service de notifications initialisé');
     } catch (error) {
       console.error('❌ Erreur lors de l\'initialisation du service de notifications:', error);
       config.onError?.(error as Error);
@@ -368,30 +425,75 @@ export class NotificationService {
   /**
    * Marque une notification comme lue
    */
-  public markAsRead(notificationId: string): void {
+  public async markAsRead(notificationId: string): Promise<void> {
     const notification = this.notifications.get(notificationId);
     if (notification && !notification.isRead) {
       notification.isRead = true;
       this.updateCountsFromNotifications();
+
+      // Synchroniser avec le backend
+      if (this.config?.token) {
+        try {
+          await fetch(`${API_CONFIG.getApiUrl()}/notifications/${notificationId}/read`, {
+            method: 'PATCH',
+            headers: {
+              'Authorization': `Bearer ${this.config.token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+        } catch (error) {
+          console.error('❌ Erreur lors de la synchronisation de la notification:', error);
+        }
+      }
     }
   }
 
   /**
    * Marque toutes les notifications comme lues
    */
-  public markAllAsRead(): void {
+  public async markAllAsRead(): Promise<void> {
     for (const notification of this.notifications.values()) {
       notification.isRead = true;
     }
     this.updateCountsFromNotifications();
+
+    // Synchroniser avec le backend
+    if (this.config?.token) {
+      try {
+        await fetch(`${API_CONFIG.getApiUrl()}/notifications/read-all`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${this.config.token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+      } catch (error) {
+        console.error('❌ Erreur lors de la synchronisation des notifications:', error);
+      }
+    }
   }
 
   /**
    * Supprime une notification
    */
-  public removeNotification(notificationId: string): void {
+  public async removeNotification(notificationId: string): Promise<void> {
     this.notifications.delete(notificationId);
     this.updateCountsFromNotifications();
+
+    // Synchroniser avec le backend
+    if (this.config?.token) {
+      try {
+        await fetch(`${API_CONFIG.getApiUrl()}/notifications/${notificationId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${this.config.token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+      } catch (error) {
+        console.error('❌ Erreur lors de la suppression de la notification:', error);
+      }
+    }
   }
 
   /**

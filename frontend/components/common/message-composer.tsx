@@ -269,25 +269,26 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     lastNotifiedIdsStringRef.current = attachmentIdsString;
   }, [attachmentIdsString, onAttachmentsChange]);
 
-  // Handler pour la sélection de fichiers - mémorisé
+  // Handler pour la sélection de fichiers - mémorisé et optimisé
   const handleFilesSelected = useCallback(async (files: File[]) => {
     if (files.length === 0) return;
 
-    files.forEach((file, i) => {
-    });
+    // Log compact pour ne pas ralentir l'UI sur mobile
+    const totalSize = files.reduce((sum, f) => sum + f.size, 0);
+    console.log(`📎 Traitement de ${files.length} fichier(s) (${(totalSize / (1024 * 1024)).toFixed(1)}MB)`);
 
     // Filtrer les doublons basés sur nom, taille et date de modification
     // Vérifier contre selectedFiles ET uploadedAttachments
     const existingFileSignatures = new Set([
       ...selectedFiles.map(f => `${f.name}_${f.size}_${f.lastModified}`),
-      ...uploadedAttachments.map(att => `${att.originalName}_${att.fileSize}_${new Date(att.uploadedAt).getTime()}`)
+      ...uploadedAttachments.map(att => `${att.originalName}_${att.fileSize}_${new Date(att.createdAt).getTime()}`)
     ]);
-
 
     const uniqueFiles = files.filter(file => {
       const signature = `${file.name}_${file.size}_${file.lastModified}`;
       const isDuplicate = existingFileSignatures.has(signature);
       if (isDuplicate) {
+        console.log(`❌ DOUBLON: ${file.name}`);
       }
       return !isDuplicate;
     });
@@ -309,9 +310,9 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     const currentTotalAttachments = selectedFiles.length + uploadedAttachments.length;
     const newTotalAttachments = currentTotalAttachments + uniqueFiles.length;
 
-
     if (newTotalAttachments > 50) {
-      setAttemptedCount(newTotalAttachments); // Stocker le nombre tenté pour affichage dans la modale
+      console.log(`❌ Limite dépassée: ${newTotalAttachments}/50 attachements`);
+      setAttemptedCount(newTotalAttachments);
       setShowAttachmentLimitModal(true);
       return;
     }
@@ -320,42 +321,48 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     const validation = AttachmentService.validateFiles(uniqueFiles);
     if (!validation.valid) {
       console.error('❌ Validation échouée:', validation.errors);
-      // Show toast for each validation error
       validation.errors.forEach(error => {
         toast.error(error);
       });
       return;
     }
 
-
-    setSelectedFiles(prev => {
-      const newFiles = [...prev, ...uniqueFiles];
-      return newFiles;
-    });
+    // Mise à jour immédiate de l'UI avec les fichiers sélectionnés
+    setSelectedFiles(prev => [...prev, ...uniqueFiles]);
     setIsUploading(true);
 
+    console.log(`📤 Upload démarré: ${uniqueFiles.length} fichier(s)`);
 
     try {
-      // Upload les fichiers
-      const response = await AttachmentService.uploadFiles(uniqueFiles, token);
+      // Upload les fichiers avec progress tracking
+      const response = await AttachmentService.uploadFiles(
+        uniqueFiles,
+        token,
+        undefined, // pas de metadata
+        (percentage, loaded, total) => {
+          // Mettre à jour la progression globale
+          setUploadProgress(prev => ({ ...prev, 0: percentage }));
 
+          // Log seulement aux étapes importantes (25%, 50%, 75%, 100%) pour ne pas ralentir
+          if (percentage % 25 === 0) {
+            const totalSizeMB = total / (1024 * 1024);
+            if (totalSizeMB > 50) {
+              console.log(`📊 ${percentage}% - ${(loaded / (1024 * 1024)).toFixed(1)}/${totalSizeMB.toFixed(1)}MB`);
+            }
+          }
+        }
+      );
 
       if (response.success && response.attachments) {
-        response.attachments.forEach((att, i) => {
-        });
+        console.log(`✅ Upload réussi: ${response.attachments.length} fichier(s)`);
 
-        setUploadedAttachments(prev => {
-          const newAttachments = [...prev, ...response.attachments];
-          return newAttachments;
-        });
+        setUploadedAttachments(prev => [...prev, ...response.attachments]);
       } else {
-        console.warn('⚠️ Upload sans succès ou sans attachments:', response);
+        console.warn('⚠️ Upload sans succès:', response);
       }
     } catch (error) {
       console.error('❌ Upload error:', error);
       if (error instanceof Error) {
-        console.error('❌ Error message:', error.message);
-        console.error('❌ Error stack:', error.stack);
         toast.error(`Upload failed: ${error.message}`);
       } else {
         toast.error('Upload failed. Please try again.');
@@ -397,12 +404,35 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     fileInputRef.current?.click();
   }, []);
 
-  // Handler pour le changement de l'input file - mémorisé
+  // Handler pour le changement de l'input file - mémorisé et optimisé pour mobile
   const handleFileInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    // CRITIQUE: Sur iOS, il faut extraire les fichiers et reset l'input IMMÉDIATEMENT
+    // pour fermer le sélecteur et libérer l'UI thread
     const files = e.target.files ? Array.from(e.target.files) : [];
-    handleFilesSelected(files);
-    // Reset l'input pour permettre de sélectionner le même fichier à nouveau
+
+    // Reset l'input IMMÉDIATEMENT pour fermer le sélecteur iOS
     e.target.value = '';
+
+    // Afficher immédiatement un feedback visuel
+    if (files.length > 0) {
+      // Toast rapide pour indiquer que le fichier est en cours de traitement
+      const fileNames = files.map(f => f.name).join(', ');
+      const totalSize = files.reduce((sum, f) => sum + f.size, 0);
+      const sizeMB = (totalSize / (1024 * 1024)).toFixed(1);
+
+      console.log(`📱 Fichier(s) sélectionné(s): ${fileNames} (${sizeMB}MB) - Traitement en arrière-plan...`);
+
+      // Si c'est un gros fichier (> 50MB), afficher un toast
+      if (totalSize > 50 * 1024 * 1024) {
+        toast.info(`Préparation de ${files.length} fichier(s) (${sizeMB}MB)...`, { duration: 2000 });
+      }
+    }
+
+    // Traiter les fichiers de manière asynchrone après avoir libéré l'UI
+    // Utiliser setTimeout avec 0ms pour déplacer le traitement hors du thread principal
+    setTimeout(() => {
+      handleFilesSelected(files);
+    }, 0);
   }, [handleFilesSelected]);
 
   // Handler pour retirer un fichier - mémorisé

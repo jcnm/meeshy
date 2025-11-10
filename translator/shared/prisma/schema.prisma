@@ -69,6 +69,7 @@ model User {
   sentMessages                Message[]                @relation("MessageSender")
   reactions                   Reaction[]               @relation("UserReactions")
   notifications               Notification[]
+  notificationPreference      NotificationPreference?
   typingIndicators            TypingIndicator[]
   preferences                 UserPreference[]
   stats                       UserStats?
@@ -396,6 +397,35 @@ model Notification {
   @@index([userId, isRead])
   @@index([userId, type])
   @@index([createdAt])
+}
+
+/// Préférences de notifications par utilisateur
+model NotificationPreference {
+  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId                String   @unique @db.ObjectId
+
+  // Activer/désactiver les notifications
+  pushEnabled           Boolean  @default(true)
+  emailEnabled          Boolean  @default(true)
+  soundEnabled          Boolean  @default(true)
+
+  // Préférences par type de notification
+  newMessageEnabled     Boolean  @default(true)
+  missedCallEnabled     Boolean  @default(true)
+  systemEnabled         Boolean  @default(true)
+  conversationEnabled   Boolean  @default(true)
+
+  // Do Not Disturb (ne pas déranger)
+  dndEnabled            Boolean  @default(false)
+  dndStartTime          String?  // Format: "22:00"
+  dndEndTime            String?  // Format: "08:00"
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preferences")
 }
 
 /// Communauté (représente une communauté de conversation)
