@@ -336,6 +336,23 @@ export function createUnifiedAuthMiddleware(
 
       // Attacher le contexte à la requête
       (request as UnifiedAuthRequest).authContext = authContext;
+      // Backwards compatibility: some legacy routes expect `request.user` to exist
+      // Provide a minimal `user` object derived from the unified context so older
+      // handlers (that reference `request.user.userId`) continue to work.
+      try {
+        (request as any).user = (request as any).user || {};
+        if (authContext.isAuthenticated && authContext.userId) {
+          (request as any).user.userId = authContext.userId;
+          (request as any).user.username = authContext.displayName || (authContext.registeredUser && authContext.registeredUser.username);
+          (request as any).user.isAnonymous = !!authContext.isAnonymous;
+        } else {
+          // Ensure user is at least an object to avoid null deref in legacy code
+          (request as any).user.userId = (request as any).user.userId || null;
+        }
+      } catch (e) {
+        // Non-blocking; if this fails, don't prevent request processing
+        console.error('[UnifiedAuth] Failed to attach legacy request.user:', e);
+      }
 
 
     } catch (error) {
