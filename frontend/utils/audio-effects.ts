@@ -640,12 +640,14 @@ export function createAudioEffectProcessor(
 
 /**
  * Available background sounds
+ * NOTE: Sons prédéfinis désactivés temporairement car les fichiers n'existent pas encore
+ * Les utilisateurs peuvent charger leurs propres fichiers audio via le composant AudioEffectsPanel
  */
 export const BACK_SOUNDS = [
-  { id: 'ambient-1', name: 'Ambient Space', url: '/sounds/ambient-space.mp3' },
-  { id: 'lofi-1', name: 'Lo-Fi Chill', url: '/sounds/lofi-chill.mp3' },
-  { id: 'nature-1', name: 'Forest Rain', url: '/sounds/forest-rain.mp3' },
-  { id: 'beats-1', name: 'Light Beats', url: '/sounds/light-beats.mp3' },
+  // { id: 'ambient-1', name: 'Ambient Space', url: '/sounds/ambient-space.mp3' },
+  // { id: 'lofi-1', name: 'Lo-Fi Chill', url: '/sounds/lofi-chill.mp3' },
+  // { id: 'nature-1', name: 'Forest Rain', url: '/sounds/forest-rain.mp3' },
+  // { id: 'beats-1', name: 'Light Beats', url: '/sounds/light-beats.mp3' },
 ] as const;
 
 /**
