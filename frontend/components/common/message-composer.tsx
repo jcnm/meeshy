@@ -351,8 +351,22 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     console.log('📎 Début upload de', uniqueFiles.length, 'fichier(s)');
 
     try {
-      // Upload les fichiers
-      const response = await AttachmentService.uploadFiles(uniqueFiles, token);
+      // Upload les fichiers avec progress tracking
+      const response = await AttachmentService.uploadFiles(
+        uniqueFiles,
+        token,
+        undefined, // pas de metadata
+        (percentage, loaded, total) => {
+          // Mettre à jour la progression globale
+          setUploadProgress(prev => ({ ...prev, 0: percentage }));
+
+          // Afficher un toast pour les gros fichiers (> 50MB)
+          const totalSizeMB = total / (1024 * 1024);
+          if (totalSizeMB > 50 && percentage % 25 === 0) {
+            console.log(`📊 Upload ${percentage}% - ${(loaded / (1024 * 1024)).toFixed(1)}MB / ${totalSizeMB.toFixed(1)}MB`);
+          }
+        }
+      );
 
       console.log('📎 Réponse upload:', response);
 

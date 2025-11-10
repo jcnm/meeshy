@@ -30,12 +30,18 @@ const buildApiUrl = (path: string): string => {
 
 export class AttachmentService {
   /**
-   * Upload un ou plusieurs fichiers
+   * Upload un ou plusieurs fichiers avec progress tracking
    * @param files - Fichiers à uploader
    * @param token - Token d'authentification
    * @param metadataArray - Métadonnées optionnelles pour chaque fichier (durée, codec, etc.)
+   * @param onProgress - Callback optionnel pour le suivi de progression (percentage: number)
    */
-  static async uploadFiles(files: File[], token?: string, metadataArray?: any[]): Promise<UploadMultipleResponse> {
+  static async uploadFiles(
+    files: File[],
+    token?: string,
+    metadataArray?: any[],
+    onProgress?: (percentage: number, loaded: number, total: number) => void
+  ): Promise<UploadMultipleResponse> {
     const formData = new FormData();
 
     files.forEach((file, index) => {
@@ -50,20 +56,68 @@ export class AttachmentService {
     // Utiliser l'utilitaire pour créer les bons headers d'authentification
     const authHeaders = createAuthHeaders(token);
 
-    const response = await fetch(buildApiUrl('/attachments/upload'), {
-      method: 'POST',
-      headers: authHeaders,
-      body: formData,
-      credentials: 'include',
+    // Utiliser XMLHttpRequest pour le progress tracking
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      // Track upload progress
+      if (onProgress) {
+        xhr.upload.addEventListener('progress', (event) => {
+          if (event.lengthComputable) {
+            const percentage = Math.round((event.loaded / event.total) * 100);
+            onProgress(percentage, event.loaded, event.total);
+            console.log(`📊 Upload progress: ${percentage}% (${event.loaded}/${event.total} bytes)`);
+          }
+        });
+      }
+
+      // Handle successful completion
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const result = JSON.parse(xhr.responseText);
+            resolve(result);
+          } catch (error) {
+            reject(new Error('Failed to parse response'));
+          }
+        } else {
+          try {
+            const error = JSON.parse(xhr.responseText);
+            reject(new Error(error.error || 'Upload failed'));
+          } catch {
+            reject(new Error(`Upload failed with status ${xhr.status}`));
+          }
+        }
+      });
+
+      // Handle errors
+      xhr.addEventListener('error', () => {
+        reject(new Error('Network error during upload'));
+      });
+
+      xhr.addEventListener('abort', () => {
+        reject(new Error('Upload aborted'));
+      });
+
+      // Handle timeout
+      xhr.addEventListener('timeout', () => {
+        reject(new Error('Upload timeout'));
+      });
+
+      // Open connection and set headers
+      xhr.open('POST', buildApiUrl('/attachments/upload'));
+
+      // Set auth headers
+      Object.entries(authHeaders).forEach(([key, value]) => {
+        xhr.setRequestHeader(key, value as string);
+      });
+
+      // Set a longer timeout for large files (10 minutes)
+      xhr.timeout = 600000;
+
+      // Send the request
+      xhr.send(formData);
     });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Upload failed' }));
-      throw new Error(error.error || 'Failed to upload files');
-    }
-
-    const result = await response.json();
-    return result;
   }
 
   /**
