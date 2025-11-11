@@ -558,30 +558,30 @@ export function CreateConversationModal({
             </div>
           )}
 
-          {/* Conversation Type Selection - Show when at least 1 user is selected */}
-          {selectedUsers.length > 0 && (
-            <div>
-              <Label className="text-sm font-medium mb-2 block">
-                {t('createConversationModal.conversationDetails.conversationType')}
-              </Label>
-              <div className={cn(
-                "grid gap-2",
-                selectedUsers.length === 1 ? "grid-cols-3" : "grid-cols-2"
-              )}>
-                {/* Direct - Only show when exactly 1 user is selected */}
-                {selectedUsers.length === 1 && (
-                  <Button
-                    type="button"
-                    variant={conversationType === 'direct' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setConversationType('direct')}
-                    className="flex items-center gap-2"
-                  >
-                    <UserIcon className="h-4 w-4" />
-                    {t('createConversationModal.conversationTypes.direct')}
-                  </Button>
-                )}
-                {/* Group - Always show when users are selected */}
+          {/* Conversation Type Selection - Always visible for flexibility */}
+          <div>
+            <Label className="text-sm font-medium mb-2 block">
+              {t('createConversationModal.conversationDetails.conversationType')}
+            </Label>
+            <div className={cn(
+              "grid gap-2",
+              selectedUsers.length === 1 ? "grid-cols-3" : "grid-cols-2"
+            )}>
+              {/* Direct - Only show when exactly 1 user is selected */}
+              {selectedUsers.length === 1 && (
+                <Button
+                  type="button"
+                  variant={conversationType === 'direct' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setConversationType('direct')}
+                  className="flex items-center gap-2"
+                >
+                  <UserIcon className="h-4 w-4" />
+                  {t('createConversationModal.conversationTypes.direct')}
+                </Button>
+              )}
+              {/* Group - Show when users are selected */}
+              {selectedUsers.length > 0 && (
                 <Button
                   type="button"
                   variant={conversationType === 'group' ? 'default' : 'outline'}
@@ -592,23 +592,23 @@ export function CreateConversationModal({
                   <Users className="h-4 w-4" />
                   {t('createConversationModal.conversationTypes.group')}
                 </Button>
-                {/* Public - Always show when users are selected */}
-                <Button
-                  type="button"
-                  variant={conversationType === 'public' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setConversationType('public')}
-                  className="flex items-center gap-2"
-                >
-                  <Globe className="h-4 w-4" />
-                  {t('createConversationModal.conversationTypes.public')}
-                </Button>
-              </div>
+              )}
+              {/* Public - Always visible even without users */}
+              <Button
+                type="button"
+                variant={conversationType === 'public' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setConversationType('public')}
+                className="flex items-center gap-2"
+              >
+                <Globe className="h-4 w-4" />
+                {t('createConversationModal.conversationTypes.public')}
+              </Button>
             </div>
-          )}
+          </div>
 
-          {/* Title and Identifier - Only show for Group or Public */}
-          {selectedUsers.length > 0 && (conversationType === 'group' || conversationType === 'public') && (
+          {/* Title and Identifier - Show for Group or Public */}
+          {(conversationType === 'group' || conversationType === 'public') && (
             <div className="space-y-4 p-4 border rounded-lg bg-gradient-to-r from-primary/5 to-secondary/5">
               <div className="flex items-center gap-2 mb-2">
                 <Hash className="h-4 w-4 text-primary" />
@@ -669,8 +669,8 @@ export function CreateConversationModal({
             </div>
           )}
 
-          {/* Community Toggle and Selection - Only show when at least 1 user is selected */}
-          {selectedUsers.length > 0 && (
+          {/* Community Toggle and Selection - Show for group/public conversations */}
+          {(conversationType === 'group' || conversationType === 'public' || selectedUsers.length > 0) && (
             <div className="space-y-3 p-4 border rounded-lg bg-muted/50">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -756,7 +756,7 @@ export function CreateConversationModal({
           )}
 
           {/* Preview - Collapsible/Accordion - Hidden by default */}
-          {selectedUsers.length > 0 && (conversationType === 'direct' || customIdentifier) && (
+          {(conversationType === 'direct' || customIdentifier) && (
             <Collapsible
               open={isPreviewOpen}
               onOpenChange={setIsPreviewOpen}
@@ -799,8 +799,8 @@ export function CreateConversationModal({
             <Button
               onClick={createConversation}
               disabled={
-                selectedUsers.length === 0 || 
-                isCreating || 
+                (conversationType !== 'public' && selectedUsers.length === 0) ||
+                isCreating ||
                 (conversationType !== 'direct' && !customIdentifier.trim()) ||
                 (conversationType !== 'direct' && !validateIdentifier(customIdentifier))
               }
