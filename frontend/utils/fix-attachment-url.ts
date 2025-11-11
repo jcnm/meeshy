@@ -26,7 +26,12 @@ export function fixAttachmentUrl(url: string | undefined): string {
 
       // Si le chemin commence par /api/, utiliser le chemin relatif
       if (urlObj.pathname.startsWith('/api/')) {
-        return urlObj.pathname + urlObj.search;
+        const fixedUrl = urlObj.pathname + urlObj.search;
+        console.log('🔧 [fixAttachmentUrl]', {
+          original: url,
+          fixed: fixedUrl
+        });
+        return fixedUrl;
       }
 
       // Sinon retourner l'URL telle quelle (pour les URLs externes)
