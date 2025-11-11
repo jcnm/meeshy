@@ -1,0 +1,246 @@
+'use client';
+
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { getUserInitials } from '@/lib/avatar-utils';
+import type { MentionSuggestion } from '../../../shared/types/mention';
+
+interface MentionAutocompleteProps {
+  conversationId: string;
+  query: string;
+  onSelect: (username: string) => void;
+  onClose: () => void;
+  position: { top: number; left: number };
+  maxSuggestions?: number;
+}
+
+export function MentionAutocomplete({
+  conversationId,
+  query,
+  onSelect,
+  onClose,
+  position,
+  maxSuggestions = 10
+}: MentionAutocompleteProps) {
+  const [suggestions, setSuggestions] = useState<MentionSuggestion[]>([]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Fetch suggestions from API
+  const fetchSuggestions = useCallback(async () => {
+    if (!conversationId) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const queryParam = query ? `&query=${encodeURIComponent(query)}` : '';
+      const response = await fetch(
+        `/api/mentions/suggestions?conversationId=${conversationId}${queryParam}`,
+        {
+          credentials: 'include'
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch suggestions');
+      }
+
+      const data = await response.json();
+
+      if (data.success && data.data) {
+        setSuggestions(data.data.slice(0, maxSuggestions));
+        setSelectedIndex(0); // Reset selection when suggestions change
+      } else {
+        setSuggestions([]);
+      }
+    } catch (err) {
+      console.error('Error fetching mention suggestions:', err);
+      setError('Failed to load suggestions');
+      setSuggestions([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [conversationId, query, maxSuggestions]);
+
+  // Fetch suggestions when query changes (with debounce)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchSuggestions();
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timer);
+  }, [fetchSuggestions]);
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (suggestions.length === 0) return;
+
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          setSelectedIndex((prev) =>
+            prev < suggestions.length - 1 ? prev + 1 : 0
+          );
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          setSelectedIndex((prev) =>
+            prev > 0 ? prev - 1 : suggestions.length - 1
+          );
+          break;
+        case 'Enter':
+          e.preventDefault();
+          if (suggestions[selectedIndex]) {
+            onSelect(suggestions[selectedIndex].username);
+          }
+          break;
+        case 'Escape':
+          e.preventDefault();
+          onClose();
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [suggestions, selectedIndex, onSelect, onClose]);
+
+  // Handle click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [onClose]);
+
+  // Auto-scroll selected item into view
+  useEffect(() => {
+    if (containerRef.current) {
+      const selectedElement = containerRef.current.querySelector(
+        `[data-index="${selectedIndex}"]`
+      );
+      selectedElement?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  }, [selectedIndex]);
+
+  const getBadgeVariant = (badge: MentionSuggestion['badge']) => {
+    switch (badge) {
+      case 'conversation':
+        return 'default';
+      case 'friend':
+        return 'secondary';
+      case 'other':
+        return 'outline';
+      default:
+        return 'outline';
+    }
+  };
+
+  const getBadgeLabel = (badge: MentionSuggestion['badge']) => {
+    switch (badge) {
+      case 'conversation':
+        return 'Dans la conversation';
+      case 'friend':
+        return 'Ami';
+      case 'other':
+        return 'Autre';
+      default:
+        return '';
+    }
+  };
+
+  if (!suggestions.length && !isLoading && !error) {
+    return null;
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      className="absolute z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-64 w-80 overflow-y-auto"
+      style={{
+        top: `${position.top}px`,
+        left: `${position.left}px`
+      }}
+    >
+      {isLoading && (
+        <div className="p-4 text-center text-sm text-gray-500">
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary mx-auto mb-2"></div>
+          Recherche...
+        </div>
+      )}
+
+      {error && (
+        <div className="p-4 text-center text-sm text-red-500">
+          {error}
+        </div>
+      )}
+
+      {!isLoading && !error && suggestions.length > 0 && (
+        <div className="py-1">
+          <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
+            Mentionner un utilisateur
+          </div>
+          {suggestions.map((suggestion, index) => (
+            <button
+              key={suggestion.id}
+              data-index={index}
+              className={`w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                index === selectedIndex
+                  ? 'bg-blue-50 dark:bg-blue-900/20'
+                  : ''
+              }`}
+              onClick={() => onSelect(suggestion.username)}
+              onMouseEnter={() => setSelectedIndex(index)}
+            >
+              <Avatar className="h-8 w-8 flex-shrink-0">
+                {suggestion.avatar && (
+                  <AvatarImage src={suggestion.avatar} alt={suggestion.username} />
+                )}
+                <AvatarFallback className="text-xs">
+                  {getUserInitials({
+                    firstName: suggestion.displayName || suggestion.username,
+                    lastName: ''
+                  })}
+                </AvatarFallback>
+              </Avatar>
+
+              <div className="flex-1 min-w-0 text-left">
+                <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                  @{suggestion.username}
+                </div>
+                {suggestion.displayName && (
+                  <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    {suggestion.displayName}
+                  </div>
+                )}
+              </div>
+
+              <Badge variant={getBadgeVariant(suggestion.badge)} className="text-xs flex-shrink-0">
+                {getBadgeLabel(suggestion.badge)}
+              </Badge>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {!isLoading && !error && suggestions.length === 0 && query && (
+        <div className="p-4 text-center text-sm text-gray-500">
+          Aucun utilisateur trouvé pour "{query}"
+        </div>
+      )}
+
+      <div className="px-3 py-2 text-xs text-gray-400 dark:text-gray-500 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+        ↑↓ pour naviguer • Entrée pour sélectionner • Échap pour fermer
+      </div>
+    </div>
+  );
+}
