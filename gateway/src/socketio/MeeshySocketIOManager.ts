@@ -2177,6 +2177,21 @@ export class MeeshySocketIOManager {
    */
   private async _createMessageNotifications(message: any, senderId: string): Promise<void> {
     try {
+      // Récupérer la conversation avec ses informations
+      const conversation = await this.prisma.conversation.findUnique({
+        where: { id: message.conversationId },
+        select: {
+          id: true,
+          type: true,
+          name: true
+        }
+      });
+
+      if (!conversation) {
+        console.error('❌ [NOTIFICATIONS] Conversation non trouvée:', message.conversationId);
+        return;
+      }
+
       // Récupérer les membres de la conversation
       const conversationMembers = await this.prisma.conversationMember.findMany({
         where: {
@@ -2216,7 +2231,9 @@ export class MeeshySocketIOManager {
           senderAvatar,
           messageContent: message.content,
           conversationId: message.conversationId,
-          messageId: message.id
+          messageId: message.id,
+          conversationType: conversation.type,
+          conversationName: conversation.name || undefined
         });
       }
 

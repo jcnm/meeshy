@@ -577,6 +577,9 @@ function NotificationsPageContent() {
                               <div className="flex items-center justify-between">
                                 <p className="text-xs text-muted-foreground">
                                   {formatNotificationTime(notification.timestamp)}
+                                  {notification.conversationType !== 'direct' && notification.conversationName && (
+                                    <span> dans {notification.conversationName}</span>
+                                  )}
                                 </p>
 
                                 {/* Actions - visibles sur hover desktop, toujours visibles sur mobile */}

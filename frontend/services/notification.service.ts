@@ -15,6 +15,8 @@ export interface Notification {
   message: string;
   data?: any;
   conversationId?: string;
+  conversationType?: string;
+  conversationName?: string;
   messageId?: string;
   callSessionId?: string;
   senderId?: string;
@@ -115,12 +117,17 @@ export class NotificationService {
       if (data.success && data.data && data.data.notifications) {
         // Charger les notifications dans le Map
         data.data.notifications.forEach((notif: any) => {
+          // Parser le champ data s'il est stocké en JSON
+          const parsedData = typeof notif.data === 'string' ? JSON.parse(notif.data) : notif.data;
+
           const notification: Notification = {
             id: notif.id,
             type: notif.type,
             title: notif.title,
             message: notif.content || notif.message || '',
             conversationId: notif.conversationId,
+            conversationType: parsedData?.conversationType,
+            conversationName: parsedData?.conversationName,
             messageId: notif.messageId,
             callSessionId: notif.callSessionId,
             senderId: notif.senderId,
@@ -130,7 +137,7 @@ export class NotificationService {
             attachments: notif.message?.attachments || [],
             timestamp: new Date(notif.createdAt),
             isRead: notif.isRead || false,
-            data: notif.data
+            data: parsedData
           };
           this.notifications.set(notification.id, notification);
         });
@@ -248,6 +255,8 @@ export class NotificationService {
       message: data.content || data.message,
       data: data.data,
       conversationId: data.conversationId,
+      conversationType: data.data?.conversationType,
+      conversationName: data.data?.conversationName,
       messageId: data.messageId,
       callSessionId: data.callSessionId,
       senderId: data.senderId,
