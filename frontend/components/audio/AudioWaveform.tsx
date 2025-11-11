@@ -19,11 +19,11 @@ export const AudioWaveform: React.FC<AudioWaveformProps> = ({
   className = '',
 }) => {
   const bars = 20;
-  const baseHeight = 4;
-  const maxHeight = 40;
+  const baseHeight = 3;
+  const maxHeight = 32;
 
   return (
-    <div className={`flex items-center justify-center gap-1 h-12 ${className}`}>
+    <div className={`flex items-center justify-center gap-0.5 h-10 ${className}`}>
       {Array.from({ length: bars }).map((_, index) => {
         // Créer un pattern de vague avec offset pour chaque barre
         const phaseOffset = (index / bars) * Math.PI * 2;

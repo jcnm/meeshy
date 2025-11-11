@@ -65,7 +65,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
   const attachmentFileUrl = attachment.fileUrl;
   const attachmentMimeType = attachment.mimeType;
 
-  // Définir le src de l'audio après le montage
+  // Charger l'audio après le montage
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -75,7 +75,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
       const isValidUrl = attachmentFileUrl.startsWith('http://') || attachmentFileUrl.startsWith('https://');
 
       if (isValidUrl) {
-        audio.src = attachmentFileUrl;
+        // Le src est défini via <source>, on appelle juste load()
         audio.load();
       } else {
         setHasError(true);
@@ -85,7 +85,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
       setHasError(true);
       setErrorMessage('URL du fichier manquante');
     }
-  }, [attachmentId, attachmentFileUrl, attachment]);
+  }, [attachmentId, attachmentFileUrl, attachmentMimeType]);
 
   // Fonction pour mettre à jour le temps avec requestAnimationFrame (fluide)
   const updateProgress = useCallback(() => {
@@ -435,6 +435,10 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
         onError={handleAudioError}
         preload="metadata"
       >
+        {/* Utiliser source avec type explicite pour meilleure compatibilité */}
+        {attachmentFileUrl && attachmentMimeType && (
+          <source src={attachmentFileUrl} type={attachmentMimeType} />
+        )}
         Votre navigateur ne supporte pas la lecture audio.
       </audio>
     </div>
