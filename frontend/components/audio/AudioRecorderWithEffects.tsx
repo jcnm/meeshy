@@ -129,6 +129,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
   }, [effectiveDuration]);
 
   // Analyser le niveau audio en temps réel avec focus sur les fréquences vocales
+  // Optimisé pour éviter de bloquer l'UI (20fps au lieu de 60fps)
   const analyzeAudioLevel = useCallback(() => {
     if (!analyserRef.current) return;
 
@@ -136,10 +137,10 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
     analyserRef.current.getByteFrequencyData(dataArray);
 
     // Focus sur les fréquences vocales (environ 80Hz - 3000Hz)
-    // Avec fftSize=1024 et sampleRate=48000, chaque bin = 48000/1024 = ~46.875Hz
-    // Bin 2 ≈ 94Hz, Bin 64 ≈ 3000Hz
-    const voiceStartBin = 2;
-    const voiceEndBin = Math.min(64, dataArray.length);
+    // Avec fftSize=512 et sampleRate=48000, chaque bin = 48000/512 = ~93.75Hz
+    // Bin 1 ≈ 94Hz, Bin 32 ≈ 3000Hz
+    const voiceStartBin = 1;
+    const voiceEndBin = Math.min(32, dataArray.length);
 
     // Calculer le niveau moyen sur les fréquences vocales uniquement
     let sum = 0;
@@ -155,7 +156,6 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
     normalizedLevel = Math.min(1.0, normalizedLevel * 3.0);
 
     // Appliquer une courbe exponentielle pour augmenter la sensibilité aux bas niveaux
-    // Cela rend les sons faibles plus visibles
     normalizedLevel = Math.pow(normalizedLevel, 0.6);
 
     // Appliquer un seuil de bruit minimal (ignorer les niveaux < 0.02)
@@ -165,8 +165,10 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
 
     setAudioLevel(normalizedLevel);
 
-    // Continuer l'analyse
-    audioLevelAnimationRef.current = requestAnimationFrame(analyzeAudioLevel);
+    // Continuer l'analyse avec un délai de ~50ms (20fps) pour ne pas bloquer l'UI
+    audioLevelAnimationRef.current = window.setTimeout(() => {
+      requestAnimationFrame(analyzeAudioLevel);
+    }, 50);
   }, []);
 
   // Démarrer l'analyse audio
@@ -179,9 +181,9 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
 
       const audioContext = audioContextRef.current;
 
-      // Créer un analyser avec plus de résolution pour mieux détecter la voix
+      // Créer un analyser optimisé pour la performance
       const analyser = audioContext.createAnalyser();
-      analyser.fftSize = 1024; // Augmenté de 256 à 1024 pour plus de précision
+      analyser.fftSize = 512; // Équilibre entre précision et performance
       analyser.smoothingTimeConstant = 0.8; // Lissage pour éviter les sauts brusques
       analyserRef.current = analyser;
 
@@ -199,6 +201,8 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
   // Arrêter l'analyse audio
   const stopAudioAnalysis = useCallback(() => {
     if (audioLevelAnimationRef.current) {
+      // Gérer à la fois setTimeout et requestAnimationFrame
+      clearTimeout(audioLevelAnimationRef.current);
       cancelAnimationFrame(audioLevelAnimationRef.current);
       audioLevelAnimationRef.current = null;
     }
