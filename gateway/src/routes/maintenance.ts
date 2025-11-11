@@ -7,7 +7,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { MaintenanceService } from '../services/maintenance.service';
 import { AttachmentService } from '../services/AttachmentService';
 import { StatusService } from '../services/status.service';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../../shared/prisma/client';
 
 export async function maintenanceRoutes(fastify: FastifyInstance) {
   const prisma = fastify.prisma as PrismaClient;

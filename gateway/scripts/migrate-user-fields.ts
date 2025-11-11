@@ -7,7 +7,7 @@
  */
 
 import '../src/env';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../shared/prisma/client';
 
 const prisma = new PrismaClient();
 

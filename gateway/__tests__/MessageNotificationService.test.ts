@@ -2,12 +2,12 @@
  * Tests pour le service de notifications de messages
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../shared/prisma/client';
 import { MessageNotificationService } from '../src/services/MessageNotificationService';
 import { MeeshySocketIOManager } from '../src/socketio/MeeshySocketIOManager';
 
 // Mock des dépendances
-jest.mock('@prisma/client');
+jest.mock('../shared/prisma/client');
 jest.mock('../src/socketio/MeeshySocketIOManager');
 
 describe('MessageNotificationService', () => {

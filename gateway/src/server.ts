@@ -17,7 +17,7 @@ import helmet from '@fastify/helmet';
 import jwt from '@fastify/jwt';
 import sensible from '@fastify/sensible'; // Ajout pour httpErrors
 import multipart from '@fastify/multipart';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../shared/prisma/client';
 import winston from 'winston';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -371,11 +371,14 @@ class MeeshyServer {
     // Global error handler
     this.server.setErrorHandler(async (error, request, reply) => {
       logger.error('Global error handler:', error);
+      // TypeScript may treat catch variables as 'unknown' (useUnknownInCatchVariables).
+      // Cast to `any` once to safely access error properties below.
+      const err: any = error as any;
 
-      if (error instanceof AuthenticationError) {
+      if (err instanceof AuthenticationError) {
         return reply.code(401).send({
           error: 'Authentication Failed',
-          message: error.message,
+          message: err.message,
           statusCode: 401,
           timestamp: new Date().toISOString()
         });
@@ -384,7 +387,7 @@ class MeeshyServer {
       if (error instanceof ValidationError) {
         return reply.code(400).send({
           error: 'Validation Error',
-          message: error.message,
+          message: err.message,
           statusCode: 400,
           timestamp: new Date().toISOString()
         });
@@ -393,14 +396,14 @@ class MeeshyServer {
       if (error instanceof TranslationError) {
         return reply.code(500).send({
           error: 'Translation Error',
-          message: error.message,
+          message: err.message,
           statusCode: 500,
           timestamp: new Date().toISOString()
         });
       }
 
       // Gestion des erreurs de limite de fichiers multipart
-      if (error.code === 'FST_FILES_LIMIT') {
+      if (err && err.code === 'FST_FILES_LIMIT') {
         return reply.code(413).send({
           error: 'Too Many Files',
           message: `You can only upload a maximum of 100 files at once. Please reduce the number of files.`,
@@ -414,7 +417,7 @@ class MeeshyServer {
       }
 
       // Gestion des erreurs de taille de fichier
-      if (error.code === 'FST_REQ_FILE_TOO_LARGE') {
+      if (err && err.code === 'FST_REQ_FILE_TOO_LARGE') {
         return reply.code(413).send({
           error: 'File Too Large',
           message: `File size exceeds the allowed limit of 2 GB. Please reduce the file size.`,
@@ -428,7 +431,7 @@ class MeeshyServer {
       }
 
       // Gestion des erreurs de limite de parties (parts) multipart
-      if (error.code === 'FST_PARTS_LIMIT') {
+      if (err && err.code === 'FST_PARTS_LIMIT') {
         return reply.code(413).send({
           error: 'Too Many Parts',
           message: `Too many parts in the multipart request. Please reduce the number of elements.`,
@@ -438,13 +441,13 @@ class MeeshyServer {
       }
 
       // Default error handling
-      const statusCode = error.statusCode || 500;
+      const statusCode = (err && err.statusCode) || 500;
       return reply.code(statusCode).send({
         error: 'Internal Server Error',
-        message: config.isDev ? error.message : 'An unexpected error occurred',
+        message: config.isDev ? (err && err.message) : 'An unexpected error occurred',
         statusCode,
         timestamp: new Date().toISOString(),
-        ...(config.isDev && { stack: error.stack })
+        ...(config.isDev && { stack: err && err.stack })
       });
     });
 

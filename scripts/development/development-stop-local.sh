@@ -144,6 +144,8 @@ else
   echo -e "${CYAN}   Pour les arrêter aussi, utilisez: $0 --with-containers${NC}"
 fi
 
+lsof -ti:3000 -ti:3100 -ti:8000 | xargs kill -9 2>/dev/null || true
+
 # Nettoyage des fichiers de logs (optionnel)
 echo -e "${BLUE}🧹 Nettoyage des fichiers de logs...${NC}"
 

@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../shared/prisma/client';
 import { MaintenanceService } from '../../services/maintenance.service';
 import { AttachmentService } from '../../services/AttachmentService';
 
