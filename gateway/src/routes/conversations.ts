@@ -926,6 +926,19 @@ export async function conversationRoutes(fastify: FastifyInstance) {
               createdAt: true
             }
           },
+          mentions: {
+            select: {
+              id: true,
+              mentionedUserId: true,
+              mentionedUser: {
+                select: {
+                  id: true,
+                  username: true,
+                  displayName: true
+                }
+              }
+            }
+          },
           status: {
             where: {
               userId: userId // Charger seulement le status de l'utilisateur courant

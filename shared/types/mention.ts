@@ -237,13 +237,21 @@ export function hasMentions(content: string): boolean {
  * Remplace les mentions dans un texte par des liens
  * @param content - Le contenu original
  * @param linkTemplate - Template pour le lien (ex: "/u/{username}")
+ * @param validUsernames - Liste optionnelle des usernames valides. Si fournie, seules ces mentions seront converties en liens.
  * @returns Contenu avec mentions transformées en liens
  */
 export function mentionsToLinks(
   content: string,
-  linkTemplate: string = '/u/{username}'
+  linkTemplate: string = '/u/{username}',
+  validUsernames?: string[]
 ): string {
   return content.replace(/@(\w+)/g, (_match, username) => {
+    // Si une liste de usernames valides est fournie, vérifier que le username est dedans
+    if (validUsernames && !validUsernames.includes(username)) {
+      // Garder la mention telle quelle sans la transformer en lien
+      return `@${username}`;
+    }
+
     const link = linkTemplate.replace('{username}', username);
     return `[@${username}](${link})`;
   });

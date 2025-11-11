@@ -146,6 +146,17 @@ export interface Message {
   // ===== ATTACHMENTS =====
   readonly attachments?: readonly Attachment[];
 
+  // ===== MENTIONS =====
+  readonly mentions?: readonly {
+    readonly id: string;
+    readonly mentionedUserId: string;
+    readonly mentionedUser?: {
+      readonly id: string;
+      readonly username: string;
+      readonly displayName?: string | null;
+    };
+  }[];
+
   // ===== COMPATIBILITÉ =====
   readonly timestamp: Date;             // Alias pour createdAt (requis pour compatibilité)
 

@@ -809,6 +809,19 @@ export async function linksRoutes(fastify: FastifyInstance) {
               confidenceScore: true,
               createdAt: true
             }
+          },
+          mentions: {
+            select: {
+              id: true,
+              mentionedUserId: true,
+              mentionedUser: {
+                select: {
+                  id: true,
+                  username: true,
+                  displayName: true
+                }
+              }
+            }
           }
         }
       });
@@ -1138,6 +1151,19 @@ export async function linksRoutes(fastify: FastifyInstance) {
               cacheKey: true,
               confidenceScore: true,
               createdAt: true
+            }
+          },
+          mentions: {
+            select: {
+              id: true,
+              mentionedUserId: true,
+              mentionedUser: {
+                select: {
+                  id: true,
+                  username: true,
+                  displayName: true
+                }
+              }
             }
           }
         }
