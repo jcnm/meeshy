@@ -220,6 +220,7 @@ model Message {
   isDeleted         Boolean               @default(false)
   deletedAt         DateTime?
   replyToId         String?               @db.ObjectId
+  validatedMentions String[]              @default([]) // Usernames des mentions validées (pour performance)
   createdAt         DateTime              @default(now())
   updatedAt         DateTime              @updatedAt
   

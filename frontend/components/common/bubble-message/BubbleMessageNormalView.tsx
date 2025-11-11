@@ -189,13 +189,11 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
 
   // Convertir les @mentions en liens cliquables (uniquement les mentions valides)
   const displayContentWithMentions = useMemo(() => {
-    // Extraire les usernames valides des mentions du message
-    const validUsernames = message.mentions
-      ?.map(m => m.mentionedUser?.username)
-      .filter((username): username is string => Boolean(username)) || [];
+    // Utiliser validatedMentions (simple tableau de usernames) - pas de JOIN nécessaire !
+    const validUsernames = message.validatedMentions || [];
 
     return mentionsToLinks(displayContent, '/u/{username}', validUsernames);
-  }, [displayContent, message.mentions]);
+  }, [displayContent, message.validatedMentions]);
 
   // Contenu de réponse traduit
   const replyToContent = useMemo(() => {
