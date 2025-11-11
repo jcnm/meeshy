@@ -1585,6 +1585,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               onAttachmentsChange={handleAttachmentsChange}
               token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
               userRole={user.role}
+              conversationId={effectiveSelectedId || undefined}
             />
           </div>
 
@@ -1773,6 +1774,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                     onAttachmentsChange={handleAttachmentsChange}
                     token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
                     userRole={user.role}
+                    conversationId={effectiveSelectedId || undefined}
                   />
               </div>
             </div>

@@ -464,6 +464,9 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   const [hasLoadedMessages, setHasLoadedMessages] = useState(false);
   const [hasEstablishedConnection, setHasEstablishedConnection] = useState(false);
 
+  // ObjectId normalisé du backend (pour "meeshy" → vrai ObjectId)
+  const [normalizedConversationId, setNormalizedConversationId] = useState<string | null>(null);
+
   // Langues utilisées par l'utilisateur (basées sur ses préférences)
   const usedLanguages: string[] = getUserLanguagePreferences();
 
@@ -622,7 +625,11 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   useEffect(() => {
     conversationIdRef.current = conversationId;
     // Récupérer l'ObjectId normalisé depuis le service
-    normalizedConversationIdRef.current = meeshySocketIOService.getCurrentConversationId();
+    const currentNormalizedId = meeshySocketIOService.getCurrentConversationId();
+    normalizedConversationIdRef.current = currentNormalizedId;
+    if (currentNormalizedId) {
+      setNormalizedConversationId(currentNormalizedId);
+    }
   }, [conversationId]);
 
   useEffect(() => {
@@ -633,6 +640,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   useEffect(() => {
     const unsubscribe = meeshySocketIOService.onConversationJoined((data: { conversationId: string; userId: string }) => {
       normalizedConversationIdRef.current = data.conversationId;
+      setNormalizedConversationId(data.conversationId); // Mettre à jour le state pour re-render
     });
 
     return () => unsubscribe();
@@ -1548,7 +1556,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                 isMobile={isMobile}
                 conversationType="public"
                 userRole={getUserModerationRole()}
-                conversationId={conversationId}
+                conversationId={normalizedConversationId || conversationId}
                 isAnonymous={isAnonymousMode}
                 currentAnonymousUserId={isAnonymousMode ? user.id : undefined}
                 addTranslatingState={addTranslatingState}
@@ -1586,7 +1594,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                   onAttachmentsChange={handleAttachmentsChange}
                   token={typeof window !== 'undefined' ? getAuthToken()?.value : undefined}
                   userRole={user?.role}
-                  conversationId={conversationId}
+                  conversationId={normalizedConversationId || conversationId}
                 />
               </div>
             </div>
@@ -1696,7 +1704,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
       {/* Galerie d'images */}
       <AttachmentGallery
-        conversationId={conversationId}
+        conversationId={normalizedConversationId || conversationId}
         initialAttachmentId={selectedAttachmentId || undefined}
         open={galleryOpen}
         onClose={() => setGalleryOpen(false)}
