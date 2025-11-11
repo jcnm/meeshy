@@ -122,12 +122,16 @@ export class MentionService {
             lastActiveAt: true
           }
         }
-      },
-      orderBy: {
-        user: {
-          lastActiveAt: 'desc'
-        }
       }
+      // Note: MongoDB/Prisma ne supporte pas orderBy sur les relations
+      // Le tri sera fait après en mémoire
+    });
+
+    // Trier les membres par lastActiveAt de l'utilisateur (en mémoire)
+    conversationMembers.sort((a, b) => {
+      const aTime = a.user?.lastActiveAt?.getTime() || 0;
+      const bTime = b.user?.lastActiveAt?.getTime() || 0;
+      return bTime - aTime; // Ordre décroissant (plus récent d'abord)
     });
 
     // 2. Récupérer les amis de l'utilisateur (via les demandes acceptées)
