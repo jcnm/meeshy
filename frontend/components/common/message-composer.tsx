@@ -16,7 +16,6 @@ import { AttachmentService } from '@/services/attachmentService';
 import { UploadedAttachmentResponse } from '@/shared/types/attachment';
 import { toast } from 'sonner';
 import { AudioRecorderWithEffects } from '@/components/audio/AudioRecorderWithEffects';
-import { MobileAudioRecorder } from '@/components/audio/MobileAudioRecorder';
 import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
 
 interface MessageComposerProps {
@@ -794,56 +793,36 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
           />
         </div>
 
-        {/* Bouton Microphone - Sur mobile, utilise MobileAudioRecorder, sur desktop l'ancien système */}
-        {isMobile ? (
-          <MobileAudioRecorder
-            onRecordingComplete={async (audioBlob: Blob, duration: number) => {
-              // Nettoyer le MIME type
-              const cleanMimeType = audioBlob.type.split(';')[0].trim();
+        {/* Bouton Microphone/Stop (Audio) - Agrandi pour mobile */}
+        <Button
+          onClick={handleMicrophoneClick}
+          disabled={!isComposingEnabled}
+          size="sm"
+          variant="ghost"
+          className={`h-[30px] w-[30px] sm:h-[32px] sm:w-[32px] p-0 rounded-full hover:bg-gray-100 relative min-w-0 min-h-0 ${
+            isRecording ? 'bg-red-50 hover:bg-red-100' : ''
+          }`}
+          title={isRecording ? "Arrêter et démarrer nouvel enregistrement" : "Enregistrer un message vocal"}
+        >
+          {isRecording ? (
+            <Square className="h-[20px] w-[20px] sm:h-[22px] sm:w-[22px] text-red-600 fill-red-600" />
+          ) : (
+            <Mic className={`h-[20px] w-[20px] sm:h-[22px] sm:w-[22px] ${showAudioRecorder ? 'text-blue-600' : 'text-gray-600'}`} />
+          )}
+        </Button>
 
-              // Obtenir l'extension correcte selon le MIME type
-              const extension = getAudioFileExtension(audioBlob.type);
-              const filename = `audio_${Date.now()}.${extension}`;
-
-              const audioFile = new File([audioBlob], filename, { type: cleanMimeType });
-
-              // Upload le fichier
-              await handleFilesSelected([audioFile]);
-            }}
-            maxDuration={600}
-            isComposingEnabled={isComposingEnabled}
-          />
-        ) : (
-          <Button
-            onClick={handleMicrophoneClick}
-            disabled={!isComposingEnabled}
-            size="sm"
-            variant="ghost"
-            className={`h-[22px] w-[22px] sm:h-[22px] sm:w-[22px] p-0 rounded-full hover:bg-gray-100 relative min-w-0 min-h-0 ${
-              isRecording ? 'bg-red-50 hover:bg-red-100' : ''
-            }`}
-            title={isRecording ? "Arrêter et démarrer nouvel enregistrement" : "Enregistrer un message vocal"}
-          >
-            {isRecording ? (
-              <Square className="h-[22px] w-[22px] sm:h-[22px] sm:w-[22px] text-red-600 fill-red-600" />
-            ) : (
-              <Mic className={`h-[22px] w-[22px] sm:h-[22px] sm:w-[22px] ${showAudioRecorder ? 'text-blue-600' : 'text-gray-600'}`} />
-            )}
-          </Button>
-        )}
-
-        {/* Bouton d'attachement (Document) */}
+        {/* Bouton d'attachement (Document) - Agrandi pour mobile */}
         <Button
           onClick={handleAttachmentClick}
           disabled={!isComposingEnabled || isUploading}
           size="sm"
           variant="ghost"
-          className="h-[22px] w-[22px] sm:h-[22px] sm:w-[22px] p-0 rounded-full hover:bg-gray-100 relative min-w-0 min-h-0"
+          className="h-[30px] w-[30px] sm:h-[32px] sm:w-[32px] p-0 rounded-full hover:bg-gray-100 relative min-w-0 min-h-0"
         >
           {isUploading ? (
-            <Loader2 className="h-[22px] w-[22px] sm:h-[22px] sm:w-[22px] text-blue-600 animate-spin" />
+            <Loader2 className="h-[20px] w-[20px] sm:h-[22px] sm:w-[22px] text-blue-600 animate-spin" />
           ) : (
-            <Paperclip className="h-[22px] w-[22px] sm:h-[22px] sm:w-[22px] text-gray-600" />
+            <Paperclip className="h-[20px] w-[20px] sm:h-[22px] sm:w-[22px] text-gray-600" />
           )}
           {selectedFiles.length > 0 && (
             <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] rounded-full h-3.5 w-3.5 flex items-center justify-center">

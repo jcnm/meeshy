@@ -6,6 +6,7 @@ import { Square, Trash2, Mic, Loader2, Radio } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAudioEffects } from '@/hooks/use-audio-effects';
 import { AudioEffectsPanel } from '@/components/video-calls/AudioEffectsPanel';
+import { AudioWaveform } from './AudioWaveform';
 import type { AudioEffectType } from '@shared/types/video-call';
 
 // Types
@@ -64,6 +65,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
   const [showEffectsPanel, setShowEffectsPanel] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [panelPosition, setPanelPosition] = useState({ top: 0, left: 0 });
+  const [audioLevel, setAudioLevel] = useState<number>(0); // Niveau audio en temps réel
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const buttonEffectsRef = useRef<HTMLButtonElement>(null);
@@ -75,6 +77,11 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
   const rawStreamRef = useRef<MediaStream | null>(null); // Stream du micro brut
   const [rawStream, setRawStream] = useState<MediaStream | null>(null); // State pour trigger useAudioEffects
   const processedAudioStreamRef = useRef<MediaStream | null>(null); // Ref pour accéder à la dernière valeur
+
+  // Refs pour l'analyse audio
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const audioLevelAnimationRef = useRef<number | null>(null);
 
   const effectiveDuration = Math.min(maxDuration, MAX_ALLOWED_DURATION);
 
@@ -138,6 +145,9 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
     }
     startTimeRef.current = 0;
 
+    // Arrêter l'analyse audio
+    stopAudioAnalysis();
+
     // Arrêter le stream brut
     if (rawStreamRef.current) {
       rawStreamRef.current.getTracks().forEach(track => track.stop());
@@ -155,7 +165,63 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
     if (onRecordingStateChange) {
       onRecordingStateChange(false);
     }
-  }, [onRecordingStateChange, onStop]);
+  }, [onRecordingStateChange, onStop, stopAudioAnalysis]);
+
+  // Analyser le niveau audio en temps réel
+  const analyzeAudioLevel = useCallback(() => {
+    if (!analyserRef.current) return;
+
+    const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
+    analyserRef.current.getByteFrequencyData(dataArray);
+
+    // Calculer le niveau moyen
+    let sum = 0;
+    for (let i = 0; i < dataArray.length; i++) {
+      sum += dataArray[i];
+    }
+    const average = sum / dataArray.length;
+    const normalizedLevel = average / 255; // Normaliser entre 0 et 1
+
+    setAudioLevel(normalizedLevel);
+
+    // Continuer l'analyse
+    audioLevelAnimationRef.current = requestAnimationFrame(analyzeAudioLevel);
+  }, []);
+
+  // Démarrer l'analyse audio
+  const startAudioAnalysis = useCallback((stream: MediaStream) => {
+    try {
+      // Créer un AudioContext si nécessaire
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+
+      const audioContext = audioContextRef.current;
+
+      // Créer un analyser
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 256;
+      analyserRef.current = analyser;
+
+      // Connecter le stream à l'analyser
+      const source = audioContext.createMediaStreamSource(stream);
+      source.connect(analyser);
+
+      // Démarrer l'analyse
+      analyzeAudioLevel();
+    } catch (error) {
+      console.error('Error starting audio analysis:', error);
+    }
+  }, [analyzeAudioLevel]);
+
+  // Arrêter l'analyse audio
+  const stopAudioAnalysis = useCallback(() => {
+    if (audioLevelAnimationRef.current) {
+      cancelAnimationFrame(audioLevelAnimationRef.current);
+      audioLevelAnimationRef.current = null;
+    }
+    setAudioLevel(0);
+  }, []);
 
   // Démarrer l'enregistrement
   const startRecording = useCallback(async () => {
@@ -270,6 +336,9 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
 
       mediaRecorder.start();
 
+      // Démarrer l'analyse audio en temps réel
+      startAudioAnalysis(newRawStream);
+
       // requestData() manuel
       requestDataIntervalRef.current = setInterval(() => {
         if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
@@ -307,7 +376,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
         setPermissionError('Recording error');
       }
     }
-  }, [effectiveDuration, onRecordingComplete, updateTimer, onRecordingStateChange]);
+  }, [effectiveDuration, onRecordingComplete, updateTimer, onRecordingStateChange, startAudioAnalysis]);
 
   // Exposer les méthodes via ref
   useImperativeHandle(ref, () => ({
@@ -477,20 +546,28 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
         </button>
 
         {/* Centre: Timer et statut */}
-        <div className="flex flex-col items-center justify-center flex-1">
+        <div className="flex flex-col items-center justify-center flex-1 gap-2">
           <div className={`text-2xl font-bold font-mono leading-none ${
             isRecording ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'
           }`}>
             {formatTime(recordingTime)}
           </div>
+
+          {/* Waveform avec analyse audio en temps réel */}
+          <AudioWaveform
+            isRecording={isRecording}
+            audioLevel={audioLevel}
+            className="w-full max-w-[200px]"
+          />
+
           {isRecording && (
-            <div className="flex items-center gap-1 mt-1">
+            <div className="flex items-center gap-1">
               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
               <span className="text-xs text-red-600 dark:text-red-400 font-medium">REC</span>
             </div>
           )}
           {!isRecording && audioEffectsActive && (
-            <div className="text-[10px] text-purple-600 dark:text-purple-400 mt-1">
+            <div className="text-[10px] text-purple-600 dark:text-purple-400">
               Effets actifs
             </div>
           )}
