@@ -420,23 +420,23 @@ export class MentionService {
   async createMentions(messageId: string, mentionedUserIds: string[]): Promise<void> {
     if (mentionedUserIds.length === 0) return;
 
-    // Créer les mentions individuellement pour gérer les duplicatas
+    // Créer les mentions en parallèle pour de meilleures performances
     // MongoDB avec Prisma ne supporte pas skipDuplicates dans createMany
-    for (const userId of mentionedUserIds) {
-      try {
-        await this.prisma.mention.create({
+    await Promise.allSettled(
+      mentionedUserIds.map(userId =>
+        this.prisma.mention.create({
           data: {
             messageId,
             mentionedUserId: userId
           }
-        });
-      } catch (error: any) {
-        // Ignorer les erreurs de doublons (code P2002)
-        if (error.code !== 'P2002') {
-          console.error(`Error creating mention for user ${userId}:`, error);
-        }
-      }
-    }
+        }).catch((error: any) => {
+          // Ignorer les erreurs de doublons (code P2002)
+          if (error.code !== 'P2002') {
+            console.error(`Error creating mention for user ${userId}:`, error);
+          }
+        })
+      )
+    );
   }
 
   /**

@@ -47,6 +47,7 @@ import { maintenanceRoutes } from './routes/maintenance';
 import { authTestRoutes } from './routes/auth-test';
 import affiliateRoutes from './routes/affiliate';
 import messageRoutes from './routes/messages';
+import mentionRoutes from './routes/mentions';
 import { notificationRoutes } from './routes/notifications';
 import { friendRequestRoutes } from './routes/friends';
 import { attachmentRoutes } from './routes/attachments';
@@ -640,13 +641,16 @@ class MeeshyServer {
     
     // Register message routes with /api prefix
     await this.server.register(messageRoutes, { prefix: '/api' });
-    
+
+    // Register mention routes with /api prefix
+    await this.server.register(mentionRoutes, { prefix: '/api' });
+
     // Register attachment routes with /api prefix
     await this.server.register(attachmentRoutes, { prefix: '/api' });
-    
+
     // Register reaction routes with /api prefix
     await this.server.register(reactionRoutes, { prefix: '/api' });
-    
+
     // Register notification routes with /api prefix
     await this.server.register(notificationRoutes, { prefix: '/api' });
     
