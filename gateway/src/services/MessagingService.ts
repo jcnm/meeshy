@@ -744,6 +744,17 @@ export class MessagingService {
               validationResult.validUserIds
             );
 
+            // Extraire les usernames validés pour le champ validatedMentions (évite les JOINs)
+            const validatedUsernames = Array.from(userMap.entries())
+              .filter(([_, user]) => validationResult.validUserIds.includes(user.id))
+              .map(([username, _]) => username);
+
+            // Mettre à jour le message avec les usernames validés (scalable avec millions d'users)
+            await this.prisma.message.update({
+              where: { id: message.id },
+              data: { validatedMentions: validatedUsernames }
+            });
+
             console.log(`[MessagingService] ✅ ${validationResult.validUserIds.length} mention(s) créée(s) pour le message ${message.id}`);
 
             // Déclencher les notifications de mention

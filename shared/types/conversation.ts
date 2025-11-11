@@ -146,6 +146,10 @@ export interface Message {
   // ===== ATTACHMENTS =====
   readonly attachments?: readonly Attachment[];
 
+  // ===== MENTIONS =====
+  // Tableau de usernames validés (pas de JOIN) - scalable avec millions d'utilisateurs
+  readonly validatedMentions?: readonly string[];
+
   // ===== COMPATIBILITÉ =====
   readonly timestamp: Date;             // Alias pour createdAt (requis pour compatibilité)
 
