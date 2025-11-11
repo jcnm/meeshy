@@ -6,7 +6,7 @@ import type {
   MentionSuggestionsResponse,
   GetMessageMentionsResponse,
   GetUserMentionsResponse
-} from '../../../shared/types/mention.js';
+} from '../../shared/types/index.js';
 
 interface MessageParams {
   messageId: string;
@@ -76,7 +76,7 @@ export default async function mentionRoutes(fastify: FastifyInstance) {
 
       return reply.send(response);
     } catch (error) {
-      fastify.log.error('Error getting mention suggestions:', error);
+      fastify.log.error({ err: error }, 'Error getting mention suggestions');
       return reply.code(500).send({
         success: false,
         error: 'Erreur lors de la récupération des suggestions'
@@ -149,7 +149,7 @@ export default async function mentionRoutes(fastify: FastifyInstance) {
 
       return reply.send(response);
     } catch (error) {
-      fastify.log.error('Error getting message mentions:', error);
+      fastify.log.error({ err: error }, 'Error getting message mentions');
       return reply.code(500).send({
         success: false,
         error: 'Erreur lors de la récupération des mentions'
@@ -212,7 +212,7 @@ export default async function mentionRoutes(fastify: FastifyInstance) {
 
       return reply.send(response);
     } catch (error) {
-      fastify.log.error('Error getting user mentions:', error);
+      fastify.log.error({ err: error }, 'Error getting user mentions');
       return reply.code(500).send({
         success: false,
         error: 'Erreur lors de la récupération des mentions'

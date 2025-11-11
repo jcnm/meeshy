@@ -5,7 +5,7 @@
  * dans les messages, ainsi que la suggestion d'utilisateurs pour l'autocomplete.
  */
 
-import { PrismaClient, User, ConversationMember } from '../../../shared/prisma/client';
+import { PrismaClient, User, ConversationMember } from '../../shared/prisma/client';
 
 export interface MentionSuggestion {
   id: string;
@@ -420,14 +420,23 @@ export class MentionService {
   async createMentions(messageId: string, mentionedUserIds: string[]): Promise<void> {
     if (mentionedUserIds.length === 0) return;
 
-    // Créer toutes les mentions en une seule transaction
-    await this.prisma.mention.createMany({
-      data: mentionedUserIds.map(userId => ({
-        messageId,
-        mentionedUserId: userId
-      })),
-      skipDuplicates: true // Éviter les erreurs si mention déjà existante
-    });
+    // Créer les mentions individuellement pour gérer les duplicatas
+    // MongoDB avec Prisma ne supporte pas skipDuplicates dans createMany
+    for (const userId of mentionedUserIds) {
+      try {
+        await this.prisma.mention.create({
+          data: {
+            messageId,
+            mentionedUserId: userId
+          }
+        });
+      } catch (error: any) {
+        // Ignorer les erreurs de doublons (code P2002)
+        if (error.code !== 'P2002') {
+          console.error(`Error creating mention for user ${userId}:`, error);
+        }
+      }
+    }
   }
 
   /**

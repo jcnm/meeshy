@@ -243,7 +243,7 @@ export function mentionsToLinks(
   content: string,
   linkTemplate: string = '/u/{username}'
 ): string {
-  return content.replace(/@(\w+)/g, (match, username) => {
+  return content.replace(/@(\w+)/g, (_match, username) => {
     const link = linkTemplate.replace('{username}', username);
     return `[@${username}](${link})`;
   });
