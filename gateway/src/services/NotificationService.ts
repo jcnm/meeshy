@@ -225,21 +225,9 @@ export class NotificationService {
   }): Promise<NotificationEventData | null> {
     const messagePreview = this.truncateMessage(data.messageContent, 25);
 
-    // Adapter le titre selon le type de conversation
-    let title: string;
-    if (data.conversationType === 'direct') {
-      // Conversation directe: "Nouveau message de Xena"
-      title = `Nouveau message de ${data.senderUsername}`;
-    } else if (data.conversationTitle) {
-      // Conversation de groupe/channel: "Xena a écrit dans Machine Learning Promotion ESG..."
-      const truncatedTitle = data.conversationTitle.length > 30
-        ? data.conversationTitle.substring(0, 27) + '...'
-        : data.conversationTitle;
-      title = `${data.senderUsername} a écrit dans ${truncatedTitle}`;
-    } else {
-      // Fallback
-      title = `Nouveau message de ${data.senderUsername}`;
-    }
+    // Titre simple pour tous les types: "Nouveau message de Xena"
+    // Le nom de la conversation est affiché dans le timestamp côté frontend
+    const title = `Nouveau message de ${data.senderUsername}`;
 
     return this.createNotification({
       userId: data.recipientId,
