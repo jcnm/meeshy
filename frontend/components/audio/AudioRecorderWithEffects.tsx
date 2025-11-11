@@ -128,45 +128,6 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
     animationFrameRef.current = requestAnimationFrame(updateTimer);
   }, [effectiveDuration]);
 
-  // Arrêter l'enregistrement
-  const stopRecording = useCallback(() => {
-    if (onStop) {
-      onStop();
-    }
-
-    if (requestDataIntervalRef.current) {
-      clearInterval(requestDataIntervalRef.current);
-      requestDataIntervalRef.current = null;
-    }
-
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-      animationFrameRef.current = null;
-    }
-    startTimeRef.current = 0;
-
-    // Arrêter l'analyse audio
-    stopAudioAnalysis();
-
-    // Arrêter le stream brut
-    if (rawStreamRef.current) {
-      rawStreamRef.current.getTracks().forEach(track => track.stop());
-      rawStreamRef.current = null;
-    }
-    setRawStream(null); // Reset le state
-
-    // Arrêter le media recorder
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      mediaRecorderRef.current.stop();
-    }
-
-    setIsRecording(false);
-
-    if (onRecordingStateChange) {
-      onRecordingStateChange(false);
-    }
-  }, [onRecordingStateChange, onStop, stopAudioAnalysis]);
-
   // Analyser le niveau audio en temps réel
   const analyzeAudioLevel = useCallback(() => {
     if (!analyserRef.current) return;
@@ -222,6 +183,45 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
     }
     setAudioLevel(0);
   }, []);
+
+  // Arrêter l'enregistrement
+  const stopRecording = useCallback(() => {
+    if (onStop) {
+      onStop();
+    }
+
+    if (requestDataIntervalRef.current) {
+      clearInterval(requestDataIntervalRef.current);
+      requestDataIntervalRef.current = null;
+    }
+
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+    startTimeRef.current = 0;
+
+    // Arrêter l'analyse audio
+    stopAudioAnalysis();
+
+    // Arrêter le stream brut
+    if (rawStreamRef.current) {
+      rawStreamRef.current.getTracks().forEach(track => track.stop());
+      rawStreamRef.current = null;
+    }
+    setRawStream(null); // Reset le state
+
+    // Arrêter le media recorder
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+    }
+
+    setIsRecording(false);
+
+    if (onRecordingStateChange) {
+      onRecordingStateChange(false);
+    }
+  }, [onRecordingStateChange, onStop, stopAudioAnalysis]);
 
   // Démarrer l'enregistrement
   const startRecording = useCallback(async () => {
