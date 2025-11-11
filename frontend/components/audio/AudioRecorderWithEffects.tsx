@@ -194,46 +194,42 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
       rawStreamRef.current = newRawStream;
       setRawStream(newRawStream); // Trigger useAudioEffects
 
-      // Attendre que useAudioEffects initialise et produise le processedAudioStream
+      // Attendre TOUJOURS que useAudioEffects initialise le stream de sortie
+      // Cela permet d'activer les effets PENDANT l'enregistrement
+      console.log('🎭 [AudioRecorder] Waiting for processedAudioStream to be ready...');
+
+      const maxWaitTime = 3000; // 3 secondes maximum
+      const checkInterval = 100; // Vérifier toutes les 100ms
+      const startWait = Date.now();
+
       let streamToRecord = newRawStream;
 
-      if (audioEffectsActive) {
-        console.log('🎭 [AudioRecorder] Waiting for processedAudioStream to be ready...');
+      while (Date.now() - startWait < maxWaitTime) {
+        // Vérifier la ref pour avoir la valeur la plus récente
+        const currentProcessedStream = processedAudioStreamRef.current;
 
-        // Attendre activement que processedAudioStream soit prêt avec des audio tracks
-        const maxWaitTime = 3000; // 3 secondes maximum
-        const checkInterval = 100; // Vérifier toutes les 100ms
-        const startWait = Date.now();
-
-        while (Date.now() - startWait < maxWaitTime) {
-          // Vérifier la ref pour avoir la valeur la plus récente
-          const currentProcessedStream = processedAudioStreamRef.current;
-
-          // Vérifier si processedAudioStream existe et a des audio tracks
-          if (currentProcessedStream && currentProcessedStream.getAudioTracks().length > 0) {
-            console.log('✅ [AudioRecorder] processedAudioStream is ready!', {
-              tracks: currentProcessedStream.getAudioTracks().length,
-              waitTime: Date.now() - startWait
-            });
-            streamToRecord = currentProcessedStream;
-            break;
-          }
-
-          // Attendre avant de vérifier à nouveau
-          await new Promise(resolve => setTimeout(resolve, checkInterval));
-        }
-
-        // Si après le timeout le stream n'est pas prêt, avertir et utiliser le stream brut
-        if (streamToRecord === newRawStream) {
-          const currentProcessedStream = processedAudioStreamRef.current;
-          console.warn('⚠️ [AudioRecorder] processedAudioStream not ready after 3s, using raw stream', {
-            processedAudioStreamExists: !!currentProcessedStream,
-            audioTracksCount: currentProcessedStream?.getAudioTracks().length || 0
+        // Vérifier si processedAudioStream existe et a des audio tracks
+        if (currentProcessedStream && currentProcessedStream.getAudioTracks().length > 0) {
+          console.log('✅ [AudioRecorder] processedAudioStream is ready!', {
+            tracks: currentProcessedStream.getAudioTracks().length,
+            waitTime: Date.now() - startWait
           });
-          toast.warning('Effets audio non appliqués - stream non prêt');
+          streamToRecord = currentProcessedStream;
+          break;
         }
-      } else {
-        console.log('🎤 [AudioRecorder] No effects active, using raw stream');
+
+        // Attendre avant de vérifier à nouveau
+        await new Promise(resolve => setTimeout(resolve, checkInterval));
+      }
+
+      // Si après le timeout le stream n'est pas prêt, avertir et utiliser le stream brut
+      if (streamToRecord === newRawStream) {
+        const currentProcessedStream = processedAudioStreamRef.current;
+        console.warn('⚠️ [AudioRecorder] processedAudioStream not ready after 3s, using raw stream', {
+          processedAudioStreamExists: !!currentProcessedStream,
+          audioTracksCount: currentProcessedStream?.getAudioTracks().length || 0
+        });
+        toast.warning('Effets audio non disponibles - utilisation du micro direct');
       }
 
       const mediaRecorder = new MediaRecorder(streamToRecord, {
@@ -311,7 +307,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
         setPermissionError('Recording error');
       }
     }
-  }, [audioEffectsActive, processedAudioStream, effectiveDuration, onRecordingComplete, updateTimer, onRecordingStateChange]);
+  }, [effectiveDuration, onRecordingComplete, updateTimer, onRecordingStateChange]);
 
   // Exposer les méthodes via ref
   useImperativeHandle(ref, () => ({

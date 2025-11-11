@@ -185,28 +185,30 @@ export const MobileAudioRecorder: React.FC<MobileAudioRecorderProps> = ({
       rawStreamRef.current = newRawStream;
       setRawStream(newRawStream);
 
-      // Attendre que useAudioEffects initialise si des effets sont actifs
+      // Attendre TOUJOURS que useAudioEffects initialise le stream de sortie
+      // Cela permet d'activer les effets PENDANT l'enregistrement
+      const maxWaitTime = 3000;
+      const checkInterval = 100;
+      const startWait = Date.now();
+
       let streamToRecord = newRawStream;
 
-      if (audioEffectsActive) {
-        const maxWaitTime = 3000;
-        const checkInterval = 100;
-        const startWait = Date.now();
+      while (Date.now() - startWait < maxWaitTime) {
+        const currentProcessedStream = processedAudioStreamRef.current;
 
-        while (Date.now() - startWait < maxWaitTime) {
-          const currentProcessedStream = processedAudioStreamRef.current;
-
-          if (currentProcessedStream && currentProcessedStream.getAudioTracks().length > 0) {
-            streamToRecord = currentProcessedStream;
-            break;
-          }
-
-          await new Promise(resolve => setTimeout(resolve, checkInterval));
+        if (currentProcessedStream && currentProcessedStream.getAudioTracks().length > 0) {
+          streamToRecord = currentProcessedStream;
+          console.log('✅ [MobileAudioRecorder] Using processed audio stream');
+          break;
         }
 
-        if (streamToRecord === newRawStream && processedAudioStreamRef.current) {
-          toast.warning('Effets audio non appliqués - stream non prêt');
-        }
+        await new Promise(resolve => setTimeout(resolve, checkInterval));
+      }
+
+      // Si le stream processé n'est pas prêt après 3s, utiliser le stream brut
+      if (streamToRecord === newRawStream) {
+        console.warn('⚠️ [MobileAudioRecorder] processedAudioStream not ready, using raw stream');
+        toast.warning('Effets audio non disponibles - utilisation du micro direct');
       }
 
       const mediaRecorder = new MediaRecorder(streamToRecord, {
@@ -286,7 +288,7 @@ export const MobileAudioRecorder: React.FC<MobileAudioRecorderProps> = ({
         toast.error('Impossible d\'accéder au microphone.');
       }
     }
-  }, [audioEffectsActive, updateTimer, vibrate]);
+  }, [updateTimer, vibrate]);
 
   // Annuler l'enregistrement
   const cancelRecording = useCallback(() => {
