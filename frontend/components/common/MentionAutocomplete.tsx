@@ -37,6 +37,7 @@ export function MentionAutocomplete({
     // Si ce n'est pas le cas (ex: "meeshy"), ne pas appeler l'API
     const isValidObjectId = /^[a-f\d]{24}$/i.test(conversationId);
     if (!isValidObjectId) {
+      console.log('[MentionAutocomplete] conversationId invalide:', conversationId);
       setSuggestions([]);
       return;
     }
@@ -46,18 +47,20 @@ export function MentionAutocomplete({
 
     try {
       const queryParam = query ? `&query=${encodeURIComponent(query)}` : '';
-      const response = await fetch(
-        `/api/mentions/suggestions?conversationId=${conversationId}${queryParam}`,
-        {
-          credentials: 'include'
-        }
-      );
+      const apiUrl = `/api/mentions/suggestions?conversationId=${conversationId}${queryParam}`;
+      console.log('[MentionAutocomplete] Fetching suggestions:', apiUrl);
+
+      const response = await fetch(apiUrl, {
+        credentials: 'include'
+      });
 
       if (!response.ok) {
+        console.error('[MentionAutocomplete] API error:', response.status, response.statusText);
         throw new Error('Failed to fetch suggestions');
       }
 
       const data = await response.json();
+      console.log('[MentionAutocomplete] API response:', data);
 
       if (data.success && data.data) {
         setSuggestions(data.data.slice(0, maxSuggestions));
@@ -166,10 +169,7 @@ export function MentionAutocomplete({
     }
   };
 
-  if (!suggestions.length && !isLoading && !error) {
-    return null;
-  }
-
+  // Toujours afficher le composant quand il est monté (pas de return null)
   return (
     <div
       ref={containerRef}
@@ -237,6 +237,12 @@ export function MentionAutocomplete({
               </Badge>
             </button>
           ))}
+        </div>
+      )}
+
+      {!isLoading && !error && suggestions.length === 0 && !query && (
+        <div className="p-4 text-center text-sm text-gray-500">
+          Tapez pour rechercher un utilisateur...
         </div>
       )}
 
