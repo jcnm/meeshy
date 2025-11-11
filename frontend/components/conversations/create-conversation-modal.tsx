@@ -360,9 +360,13 @@ export function CreateConversationModal({
 
       const requestBody: any = {
         title: conversationTitle,
-        type: backendType,
-        participantIds: validParticipantIds
+        type: backendType
       };
+
+      // Only add participantIds if there are valid participants
+      if (validParticipantIds.length > 0) {
+        requestBody.participantIds = validParticipantIds;
+      }
 
       // Add identifier only for group and public conversations
       if (conversationType !== 'direct' && customIdentifier.trim()) {
@@ -374,23 +378,41 @@ export function CreateConversationModal({
         requestBody.communityId = selectedCommunity;
       }
 
+      // Log pour debug
+      console.log('🔍 [CreateConversation] Request body:', JSON.stringify(requestBody, null, 2));
+
       const response = await apiService.post<{ success: boolean; data: any }>('/api/conversations', requestBody);
 
       if (response.data.success) {
         const responseData = response.data;
         const conversation = responseData.data;
+        console.log('✅ [CreateConversation] Conversation créée avec succès:', conversation);
         toast.success(t('createConversationModal.success.conversationCreated'));
-        
+
         // Passer les données de la conversation créée pour un ajout immédiat
         onConversationCreated(conversation.id, conversation);
         handleClose();
       } else {
         // Handle error response
+        console.error('❌ [CreateConversation] Échec de création (response.success = false):', response.data);
         toast.error(t('createConversationModal.errors.creationError'));
       }
-    } catch (error) {
-      console.error('Erreur création conversation:', error);
-      toast.error(t('createConversationModal.errors.creationError'));
+    } catch (error: any) {
+      console.error('❌ [CreateConversation] Erreur lors de la création:', {
+        message: error?.message,
+        status: error?.status,
+        data: error?.data,
+        error
+      });
+
+      // Afficher un message d'erreur plus détaillé si disponible
+      if (error?.data?.message) {
+        toast.error(`Erreur: ${error.data.message}`);
+      } else if (error?.message) {
+        toast.error(`Erreur: ${error.message}`);
+      } else {
+        toast.error(t('createConversationModal.errors.creationError'));
+      }
     } finally {
       setIsCreating(false);
     }
