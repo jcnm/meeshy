@@ -71,6 +71,7 @@ export const MobileAudioRecorder: React.FC<MobileAudioRecorderProps> = ({
   const rawStreamRef = useRef<MediaStream | null>(null);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
   const processedAudioStreamRef = useRef<MediaStream | null>(null);
+  const sendDirectlyRef = useRef<boolean>(false); // Flag pour envoyer directement sans preview
 
   const [rawStream, setRawStream] = useState<MediaStream | null>(null);
 
@@ -225,12 +226,34 @@ export const MobileAudioRecorder: React.FC<MobileAudioRecorderProps> = ({
 
       mediaRecorder.onstop = async () => {
         const blob = new Blob(chunksRef.current, { type: mimeType });
-        setAudioBlob(blob);
-        setRecordingState('preview');
+        const duration = recordingTime / 1000;
 
         // Arrêter tous les tracks du stream brut
         newRawStream.getTracks().forEach(track => track.stop());
         setRawStream(null);
+
+        // Si on doit envoyer directement (mode release-to-send)
+        if (sendDirectlyRef.current) {
+          sendDirectlyRef.current = false; // Reset le flag
+
+          if (duration < 0.5) {
+            // Enregistrement trop court
+            toast.warning('Enregistrement trop court');
+            setRecordingState('idle');
+            setRecordingTime(0);
+            vibrate('warning');
+          } else {
+            // Envoyer directement
+            onRecordingComplete(blob, duration);
+            setRecordingState('idle');
+            setRecordingTime(0);
+            vibrate('success');
+          }
+        } else {
+          // Mode preview (quand on arrête manuellement en mode verrouillé)
+          setAudioBlob(blob);
+          setRecordingState('preview');
+        }
       };
 
       mediaRecorder.start();
@@ -327,31 +350,11 @@ export const MobileAudioRecorder: React.FC<MobileAudioRecorderProps> = ({
 
   const handleMicRelease = useCallback(() => {
     if (recordingState === 'recording') {
-      // Enregistrement non verrouillé, arrêter et envoyer
-      stopRecording();
-      // Le blob sera créé dans onstop, et on l'envoie automatiquement
-      setTimeout(() => {
-        if (chunksRef.current.length > 0) {
-          const mimeType = selectedCodecRef.current;
-          const blob = new Blob(chunksRef.current, { type: mimeType });
-          const duration = recordingTime / 1000;
-
-          if (duration < 0.5) {
-            // Enregistrement trop court
-            toast.warning('Enregistrement trop court');
-            setRecordingState('idle');
-            setRecordingTime(0);
-            vibrate('warning');
-          } else {
-            onRecordingComplete(blob, duration);
-            setRecordingState('idle');
-            setRecordingTime(0);
-            vibrate('success');
-          }
-        }
-      }, 100);
+      // Enregistrement non verrouillé, arrêter et envoyer directement
+      sendDirectlyRef.current = true; // Activer le flag pour envoyer directement
+      stopRecording(); // mediaRecorder.onstop gérera l'envoi
     }
-  }, [recordingState, stopRecording, recordingTime, onRecordingComplete, vibrate]);
+  }, [recordingState, stopRecording]);
 
   // Gérer les swipe gestures
   const handlePan = useCallback((event: any, info: PanInfo) => {
