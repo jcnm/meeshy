@@ -10,7 +10,7 @@
  */
 
 import { Socket } from 'socket.io';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../../shared/prisma/client';
 import { CallService } from '../services/CallService';
 import { NotificationService } from '../services/NotificationService';
 import { logger } from '../utils/logger';

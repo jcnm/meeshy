@@ -11,7 +11,7 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from '@jest/globals';
 import { FastifyInstance } from 'fastify';
 import Fastify from 'fastify';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../shared/prisma/client';
 import { createUnifiedAuthMiddleware } from '../../middleware/auth';
 import jwt from 'jsonwebtoken';
 

@@ -120,13 +120,13 @@ COPY --chown=gateway:nodejs docker-entrypoint.sh ./
 
 # Build de l'application avec nettoyage
 RUN echo "🔧 Génération du client Prisma Node.js..." \
-    && npx prisma generate --schema=./shared/prisma/schema.prisma \
+    && PRISMA_CLIENT_OUTPUT_DIRECTORY=./shared/prisma npx prisma generate --schema=./shared/prisma/schema.prisma \
     && echo "✅ Client Prisma Node.js généré avec succès" \
     && echo "🏗️  Building TypeScript application..." \
     && CI=true DATABASE_URL=mongodb://dummy:dummy@localhost:27017/dummy pnpm exec tsc \
     && echo "📦 Copying shared resources to dist..." \
-    && cp -r shared/prisma dist/shared/ \
-    && echo "📂 Verifying compiled structure..." \
+    && cp -ar shared/prisma dist/shared/ \
+    && ls -ial shared/prisma/ && echo "📂 Verifying compiled structure..." \
     && ls -la dist/shared/ || true \
     && ls -la dist/shared/utils/ 2>/dev/null && echo "✅ shared/utils successfully compiled" || echo "⚠️  dist/shared/utils not found" \
     && ls -la dist/shared/types/ 2>/dev/null && echo "✅ shared/types successfully compiled" || echo "⚠️  dist/shared/types not found" \
