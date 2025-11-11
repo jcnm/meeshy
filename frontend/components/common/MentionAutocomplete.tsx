@@ -33,6 +33,14 @@ export function MentionAutocomplete({
   const fetchSuggestions = useCallback(async () => {
     if (!conversationId) return;
 
+    // Vérifier que conversationId est un ObjectId MongoDB valide (24 caractères hexadécimaux)
+    // Si ce n'est pas le cas (ex: "meeshy"), ne pas appeler l'API
+    const isValidObjectId = /^[a-f\d]{24}$/i.test(conversationId);
+    if (!isValidObjectId) {
+      setSuggestions([]);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 

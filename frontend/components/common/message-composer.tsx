@@ -650,7 +650,10 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     const cursorPosition = textarea.selectionStart;
     const mentionDetection = detectMentionAtCursor(newValue, cursorPosition);
 
-    if (mentionDetection && conversationId) {
+    // Vérifier que conversationId est un ObjectId MongoDB valide (24 caractères hexadécimaux)
+    const isValidObjectId = conversationId && /^[a-f\d]{24}$/i.test(conversationId);
+
+    if (mentionDetection && isValidObjectId) {
       // Calculer la position de l'autocomplete
       if (textareaRef.current) {
         const textareaRect = textareaRef.current.getBoundingClientRect();
