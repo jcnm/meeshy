@@ -46,7 +46,12 @@ class ApiService {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
-    const url = buildApiUrl(endpoint);
+    // Utiliser une URL relative côté client pour que Next.js rewrites fonctionnent
+    // et préservent les cookies d'authentification
+    const isBrowser = typeof window !== 'undefined';
+    const url = isBrowser
+      ? (endpoint.startsWith('/api/') ? endpoint : `/api${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`)
+      : buildApiUrl(endpoint);
 
     // Get token from AuthManager (source unique de vérité)
     const token = authManager.getAuthToken();

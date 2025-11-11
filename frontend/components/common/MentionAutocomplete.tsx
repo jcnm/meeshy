@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { getUserInitials } from '@/lib/avatar-utils';
+import { mentionsService } from '@/services/mentions.service';
 import type { MentionSuggestion } from '../../../shared/types/mention';
 
 interface MentionAutocompleteProps {
@@ -46,31 +47,17 @@ export function MentionAutocomplete({
     setError(null);
 
     try {
-      const queryParam = query ? `&query=${encodeURIComponent(query)}` : '';
-      // Utiliser une URL relative pour que Next.js fasse le rewrite et transmette les cookies
-      const apiUrl = `/api/mentions/suggestions?conversationId=${conversationId}${queryParam}`;
-      console.log('[MentionAutocomplete] Fetching suggestions:', apiUrl);
+      // Utiliser le service dédié pour les mentions
+      const data = await mentionsService.getSuggestions(conversationId, query);
 
-      const response = await fetch(apiUrl, {
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        console.error('[MentionAutocomplete] API error:', response.status, response.statusText);
-        throw new Error('Failed to fetch suggestions');
-      }
-
-      const data = await response.json();
-      console.log('[MentionAutocomplete] API response:', data);
-
-      if (data.success && data.data) {
-        setSuggestions(data.data.slice(0, maxSuggestions));
+      if (data && data.length > 0) {
+        setSuggestions(data.slice(0, maxSuggestions));
         setSelectedIndex(0); // Reset selection when suggestions change
       } else {
         setSuggestions([]);
       }
     } catch (err) {
-      console.error('Error fetching mention suggestions:', err);
+      console.error('[MentionAutocomplete] Error fetching suggestions:', err);
       setError('Failed to load suggestions');
       setSuggestions([]);
     } finally {
