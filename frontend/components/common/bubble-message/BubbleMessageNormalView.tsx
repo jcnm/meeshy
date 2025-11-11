@@ -187,10 +187,15 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
     return message.content;
   }, [currentDisplayLanguage, message.originalLanguage, message.originalContent, message.content, message.translations]);
 
-  // Convertir les @mentions en liens cliquables (uniquement les mentions valides)
+  // Convertir les @mentions en liens cliquables
   const displayContentWithMentions = useMemo(() => {
-    // Utiliser validatedMentions (simple tableau de usernames) - pas de JOIN nécessaire !
-    const validUsernames = message.validatedMentions || [];
+    // 3 modes selon validatedMentions:
+    // - undefined: mode PUBLIC/GLOBAL → TOUS les @usernames cliquables (peut 404)
+    // - ["alice", "bob"]: mode DIRECT/GROUP → seulement ces usernames cliquables
+    // - []: aucun username cliquable
+    const validUsernames = message.validatedMentions !== undefined
+      ? message.validatedMentions  // Array (peut être vide) - mode validation stricte
+      : null;                       // null - mode "tous cliquables" (PUBLIC/GLOBAL)
 
     return mentionsToLinks(displayContent, '/u/{username}', validUsernames);
   }, [displayContent, message.validatedMentions]);
