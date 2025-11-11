@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { getUserInitials } from '@/lib/avatar-utils';
-import { buildApiUrl } from '@/lib/config';
 import type { MentionSuggestion } from '../../../shared/types/mention';
 
 interface MentionAutocompleteProps {
@@ -48,7 +47,8 @@ export function MentionAutocomplete({
 
     try {
       const queryParam = query ? `&query=${encodeURIComponent(query)}` : '';
-      const apiUrl = buildApiUrl(`/mentions/suggestions?conversationId=${conversationId}${queryParam}`);
+      // Utiliser une URL relative pour que Next.js fasse le rewrite et transmette les cookies
+      const apiUrl = `/api/mentions/suggestions?conversationId=${conversationId}${queryParam}`;
       console.log('[MentionAutocomplete] Fetching suggestions:', apiUrl);
 
       const response = await fetch(apiUrl, {
