@@ -331,14 +331,37 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
         const fullPath = (request.params as any)['*'];
         const decodedPath = decodeURIComponent(fullPath);
 
+        // Log pour debug
+        console.log('🔍 [AttachmentRoutes] GET /attachments/file/*', {
+          fullPath,
+          decodedPath,
+          UPLOAD_PATH: process.env.UPLOAD_PATH,
+        });
+
         // Construire le chemin complet
         const uploadBasePath = process.env.UPLOAD_PATH || 'uploads/attachments';
         const filePath = require('path').join(uploadBasePath, decodedPath);
 
+        console.log('📁 [AttachmentRoutes] Resolved file path:', {
+          uploadBasePath,
+          decodedPath,
+          filePath,
+        });
+
         // Vérifier que le fichier existe
         try {
-          await stat(filePath);
-        } catch {
+          const stats = await stat(filePath);
+          console.log('✅ [AttachmentRoutes] File found:', {
+            filePath,
+            size: stats.size,
+            isFile: stats.isFile(),
+          });
+        } catch (statError: any) {
+          console.error('❌ [AttachmentRoutes] File not found on disk:', {
+            filePath,
+            error: statError.message,
+            code: statError.code,
+          });
           return reply.status(404).send({
             success: false,
             error: 'File not found',
