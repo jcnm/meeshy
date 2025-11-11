@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Play, Pause, Download, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
+import { fixAttachmentUrl } from '@/utils/fix-attachment-url';
 
 interface SimpleAudioPlayerProps {
   attachment: UploadedAttachmentResponse;
@@ -62,8 +63,10 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
   // Extraire les valeurs primitives pour éviter les re-renders
   const attachmentId = attachment.id;
   const attachmentDuration = attachment.duration;
-  const attachmentFileUrl = attachment.fileUrl;
   const attachmentMimeType = attachment.mimeType;
+
+  // Fixer l'URL pour qu'elle passe par le proxy Next.js (évite Mixed Content et ERR_EMPTY_RESPONSE)
+  const attachmentFileUrl = fixAttachmentUrl(attachment.fileUrl);
 
   // Charger l'audio après le montage
   useEffect(() => {
@@ -71,8 +74,10 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     if (!audio) return;
 
     if (attachmentFileUrl) {
-      // Valider que l'URL est absolue (commence par http:// ou https://)
-      const isValidUrl = attachmentFileUrl.startsWith('http://') || attachmentFileUrl.startsWith('https://');
+      // Valider que l'URL est valide (absolue ou relative)
+      const isValidUrl = attachmentFileUrl.startsWith('/') ||
+                        attachmentFileUrl.startsWith('http://') ||
+                        attachmentFileUrl.startsWith('https://');
 
       if (isValidUrl) {
         // Le src est défini via <source>, on appelle juste load()
@@ -419,7 +424,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
 
       {/* Bouton télécharger - Plus petit */}
       <a
-        href={attachment.fileUrl}
+        href={attachmentFileUrl}
         download={attachment.originalName}
         className="flex-shrink-0 p-1.5 hover:bg-white/50 dark:hover:bg-gray-700/50 rounded-full transition-all duration-200"
         title="Télécharger"
