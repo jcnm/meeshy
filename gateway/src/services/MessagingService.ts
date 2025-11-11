@@ -5,9 +5,9 @@
  */
 
 import { PrismaClient, Message } from '../../shared/prisma/client';
-import type { 
-  MessageRequest, 
-  MessageResponse, 
+import type {
+  MessageRequest,
+  MessageResponse,
   MessageValidationResult,
   MessagePermissionResult,
   MessageResponseMetadata,
@@ -17,15 +17,18 @@ import type {
 import { TranslationService } from './TranslationService';
 import { conversationStatsService } from './ConversationStatsService';
 import { TrackingLinkService } from './TrackingLinkService';
+import { MentionService } from './MentionService';
 
 export class MessagingService {
   private trackingLinkService: TrackingLinkService;
+  private mentionService: MentionService;
 
   constructor(
     private readonly prisma: PrismaClient,
     private readonly translationService: TranslationService
   ) {
     this.trackingLinkService = new TrackingLinkService(prisma);
+    this.mentionService = new MentionService(prisma);
   }
 
   /**
@@ -690,13 +693,13 @@ export class MessagingService {
         // Extraire tous les tokens Meeshy du contenu modifié
         const meeshyTokenRegex = /m\+([a-zA-Z0-9+\-_=]{6})/gi;
         const matches = processedContent.matchAll(meeshyTokenRegex);
-        
+
         for (const match of matches) {
           const token = match[1];
           try {
             // Mettre à jour le lien de tracking avec le messageId
             await this.prisma.trackingLink.updateMany({
-              where: { 
+              where: {
                 token,
                 conversationId: data.conversationId,
                 messageId: null // Seulement ceux qui n'ont pas encore de messageId
@@ -710,6 +713,44 @@ export class MessagingService {
       } catch (error) {
         console.error('[MessagingService] Erreur lors de la mise à jour des messageIds:', error);
       }
+    }
+
+    // ÉTAPE 4: Traiter les mentions d'utilisateurs
+    try {
+      // Extraire les usernames mentionnés
+      const mentionedUsernames = this.mentionService.extractMentions(processedContent);
+
+      if (mentionedUsernames.length > 0 && data.senderId) {
+        // Résoudre les usernames en utilisateurs réels
+        const userMap = await this.mentionService.resolveUsernames(mentionedUsernames);
+        const mentionedUserIds = Array.from(userMap.values()).map(user => user.id);
+
+        if (mentionedUserIds.length > 0) {
+          // Valider les permissions de mention
+          const validationResult = await this.mentionService.validateMentionPermissions(
+            data.conversationId,
+            mentionedUserIds,
+            data.senderId
+          );
+
+          if (validationResult.validUserIds.length > 0) {
+            // Créer les entrées de mention dans la DB
+            await this.mentionService.createMentions(
+              message.id,
+              validationResult.validUserIds
+            );
+
+            console.log(`[MessagingService] ✅ ${validationResult.validUserIds.length} mention(s) créée(s) pour le message ${message.id}`);
+          }
+
+          if (!validationResult.isValid) {
+            console.warn(`[MessagingService] ⚠️ Certaines mentions invalides:`, validationResult.errors);
+          }
+        }
+      }
+    } catch (mentionError) {
+      console.error('[MessagingService] Erreur lors du traitement des mentions:', mentionError);
+      // Ne pas bloquer l'envoi du message si les mentions échouent
     }
 
     // Convertir au format unifié avec timestamp
@@ -883,8 +924,7 @@ export class MessagingService {
   }
 
   private extractMentions(content: string): string[] {
-    const mentions = content.match(/@(\w+)/g);
-    return mentions ? mentions.map(mention => mention.slice(1)) : [];
+    return this.mentionService.extractMentions(content);
   }
 
   private containsLinks(content: string): boolean {

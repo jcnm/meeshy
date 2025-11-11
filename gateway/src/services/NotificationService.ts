@@ -13,7 +13,7 @@ import type { Server as SocketIOServer } from 'socket.io';
 
 export interface CreateNotificationData {
   userId: string;
-  type: 'new_message' | 'missed_call' | 'new_conversation' | 'message_edited' | 'system';
+  type: 'new_message' | 'missed_call' | 'new_conversation' | 'message_edited' | 'user_mentioned' | 'system';
   title: string;
   content: string;
   priority?: 'low' | 'normal' | 'high' | 'urgent';
@@ -121,6 +121,9 @@ export class NotificationService {
         case 'new_conversation':
         case 'message_edited':
           return preferences.conversationEnabled;
+        case 'user_mentioned':
+          // Les mentions utilisent la même préférence que les messages
+          return preferences.newMessageEnabled && preferences.conversationEnabled;
         default:
           return true;
       }

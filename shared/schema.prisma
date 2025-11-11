@@ -66,6 +66,7 @@ model User {
   messageStatus               MessageStatus[]
   sentMessages                Message[]                @relation("MessageSender")
   reactions                   Reaction[]               @relation("UserReactions")
+  mentions                    Mention[]                @relation("UserMentions")
   notifications               Notification[]
   notificationPreference      NotificationPreference?
   typingIndicators            TypingIndicator[]
@@ -227,6 +228,7 @@ model Message {
   translations      MessageTranslation[]
   attachments       MessageAttachment[]
   reactions         Reaction[]            @relation("MessageReactions")
+  mentions          Mention[]             @relation("MessageMentions")
   notifications     Notification[]        @relation("NotificationMessage")
   replyTo           Message?              @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   replies           Message[]             @relation("MessageReplies")
@@ -343,6 +345,23 @@ model Reaction {
   @@index([userId])
   @@index([anonymousUserId])
   @@index([emoji])
+}
+
+/// Mention d'un utilisateur dans un message
+model Mention {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  messageId       String   @db.ObjectId
+  mentionedUserId String   @db.ObjectId
+  mentionedAt     DateTime @default(now())
+
+  message         Message  @relation("MessageMentions", fields: [messageId], references: [id], onDelete: Cascade)
+  mentionedUser   User     @relation("UserMentions", fields: [mentionedUserId], references: [id], onDelete: Cascade)
+
+  // Contrainte: un utilisateur ne peut être mentionné qu'une seule fois par message
+  @@unique([messageId, mentionedUserId], name: "message_user_mention_unique")
+  @@index([messageId])
+  @@index([mentionedUserId])
+  @@index([mentionedAt])
 }
 
 /// Demande d'amitié entre utilisateurs

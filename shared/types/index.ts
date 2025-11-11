@@ -40,6 +40,9 @@ export * from './community';
 // Export des types réactions
 export * from './reaction';
 
+// Export des types mentions
+export * from './mention';
+
 // Export des types d'erreurs
 export * from './errors';
 
