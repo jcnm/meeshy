@@ -326,10 +326,10 @@ export const MarkdownMessage: React.FC<MarkdownMessageProps> = ({
               </h3>
             );
           },
-          // Custom paragraph rendering
+          // Custom paragraph rendering with whitespace preservation
           p({ node, children, ...props }: any) {
             return (
-              <p className="my-2 leading-relaxed" {...props}>
+              <p className="my-2 leading-relaxed whitespace-pre-line" {...props}>
                 {children}
               </p>
             );
