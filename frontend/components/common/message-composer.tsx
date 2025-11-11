@@ -17,6 +17,8 @@ import { UploadedAttachmentResponse } from '@/shared/types/attachment';
 import { toast } from 'sonner';
 import { AudioRecorderWithEffects } from '@/components/audio/AudioRecorderWithEffects';
 import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
+import { MentionAutocomplete } from './MentionAutocomplete';
+import { detectMentionAtCursor } from '@/shared/types/mention';
 
 interface MessageComposerProps {
   value: string;
@@ -95,6 +97,12 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
 
   // Ref pour gérer le timeout de stopTyping
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // États pour le système de mentions @username
+  const [showMentionAutocomplete, setShowMentionAutocomplete] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState('');
+  const [mentionPosition, setMentionPosition] = useState({ top: 0, left: 0 });
+  const [mentionCursorStart, setMentionCursorStart] = useState(0);
 
   // Utiliser le placeholder fourni ou la traduction par défaut
   const finalPlaceholder = placeholder || t('conversationSearch.shareMessage');
@@ -637,6 +645,31 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     // The conversationId prop is kept for potential future use but
     // typing is NOT emitted here to avoid duplication with parent handlers
 
+    // Détection des mentions @username
+    const textarea = e.target;
+    const cursorPosition = textarea.selectionStart;
+    const mentionDetection = detectMentionAtCursor(newValue, cursorPosition);
+
+    if (mentionDetection && conversationId) {
+      // Calculer la position de l'autocomplete
+      if (textareaRef.current) {
+        const textareaRect = textareaRef.current.getBoundingClientRect();
+
+        // Position approximative du curseur (peut être amélioré avec un calcul plus précis)
+        setMentionPosition({
+          top: textareaRect.bottom + window.scrollY,
+          left: textareaRect.left + window.scrollX
+        });
+      }
+
+      setMentionQuery(mentionDetection.query);
+      setMentionCursorStart(mentionDetection.start);
+      setShowMentionAutocomplete(true);
+    } else {
+      setShowMentionAutocomplete(false);
+      setMentionQuery('');
+    }
+
     // Auto-resize textarea avec gestion améliorée des retours à la ligne
     if (textareaRef.current && textareaRef.current.style) {
       try {
@@ -666,6 +699,30 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       }
     }
   }, [onChange, conversationId]);
+
+  // Handler pour la sélection d'une mention - mémorisé
+  const handleMentionSelect = useCallback((username: string) => {
+    if (!textareaRef.current) return;
+
+    const currentValue = value;
+    const beforeMention = currentValue.substring(0, mentionCursorStart);
+    const afterCursor = currentValue.substring(textareaRef.current.selectionStart);
+    const newValue = `${beforeMention}@${username} ${afterCursor}`;
+
+    onChange(newValue);
+    setShowMentionAutocomplete(false);
+    setMentionQuery('');
+
+    // Placer le curseur après la mention insérée
+    setTimeout(() => {
+      if (textareaRef.current) {
+        const newCursorPos = mentionCursorStart + username.length + 2; // +2 pour @ et espace
+        textareaRef.current.selectionStart = newCursorPos;
+        textareaRef.current.selectionEnd = newCursorPos;
+        textareaRef.current.focus();
+      }
+    }, 0);
+  }, [value, mentionCursorStart, onChange]);
 
 
   return (
@@ -778,6 +835,19 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         }}
       />
 
+      {/* Autocomplete des mentions @username */}
+      {showMentionAutocomplete && conversationId && (
+        <MentionAutocomplete
+          conversationId={conversationId}
+          query={mentionQuery}
+          onSelect={handleMentionSelect}
+          onClose={() => {
+            setShowMentionAutocomplete(false);
+            setMentionQuery('');
+          }}
+          position={mentionPosition}
+        />
+      )}
 
       {/* Indicateurs et boutons à gauche: Flag selector, Audio, Document, localisation, upload */}
       <div className="absolute bottom-2 sm:bottom-3 left-3 flex items-center space-x-1 text-xs sm:text-sm text-gray-600 pointer-events-auto">

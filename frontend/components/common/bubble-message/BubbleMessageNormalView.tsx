@@ -44,6 +44,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { User, BubbleTranslation } from '@shared/types';
 import { SUPPORTED_LANGUAGES, getLanguageInfo } from '@shared/types';
 import type { Message } from '@shared/types/conversation';
+import { mentionsToLinks } from '@/shared/types/mention';
 import type { BubbleStreamMessage } from '@/types/bubble-stream';
 import { Z_CLASSES } from '@/lib/z-index';
 import { useI18n } from '@/hooks/useI18n';
@@ -185,6 +186,11 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
 
     return message.content;
   }, [currentDisplayLanguage, message.originalLanguage, message.originalContent, message.content, message.translations]);
+
+  // Convertir les @mentions en liens cliquables
+  const displayContentWithMentions = useMemo(() => {
+    return mentionsToLinks(displayContent, '/u/{username}');
+  }, [displayContent]);
 
   // Contenu de réponse traduit
   const replyToContent = useMemo(() => {
@@ -669,7 +675,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                     style={{ position: 'relative', zIndex: 1 }}
                   >
                     <MarkdownMessage
-                      content={displayContent}
+                      content={displayContentWithMentions}
                       className={cn(
                         "text-sm sm:text-base break-words",
                         isOwnMessage
