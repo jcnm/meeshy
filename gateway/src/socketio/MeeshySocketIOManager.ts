@@ -2183,7 +2183,7 @@ export class MeeshySocketIOManager {
         select: {
           id: true,
           type: true,
-          name: true
+          title: true
         }
       });
 
@@ -2233,7 +2233,7 @@ export class MeeshySocketIOManager {
           conversationId: message.conversationId,
           messageId: message.id,
           conversationType: conversation.type,
-          conversationName: conversation.name || undefined
+          conversationTitle: conversation.title || undefined
         });
       }
 

@@ -16,7 +16,7 @@ export interface Notification {
   data?: any;
   conversationId?: string;
   conversationType?: string;
-  conversationName?: string;
+  conversationTitle?: string;
   messageId?: string;
   callSessionId?: string;
   senderId?: string;
@@ -127,7 +127,7 @@ export class NotificationService {
             message: notif.content || notif.message || '',
             conversationId: notif.conversationId,
             conversationType: parsedData?.conversationType,
-            conversationName: parsedData?.conversationName,
+            conversationTitle: parsedData?.conversationTitle,
             messageId: notif.messageId,
             callSessionId: notif.callSessionId,
             senderId: notif.senderId,
@@ -256,7 +256,7 @@ export class NotificationService {
       data: data.data,
       conversationId: data.conversationId,
       conversationType: data.data?.conversationType,
-      conversationName: data.data?.conversationName,
+      conversationTitle: data.data?.conversationTitle,
       messageId: data.messageId,
       callSessionId: data.callSessionId,
       senderId: data.senderId,

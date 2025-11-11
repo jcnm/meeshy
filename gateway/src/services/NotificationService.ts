@@ -221,7 +221,7 @@ export class NotificationService {
     messageId: string;
     conversationIdentifier?: string;
     conversationType?: string;
-    conversationName?: string;
+    conversationTitle?: string;
   }): Promise<NotificationEventData | null> {
     const messagePreview = this.truncateMessage(data.messageContent, 25);
 
@@ -230,12 +230,12 @@ export class NotificationService {
     if (data.conversationType === 'direct') {
       // Conversation directe: "Nouveau message de Xena"
       title = `Nouveau message de ${data.senderUsername}`;
-    } else if (data.conversationName) {
+    } else if (data.conversationTitle) {
       // Conversation de groupe/channel: "Xena a écrit dans Machine Learning Promotion ESG..."
-      const truncatedName = data.conversationName.length > 30
-        ? data.conversationName.substring(0, 27) + '...'
-        : data.conversationName;
-      title = `${data.senderUsername} a écrit dans ${truncatedName}`;
+      const truncatedTitle = data.conversationTitle.length > 30
+        ? data.conversationTitle.substring(0, 27) + '...'
+        : data.conversationTitle;
+      title = `${data.senderUsername} a écrit dans ${truncatedTitle}`;
     } else {
       // Fallback
       title = `Nouveau message de ${data.senderUsername}`;
@@ -256,7 +256,7 @@ export class NotificationService {
       data: {
         conversationIdentifier: data.conversationIdentifier,
         conversationType: data.conversationType,
-        conversationName: data.conversationName
+        conversationTitle: data.conversationTitle
       }
     });
   }

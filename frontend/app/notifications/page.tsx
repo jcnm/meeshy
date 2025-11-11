@@ -577,8 +577,8 @@ function NotificationsPageContent() {
                               <div className="flex items-center justify-between">
                                 <p className="text-xs text-muted-foreground">
                                   {formatNotificationTime(notification.timestamp)}
-                                  {notification.conversationType !== 'direct' && notification.conversationName && (
-                                    <span> dans {notification.conversationName}</span>
+                                  {notification.conversationType !== 'direct' && notification.conversationTitle && (
+                                    <span> dans {notification.conversationTitle}</span>
                                   )}
                                 </p>
 
