@@ -27,14 +27,13 @@ export function fixAttachmentUrl(url: string | undefined): string {
       // Si le chemin commence par /api/, utiliser le chemin relatif
       if (urlObj.pathname.startsWith('/api/')) {
         // Décoder l'URL pour transformer %2F en / et autres caractères encodés
-        const decodedPath = decodeURIComponent(urlObj.pathname);
-        const decodedSearch = urlObj.search ? decodeURIComponent(urlObj.search) : '';
-        const fixedUrl = decodedPath + decodedSearch;
+        // IMPORTANT: urlObj.pathname est DÉJÀ décodé par l'API URL
+        const fixedUrl = urlObj.pathname + urlObj.search;
 
         console.log('🔧 [fixAttachmentUrl]', {
           original: url,
           pathname: urlObj.pathname,
-          decoded: decodedPath,
+          search: urlObj.search,
           fixed: fixedUrl
         });
         return fixedUrl;
@@ -52,3 +51,4 @@ export function fixAttachmentUrl(url: string | undefined): string {
     return url;
   }
 }
+
