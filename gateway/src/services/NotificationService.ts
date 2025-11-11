@@ -284,6 +284,65 @@ export class NotificationService {
   }
 
   /**
+   * Créer une notification pour une mention d'utilisateur
+   */
+  async createMentionNotification(data: {
+    mentionedUserId: string;
+    senderId: string;
+    senderUsername: string;
+    senderAvatar?: string;
+    messageContent: string;
+    conversationId: string;
+    conversationTitle?: string | null;
+    messageId: string;
+    isMemberOfConversation: boolean;
+  }): Promise<NotificationEventData | null> {
+    // Tronquer le message à 20 mots pour l'aperçu
+    const messagePreview = this.truncateMessage(data.messageContent, 20);
+
+    // Titre: "@username vous a mentionné dans "Titre de conversation""
+    const conversationName = data.conversationTitle || 'une conversation';
+    const title = `${data.senderUsername} vous a mentionné dans "${conversationName}"`;
+
+    // Déterminer le contenu et les données selon si l'utilisateur est membre
+    let content: string;
+    let notificationData: any;
+
+    if (data.isMemberOfConversation) {
+      // Utilisateur est membre: afficher l'aperçu du message
+      content = messagePreview;
+      notificationData = {
+        conversationTitle: data.conversationTitle,
+        isMember: true,
+        action: 'view_message'
+      };
+    } else {
+      // Utilisateur n'est pas membre: invitation à rejoindre
+      content = `${messagePreview}\n\nVous n'êtes pas membre de cette conversation. Cliquez pour la rejoindre.`;
+      notificationData = {
+        conversationTitle: data.conversationTitle,
+        isMember: false,
+        action: 'join_conversation'
+      };
+    }
+
+    return this.createNotification({
+      userId: data.mentionedUserId,
+      type: 'user_mentioned',
+      title,
+      content,
+      priority: 'normal',
+      senderId: data.senderId,
+      senderUsername: data.senderUsername,
+      senderAvatar: data.senderAvatar,
+      messagePreview,
+      conversationId: data.conversationId,
+      messageId: data.messageId,
+      data: notificationData
+    });
+  }
+
+  /**
    * Émettre une notification via Socket.IO
    */
   private emitNotification(userId: string, notification: NotificationEventData) {

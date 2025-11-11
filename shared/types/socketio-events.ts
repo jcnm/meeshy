@@ -45,6 +45,7 @@ export const SERVER_EVENTS = {
   REACTION_ADDED: 'reaction:added',
   REACTION_REMOVED: 'reaction:removed',
   REACTION_SYNC: 'reaction:sync',
+  MENTION_CREATED: 'mention:created',
   CALL_INITIATED: 'call:initiated',
   CALL_PARTICIPANT_JOINED: 'call:participant-joined',
   CALL_PARTICIPANT_LEFT: 'call:participant-left',

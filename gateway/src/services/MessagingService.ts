@@ -18,17 +18,21 @@ import { TranslationService } from './TranslationService';
 import { conversationStatsService } from './ConversationStatsService';
 import { TrackingLinkService } from './TrackingLinkService';
 import { MentionService } from './MentionService';
+import { NotificationService } from './NotificationService';
 
 export class MessagingService {
   private trackingLinkService: TrackingLinkService;
   private mentionService: MentionService;
+  private notificationService?: NotificationService;
 
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly translationService: TranslationService
+    private readonly translationService: TranslationService,
+    notificationService?: NotificationService
   ) {
     this.trackingLinkService = new TrackingLinkService(prisma);
     this.mentionService = new MentionService(prisma);
+    this.notificationService = notificationService;
   }
 
   /**
@@ -741,6 +745,17 @@ export class MessagingService {
             );
 
             console.log(`[MessagingService] ✅ ${validationResult.validUserIds.length} mention(s) créée(s) pour le message ${message.id}`);
+
+            // Déclencher les notifications de mention
+            if (this.notificationService) {
+              await this.sendMentionNotifications(
+                validationResult.validUserIds,
+                data.senderId,
+                data.conversationId,
+                message.id,
+                processedContent
+              );
+            }
           }
 
           if (!validationResult.isValid) {
@@ -914,6 +929,88 @@ export class MessagingService {
         }
       }
     };
+  }
+
+  /**
+   * Envoie les notifications de mention à tous les utilisateurs mentionnés
+   */
+  private async sendMentionNotifications(
+    mentionedUserIds: string[],
+    senderId: string,
+    conversationId: string,
+    messageId: string,
+    messageContent: string
+  ): Promise<void> {
+    if (!this.notificationService) {
+      return;
+    }
+
+    try {
+      // Récupérer les informations de l'expéditeur
+      const sender = await this.prisma.user.findUnique({
+        where: { id: senderId },
+        select: {
+          username: true,
+          avatar: true
+        }
+      });
+
+      if (!sender) {
+        console.error('[MessagingService] Sender not found for mention notifications');
+        return;
+      }
+
+      // Récupérer les informations de la conversation
+      const conversation = await this.prisma.conversation.findUnique({
+        where: { id: conversationId },
+        select: {
+          title: true,
+          type: true,
+          members: {
+            where: { isActive: true },
+            select: { userId: true }
+          }
+        }
+      });
+
+      if (!conversation) {
+        console.error('[MessagingService] Conversation not found for mention notifications');
+        return;
+      }
+
+      const memberIds = conversation.members.map(m => m.userId);
+
+      // Envoyer une notification à chaque utilisateur mentionné
+      for (const mentionedUserId of mentionedUserIds) {
+        // Ne pas notifier l'expéditeur lui-même
+        if (mentionedUserId === senderId) {
+          continue;
+        }
+
+        const isMember = memberIds.includes(mentionedUserId);
+
+        try {
+          await this.notificationService.createMentionNotification({
+            mentionedUserId,
+            senderId,
+            senderUsername: sender.username,
+            senderAvatar: sender.avatar || undefined,
+            messageContent,
+            conversationId,
+            conversationTitle: conversation.title,
+            messageId,
+            isMemberOfConversation: isMember
+          });
+
+          console.log(`[MessagingService] 📩 Notification de mention envoyée à l'utilisateur ${mentionedUserId}`);
+        } catch (notifError) {
+          console.error(`[MessagingService] Erreur lors de l'envoi de notification à ${mentionedUserId}:`, notifError);
+          // Continue avec les autres utilisateurs même si une notification échoue
+        }
+      }
+    } catch (error) {
+      console.error('[MessagingService] Erreur lors de l\'envoi des notifications de mention:', error);
+    }
   }
 
   /**
