@@ -62,6 +62,14 @@ export default async function mentionRoutes(fastify: FastifyInstance) {
         });
       }
 
+      // Valider que conversationId est un ID MongoDB valide (24 caractères hexadécimaux)
+      if (!/^[a-f\d]{24}$/i.test(conversationId)) {
+        return reply.code(400).send({
+          success: false,
+          error: 'conversationId invalide'
+        });
+      }
+
       // Récupérer les suggestions
       const suggestions = await mentionService.getUserSuggestionsForConversation(
         conversationId,
