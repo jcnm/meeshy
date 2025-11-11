@@ -84,7 +84,16 @@ export default async function mentionRoutes(fastify: FastifyInstance) {
 
       return reply.send(response);
     } catch (error) {
-      fastify.log.error({ err: error }, 'Error getting mention suggestions');
+      // Log détaillé de l'erreur pour debug
+      fastify.log.error({
+        err: error,
+        conversationId: request.query.conversationId,
+        query: request.query.query,
+        userId: (request as UnifiedAuthRequest).authContext.userId,
+        stack: error instanceof Error ? error.stack : undefined,
+        message: error instanceof Error ? error.message : String(error)
+      }, 'Error getting mention suggestions');
+
       return reply.code(500).send({
         success: false,
         error: 'Erreur lors de la récupération des suggestions'

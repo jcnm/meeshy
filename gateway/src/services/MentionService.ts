@@ -101,31 +101,45 @@ export class MentionService {
     currentUserId: string,
     query: string = ''
   ): Promise<MentionSuggestion[]> {
+    console.log('[MentionService] getUserSuggestionsForConversation called', {
+      conversationId,
+      currentUserId,
+      query
+    });
+
     const normalizedQuery = query.toLowerCase().trim();
 
     // 1. Récupérer les membres de la conversation
-    const conversationMembers = await this.prisma.conversationMember.findMany({
-      where: {
-        conversationId,
-        isActive: true,
-        userId: { not: currentUserId } // Exclure l'utilisateur actuel
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            firstName: true,
-            lastName: true,
-            displayName: true,
-            avatar: true,
-            lastActiveAt: true
+    console.log('[MentionService] Fetching conversation members...');
+    let conversationMembers;
+    try {
+      conversationMembers = await this.prisma.conversationMember.findMany({
+        where: {
+          conversationId,
+          isActive: true,
+          userId: { not: currentUserId } // Exclure l'utilisateur actuel
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              firstName: true,
+              lastName: true,
+              displayName: true,
+              avatar: true,
+              lastActiveAt: true
+            }
           }
         }
-      }
-      // Note: MongoDB/Prisma ne supporte pas orderBy sur les relations
-      // Le tri sera fait après en mémoire
-    });
+        // Note: MongoDB/Prisma ne supporte pas orderBy sur les relations
+        // Le tri sera fait après en mémoire
+      });
+      console.log(`[MentionService] Found ${conversationMembers.length} conversation members`);
+    } catch (err) {
+      console.error('[MentionService] Error fetching conversation members:', err);
+      throw err;
+    }
 
     // Trier les membres par lastActiveAt de l'utilisateur (en mémoire)
     conversationMembers.sort((a, b) => {
@@ -135,36 +149,44 @@ export class MentionService {
     });
 
     // 2. Récupérer les amis de l'utilisateur (via les demandes acceptées)
-    const friendships = await this.prisma.friendRequest.findMany({
-      where: {
-        OR: [
-          { senderId: currentUserId, status: 'accepted' },
-          { receiverId: currentUserId, status: 'accepted' }
-        ]
-      },
-      include: {
-        sender: {
-          select: {
-            id: true,
-            username: true,
-            firstName: true,
-            lastName: true,
-            displayName: true,
-            avatar: true
-          }
+    console.log('[MentionService] Fetching friendships...');
+    let friendships;
+    try {
+      friendships = await this.prisma.friendRequest.findMany({
+        where: {
+          OR: [
+            { senderId: currentUserId, status: 'accepted' },
+            { receiverId: currentUserId, status: 'accepted' }
+          ]
         },
-        receiver: {
-          select: {
-            id: true,
-            username: true,
-            firstName: true,
-            lastName: true,
-            displayName: true,
-            avatar: true
+        include: {
+          sender: {
+            select: {
+              id: true,
+              username: true,
+              firstName: true,
+              lastName: true,
+              displayName: true,
+              avatar: true
+            }
+          },
+          receiver: {
+            select: {
+              id: true,
+              username: true,
+              firstName: true,
+              lastName: true,
+              displayName: true,
+              avatar: true
+            }
           }
         }
-      }
-    });
+      });
+      console.log(`[MentionService] Found ${friendships.length} friendships`);
+    } catch (err) {
+      console.error('[MentionService] Error fetching friendships:', err);
+      throw err;
+    }
 
     // Construire la liste des amis (exclure l'utilisateur actuel)
     const friends = new Set<string>();
