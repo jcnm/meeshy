@@ -237,28 +237,28 @@ export function hasMentions(content: string): boolean {
  * Remplace les mentions dans un texte par des liens
  * @param content - Le contenu original
  * @param linkTemplate - Template pour le lien (ex: "/u/{username}")
- * @param validUsernames - Liste optionnelle des usernames valides:
- *   - undefined/null: TOUS les @usernames deviennent cliquables (mode PUBLIC/GLOBAL - accepte 404)
- *   - ["alice", "bob"]: seuls ces usernames deviennent cliquables (mode DIRECT/GROUP - validés)
- *   - []: AUCUN username n'est cliquable
- * @returns Contenu avec mentions transformées en liens
+ * @param validUsernames - Liste des usernames validés à convertir en liens:
+ *   - ["alice", "bob"]: seuls ces usernames deviennent cliquables
+ *   - [] ou undefined: AUCUNE mention ne devient cliquable
+ * @returns Contenu avec mentions validées transformées en liens
+ *
+ * @example
+ * mentionsToLinks("Hello @alice @fakeuser", "/u/{username}", ["alice"])
+ * // → "Hello [@alice](/u/alice) @fakeuser"
  */
 export function mentionsToLinks(
   content: string,
   linkTemplate: string = '/u/{username}',
-  validUsernames?: string[] | null
+  validUsernames?: string[]
 ): string {
   return content.replace(/@(\w+)/g, (_match, username) => {
-    // Mode "tous cliquables" si validUsernames est null/undefined (PUBLIC/GLOBAL)
-    // Sinon, vérifier que le username est dans la liste validée
-    if (validUsernames !== null && validUsernames !== undefined) {
-      if (!validUsernames.includes(username)) {
-        // Username pas validé → texte plain
-        return `@${username}`;
-      }
+    // Vérifier si le username est dans la liste validée
+    if (!validUsernames || !validUsernames.includes(username)) {
+      // Username pas validé → texte plain
+      return `@${username}`;
     }
 
-    // Username validé (ou mode "tous cliquables") → lien
+    // Username validé → lien cliquable
     const link = linkTemplate.replace('{username}', username);
     return `[@${username}](${link})`;
   });

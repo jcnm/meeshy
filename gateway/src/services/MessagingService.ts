@@ -721,26 +721,10 @@ export class MessagingService {
 
     // ÉTAPE 4: Traiter les mentions d'utilisateurs
     try {
-      // Récupérer le type de conversation pour décider si on traite les mentions
-      const conversation = await this.prisma.conversation.findUnique({
-        where: { id: data.conversationId },
-        select: { type: true }
-      });
-
-      // OPTIMISATION: Skip mentions pour PUBLIC/GLOBAL (millions d'utilisateurs)
-      // Dans ces conversations, @username devient juste du texte, pas de validation/notification
-      const shouldProcessMentions = conversation &&
-        conversation.type !== 'public' &&
-        conversation.type !== 'global';
-
       // Extraire les usernames mentionnés
       const mentionedUsernames = this.mentionService.extractMentions(processedContent);
 
-      if (mentionedUsernames.length > 0 && !shouldProcessMentions) {
-        console.log(`[MessagingService] ⚠️ Mentions détectées mais skippées (conversation ${conversation?.type}) - pas de validation/notification pour éviter de scaler avec millions d'users`);
-      }
-
-      if (mentionedUsernames.length > 0 && data.senderId && shouldProcessMentions) {
+      if (mentionedUsernames.length > 0 && data.senderId) {
         // Résoudre les usernames en utilisateurs réels
         const userMap = await this.mentionService.resolveUsernames(mentionedUsernames);
         const mentionedUserIds = Array.from(userMap.values()).map(user => user.id);
