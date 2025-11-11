@@ -73,13 +73,16 @@ export class NotificationService {
   }
 
   /**
-   * Tronquer un message à une longueur maximale
+   * Tronquer un message à une longueur maximale (en mots pour le texte)
    */
-  private truncateMessage(message: string, maxLength: number = 32): string {
-    if (message.length <= maxLength) {
+  private truncateMessage(message: string, maxWords: number = 25): string {
+    if (!message) return '';
+
+    const words = message.trim().split(/\s+/);
+    if (words.length <= maxWords) {
       return message;
     }
-    return message.substring(0, maxLength - 3) + '...';
+    return words.slice(0, maxWords).join(' ') + '...';
   }
 
   /**
@@ -217,13 +220,19 @@ export class NotificationService {
     conversationId: string;
     messageId: string;
     conversationIdentifier?: string;
+    conversationType?: string;
+    conversationTitle?: string;
   }): Promise<NotificationEventData | null> {
-    const messagePreview = this.truncateMessage(data.messageContent, 32);
+    const messagePreview = this.truncateMessage(data.messageContent, 25);
+
+    // Titre simple pour tous les types: "Nouveau message de Xena"
+    // Le nom de la conversation est affiché dans le timestamp côté frontend
+    const title = `Nouveau message de ${data.senderUsername}`;
 
     return this.createNotification({
       userId: data.recipientId,
       type: 'new_message',
-      title: `Nouveau message de ${data.senderUsername}`,
+      title,
       content: messagePreview,
       priority: 'normal',
       senderId: data.senderId,
@@ -233,7 +242,9 @@ export class NotificationService {
       conversationId: data.conversationId,
       messageId: data.messageId,
       data: {
-        conversationIdentifier: data.conversationIdentifier
+        conversationIdentifier: data.conversationIdentifier,
+        conversationType: data.conversationType,
+        conversationTitle: data.conversationTitle
       }
     });
   }

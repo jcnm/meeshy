@@ -15,6 +15,8 @@ export interface Notification {
   message: string;
   data?: any;
   conversationId?: string;
+  conversationType?: string;
+  conversationTitle?: string;
   messageId?: string;
   callSessionId?: string;
   senderId?: string;
@@ -115,12 +117,34 @@ export class NotificationService {
       if (data.success && data.data && data.data.notifications) {
         // Charger les notifications dans le Map
         data.data.notifications.forEach((notif: any) => {
+          // Parser le champ data s'il est stocké en JSON
+          let parsedData = notif.data;
+          if (typeof notif.data === 'string') {
+            try {
+              parsedData = JSON.parse(notif.data);
+            } catch (e) {
+              console.error('❌ Erreur parsing notification data:', e);
+              parsedData = null;
+            }
+          }
+
+          console.log('📥 Notification chargée depuis API:', {
+            id: notif.id,
+            conversationId: notif.conversationId,
+            rawData: notif.data,
+            parsedData,
+            conversationType: parsedData?.conversationType,
+            conversationTitle: parsedData?.conversationTitle
+          });
+
           const notification: Notification = {
             id: notif.id,
             type: notif.type,
             title: notif.title,
             message: notif.content || notif.message || '',
             conversationId: notif.conversationId,
+            conversationType: parsedData?.conversationType,
+            conversationTitle: parsedData?.conversationTitle,
             messageId: notif.messageId,
             callSessionId: notif.callSessionId,
             senderId: notif.senderId,
@@ -130,7 +154,7 @@ export class NotificationService {
             attachments: notif.message?.attachments || [],
             timestamp: new Date(notif.createdAt),
             isRead: notif.isRead || false,
-            data: notif.data
+            data: parsedData
           };
           this.notifications.set(notification.id, notification);
         });
@@ -240,6 +264,14 @@ export class NotificationService {
    * Traite une notification générique (nouveau système avec avatar et preview)
    */
   private handleGenericNotification(data: any): void {
+    console.log('🔔 Notification reçue via Socket.IO:', {
+      id: data.id,
+      type: data.type,
+      conversationId: data.conversationId,
+      dataObject: data.data,
+      conversationType: data.data?.conversationType,
+      conversationTitle: data.data?.conversationTitle
+    });
 
     const notification: Notification = {
       id: data.id,
@@ -248,6 +280,8 @@ export class NotificationService {
       message: data.content || data.message,
       data: data.data,
       conversationId: data.conversationId,
+      conversationType: data.data?.conversationType,
+      conversationTitle: data.data?.conversationTitle,
       messageId: data.messageId,
       callSessionId: data.callSessionId,
       senderId: data.senderId,
