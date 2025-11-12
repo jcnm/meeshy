@@ -851,6 +851,15 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       />
 
       {/* Autocomplete des mentions @username */}
+      {(() => {
+        console.log('[MessageComposer] Mention autocomplete conditions:', {
+          showMentionAutocomplete,
+          conversationId,
+          mentionQuery,
+          mentionPosition
+        });
+        return null;
+      })()}
       {showMentionAutocomplete && conversationId && (
         <MentionAutocomplete
           conversationId={conversationId}
