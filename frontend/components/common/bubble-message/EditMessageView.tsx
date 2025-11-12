@@ -203,7 +203,7 @@ export const EditMessageView = memo(function EditMessageView({
       exit={{ opacity: 0, scale: 0.95, y: 10 }}
       transition={{ duration: 0.2, ease: 'easeInOut' }}
       className={cn(
-        "relative w-full max-w-2xl mx-auto rounded-lg border shadow-lg overflow-hidden",
+        "relative w-full max-w-2xl mx-auto rounded-lg border shadow-lg overflow-visible",
         isOwnMessage
           ? "bg-gradient-to-br from-blue-400/95 to-blue-500/95 dark:from-blue-600/90 dark:to-blue-700/90 border-blue-400 dark:border-blue-500 backdrop-blur-sm"
           : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
