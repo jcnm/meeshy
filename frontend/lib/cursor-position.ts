@@ -6,30 +6,26 @@ export function getCursorPosition(
   textarea: HTMLTextAreaElement,
   cursorIndex: number
 ): { x: number; y: number } {
-  // Créer un div miroir invisible pour calculer la position du curseur
-  const mirror = document.createElement('div');
+  // Créer un div miroir pour calculer la position du curseur
+  const div = document.createElement('div');
   const computed = window.getComputedStyle(textarea);
 
-  // Copier tous les styles pertinents du textarea vers le miroir
+  // Copier tous les styles du textarea vers le div
   const styles = [
     'boxSizing',
     'width',
-    'height',
-    'overflowX',
-    'overflowY',
-    'borderTopWidth',
-    'borderRightWidth',
-    'borderBottomWidth',
-    'borderLeftWidth',
     'paddingTop',
     'paddingRight',
     'paddingBottom',
     'paddingLeft',
+    'borderTopWidth',
+    'borderRightWidth',
+    'borderBottomWidth',
+    'borderLeftWidth',
     'fontFamily',
     'fontSize',
     'fontWeight',
     'lineHeight',
-    'textTransform',
     'letterSpacing',
     'wordSpacing',
     'whiteSpace',
@@ -41,44 +37,50 @@ export function getCursorPosition(
   ];
 
   styles.forEach(style => {
-    (mirror.style as any)[style] = (computed as any)[style];
+    (div.style as any)[style] = (computed as any)[style];
   });
 
-  // Styles supplémentaires pour le positionnement
-  mirror.style.position = 'absolute';
-  mirror.style.visibility = 'hidden';
-  mirror.style.top = '-9999px'; // Hors écran pour éviter tout impact visuel
-  mirror.style.left = '-9999px';
-  mirror.style.pointerEvents = 'none';
-  mirror.style.overflow = 'hidden'; // Important pour mesurer correctement
+  // Styles spéciaux pour le positionnement du div
+  div.style.position = 'absolute';
+  div.style.visibility = 'hidden';
+  div.style.whiteSpace = 'pre-wrap'; // Important pour le wrapping comme textarea
+  div.style.wordWrap = 'break-word';
+  div.style.overflow = 'hidden';
+  div.style.height = 'auto'; // Laisser le div grandir naturellement
 
-  // Ajouter le contenu jusqu'au curseur
+  // Ajouter le texte avant le curseur
   const textBeforeCursor = textarea.value.substring(0, cursorIndex);
-  mirror.textContent = textBeforeCursor;
+  const textNode = document.createTextNode(textBeforeCursor);
+  div.appendChild(textNode);
 
-  // Créer un span pour marquer la position du curseur
-  const cursorMarker = document.createElement('span');
-  cursorMarker.textContent = '|';
-  cursorMarker.style.color = 'transparent';
-  mirror.appendChild(cursorMarker);
+  // Créer un span pour marquer la position exacte du curseur
+  const span = document.createElement('span');
+  span.textContent = '|';
+  div.appendChild(span);
 
-  // Ajouter le miroir au DOM temporairement
-  document.body.appendChild(mirror);
+  // Ajouter le texte après le curseur (optionnel mais aide au wrapping)
+  const textAfterCursor = textarea.value.substring(cursorIndex);
+  const textNodeAfter = document.createTextNode(textAfterCursor);
+  div.appendChild(textNodeAfter);
 
-  // Obtenir la position du textarea
+  // Ajouter temporairement au DOM
+  document.body.appendChild(div);
+
+  // Obtenir les positions
   const textareaRect = textarea.getBoundingClientRect();
+  const spanRect = span.getBoundingClientRect();
+  const divRect = div.getBoundingClientRect();
 
-  // Obtenir la position du marqueur de curseur
-  const markerRect = cursorMarker.getBoundingClientRect();
-  const mirrorRect = mirror.getBoundingClientRect();
+  // Calculer la position relative du span dans le div
+  const offsetX = spanRect.left - divRect.left;
+  const offsetY = spanRect.top - divRect.top;
 
-  // Calculer les coordonnées relatives en tenant compte du scroll
-  // Le scroll du textarea doit être soustrait pour obtenir la vraie position visible
-  const x = textareaRect.left + (markerRect.left - mirrorRect.left) - textarea.scrollLeft;
-  const y = textareaRect.top + (markerRect.top - mirrorRect.top) - textarea.scrollTop;
+  // Calculer la position absolue en tenant compte du scroll du textarea
+  const x = textareaRect.left + offsetX - textarea.scrollLeft;
+  const y = textareaRect.top + offsetY - textarea.scrollTop;
 
   // Nettoyer
-  document.body.removeChild(mirror);
+  document.body.removeChild(div);
 
   return { x, y };
 }
