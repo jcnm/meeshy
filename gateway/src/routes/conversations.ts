@@ -1813,33 +1813,29 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         // Ne pas faire échouer l'édition si les mentions échouent
       }
 
-      // Déclencher la retraduction automatique du message modifié
+      // STEP 1: Récupérer les traductions AVANT de déclencher la retraduction
+      // Cela permet de broadcast immédiatement avec les anciennes traductions
+      let messageTranslations: any[] = [];
       try {
-        // Utiliser les instances déjà disponibles dans le contexte Fastify
-        const translationService: TranslationService = (fastify as any).translationService;
-        
-        // Invalider les traductions existantes en base de données
-        const deletedCount = await prisma.messageTranslation.deleteMany({
-          where: {
-            messageId: messageId
+        const messageWithTranslations = await prisma.message.findUnique({
+          where: { id: messageId },
+          include: {
+            translations: {
+              select: {
+                id: true,
+                targetLanguage: true,
+                translatedContent: true,
+                translationModel: true,
+                cacheKey: true,
+                confidenceScore: true
+              }
+            }
           }
         });
-        
-        // Créer un objet message pour la retraduction (avec contenu traité incluant tracking links)
-        const messageForRetranslation = {
-          id: messageId,
-          content: processedContent,
-          originalLanguage: originalLanguage,
-          conversationId: conversationId,
-          senderId: userId
-        };
-        
-        // Déclencher la retraduction via la méthode privée existante
-        await (translationService as any)._processRetranslationAsync(messageId, messageForRetranslation);
-
-      } catch (translationError) {
-        console.error('[GATEWAY] Erreur lors de la retraduction:', translationError);
-        // Ne pas faire échouer l'édition si la retraduction échoue
+        messageTranslations = messageWithTranslations?.translations || [];
+        console.log(`[GATEWAY] Edit - Fetched ${messageTranslations.length} existing translations for immediate broadcast`);
+      } catch (error) {
+        console.warn('[GATEWAY] Edit - Error fetching translations:', error);
       }
 
       // Invalider et recalculer les stats pour refléter l'édition
@@ -1849,15 +1845,48 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         () => []
       );
 
-      // Diffuser la mise à jour via Socket.IO
+      // STEP 2: Déclencher la retraduction automatique du message modifié (asynchrone)
+      // Note: Ne PAS attendre la fin - les nouvelles traductions arriveront plus tard via socket
+      (async () => {
+        try {
+          // Utiliser les instances déjà disponibles dans le contexte Fastify
+          const translationService: TranslationService = (fastify as any).translationService;
+
+          // Créer un objet message pour la retraduction (avec contenu traité incluant tracking links)
+          const messageForRetranslation = {
+            id: messageId,
+            content: processedContent,
+            originalLanguage: originalLanguage,
+            conversationId: conversationId,
+            senderId: userId
+          };
+
+          // Déclencher la retraduction via la méthode privée existante
+          // Cette méthode supprime les anciennes traductions et en crée de nouvelles
+          await (translationService as any)._processRetranslationAsync(messageId, messageForRetranslation);
+          console.log(`[GATEWAY] Edit - Retranslation queued for message ${messageId}`);
+
+        } catch (translationError) {
+          console.error('[GATEWAY] Erreur lors de la retraduction:', translationError);
+          // Ne pas faire échouer l'édition si la retraduction échoue
+        }
+      })();
+
+      // Construire le message complet avec traductions pour la réponse et le broadcast
+      const messageWithTranslations = {
+        ...updatedMessage,
+        conversationId,
+        translations: messageTranslations,
+        meta: { conversationStats: stats }
+      };
+
+      // Diffuser la mise à jour via Socket.IO avec les traductions
       try {
         const socketIOManager = socketIOHandler.getManager();
         if (socketIOManager) {
           const room = `conversation_${conversationId}`;
-          (socketIOManager as any).io.to(room).emit('message:edited', {
-            ...updatedMessage,
-            conversationId
-          });
+          (socketIOManager as any).io.to(room).emit('message:edited', messageWithTranslations);
+          console.log(`[GATEWAY] Edit - Broadcasted message:edited to room ${room} with ${messageTranslations.length} translations`);
         }
       } catch (socketError) {
         console.error('[CONVERSATIONS] Erreur lors de la diffusion Socket.IO:', socketError);
@@ -1866,7 +1895,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
       reply.send({
         success: true,
-        data: { ...updatedMessage, meta: { conversationStats: stats } }
+        data: messageWithTranslations
       });
 
     } catch (error) {
