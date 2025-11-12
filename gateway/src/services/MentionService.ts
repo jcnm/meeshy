@@ -404,12 +404,11 @@ export class MentionService {
       case 'public':
       case 'global':
         // Conversations publiques/globales: tous les utilisateurs enregistrés
-        // Vérifier que les utilisateurs existent et sont actifs
+        // Ne pas filtrer sur isActive pour cohérence avec l'autocomplete
         const users = await this.prisma.user.findMany({
           where: {
-            id: { in: mentionedUserIds },
-            isActive: true,
-            deletedAt: null
+            id: { in: mentionedUserIds }
+            // Pas de filtre isActive/deletedAt pour cohérence avec autocomplete
           },
           select: { id: true }
         });
@@ -425,7 +424,7 @@ export class MentionService {
         }
 
         if (invalidUserIds.length > 0) {
-          errors.push('Certains utilisateurs mentionnés n\'existent pas ou sont inactifs');
+          errors.push('Certains utilisateurs mentionnés n\'existent pas');
         }
         break;
 
