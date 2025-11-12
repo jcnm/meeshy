@@ -210,6 +210,78 @@ class ApiService {
   }
 
   /**
+   * Fetch binary data (audio, images, etc.) as Blob
+   * Returns blob data that can be used to create object URLs
+   *
+   * @param endpoint - API endpoint path (e.g., '/attachments/file/...')
+   * @param options - Additional options (abort signal, custom headers)
+   * @returns Promise resolving to Blob
+   *
+   * @example
+   * const blob = await apiService.getBlob('/attachments/file/2025/11/audio.m4a')
+   * const objectUrl = URL.createObjectURL(blob)
+   */
+  async getBlob(endpoint: string, options?: { signal?: AbortSignal; headers?: Record<string, string> }): Promise<Blob> {
+    const url = buildApiUrl(endpoint);
+    const token = authManager.getAuthToken();
+
+    const headers = {
+      ...(token && { Authorization: `Bearer ${token}` }),
+      ...options?.headers,
+    };
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.config.timeout);
+
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers,
+        signal: options?.signal || controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        // Try to get error message from response
+        let errorMessage = `Erreur serveur (${response.status})`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch {
+          // If not JSON, use default message
+        }
+
+        throw new ApiServiceError(
+          errorMessage,
+          response.status,
+          'BLOB_FETCH_ERROR'
+        );
+      }
+
+      const blob = await response.blob();
+      return blob;
+    } catch (error) {
+      clearTimeout(timeoutId);
+
+      if (error instanceof ApiServiceError) {
+        throw error;
+      }
+
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.error('❌ [API-SERVICE] Timeout de la requête blob:', { endpoint: url, timeout: this.config.timeout });
+        throw new ApiServiceError(`Timeout de la requête blob (${this.config.timeout}ms) - ${endpoint}`, 408, 'TIMEOUT');
+      }
+
+      throw new ApiServiceError(
+        'Erreur de connexion au serveur',
+        0,
+        'NETWORK_ERROR'
+      );
+    }
+  }
+
+  /**
    * @deprecated Utiliser authManager.setCredentials() à la place
    * Conservé pour compatibilité legacy
    */

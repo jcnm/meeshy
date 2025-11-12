@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Play, Pause, Download, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
-import { fixAttachmentUrl } from '@/utils/fix-attachment-url';
+import { apiService } from '@/services/api.service';
 
 interface SimpleAudioPlayerProps {
   attachment: UploadedAttachmentResponse;
@@ -56,6 +56,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
   const [hasLoadedMetadata, setHasLoadedMetadata] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [objectUrl, setObjectUrl] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const animationFrameRef = useRef<number | null>(null);
 
@@ -64,33 +65,104 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
   const attachmentId = attachment.id;
   const attachmentDuration = attachment.duration;
   const attachmentMimeType = attachment.mimeType;
+  const attachmentFileUrl = attachment.fileUrl;
 
-  // Fixer l'URL pour qu'elle passe par le proxy Next.js (évite Mixed Content et ERR_EMPTY_RESPONSE)
-  const attachmentFileUrl = fixAttachmentUrl(attachment.fileUrl);
-
-  // Charger l'audio après le montage
+  // Charger l'audio via apiService - fetch blob et créer object URL
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
+    let isMounted = true;
+    let currentObjectUrl: string | null = null;
 
-    if (attachmentFileUrl) {
-      // Valider que l'URL est valide (absolue ou relative)
-      const isValidUrl = attachmentFileUrl.startsWith('/') ||
-                        attachmentFileUrl.startsWith('http://') ||
-                        attachmentFileUrl.startsWith('https://');
-
-      if (isValidUrl) {
-        // Le src est défini via <source>, on appelle juste load()
-        audio.load();
-      } else {
+    const loadAudio = async () => {
+      if (!attachmentFileUrl) {
         setHasError(true);
-        setErrorMessage('URL du fichier invalide');
+        setErrorMessage('URL du fichier manquante');
+        return;
       }
-    } else {
-      setHasError(true);
-      setErrorMessage('URL du fichier manquante');
-    }
-  }, [attachmentId, attachmentFileUrl, attachmentMimeType]);
+
+      try {
+        setIsLoading(true);
+        setHasError(false);
+
+        // Extraire le chemin API de l'URL (enlever le domaine si présent)
+        let apiPath = attachmentFileUrl;
+
+        // Si c'est une URL absolue, extraire le pathname
+        if (attachmentFileUrl.startsWith('http://') || attachmentFileUrl.startsWith('https://')) {
+          try {
+            const url = new URL(attachmentFileUrl);
+            apiPath = url.pathname;
+          } catch {
+            // Si parsing échoue, utiliser tel quel
+          }
+        }
+
+        // Enlever le préfixe /api si présent (apiService l'ajoute automatiquement)
+        if (apiPath.startsWith('/api/')) {
+          apiPath = apiPath.substring(4);
+        }
+
+        console.log('🎵 [SimpleAudioPlayer] Fetching audio via apiService:', {
+          original: attachmentFileUrl,
+          apiPath,
+          attachmentId
+        });
+
+        // Fetch via apiService - utilise automatiquement le bon backend URL
+        const blob = await apiService.getBlob(apiPath);
+
+        if (!isMounted) {
+          return;
+        }
+
+        // Créer un object URL depuis le blob
+        currentObjectUrl = URL.createObjectURL(blob);
+        setObjectUrl(currentObjectUrl);
+
+        console.log('✅ [SimpleAudioPlayer] Audio loaded successfully:', {
+          blobSize: blob.size,
+          blobType: blob.type,
+          objectUrl: currentObjectUrl
+        });
+
+        // Charger l'audio une fois l'object URL créé
+        if (audioRef.current) {
+          audioRef.current.load();
+        }
+
+        setIsLoading(false);
+      } catch (error: any) {
+        console.error('❌ [SimpleAudioPlayer] Failed to load audio:', error);
+
+        if (!isMounted) {
+          return;
+        }
+
+        setHasError(true);
+        setIsLoading(false);
+
+        if (error?.status === 404) {
+          setErrorMessage('Fichier audio introuvable');
+        } else if (error?.status === 500) {
+          setErrorMessage('Erreur serveur');
+        } else if (error?.code === 'TIMEOUT') {
+          setErrorMessage('Timeout - fichier trop volumineux');
+        } else {
+          setErrorMessage('Erreur de chargement');
+        }
+      }
+    };
+
+    loadAudio();
+
+    // Cleanup: révoquer l'object URL quand le composant unmount ou l'URL change
+    return () => {
+      isMounted = false;
+      if (currentObjectUrl) {
+        console.log('🧹 [SimpleAudioPlayer] Revoking object URL:', currentObjectUrl);
+        URL.revokeObjectURL(currentObjectUrl);
+      }
+    };
+  }, [attachmentId, attachmentFileUrl]);
 
   // Fonction pour mettre à jour le temps avec requestAnimationFrame (fluide)
   const updateProgress = useCallback(() => {
@@ -129,10 +201,10 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
       return;
     }
 
-    // Vérifier si l'audio a une source valide
-    if (!attachmentFileUrl) {
+    // Vérifier si l'audio a une source valide (objectUrl créé)
+    if (!objectUrl) {
       setHasError(true);
-      setErrorMessage('URL du fichier audio manquante');
+      setErrorMessage('Audio non chargé');
       return;
     }
 
@@ -172,7 +244,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
         setErrorMessage('Erreur de lecture audio');
       }
     }
-  }, [attachmentId, attachmentFileUrl, isPlaying]);
+  }, [objectUrl, isPlaying]);
 
   // Handler pour récupérer la durée - VERSION SIMPLIFIÉE
   const tryToGetDuration = useCallback(() => {
@@ -424,26 +496,28 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
 
       {/* Bouton télécharger - Plus petit */}
       <a
-        href={attachmentFileUrl}
+        href={objectUrl || '#'}
         download={attachment.originalName}
         className="flex-shrink-0 p-1.5 hover:bg-white/50 dark:hover:bg-gray-700/50 rounded-full transition-all duration-200"
         title="Télécharger"
+        onClick={(e) => {
+          if (!objectUrl) {
+            e.preventDefault();
+          }
+        }}
       >
         <Download className="w-4 h-4 text-gray-600 dark:text-gray-300" />
       </a>
 
-      {/* Audio element caché - src défini via useEffect pour éviter les problèmes de timing */}
+      {/* Audio element caché - src from object URL */}
       <audio
         ref={audioRef}
+        src={objectUrl || undefined}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleEnded}
         onError={handleAudioError}
         preload="metadata"
       >
-        {/* Utiliser source avec type explicite pour meilleure compatibilité */}
-        {attachmentFileUrl && attachmentMimeType && (
-          <source src={attachmentFileUrl} type={attachmentMimeType} />
-        )}
         Votre navigateur ne supporte pas la lecture audio.
       </audio>
     </div>
@@ -458,10 +532,61 @@ export const CompactAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
   className = ''
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [objectUrl, setObjectUrl] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
+  // Charger l'audio via apiService
+  useEffect(() => {
+    let isMounted = true;
+    let currentObjectUrl: string | null = null;
+
+    const loadAudio = async () => {
+      if (!attachment.fileUrl) return;
+
+      try {
+        // Extraire le chemin API
+        let apiPath = attachment.fileUrl;
+
+        if (apiPath.startsWith('http://') || apiPath.startsWith('https://')) {
+          try {
+            const url = new URL(apiPath);
+            apiPath = url.pathname;
+          } catch {
+            // Ignore parsing errors
+          }
+        }
+
+        if (apiPath.startsWith('/api/')) {
+          apiPath = apiPath.substring(4);
+        }
+
+        const blob = await apiService.getBlob(apiPath);
+
+        if (!isMounted) return;
+
+        currentObjectUrl = URL.createObjectURL(blob);
+        setObjectUrl(currentObjectUrl);
+
+        if (audioRef.current) {
+          audioRef.current.load();
+        }
+      } catch (error) {
+        console.error('CompactAudioPlayer: Failed to load audio', error);
+      }
+    };
+
+    loadAudio();
+
+    return () => {
+      isMounted = false;
+      if (currentObjectUrl) {
+        URL.revokeObjectURL(currentObjectUrl);
+      }
+    };
+  }, [attachment.fileUrl]);
+
   const togglePlay = async () => {
-    if (!audioRef.current) return;
+    if (!audioRef.current || !objectUrl) return;
 
     try {
       if (isPlaying) {
@@ -489,7 +614,8 @@ export const CompactAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
       {/* Bouton Play/Pause compact */}
       <button
         onClick={togglePlay}
-        className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center transition-all duration-200"
+        disabled={!objectUrl}
+        className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center transition-all duration-200 disabled:opacity-50"
       >
         {isPlaying ? (
           <Pause className="w-4 h-4 fill-current" />
@@ -506,7 +632,7 @@ export const CompactAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
       {/* Audio element caché */}
       <audio
         ref={audioRef}
-        src={attachment.fileUrl}
+        src={objectUrl || undefined}
         onEnded={() => setIsPlaying(false)}
         preload="metadata"
       />
