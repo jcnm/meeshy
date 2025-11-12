@@ -342,7 +342,7 @@ export class MeeshySocketIOManager {
                   }
                 },
                 attachments: true,
-                validatedMentions: true, // IMPORTANT: Include validated mentions for real-time display
+                // NOTE: validatedMentions est un champ String[] et est automatiquement inclus (pas besoin de include)
                 replyTo: {
                   include: {
                     sender: {
@@ -567,7 +567,7 @@ export class MeeshySocketIOManager {
                   }
                 },
                 attachments: true,
-                validatedMentions: true, // IMPORTANT: Include validated mentions for real-time display
+                // NOTE: validatedMentions est un champ String[] et est automatiquement inclus (pas besoin de include)
                 replyTo: {
                   include: {
                     sender: {
