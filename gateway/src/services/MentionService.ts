@@ -61,17 +61,12 @@ export class MentionService {
   async resolveUsernames(usernames: string[]): Promise<Map<string, User>> {
     if (usernames.length === 0) return new Map();
 
-    // Créer des regex case-insensitive pour chaque username
-    const usernamePatterns = usernames.map(username => ({
-      $regex: `^${username}$`,
-      $options: 'i' // Case-insensitive
-    }));
-
     const users = await this.prisma.user.findMany({
       where: {
-        OR: usernamePatterns.map(pattern => ({
-          username: pattern
-        })),
+        username: {
+          in: usernames,
+          mode: 'insensitive' // Prisma syntax for case-insensitive search
+        },
         isActive: true,
         deletedAt: null
       },
