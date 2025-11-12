@@ -10,7 +10,6 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
-import { buildApiUrl } from '@/lib/config';
 
 interface PDFViewerProps {
   attachment: UploadedAttachmentResponse;
@@ -37,8 +36,8 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Construire l'URL avec buildApiUrl pour utiliser le bon domaine
-  const attachmentFileUrl = buildApiUrl(`/attachments/${attachment.id}`);
+  // Utiliser directement l'URL depuis l'attachement qui contient déjà le bon chemin
+  const attachmentFileUrl = attachment.fileUrl;
 
   // Check if iframe loads successfully
   React.useEffect(() => {

@@ -20,7 +20,6 @@ import {
 import { Button } from '@/components/ui/button';
 import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
 import { MermaidDiagram } from '@/components/markdown/MermaidDiagram';
-import { buildApiUrl } from '@/lib/config';
 
 interface MarkdownViewerProps {
   attachment: UploadedAttachmentResponse;
@@ -52,8 +51,8 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
   const [showRaw, setShowRaw] = useState(false);
   const { theme, resolvedTheme } = useTheme();
 
-  // Construire l'URL avec buildApiUrl pour utiliser le bon domaine
-  const attachmentFileUrl = buildApiUrl(`/attachments/${attachment.id}`);
+  // Utiliser directement l'URL depuis l'attachement qui contient déjà le bon chemin
+  const attachmentFileUrl = attachment.fileUrl;
   const isDark = theme === 'dark' || resolvedTheme === 'dark';
 
   useEffect(() => {
@@ -85,8 +84,8 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
     setShowRaw(!showRaw);
   };
 
-  // URL de téléchargement avec buildApiUrl
-  const downloadUrl = buildApiUrl(`/attachments/${attachment.id}`);
+  // URL de téléchargement - utiliser directement fileUrl
+  const downloadUrl = attachment.fileUrl;
 
   return (
     <div
