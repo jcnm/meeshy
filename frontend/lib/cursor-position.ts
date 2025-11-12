@@ -72,12 +72,18 @@ export function getCursorPosition(
   const divRect = div.getBoundingClientRect();
 
   // Calculer la position relative du span dans le div
+  // spanRect et divRect incluent déjà les border/padding car on les a copiés
   const offsetX = spanRect.left - divRect.left;
   const offsetY = spanRect.top - divRect.top;
 
-  // Calculer la position absolue en tenant compte du scroll du textarea
+  // Obtenir la hauteur de ligne pour positionner l'autocomplete juste sous la ligne du curseur
+  const lineHeight = parseFloat(computed.lineHeight) || parseFloat(computed.fontSize) * 1.2;
+
+  // Calculer la position absolue
+  // Le div miroir a les mêmes border/padding que le textarea, donc l'offset
+  // est déjà correct. On translate juste du div vers le textarea.
   const x = textareaRect.left + offsetX - textarea.scrollLeft;
-  const y = textareaRect.top + offsetY - textarea.scrollTop;
+  const y = textareaRect.top + offsetY + lineHeight - textarea.scrollTop;
 
   // Nettoyer
   document.body.removeChild(div);
