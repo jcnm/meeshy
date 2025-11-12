@@ -171,8 +171,8 @@ export const MarkdownLightbox: React.FC<MarkdownLightboxProps> = ({
           className="absolute inset-0 flex items-center justify-center pt-14 sm:pt-16 pb-2 sm:pb-4 px-2 sm:px-4"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="w-full h-full bg-white dark:bg-gray-900 overflow-hidden shadow-2xl">
-            <div className="w-full h-full overflow-auto p-4 sm:p-6 md:p-8">
+          <div className="w-full h-full bg-white dark:bg-gray-900 shadow-2xl rounded-lg flex flex-col">
+            <div className="w-full h-full overflow-x-auto overflow-y-auto p-4 sm:p-6 md:p-8">
               {isLoading ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />

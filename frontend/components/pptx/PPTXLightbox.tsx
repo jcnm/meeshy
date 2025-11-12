@@ -111,10 +111,11 @@ export const PPTXLightbox: React.FC<PPTXLightboxProps> = ({
           className="absolute inset-0 flex items-center justify-center pt-14 sm:pt-16 pb-2 sm:pb-4 px-2 sm:px-4"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="w-full h-full bg-white dark:bg-gray-900 overflow-hidden shadow-2xl">
+          <div className="w-full h-full bg-white dark:bg-gray-900 overflow-auto shadow-2xl rounded-lg">
             <iframe
               src={officeViewerUrl}
-              className="w-full h-full border-0"
+              className="w-full min-h-full border-0"
+              style={{ minHeight: '100vh' }}
               title={attachment.originalName}
               allow="autoplay"
             />
