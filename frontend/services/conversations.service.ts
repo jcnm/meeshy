@@ -2,14 +2,15 @@ import { apiService } from './api.service';
 import { socketIOUserToUser } from '@/utils/user-adapter';
 import { UserRoleEnum, MessageType } from '@shared/types';
 import { generateLinkName } from '@/utils/link-name-generator';
-import type { 
-  Conversation, 
-  Message, 
+import { authManager } from './auth-manager.service';
+import type {
+  Conversation,
+  Message,
   User,
   UserRole,
   UserPermissions,
   CreateConversationRequest,
-  SendMessageRequest 
+  SendMessageRequest
 } from '@shared/types';
 
 /**

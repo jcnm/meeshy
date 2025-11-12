@@ -14,7 +14,9 @@ import type {
 import type {
   Message,
   MessageWithTranslations,
-  UITranslationState
+  UITranslationState,
+  UIMessage,
+  GatewayMessage
 } from '@shared/types';
 
 // Ré-export des types partagés essentiels

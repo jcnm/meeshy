@@ -66,9 +66,6 @@ export function getUserTranslation(
   return translationDataToBubbleTranslation(translation);
 }
 
-// Import resolveUserPreferredLanguage from user-language-preferences
-import { resolveUserPreferredLanguage } from './user-language-preferences';
-
 /**
  * Détermine la langue cible d'un utilisateur selon ses préférences
  * @deprecated Use resolveUserPreferredLanguage from user-language-preferences

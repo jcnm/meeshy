@@ -2,6 +2,8 @@
  * Outil de diagnostic pour déboguer les problèmes de connexion WebSocket
  */
 
+import { authManager } from '@/services/auth-manager.service';
+
 export interface WebSocketDiagnostics {
   timestamp: string;
   userState: {

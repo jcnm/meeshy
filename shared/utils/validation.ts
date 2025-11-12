@@ -16,9 +16,9 @@ export function validateSchema<T>(
   context?: string
 ): T {
   const result = schema.safeParse(data);
-  
+
   if (!result.success) {
-    const errors = result.error.errors.map((err: any) => ({
+    const errors = result.error.issues.map((err: any) => ({
       path: err.path.join('.'),
       message: err.message,
     }));

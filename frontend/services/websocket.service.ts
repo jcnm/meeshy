@@ -14,8 +14,8 @@
 
 import { io, Socket } from 'socket.io-client';
 import { toast } from 'sonner';
-import type { 
-  Message, 
+import type {
+  Message,
   User,
   ServerToClientEvents,
   ClientToServerEvents,
@@ -24,6 +24,7 @@ import type {
   UserStatusEvent
 } from '@/types';
 import { SERVER_EVENTS, CLIENT_EVENTS } from '@shared/types/socketio-events';
+import { authManager } from './auth-manager.service';
 
 class WebSocketService {
   private static instance: WebSocketService | null = null;

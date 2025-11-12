@@ -54,11 +54,16 @@ class Logger {
   /**
    * Log une erreur (toujours affiché)
    */
-  error(tag: string, message: string, data?: any): void {
+  error(tag: string, message: string | object, data?: any): void {
     if (this.shouldLog(LogLevel.ERROR)) {
-      if (data !== undefined) {
+      if (typeof message === 'object') {
+        // Format: error(tag, dataObject)
+        console.error(tag, message);
+      } else if (data !== undefined) {
+        // Format: error(tag, message, data)
         console.error(`${tag} ${message}`, data);
       } else {
+        // Format: error(tag, message)
         console.error(`${tag} ${message}`);
       }
     }
@@ -67,9 +72,11 @@ class Logger {
   /**
    * Log un avertissement (toujours affiché)
    */
-  warn(tag: string, message: string, data?: any): void {
+  warn(tag: string, message: string | object, data?: any): void {
     if (this.shouldLog(LogLevel.WARN)) {
-      if (data !== undefined) {
+      if (typeof message === 'object') {
+        console.warn(tag, message);
+      } else if (data !== undefined) {
         console.warn(`${tag} ${message}`, data);
       } else {
         console.warn(`${tag} ${message}`);
@@ -80,10 +87,14 @@ class Logger {
   /**
    * Log une information (uniquement en développement)
    */
-  info(tag: string, message: string, data?: any): void {
+  info(tag: string, message: string | object, data?: any): void {
     if (this.shouldLog(LogLevel.INFO)) {
-      if (data !== undefined) {
+      if (typeof message === 'object') {
+        console.info(tag, message);
+      } else if (data !== undefined) {
+        console.info(`${tag} ${message}`, data);
       } else {
+        console.info(`${tag} ${message}`);
       }
     }
   }
@@ -91,10 +102,14 @@ class Logger {
   /**
    * Log de débogage (uniquement en développement)
    */
-  debug(tag: string, message: string, data?: any): void {
+  debug(tag: string, message: string | object, data?: any): void {
     if (this.shouldLog(LogLevel.DEBUG)) {
-      if (data !== undefined) {
+      if (typeof message === 'object') {
+        console.debug(tag, message);
+      } else if (data !== undefined) {
+        console.debug(`${tag} ${message}`, data);
       } else {
+        console.debug(`${tag} ${message}`);
       }
     }
   }
@@ -105,6 +120,7 @@ class Logger {
    */
   log(message: string, ...args: any[]): void {
     if (this.config.enabled) {
+      console.log(message, ...args);
     }
   }
 }

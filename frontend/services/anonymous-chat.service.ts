@@ -5,6 +5,7 @@
 
 import { buildApiUrl } from '@/lib/config';
 import { toast } from 'sonner';
+import { authManager } from './auth-manager.service';
 
 export interface AnonymousParticipant {
   id: string;

@@ -174,8 +174,8 @@ export const paginationSchema = z.object({
  * Helper pour valider et formater les erreurs Zod
  */
 export function formatZodErrors(error: z.ZodError): string {
-  return error.errors
-    .map(err => `${err.path.join('.')}: ${err.message}`)
+  return error.issues
+    .map((err: z.ZodIssue) => `${err.path.join('.')}: ${err.message}`)
     .join(', ');
 }
 
