@@ -120,16 +120,13 @@ export const EditMessageView = memo(function EditMessageView({
           // bottom = distance depuis le bas du viewport jusqu'au haut du textarea + marge
           const bottomDistance = window.innerHeight - textareaRect.top + 10;
 
-          // IMPORTANT: CENTRER l'autocomplete au-dessus du textarea
+          // IMPORTANT: Aligner l'autocomplete à gauche du textarea (près du curseur)
           // L'autocomplete fait 320px de large (w-80)
           const autocompleteWidth = 320;
           const viewportWidth = window.innerWidth;
 
-          // Calculer la position centrale du textarea
-          const textareaCenterX = textareaRect.left + textareaRect.width / 2;
-
-          // Centrer l'autocomplete sur cette position
-          let leftPosition = textareaCenterX - autocompleteWidth / 2;
+          // Positionner à gauche du textarea avec un petit offset
+          let leftPosition = textareaRect.left + 10;
 
           // S'assurer qu'il reste dans le viewport
           if (leftPosition < 10) {
