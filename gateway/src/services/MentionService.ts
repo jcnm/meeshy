@@ -64,13 +64,17 @@ export class MentionService {
     // Ne pas filtrer sur isActive/deletedAt pour cohérence avec l'autocomplete
     // Si un utilisateur apparaît dans l'autocomplete (membre de conversation),
     // il doit pouvoir être mentionné même s'il est "inactif"
+
+    // Note: mode: 'insensitive' ne fonctionne PAS avec 'in' dans Prisma + MongoDB
+    // On doit utiliser $or avec equals pour chaque username
     const users = await this.prisma.user.findMany({
       where: {
-        username: {
-          in: usernames,
-          mode: 'insensitive' // Prisma syntax for case-insensitive search
-        }
-        // Pas de filtre isActive/deletedAt pour cohérence avec autocomplete
+        OR: usernames.map(username => ({
+          username: {
+            equals: username,
+            mode: 'insensitive'
+          }
+        }))
       },
       select: {
         id: true,
