@@ -670,10 +670,11 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       if (textareaRef.current) {
         const textareaRect = textareaRef.current.getBoundingClientRect();
 
-        // Position approximative du curseur (peut être amélioré avec un calcul plus précis)
+        // Positionner le dropdown juste sous le textarea (fixed positioning)
+        // On place le dropdown légèrement décalé pour ne pas couvrir le texte
         setMentionPosition({
-          top: textareaRect.bottom + window.scrollY,
-          left: textareaRect.left + window.scrollX
+          top: textareaRect.top - 280, // Au-dessus du textarea (hauteur max du dropdown = 256px + padding)
+          left: textareaRect.left
         });
       }
 
