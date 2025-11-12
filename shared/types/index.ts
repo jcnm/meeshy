@@ -16,8 +16,9 @@ export * from './migration-utils';
 // Import pour usage interne
 import type { AnonymousParticipant } from './anonymous';
 
-// Message types are now consolidated
-export * from './message-types';
+// Message types are now consolidated - export only UIMessage and GatewayMessage to avoid conflicts with conversation.ts
+export type { UIMessage, GatewayMessage } from './message-types';
+export { gatewayToUIMessage, getDisplayContent, isTranslating, hasTranslation } from './message-types';
 
 // Export des types unifiés Phase 2 - Messaging
 export * from './messaging';
