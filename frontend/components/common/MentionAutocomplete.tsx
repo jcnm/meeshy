@@ -148,11 +148,11 @@ export function MentionAutocomplete({
   const getBadgeLabel = (badge: MentionSuggestion['badge']) => {
     switch (badge) {
       case 'conversation':
-        return 'Dans la conversation';
+        return 'Présent';
       case 'friend':
-        return 'Ami';
+        return 'Inviter';
       case 'other':
-        return 'Autre';
+        return 'Inviter';
       default:
         return '';
     }
@@ -163,7 +163,7 @@ export function MentionAutocomplete({
   const autocompleteContent = (
     <div
       ref={containerRef}
-      className="fixed bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-2xl max-h-64 w-80 overflow-y-auto"
+      className="fixed bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-2xl max-h-64 w-56 overflow-y-auto"
       style={{
         ...(position.top !== undefined && { top: `${position.top}px` }),
         ...(position.bottom !== undefined && { bottom: `${position.bottom}px` }),

@@ -83,7 +83,7 @@ export function getCursorPosition(
 export function adjustPositionForViewport(
   x: number,
   y: number,
-  autocompleteWidth: number = 320,
+  autocompleteWidth: number = 224,
   autocompleteHeight: number = 256
 ): { top?: number; bottom?: number; left: number } {
   const viewportWidth = window.innerWidth;
