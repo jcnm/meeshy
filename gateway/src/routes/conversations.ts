@@ -1725,6 +1725,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
                 updatedMessage.validatedMentions = validatedUsernames;
 
                 console.log(`[GATEWAY] ✅ ${validationResult.validUserIds.length} mention(s) mise(s) à jour`);
+                console.log(`[GATEWAY] updatedMessage.validatedMentions =`, updatedMessage.validatedMentions);
 
                 // Déclencher les notifications de mention pour les utilisateurs mentionnés
                 const notificationService = (fastify as any).notificationService;
@@ -1806,11 +1807,27 @@ export async function conversationRoutes(fastify: FastifyInstance) {
           }
         } else {
           console.warn('[GATEWAY] Edit - MentionService NOT AVAILABLE - mentions will not be processed!');
+          // Clear mentions if service not available
+          await prisma.message.update({
+            where: { id: messageId },
+            data: { validatedMentions: [] }
+          });
+          updatedMessage.validatedMentions = [];
         }
       } catch (mentionError) {
         console.error('[GATEWAY] Edit - Error processing mentions:', mentionError);
         console.error('[GATEWAY] Edit - Stack trace:', mentionError.stack);
         // Ne pas faire échouer l'édition si les mentions échouent
+        // Clear mentions on error to avoid stale data
+        try {
+          await prisma.message.update({
+            where: { id: messageId },
+            data: { validatedMentions: [] }
+          });
+          updatedMessage.validatedMentions = [];
+        } catch (e) {
+          console.error('[GATEWAY] Edit - Error clearing mentions:', e);
+        }
       }
 
       // STEP 1: Récupérer les traductions AVANT de déclencher la retraduction
@@ -1873,12 +1890,16 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       })();
 
       // Construire le message complet avec traductions pour la réponse et le broadcast
+      // IMPORTANT: S'assurer que validatedMentions est inclus (peut être undefined si pas défini)
       const messageWithTranslations = {
         ...updatedMessage,
         conversationId,
+        validatedMentions: updatedMessage.validatedMentions || [],
         translations: messageTranslations,
         meta: { conversationStats: stats }
       };
+
+      console.log(`[GATEWAY] Edit - Final response includes ${(updatedMessage.validatedMentions || []).length} validated mentions`);
 
       // Diffuser la mise à jour via Socket.IO avec les traductions
       try {
