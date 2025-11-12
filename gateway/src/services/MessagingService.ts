@@ -772,6 +772,9 @@ export class MessagingService {
               data: { validatedMentions: validatedUsernames }
             });
 
+            // IMPORTANT: Mettre à jour l'objet message en mémoire pour que le retour inclue validatedMentions
+            message.validatedMentions = validatedUsernames;
+
             console.log(`[MessagingService] ✅ ${validationResult.validUserIds.length} mention(s) créée(s) pour le message ${message.id}`);
 
             // Déclencher les notifications de mention

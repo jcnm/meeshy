@@ -22,6 +22,7 @@ interface MarkdownMessageProps {
   className?: string;
   enableTracking?: boolean;
   onLinkClick?: (url: string, isTracking: boolean) => void;
+  isOwnMessage?: boolean; // Pour adapter les couleurs en fonction de l'expéditeur
 }
 
 /**
@@ -94,7 +95,8 @@ export const MarkdownMessage: React.FC<MarkdownMessageProps> = ({
   content,
   className = '',
   enableTracking = true,
-  onLinkClick
+  onLinkClick,
+  isOwnMessage = false
 }) => {
   const { theme, resolvedTheme } = useTheme();
   const isDark = theme === 'dark' || resolvedTheme === 'dark';
@@ -227,11 +229,17 @@ export const MarkdownMessage: React.FC<MarkdownMessageProps> = ({
                 className={cn(
                   'inline-flex items-center gap-1 transition-colors cursor-pointer',
                   isMention
-                    ? 'text-blue-700 dark:text-blue-300 no-underline hover:underline font-medium'
+                    ? isOwnMessage && !isDark
+                      ? 'text-orange-600 no-underline hover:underline font-medium'
+                      : 'text-blue-700 dark:text-blue-300 no-underline hover:underline font-medium'
                     : 'underline',
                   !isMention && isTracking
-                    ? 'text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 decoration-blue-500/30 hover:decoration-blue-500/60'
-                    : !isMention && 'text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300'
+                    ? isOwnMessage && !isDark
+                      ? 'text-gray-900 hover:text-black decoration-gray-700/40 hover:decoration-gray-900/60'
+                      : 'text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 decoration-blue-500/30 hover:decoration-blue-500/60'
+                    : !isMention && isOwnMessage && !isDark
+                      ? 'text-gray-900 hover:text-black'
+                      : !isMention && 'text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300'
                 )}
                 {...props}
               >

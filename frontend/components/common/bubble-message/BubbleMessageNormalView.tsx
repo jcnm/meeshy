@@ -683,10 +683,11 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                       className={cn(
                         "text-sm sm:text-base break-words",
                         isOwnMessage
-                          ? "text-white [&_a]:text-white [&_a:hover]:text-white/90 [&_a]:decoration-white/40 [&_a:hover]:decoration-white/70 [&_code]:bg-white/10 [&_code]:text-white/90 [&_pre]:bg-white/10"
+                          ? "text-white [&_code]:bg-white/10 [&_code]:text-white/90 [&_pre]:bg-white/10"
                           : "text-gray-800 dark:text-gray-100"
                       )}
                       enableTracking={true}
+                      isOwnMessage={isOwnMessage}
                       onLinkClick={(url, isTracking) => {
                       }}
                     />
