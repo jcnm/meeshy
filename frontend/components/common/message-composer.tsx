@@ -101,7 +101,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   // États pour le système de mentions @username
   const [showMentionAutocomplete, setShowMentionAutocomplete] = useState(false);
   const [mentionQuery, setMentionQuery] = useState('');
-  const [mentionPosition, setMentionPosition] = useState({ top: 0, left: 0 });
+  const [mentionPosition, setMentionPosition] = useState<{ top?: number; bottom?: number; left: number }>({ left: 0 });
   const [mentionCursorStart, setMentionCursorStart] = useState(0);
 
   // Utiliser le placeholder fourni ou la traduction par défaut
@@ -662,10 +662,13 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         if (textareaRef.current) {
           const textareaRect = textareaRef.current.getBoundingClientRect();
 
-          // Positionner le dropdown juste au-dessus du textarea (fixed positioning)
+          // Utiliser bottom pour positionner AU-DESSUS du textarea
+          // bottom = distance depuis le bas du viewport jusqu'au haut du textarea + marge
+          const bottomDistance = window.innerHeight - textareaRect.top + 10;
+
           setMentionPosition({
-            top: textareaRect.top - 280, // Au-dessus du textarea (hauteur max du dropdown = 256px + padding)
-            left: textareaRect.left
+            bottom: bottomDistance,
+            left: textareaRect.left + 10 // Petit décalage pour alignement
           });
         }
 
