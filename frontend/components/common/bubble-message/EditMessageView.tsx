@@ -120,23 +120,23 @@ export const EditMessageView = memo(function EditMessageView({
           // bottom = distance depuis le bas du viewport jusqu'au haut du textarea + marge
           const bottomDistance = window.innerHeight - textareaRect.top + 10;
 
-          // IMPORTANT: Calculer left intelligemment pour éviter que l'autocomplete sorte de l'écran
+          // IMPORTANT: CENTRER l'autocomplete au-dessus du textarea
           // L'autocomplete fait 320px de large (w-80)
           const autocompleteWidth = 320;
           const viewportWidth = window.innerWidth;
 
-          // Essayer de positionner à gauche du textarea
-          let leftPosition = textareaRect.left + 10;
+          // Calculer la position centrale du textarea
+          const textareaCenterX = textareaRect.left + textareaRect.width / 2;
 
-          // Si l'autocomplete sortirait de l'écran à droite, l'ajuster
-          if (leftPosition + autocompleteWidth > viewportWidth) {
-            // Positionner à droite du viewport avec une marge
-            leftPosition = viewportWidth - autocompleteWidth - 20;
-          }
+          // Centrer l'autocomplete sur cette position
+          let leftPosition = textareaCenterX - autocompleteWidth / 2;
 
-          // S'assurer qu'il ne sort pas à gauche non plus
+          // S'assurer qu'il reste dans le viewport
           if (leftPosition < 10) {
             leftPosition = 10;
+          }
+          if (leftPosition + autocompleteWidth > viewportWidth - 10) {
+            leftPosition = viewportWidth - autocompleteWidth - 10;
           }
 
           setMentionPosition({

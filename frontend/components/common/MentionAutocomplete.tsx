@@ -161,7 +161,7 @@ export function MentionAutocomplete({
   return (
     <div
       ref={containerRef}
-      className="fixed z-[9999] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl max-h-64 w-80 overflow-y-auto"
+      className="fixed z-[99999] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-2xl max-h-64 w-80 overflow-y-auto"
       style={{
         ...(position.top !== undefined && { top: `${position.top}px` }),
         ...(position.bottom !== undefined && { bottom: `${position.bottom}px` }),
