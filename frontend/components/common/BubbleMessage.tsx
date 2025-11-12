@@ -174,7 +174,7 @@ const BubbleMessageInner = memo(function BubbleMessageInner({
     try {
       await onEditMessage?.(messageId, newContent);
       exitMode();
-      toast.success(t('messageUpdated'));
+      // Note: Le toast de succès est géré par le composant parent (bubble-stream-page)
     } catch (error) {
       toast.error(t('failedToUpdateMessage'));
       throw error; // Re-throw pour que la vue puisse afficher l'erreur
