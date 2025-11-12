@@ -540,6 +540,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
               currentPreset={currentPreset}
               availablePresets={availablePresets}
               availableBackSounds={availableBackSounds}
+              onClose={() => setShowEffectsPanel(false)}
             />
           </div>
         </>,

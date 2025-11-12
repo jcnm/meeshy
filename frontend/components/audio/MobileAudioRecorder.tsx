@@ -695,6 +695,7 @@ export const MobileAudioRecorder: React.FC<MobileAudioRecorderProps> = ({
                 currentPreset={currentPreset}
                 availablePresets={availablePresets}
                 availableBackSounds={availableBackSounds}
+                onClose={() => setShowEffectsPanel(false)}
               />
             </motion.div>
           </>

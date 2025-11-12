@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Info, Upload } from 'lucide-react';
+import { Info, Upload, X } from 'lucide-react';
 import {
   Popover,
   PopoverContent,
@@ -61,6 +61,7 @@ interface AudioEffectsPanelProps {
   currentPreset?: VoiceCoderPreset;
   availablePresets?: Record<string, { name: string; description: string; params: VoiceCoderParams }>;
   availableBackSounds: readonly { id: string; name: string; url: string }[];
+  onClose?: () => void; // Optional close handler for X button
   className?: string;
 }
 
@@ -72,6 +73,7 @@ export function AudioEffectsPanel({
   currentPreset,
   availablePresets,
   availableBackSounds,
+  onClose,
   className,
 }: AudioEffectsPanelProps) {
   const { t } = useI18n('audioEffects');
@@ -132,6 +134,19 @@ export function AudioEffectsPanel({
             <p className="text-gray-400 text-[8px]">{t('subtitle')}</p>
           </div>
         </div>
+
+        {/* Close button - visible when onClose handler is provided */}
+        {onClose && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="h-7 w-7 p-0 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+            aria-label="Close audio effects panel"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        )}
       </div>
 
       {/* Mobile Effect Selector - visible only on mobile */}

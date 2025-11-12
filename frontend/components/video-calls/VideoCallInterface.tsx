@@ -496,6 +496,7 @@ export function VideoCallInterface({ callId }: VideoCallInterfaceProps) {
             currentPreset={currentPreset}
             availablePresets={availablePresets}
             availableBackSounds={availableBackSounds}
+            onClose={() => setShowAudioEffects(false)}
           />
         </div>
       )}
