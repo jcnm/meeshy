@@ -20,6 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
 import { MermaidDiagram } from '@/components/markdown/MermaidDiagram';
+import { buildApiUrl } from '@/lib/config';
 
 interface MarkdownViewerProps {
   attachment: UploadedAttachmentResponse;
@@ -51,7 +52,8 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
   const [showRaw, setShowRaw] = useState(false);
   const { theme, resolvedTheme } = useTheme();
 
-  const attachmentFileUrl = attachment.fileUrl;
+  // Construire l'URL avec buildApiUrl pour utiliser le bon domaine
+  const attachmentFileUrl = buildApiUrl(`/attachments/${attachment.id}`);
   const isDark = theme === 'dark' || resolvedTheme === 'dark';
 
   useEffect(() => {
@@ -83,13 +85,16 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
     setShowRaw(!showRaw);
   };
 
+  // URL de téléchargement avec buildApiUrl
+  const downloadUrl = buildApiUrl(`/attachments/${attachment.id}`);
+
   return (
     <div
       className={`flex flex-col gap-2 p-3 bg-gradient-to-br from-green-50 to-teal-50 dark:from-gray-800 dark:to-gray-900 rounded-lg border ${
         hasError
           ? 'border-red-300 dark:border-red-700'
           : 'border-green-200 dark:border-gray-700'
-      } shadow-md hover:shadow-lg transition-all duration-200 w-full sm:max-w-2xl min-w-0 overflow-hidden ${className}`}
+      } shadow-md hover:shadow-lg transition-all duration-200 w-full max-w-[70%] min-w-0 overflow-hidden ${className}`}
     >
       {/* Content area - responsive height matching PDF/PPTX */}
       <div className="relative w-full h-[210px] sm:h-[280px] md:h-[350px] bg-white dark:bg-gray-900 rounded-lg overflow-auto p-4 border border-gray-200 dark:border-gray-700">
@@ -209,7 +214,7 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
 
           {/* Bouton télécharger */}
           <a
-            href={attachment.fileUrl}
+            href={downloadUrl}
             download={attachment.originalName}
             className="flex-shrink-0 p-1.5 hover:bg-white/50 dark:hover:bg-gray-700/50 rounded-full transition-all duration-200"
             title="Télécharger"

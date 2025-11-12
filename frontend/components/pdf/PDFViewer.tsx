@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
+import { buildApiUrl } from '@/lib/config';
 
 interface PDFViewerProps {
   attachment: UploadedAttachmentResponse;
@@ -36,8 +37,8 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const attachmentId = attachment.id;
-  const attachmentFileUrl = attachment.fileUrl;
+  // Construire l'URL avec buildApiUrl pour utiliser le bon domaine
+  const attachmentFileUrl = buildApiUrl(`/attachments/${attachment.id}`);
 
   // Check if iframe loads successfully
   React.useEffect(() => {
@@ -64,7 +65,7 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
         hasError
           ? 'border-red-300 dark:border-red-700'
           : 'border-red-200 dark:border-gray-700'
-      } shadow-md hover:shadow-lg transition-all duration-200 w-full sm:max-w-2xl min-w-0 overflow-hidden ${className}`}
+      } shadow-md hover:shadow-lg transition-all duration-200 w-full max-w-[70%] min-w-0 overflow-hidden ${className}`}
     >
       {/* PDF embed - responsive height */}
       <div className="relative w-full bg-white dark:bg-gray-900 rounded-lg overflow-hidden h-[210px] sm:h-[280px] md:h-[350px]">
@@ -140,7 +141,7 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
 
           {/* Bouton télécharger */}
           <a
-            href={attachment.fileUrl}
+            href={attachmentFileUrl}
             download={attachment.originalName}
             className="flex-shrink-0 p-1.5 hover:bg-white/50 dark:hover:bg-gray-700/50 rounded-full transition-all duration-200"
             title="Télécharger"
