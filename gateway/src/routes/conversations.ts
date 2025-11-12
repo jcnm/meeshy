@@ -894,6 +894,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
           conversationId: true,
           isDeleted: true,
           replyToId: true,
+          validatedMentions: true,
           sender: {
             select: {
               id: true,
@@ -964,6 +965,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
               createdAt: true,
               senderId: true,
               anonymousSenderId: true,
+              validatedMentions: true,
               sender: {
                 select: {
                   id: true,
