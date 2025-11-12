@@ -171,6 +171,7 @@ export const EditMessageView = memo(function EditMessageView({
   }, [content, mentionCursorStart]);
 
   const originalLanguageInfo = getLanguageInfo(message.originalLanguage || 'fr');
+  const hasTranslations = message.translations && message.translations.length > 0;
 
   return (
     <motion.div
@@ -253,32 +254,34 @@ export const EditMessageView = memo(function EditMessageView({
             />
           </div>
 
-          {/* Translation Warning - Toujours afficher pour informer l'utilisateur */}
-          <div className={cn(
-            "flex items-start gap-2 p-3 rounded-md border",
-            isOwnMessage
-              ? "bg-white/10 border-white/20"
-              : "bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800"
-          )}>
-            <AlertTriangle className={cn(
-              "h-4 w-4 mt-0.5 flex-shrink-0",
-              isOwnMessage ? "text-amber-700" : "text-amber-600 dark:text-amber-400"
-            )} />
-            <div>
-              <p className={cn(
-                "text-xs font-medium mb-1",
-                isOwnMessage ? "text-amber-900" : "text-amber-800 dark:text-amber-200"
-              )}>
-                {t('translationWarning')}
-              </p>
-              <p className={cn(
-                "text-xs",
-                isOwnMessage ? "text-amber-800" : "text-amber-700 dark:text-amber-300"
-              )}>
-                {t('translationWillBeRegenerated')}
-              </p>
+          {/* Translation Warning - Afficher seulement si le message a des traductions */}
+          {hasTranslations && (
+            <div className={cn(
+              "flex items-start gap-2 p-3 rounded-md border",
+              isOwnMessage
+                ? "bg-white/10 border-white/20"
+                : "bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800"
+            )}>
+              <AlertTriangle className={cn(
+                "h-4 w-4 mt-0.5 flex-shrink-0",
+                isOwnMessage ? "text-amber-700" : "text-amber-600 dark:text-amber-400"
+              )} />
+              <div>
+                <p className={cn(
+                  "text-xs font-medium mb-1",
+                  isOwnMessage ? "text-amber-900" : "text-amber-800 dark:text-amber-200"
+                )}>
+                  {t('translationWarning')}
+                </p>
+                <p className={cn(
+                  "text-xs",
+                  isOwnMessage ? "text-amber-800" : "text-amber-700 dark:text-amber-300"
+                )}>
+                  {t('translationWillBeRegenerated')}
+                </p>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Save Error */}
           {saveError && (
