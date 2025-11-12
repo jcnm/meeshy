@@ -277,6 +277,7 @@ const BubbleMessageInner = memo(function BubbleMessageInner({
           isOwnMessage={isOwnMessage}
           onSave={handleSaveEdit}
           onCancel={exitMode}
+          conversationId={conversationId}
         />
       )}
 

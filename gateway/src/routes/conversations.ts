@@ -1641,6 +1641,105 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         }
       });
 
+      // ÉTAPE: Traitement des mentions @username lors de l'édition
+      try {
+        const mentionService = (fastify as any).mentionService;
+
+        if (mentionService) {
+          console.log('[GATEWAY] Traitement des mentions pour le message édité:', messageId);
+
+          // Supprimer les anciennes mentions
+          await prisma.mention.deleteMany({
+            where: { messageId: messageId }
+          });
+
+          // Extraire les nouvelles mentions
+          const mentionedUsernames = mentionService.extractMentions(content.trim());
+          console.log('[GATEWAY] Mentions extraites:', mentionedUsernames);
+
+          if (mentionedUsernames.length > 0) {
+            // Résoudre les usernames en utilisateurs réels
+            const userMap = await mentionService.resolveUsernames(mentionedUsernames);
+            console.log('[GATEWAY] UserMap size:', userMap.size);
+            const mentionedUserIds = Array.from(userMap.values()).map(user => user.id);
+
+            if (mentionedUserIds.length > 0) {
+              // Valider les permissions de mention
+              const validationResult = await mentionService.validateMentionPermissions(
+                conversationId,
+                mentionedUserIds,
+                userId
+              );
+              console.log('[GATEWAY] Validation result:', {
+                isValid: validationResult.isValid,
+                validUserIdsCount: validationResult.validUserIds.length
+              });
+
+              if (validationResult.validUserIds.length > 0) {
+                // Créer les nouvelles entrées de mention
+                await mentionService.createMentions(
+                  messageId,
+                  validationResult.validUserIds
+                );
+
+                // Extraire les usernames validés
+                const validatedUsernames = Array.from(userMap.entries())
+                  .filter(([_, user]) => validationResult.validUserIds.includes(user.id))
+                  .map(([username, _]) => username);
+
+                console.log('[GATEWAY] Mise à jour avec validatedMentions:', validatedUsernames);
+
+                // Mettre à jour le message avec les usernames validés
+                await prisma.message.update({
+                  where: { id: messageId },
+                  data: { validatedMentions: validatedUsernames }
+                });
+
+                // IMPORTANT: Mettre à jour l'objet en mémoire
+                updatedMessage.validatedMentions = validatedUsernames;
+
+                console.log(`[GATEWAY] ✅ ${validationResult.validUserIds.length} mention(s) mise(s) à jour`);
+
+                // Déclencher les notifications de mention (si disponible)
+                const notificationService = (fastify as any).notificationService;
+                if (notificationService) {
+                  try {
+                    await notificationService.sendMentionNotifications(
+                      validationResult.validUserIds,
+                      userId,
+                      conversationId,
+                      messageId,
+                      content.trim()
+                    );
+                  } catch (notifError) {
+                    console.error('[GATEWAY] Erreur notifications mentions:', notifError);
+                  }
+                }
+              }
+            } else {
+              console.log('[GATEWAY] Aucun utilisateur trouvé pour les mentions');
+              // Mettre à jour avec un tableau vide
+              await prisma.message.update({
+                where: { id: messageId },
+                data: { validatedMentions: [] }
+              });
+              updatedMessage.validatedMentions = [];
+            }
+          } else {
+            console.log('[GATEWAY] Aucune mention dans le message édité');
+            // Mettre à jour avec un tableau vide
+            await prisma.message.update({
+              where: { id: messageId },
+              data: { validatedMentions: [] }
+            });
+            updatedMessage.validatedMentions = [];
+          }
+        }
+      } catch (mentionError) {
+        console.error('[GATEWAY] Erreur traitement mentions:', mentionError);
+        // Ne pas faire échouer l'édition si les mentions échouent
+      }
+
       // Déclencher la retraduction automatique du message modifié
       try {
         // Utiliser les instances déjà disponibles dans le contexte Fastify

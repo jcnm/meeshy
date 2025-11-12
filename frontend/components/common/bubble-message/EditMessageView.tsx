@@ -10,6 +10,8 @@ import { cn } from '@/lib/utils';
 import { getLanguageInfo } from '@shared/types';
 import type { Message } from '@shared/types';
 import { useI18n } from '@/hooks/useI18n';
+import { MentionAutocomplete } from '@/components/common/MentionAutocomplete';
+import { detectMentionAtCursor } from '@/shared/types/mention';
 
 interface EditMessageViewProps {
   message: Message & {
@@ -22,6 +24,7 @@ interface EditMessageViewProps {
   onCancel: () => void;
   isSaving?: boolean;
   saveError?: string;
+  conversationId?: string; // Pour les suggestions de mentions
 }
 
 export const EditMessageView = memo(function EditMessageView({
@@ -30,12 +33,19 @@ export const EditMessageView = memo(function EditMessageView({
   onSave,
   onCancel,
   isSaving = false,
-  saveError
+  saveError,
+  conversationId
 }: EditMessageViewProps) {
   const { t } = useI18n('editMessage');
   const [content, setContent] = useState(message.originalContent || message.content);
   const [hasChanges, setHasChanges] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // États pour le système de mentions @username
+  const [showMentionAutocomplete, setShowMentionAutocomplete] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState('');
+  const [mentionPosition, setMentionPosition] = useState<{ top?: number; bottom?: number; left: number }>({ left: 0 });
+  const [mentionCursorStart, setMentionCursorStart] = useState(0);
 
   // Focus sur le textarea au mount
   useEffect(() => {
@@ -53,8 +63,49 @@ export const EditMessageView = memo(function EditMessageView({
   }, [content, message.originalContent, message.content]);
 
   const handleContentChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setContent(e.target.value);
-  }, []);
+    const newValue = e.target.value;
+    setContent(newValue);
+
+    // Détection des mentions @username
+    const textarea = e.target;
+    const cursorPosition = textarea.selectionStart;
+    const mentionDetection = detectMentionAtCursor(newValue, cursorPosition);
+
+    // Vérifier que conversationId est un ObjectId MongoDB valide (24 caractères hexadécimaux)
+    const isValidObjectId = conversationId && /^[a-f\d]{24}$/i.test(conversationId);
+
+    if (mentionDetection && isValidObjectId) {
+      // Valider que la query est un username valide (lettres, chiffres, underscore, max 30 caractères)
+      const isValidQuery = /^\w{0,30}$/.test(mentionDetection.query);
+
+      if (isValidQuery) {
+        // Calculer la position de l'autocomplete
+        if (textareaRef.current) {
+          const textareaRect = textareaRef.current.getBoundingClientRect();
+
+          // Utiliser bottom pour positionner AU-DESSUS du textarea
+          // bottom = distance depuis le bas du viewport jusqu'au haut du textarea + marge
+          const bottomDistance = window.innerHeight - textareaRect.top + 10;
+
+          setMentionPosition({
+            bottom: bottomDistance,
+            left: textareaRect.left + 10 // Petit décalage pour alignement
+          });
+        }
+
+        setMentionQuery(mentionDetection.query);
+        setMentionCursorStart(mentionDetection.start);
+        setShowMentionAutocomplete(true);
+      } else {
+        // Query invalide (caractères spéciaux ou trop longue) → fermer l'autocomplete
+        setShowMentionAutocomplete(false);
+        setMentionQuery('');
+      }
+    } else {
+      setShowMentionAutocomplete(false);
+      setMentionQuery('');
+    }
+  }, [conversationId]);
 
   const handleSave = useCallback(async () => {
     if (!hasChanges || !content.trim()) return;
@@ -69,12 +120,43 @@ export const EditMessageView = memo(function EditMessageView({
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
+      // Si l'autocomplete est ouvert, le fermer d'abord
+      if (showMentionAutocomplete) {
+        setShowMentionAutocomplete(false);
+        setMentionQuery('');
+        e.preventDefault();
+        return;
+      }
       onCancel();
     } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
       handleSave();
     }
-  }, [onCancel, handleSave]);
+  }, [onCancel, handleSave, showMentionAutocomplete]);
+
+  // Handler pour la sélection d'une mention
+  const handleMentionSelect = useCallback((username: string) => {
+    if (!textareaRef.current) return;
+
+    const currentValue = content;
+    const beforeMention = currentValue.substring(0, mentionCursorStart);
+    const afterCursor = currentValue.substring(textareaRef.current.selectionStart);
+    const newValue = `${beforeMention}@${username} ${afterCursor}`;
+
+    setContent(newValue);
+    setShowMentionAutocomplete(false);
+    setMentionQuery('');
+
+    // Placer le curseur après la mention insérée
+    setTimeout(() => {
+      if (textareaRef.current) {
+        const newCursorPos = mentionCursorStart + username.length + 2; // +2 pour @ et espace
+        textareaRef.current.selectionStart = newCursorPos;
+        textareaRef.current.selectionEnd = newCursorPos;
+        textareaRef.current.focus();
+      }
+    }, 0);
+  }, [content, mentionCursorStart]);
 
   const originalLanguageInfo = getLanguageInfo(message.originalLanguage || 'fr');
   const hasTranslations = message.translations && message.translations.length > 0;
@@ -269,6 +351,20 @@ export const EditMessageView = memo(function EditMessageView({
           </Button>
         </div>
       </div>
+
+      {/* Autocomplete des mentions @username */}
+      {showMentionAutocomplete && conversationId && (
+        <MentionAutocomplete
+          conversationId={conversationId}
+          query={mentionQuery}
+          onSelect={handleMentionSelect}
+          onClose={() => {
+            setShowMentionAutocomplete(false);
+            setMentionQuery('');
+          }}
+          position={mentionPosition}
+        />
+      )}
     </motion.div>
   );
 });
