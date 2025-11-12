@@ -945,6 +945,7 @@ class MeeshySocketIOService {
       conversationId: socketMessage.conversationId,
       senderId: socketMessage.senderId || (socketMessage as any).anonymousSenderId || '',
       content: socketMessage.content,
+      originalContent: (socketMessage as any).originalContent || socketMessage.content,
       originalLanguage: socketMessage.originalLanguage || 'fr',
       messageType: socketMessage.messageType,
       timestamp: socketMessage.createdAt,

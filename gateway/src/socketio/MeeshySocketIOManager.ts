@@ -1752,11 +1752,14 @@ export class MeeshySocketIOManager {
         senderId: message.senderId || undefined,
         content: message.content,
         originalLanguage: message.originalLanguage || 'fr',
+        originalContent: (message as any).originalContent || message.content,
         messageType: message.messageType || 'text',
         isEdited: Boolean(message.isEdited),
         isDeleted: Boolean(message.isDeleted),
         createdAt: message.createdAt || new Date(),
         updatedAt: message.updatedAt || new Date(),
+        // CORRECTION CRITIQUE: Inclure validatedMentions pour rendre les mentions cliquables en temps réel
+        validatedMentions: (message as any).validatedMentions || [],
         // CORRECTION CRITIQUE: Inclure les traductions dans le payload
         translations: messageTranslations,
         sender: message.sender ? {
