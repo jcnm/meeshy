@@ -70,7 +70,7 @@ export class AttachmentService {
     // Détection intelligente de l'URL publique selon l'environnement
     const isProduction = process.env.NODE_ENV === 'production';
     const isDevelopment = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'local';
-    
+
     // Déterminer l'URL publique avec une logique plus robuste
     if (process.env.PUBLIC_URL) {
       // 1. Priorité absolue à PUBLIC_URL si définie explicitement
@@ -81,12 +81,22 @@ export class AttachmentService {
       this.publicUrl = `https://gate.${domain}`;
       console.warn('[AttachmentService] ⚠️  PUBLIC_URL non définie, utilisation du domaine par défaut:', this.publicUrl);
     } else if (isDevelopment) {
-      // 3. En développement, utiliser localhost
-      this.publicUrl = 'http://localhost:3000';
+      // 3. En développement, utiliser BACKEND_URL ou dériver du port
+      // Priorité: BACKEND_URL > NEXT_PUBLIC_BACKEND_URL > localhost avec PORT
+      if (process.env.BACKEND_URL) {
+        this.publicUrl = process.env.BACKEND_URL;
+      } else if (process.env.NEXT_PUBLIC_BACKEND_URL) {
+        this.publicUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+      } else {
+        // Fallback avec le port du serveur actuel
+        const port = process.env.PORT || '3000';
+        this.publicUrl = `http://localhost:${port}`;
+        console.warn('[AttachmentService] ⚠️  BACKEND_URL non définie en développement, utilisation de localhost:', this.publicUrl);
+      }
     } else {
-      // 4. Fallback ultime (ne devrait jamais arriver)
-      this.publicUrl = 'http://localhost:3000';
-      console.error('[AttachmentService] ❌ Impossible de déterminer PUBLIC_URL, utilisation du fallback localhost');
+      // 4. Fallback ultime - utiliser les variables d'environnement disponibles
+      this.publicUrl = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000';
+      console.error('[AttachmentService] ❌ Impossible de déterminer PUBLIC_URL, utilisation du fallback:', this.publicUrl);
     }
     
     
