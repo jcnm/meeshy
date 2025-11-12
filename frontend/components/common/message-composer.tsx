@@ -650,36 +650,33 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     const cursorPosition = textarea.selectionStart;
     const mentionDetection = detectMentionAtCursor(newValue, cursorPosition);
 
-    console.log('[MessageComposer] Mention detection:', {
-      mentionDetection,
-      conversationId,
-      cursorPosition,
-      value: newValue
-    });
-
     // Vérifier que conversationId est un ObjectId MongoDB valide (24 caractères hexadécimaux)
     const isValidObjectId = conversationId && /^[a-f\d]{24}$/i.test(conversationId);
 
-    console.log('[MessageComposer] Validation ObjectId:', {
-      conversationId,
-      isValidObjectId
-    });
-
     if (mentionDetection && isValidObjectId) {
-      // Calculer la position de l'autocomplete
-      if (textareaRef.current) {
-        const textareaRect = textareaRef.current.getBoundingClientRect();
+      // Valider que la query est un username valide (lettres, chiffres, underscore, max 30 caractères)
+      const isValidQuery = /^\w{0,30}$/.test(mentionDetection.query);
 
-        // Position approximative du curseur (peut être amélioré avec un calcul plus précis)
-        setMentionPosition({
-          top: textareaRect.bottom + window.scrollY,
-          left: textareaRect.left + window.scrollX
-        });
+      if (isValidQuery) {
+        // Calculer la position de l'autocomplete
+        if (textareaRef.current) {
+          const textareaRect = textareaRef.current.getBoundingClientRect();
+
+          // Positionner le dropdown juste au-dessus du textarea (fixed positioning)
+          setMentionPosition({
+            top: textareaRect.top - 280, // Au-dessus du textarea (hauteur max du dropdown = 256px + padding)
+            left: textareaRect.left
+          });
+        }
+
+        setMentionQuery(mentionDetection.query);
+        setMentionCursorStart(mentionDetection.start);
+        setShowMentionAutocomplete(true);
+      } else {
+        // Query invalide (caractères spéciaux ou trop longue) → fermer l'autocomplete
+        setShowMentionAutocomplete(false);
+        setMentionQuery('');
       }
-
-      setMentionQuery(mentionDetection.query);
-      setMentionCursorStart(mentionDetection.start);
-      setShowMentionAutocomplete(true);
     } else {
       setShowMentionAutocomplete(false);
       setMentionQuery('');
@@ -851,15 +848,6 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       />
 
       {/* Autocomplete des mentions @username */}
-      {(() => {
-        console.log('[MessageComposer] Mention autocomplete conditions:', {
-          showMentionAutocomplete,
-          conversationId,
-          mentionQuery,
-          mentionPosition
-        });
-        return null;
-      })()}
       {showMentionAutocomplete && conversationId && (
         <MentionAutocomplete
           conversationId={conversationId}
