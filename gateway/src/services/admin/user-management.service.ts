@@ -48,15 +48,15 @@ export class UserManagementService {
     }
 
     if (filters.emailVerified !== undefined) {
-      where.emailVerified = filters.emailVerified;
+      where.emailVerifiedAt = filters.emailVerified ? { not: null } : null;
     }
 
     if (filters.phoneVerified !== undefined) {
-      where.phoneVerified = filters.phoneVerified;
+      where.phoneVerifiedAt = filters.phoneVerified ? { not: null } : null;
     }
 
     if (filters.twoFactorEnabled !== undefined) {
-      where.twoFactorEnabled = filters.twoFactorEnabled;
+      where.twoFactorEnabledAt = filters.twoFactorEnabled ? { not: null } : null;
     }
 
     if (filters.createdAfter || filters.createdBefore) {

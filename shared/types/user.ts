@@ -106,11 +106,9 @@ export interface FullUser {
   role: string;
   isActive: boolean;
   isOnline: boolean;
-  emailVerified: boolean | null;
   emailVerifiedAt: Date | null;
-  phoneVerified: boolean | null;
   phoneVerifiedAt: Date | null;
-  twoFactorEnabled: boolean | null;
+  twoFactorEnabledAt: Date | null;
   lastSeen: Date;
   lastActiveAt: Date;
   systemLanguage: string;
@@ -150,8 +148,8 @@ export interface PublicUser {
   role: string;
   isActive: boolean;
   isOnline: boolean;
-  emailVerified: boolean | null;
-  phoneVerified: boolean | null;
+  emailVerifiedAt: Date | null;
+  phoneVerifiedAt: Date | null;
   lastSeen: Date;
   lastActiveAt: Date;
   createdAt: Date;
@@ -171,7 +169,7 @@ export interface PublicUser {
 export interface AdminUser extends PublicUser {
   email: string;
   phoneNumber: string | null;
-  twoFactorEnabled: boolean | null;
+  twoFactorEnabledAt: Date | null;
   systemLanguage: string;
   regionalLanguage: string;
   customDestinationLanguage: string | null;
@@ -179,8 +177,6 @@ export interface AdminUser extends PublicUser {
   translateToSystemLanguage: boolean;
   translateToRegionalLanguage: boolean;
   useCustomDestination: boolean;
-  emailVerifiedAt: Date | null;
-  phoneVerifiedAt: Date | null;
   lastPasswordChange: Date | null;
   failedLoginAttempts: number | null;
   lockedUntil: Date | null;

@@ -1661,7 +1661,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
             // Résoudre les usernames en utilisateurs réels
             const userMap = await mentionService.resolveUsernames(mentionedUsernames);
             console.log('[GATEWAY] UserMap size:', userMap.size);
-            const mentionedUserIds = Array.from(userMap.values()).map(user => user.id);
+            const mentionedUserIds = Array.from(userMap.values()).map((user: any) => user.id);
 
             if (mentionedUserIds.length > 0) {
               // Valider les permissions de mention

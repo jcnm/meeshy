@@ -361,11 +361,9 @@ export async function adminRoutes(fastify: FastifyInstance) {
             createdAt: true,
             updatedAt: true,
             // Champs de sécurité et vérification
-            emailVerified: true,
             emailVerifiedAt: true,
-            phoneVerified: true,
             phoneVerifiedAt: true,
-            twoFactorEnabled: true,
+            twoFactorEnabledAt: true,
             failedLoginAttempts: true,
             lockedUntil: true,
             lastPasswordChange: true,
