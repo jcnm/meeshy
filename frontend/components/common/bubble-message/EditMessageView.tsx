@@ -44,6 +44,16 @@ export const EditMessageView = memo(function EditMessageView({
   // Utiliser conversationId de la prop ou du message comme fallback
   const effectiveConversationId = conversationId || (message as any).conversationId;
 
+  // Debug: Log conversationId availability
+  useEffect(() => {
+    console.log('[EditMessageView] conversationId sources:', {
+      fromProp: conversationId,
+      fromMessage: (message as any).conversationId,
+      effective: effectiveConversationId,
+      messageId: message.id
+    });
+  }, [conversationId, message.id, effectiveConversationId]);
+
   // États pour le système de mentions @username
   const [showMentionAutocomplete, setShowMentionAutocomplete] = useState(false);
   const [mentionQuery, setMentionQuery] = useState('');
@@ -77,13 +87,22 @@ export const EditMessageView = memo(function EditMessageView({
     // Vérifier que conversationId est un ObjectId MongoDB valide (24 caractères hexadécimaux)
     const isValidObjectId = effectiveConversationId && /^[a-f\d]{24}$/i.test(effectiveConversationId);
 
-    // Debug: log si conversationId n'est pas valide
-    if (mentionDetection && !isValidObjectId) {
-      console.warn('[EditMessageView] conversationId invalid or missing:', {
-        conversationId: effectiveConversationId,
-        isValid: isValidObjectId,
-        messageId: message.id
-      });
+    // Debug: log detection result
+    if (mentionDetection) {
+      if (!isValidObjectId) {
+        console.warn('[EditMessageView] Mention detected but conversationId invalid:', {
+          conversationId: effectiveConversationId,
+          isValid: isValidObjectId,
+          messageId: message.id,
+          query: mentionDetection.query
+        });
+      } else {
+        console.log('[EditMessageView] Mention detected with valid conversationId:', {
+          conversationId: effectiveConversationId,
+          query: mentionDetection.query,
+          messageId: message.id
+        });
+      }
     }
 
     if (mentionDetection && isValidObjectId) {
@@ -108,8 +127,10 @@ export const EditMessageView = memo(function EditMessageView({
         setMentionQuery(mentionDetection.query);
         setMentionCursorStart(mentionDetection.start);
         setShowMentionAutocomplete(true);
+        console.log('[EditMessageView] Opening autocomplete for query:', mentionDetection.query);
       } else {
         // Query invalide (caractères spéciaux ou trop longue) → fermer l'autocomplete
+        console.log('[EditMessageView] Invalid query, closing autocomplete:', mentionDetection.query);
         setShowMentionAutocomplete(false);
         setMentionQuery('');
       }
