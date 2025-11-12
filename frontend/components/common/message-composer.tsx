@@ -19,6 +19,7 @@ import { AudioRecorderWithEffects } from '@/components/audio/AudioRecorderWithEf
 import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
 import { MentionAutocomplete } from './MentionAutocomplete';
 import { detectMentionAtCursor } from '@/shared/types/mention';
+import { getCursorPosition, adjustPositionForViewport } from '@/lib/cursor-position';
 
 interface MessageComposerProps {
   value: string;
@@ -658,34 +659,15 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       const isValidQuery = /^\w{0,30}$/.test(mentionDetection.query);
 
       if (isValidQuery) {
-        // Calculer la position de l'autocomplete
+        // Calculer la position de l'autocomplete AU NIVEAU DU CURSEUR
         if (textareaRef.current) {
-          const textareaRect = textareaRef.current.getBoundingClientRect();
+          // Obtenir la position exacte du curseur dans le textarea
+          const cursorPos = getCursorPosition(textareaRef.current, cursorPosition);
 
-          // Utiliser bottom pour positionner AU-DESSUS du textarea
-          // bottom = distance depuis le bas du viewport jusqu'au haut du textarea + marge
-          const bottomDistance = window.innerHeight - textareaRect.top + 10;
+          // Ajuster la position pour qu'elle reste visible dans le viewport
+          const adjustedPosition = adjustPositionForViewport(cursorPos.x, cursorPos.y);
 
-          // IMPORTANT: Aligner l'autocomplete à gauche du textarea (près du curseur)
-          // L'autocomplete fait 320px de large (w-80)
-          const autocompleteWidth = 320;
-          const viewportWidth = window.innerWidth;
-
-          // Positionner à gauche du textarea avec un petit offset
-          let leftPosition = textareaRect.left + 10;
-
-          // S'assurer qu'il reste dans le viewport
-          if (leftPosition < 10) {
-            leftPosition = 10;
-          }
-          if (leftPosition + autocompleteWidth > viewportWidth - 10) {
-            leftPosition = viewportWidth - autocompleteWidth - 10;
-          }
-
-          setMentionPosition({
-            bottom: bottomDistance,
-            left: leftPosition
-          });
+          setMentionPosition(adjustedPosition);
         }
 
         setMentionQuery(mentionDetection.query);

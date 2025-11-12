@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { getUserInitials } from '@/lib/avatar-utils';
@@ -157,15 +158,17 @@ export function MentionAutocomplete({
     }
   };
 
-  // Toujours afficher le composant quand il est monté (pas de return null)
-  return (
+  // Utiliser un portail React pour "teleporter" le composant au niveau body
+  // Cela garantit qu'il apparaît au-dessus de TOUS les autres éléments
+  const autocompleteContent = (
     <div
       ref={containerRef}
-      className="fixed z-[99999] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-2xl max-h-64 w-80 overflow-y-auto"
+      className="fixed bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-2xl max-h-64 w-80 overflow-y-auto"
       style={{
         ...(position.top !== undefined && { top: `${position.top}px` }),
         ...(position.bottom !== undefined && { bottom: `${position.bottom}px` }),
-        left: `${position.left}px`
+        left: `${position.left}px`,
+        zIndex: 2147483647 // Valeur maximale pour z-index (2^31 - 1)
       }}
     >
       {isLoading && (
@@ -246,4 +249,9 @@ export function MentionAutocomplete({
       </div>
     </div>
   );
+
+  // Utiliser createPortal pour monter le composant directement dans le body
+  // Cela garantit qu'il n'est pas affecté par les overflow, z-index ou position des parents
+  if (typeof window === 'undefined') return null;
+  return createPortal(autocompleteContent, document.body);
 }
