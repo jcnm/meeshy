@@ -139,6 +139,13 @@ export class MeeshySocketIOManager {
     }
   }
 
+  /**
+   * Expose NotificationService for use in routes
+   */
+  public getNotificationService(): NotificationService {
+    return this.notificationService;
+  }
+
   async initialize(): Promise<void> {
     try {
       // Initialiser le service de traduction

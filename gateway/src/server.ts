@@ -23,6 +23,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { TranslationService } from './services/TranslationService';
 import { MessagingService } from './services/MessagingService';
+import { MentionService } from './services/MentionService';
 import { StatusService } from './services/status.service';
 import { AuthMiddleware, createUnifiedAuthMiddleware } from './middleware/auth';
 import { authRoutes } from './routes/auth';
@@ -234,6 +235,7 @@ class MeeshyServer {
   private prisma: PrismaClient;
   private translationService: TranslationService;
   private messagingService: MessagingService;
+  private mentionService: MentionService;
   private statusService: StatusService;
   private authMiddleware: AuthMiddleware;
   private socketIOHandler: MeeshySocketIOHandler;
@@ -292,6 +294,9 @@ class MeeshyServer {
 
     // Initialiser le service de messaging
     this.messagingService = new MessagingService(this.prisma, this.translationService);
+
+    // Initialiser le service de mentions
+    this.mentionService = new MentionService(this.prisma);
 
     this.socketIOHandler = new MeeshySocketIOHandler(this.prisma, config.jwtSecret);
 
@@ -455,6 +460,7 @@ class MeeshyServer {
     // Decorators for dependency injection
     this.server.decorate('prisma', this.prisma);
     this.server.decorate('translationService', this.translationService);
+    this.server.decorate('mentionService', this.mentionService);
     this.server.decorate('socketIOHandler', this.socketIOHandler);
     this.server.decorate('authenticate', this.createAuthMiddleware());
 
@@ -480,6 +486,14 @@ class MeeshyServer {
       // Socket.IO sera configuré directement avec le serveur HTTP
       this.socketIOHandler.setupSocketIO(this.server);
       logger.info('[GWY] ✅ Socket.IO configured with MeeshySocketIOHandler');
+
+      // Expose NotificationService from SocketIOManager for use in routes
+      const manager = this.socketIOHandler.getManager();
+      if (manager) {
+        const notificationService = manager.getNotificationService();
+        this.server.decorate('notificationService', notificationService);
+        logger.info('[GWY] ✅ NotificationService exposed for routes');
+      }
     } catch (error) {
       logger.error('[GWY] ❌ Failed to setup Socket.IO:', error);
       throw error;
@@ -573,10 +587,11 @@ class MeeshyServer {
       // Décorer le serveur avec le service de traduction et messaging
       fastify.decorate('translationService', this.translationService);
       fastify.decorate('messagingService', this.messagingService);
-      
+      fastify.decorate('mentionService', this.mentionService);
+
       // Enregistrer les routes de traduction (non-blocking)
       await fastify.register(translationRoutes);
-      
+
       // Enregistrer les routes de traduction (blocking)
       await fastify.register(translationBlockingRoutes);
     }, { prefix: '/api' });
