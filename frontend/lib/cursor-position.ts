@@ -66,10 +66,12 @@ export function getCursorPosition(
 
   // Obtenir la position du marqueur de curseur
   const markerRect = cursorMarker.getBoundingClientRect();
+  const mirrorRect = mirror.getBoundingClientRect();
 
-  // Calculer les coordonnées relatives
-  const x = textareaRect.left + (markerRect.left - mirror.getBoundingClientRect().left);
-  const y = textareaRect.top + (markerRect.top - mirror.getBoundingClientRect().top);
+  // Calculer les coordonnées relatives en tenant compte du scroll
+  // Le scroll du textarea doit être soustrait pour obtenir la vraie position visible
+  const x = textareaRect.left + (markerRect.left - mirrorRect.left) - textarea.scrollLeft;
+  const y = textareaRect.top + (markerRect.top - mirrorRect.top) - textarea.scrollTop;
 
   // Nettoyer
   document.body.removeChild(mirror);

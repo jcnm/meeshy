@@ -432,7 +432,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       if (isAnonymousMode) {
         return;
       }
-      
+
       const onlineUsers = await conversationsService.getParticipants(conversationId, { onlineOnly: true });
       setActiveUsersDeduped(onlineUsers);
     } catch (error) {
@@ -450,7 +450,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       if (isAnonymousMode) {
         return [];
       }
-      
+
       const allParticipants = await conversationsService.getParticipants(conversationId);
       return allParticipants;
     } catch (error) {
