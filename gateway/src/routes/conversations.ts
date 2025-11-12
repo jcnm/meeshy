@@ -48,6 +48,9 @@ async function canAccessConversation(
           isActive: true
         }
       });
+
+      console.log('[GATEWAY] ===== POST MESSAGE UPDATE - BEFORE MENTIONS =====');
+      console.log('[GATEWAY] Message updated successfully, ID:', messageId);
       return !!membership;
     }
   }
@@ -1313,6 +1316,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
       // Déclencher les traductions via le TranslationService (gère les langues des participants)
       try {
+        console.log('[GATEWAY] ===== ENTERED TRY BLOCK FOR MENTIONS =====');
         await translationService.handleNewMessage({
           id: message.id,
           conversationId: conversationId, // Utiliser l'ID résolu
@@ -1603,6 +1607,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       console.log('[GATEWAY] Edit - Original content:', content.trim());
 
       try {
+        console.log('[GATEWAY] ===== ENTERED TRY BLOCK FOR MENTIONS =====');
         console.log('[GATEWAY] Processing tracking links in edited message:', messageId);
         const { processedContent: contentWithLinks, trackingLinks } = await trackingLinkService.processExplicitLinksInContent({
           content: content.trim(),
@@ -1664,8 +1669,12 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         }
       });
 
+      console.log('[GATEWAY] ===== POST MESSAGE UPDATE - BEFORE MENTIONS =====');
+      console.log('[GATEWAY] Message updated successfully, ID:', messageId);
       // ÉTAPE: Traitement des mentions @username lors de l'édition
+      console.log('[GATEWAY] ===== STARTING MENTION PROCESSING BLOCK =====');
       try {
+        console.log('[GATEWAY] ===== ENTERED TRY BLOCK FOR MENTIONS =====');
         const mentionService = (fastify as any).mentionService;
         console.log('[GATEWAY] Edit - MentionService available:', !!mentionService);
 
@@ -1832,6 +1841,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
       // Déclencher la retraduction automatique du message modifié
       try {
+        console.log('[GATEWAY] ===== ENTERED TRY BLOCK FOR MENTIONS =====');
         // Utiliser les instances déjà disponibles dans le contexte Fastify
         const translationService: TranslationService = (fastify as any).translationService;
 
@@ -1879,6 +1889,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
       // Diffuser la mise à jour via Socket.IO
       try {
+        console.log('[GATEWAY] ===== ENTERED TRY BLOCK FOR MENTIONS =====');
         const socketIOManager = socketIOHandler.getManager();
         if (socketIOManager) {
           const room = `conversation_${conversationId}`;
@@ -2018,6 +2029,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
       // Diffuser la suppression via Socket.IO
       try {
+        console.log('[GATEWAY] ===== ENTERED TRY BLOCK FOR MENTIONS =====');
         const socketIOManager = socketIOHandler.getManager();
         if (socketIOManager) {
           const room = `conversation_${conversationId}`;
