@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { LanguageSelector } from '@/components/translation/language-selector';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/use-auth';
-import { User, SUPPORTED_LANGUAGES } from '@/types';
+import { User } from '@/types';
 import { JoinConversationResponse } from '@/types/frontend';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { useI18n } from '@/hooks/useI18n';
@@ -253,44 +253,24 @@ export function RegisterForm({
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="systemLanguage">{t('register.systemLanguageLabel')}</Label>
-          <Select 
-            value={formData.systemLanguage} 
+          <LanguageSelector
+            value={formData.systemLanguage}
             onValueChange={(value) => setFormData({ ...formData, systemLanguage: value })}
             disabled={disabled}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder={t('register.systemLanguageLabel')} />
-            </SelectTrigger>
-            <SelectContent>
-              {SUPPORTED_LANGUAGES.map((lang) => (
-                <SelectItem key={lang.code} value={lang.code}>
-                  {lang.flag} {lang.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            placeholder={t('register.systemLanguageLabel')}
+          />
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             {t('register.systemLanguageHelp')}
           </p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="regionalLanguage">{t('register.regionalLanguageLabel')}</Label>
-          <Select 
-            value={formData.regionalLanguage} 
+          <LanguageSelector
+            value={formData.regionalLanguage}
             onValueChange={(value) => setFormData({ ...formData, regionalLanguage: value })}
             disabled={disabled}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder={t('register.regionalLanguageLabel')} />
-            </SelectTrigger>
-            <SelectContent>
-              {SUPPORTED_LANGUAGES.map((lang) => (
-                <SelectItem key={lang.code} value={lang.code}>
-                  {lang.flag} {lang.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            placeholder={t('register.regionalLanguageLabel')}
+          />
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             {t('register.regionalLanguageHelp')}
           </p>

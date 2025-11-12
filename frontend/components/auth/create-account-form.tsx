@@ -5,8 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { SUPPORTED_LANGUAGES } from '@shared/types';
+import { LanguageSelector } from '@/components/translation/language-selector';
 import { JoinConversationResponse } from '@/types/frontend';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
@@ -150,34 +149,20 @@ export function CreateAccountForm({ linkId, onSuccess }: CreateAccountFormProps)
 
           <div className="space-y-2">
             <Label htmlFor="spokenLanguage">{t('createAccount.spokenLanguageLabel')}</Label>
-            <Select value={formData.spokenLanguage} onValueChange={(value) => updateFormData('spokenLanguage', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder={t('createAccount.spokenLanguagePlaceholder')} />
-              </SelectTrigger>
-              <SelectContent>
-                {SUPPORTED_LANGUAGES.map((lang) => (
-                  <SelectItem key={lang.code} value={lang.code}>
-                    {lang.flag} {lang.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <LanguageSelector
+              value={formData.spokenLanguage}
+              onValueChange={(value) => updateFormData('spokenLanguage', value)}
+              placeholder={t('createAccount.spokenLanguagePlaceholder')}
+            />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="receiveLanguage">{t('createAccount.receiveLanguageLabel')}</Label>
-            <Select value={formData.receiveLanguage} onValueChange={(value) => updateFormData('receiveLanguage', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder={t('createAccount.receiveLanguagePlaceholder')} />
-              </SelectTrigger>
-              <SelectContent>
-                {SUPPORTED_LANGUAGES.map((lang) => (
-                  <SelectItem key={lang.code} value={lang.code}>
-                    {lang.flag} {lang.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <LanguageSelector
+              value={formData.receiveLanguage}
+              onValueChange={(value) => updateFormData('receiveLanguage', value)}
+              placeholder={t('createAccount.receiveLanguagePlaceholder')}
+            />
           </div>
 
           <Button 

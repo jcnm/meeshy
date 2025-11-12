@@ -36,12 +36,10 @@ model User {
   isActive                    Boolean                  @default(true)
   deactivatedAt               DateTime?
 
-  // Security & verification fields
-  emailVerified               Boolean?                 @default(false)
+  // Security & verification fields (DateTime? non-null = vérifié/activé)
   emailVerifiedAt             DateTime?
-  phoneVerified               Boolean?                 @default(false)
   phoneVerifiedAt             DateTime?
-  twoFactorEnabled            Boolean?                 @default(false)
+  twoFactorEnabledAt          DateTime?
   failedLoginAttempts         Int?                     @default(0)
   lockedUntil                 DateTime?
   lastPasswordChange          DateTime?                @default(now())

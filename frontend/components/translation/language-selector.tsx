@@ -85,6 +85,7 @@ export function LanguageSelector({
       </PopoverTrigger>
       <PopoverContent className="w-[300px] p-0">
         <Command>
+          <CommandInput placeholder={t('languageSelector.searchLanguage') || "Search language..."} />
           <CommandList>
             <CommandEmpty>{t('languageSelector.noLanguageFound')}</CommandEmpty>
             <CommandGroup>

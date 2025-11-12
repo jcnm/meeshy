@@ -5,9 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { LanguageSelector } from '@/components/translation/language-selector';
 import { Badge } from '@/components/ui/badge';
-import { User as UserType, SUPPORTED_LANGUAGES } from '@/types';
+import { User as UserType } from '@/types';
+import { SUPPORTED_LANGUAGES } from '@/shared/utils/languages';
 import { toast } from 'sonner';
 import { Globe, Languages, Target } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
@@ -142,24 +143,12 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
           <div className="grid gap-4 sm:gap-6 lg:grid-cols-2 xl:grid-cols-3">
             <div className="space-y-2">
               <Label htmlFor="systemLanguage" className="text-sm sm:text-base">{t('translation.mainLanguages.systemLanguage')}</Label>
-              <Select
+              <LanguageSelector
                 value={settings.systemLanguage}
                 onValueChange={(value) => handleSettingChange('systemLanguage', value)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SUPPORTED_LANGUAGES.map((lang) => (
-                    <SelectItem key={lang.code} value={lang.code}>
-                      <span className="flex items-center gap-2">
-                        <span>{lang.flag}</span>
-                        <span>{lang.name}</span>
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                placeholder={t('translation.mainLanguages.systemLanguage')}
+                className="w-full"
+              />
               <p className="text-xs sm:text-sm text-muted-foreground">
                 {t('translation.mainLanguages.systemLanguageDescription')}
               </p>
@@ -167,24 +156,12 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
 
             <div className="space-y-2">
               <Label htmlFor="regionalLanguage" className="text-sm sm:text-base">{t('translation.mainLanguages.regionalLanguage')}</Label>
-              <Select
+              <LanguageSelector
                 value={settings.regionalLanguage}
                 onValueChange={(value) => handleSettingChange('regionalLanguage', value)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SUPPORTED_LANGUAGES.map((lang) => (
-                    <SelectItem key={lang.code} value={lang.code}>
-                      <span className="flex items-center gap-2">
-                        <span>{lang.flag}</span>
-                        <span>{lang.name}</span>
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                placeholder={t('translation.mainLanguages.regionalLanguage')}
+                className="w-full"
+              />
               <p className="text-xs sm:text-sm text-muted-foreground">
                 {t('translation.mainLanguages.regionalLanguageDescription')}
               </p>
@@ -192,25 +169,12 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
 
             <div className="space-y-2 lg:col-span-2 xl:col-span-1">
               <Label htmlFor="customDestinationLanguage" className="text-sm sm:text-base">{t('translation.mainLanguages.customDestinationLanguage')}</Label>
-              <Select
-                value={settings.customDestinationLanguage || "none"}
-                onValueChange={(value) => handleSettingChange('customDestinationLanguage', value === "none" ? "" : value)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={t('translation.mainLanguages.selectLanguage')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">{t('translation.mainLanguages.none')}</SelectItem>
-                  {SUPPORTED_LANGUAGES.map((lang) => (
-                    <SelectItem key={lang.code} value={lang.code}>
-                      <span className="flex items-center gap-2">
-                        <span>{lang.flag}</span>
-                        <span>{lang.name}</span>
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <LanguageSelector
+                value={settings.customDestinationLanguage || ""}
+                onValueChange={(value) => handleSettingChange('customDestinationLanguage', value)}
+                placeholder={t('translation.mainLanguages.selectLanguage')}
+                className="w-full"
+              />
               <p className="text-xs sm:text-sm text-muted-foreground">
                 {t('translation.mainLanguages.customDestinationLanguageDescription')}
               </p>

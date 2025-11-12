@@ -46,7 +46,7 @@ class Settings:
         
         # Configuration des langues
         self.default_language = os.getenv("DEFAULT_LANGUAGE", "fr")
-        self.supported_languages = os.getenv("SUPPORTED_LANGUAGES", "fr,en,es,de,pt,zh,ja,ar")
+        self.supported_languages = os.getenv("SUPPORTED_LANGUAGES", "af,ar,bg,bn,cs,da,de,el,en,es,fa,fi,fr,he,hi,hr,hu,hy,id,ig,it,ja,ko,ln,lt,ms,nl,no,pl,pt,ro,ru,sv,sw,th,tr,uk,ur,vi,zh")
         self.auto_detect_language = os.getenv("AUTO_DETECT_LANGUAGE", "true").lower() == "true"
         
         # Configuration des modèles de traduction - utiliser les valeurs du .env
@@ -78,39 +78,49 @@ def get_settings():
     """Retourne une instance des paramètres"""
     return Settings()
 
-# Mappings des langues pour les modèles
+# Mappings des langues pour les modèles NLLB-200
 LANGUAGE_MAPPINGS = {
-    # Codes ISO 639-1 vers codes modèles
-    'fr': 'fra_Latn',
-    'en': 'eng_Latn', 
-    'es': 'spa_Latn',
-    'de': 'deu_Latn',
-    'pt': 'por_Latn',
-    'zh': 'zho_Hans',
-    'ja': 'jpn_Jpan',
-    'ar': 'arb_Arab'
-}
-
-def get_model_language_code(iso_code: str) -> str:
-    """Convertit un code ISO vers un code modèle"""
-    return LANGUAGE_MAPPINGS.get(iso_code, iso_code)
-
-def get_iso_language_code(model_code: str) -> str:
-    """Convertit un code modèle vers un code ISO"""
-    reverse_mapping = {v: k for k, v in LANGUAGE_MAPPINGS.items()}
-    return reverse_mapping.get(model_code, model_code.split('_')[0] if '_' in model_code else model_code)
-
-# Mappings des langues pour les modèles
-LANGUAGE_MAPPINGS = {
-    # Codes ISO 639-1 vers codes modèles
-    'fr': 'fra_Latn',
-    'en': 'eng_Latn', 
-    'es': 'spa_Latn',
-    'de': 'deu_Latn',
-    'pt': 'por_Latn',
-    'zh': 'zho_Hans',
-    'ja': 'jpn_Jpan',
-    'ar': 'arb_Arab'
+    # Codes ISO 639-1 vers codes NLLB-200
+    'af': 'afr_Latn',      # Afrikaans
+    'ar': 'arb_Arab',      # Arabic
+    'bg': 'bul_Cyrl',      # Bulgarian
+    'bn': 'ben_Beng',      # Bengali
+    'cs': 'ces_Latn',      # Czech
+    'da': 'dan_Latn',      # Danish
+    'de': 'deu_Latn',      # German
+    'el': 'ell_Grek',      # Greek
+    'en': 'eng_Latn',      # English
+    'es': 'spa_Latn',      # Spanish
+    'fa': 'pes_Arab',      # Persian
+    'fi': 'fin_Latn',      # Finnish
+    'fr': 'fra_Latn',      # French
+    'he': 'heb_Hebr',      # Hebrew
+    'hi': 'hin_Deva',      # Hindi
+    'hr': 'hrv_Latn',      # Croatian
+    'hu': 'hun_Latn',      # Hungarian
+    'hy': 'hye_Armn',      # Armenian
+    'id': 'ind_Latn',      # Indonesian
+    'ig': 'ibo_Latn',      # Igbo
+    'it': 'ita_Latn',      # Italian
+    'ja': 'jpn_Jpan',      # Japanese
+    'ko': 'kor_Hang',      # Korean
+    'ln': 'lin_Latn',      # Lingala
+    'lt': 'lit_Latn',      # Lithuanian
+    'ms': 'zsm_Latn',      # Malay
+    'nl': 'nld_Latn',      # Dutch
+    'no': 'nob_Latn',      # Norwegian Bokmål
+    'pl': 'pol_Latn',      # Polish
+    'pt': 'por_Latn',      # Portuguese
+    'ro': 'ron_Latn',      # Romanian
+    'ru': 'rus_Cyrl',      # Russian
+    'sv': 'swe_Latn',      # Swedish
+    'sw': 'swh_Latn',      # Swahili
+    'th': 'tha_Thai',      # Thai
+    'tr': 'tur_Latn',      # Turkish
+    'uk': 'ukr_Cyrl',      # Ukrainian
+    'ur': 'urd_Arab',      # Urdu
+    'vi': 'vie_Latn',      # Vietnamese
+    'zh': 'zho_Hans',      # Chinese (Simplified)
 }
 
 def get_model_language_code(iso_code: str) -> str:
