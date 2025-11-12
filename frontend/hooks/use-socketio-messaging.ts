@@ -52,22 +52,42 @@ export function useSocketIOMessaging(options: UseSocketIOMessagingOptions = {}) 
   // Compatibilité avec l'ancien code qui utilise isConnected directement
   const isConnected = connectionStatus.isConnected;
 
-  // ÉTAPE 1: Initialiser la connexion au montage du hook
+  // ÉTAPE 1A: Initialiser la connexion WebSocket AU MONTAGE (indépendamment de currentUser)
+  // Tenter de se connecter immédiatement au montage
   useEffect(() => {
-    // Définir l'utilisateur courant dans le service si disponible
-    if (currentUser) {
-      meeshySocketIOService.setCurrentUser(currentUser);
-    }
-
     // Force la connexion initiale si des tokens sont disponibles
     const hasAuthToken = typeof window !== 'undefined' && !!authManager.getAuthToken();
     const hasSessionToken = typeof window !== 'undefined' && !!authManager.getAnonymousSession()?.token;
 
     if (hasAuthToken || hasSessionToken) {
-      // Forcer la connexion initiale
+      // Forcer la connexion initiale dès le montage du composant
       meeshySocketIOService.reconnect();
     }
+  }, []); // Exécuter une seule fois au montage
+
+  // ÉTAPE 1B: Définir l'utilisateur courant dans le service quand disponible
+  useEffect(() => {
+    if (currentUser) {
+      meeshySocketIOService.setCurrentUser(currentUser);
+    }
   }, [currentUser]); // Re-exécuter si currentUser change
+
+  // ÉTAPE 1C: Vérifier périodiquement la connexion et se reconnecter si nécessaire
+  // Ceci gère le cas où les tokens sont chargés après le montage du composant
+  useEffect(() => {
+    const checkConnectionInterval = setInterval(() => {
+      const hasAuthToken = typeof window !== 'undefined' && !!authManager.getAuthToken();
+      const hasSessionToken = typeof window !== 'undefined' && !!authManager.getAnonymousSession()?.token;
+      const diagnostics = meeshySocketIOService.getConnectionDiagnostics();
+
+      // Si on a un token mais pas de connexion, tenter de se connecter
+      if ((hasAuthToken || hasSessionToken) && !diagnostics.isConnected && !diagnostics.isConnecting) {
+        meeshySocketIOService.reconnect();
+      }
+    }, 3000); // Vérifier toutes les 3 secondes
+
+    return () => clearInterval(checkConnectionInterval);
+  }, []); // Exécuter une seule fois au montage
 
   // ÉTAPE 2: Gérer le join/leave de conversation
   useEffect(() => {
