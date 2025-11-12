@@ -666,21 +666,29 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     });
 
     if (mentionDetection && isValidObjectId) {
-      // Calculer la position de l'autocomplete
-      if (textareaRef.current) {
-        const textareaRect = textareaRef.current.getBoundingClientRect();
+      // Valider que la query est un username valide (lettres, chiffres, underscore, max 30 caractères)
+      const isValidQuery = /^\w{0,30}$/.test(mentionDetection.query);
 
-        // Positionner le dropdown juste sous le textarea (fixed positioning)
-        // On place le dropdown légèrement décalé pour ne pas couvrir le texte
-        setMentionPosition({
-          top: textareaRect.top - 280, // Au-dessus du textarea (hauteur max du dropdown = 256px + padding)
-          left: textareaRect.left
-        });
+      if (isValidQuery) {
+        // Calculer la position de l'autocomplete
+        if (textareaRef.current) {
+          const textareaRect = textareaRef.current.getBoundingClientRect();
+
+          // Positionner le dropdown juste au-dessus du textarea (fixed positioning)
+          setMentionPosition({
+            top: textareaRect.top - 280, // Au-dessus du textarea (hauteur max du dropdown = 256px + padding)
+            left: textareaRect.left
+          });
+        }
+
+        setMentionQuery(mentionDetection.query);
+        setMentionCursorStart(mentionDetection.start);
+        setShowMentionAutocomplete(true);
+      } else {
+        // Query invalide (caractères spéciaux ou trop longue) → fermer l'autocomplete
+        setShowMentionAutocomplete(false);
+        setMentionQuery('');
       }
-
-      setMentionQuery(mentionDetection.query);
-      setMentionCursorStart(mentionDetection.start);
-      setShowMentionAutocomplete(true);
     } else {
       setShowMentionAutocomplete(false);
       setMentionQuery('');
