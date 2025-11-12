@@ -181,8 +181,8 @@ export const EditMessageView = memo(function EditMessageView({
       transition={{ duration: 0.2, ease: 'easeInOut' }}
       className={cn(
         "relative w-full max-w-2xl mx-auto rounded-lg border shadow-lg overflow-hidden",
-        isOwnMessage 
-          ? "bg-gradient-to-br from-blue-400/95 to-blue-500/95 border-blue-400 backdrop-blur-sm" 
+        isOwnMessage
+          ? "bg-gradient-to-br from-blue-400/95 to-blue-500/95 dark:from-blue-600/90 dark:to-blue-700/90 border-blue-400 dark:border-blue-500 backdrop-blur-sm"
           : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
       )}
       onKeyDown={handleKeyDown}
@@ -190,28 +190,28 @@ export const EditMessageView = memo(function EditMessageView({
       {/* Header */}
       <div className={cn(
         "flex items-center justify-between px-4 py-3 border-b",
-        isOwnMessage 
-          ? "border-white/20 bg-white/10" 
+        isOwnMessage
+          ? "border-white/20 dark:border-white/10 bg-white/10 dark:bg-white/5"
           : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50"
       )}>
         <div className="flex items-center gap-2">
           <h3 className={cn(
             "text-sm font-semibold",
-            isOwnMessage ? "text-blue-900" : "text-gray-800 dark:text-gray-100"
+            isOwnMessage ? "text-blue-900 dark:text-blue-100" : "text-gray-800 dark:text-gray-100"
           )}>
             {t('editMessage')}
           </h3>
           <Badge variant="outline" className={cn(
             "text-xs h-5",
-            isOwnMessage 
-              ? "border-blue-700 text-blue-900 bg-white/50" 
+            isOwnMessage
+              ? "border-blue-700 dark:border-blue-300 text-blue-900 dark:text-blue-100 bg-white/50 dark:bg-white/10"
               : "border-gray-300 text-gray-600 dark:border-gray-600 dark:text-gray-400"
           )}>
             <span className="mr-1">{originalLanguageInfo.flag}</span>
             {originalLanguageInfo.code.toUpperCase()}
           </Badge>
         </div>
-        
+
         <Button
           variant="ghost"
           size="sm"
@@ -219,8 +219,8 @@ export const EditMessageView = memo(function EditMessageView({
           disabled={isSaving}
           className={cn(
             "h-6 w-6 p-0 rounded-full",
-            isOwnMessage 
-              ? "text-blue-900 hover:text-blue-950 hover:bg-blue-900/20" 
+            isOwnMessage
+              ? "text-blue-900 dark:text-blue-100 hover:text-blue-950 dark:hover:text-white hover:bg-blue-900/20 dark:hover:bg-white/20"
               : "text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
           )}
           aria-label={t('cancel')}
@@ -235,7 +235,7 @@ export const EditMessageView = memo(function EditMessageView({
           <div>
             <label className={cn(
               "block text-sm font-medium mb-2",
-              isOwnMessage ? "text-blue-900" : "text-gray-700 dark:text-gray-300"
+              isOwnMessage ? "text-blue-900 dark:text-blue-100" : "text-gray-700 dark:text-gray-300"
             )}>
               {t('messageContent')}:
             </label>
@@ -246,8 +246,8 @@ export const EditMessageView = memo(function EditMessageView({
               placeholder={t('enterMessageContent')}
               className={cn(
                 "min-h-[120px] resize-none text-sm leading-relaxed",
-                isOwnMessage 
-                  ? "bg-white border-blue-300 text-gray-900 placeholder:text-gray-500 focus:bg-white focus:border-blue-500" 
+                isOwnMessage
+                  ? "bg-white dark:bg-gray-800 border-blue-300 dark:border-blue-400 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:bg-white dark:focus:bg-gray-800 focus:border-blue-500 dark:focus:border-blue-300"
                   : "bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600"
               )}
               disabled={isSaving}
@@ -259,23 +259,23 @@ export const EditMessageView = memo(function EditMessageView({
             <div className={cn(
               "flex items-start gap-2 p-3 rounded-md border",
               isOwnMessage
-                ? "bg-white/10 border-white/20"
+                ? "bg-white/10 dark:bg-white/5 border-white/20 dark:border-white/10"
                 : "bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800"
             )}>
               <AlertTriangle className={cn(
                 "h-4 w-4 mt-0.5 flex-shrink-0",
-                isOwnMessage ? "text-amber-700" : "text-amber-600 dark:text-amber-400"
+                isOwnMessage ? "text-amber-700 dark:text-amber-300" : "text-amber-600 dark:text-amber-400"
               )} />
               <div>
                 <p className={cn(
                   "text-xs font-medium mb-1",
-                  isOwnMessage ? "text-amber-900" : "text-amber-800 dark:text-amber-200"
+                  isOwnMessage ? "text-amber-900 dark:text-amber-200" : "text-amber-800 dark:text-amber-200"
                 )}>
                   {t('translationWarning')}
                 </p>
                 <p className={cn(
                   "text-xs",
-                  isOwnMessage ? "text-amber-800" : "text-amber-700 dark:text-amber-300"
+                  isOwnMessage ? "text-amber-800 dark:text-amber-300" : "text-amber-700 dark:text-amber-300"
                 )}>
                   {t('translationWillBeRegenerated')}
                 </p>
@@ -287,17 +287,17 @@ export const EditMessageView = memo(function EditMessageView({
           {saveError && (
             <div className={cn(
               "flex items-start gap-2 p-3 rounded-md border",
-              isOwnMessage 
-                ? "bg-red-900/30 border-red-700" 
+              isOwnMessage
+                ? "bg-red-900/30 dark:bg-red-900/40 border-red-700 dark:border-red-600"
                 : "bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800"
             )}>
               <AlertTriangle className={cn(
                 "h-4 w-4 mt-0.5 flex-shrink-0",
-                isOwnMessage ? "text-red-200" : "text-red-600 dark:text-red-400"
+                isOwnMessage ? "text-red-200 dark:text-red-300" : "text-red-600 dark:text-red-400"
               )} />
               <p className={cn(
                 "text-xs",
-                isOwnMessage ? "text-red-200" : "text-red-700 dark:text-red-300"
+                isOwnMessage ? "text-red-200 dark:text-red-300" : "text-red-700 dark:text-red-300"
               )}>
                 {saveError}
               </p>
@@ -309,8 +309,8 @@ export const EditMessageView = memo(function EditMessageView({
       {/* Footer Actions */}
       <div className={cn(
         "flex items-center justify-between px-4 py-3 border-t",
-        isOwnMessage 
-          ? "border-white/20 bg-white/5" 
+        isOwnMessage
+          ? "border-white/20 dark:border-white/10 bg-white/5 dark:bg-white/5"
           : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50"
       )}>
         <div className="flex items-center gap-2">
@@ -324,22 +324,22 @@ export const EditMessageView = memo(function EditMessageView({
             disabled={isSaving}
             className={cn(
               "h-8 px-3 text-xs",
-              isOwnMessage 
-                ? "border-blue-700 bg-white text-blue-900 hover:bg-blue-50" 
+              isOwnMessage
+                ? "border-blue-700 dark:border-blue-400 bg-white dark:bg-gray-800 text-blue-900 dark:text-blue-100 hover:bg-blue-50 dark:hover:bg-gray-700"
                 : "border-gray-300 text-gray-600 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
             )}
           >
             {t('cancel')}
           </Button>
-          
+
           <Button
             size="sm"
             onClick={handleSave}
             disabled={!hasChanges || !content.trim() || isSaving}
             className={cn(
               "h-8 px-3 text-xs",
-              isOwnMessage 
-                ? "bg-blue-700 hover:bg-blue-800 text-white border-blue-800" 
+              isOwnMessage
+                ? "bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-500 text-white border-blue-800 dark:border-blue-500"
                 : "bg-blue-600 hover:bg-blue-700 text-white"
             )}
           >
