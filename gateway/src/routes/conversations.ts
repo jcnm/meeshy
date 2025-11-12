@@ -1600,6 +1600,8 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
       // ÉTAPE: Traiter les liens [[url]] et <url> AVANT de sauvegarder le message
       let processedContent = content.trim();
+      console.log('[GATEWAY] Edit - Original content:', content.trim());
+
       try {
         console.log('[GATEWAY] Processing tracking links in edited message:', messageId);
         const { processedContent: contentWithLinks, trackingLinks } = await trackingLinkService.processExplicitLinksInContent({
@@ -1609,6 +1611,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
           createdBy: userId
         });
         processedContent = contentWithLinks;
+        console.log('[GATEWAY] Edit - Processed content after links:', processedContent);
 
         if (trackingLinks.length > 0) {
           console.log(`[GATEWAY] ✅ ${trackingLinks.length} tracking link(s) created/reused in edited message`);
@@ -1664,9 +1667,10 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       // ÉTAPE: Traitement des mentions @username lors de l'édition
       try {
         const mentionService = (fastify as any).mentionService;
+        console.log('[GATEWAY] Edit - MentionService available:', !!mentionService);
 
         if (mentionService) {
-          console.log('[GATEWAY] Traitement des mentions pour le message édité:', messageId);
+          console.log('[GATEWAY] Edit - Processing mentions for edited message:', messageId);
 
           // Supprimer les anciennes mentions
           await prisma.mention.deleteMany({
@@ -1675,7 +1679,9 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
           // Extraire les nouvelles mentions du contenu traité (avec tracking links déjà remplacés)
           const mentionedUsernames = mentionService.extractMentions(processedContent);
-          console.log('[GATEWAY] Mentions extraites:', mentionedUsernames);
+          console.log('[GATEWAY] Edit - Extracting mentions from:', processedContent);
+          console.log('[GATEWAY] Edit - Mentions extracted:', mentionedUsernames);
+          console.log('[GATEWAY] Edit - Number of mentions:', mentionedUsernames.length);
 
           if (mentionedUsernames.length > 0) {
             // Résoudre les usernames en utilisateurs réels
@@ -1720,17 +1726,61 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
                 console.log(`[GATEWAY] ✅ ${validationResult.validUserIds.length} mention(s) mise(s) à jour`);
 
-                // Déclencher les notifications de mention (si disponible)
+                // Déclencher les notifications de mention pour les utilisateurs mentionnés
                 const notificationService = (fastify as any).notificationService;
                 if (notificationService) {
                   try {
-                    await notificationService.sendMentionNotifications(
-                      validationResult.validUserIds,
-                      userId,
-                      conversationId,
-                      messageId,
-                      processedContent
-                    );
+                    // Récupérer les informations de l'expéditeur
+                    const sender = await prisma.user.findUnique({
+                      where: { id: userId },
+                      select: {
+                        username: true,
+                        avatar: true
+                      }
+                    });
+
+                    if (sender) {
+                      // Récupérer les informations de la conversation
+                      const conversationInfo = await prisma.conversation.findUnique({
+                        where: { id: conversationId },
+                        select: {
+                          title: true,
+                          type: true,
+                          members: {
+                            where: { isActive: true },
+                            select: { userId: true }
+                          }
+                        }
+                      });
+
+                      if (conversationInfo) {
+                        const memberIds = conversationInfo.members.map((m: any) => m.userId);
+
+                        // Envoyer une notification à chaque utilisateur mentionné
+                        for (const mentionedUserId of validationResult.validUserIds) {
+                          // Ne pas notifier l'expéditeur lui-même
+                          if (mentionedUserId === userId) {
+                            continue;
+                          }
+
+                          const isMember = memberIds.includes(mentionedUserId);
+
+                          await notificationService.createMentionNotification({
+                            mentionedUserId,
+                            senderId: userId,
+                            senderUsername: sender.username,
+                            senderAvatar: sender.avatar || undefined,
+                            messageContent: processedContent,
+                            conversationId,
+                            conversationTitle: conversationInfo.title,
+                            messageId,
+                            isMemberOfConversation: isMember
+                          });
+
+                          console.log(`[GATEWAY] 📩 Notification de mention envoyée à l'utilisateur ${mentionedUserId}`);
+                        }
+                      }
+                    }
                   } catch (notifError) {
                     console.error('[GATEWAY] Erreur notifications mentions:', notifError);
                   }
@@ -1754,9 +1804,12 @@ export async function conversationRoutes(fastify: FastifyInstance) {
             });
             updatedMessage.validatedMentions = [];
           }
+        } else {
+          console.warn('[GATEWAY] Edit - MentionService NOT AVAILABLE - mentions will not be processed!');
         }
       } catch (mentionError) {
-        console.error('[GATEWAY] Erreur traitement mentions:', mentionError);
+        console.error('[GATEWAY] Edit - Error processing mentions:', mentionError);
+        console.error('[GATEWAY] Edit - Stack trace:', mentionError.stack);
         // Ne pas faire échouer l'édition si les mentions échouent
       }
 
