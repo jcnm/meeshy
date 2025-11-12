@@ -61,28 +61,16 @@ export class MentionService {
   async resolveUsernames(usernames: string[]): Promise<Map<string, User>> {
     if (usernames.length === 0) return new Map();
 
-    // DEBUG: Chercher tous les utilisateurs avec des usernames similaires
-    const debugUsers = await this.prisma.user.findMany({
-      where: {
-        isActive: true,
-        deletedAt: null
-      },
-      select: {
-        username: true,
-        isActive: true
-      },
-      take: 100
-    });
-    console.log('[MentionService] DEBUG - Tous les usernames actifs en DB:', debugUsers.map(u => u.username));
-
+    // Ne pas filtrer sur isActive/deletedAt pour cohérence avec l'autocomplete
+    // Si un utilisateur apparaît dans l'autocomplete (membre de conversation),
+    // il doit pouvoir être mentionné même s'il est "inactif"
     const users = await this.prisma.user.findMany({
       where: {
         username: {
           in: usernames,
           mode: 'insensitive' // Prisma syntax for case-insensitive search
-        },
-        isActive: true,
-        deletedAt: null
+        }
+        // Pas de filtre isActive/deletedAt pour cohérence avec autocomplete
       },
       select: {
         id: true,
