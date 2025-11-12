@@ -342,6 +342,7 @@ export class MeeshySocketIOManager {
                   }
                 },
                 attachments: true,
+                validatedMentions: true, // IMPORTANT: Include validated mentions for real-time display
                 replyTo: {
                   include: {
                     sender: {
@@ -566,6 +567,7 @@ export class MeeshySocketIOManager {
                   }
                 },
                 attachments: true,
+                validatedMentions: true, // IMPORTANT: Include validated mentions for real-time display
                 replyTo: {
                   include: {
                     sender: {
