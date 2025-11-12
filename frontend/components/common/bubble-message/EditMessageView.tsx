@@ -41,6 +41,9 @@ export const EditMessageView = memo(function EditMessageView({
   const [hasChanges, setHasChanges] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Utiliser conversationId de la prop ou du message comme fallback
+  const effectiveConversationId = conversationId || (message as any).conversationId;
+
   // États pour le système de mentions @username
   const [showMentionAutocomplete, setShowMentionAutocomplete] = useState(false);
   const [mentionQuery, setMentionQuery] = useState('');
@@ -72,7 +75,16 @@ export const EditMessageView = memo(function EditMessageView({
     const mentionDetection = detectMentionAtCursor(newValue, cursorPosition);
 
     // Vérifier que conversationId est un ObjectId MongoDB valide (24 caractères hexadécimaux)
-    const isValidObjectId = conversationId && /^[a-f\d]{24}$/i.test(conversationId);
+    const isValidObjectId = effectiveConversationId && /^[a-f\d]{24}$/i.test(effectiveConversationId);
+
+    // Debug: log si conversationId n'est pas valide
+    if (mentionDetection && !isValidObjectId) {
+      console.warn('[EditMessageView] conversationId invalid or missing:', {
+        conversationId: effectiveConversationId,
+        isValid: isValidObjectId,
+        messageId: message.id
+      });
+    }
 
     if (mentionDetection && isValidObjectId) {
       // Valider que la query est un username valide (lettres, chiffres, underscore, max 30 caractères)
@@ -105,7 +117,7 @@ export const EditMessageView = memo(function EditMessageView({
       setShowMentionAutocomplete(false);
       setMentionQuery('');
     }
-  }, [conversationId]);
+  }, [effectiveConversationId, message.id]);
 
   const handleSave = useCallback(async () => {
     if (!hasChanges || !content.trim()) return;
@@ -353,9 +365,9 @@ export const EditMessageView = memo(function EditMessageView({
       </div>
 
       {/* Autocomplete des mentions @username */}
-      {showMentionAutocomplete && conversationId && (
+      {showMentionAutocomplete && effectiveConversationId && (
         <MentionAutocomplete
-          conversationId={conversationId}
+          conversationId={effectiveConversationId}
           query={mentionQuery}
           onSelect={handleMentionSelect}
           onClose={() => {
