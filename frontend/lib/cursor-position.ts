@@ -34,7 +34,10 @@ export function getCursorPosition(
     'wordSpacing',
     'whiteSpace',
     'wordWrap',
-    'wordBreak'
+    'wordBreak',
+    'textAlign',
+    'direction',
+    'tabSize'
   ];
 
   styles.forEach(style => {
@@ -44,9 +47,10 @@ export function getCursorPosition(
   // Styles supplémentaires pour le positionnement
   mirror.style.position = 'absolute';
   mirror.style.visibility = 'hidden';
-  mirror.style.top = '0';
-  mirror.style.left = '0';
+  mirror.style.top = '-9999px'; // Hors écran pour éviter tout impact visuel
+  mirror.style.left = '-9999px';
   mirror.style.pointerEvents = 'none';
+  mirror.style.overflow = 'hidden'; // Important pour mesurer correctement
 
   // Ajouter le contenu jusqu'au curseur
   const textBeforeCursor = textarea.value.substring(0, cursorIndex);
