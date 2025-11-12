@@ -12,7 +12,7 @@ interface MentionAutocompleteProps {
   query: string;
   onSelect: (username: string) => void;
   onClose: () => void;
-  position: { top: number; left: number };
+  position: { top?: number; bottom?: number; left: number };
   maxSuggestions?: number;
 }
 
@@ -163,7 +163,8 @@ export function MentionAutocomplete({
       ref={containerRef}
       className="fixed z-[9999] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl max-h-64 w-80 overflow-y-auto"
       style={{
-        top: `${position.top}px`,
+        ...(position.top !== undefined && { top: `${position.top}px` }),
+        ...(position.bottom !== undefined && { bottom: `${position.bottom}px` }),
         left: `${position.left}px`
       }}
     >
