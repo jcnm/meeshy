@@ -39,6 +39,15 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
   // Utiliser directement l'URL depuis l'attachement qui contient déjà le bon chemin
   const attachmentFileUrl = attachment.fileUrl;
 
+  // Tronquer le nom de fichier sur mobile (32 caractères max)
+  const truncateFilename = (filename: string, maxLength: number = 32): string => {
+    if (filename.length <= maxLength) return filename;
+    const ext = filename.split('.').pop() || '';
+    const nameWithoutExt = filename.substring(0, filename.lastIndexOf('.'));
+    const truncatedName = nameWithoutExt.substring(0, maxLength - ext.length - 4) + '...';
+    return `${truncatedName}.${ext}`;
+  };
+
   // Check if iframe loads successfully
   React.useEffect(() => {
     // Set a timeout to detect if PDF fails to load
@@ -120,7 +129,10 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
         <div className="flex items-center gap-2 min-w-0 flex-1">
           {/* Info fichier */}
           <div className="text-xs text-gray-600 dark:text-gray-300 truncate">
-            <span className="font-medium">{attachment.originalName}</span>
+            <span className="font-medium">
+              <span className="hidden sm:inline">{attachment.originalName}</span>
+              <span className="inline sm:hidden">{truncateFilename(attachment.originalName)}</span>
+            </span>
           </div>
         </div>
 

@@ -87,6 +87,15 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
   // URL de téléchargement - utiliser directement fileUrl
   const downloadUrl = attachment.fileUrl;
 
+  // Tronquer le nom de fichier sur mobile (32 caractères max)
+  const truncateFilename = (filename: string, maxLength: number = 32): string => {
+    if (filename.length <= maxLength) return filename;
+    const ext = filename.split('.').pop() || '';
+    const nameWithoutExt = filename.substring(0, filename.lastIndexOf('.'));
+    const truncatedName = nameWithoutExt.substring(0, maxLength - ext.length - 4) + '...';
+    return `${truncatedName}.${ext}`;
+  };
+
   return (
     <div
       className={`flex flex-col gap-2 p-3 bg-gradient-to-br from-green-50 to-teal-50 dark:from-gray-800 dark:to-gray-900 rounded-lg border ${
@@ -177,7 +186,10 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
           {/* Info fichier */}
           <div className="text-xs text-gray-600 dark:text-gray-300 flex items-center gap-1 truncate">
             <FileText className="w-3 h-3 flex-shrink-0" />
-            <span className="font-medium truncate">{attachment.originalName}</span>
+            <span className="font-medium truncate">
+              <span className="hidden sm:inline">{attachment.originalName}</span>
+              <span className="inline sm:hidden">{truncateFilename(attachment.originalName)}</span>
+            </span>
           </div>
         </div>
 
