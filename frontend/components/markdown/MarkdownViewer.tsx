@@ -170,6 +170,14 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
       {/* Contrôles */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2 min-w-0 flex-1">
+          {/* Info fichier */}
+          <div className="text-xs text-gray-600 dark:text-gray-300 flex items-center gap-1 truncate">
+            <FileText className="w-3 h-3 flex-shrink-0" />
+            <span className="font-medium truncate">{attachment.originalName}</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 flex-shrink-0">
           {/* Bouton toggle raw/formatted */}
           <Button
             onClick={toggleRawMode}
@@ -186,14 +194,6 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
             )}
           </Button>
 
-          {/* Info fichier */}
-          <div className="text-xs text-gray-600 dark:text-gray-300 flex items-center gap-1 truncate">
-            <FileText className="w-3 h-3 flex-shrink-0" />
-            <span className="font-medium truncate">{attachment.originalName}</span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 flex-shrink-0">
           {/* Bouton plein écran / lightbox */}
           {onOpenLightbox && (
             <Button
