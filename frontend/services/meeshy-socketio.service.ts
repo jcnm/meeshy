@@ -955,7 +955,8 @@ class MeeshySocketIOService {
       translations: [],
       replyTo: replyTo,
       sender: sender,
-      attachments: attachments.length > 0 ? attachments : undefined
+      attachments: attachments.length > 0 ? attachments : undefined,
+      validatedMentions: (socketMessage as any).validatedMentions || []
     } as Message;
   }
 
