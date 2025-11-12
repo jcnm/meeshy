@@ -311,9 +311,29 @@ export async function conversationRoutes(fastify: FastifyInstance) {
     }
 
     // Sinon, chercher par le champ identifier
-    const conversation = await prisma.conversation.findFirst({
+    let conversation = await prisma.conversation.findFirst({
       where: { identifier: identifier }
     });
+
+    // Cas spécial : créer automatiquement la conversation globale "meeshy" si elle n'existe pas
+    if (!conversation && identifier === 'meeshy') {
+      console.log('[GATEWAY] Creating global Meeshy conversation automatically...');
+      try {
+        conversation = await prisma.conversation.create({
+          data: {
+            identifier: 'meeshy',
+            title: 'Meeshy Global',
+            type: 'global',
+            isPublic: true,
+            createdBy: '000000000000000000000000' // System user placeholder
+          }
+        });
+        console.log('[GATEWAY] Created global Meeshy conversation with ID:', conversation.id);
+      } catch (error) {
+        console.error('[GATEWAY] Error creating Meeshy conversation:', error);
+        return null;
+      }
+    }
 
     return conversation ? conversation.id : null;
   }
