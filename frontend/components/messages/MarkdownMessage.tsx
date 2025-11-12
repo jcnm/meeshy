@@ -203,33 +203,43 @@ export const MarkdownMessage: React.FC<MarkdownMessageProps> = ({
               </code>
             );
           },
-          // Custom link rendering with tracking support
+          // Custom link rendering with tracking support and mention detection
           a({ node, children, href, ...props }: any) {
+            // Check if this is a user mention link (/u/username)
+            const isMention = href && href.startsWith('/u/');
+
             // Parse the URL to check if it's a tracking link
             const parsedParts = parseMessageLinks(href || '');
             const linkPart = parsedParts.find(part => part.type !== 'text');
             const isTracking = linkPart && (linkPart.type === 'tracking-link' || linkPart.type === 'mshy-link');
             const isMshyLink = linkPart && linkPart.type === 'mshy-link';
 
+            // For mentions, use internal routing instead of opening in new tab
+            const linkTarget = isMention ? undefined : "_blank";
+            const linkRel = isMention ? undefined : "noopener noreferrer";
+
             return (
               <a
                 href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => handleLinkClick(e, href || '')}
+                target={linkTarget}
+                rel={linkRel}
+                onClick={(e) => !isMention && handleLinkClick(e, href || '')}
                 className={cn(
-                  'inline-flex items-center gap-1 underline transition-colors cursor-pointer',
-                  isTracking
+                  'inline-flex items-center gap-1 transition-colors cursor-pointer',
+                  isMention
+                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-1 py-0.5 rounded no-underline hover:bg-blue-200 dark:hover:bg-blue-900/50 font-medium'
+                    : 'underline',
+                  !isMention && isTracking
                     ? 'text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 decoration-blue-500/30 hover:decoration-blue-500/60'
-                    : 'text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300'
+                    : !isMention && 'text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300'
                 )}
                 {...props}
               >
-                {isTracking ? (
+                {!isMention && isTracking ? (
                   <Link2 className="h-3 w-3 flex-shrink-0 inline" />
-                ) : (
+                ) : !isMention ? (
                   <ExternalLink className="h-3 w-3 flex-shrink-0 inline" />
-                )}
+                ) : null}
                 {isMshyLink ? (
                   <span className="font-mono text-xs">{children}</span>
                 ) : (
