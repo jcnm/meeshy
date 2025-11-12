@@ -61,6 +61,20 @@ export class MentionService {
   async resolveUsernames(usernames: string[]): Promise<Map<string, User>> {
     if (usernames.length === 0) return new Map();
 
+    // DEBUG: Chercher tous les utilisateurs avec des usernames similaires
+    const debugUsers = await this.prisma.user.findMany({
+      where: {
+        isActive: true,
+        deletedAt: null
+      },
+      select: {
+        username: true,
+        isActive: true
+      },
+      take: 100
+    });
+    console.log('[MentionService] DEBUG - Tous les usernames actifs en DB:', debugUsers.map(u => u.username));
+
     const users = await this.prisma.user.findMany({
       where: {
         username: {
