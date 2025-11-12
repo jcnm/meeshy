@@ -157,15 +157,6 @@ export function MentionAutocomplete({
     }
   };
 
-  // Debug: Log component state
-  console.log('[MentionAutocomplete] Render state:', {
-    isLoading,
-    error,
-    suggestionsCount: suggestions.length,
-    position,
-    query
-  });
-
   // Toujours afficher le composant quand il est monté (pas de return null)
   return (
     <div

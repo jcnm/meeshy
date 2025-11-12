@@ -650,20 +650,8 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     const cursorPosition = textarea.selectionStart;
     const mentionDetection = detectMentionAtCursor(newValue, cursorPosition);
 
-    console.log('[MessageComposer] Mention detection:', {
-      mentionDetection,
-      conversationId,
-      cursorPosition,
-      value: newValue
-    });
-
     // Vérifier que conversationId est un ObjectId MongoDB valide (24 caractères hexadécimaux)
     const isValidObjectId = conversationId && /^[a-f\d]{24}$/i.test(conversationId);
-
-    console.log('[MessageComposer] Validation ObjectId:', {
-      conversationId,
-      isValidObjectId
-    });
 
     if (mentionDetection && isValidObjectId) {
       // Valider que la query est un username valide (lettres, chiffres, underscore, max 30 caractères)
@@ -860,15 +848,6 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       />
 
       {/* Autocomplete des mentions @username */}
-      {(() => {
-        console.log('[MessageComposer] Mention autocomplete conditions:', {
-          showMentionAutocomplete,
-          conversationId,
-          mentionQuery,
-          mentionPosition
-        });
-        return null;
-      })()}
       {showMentionAutocomplete && conversationId && (
         <MentionAutocomplete
           conversationId={conversationId}
