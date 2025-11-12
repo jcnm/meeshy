@@ -17,6 +17,7 @@ export * from './migration-utils';
 import type { AnonymousParticipant } from './anonymous';
 
 // Message types are now consolidated
+export * from './message-types';
 
 // Export des types unifiés Phase 2 - Messaging
 export * from './messaging';
