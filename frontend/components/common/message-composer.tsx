@@ -664,8 +664,12 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
           // Obtenir la position exacte du curseur dans le textarea
           const cursorPos = getCursorPosition(textareaRef.current, cursorPosition);
 
+          // Get lineHeight from textarea computed styles
+          const computed = window.getComputedStyle(textareaRef.current);
+          const lineHeight = parseFloat(computed.lineHeight) || parseFloat(computed.fontSize) * 1.2;
+
           // Ajuster la position pour qu'elle reste visible dans le viewport
-          const adjustedPosition = adjustPositionForViewport(cursorPos.x, cursorPos.y);
+          const adjustedPosition = adjustPositionForViewport(cursorPos.x, cursorPos.y, 224, 256, lineHeight);
 
           setMentionPosition(adjustedPosition);
         }

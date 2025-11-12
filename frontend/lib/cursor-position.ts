@@ -76,14 +76,12 @@ export function getCursorPosition(
   const offsetX = spanRect.left - divRect.left;
   const offsetY = spanRect.top - divRect.top;
 
-  // Obtenir la hauteur de ligne pour positionner l'autocomplete juste sous la ligne du curseur
-  const lineHeight = parseFloat(computed.lineHeight) || parseFloat(computed.fontSize) * 1.2;
-
-  // Calculer la position absolue
+  // Calculer la position absolue du curseur (SANS offset lineHeight)
   // Le div miroir a les mêmes border/padding que le textarea, donc l'offset
   // est déjà correct. On translate juste du div vers le textarea.
+  // Note: on ne soustrait le scroll que si le textarea est scrollable
   const x = textareaRect.left + offsetX - textarea.scrollLeft;
-  const y = textareaRect.top + offsetY + lineHeight - textarea.scrollTop;
+  const y = textareaRect.top + offsetY - textarea.scrollTop;
 
   // Nettoyer
   document.body.removeChild(div);
@@ -93,12 +91,18 @@ export function getCursorPosition(
 
 /**
  * Ajuste la position de l'autocomplete pour qu'elle reste visible dans le viewport
+ * @param x Position horizontale du curseur
+ * @param y Position verticale du curseur (haut de la ligne)
+ * @param autocompleteWidth Largeur de l'autocomplete
+ * @param autocompleteHeight Hauteur de l'autocomplete
+ * @param lineHeight Hauteur de ligne (pour positionner sous la ligne)
  */
 export function adjustPositionForViewport(
   x: number,
   y: number,
   autocompleteWidth: number = 224,
-  autocompleteHeight: number = 256
+  autocompleteHeight: number = 256,
+  lineHeight: number = 24
 ): { top?: number; bottom?: number; left: number } {
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
@@ -113,20 +117,21 @@ export function adjustPositionForViewport(
   }
 
   // Ajuster la position verticale
-  // Si l'autocomplete dépasse en bas, l'afficher au-dessus du curseur
-  const spaceBelow = viewportHeight - y;
+  // y est la position du HAUT de la ligne du curseur
+  const yBelow = y + lineHeight; // Position sous la ligne
+  const spaceBelow = viewportHeight - yBelow;
   const spaceAbove = y;
 
   if (spaceBelow >= autocompleteHeight + 10) {
-    // Assez d'espace en dessous - afficher en dessous du curseur
+    // Assez d'espace en dessous - afficher sous la ligne du curseur
     return {
-      top: y + 5, // Petit décalage sous le curseur
+      top: yBelow + 5, // Petit décalage sous la ligne
       left: adjustedLeft
     };
   } else if (spaceAbove >= autocompleteHeight + 10) {
-    // Pas assez d'espace en dessous mais assez au-dessus - afficher au-dessus
+    // Pas assez d'espace en dessous mais assez au-dessus - afficher au-dessus de la ligne
     return {
-      top: y - autocompleteHeight - 5, // Petit décalage au-dessus du curseur
+      top: y - autocompleteHeight - 5, // Au-dessus de la ligne du curseur
       left: adjustedLeft
     };
   } else {
