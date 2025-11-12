@@ -227,7 +227,7 @@ export const MarkdownMessage: React.FC<MarkdownMessageProps> = ({
                 className={cn(
                   'inline-flex items-center gap-1 transition-colors cursor-pointer',
                   isMention
-                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-1 py-0.5 rounded no-underline hover:bg-blue-200 dark:hover:bg-blue-900/50 font-medium'
+                    ? 'text-blue-700 dark:text-blue-300 no-underline hover:underline font-medium'
                     : 'underline',
                   !isMention && isTracking
                     ? 'text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 decoration-blue-500/30 hover:decoration-blue-500/60'
