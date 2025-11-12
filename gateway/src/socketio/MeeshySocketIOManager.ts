@@ -2192,6 +2192,22 @@ export class MeeshySocketIOManager {
         return;
       }
 
+      // Récupérer les utilisateurs mentionnés dans le message
+      // Ils recevront une notification de mention spécifique, pas une notification de message générique
+      const mentionedUserIds = new Set<string>();
+      if (message.id) {
+        try {
+          const mentions = await this.prisma.mention.findMany({
+            where: { messageId: message.id },
+            select: { mentionedUserId: true }
+          });
+          mentions.forEach(m => mentionedUserIds.add(m.mentionedUserId));
+          console.log(`📢 [NOTIFICATIONS] ${mentionedUserIds.size} utilisateur(s) mentionné(s) - ils ne recevront QUE la notification de mention`);
+        } catch (err) {
+          console.error('❌ [NOTIFICATIONS] Erreur lors de la récupération des mentions:', err);
+        }
+      }
+
       // Récupérer les membres de la conversation
       const conversationMembers = await this.prisma.conversationMember.findMany({
         where: {
@@ -2222,8 +2238,15 @@ export class MeeshySocketIOManager {
         senderUsername = fullName || message.anonymousSender.username || 'Anonymous';
       }
 
-      // Créer une notification pour chaque membre (sauf l'expéditeur)
+      // Créer une notification pour chaque membre (sauf l'expéditeur ET les utilisateurs mentionnés)
       for (const member of conversationMembers) {
+        // Ne pas envoyer de notification de message générique aux utilisateurs mentionnés
+        // Ils recevront une notification de mention plus spécifique
+        if (mentionedUserIds.has(member.userId)) {
+          console.log(`📢 [NOTIFICATIONS] Skip notification générique pour ${member.userId} (mentionné)`);
+          continue;
+        }
+
         await this.notificationService.createMessageNotification({
           recipientId: member.userId,
           senderId: message.senderId || '',

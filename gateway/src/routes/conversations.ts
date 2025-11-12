@@ -1598,11 +1598,31 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // Mettre à jour le message
+      // ÉTAPE: Traiter les liens [[url]] et <url> AVANT de sauvegarder le message
+      let processedContent = content.trim();
+      try {
+        console.log('[GATEWAY] Processing tracking links in edited message:', messageId);
+        const { processedContent: contentWithLinks, trackingLinks } = await trackingLinkService.processExplicitLinksInContent({
+          content: content.trim(),
+          conversationId: conversationId,
+          messageId: messageId,
+          createdBy: userId
+        });
+        processedContent = contentWithLinks;
+
+        if (trackingLinks.length > 0) {
+          console.log(`[GATEWAY] ✅ ${trackingLinks.length} tracking link(s) created/reused in edited message`);
+        }
+      } catch (linkError) {
+        console.error('[GATEWAY] Error processing tracking links in edit:', linkError);
+        // Continue with unprocessed content if tracking links fail
+      }
+
+      // Mettre à jour le message avec le contenu traité
       const updatedMessage = await prisma.message.update({
         where: { id: messageId },
         data: {
-          content: content.trim(),
+          content: processedContent,
           originalLanguage,
           isEdited: true,
           editedAt: new Date()
@@ -1653,8 +1673,8 @@ export async function conversationRoutes(fastify: FastifyInstance) {
             where: { messageId: messageId }
           });
 
-          // Extraire les nouvelles mentions
-          const mentionedUsernames = mentionService.extractMentions(content.trim());
+          // Extraire les nouvelles mentions du contenu traité (avec tracking links déjà remplacés)
+          const mentionedUsernames = mentionService.extractMentions(processedContent);
           console.log('[GATEWAY] Mentions extraites:', mentionedUsernames);
 
           if (mentionedUsernames.length > 0) {
@@ -1709,7 +1729,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
                       userId,
                       conversationId,
                       messageId,
-                      content.trim()
+                      processedContent
                     );
                   } catch (notifError) {
                     console.error('[GATEWAY] Erreur notifications mentions:', notifError);
@@ -1752,10 +1772,10 @@ export async function conversationRoutes(fastify: FastifyInstance) {
           }
         });
         
-        // Créer un objet message pour la retraduction
+        // Créer un objet message pour la retraduction (avec contenu traité incluant tracking links)
         const messageForRetranslation = {
           id: messageId,
-          content: content.trim(),
+          content: processedContent,
           originalLanguage: originalLanguage,
           conversationId: conversationId,
           senderId: userId

@@ -526,6 +526,9 @@ export class MessagingService {
       const protectedItems: Array<{ placeholder: string; original: string }> = [];
       let placeholderCounter = 0;
 
+      // Track URLs already processed in this message to reuse tokens for identical URLs
+      const urlTokenMap = new Map<string, string>();
+
       // ÉTAPE 1: Protéger les liens markdown [texte](url) - Règle 1
       const MARKDOWN_LINK_REGEX = /\[([^\]]+)\]\(([^)]+)\)/g;
       processedContent = processedContent.replace(MARKDOWN_LINK_REGEX, (match) => {
@@ -543,21 +546,33 @@ export class MessagingService {
         const url = match[1];
 
         try {
-          let trackingLink = await this.trackingLinkService.findExistingTrackingLink(
-            url,
-            conversationId
-          );
+          let token: string;
 
-          if (!trackingLink) {
-            trackingLink = await this.trackingLinkService.createTrackingLink({
-              originalUrl: url,
-              conversationId,
-              createdBy: senderId,
-              messageId
-            });
+          // Check if we already processed this URL in this message
+          if (urlTokenMap.has(url)) {
+            token = urlTokenMap.get(url)!;
+            console.log(`[MessagingService] Reusing token ${token} for duplicate URL in same message: ${url}`);
+          } else {
+            // Find or create tracking link
+            let trackingLink = await this.trackingLinkService.findExistingTrackingLink(
+              url,
+              conversationId
+            );
+
+            if (!trackingLink) {
+              trackingLink = await this.trackingLinkService.createTrackingLink({
+                originalUrl: url,
+                conversationId,
+                createdBy: senderId,
+                messageId
+              });
+            }
+
+            token = trackingLink.token;
+            urlTokenMap.set(url, token);
           }
 
-          const meeshyShortLink = `m+${trackingLink.token}`;
+          const meeshyShortLink = `m+${token}`;
           processedContent = processedContent.replace(fullMatch, meeshyShortLink);
         } catch (linkError) {
           console.error(`[MessagingService] ❌ Erreur lors du traitement du lien [[url]]:`, linkError);
@@ -575,21 +590,33 @@ export class MessagingService {
         const url = match[1];
 
         try {
-          let trackingLink = await this.trackingLinkService.findExistingTrackingLink(
-            url,
-            conversationId
-          );
+          let token: string;
 
-          if (!trackingLink) {
-            trackingLink = await this.trackingLinkService.createTrackingLink({
-              originalUrl: url,
-              conversationId,
-              createdBy: senderId,
-              messageId
-            });
+          // Check if we already processed this URL in this message
+          if (urlTokenMap.has(url)) {
+            token = urlTokenMap.get(url)!;
+            console.log(`[MessagingService] Reusing token ${token} for duplicate URL in same message: ${url}`);
+          } else {
+            // Find or create tracking link
+            let trackingLink = await this.trackingLinkService.findExistingTrackingLink(
+              url,
+              conversationId
+            );
+
+            if (!trackingLink) {
+              trackingLink = await this.trackingLinkService.createTrackingLink({
+                originalUrl: url,
+                conversationId,
+                createdBy: senderId,
+                messageId
+              });
+            }
+
+            token = trackingLink.token;
+            urlTokenMap.set(url, token);
           }
 
-          const meeshyShortLink = `m+${trackingLink.token}`;
+          const meeshyShortLink = `m+${token}`;
           processedContent = processedContent.replace(fullMatch, meeshyShortLink);
         } catch (linkError) {
           console.error(`[MessagingService] ❌ Erreur lors du traitement du lien <url>:`, linkError);
