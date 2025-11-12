@@ -41,8 +41,9 @@ export const EditMessageView = memo(function EditMessageView({
   const [hasChanges, setHasChanges] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Utiliser conversationId de la prop ou du message comme fallback
-  const effectiveConversationId = conversationId || (message as any).conversationId;
+  // IMPORTANT: Priorité à message.conversationId (toujours un ObjectId valide du backend)
+  // Fallback vers conversationId prop seulement si message.conversationId n'existe pas
+  const effectiveConversationId = (message as any).conversationId || conversationId;
 
   // Debug: Log conversationId availability
   useEffect(() => {
@@ -50,7 +51,8 @@ export const EditMessageView = memo(function EditMessageView({
       fromProp: conversationId,
       fromMessage: (message as any).conversationId,
       effective: effectiveConversationId,
-      messageId: message.id
+      messageId: message.id,
+      isValidObjectId: effectiveConversationId && /^[a-f\d]{24}$/i.test(effectiveConversationId)
     });
   }, [conversationId, message.id, effectiveConversationId]);
 
