@@ -236,7 +236,7 @@ export const getBackendUrl = (): string => {
     const isDev = currentHost === 'localhost' || currentHost === '127.0.0.1';
 
     if (isDev) {
-      // En développement local, utiliser http://localhost:3000 (gateway)
+      // En développement local, le gateway tourne sur le port 3000
       return 'http://localhost:3000';
     }
 
@@ -269,7 +269,7 @@ export const getWebSocketUrl = (): string => {
     const isDev = currentHost === 'localhost' || currentHost === '127.0.0.1';
     
     if (isDev) {
-      // En développement local, utiliser ws://localhost:4000
+      // En développement local, le gateway WebSocket tourne sur le port 3000
       return 'ws://localhost:3000';
     }
     
