@@ -165,10 +165,11 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
 
     setAudioLevel(normalizedLevel);
 
-    // Continuer l'analyse avec un délai de ~50ms (20fps) pour ne pas bloquer l'UI
+    // Continuer l'analyse avec un délai de ~200ms (5fps) pour économiser les ressources
+    // Réduit la consommation CPU et évite la chauffe du téléphone
     audioLevelAnimationRef.current = window.setTimeout(() => {
       requestAnimationFrame(analyzeAudioLevel);
-    }, 50);
+    }, 200);
   }, []);
 
   // Démarrer l'analyse audio
@@ -278,7 +279,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
           noiseSuppression: false,
           autoGainControl: false,
           sampleRate: 48000,
-          channelCount: 1,
+          channelCount: 2, // Stéréo pour une meilleure qualité audio
         }
       });
 
@@ -549,7 +550,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
 
       <div className="relative group pt-2 pb-1">
         {/* Composant principal */}
-      <div className={`relative flex flex-row items-center justify-between gap-2 w-full h-24 rounded-lg px-3 py-2 border-2 ${
+      <div className={`relative flex flex-row items-center justify-between gap-2 w-full h-16 rounded-lg px-2 py-1.5 border-2 ${
         isRecording
           ? 'bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/30 dark:to-orange-900/30 border-red-400 dark:border-red-500'
           : 'bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/30 dark:to-gray-900/30 border-gray-300 dark:border-gray-600'
@@ -558,22 +559,23 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
         <button
           ref={buttonEffectsRef}
           onClick={() => setShowEffectsPanel(!showEffectsPanel)}
-          className={`relative flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+          onTouchStart={() => setShowEffectsPanel(!showEffectsPanel)}
+          className={`relative flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all ${
             audioEffectsActive
               ? 'bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg shadow-purple-500/50'
               : 'bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700'
-          } hover:scale-105`}
+          } hover:scale-105 active:scale-95`}
           title="Effets audio"
         >
-          <span className="text-2xl">🎭</span>
+          <span className="text-xl">🎭</span>
           {audioEffectsActive && (
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
+            <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white" />
           )}
         </button>
 
         {/* Centre: Timer et statut */}
         <div className="flex flex-col items-center justify-center flex-1 gap-0.5">
-          <div className={`text-2xl font-bold font-mono leading-none ${
+          <div className={`text-lg font-bold font-mono leading-none ${
             isRecording ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'
           }`}>
             {formatTime(recordingTime)}
@@ -583,17 +585,17 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
           <AudioWaveform
             isRecording={isRecording}
             audioLevel={audioLevel}
-            className="w-full max-w-[200px]"
+            className="w-full max-w-[160px]"
           />
 
           {isRecording && (
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-              <span className="text-xs text-red-600 dark:text-red-400 font-medium">REC</span>
+              <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+              <span className="text-[10px] text-red-600 dark:text-red-400 font-medium">REC</span>
             </div>
           )}
           {!isRecording && audioEffectsActive && (
-            <div className="text-[10px] text-purple-600 dark:text-purple-400">
+            <div className="text-[9px] text-purple-600 dark:text-purple-400">
               Effets actifs
             </div>
           )}
@@ -603,18 +605,26 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
         {!isRecording ? (
           <button
             onClick={startRecording}
-            className="flex-shrink-0 w-12 h-12 bg-blue-500 hover:bg-blue-600 rounded-full flex items-center justify-center transition-all shadow-lg"
+            onTouchStart={(e) => {
+              e.preventDefault();
+              startRecording();
+            }}
+            className="flex-shrink-0 w-10 h-10 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 rounded-full flex items-center justify-center transition-all shadow-lg active:scale-95"
             title="Démarrer l'enregistrement"
           >
-            <Radio className="w-6 h-6 text-white" />
+            <Radio className="w-5 h-5 text-white" />
           </button>
         ) : (
           <button
             onClick={stopRecording}
-            className="flex-shrink-0 w-12 h-12 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center transition-all shadow-lg"
+            onTouchStart={(e) => {
+              e.preventDefault();
+              stopRecording();
+            }}
+            className="flex-shrink-0 w-10 h-10 bg-red-500 hover:bg-red-600 active:bg-red-700 rounded-full flex items-center justify-center transition-all shadow-lg active:scale-95"
             title="Arrêter l'enregistrement"
           >
-            <Square className="w-5 h-5 fill-white stroke-white" />
+            <Square className="w-4 h-4 fill-white stroke-white" />
           </button>
         )}
       </div>

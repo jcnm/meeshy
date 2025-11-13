@@ -69,7 +69,7 @@ export function LanguageSelector({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "justify-between min-w-[200px]",
+            "justify-between min-w-[100px]",
             className
           )}
         >
@@ -86,7 +86,7 @@ export function LanguageSelector({
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] max-w-[96vw] p-0">
+      <PopoverContent className="w-[150px] max-w-[96vw] p-0">
         <Command>
           {showSearchInput && (
             <CommandInput placeholder={t('languageSelector.searchLanguage') || "Search language..."} />

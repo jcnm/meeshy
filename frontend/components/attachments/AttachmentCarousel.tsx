@@ -16,6 +16,8 @@ import {
   TooltipTrigger,
 } from '../ui/tooltip';
 import { createThumbnailsBatch, isLowEndDevice } from '@/lib/utils/image-thumbnail';
+import { ImageLightbox } from '@/components/attachments/ImageLightbox';
+import { VideoLightbox } from '@/components/video/VideoLightbox';
 
 interface AttachmentCarouselProps {
   files: File[];
@@ -195,8 +197,46 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
   const processedFilesRef = useRef<Set<string>>(new Set());
   const thumbnailsRef = useRef<Map<string, string>>(new Map());
 
+  // États pour les lightbox
+  const [imageLightboxIndex, setImageLightboxIndex] = useState<number>(-1);
+  const [videoLightboxIndex, setVideoLightboxIndex] = useState<number>(-1);
+  const [fileUrls, setFileUrls] = useState<Map<string, string>>(new Map());
+
   // Détecter si c'est un appareil bas de gamme pour adapter les performances
   const isLowEnd = useMemo(() => isLowEndDevice(), []);
+
+  // Créer les URLs blob pour les fichiers (images et vidéos)
+  useEffect(() => {
+    const newUrls = new Map<string, string>();
+
+    files.forEach((file) => {
+      const fileKey = `${file.name}-${file.size}-${file.lastModified}`;
+      const type = getAttachmentType(file.type);
+
+      // Créer des URLs blob uniquement pour les images et vidéos
+      if ((type === 'image' || type === 'video') && !fileUrls.has(fileKey)) {
+        const url = URL.createObjectURL(file);
+        newUrls.set(fileKey, url);
+      }
+    });
+
+    if (newUrls.size > 0) {
+      setFileUrls((prev) => new Map([...prev, ...newUrls]));
+    }
+
+    // Cleanup: révoquer les URLs qui ne sont plus utilisées
+    return () => {
+      const currentFileKeys = new Set(
+        files.map((f) => `${f.name}-${f.size}-${f.lastModified}`)
+      );
+
+      fileUrls.forEach((url, key) => {
+        if (!currentFileKeys.has(key)) {
+          URL.revokeObjectURL(url);
+        }
+      });
+    };
+  }, [files]);
 
   // Synchroniser la ref avec l'état pour le cleanup
   useEffect(() => {
@@ -358,7 +398,15 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
               }`}>
                 {/* Image preview avec miniature optimisée */}
                 {type === 'image' && thumbnailUrl ? (
-                  <div className="absolute inset-0 rounded-lg overflow-hidden">
+                  <div
+                    className="absolute inset-0 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const imageFiles = files.filter(f => getAttachmentType(f.type) === 'image');
+                      const imageIndex = imageFiles.findIndex(f => `${f.name}-${f.size}-${f.lastModified}` === fileKey);
+                      setImageLightboxIndex(imageIndex);
+                    }}
+                  >
                     <img
                       src={thumbnailUrl}
                       alt={file.name}
@@ -406,12 +454,22 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
                 ) : isVideo ? (
                   /* Prévisualisation vidéo avec icône play */
                   <>
-                    <div className="absolute inset-0 rounded-lg overflow-hidden flex items-center justify-center">
+                    <div
+                      className="absolute inset-0 rounded-lg overflow-hidden flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const videoFiles = files.filter(f => getAttachmentType(f.type) === 'video');
+                        const videoIndex = videoFiles.findIndex(f => `${f.name}-${f.size}-${f.lastModified}` === fileKey);
+                        setVideoLightboxIndex(videoIndex);
+                      }}
+                    >
                       <Video className="w-12 h-12 text-purple-500 dark:text-purple-400" />
                     </div>
 
                     {/* Icône play centrée */}
-                    <div className="absolute inset-0 flex items-center justify-center">
+                    <div
+                      className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                    >
                       <div className="w-10 h-10 bg-purple-600 dark:bg-purple-500 rounded-full flex items-center justify-center">
                         <div className="w-0 h-0 border-l-[8px] border-l-white border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent ml-0.5"></div>
                       </div>
@@ -583,6 +641,56 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
           outline-offset: -2px;
         }
       `}</style>
+
+      {/* Lightbox pour les images */}
+      {imageLightboxIndex >= 0 && (() => {
+        const imageFiles = files.filter(f => getAttachmentType(f.type) === 'image');
+        const imageAttachments = imageFiles.map((file, idx) => {
+          const fileKey = `${file.name}-${file.size}-${file.lastModified}`;
+          return {
+            id: fileKey,
+            fileUrl: fileUrls.get(fileKey) || '',
+            originalName: file.name,
+            mimeType: file.type,
+            fileSize: file.size,
+            createdAt: new Date().toISOString(),
+          };
+        });
+
+        return (
+          <ImageLightbox
+            attachments={imageAttachments as any}
+            initialIndex={imageLightboxIndex}
+            isOpen={true}
+            onClose={() => setImageLightboxIndex(-1)}
+          />
+        );
+      })()}
+
+      {/* Lightbox pour les vidéos */}
+      {videoLightboxIndex >= 0 && (() => {
+        const videoFiles = files.filter(f => getAttachmentType(f.type) === 'video');
+        const videoAttachments = videoFiles.map((file, idx) => {
+          const fileKey = `${file.name}-${file.size}-${file.lastModified}`;
+          return {
+            id: fileKey,
+            fileUrl: fileUrls.get(fileKey) || '',
+            originalName: file.name,
+            mimeType: file.type,
+            fileSize: file.size,
+            createdAt: new Date().toISOString(),
+          };
+        });
+
+        return (
+          <VideoLightbox
+            attachments={videoAttachments as any}
+            initialIndex={videoLightboxIndex}
+            isOpen={true}
+            onClose={() => setVideoLightboxIndex(-1)}
+          />
+        );
+      })()}
     </div>
   );
 }, (prevProps, nextProps) => {

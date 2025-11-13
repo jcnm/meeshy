@@ -107,12 +107,18 @@ export const PDFLightbox: React.FC<PDFLightboxProps> = ({
         <div
           className="absolute inset-0 flex items-center justify-center pt-14 sm:pt-16 pb-2 sm:pb-4 px-2 sm:px-4"
           onClick={(e) => e.stopPropagation()}
+          style={{ touchAction: 'manipulation' }}
         >
-          <div className="w-full h-full bg-white dark:bg-gray-900 overflow-auto shadow-2xl rounded-lg">
+          <div className="w-full h-full bg-white dark:bg-gray-900 overflow-auto shadow-2xl rounded-lg" style={{ touchAction: 'manipulation', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
             <iframe
-              src={`${attachment.fileUrl}#toolbar=1&navpanes=1&scrollbars=1&view=FitH`}
+              src={`${attachment.fileUrl}#toolbar=1&navpanes=1&scrollbars=1&view=FitH&zoom=page-fit`}
               className="w-full min-h-full border-0"
-              style={{ minHeight: '100vh' }}
+              style={{
+                minHeight: '100vh',
+                touchAction: 'manipulation',
+                overflowY: 'auto',
+                WebkitOverflowScrolling: 'touch'
+              } as React.CSSProperties}
               title={attachment.originalName}
             />
           </div>
