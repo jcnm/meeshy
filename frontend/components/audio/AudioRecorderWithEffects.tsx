@@ -481,16 +481,28 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
           )}
         </button>
 
-        {/* Centre: Timer centré verticalement */}
-        <div className="flex items-center justify-center flex-1">
+        {/* Centre: Timer centré verticalement avec barre de progression */}
+        <div className="flex flex-col items-center justify-center flex-1 gap-1.5">
           <div className={`text-2xl font-bold font-mono ${
             isRecording ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'
           }`}>
             {formatTime(recordingTime)}
           </div>
+
+          {/* Barre de progression (visible uniquement en enregistrement) */}
+          {isRecording && (
+            <div className="w-full max-w-[200px] h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-red-500 to-orange-500 transition-all duration-300 ease-linear"
+                style={{
+                  width: `${Math.min((recordingTime / (effectiveDuration * 1000)) * 100, 100)}%`
+                }}
+              />
+            </div>
+          )}
         </div>
 
-        {/* Droite: Bouton Start/Stop avec animation de cercle */}
+        {/* Droite: Bouton Start/Stop */}
         {!isRecording ? (
           <button
             onClick={startRecording}
@@ -504,24 +516,17 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
             <Radio className="w-5 h-5 text-white" />
           </button>
         ) : (
-          <div className="relative flex-shrink-0">
-            {/* Animation cercle pulsant autour du bouton */}
-            <div className="absolute inset-0 w-10 h-10 rounded-full bg-red-500 opacity-30 animate-ping" />
-            <div className="absolute inset-0 w-10 h-10 rounded-full border-2 border-red-500 opacity-50 animate-pulse" />
-
-            {/* Bouton stop */}
-            <button
-              onClick={stopRecording}
-              onTouchStart={(e) => {
-                e.preventDefault();
-                stopRecording();
-              }}
-              className="relative w-10 h-10 bg-red-500 hover:bg-red-600 active:bg-red-700 rounded-full flex items-center justify-center transition-all shadow-lg active:scale-95 z-10"
-              title="Arrêter l'enregistrement"
-            >
-              <Square className="w-4 h-4 fill-white stroke-white" />
-            </button>
-          </div>
+          <button
+            onClick={stopRecording}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              stopRecording();
+            }}
+            className="flex-shrink-0 w-10 h-10 bg-red-500 hover:bg-red-600 active:bg-red-700 rounded-full flex items-center justify-center transition-all shadow-lg active:scale-95"
+            title="Arrêter l'enregistrement"
+          >
+            <Square className="w-4 h-4 fill-white stroke-white" />
+          </button>
         )}
       </div>
 
