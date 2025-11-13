@@ -1347,9 +1347,104 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         }
       });
 
+      // TRAITEMENT DES MENTIONS ET NOTIFICATIONS
+      const mentionService = (fastify as any).mentionService;
+      const notificationService = (fastify as any).notificationService;
+
+      if (mentionService && notificationService) {
+        try {
+          console.log('[GATEWAY REST] ===== TRAITEMENT DES MENTIONS =====');
+
+          // Extraire les mentions du contenu
+          const mentionedUsernames = mentionService.extractMentions(processedContent);
+          console.log('[GATEWAY REST] Mentions extraites:', mentionedUsernames);
+
+          if (mentionedUsernames.length > 0) {
+            // Résoudre les usernames en utilisateurs
+            const userMap = await mentionService.resolveUsernames(mentionedUsernames);
+            const mentionedUserIds = Array.from(userMap.values()).map((user: any) => user.id);
+            console.log('[GATEWAY REST] UserIds trouvés:', mentionedUserIds);
+
+            if (mentionedUserIds.length > 0) {
+              // Valider les permissions de mention
+              const validationResult = await mentionService.validateMentionPermissions(
+                conversationId,
+                mentionedUserIds,
+                userId
+              );
+
+              if (validationResult.validUserIds.length > 0) {
+                // Créer les mentions en DB
+                await mentionService.createMentions(message.id, validationResult.validUserIds);
+
+                // Extraire les usernames validés
+                const validatedUsernames = Array.from(userMap.entries())
+                  .filter(([_, user]: [string, any]) => validationResult.validUserIds.includes(user.id))
+                  .map(([username, _]: [string, any]) => username);
+
+                // Mettre à jour le message avec validatedMentions
+                await prisma.message.update({
+                  where: { id: message.id },
+                  data: { validatedMentions: validatedUsernames }
+                });
+
+                // Mettre à jour l'objet message en mémoire
+                (message as any).validatedMentions = validatedUsernames;
+
+                console.log(`[GATEWAY REST] ✅ ${validationResult.validUserIds.length} mention(s) créée(s)`);
+
+                // Envoyer les notifications de mention
+                const sender = await prisma.user.findUnique({
+                  where: { id: userId },
+                  select: { username: true, displayName: true, avatar: true }
+                });
+
+                if (sender) {
+                  const conversation = await prisma.conversation.findUnique({
+                    where: { id: conversationId },
+                    select: {
+                      title: true,
+                      type: true,
+                      members: {
+                        where: { isActive: true },
+                        select: { userId: true }
+                      }
+                    }
+                  });
+
+                  if (conversation) {
+                    const memberIds = conversation.members.map((m: any) => m.userId);
+
+                    for (const mentionedUserId of validationResult.validUserIds) {
+                      if (mentionedUserId === userId) continue;
+
+                      const isMember = memberIds.includes(mentionedUserId);
+                      await notificationService.createMentionNotification({
+                        mentionedUserId,
+                        senderId: userId,
+                        senderUsername: sender.displayName || sender.username,
+                        senderAvatar: sender.avatar || undefined,
+                        messageContent: processedContent,
+                        conversationId,
+                        conversationTitle: conversation.title,
+                        messageId: message.id,
+                        isMemberOfConversation: isMember
+                      });
+                      console.log(`[GATEWAY REST] 📩 Notification de mention envoyée à ${mentionedUserId}`);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        } catch (mentionError) {
+          console.error('[GATEWAY REST] Erreur traitement mentions:', mentionError);
+          // Ne pas bloquer l'envoi du message
+        }
+      }
+
       // Déclencher les traductions via le TranslationService (gère les langues des participants)
       try {
-        console.log('[GATEWAY] ===== ENTERED TRY BLOCK FOR MENTIONS =====');
         await translationService.handleNewMessage({
           id: message.id,
           conversationId: conversationId, // Utiliser l'ID résolu
@@ -3246,6 +3341,65 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         where: { id: shareLink.id },
         data: { currentUses: { increment: 1 } }
       });
+
+      // Envoyer des notifications
+      const notificationService = (fastify as any).notificationService;
+      if (notificationService) {
+        try {
+          // Récupérer les informations de l'utilisateur qui rejoint
+          const joiningUser = await prisma.user.findUnique({
+            where: { id: userToken.userId },
+            select: {
+              username: true,
+              displayName: true,
+              avatar: true
+            }
+          });
+
+          if (joiningUser) {
+            const userName = joiningUser.displayName || joiningUser.username;
+
+            // 1. Notification de confirmation pour l'utilisateur qui rejoint
+            await notificationService.createConversationJoinNotification({
+              userId: userToken.userId,
+              conversationId: shareLink.conversationId,
+              conversationTitle: shareLink.conversation.title,
+              conversationType: shareLink.conversation.type,
+              isJoiner: true // C'est l'utilisateur qui rejoint
+            });
+
+            // 2. Notifier les admins et créateurs de la conversation
+            const adminsAndCreators = await prisma.conversationMember.findMany({
+              where: {
+                conversationId: shareLink.conversationId,
+                role: { in: ['ADMIN', 'CREATOR'] },
+                isActive: true,
+                userId: { not: userToken.userId } // Ne pas notifier l'utilisateur lui-même
+              },
+              select: { userId: true }
+            });
+
+            // Envoyer une notification à chaque admin/créateur
+            for (const member of adminsAndCreators) {
+              await notificationService.createConversationJoinNotification({
+                userId: member.userId,
+                conversationId: shareLink.conversationId,
+                conversationTitle: shareLink.conversation.title,
+                conversationType: shareLink.conversation.type,
+                isJoiner: false, // C'est une notification pour un admin
+                joinerUsername: userName,
+                joinerAvatar: joiningUser.avatar || undefined
+              });
+              console.log(`[GATEWAY] 📩 Notification "membre a rejoint" envoyée à l'admin ${member.userId}`);
+            }
+
+            console.log(`[GATEWAY] 📩 Notification de confirmation envoyée à ${userToken.userId}`);
+          }
+        } catch (notifError) {
+          console.error('[GATEWAY] Erreur lors de l\'envoi des notifications de jointure:', notifError);
+          // Ne pas bloquer la jointure
+        }
+      }
 
       return reply.send({
         success: true,

@@ -1043,6 +1043,28 @@ export class MessagingService {
         return;
       }
 
+      // Récupérer les attachments du message
+      let messageAttachments: Array<{ id: string; filename: string; mimeType: string; fileSize: number }> = [];
+      try {
+        const attachments = await this.prisma.messageAttachment.findMany({
+          where: { messageId },
+          select: {
+            id: true,
+            fileName: true,
+            mimeType: true,
+            fileSize: true
+          }
+        });
+        messageAttachments = attachments.map(att => ({
+          id: att.id,
+          filename: att.fileName,
+          mimeType: att.mimeType,
+          fileSize: att.fileSize
+        }));
+      } catch (err) {
+        console.error('[MessagingService] Erreur récupération attachments pour mention:', err);
+      }
+
       const memberIds = conversation.members.map(m => m.userId);
 
       // Envoyer une notification à chaque utilisateur mentionné
@@ -1064,7 +1086,8 @@ export class MessagingService {
             conversationId,
             conversationTitle: conversation.title,
             messageId,
-            isMemberOfConversation: isMember
+            isMemberOfConversation: isMember,
+            attachments: messageAttachments.length > 0 ? messageAttachments : undefined
           });
 
           console.log(`[MessagingService] 📩 Notification de mention envoyée à l'utilisateur ${mentionedUserId}`);

@@ -384,6 +384,68 @@ export class NotificationService {
   }
 
   /**
+   * Créer une notification pour rejoindre une conversation via lien
+   */
+  async createConversationJoinNotification(data: {
+    userId: string;
+    conversationId: string;
+    conversationTitle?: string | null;
+    conversationType: string;
+    isJoiner: boolean; // true = utilisateur qui rejoint, false = admin qui est notifié
+    joinerUsername?: string; // Nom de l'utilisateur qui rejoint (pour les admins)
+    joinerAvatar?: string;
+  }): Promise<NotificationEventData | null> {
+    let title: string;
+    let content: string;
+
+    if (data.isJoiner) {
+      // Notification de confirmation pour l'utilisateur qui rejoint
+      const conversationName = data.conversationTitle || 'la conversation';
+      title = `Bienvenue dans "${conversationName}"`;
+      content = `Vous avez rejoint "${conversationName}" avec succès`;
+
+      return this.createNotification({
+        userId: data.userId,
+        type: 'new_conversation',
+        title,
+        content,
+        priority: 'normal',
+        conversationId: data.conversationId,
+        data: {
+          conversationTitle: data.conversationTitle,
+          conversationType: data.conversationType,
+          action: 'view_conversation',
+          joinType: 'via_link'
+        }
+      });
+    } else {
+      // Notification pour les admins qu'un nouveau membre a rejoint
+      const conversationName = data.conversationTitle || 'la conversation';
+      const joinerName = data.joinerUsername || 'Un utilisateur';
+      title = `Nouveau membre dans "${conversationName}"`;
+      content = `${joinerName} a rejoint "${conversationName}" via un lien partagé`;
+
+      return this.createNotification({
+        userId: data.userId,
+        type: 'new_conversation',
+        title,
+        content,
+        priority: 'low',
+        senderUsername: data.joinerUsername,
+        senderAvatar: data.joinerAvatar,
+        conversationId: data.conversationId,
+        data: {
+          conversationTitle: data.conversationTitle,
+          conversationType: data.conversationType,
+          joinerUsername: data.joinerUsername,
+          action: 'view_conversation',
+          notificationType: 'member_joined'
+        }
+      });
+    }
+  }
+
+  /**
    * Créer une notification pour une mention d'utilisateur
    */
   async createMentionNotification(data: {
@@ -396,9 +458,63 @@ export class NotificationService {
     conversationTitle?: string | null;
     messageId: string;
     isMemberOfConversation: boolean;
+    attachments?: Array<{ id: string; filename: string; mimeType: string; fileSize: number }>;
   }): Promise<NotificationEventData | null> {
-    // Tronquer le message à 20 mots pour l'aperçu
-    const messagePreview = this.truncateMessage(data.messageContent, 20);
+    // Traiter le message avec attachments si présents
+    let messagePreview: string;
+    let attachmentInfo: any = null;
+
+    if (data.attachments && data.attachments.length > 0) {
+      const attachment = data.attachments[0];
+      const attachmentType = attachment.mimeType.split('/')[0];
+
+      // Créer une description de l'attachment
+      let attachmentDescription = '';
+      switch (attachmentType) {
+        case 'image':
+          attachmentDescription = '📷 Photo';
+          break;
+        case 'video':
+          attachmentDescription = '🎥 Vidéo';
+          break;
+        case 'audio':
+          attachmentDescription = '🎵 Audio';
+          break;
+        case 'application':
+          if (attachment.mimeType === 'application/pdf') {
+            attachmentDescription = '📄 PDF';
+          } else {
+            attachmentDescription = '📎 Document';
+          }
+          break;
+        default:
+          attachmentDescription = '📎 Fichier';
+      }
+
+      // Si plusieurs attachments
+      if (data.attachments.length > 1) {
+        attachmentDescription += ` (+${data.attachments.length - 1})`;
+      }
+
+      // Combiner le texte avec l'aperçu d'attachment
+      if (data.messageContent && data.messageContent.trim().length > 0) {
+        const textPreview = this.truncateMessage(data.messageContent, 15);
+        messagePreview = `${textPreview} ${attachmentDescription}`;
+      } else {
+        messagePreview = attachmentDescription;
+      }
+
+      // Ajouter les infos d'attachment
+      attachmentInfo = {
+        count: data.attachments.length,
+        firstType: attachmentType,
+        firstFilename: attachment.filename,
+        firstMimeType: attachment.mimeType
+      };
+    } else {
+      // Tronquer le message à 20 mots pour l'aperçu
+      messagePreview = this.truncateMessage(data.messageContent, 20);
+    }
 
     // Titre: "@username vous a mentionné dans "Titre de conversation""
     const conversationName = data.conversationTitle || 'une conversation';
@@ -414,7 +530,8 @@ export class NotificationService {
       notificationData = {
         conversationTitle: data.conversationTitle,
         isMember: true,
-        action: 'view_message'
+        action: 'view_message',
+        attachments: attachmentInfo
       };
     } else {
       // Utilisateur n'est pas membre: invitation à rejoindre
@@ -422,7 +539,8 @@ export class NotificationService {
       notificationData = {
         conversationTitle: data.conversationTitle,
         isMember: false,
-        action: 'join_conversation'
+        action: 'join_conversation',
+        attachments: attachmentInfo
       };
     }
 
