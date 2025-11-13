@@ -257,6 +257,21 @@ export const MarkdownMessage: React.FC<MarkdownMessageProps> = ({
               </blockquote>
             );
           },
+          // Custom list rendering
+          ul({ node, children, ...props }: any) {
+            return (
+              <ul className="list-disc list-inside my-2 space-y-1" {...props}>
+                {children}
+              </ul>
+            );
+          },
+          ol({ node, children, ...props }: any) {
+            return (
+              <ol className="list-decimal list-inside my-2 space-y-1" {...props}>
+                {children}
+              </ol>
+            );
+          },
           // Custom heading rendering
           h1({ node, children, ...props }: any) {
             return (
