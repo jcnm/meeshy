@@ -684,7 +684,7 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
 
         return (
           <VideoLightbox
-            attachments={videoAttachments as any}
+            videos={videoAttachments as any}
             initialIndex={videoLightboxIndex}
             isOpen={true}
             onClose={() => setVideoLightboxIndex(-1)}
