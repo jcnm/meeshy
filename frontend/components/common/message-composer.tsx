@@ -19,7 +19,7 @@ import { AudioRecorderWithEffects } from '@/components/audio/AudioRecorderWithEf
 import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
 import { MentionAutocomplete } from './MentionAutocomplete';
 import { detectMentionAtCursor } from '@/shared/types/mention';
-import { getCursorPositionForFixed, adjustPositionForViewport } from '@/lib/cursor-position';
+import { getCursorPosition, adjustPositionForViewport } from '@/lib/cursor-position';
 
 interface MessageComposerProps {
   value: string;
@@ -662,8 +662,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         // Calculer la position de l'autocomplete AU NIVEAU DU CURSEUR
         if (textareaRef.current) {
           // Obtenir la position exacte du curseur dans le textarea
-          // Utilise getCursorPositionForFixed car MessageComposer est dans un conteneur position:fixed
-          const cursorPos = getCursorPositionForFixed(textareaRef.current, cursorPosition);
+          const cursorPos = getCursorPosition(textareaRef.current, cursorPosition);
 
           // Get lineHeight from textarea computed styles
           const computed = window.getComputedStyle(textareaRef.current);
