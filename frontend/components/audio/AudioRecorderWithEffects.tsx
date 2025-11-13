@@ -6,7 +6,6 @@ import { Square, Trash2, Mic, Loader2, Radio } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAudioEffects } from '@/hooks/use-audio-effects';
 import { AudioEffectsPanel } from '@/components/video-calls/AudioEffectsPanel';
-import { AudioWaveform } from './AudioWaveform';
 import type { AudioEffectType } from '@shared/types/video-call';
 
 // Types
@@ -65,8 +64,6 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
   const [showEffectsPanel, setShowEffectsPanel] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [panelPosition, setPanelPosition] = useState({ top: 0, left: 0 });
-  const [audioLevel, setAudioLevel] = useState<number>(0); // Niveau audio en temps réel
-
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const buttonEffectsRef = useRef<HTMLButtonElement>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -77,11 +74,6 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
   const rawStreamRef = useRef<MediaStream | null>(null); // Stream du micro brut
   const [rawStream, setRawStream] = useState<MediaStream | null>(null); // State pour trigger useAudioEffects
   const processedAudioStreamRef = useRef<MediaStream | null>(null); // Ref pour accéder à la dernière valeur
-
-  // Refs pour l'analyse audio
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const audioLevelAnimationRef = useRef<number | null>(null);
 
   const effectiveDuration = Math.min(maxDuration, MAX_ALLOWED_DURATION);
 
@@ -128,87 +120,6 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
     animationFrameRef.current = requestAnimationFrame(updateTimer);
   }, [effectiveDuration]);
 
-  // Analyser le niveau audio en temps réel avec focus sur les fréquences vocales
-  // Optimisé pour éviter de bloquer l'UI (20fps au lieu de 60fps)
-  const analyzeAudioLevel = useCallback(() => {
-    if (!analyserRef.current) return;
-
-    const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
-    analyserRef.current.getByteFrequencyData(dataArray);
-
-    // Focus sur les fréquences vocales (environ 80Hz - 3000Hz)
-    // Avec fftSize=512 et sampleRate=48000, chaque bin = 48000/512 = ~93.75Hz
-    // Bin 1 ≈ 94Hz, Bin 32 ≈ 3000Hz
-    const voiceStartBin = 1;
-    const voiceEndBin = Math.min(32, dataArray.length);
-
-    // Calculer le niveau moyen sur les fréquences vocales uniquement
-    let sum = 0;
-    for (let i = voiceStartBin; i < voiceEndBin; i++) {
-      sum += dataArray[i];
-    }
-    const average = sum / (voiceEndBin - voiceStartBin);
-
-    // Normaliser entre 0 et 1
-    let normalizedLevel = average / 255;
-
-    // Appliquer un amplificateur pour rendre plus sensible (x3)
-    normalizedLevel = Math.min(1.0, normalizedLevel * 3.0);
-
-    // Appliquer une courbe exponentielle pour augmenter la sensibilité aux bas niveaux
-    normalizedLevel = Math.pow(normalizedLevel, 0.6);
-
-    // Appliquer un seuil de bruit minimal (ignorer les niveaux < 0.02)
-    if (normalizedLevel < 0.02) {
-      normalizedLevel = 0;
-    }
-
-    setAudioLevel(normalizedLevel);
-
-    // Continuer l'analyse avec un délai de ~200ms (5fps) pour économiser les ressources
-    // Réduit la consommation CPU et évite la chauffe du téléphone
-    audioLevelAnimationRef.current = window.setTimeout(() => {
-      requestAnimationFrame(analyzeAudioLevel);
-    }, 200);
-  }, []);
-
-  // Démarrer l'analyse audio
-  const startAudioAnalysis = useCallback((stream: MediaStream) => {
-    try {
-      // Créer un AudioContext si nécessaire
-      if (!audioContextRef.current) {
-        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-      }
-
-      const audioContext = audioContextRef.current;
-
-      // Créer un analyser optimisé pour la performance
-      const analyser = audioContext.createAnalyser();
-      analyser.fftSize = 512; // Équilibre entre précision et performance
-      analyser.smoothingTimeConstant = 0.8; // Lissage pour éviter les sauts brusques
-      analyserRef.current = analyser;
-
-      // Connecter le stream à l'analyser
-      const source = audioContext.createMediaStreamSource(stream);
-      source.connect(analyser);
-
-      // Démarrer l'analyse
-      analyzeAudioLevel();
-    } catch (error) {
-      console.error('Error starting audio analysis:', error);
-    }
-  }, [analyzeAudioLevel]);
-
-  // Arrêter l'analyse audio
-  const stopAudioAnalysis = useCallback(() => {
-    if (audioLevelAnimationRef.current) {
-      // Gérer à la fois setTimeout et requestAnimationFrame
-      clearTimeout(audioLevelAnimationRef.current);
-      cancelAnimationFrame(audioLevelAnimationRef.current);
-      audioLevelAnimationRef.current = null;
-    }
-    setAudioLevel(0);
-  }, []);
 
   // Arrêter l'enregistrement
   const stopRecording = useCallback(() => {
@@ -361,9 +272,6 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
       };
 
       mediaRecorder.start();
-
-      // Démarrer l'analyse audio en temps réel
-      startAudioAnalysis(newRawStream);
 
       // requestData() manuel
       requestDataIntervalRef.current = setInterval(() => {
@@ -573,35 +481,16 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
           )}
         </button>
 
-        {/* Centre: Timer et statut */}
-        <div className="flex flex-col items-center justify-center flex-1 gap-0.5">
-          <div className={`text-lg font-bold font-mono leading-none ${
+        {/* Centre: Timer centré verticalement */}
+        <div className="flex items-center justify-center flex-1">
+          <div className={`text-2xl font-bold font-mono ${
             isRecording ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'
           }`}>
             {formatTime(recordingTime)}
           </div>
-
-          {/* Waveform avec analyse audio en temps réel */}
-          <AudioWaveform
-            isRecording={isRecording}
-            audioLevel={audioLevel}
-            className="w-full max-w-[160px]"
-          />
-
-          {isRecording && (
-            <div className="flex items-center gap-1">
-              <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
-              <span className="text-[10px] text-red-600 dark:text-red-400 font-medium">REC</span>
-            </div>
-          )}
-          {!isRecording && audioEffectsActive && (
-            <div className="text-[9px] text-purple-600 dark:text-purple-400">
-              Effets actifs
-            </div>
-          )}
         </div>
 
-        {/* Droite: Bouton Start/Stop */}
+        {/* Droite: Bouton Start/Stop avec animation de cercle */}
         {!isRecording ? (
           <button
             onClick={startRecording}
@@ -615,17 +504,24 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
             <Radio className="w-5 h-5 text-white" />
           </button>
         ) : (
-          <button
-            onClick={stopRecording}
-            onTouchStart={(e) => {
-              e.preventDefault();
-              stopRecording();
-            }}
-            className="flex-shrink-0 w-10 h-10 bg-red-500 hover:bg-red-600 active:bg-red-700 rounded-full flex items-center justify-center transition-all shadow-lg active:scale-95"
-            title="Arrêter l'enregistrement"
-          >
-            <Square className="w-4 h-4 fill-white stroke-white" />
-          </button>
+          <div className="relative flex-shrink-0">
+            {/* Animation cercle pulsant autour du bouton */}
+            <div className="absolute inset-0 w-10 h-10 rounded-full bg-red-500 opacity-30 animate-ping" />
+            <div className="absolute inset-0 w-10 h-10 rounded-full border-2 border-red-500 opacity-50 animate-pulse" />
+
+            {/* Bouton stop */}
+            <button
+              onClick={stopRecording}
+              onTouchStart={(e) => {
+                e.preventDefault();
+                stopRecording();
+              }}
+              className="relative w-10 h-10 bg-red-500 hover:bg-red-600 active:bg-red-700 rounded-full flex items-center justify-center transition-all shadow-lg active:scale-95 z-10"
+              title="Arrêter l'enregistrement"
+            >
+              <Square className="w-4 h-4 fill-white stroke-white" />
+            </button>
+          </div>
         )}
       </div>
 
