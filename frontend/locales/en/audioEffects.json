@@ -3,6 +3,8 @@
     "title": "Audio Effects",
     "subtitle": "Transform your voice",
     "selectEffect": "Select an effect",
+    "selectEffectPrompt": "Click on an effect to configure it",
+    "resetAll": "Reset All",
     "disableAll": "Disable all effects",
 
     "voiceCoder": {

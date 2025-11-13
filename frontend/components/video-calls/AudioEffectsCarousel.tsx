@@ -19,7 +19,7 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { useI18n } from '@/hooks/useI18n';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { X, ChevronLeft, ChevronRight, RotateCcw, Upload } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, RotateCcw, Upload, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type {
@@ -210,11 +210,12 @@ export function AudioEffectsCarousel({
                   if (tile.id === 'reset') {
                     handleResetAll();
                   } else {
-                    setSelectedEffect(isSelected ? null : tile.id);
+                    // Toggle ON/OFF de l'effet
+                    onToggleEffect(tile.id as AudioEffectType);
                   }
                 }}
                 className={cn(
-                  'flex-shrink-0 w-32 h-32 p-3 cursor-pointer transition-all duration-300',
+                  'relative flex-shrink-0 w-32 h-32 p-3 cursor-pointer transition-all duration-300',
                   `bg-gradient-to-br ${tile.gradient}`,
                   'hover:scale-105 hover:shadow-xl',
                   isSelected && 'ring-2 ring-white scale-105',
@@ -249,6 +250,20 @@ export function AudioEffectsCarousel({
                     <RotateCcw className="w-4 h-4 opacity-70" />
                   )}
                 </div>
+
+                {/* Settings Button (pour ouvrir les détails) */}
+                {tile.id !== 'reset' && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation(); // Ne pas trigger le toggle
+                      setSelectedEffect(isSelected ? null : tile.id);
+                    }}
+                    className="absolute top-1 right-1 w-6 h-6 bg-black/40 hover:bg-black/70 rounded-full flex items-center justify-center transition-colors"
+                    title="Configurer"
+                  >
+                    <Settings className="w-3 h-3 text-white" />
+                  </button>
+                )}
               </Card>
             );
           })}
@@ -305,8 +320,8 @@ export function AudioEffectsCarousel({
       )}
 
       {!selectedEffect && (
-        <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
-          <p>{t('selectEffectPrompt') || 'Select an effect to configure'}</p>
+        <div className="flex-1 flex items-center justify-center text-gray-400 text-sm text-center px-4">
+          <p>{t('selectEffectPrompt') || 'Click on an effect to configure it'}</p>
         </div>
       )}
     </div>
