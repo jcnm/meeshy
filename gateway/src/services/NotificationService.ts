@@ -61,7 +61,18 @@ export class NotificationService {
   private io: SocketIOServer | null = null;
   private userSocketsMap: Map<string, Set<string>> = new Map();
 
-  constructor(private prisma: PrismaClient) {}
+  // Anti-spam: tracking des mentions récentes par paire (sender, recipient)
+  // Structure: Map<"senderId:recipientId", timestamp[]>
+  private recentMentions: Map<string, number[]> = new Map();
+
+  // Limite: max 5 mentions par minute d'un sender vers un recipient
+  private readonly MAX_MENTIONS_PER_MINUTE = 5;
+  private readonly MENTION_WINDOW_MS = 60000; // 1 minute
+
+  constructor(private prisma: PrismaClient) {
+    // Nettoyer les mentions anciennes toutes les 2 minutes
+    setInterval(() => this.cleanupOldMentions(), 120000);
+  }
 
   /**
    * Initialiser le service avec Socket.IO
@@ -70,6 +81,55 @@ export class NotificationService {
     this.io = io;
     this.userSocketsMap = userSocketsMap;
     logger.info('📢 NotificationService: Socket.IO initialized');
+  }
+
+  /**
+   * Nettoie les mentions anciennes du cache anti-spam
+   */
+  private cleanupOldMentions(): void {
+    const now = Date.now();
+    const cutoff = now - this.MENTION_WINDOW_MS;
+
+    for (const [key, timestamps] of this.recentMentions.entries()) {
+      // Filtrer les timestamps trop anciens
+      const recent = timestamps.filter(ts => ts > cutoff);
+
+      if (recent.length === 0) {
+        this.recentMentions.delete(key);
+      } else {
+        this.recentMentions.set(key, recent);
+      }
+    }
+  }
+
+  /**
+   * Vérifie si une notification de mention doit être créée (anti-spam)
+   * @returns true si la notification doit être créée, false si rate-limitée
+   */
+  private shouldCreateMentionNotification(senderId: string, recipientId: string): boolean {
+    const key = `${senderId}:${recipientId}`;
+    const now = Date.now();
+    const cutoff = now - this.MENTION_WINDOW_MS;
+
+    // Récupérer les mentions récentes
+    const timestamps = this.recentMentions.get(key) || [];
+
+    // Filtrer les mentions dans la fenêtre temporelle
+    const recentTimestamps = timestamps.filter(ts => ts > cutoff);
+
+    // Vérifier la limite
+    if (recentTimestamps.length >= this.MAX_MENTIONS_PER_MINUTE) {
+      console.warn(
+        `[NotificationService] Anti-spam: ${senderId} a déjà mentionné ${recipientId} ${recentTimestamps.length} fois dans la dernière minute`
+      );
+      return false;
+    }
+
+    // Ajouter le timestamp actuel
+    recentTimestamps.push(now);
+    this.recentMentions.set(key, recentTimestamps);
+
+    return true;
   }
 
   /**
@@ -446,7 +506,211 @@ export class NotificationService {
   }
 
   /**
+   * PERFORMANCE: Créer des notifications de mention en batch (évite N+1 queries)
+   * Crée toutes les notifications en une seule query avec createMany
+   *
+   * @param mentionedUserIds - Liste des IDs d'utilisateurs mentionnés
+   * @param commonData - Données communes à toutes les notifications
+   * @param memberIds - IDs des membres de la conversation (pour déterminer isMember)
+   * @returns Nombre de notifications créées
+   */
+  async createMentionNotificationsBatch(
+    mentionedUserIds: string[],
+    commonData: {
+      senderId: string;
+      senderUsername: string;
+      senderAvatar?: string;
+      messageContent: string;
+      conversationId: string;
+      conversationTitle?: string | null;
+      messageId: string;
+      attachments?: Array<{ id: string; filename: string; mimeType: string; fileSize: number }>;
+    },
+    memberIds: string[]
+  ): Promise<number> {
+    if (mentionedUserIds.length === 0) {
+      return 0;
+    }
+
+    try {
+      // Préparer le messagePreview et attachmentInfo (une fois pour tous)
+      let messagePreview: string;
+      let attachmentInfo: any = null;
+
+      if (commonData.attachments && commonData.attachments.length > 0) {
+        const attachment = commonData.attachments[0];
+        const attachmentType = attachment.mimeType.split('/')[0];
+
+        let attachmentDescription = '';
+        switch (attachmentType) {
+          case 'image': attachmentDescription = '📷 Photo'; break;
+          case 'video': attachmentDescription = '🎥 Vidéo'; break;
+          case 'audio': attachmentDescription = '🎵 Audio'; break;
+          case 'application':
+            attachmentDescription = attachment.mimeType === 'application/pdf' ? '📄 PDF' : '📎 Document';
+            break;
+          default: attachmentDescription = '📎 Fichier';
+        }
+
+        if (commonData.attachments.length > 1) {
+          attachmentDescription += ` (+${commonData.attachments.length - 1})`;
+        }
+
+        if (commonData.messageContent && commonData.messageContent.trim().length > 0) {
+          const textPreview = this.truncateMessage(commonData.messageContent, 15);
+          messagePreview = `${textPreview} ${attachmentDescription}`;
+        } else {
+          messagePreview = attachmentDescription;
+        }
+
+        attachmentInfo = {
+          count: commonData.attachments.length,
+          firstType: attachmentType,
+          firstFilename: attachment.filename,
+          firstMimeType: attachment.mimeType
+        };
+      } else {
+        messagePreview = this.truncateMessage(commonData.messageContent, 20);
+      }
+
+      const conversationName = commonData.conversationTitle || 'une conversation';
+      const title = `${commonData.senderUsername} vous a mentionné dans "${conversationName}"`;
+
+      // Filtrer les utilisateurs qui ont dépassé le rate limit
+      const validMentionedUserIds: string[] = [];
+      for (const mentionedUserId of mentionedUserIds) {
+        // Ne pas créer de notification pour le sender
+        if (mentionedUserId === commonData.senderId) continue;
+
+        // SÉCURITÉ: Vérifier le rate limit
+        if (!this.shouldCreateMentionNotification(commonData.senderId, mentionedUserId)) {
+          console.log(`[NotificationService] Notification de mention bloquée (rate limit): ${commonData.senderId} → ${mentionedUserId}`);
+          continue;
+        }
+
+        validMentionedUserIds.push(mentionedUserId);
+      }
+
+      if (validMentionedUserIds.length === 0) {
+        console.log('[NotificationService] Aucune notification de mention à créer après filtrage rate limit');
+        return 0;
+      }
+
+      // Vérifier les préférences de notification pour chaque utilisateur
+      const usersToNotify: string[] = [];
+      await Promise.all(
+        validMentionedUserIds.map(async (userId) => {
+          const shouldSend = await this.shouldSendNotification(userId, 'user_mentioned');
+          if (shouldSend) {
+            usersToNotify.push(userId);
+          }
+        })
+      );
+
+      if (usersToNotify.length === 0) {
+        console.log('[NotificationService] Aucune notification de mention à créer après vérification des préférences');
+        return 0;
+      }
+
+      // Préparer les données pour createMany
+      const notificationsData = usersToNotify.map(mentionedUserId => {
+        const isMember = memberIds.includes(mentionedUserId);
+
+        // Déterminer le contenu et les données selon si l'utilisateur est membre
+        let content: string;
+        let notificationData: any;
+
+        if (isMember) {
+          content = messagePreview;
+          notificationData = {
+            conversationTitle: commonData.conversationTitle,
+            isMember: true,
+            action: 'view_message',
+            attachments: attachmentInfo
+          };
+        } else {
+          content = `${messagePreview}\n\nVous n'êtes pas membre de cette conversation. Cliquez pour la rejoindre.`;
+          notificationData = {
+            conversationTitle: commonData.conversationTitle,
+            isMember: false,
+            action: 'join_conversation',
+            attachments: attachmentInfo
+          };
+        }
+
+        return {
+          userId: mentionedUserId,
+          type: 'user_mentioned',
+          title,
+          content,
+          priority: 'normal',
+          senderId: commonData.senderId,
+          senderUsername: commonData.senderUsername,
+          senderAvatar: commonData.senderAvatar,
+          messagePreview,
+          conversationId: commonData.conversationId,
+          messageId: commonData.messageId,
+          data: JSON.stringify(notificationData),
+          isRead: false
+        };
+      });
+
+      // PERFORMANCE: Créer toutes les notifications en une seule query
+      // Note: skipDuplicates n'est pas supporté avec MongoDB
+      const result = await this.prisma.notification.createMany({
+        data: notificationsData
+      });
+
+      console.log(`[NotificationService] ✅ Created ${result.count} mention notifications in batch`);
+
+      // Récupérer les notifications créées pour les émettre via Socket.IO
+      // Note: createMany ne retourne pas les objets créés, on doit les récupérer
+      const createdNotifications = await this.prisma.notification.findMany({
+        where: {
+          messageId: commonData.messageId,
+          type: 'user_mentioned',
+          userId: { in: usersToNotify }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        },
+        take: usersToNotify.length
+      });
+
+      // Émettre les notifications via Socket.IO
+      for (const notification of createdNotifications) {
+        const notificationEvent: NotificationEventData = {
+          id: notification.id,
+          userId: notification.userId,
+          type: notification.type,
+          title: notification.title,
+          content: notification.content,
+          priority: notification.priority,
+          isRead: notification.isRead,
+          createdAt: notification.createdAt,
+          senderId: notification.senderId || undefined,
+          senderUsername: notification.senderUsername || undefined,
+          senderAvatar: notification.senderAvatar || undefined,
+          messagePreview: notification.messagePreview || undefined,
+          conversationId: notification.conversationId || undefined,
+          messageId: notification.messageId || undefined,
+          data: notification.data ? JSON.parse(notification.data) : undefined
+        };
+
+        this.emitNotification(notification.userId, notificationEvent);
+      }
+
+      return result.count;
+    } catch (error) {
+      console.error('[NotificationService] ❌ Error creating batch mention notifications:', error);
+      return 0;
+    }
+  }
+
+  /**
    * Créer une notification pour une mention d'utilisateur
+   * SÉCURITÉ: Limite à 5 mentions/minute d'un sender vers un recipient
+   * NOTE: Préférer createMentionNotificationsBatch pour des performances optimales
    */
   async createMentionNotification(data: {
     mentionedUserId: string;
@@ -460,6 +724,11 @@ export class NotificationService {
     isMemberOfConversation: boolean;
     attachments?: Array<{ id: string; filename: string; mimeType: string; fileSize: number }>;
   }): Promise<NotificationEventData | null> {
+    // SÉCURITÉ: Anti-spam - Vérifier le rate limit
+    if (!this.shouldCreateMentionNotification(data.senderId, data.mentionedUserId)) {
+      console.log(`[NotificationService] Notification de mention bloquée (rate limit): ${data.senderId} → ${data.mentionedUserId}`);
+      return null;
+    }
     // Traiter le message avec attachments si présents
     let messagePreview: string;
     let attachmentInfo: any = null;

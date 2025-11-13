@@ -1067,18 +1067,11 @@ export class MessagingService {
 
       const memberIds = conversation.members.map(m => m.userId);
 
-      // Envoyer une notification à chaque utilisateur mentionné
-      for (const mentionedUserId of mentionedUserIds) {
-        // Ne pas notifier l'expéditeur lui-même
-        if (mentionedUserId === senderId) {
-          continue;
-        }
-
-        const isMember = memberIds.includes(mentionedUserId);
-
-        try {
-          await this.notificationService.createMentionNotification({
-            mentionedUserId,
+      // PERFORMANCE: Créer toutes les notifications de mention en batch (une seule query)
+      try {
+        const count = await this.notificationService.createMentionNotificationsBatch(
+          mentionedUserIds,
+          {
             senderId,
             senderUsername: sender.username,
             senderAvatar: sender.avatar || undefined,
@@ -1086,15 +1079,14 @@ export class MessagingService {
             conversationId,
             conversationTitle: conversation.title,
             messageId,
-            isMemberOfConversation: isMember,
             attachments: messageAttachments.length > 0 ? messageAttachments : undefined
-          });
+          },
+          memberIds
+        );
 
-          console.log(`[MessagingService] 📩 Notification de mention envoyée à l'utilisateur ${mentionedUserId}`);
-        } catch (notifError) {
-          console.error(`[MessagingService] Erreur lors de l'envoi de notification à ${mentionedUserId}:`, notifError);
-          // Continue avec les autres utilisateurs même si une notification échoue
-        }
+        console.log(`[MessagingService] 📩 ${count} notifications de mention créées en batch`);
+      } catch (notifError) {
+        console.error('[MessagingService] Erreur lors de l\'envoi des notifications de mention en batch:', notifError);
       }
     } catch (error) {
       console.error('[MessagingService] Erreur lors de l\'envoi des notifications de mention:', error);

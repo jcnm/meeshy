@@ -13,6 +13,7 @@ import {
   generateDefaultConversationTitle
 } from '../../shared/utils/conversation-helpers';
 import { createUnifiedAuthMiddleware, UnifiedAuthRequest } from '../middleware/auth';
+import { messageValidationHook } from '../middleware/rate-limiter';
 
 /**
  * Vérifie si un utilisateur peut accéder à une conversation
@@ -1215,11 +1216,12 @@ export async function conversationRoutes(fastify: FastifyInstance) {
   });
 
   // Route pour envoyer un message dans une conversation
-  fastify.post<{ 
+  fastify.post<{
     Params: ConversationParams;
     Body: SendMessageBody;
   }>('/conversations/:id/messages', {
-    preValidation: [optionalAuth]
+    preValidation: [optionalAuth],
+    preHandler: [messageValidationHook]
   }, async (request, reply) => {
     try {
       const authRequest = request as UnifiedAuthRequest;
@@ -1415,23 +1417,21 @@ export async function conversationRoutes(fastify: FastifyInstance) {
                   if (conversation) {
                     const memberIds = conversation.members.map((m: any) => m.userId);
 
-                    for (const mentionedUserId of validationResult.validUserIds) {
-                      if (mentionedUserId === userId) continue;
-
-                      const isMember = memberIds.includes(mentionedUserId);
-                      await notificationService.createMentionNotification({
-                        mentionedUserId,
+                    // PERFORMANCE: Créer toutes les notifications de mention en batch
+                    const count = await notificationService.createMentionNotificationsBatch(
+                      validationResult.validUserIds,
+                      {
                         senderId: userId,
                         senderUsername: sender.displayName || sender.username,
                         senderAvatar: sender.avatar || undefined,
                         messageContent: processedContent,
                         conversationId,
                         conversationTitle: conversation.title,
-                        messageId: message.id,
-                        isMemberOfConversation: isMember
-                      });
-                      console.log(`[GATEWAY REST] 📩 Notification de mention envoyée à ${mentionedUserId}`);
-                    }
+                        messageId: message.id
+                      },
+                      memberIds
+                    );
+                    console.log(`[GATEWAY REST] 📩 ${count} notifications de mention créées en batch`);
                   }
                 }
               }
@@ -1633,7 +1633,8 @@ export async function conversationRoutes(fastify: FastifyInstance) {
     Params: ConversationParams & { messageId: string };
     Body: EditMessageBody;
   }>('/conversations/:id/messages/:messageId', {
-    preValidation: [requiredAuth]
+    preValidation: [requiredAuth],
+    preHandler: [messageValidationHook]
   }, async (request, reply) => {
     try {
       const { id, messageId } = request.params;
@@ -1894,29 +1895,21 @@ export async function conversationRoutes(fastify: FastifyInstance) {
                       if (conversationInfo) {
                         const memberIds = conversationInfo.members.map((m: any) => m.userId);
 
-                        // Envoyer une notification à chaque utilisateur mentionné
-                        for (const mentionedUserId of validationResult.validUserIds) {
-                          // Ne pas notifier l'expéditeur lui-même
-                          if (mentionedUserId === userId) {
-                            continue;
-                          }
-
-                          const isMember = memberIds.includes(mentionedUserId);
-
-                          await notificationService.createMentionNotification({
-                            mentionedUserId,
+                        // PERFORMANCE: Créer toutes les notifications de mention en batch
+                        const count = await notificationService.createMentionNotificationsBatch(
+                          validationResult.validUserIds,
+                          {
                             senderId: userId,
                             senderUsername: sender.username,
                             senderAvatar: sender.avatar || undefined,
                             messageContent: processedContent,
                             conversationId,
                             conversationTitle: conversationInfo.title,
-                            messageId,
-                            isMemberOfConversation: isMember
-                          });
-
-                          console.log(`[GATEWAY] 📩 Notification de mention envoyée à l'utilisateur ${mentionedUserId}`);
-                        }
+                            messageId
+                          },
+                          memberIds
+                        );
+                        console.log(`[GATEWAY] 📩 ${count} notifications de mention créées en batch`);
                       }
                     }
                   } catch (notifError) {
@@ -2329,7 +2322,8 @@ export async function conversationRoutes(fastify: FastifyInstance) {
     Params: { messageId: string };
     Body: { content: string };
   }>('/messages/:messageId', {
-    preValidation: [requiredAuth]
+    preValidation: [requiredAuth],
+    preHandler: [messageValidationHook]
   }, async (request, reply) => {
     try {
       const { messageId } = request.params;
@@ -3562,6 +3556,18 @@ export async function conversationRoutes(fastify: FastifyInstance) {
           }
         } catch (notifError) {
           console.error('[GATEWAY] Erreur lors de l\'envoi de la notification d\'invitation:', notifError);
+          // Ne pas bloquer l'invitation
+        }
+      }
+
+      // PERFORMANCE: Invalider le cache d'autocomplete car la liste des membres a changé
+      const mentionService = (fastify as any).mentionService;
+      if (mentionService) {
+        try {
+          await mentionService.invalidateCacheForConversation(conversationId);
+          console.log(`[GATEWAY] 🔄 Cache d'autocomplete invalidé pour la conversation ${conversationId}`);
+        } catch (cacheError) {
+          console.error('[GATEWAY] Erreur lors de l\'invalidation du cache:', cacheError);
           // Ne pas bloquer l'invitation
         }
       }

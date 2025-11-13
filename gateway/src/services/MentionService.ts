@@ -6,6 +6,7 @@
  */
 
 import { PrismaClient, User, ConversationMember } from '../../shared/prisma/client';
+import Redis from 'ioredis';
 
 export interface MentionSuggestion {
   id: string;
@@ -28,26 +29,158 @@ export class MentionService {
   // Regex pour détecter les mentions @username (lettres, chiffres, underscore)
   private readonly MENTION_REGEX = /@(\w+)/g;
 
+  // Regex stricte pour valider les usernames (alphanumeric + underscore, 1-30 caractères)
+  private readonly USERNAME_VALIDATION_REGEX = /^[a-z0-9_]{1,30}$/;
+
   // Limite de suggestions pour l'autocomplete
   private readonly MAX_SUGGESTIONS = 10;
 
-  constructor(private readonly prisma: PrismaClient) {}
+  // Limite maximale de mentions par message (protection anti-spam)
+  private readonly MAX_MENTIONS_PER_MESSAGE = 50;
+
+  // Limite maximale de longueur de contenu à traiter (10KB)
+  private readonly MAX_CONTENT_LENGTH = 10000;
+
+  // Cache Redis pour l'autocomplete (TTL: 5 minutes)
+  private readonly CACHE_TTL = 300; // 5 minutes en secondes
+  private redis: Redis | null = null;
+
+  constructor(
+    private readonly prisma: PrismaClient,
+    redisUrl: string = 'redis://meeshy.me:6379'
+  ) {
+    try {
+      this.redis = new Redis(redisUrl);
+      console.log('[MentionService] Redis cache initialized');
+    } catch (error) {
+      console.warn('[MentionService] Redis cache initialization failed, continuing without cache:', error);
+      this.redis = null;
+    }
+  }
+
+  /**
+   * Génère une clé de cache pour l'autocomplete
+   */
+  private generateCacheKey(conversationId: string, currentUserId: string, query: string): string {
+    const normalizedQuery = query.toLowerCase().trim();
+    return `mentions:suggestions:${conversationId}:${currentUserId}:${normalizedQuery}`;
+  }
+
+  /**
+   * Récupère les suggestions depuis le cache
+   */
+  private async getCachedSuggestions(
+    conversationId: string,
+    currentUserId: string,
+    query: string
+  ): Promise<MentionSuggestion[] | null> {
+    if (!this.redis) return null;
+
+    try {
+      const cacheKey = this.generateCacheKey(conversationId, currentUserId, query);
+      const cached = await this.redis.get(cacheKey);
+
+      if (cached) {
+        const suggestions: MentionSuggestion[] = JSON.parse(cached);
+        console.log(`[MentionService] Cache HIT for ${cacheKey} (${suggestions.length} suggestions)`);
+        return suggestions;
+      }
+
+      console.log(`[MentionService] Cache MISS for ${cacheKey}`);
+      return null;
+    } catch (error) {
+      console.error('[MentionService] Error reading cache:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Met en cache les suggestions
+   */
+  private async cacheSuggestions(
+    conversationId: string,
+    currentUserId: string,
+    query: string,
+    suggestions: MentionSuggestion[]
+  ): Promise<void> {
+    if (!this.redis) return;
+
+    try {
+      const cacheKey = this.generateCacheKey(conversationId, currentUserId, query);
+      await this.redis.setex(cacheKey, this.CACHE_TTL, JSON.stringify(suggestions));
+      console.log(`[MentionService] Cached ${suggestions.length} suggestions for ${cacheKey} (TTL: ${this.CACHE_TTL}s)`);
+    } catch (error) {
+      console.error('[MentionService] Error writing cache:', error);
+    }
+  }
+
+  /**
+   * Invalide le cache pour une conversation (appelé quand les membres changent)
+   */
+  async invalidateCacheForConversation(conversationId: string): Promise<void> {
+    if (!this.redis) return;
+
+    try {
+      const pattern = `mentions:suggestions:${conversationId}:*`;
+      const keys = await this.redis.keys(pattern);
+
+      if (keys.length > 0) {
+        await this.redis.del(...keys);
+        console.log(`[MentionService] Invalidated ${keys.length} cache entries for conversation ${conversationId}`);
+      }
+    } catch (error) {
+      console.error('[MentionService] Error invalidating cache:', error);
+    }
+  }
+
+  /**
+   * Valide qu'un username respecte le format requis
+   * @param username - Username à valider (sans @)
+   * @returns true si valide, false sinon
+   */
+  private isValidUsername(username: string): boolean {
+    return this.USERNAME_VALIDATION_REGEX.test(username);
+  }
 
   /**
    * Extrait tous les usernames mentionnés (@username) d'un contenu de message
+   * SÉCURITÉ: Filtre les mentions invalides et limite le nombre total
+   *
    * @param content - Le contenu du message
-   * @returns Array des usernames uniques (sans le @)
+   * @returns Array des usernames uniques ET VALIDES (sans le @)
    */
   extractMentions(content: string): string[] {
-    if (!content) return [];
+    // Protection: contenu vide ou trop long
+    if (!content || content.length > this.MAX_CONTENT_LENGTH) {
+      console.warn(`[MentionService] Content too long or empty: ${content?.length || 0} bytes`);
+      return [];
+    }
 
     const mentions = new Set<string>();
     const matches = content.matchAll(this.MENTION_REGEX);
 
     for (const match of matches) {
       if (match[1]) {
-        mentions.add(match[1].toLowerCase()); // Normaliser en minuscules
+        const username = match[1].toLowerCase(); // Normaliser en minuscules
+
+        // SÉCURITÉ: Valider le format du username
+        if (!this.isValidUsername(username)) {
+          console.warn(`[MentionService] Invalid username format ignored: @${username}`);
+          continue; // Ignorer silencieusement les mentions invalides
+        }
+
+        mentions.add(username);
+
+        // SÉCURITÉ: Limiter le nombre de mentions
+        if (mentions.size >= this.MAX_MENTIONS_PER_MESSAGE) {
+          console.warn(`[MentionService] Max mentions limit reached (${this.MAX_MENTIONS_PER_MESSAGE}), truncating`);
+          break;
+        }
       }
+    }
+
+    if (mentions.size > 0) {
+      console.log(`[MentionService] Extracted ${mentions.size} valid mention(s)`);
     }
 
     return Array.from(mentions);
@@ -104,6 +237,7 @@ export class MentionService {
   /**
    * Obtient des suggestions d'utilisateurs pour l'autocomplete
    * avec priorité aux membres de la conversation et aux amis
+   * PERFORMANCE: Utilise Redis cache (TTL: 5 minutes)
    *
    * @param conversationId - ID de la conversation
    * @param currentUserId - ID de l'utilisateur qui fait la recherche
@@ -120,6 +254,12 @@ export class MentionService {
       currentUserId,
       query
     });
+
+    // PERFORMANCE: Vérifier le cache d'abord
+    const cachedSuggestions = await this.getCachedSuggestions(conversationId, currentUserId, query);
+    if (cachedSuggestions) {
+      return cachedSuggestions;
+    }
 
     const normalizedQuery = query.toLowerCase().trim();
 
@@ -254,6 +394,8 @@ export class MentionService {
       addedUserIds.add(member.user.id);
 
       if (suggestions.length >= this.MAX_SUGGESTIONS) {
+        // PERFORMANCE: Mettre en cache avant de retourner
+        await this.cacheSuggestions(conversationId, currentUserId, query, suggestions);
         return suggestions;
       }
     }
@@ -276,6 +418,8 @@ export class MentionService {
       addedUserIds.add(friendId);
 
       if (suggestions.length >= this.MAX_SUGGESTIONS) {
+        // PERFORMANCE: Mettre en cache avant de retourner
+        await this.cacheSuggestions(conversationId, currentUserId, query, suggestions);
         return suggestions;
       }
     }
@@ -325,6 +469,8 @@ export class MentionService {
       });
     }
 
+    // PERFORMANCE: Mettre en cache avant de retourner
+    await this.cacheSuggestions(conversationId, currentUserId, query, suggestions);
     return suggestions;
   }
 
