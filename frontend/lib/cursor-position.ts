@@ -40,22 +40,13 @@ export function getCursorPosition(
     (div.style as any)[style] = (computed as any)[style];
   });
 
-  // Get textarea position FIRST (before adding div to DOM)
-  const textareaRect = textarea.getBoundingClientRect();
-
   // Styles spéciaux pour le positionnement du div
-  // IMPORTANT: Utiliser position: fixed pour être dans le même référentiel que le textarea
-  // (que le textarea soit dans un conteneur fixed ou non, getBoundingClientRect retourne
-  // toujours des coordonnées relatives au viewport)
-  div.style.position = 'fixed';
-  div.style.top = `${textareaRect.top}px`; // Position relative au viewport
-  div.style.left = `${textareaRect.left}px`;
+  div.style.position = 'absolute';
   div.style.visibility = 'hidden';
   div.style.whiteSpace = 'pre-wrap'; // Important pour le wrapping comme textarea
   div.style.wordWrap = 'break-word';
   div.style.overflow = 'hidden';
   div.style.height = 'auto'; // Laisser le div grandir naturellement
-  div.style.pointerEvents = 'none'; // Éviter toute interaction
 
   // Ajouter le texte avant le curseur
   const textBeforeCursor = textarea.value.substring(0, cursorIndex);
@@ -75,18 +66,113 @@ export function getCursorPosition(
   // Ajouter temporairement au DOM
   document.body.appendChild(div);
 
-  // Obtenir les positions du span (curseur) et du div miroir
+  // Obtenir les positions
+  const textareaRect = textarea.getBoundingClientRect();
   const spanRect = span.getBoundingClientRect();
   const divRect = div.getBoundingClientRect();
 
   // Calculer la position relative du span dans le div
-  // Ces offsets représentent la position du curseur dans le textarea
+  // spanRect et divRect incluent déjà les border/padding car on les a copiés
+  const offsetX = spanRect.left - divRect.left;
+  const offsetY = spanRect.top - divRect.top;
+
+  // Calculer la position absolue du curseur (SANS offset lineHeight)
+  // Le div miroir a les mêmes border/padding que le textarea, donc l'offset
+  // est déjà correct. On translate juste du div vers le textarea.
+  // Note: on ne soustrait le scroll que si le textarea est scrollable
+  const x = textareaRect.left + offsetX - textarea.scrollLeft;
+  const y = textareaRect.top + offsetY - textarea.scrollTop;
+
+  // Nettoyer
+  document.body.removeChild(div);
+
+  return { x, y };
+}
+
+/**
+ * Version alternative pour les textareas dans des conteneurs position:fixed
+ * Utilise position:fixed pour le div miroir pour être dans le même référentiel
+ */
+export function getCursorPositionForFixed(
+  textarea: HTMLTextAreaElement,
+  cursorIndex: number
+): { x: number; y: number } {
+  // Créer un div miroir pour calculer la position du curseur
+  const div = document.createElement('div');
+  const computed = window.getComputedStyle(textarea);
+
+  // Copier tous les styles du textarea vers le div
+  const styles = [
+    'boxSizing',
+    'width',
+    'paddingTop',
+    'paddingRight',
+    'paddingBottom',
+    'paddingLeft',
+    'borderTopWidth',
+    'borderRightWidth',
+    'borderBottomWidth',
+    'borderLeftWidth',
+    'fontFamily',
+    'fontSize',
+    'fontWeight',
+    'lineHeight',
+    'letterSpacing',
+    'wordSpacing',
+    'whiteSpace',
+    'wordWrap',
+    'wordBreak',
+    'textAlign',
+    'direction',
+    'tabSize'
+  ];
+
+  styles.forEach(style => {
+    (div.style as any)[style] = (computed as any)[style];
+  });
+
+  // Get textarea position FIRST (before adding div to DOM)
+  const textareaRect = textarea.getBoundingClientRect();
+
+  // IMPORTANT: Utiliser position: fixed pour être dans le même référentiel que le textarea
+  // (quand le textarea est dans un conteneur fixed)
+  div.style.position = 'fixed';
+  div.style.top = `${textareaRect.top}px`;
+  div.style.left = `${textareaRect.left}px`;
+  div.style.visibility = 'hidden';
+  div.style.whiteSpace = 'pre-wrap';
+  div.style.wordWrap = 'break-word';
+  div.style.overflow = 'hidden';
+  div.style.height = 'auto';
+  div.style.pointerEvents = 'none';
+
+  // Ajouter le texte avant le curseur
+  const textBeforeCursor = textarea.value.substring(0, cursorIndex);
+  const textNode = document.createTextNode(textBeforeCursor);
+  div.appendChild(textNode);
+
+  // Créer un span pour marquer la position exacte du curseur
+  const span = document.createElement('span');
+  span.textContent = '|';
+  div.appendChild(span);
+
+  // Ajouter le texte après le curseur
+  const textAfterCursor = textarea.value.substring(cursorIndex);
+  const textNodeAfter = document.createTextNode(textAfterCursor);
+  div.appendChild(textNodeAfter);
+
+  // Ajouter temporairement au DOM
+  document.body.appendChild(div);
+
+  // Obtenir les positions
+  const spanRect = span.getBoundingClientRect();
+  const divRect = div.getBoundingClientRect();
+
+  // Calculer la position relative du span dans le div
   const offsetX = spanRect.left - divRect.left;
   const offsetY = spanRect.top - divRect.top;
 
   // Calculer la position absolue du curseur dans le viewport
-  // textareaRect est déjà relatif au viewport (getBoundingClientRect)
-  // On ajoute l'offset du curseur dans le textarea et on soustrait le scroll interne
   const x = textareaRect.left + offsetX - textarea.scrollLeft;
   const y = textareaRect.top + offsetY - textarea.scrollTop;
 
