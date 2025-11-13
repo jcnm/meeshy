@@ -281,7 +281,7 @@ class MeeshyServer {
     }
     
     this.prisma = new PrismaClient({
-      log: config.isDev ? ['query', 'info', 'warn', 'error'] : ['error', 'warn']
+      log: ['warn', 'error'] // Désactivation des logs query et info pour réduire le bruit
     });
 
     // NOUVEAU: Initialiser le StatusService en premier (requis par AuthMiddleware)
