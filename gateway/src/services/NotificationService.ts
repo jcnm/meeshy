@@ -225,8 +225,62 @@ export class NotificationService {
     conversationIdentifier?: string;
     conversationType?: string;
     conversationTitle?: string;
+    attachments?: Array<{ id: string; filename: string; mimeType: string; fileSize: number }>;
   }): Promise<NotificationEventData | null> {
-    const messagePreview = this.truncateMessage(data.messageContent, 25);
+    let messagePreview: string;
+    let attachmentInfo: any = null;
+
+    // Si le message a des attachments, créer un aperçu spécial
+    if (data.attachments && data.attachments.length > 0) {
+      const attachment = data.attachments[0];
+      const attachmentType = attachment.mimeType.split('/')[0]; // image, video, audio, application
+
+      // Créer une description de l'attachment
+      let attachmentDescription = '';
+      switch (attachmentType) {
+        case 'image':
+          attachmentDescription = '📷 Photo';
+          break;
+        case 'video':
+          attachmentDescription = '🎥 Vidéo';
+          break;
+        case 'audio':
+          attachmentDescription = '🎵 Audio';
+          break;
+        case 'application':
+          if (attachment.mimeType === 'application/pdf') {
+            attachmentDescription = '📄 PDF';
+          } else {
+            attachmentDescription = '📎 Document';
+          }
+          break;
+        default:
+          attachmentDescription = '📎 Fichier';
+      }
+
+      // Si plusieurs attachments
+      if (data.attachments.length > 1) {
+        attachmentDescription += ` (+${data.attachments.length - 1})`;
+      }
+
+      // Combiner le texte du message (s'il y en a) avec l'aperçu d'attachment
+      if (data.messageContent && data.messageContent.trim().length > 0) {
+        const textPreview = this.truncateMessage(data.messageContent, 15);
+        messagePreview = `${textPreview} ${attachmentDescription}`;
+      } else {
+        messagePreview = attachmentDescription;
+      }
+
+      // Ajouter les infos d'attachment pour le frontend
+      attachmentInfo = {
+        count: data.attachments.length,
+        firstType: attachmentType,
+        firstFilename: attachment.filename,
+        firstMimeType: attachment.mimeType
+      };
+    } else {
+      messagePreview = this.truncateMessage(data.messageContent, 25);
+    }
 
     // Titre simple pour tous les types: "Nouveau message de Xena"
     // Le nom de la conversation est affiché dans le timestamp côté frontend
@@ -247,7 +301,8 @@ export class NotificationService {
       data: {
         conversationIdentifier: data.conversationIdentifier,
         conversationType: data.conversationType,
-        conversationTitle: data.conversationTitle
+        conversationTitle: data.conversationTitle,
+        attachments: attachmentInfo
       }
     });
   }
@@ -279,6 +334,51 @@ export class NotificationService {
       callSessionId: data.callSessionId,
       data: {
         callType: data.callType || 'video'
+      }
+    });
+  }
+
+  /**
+   * Créer une notification pour une nouvelle conversation / invitation
+   */
+  async createConversationInviteNotification(data: {
+    invitedUserId: string;
+    inviterId: string;
+    inviterUsername: string;
+    inviterAvatar?: string;
+    conversationId: string;
+    conversationTitle?: string | null;
+    conversationType: string;
+  }): Promise<NotificationEventData | null> {
+    // Déterminer le contenu selon le type de conversation
+    let title: string;
+    let content: string;
+
+    if (data.conversationType === 'direct') {
+      // Conversation directe: juste le nom de l'inviteur
+      title = `Nouvelle conversation avec ${data.inviterUsername}`;
+      content = `${data.inviterUsername} a démarré une conversation avec vous`;
+    } else {
+      // Conversation de groupe: nom de l'inviteur + titre de la conversation
+      const conversationName = data.conversationTitle || 'une conversation';
+      title = `Invitation à "${conversationName}"`;
+      content = `${data.inviterUsername} vous a invité à rejoindre "${conversationName}"`;
+    }
+
+    return this.createNotification({
+      userId: data.invitedUserId,
+      type: 'new_conversation',
+      title,
+      content,
+      priority: 'normal',
+      senderId: data.inviterId,
+      senderUsername: data.inviterUsername,
+      senderAvatar: data.inviterAvatar,
+      conversationId: data.conversationId,
+      data: {
+        conversationTitle: data.conversationTitle,
+        conversationType: data.conversationType,
+        action: 'view_conversation'
       }
     });
   }

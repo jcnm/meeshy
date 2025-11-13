@@ -76,10 +76,11 @@ export class MeeshySocketIOManager {
     const attachmentService = new AttachmentService(prisma);
     this.maintenanceService = new MaintenanceService(prisma, attachmentService);
 
-    this.messagingService = new MessagingService(prisma, this.translationService);
+    // CORRECTION: Créer NotificationService AVANT MessagingService pour que les mentions génèrent des notifications
+    this.notificationService = new NotificationService(prisma);
+    this.messagingService = new MessagingService(prisma, this.translationService, this.notificationService);
     this.callEventsHandler = new CallEventsHandler(prisma);
     this.callService = new CallService(prisma);
-    this.notificationService = new NotificationService(prisma);
 
     // CORRECTION: Configurer le callback de broadcast pour le MaintenanceService
     this.maintenanceService.setStatusBroadcastCallback(
@@ -2199,6 +2200,34 @@ export class MeeshySocketIOManager {
         }
       });
 
+      // Récupérer les attachments du message pour les inclure dans la notification
+      let messageAttachments: Array<{ id: string; filename: string; mimeType: string; fileSize: number }> = [];
+      if (message.id) {
+        try {
+          const attachments = await this.prisma.messageAttachment.findMany({
+            where: { messageId: message.id },
+            select: {
+              id: true,
+              fileName: true,
+              mimeType: true,
+              fileSize: true
+            }
+          });
+          // Mapper fileName vers filename pour correspondre à l'interface de la notification
+          messageAttachments = attachments.map(att => ({
+            id: att.id,
+            filename: att.fileName,
+            mimeType: att.mimeType,
+            fileSize: att.fileSize
+          }));
+          if (attachments.length > 0) {
+            console.log(`📢 [NOTIFICATIONS] Message avec ${attachments.length} attachment(s)`);
+          }
+        } catch (err) {
+          console.error('❌ [NOTIFICATIONS] Erreur lors de la récupération des attachments:', err);
+        }
+      }
+
       if (!conversation) {
         console.error('❌ [NOTIFICATIONS] Conversation non trouvée:', message.conversationId);
         return;
@@ -2268,7 +2297,8 @@ export class MeeshySocketIOManager {
           conversationId: message.conversationId,
           messageId: message.id,
           conversationType: conversation.type,
-          conversationTitle: conversation.title || undefined
+          conversationTitle: conversation.title || undefined,
+          attachments: messageAttachments.length > 0 ? messageAttachments : undefined
         });
       }
 

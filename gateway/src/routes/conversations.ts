@@ -816,6 +816,41 @@ export async function conversationRoutes(fastify: FastifyInstance) {
             userId
           );
 
+      // Envoyer des notifications aux participants invités
+      const notificationService = (fastify as any).notificationService;
+      if (notificationService && uniqueParticipantIds.length > 0) {
+        try {
+          // Récupérer les informations du créateur
+          const creator = await prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+              username: true,
+              displayName: true,
+              avatar: true
+            }
+          });
+
+          if (creator) {
+            // Envoyer une notification à chaque participant invité
+            for (const participantId of uniqueParticipantIds) {
+              await notificationService.createConversationInviteNotification({
+                invitedUserId: participantId,
+                inviterId: userId,
+                inviterUsername: creator.displayName || creator.username,
+                inviterAvatar: creator.avatar || undefined,
+                conversationId: conversation.id,
+                conversationTitle: displayTitle,
+                conversationType: type
+              });
+              console.log(`[GATEWAY] 📩 Notification d'invitation envoyée à ${participantId} pour la conversation ${conversation.id}`);
+            }
+          }
+        } catch (notifError) {
+          console.error('[GATEWAY] Erreur lors de l\'envoi des notifications d\'invitation:', notifError);
+          // Ne pas bloquer la création de la conversation
+        }
+      }
+
       reply.status(201).send({
         success: true,
         data: {
@@ -3344,6 +3379,38 @@ export async function conversationRoutes(fastify: FastifyInstance) {
           }
         }
       });
+
+      // Envoyer une notification à l'utilisateur invité
+      const notificationService = (fastify as any).notificationService;
+      if (notificationService) {
+        try {
+          // Récupérer les informations de l'inviteur
+          const inviter = await fastify.prisma.user.findUnique({
+            where: { id: inviterId },
+            select: {
+              username: true,
+              displayName: true,
+              avatar: true
+            }
+          });
+
+          if (inviter) {
+            await notificationService.createConversationInviteNotification({
+              invitedUserId: userId,
+              inviterId: inviterId,
+              inviterUsername: inviter.displayName || inviter.username,
+              inviterAvatar: inviter.avatar || undefined,
+              conversationId: conversationId,
+              conversationTitle: conversation.title,
+              conversationType: conversation.type
+            });
+            console.log(`[GATEWAY] 📩 Notification d'invitation envoyée à ${userId} pour la conversation ${conversationId}`);
+          }
+        } catch (notifError) {
+          console.error('[GATEWAY] Erreur lors de l\'envoi de la notification d\'invitation:', notifError);
+          // Ne pas bloquer l'invitation
+        }
+      }
 
       return reply.send({
         success: true,
