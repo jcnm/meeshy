@@ -40,13 +40,22 @@ export function getCursorPosition(
     (div.style as any)[style] = (computed as any)[style];
   });
 
+  // Get textarea position FIRST (before adding div to DOM)
+  const textareaRect = textarea.getBoundingClientRect();
+
   // Styles spéciaux pour le positionnement du div
-  div.style.position = 'absolute';
+  // IMPORTANT: Utiliser position: fixed pour être dans le même référentiel que le textarea
+  // (que le textarea soit dans un conteneur fixed ou non, getBoundingClientRect retourne
+  // toujours des coordonnées relatives au viewport)
+  div.style.position = 'fixed';
+  div.style.top = `${textareaRect.top}px`; // Position relative au viewport
+  div.style.left = `${textareaRect.left}px`;
   div.style.visibility = 'hidden';
   div.style.whiteSpace = 'pre-wrap'; // Important pour le wrapping comme textarea
   div.style.wordWrap = 'break-word';
   div.style.overflow = 'hidden';
   div.style.height = 'auto'; // Laisser le div grandir naturellement
+  div.style.pointerEvents = 'none'; // Éviter toute interaction
 
   // Ajouter le texte avant le curseur
   const textBeforeCursor = textarea.value.substring(0, cursorIndex);
@@ -66,20 +75,18 @@ export function getCursorPosition(
   // Ajouter temporairement au DOM
   document.body.appendChild(div);
 
-  // Obtenir les positions
-  const textareaRect = textarea.getBoundingClientRect();
+  // Obtenir les positions du span (curseur) et du div miroir
   const spanRect = span.getBoundingClientRect();
   const divRect = div.getBoundingClientRect();
 
   // Calculer la position relative du span dans le div
-  // spanRect et divRect incluent déjà les border/padding car on les a copiés
+  // Ces offsets représentent la position du curseur dans le textarea
   const offsetX = spanRect.left - divRect.left;
   const offsetY = spanRect.top - divRect.top;
 
-  // Calculer la position absolue du curseur (SANS offset lineHeight)
-  // Le div miroir a les mêmes border/padding que le textarea, donc l'offset
-  // est déjà correct. On translate juste du div vers le textarea.
-  // Note: on ne soustrait le scroll que si le textarea est scrollable
+  // Calculer la position absolue du curseur dans le viewport
+  // textareaRect est déjà relatif au viewport (getBoundingClientRect)
+  // On ajoute l'offset du curseur dans le textarea et on soustrait le scroll interne
   const x = textareaRect.left + offsetX - textarea.scrollLeft;
   const y = textareaRect.top + offsetY - textarea.scrollTop;
 
