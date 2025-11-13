@@ -382,8 +382,8 @@ function VoiceCoderDetails({
                 value={[effect.params.retuneSpeed]}
                 min={0}
                 max={100}
-                step={0.1}
-                onValueChange={([value]) => onUpdateParams({ retuneSpeed: Math.round(value * 10) / 10 })}
+                step={0.01}
+                onValueChange={([value]) => onUpdateParams({ retuneSpeed: Math.round(value * 100) / 100 })}
               />
             </div>
 
@@ -395,8 +395,8 @@ function VoiceCoderDetails({
                 value={[effect.params.strength]}
                 min={0}
                 max={100}
-                step={0.1}
-                onValueChange={([value]) => onUpdateParams({ strength: Math.round(value * 10) / 10 })}
+                step={0.01}
+                onValueChange={([value]) => onUpdateParams({ strength: Math.round(value * 100) / 100 })}
               />
             </div>
 
@@ -408,8 +408,8 @@ function VoiceCoderDetails({
                 value={[effect.params.naturalVibrato]}
                 min={0}
                 max={100}
-                step={0.1}
-                onValueChange={([value]) => onUpdateParams({ naturalVibrato: Math.round(value * 10) / 10 })}
+                step={0.01}
+                onValueChange={([value]) => onUpdateParams({ naturalVibrato: Math.round(value * 100) / 100 })}
               />
             </div>
 
@@ -421,8 +421,8 @@ function VoiceCoderDetails({
                 value={[effect.params.pitch]}
                 min={-12}
                 max={12}
-                step={0.1}
-                onValueChange={([value]) => onUpdateParams({ pitch: Math.round(value * 10) / 10 })}
+                step={0.01}
+                onValueChange={([value]) => onUpdateParams({ pitch: Math.round(value * 100) / 100 })}
               />
             </div>
           </div>
@@ -544,8 +544,8 @@ function BackSoundDetails({
               value={[effect.params.volume]}
               min={0}
               max={100}
-              step={0.1}
-              onValueChange={([value]) => onUpdateParams({ volume: Math.round(value * 10) / 10 })}
+              step={0.01}
+              onValueChange={([value]) => onUpdateParams({ volume: Math.round(value * 100) / 100 })}
             />
           </div>
 
@@ -622,8 +622,8 @@ function BabyVoiceDetails({
               value={[effect.params.pitch]}
               min={6}
               max={12}
-              step={0.1}
-              onValueChange={([value]) => onUpdateParams({ pitch: Math.round(value * 10) / 10 })}
+              step={0.01}
+              onValueChange={([value]) => onUpdateParams({ pitch: Math.round(value * 100) / 100 })}
             />
           </div>
 
@@ -635,8 +635,8 @@ function BabyVoiceDetails({
               value={[effect.params.formant * 100]}
               min={120}
               max={150}
-              step={0.1}
-              onValueChange={([value]) => onUpdateParams({ formant: Math.round(value) / 100 })}
+              step={0.01}
+              onValueChange={([value]) => onUpdateParams({ formant: Math.round(value * 100) / 10000 })}
             />
           </div>
 
@@ -648,8 +648,8 @@ function BabyVoiceDetails({
               value={[effect.params.breathiness]}
               min={0}
               max={100}
-              step={0.1}
-              onValueChange={([value]) => onUpdateParams({ breathiness: Math.round(value * 10) / 10 })}
+              step={0.01}
+              onValueChange={([value]) => onUpdateParams({ breathiness: Math.round(value * 100) / 100 })}
             />
           </div>
         </div>
@@ -695,8 +695,8 @@ function DemonVoiceDetails({
               value={[effect.params.pitch]}
               min={-12}
               max={-8}
-              step={0.1}
-              onValueChange={([value]) => onUpdateParams({ pitch: Math.round(value * 10) / 10 })}
+              step={0.01}
+              onValueChange={([value]) => onUpdateParams({ pitch: Math.round(value * 100) / 100 })}
             />
           </div>
 
@@ -708,8 +708,8 @@ function DemonVoiceDetails({
               value={[effect.params.distortion]}
               min={0}
               max={100}
-              step={0.1}
-              onValueChange={([value]) => onUpdateParams({ distortion: Math.round(value * 10) / 10 })}
+              step={0.01}
+              onValueChange={([value]) => onUpdateParams({ distortion: Math.round(value * 100) / 100 })}
             />
           </div>
 
@@ -721,8 +721,8 @@ function DemonVoiceDetails({
               value={[effect.params.reverb]}
               min={0}
               max={100}
-              step={0.1}
-              onValueChange={([value]) => onUpdateParams({ reverb: Math.round(value * 10) / 10 })}
+              step={0.01}
+              onValueChange={([value]) => onUpdateParams({ reverb: Math.round(value * 100) / 100 })}
             />
           </div>
         </div>
