@@ -20,6 +20,9 @@ interface LanguageFlagSelectorProps {
 	choices?: LanguageChoice[];
 	interfaceOnly?: boolean;
 	showLanguageName?: boolean;
+	popoverSide?: "top" | "right" | "bottom" | "left";
+	popoverAlign?: "start" | "center" | "end";
+	popoverSideOffset?: number;
 }
 
 export function LanguageFlagSelector({
@@ -30,6 +33,9 @@ export function LanguageFlagSelector({
 	choices,
 	interfaceOnly = false,
 	showLanguageName = true,
+	popoverSide = "top",
+	popoverAlign = "center",
+	popoverSideOffset = 8,
 }: LanguageFlagSelectorProps) {
 	const [open, setOpen] = useState(false);
 
@@ -63,9 +69,9 @@ export function LanguageFlagSelector({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        align="center"
-        side="top"
-        sideOffset={8}
+        align={popoverAlign}
+        side={popoverSide}
+        sideOffset={popoverSideOffset}
         className="p-2 w-[180px] max-w-[96vw] sm:max-w-[320px] min-w-[140px] flex flex-col gap-2 items-center max-h-[40vh] overflow-y-auto"
       >
         {availableLanguages.map((language) => (

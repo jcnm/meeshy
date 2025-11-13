@@ -57,6 +57,9 @@ export function LanguageSelector({
   
   const displayPlaceholder = placeholder || t('languageSelector.selectLanguage');
 
+  // N'afficher l'input de recherche que si > 10 langues disponibles
+  const showSearchInput = availableLanguages.length > 10;
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -83,10 +86,12 @@ export function LanguageSelector({
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0">
+      <PopoverContent className="w-[300px] max-w-[96vw] p-0">
         <Command>
-          <CommandInput placeholder={t('languageSelector.searchLanguage') || "Search language..."} />
-          <CommandList>
+          {showSearchInput && (
+            <CommandInput placeholder={t('languageSelector.searchLanguage') || "Search language..."} />
+          )}
+          <CommandList className="max-h-[60vh]">
             <CommandEmpty>{t('languageSelector.noLanguageFound')}</CommandEmpty>
             <CommandGroup>
               {availableLanguages.map((language) => (
