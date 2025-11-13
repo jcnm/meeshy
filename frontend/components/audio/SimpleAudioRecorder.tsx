@@ -198,7 +198,7 @@ export const SimpleAudioRecorder: React.FC<SimpleAudioRecorderProps> = ({
           noiseSuppression: true,
           autoGainControl: true,
           sampleRate: 48000,
-          channelCount: 1, // Mono pour réduire la taille
+          channelCount: 2, // Stéréo pour une meilleure qualité audio
         }
       });
 

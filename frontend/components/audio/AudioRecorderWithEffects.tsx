@@ -165,10 +165,11 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
 
     setAudioLevel(normalizedLevel);
 
-    // Continuer l'analyse avec un délai de ~50ms (20fps) pour ne pas bloquer l'UI
+    // Continuer l'analyse avec un délai de ~200ms (5fps) pour économiser les ressources
+    // Réduit la consommation CPU et évite la chauffe du téléphone
     audioLevelAnimationRef.current = window.setTimeout(() => {
       requestAnimationFrame(analyzeAudioLevel);
-    }, 50);
+    }, 200);
   }, []);
 
   // Démarrer l'analyse audio
@@ -278,7 +279,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
           noiseSuppression: false,
           autoGainControl: false,
           sampleRate: 48000,
-          channelCount: 1,
+          channelCount: 2, // Stéréo pour une meilleure qualité audio
         }
       });
 

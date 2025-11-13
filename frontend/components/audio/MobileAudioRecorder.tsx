@@ -178,7 +178,7 @@ export const MobileAudioRecorder: React.FC<MobileAudioRecorderProps> = ({
           noiseSuppression: false,
           autoGainControl: false,
           sampleRate: 48000,
-          channelCount: 1,
+          channelCount: 2, // Stéréo pour une meilleure qualité audio
         }
       });
 
