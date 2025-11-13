@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { AudioWaveform } from './AudioWaveform';
 import { useAudioEffects } from '@/hooks/use-audio-effects';
-import { AudioEffectsPanel } from '@/components/video-calls/AudioEffectsPanel';
+import { AudioEffectsCarousel } from '@/components/video-calls/AudioEffectsCarousel';
 
 interface MobileAudioRecorderProps {
   onRecordingComplete: (audioBlob: Blob, duration: number) => void;
@@ -687,7 +687,7 @@ export const MobileAudioRecorder: React.FC<MobileAudioRecorderProps> = ({
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
               className="fixed bottom-0 left-0 right-0 z-[10001] max-h-[80vh] overflow-auto"
             >
-              <AudioEffectsPanel
+              <AudioEffectsCarousel
                 effectsState={effectsState}
                 onToggleEffect={toggleEffect}
                 onUpdateParams={updateEffectParams}

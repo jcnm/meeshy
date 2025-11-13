@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { Square, Trash2, Mic, Loader2, Radio } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAudioEffects } from '@/hooks/use-audio-effects';
-import { AudioEffectsPanel } from '@/components/video-calls/AudioEffectsPanel';
+import { AudioEffectsCarousel } from '@/components/video-calls/AudioEffectsCarousel';
 import type { AudioEffectType } from '@shared/types/video-call';
 
 // Types
@@ -138,9 +138,6 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
     }
     startTimeRef.current = 0;
 
-    // Arrêter l'analyse audio
-    stopAudioAnalysis();
-
     // Arrêter le stream brut
     if (rawStreamRef.current) {
       rawStreamRef.current.getTracks().forEach(track => track.stop());
@@ -158,7 +155,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
     if (onRecordingStateChange) {
       onRecordingStateChange(false);
     }
-  }, [onRecordingStateChange, onStop, stopAudioAnalysis]);
+  }, [onRecordingStateChange, onStop]);
 
   // Démarrer l'enregistrement
   const startRecording = useCallback(async () => {
@@ -310,7 +307,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
         setPermissionError('Recording error');
       }
     }
-  }, [effectiveDuration, onRecordingComplete, updateTimer, onRecordingStateChange, startAudioAnalysis]);
+  }, [effectiveDuration, onRecordingComplete, updateTimer, onRecordingStateChange]);
 
   // Exposer les méthodes via ref
   useImperativeHandle(ref, () => ({
@@ -441,7 +438,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
               maxHeight: '85vh',
             }}
           >
-            <AudioEffectsPanel
+            <AudioEffectsCarousel
               effectsState={effectsState}
               onToggleEffect={toggleEffect}
               onUpdateParams={updateEffectParams}

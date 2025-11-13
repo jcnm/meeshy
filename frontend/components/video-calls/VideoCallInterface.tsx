@@ -14,7 +14,7 @@ import { useCallQuality } from '@/hooks/use-call-quality';
 import { VideoStream } from './VideoStream';
 import { CallControls } from './CallControls';
 import { CallStatusIndicator } from './CallStatusIndicator';
-import { AudioEffectsPanel } from './AudioEffectsPanel';
+import { AudioEffectsCarousel } from './AudioEffectsCarousel';
 import { ConnectionQualityBadge } from './ConnectionQualityBadge';
 import { DraggableParticipantOverlay } from './DraggableParticipantOverlay';
 import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
@@ -488,7 +488,7 @@ export function VideoCallInterface({ callId }: VideoCallInterfaceProps) {
       {/* Audio Effects Panel (Sliding from bottom) */}
       {showAudioEffects && (
         <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 w-full max-w-4xl px-4 z-40">
-          <AudioEffectsPanel
+          <AudioEffectsCarousel
             effectsState={effectsState}
             onToggleEffect={toggleEffect}
             onUpdateParams={updateEffectParams}
