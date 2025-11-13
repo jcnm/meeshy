@@ -31,6 +31,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useAppStore } from '@/stores/app-store';
 import { useI18n } from '@/hooks/useI18n';
 import { LanguageFlagSelector } from '@/components/translation/language-flag-selector';
+import { LanguageSelector } from '@/components/translation/language-selector';
 import { useLanguageStore } from '@/stores';
 import { INTERFACE_LANGUAGES } from '@/types/frontend';
 
@@ -225,11 +226,11 @@ export function Header({
                 )}
 
                 {/* Sélecteur de langue pour la page d'accueil */}
-                <LanguageFlagSelector
+                <LanguageSelector
                   value={currentInterfaceLanguage}
                   onValueChange={handleLanguageChange}
                   interfaceOnly={true}
-                  showLanguageName={true}
+                  className="min-w-[150px]"
                 />
 
                 <Link href="/login">
@@ -434,12 +435,11 @@ export function Header({
                       <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{t('interfaceLanguage')}</span>
                     </div>
                     <div className="px-2">
-                      <LanguageFlagSelector
+                      <LanguageSelector
                         value={currentInterfaceLanguage}
                         onValueChange={handleLanguageChange}
                         interfaceOnly={true}
                         className="w-full"
-                        showLanguageName={true}
                       />
                     </div>
                   </div>
