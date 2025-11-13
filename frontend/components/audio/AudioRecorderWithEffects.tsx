@@ -558,11 +558,12 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
         <button
           ref={buttonEffectsRef}
           onClick={() => setShowEffectsPanel(!showEffectsPanel)}
+          onTouchStart={() => setShowEffectsPanel(!showEffectsPanel)}
           className={`relative flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all ${
             audioEffectsActive
               ? 'bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg shadow-purple-500/50'
               : 'bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700'
-          } hover:scale-105`}
+          } hover:scale-105 active:scale-95`}
           title="Effets audio"
         >
           <span className="text-xl">🎭</span>
@@ -603,7 +604,11 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
         {!isRecording ? (
           <button
             onClick={startRecording}
-            className="flex-shrink-0 w-10 h-10 bg-blue-500 hover:bg-blue-600 rounded-full flex items-center justify-center transition-all shadow-lg"
+            onTouchStart={(e) => {
+              e.preventDefault();
+              startRecording();
+            }}
+            className="flex-shrink-0 w-10 h-10 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 rounded-full flex items-center justify-center transition-all shadow-lg active:scale-95"
             title="Démarrer l'enregistrement"
           >
             <Radio className="w-5 h-5 text-white" />
@@ -611,7 +616,11 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
         ) : (
           <button
             onClick={stopRecording}
-            className="flex-shrink-0 w-10 h-10 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center transition-all shadow-lg"
+            onTouchStart={(e) => {
+              e.preventDefault();
+              stopRecording();
+            }}
+            className="flex-shrink-0 w-10 h-10 bg-red-500 hover:bg-red-600 active:bg-red-700 rounded-full flex items-center justify-center transition-all shadow-lg active:scale-95"
             title="Arrêter l'enregistrement"
           >
             <Square className="w-4 h-4 fill-white stroke-white" />
