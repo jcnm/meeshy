@@ -66,7 +66,7 @@ export function LanguageFlagSelector({
         align="center"
         side="top"
         sideOffset={8}
-        className="p-2 w-[180px] max-w-[96vw] sm:max-w-[320px] min-w-[140px] flex flex-col gap-2 items-center max-h-[40vh] overflow-y-auto"
+        className="p-2 w-[90px] max-w-[96vw] sm:max-w-[160px] min-w-[70px] flex flex-col gap-2 items-center max-h-[40vh] overflow-y-auto"
       >
         {availableLanguages.map((language) => (
           <Button

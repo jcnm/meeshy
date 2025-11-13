@@ -143,7 +143,7 @@ export function Header({
                         <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuContent align="end" className="w-28">
                       <DropdownMenuLabel>
                         {user.displayName || user.username}
                       </DropdownMenuLabel>

@@ -15,7 +15,6 @@ import {
   recordTrackingLinkClick,
   generateDeviceFingerprint,
 } from '@/lib/utils/link-parser';
-import { MermaidDiagram } from '@/components/markdown/MermaidDiagram';
 
 interface MarkdownMessageProps {
   content: string;
@@ -164,41 +163,38 @@ export const MarkdownMessage: React.FC<MarkdownMessageProps> = ({
   );
 
   return (
-    <div className={cn('markdown-message leading-relaxed', className)}>
+    <div className={cn('markdown-message leading-relaxed max-w-full overflow-hidden', className)}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw, rehypeSanitize]}
         components={{
-          // Custom code block rendering with syntax highlighting and Mermaid support
+          // Custom code block rendering with syntax highlighting
           code({ node, inline, className, children, ...props }: any) {
             const match = /language-(\w+)/.exec(className || '');
             const language = match ? match[1] : '';
 
-            // Mermaid diagrams
-            if (!inline && language === 'mermaid') {
-              return (
-                <MermaidDiagram
-                  chart={String(children).replace(/\n$/, '')}
-                  className="my-4"
-                />
-              );
-            }
-
             // Syntax highlighted code blocks
             return !inline && language ? (
-              <SyntaxHighlighter
-                style={isDark ? vscDarkPlus : vs}
-                language={language}
-                PreTag="div"
-                className="rounded-md my-2 text-sm"
-                showLineNumbers={true}
-                {...props}
-              >
-                {String(children).replace(/\n$/, '')}
-              </SyntaxHighlighter>
+              <div className="max-w-full overflow-x-auto my-2">
+                <SyntaxHighlighter
+                  style={isDark ? vscDarkPlus : vs}
+                  language={language}
+                  PreTag="div"
+                  className="rounded-md text-sm !max-w-full"
+                  showLineNumbers={true}
+                  wrapLongLines={false}
+                  customStyle={{
+                    maxWidth: '100%',
+                    overflowX: 'auto'
+                  }}
+                  {...props}
+                >
+                  {String(children).replace(/\n$/, '')}
+                </SyntaxHighlighter>
+              </div>
             ) : (
               <code
-                className="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-sm font-mono"
+                className="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-sm font-mono break-all"
                 {...props}
               >
                 {children}
@@ -250,46 +246,6 @@ export const MarkdownMessage: React.FC<MarkdownMessageProps> = ({
               </a>
             );
           },
-          // Custom table rendering
-          table({ node, children, ...props }: any) {
-            return (
-              <div className="overflow-x-auto my-4">
-                <table
-                  className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 border border-gray-200 dark:border-gray-700"
-                  {...props}
-                >
-                  {children}
-                </table>
-              </div>
-            );
-          },
-          thead({ node, children, ...props }: any) {
-            return (
-              <thead className="bg-gray-50 dark:bg-gray-800" {...props}>
-                {children}
-              </thead>
-            );
-          },
-          th({ node, children, ...props }: any) {
-            return (
-              <th
-                className="px-4 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider"
-                {...props}
-              >
-                {children}
-              </th>
-            );
-          },
-          td({ node, children, ...props }: any) {
-            return (
-              <td
-                className="px-4 py-2 text-sm text-gray-900 dark:text-gray-100 border-t border-gray-200 dark:border-gray-700"
-                {...props}
-              >
-                {children}
-              </td>
-            );
-          },
           // Custom blockquote rendering
           blockquote({ node, children, ...props }: any) {
             return (
@@ -299,21 +255,6 @@ export const MarkdownMessage: React.FC<MarkdownMessageProps> = ({
               >
                 {children}
               </blockquote>
-            );
-          },
-          // Custom list rendering
-          ul({ node, children, ...props }: any) {
-            return (
-              <ul className="list-disc list-inside my-2 space-y-1" {...props}>
-                {children}
-              </ul>
-            );
-          },
-          ol({ node, children, ...props }: any) {
-            return (
-              <ol className="list-decimal list-inside my-2 space-y-1" {...props}>
-                {children}
-              </ol>
             );
           },
           // Custom heading rendering
