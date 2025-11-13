@@ -42,7 +42,7 @@ import {
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { User, BubbleTranslation } from '@shared/types';
-import { SUPPORTED_LANGUAGES, getLanguageInfo } from '@shared/types';
+import { SUPPORTED_LANGUAGES, getLanguageInfo } from '@shared/utils/languages';
 import type { Message } from '@shared/types/conversation';
 import { mentionsToLinks } from '@/shared/types/mention';
 import type { BubbleStreamMessage } from '@/types/bubble-stream';

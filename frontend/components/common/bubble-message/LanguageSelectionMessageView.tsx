@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { SUPPORTED_LANGUAGES, getLanguageInfo } from '@shared/types';
+import { SUPPORTED_LANGUAGES, getLanguageInfo } from '@shared/utils/languages';
 import type { Message, BubbleTranslation } from '@shared/types';
 import { useI18n } from '@/hooks/useI18n';
 import { formatDistanceToNow } from 'date-fns';
