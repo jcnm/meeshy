@@ -47,11 +47,13 @@ export class MentionService {
 
   constructor(
     private readonly prisma: PrismaClient,
-    redisUrl: string = 'redis://meeshy.me:6379'
+    redisUrl?: string
   ) {
     try {
-      this.redis = new Redis(redisUrl);
-      console.log('[MentionService] Redis cache initialized');
+      // Utiliser REDIS_URL de l'environnement ou la valeur par défaut
+      const url = redisUrl || process.env.REDIS_URL || 'redis://redis:6379';
+      this.redis = new Redis(url);
+      console.log(`[MentionService] Redis cache initialized at ${url}`);
     } catch (error) {
       console.warn('[MentionService] Redis cache initialization failed, continuing without cache:', error);
       this.redis = null;

@@ -26,6 +26,7 @@ import { MessagingService } from './services/MessagingService';
 import { MentionService } from './services/MentionService';
 import { StatusService } from './services/status.service';
 import { AuthMiddleware, createUnifiedAuthMiddleware } from './middleware/auth';
+import { registerGlobalRateLimiter } from './middleware/rate-limiter';
 import { authRoutes } from './routes/auth';
 import { conversationRoutes } from './routes/conversations';
 import { linksRoutes } from './routes/links';
@@ -370,6 +371,10 @@ class MeeshyServer {
     await this.server.register(jwt, {
       secret: config.jwtSecret
     });
+
+    // SÉCURITÉ P1.1: Rate limiting global (100 requêtes/min par IP)
+    await registerGlobalRateLimiter(this.server);
+    logger.info('✅ Global rate limiter configured (100 req/min per IP)');
 
     // Socket.IO will be configured after server initialization
     // No need to register a plugin as Socket.IO attaches directly to the HTTP server

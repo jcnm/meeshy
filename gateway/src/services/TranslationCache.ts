@@ -14,8 +14,11 @@ export class TranslationCache {
   private redis: Redis;
   private readonly TTL = 3600; // 1 heure par défaut
 
-  constructor(redisUrl: string = 'redis://meeshy.me:6379') {
-    this.redis = new Redis(redisUrl);
+  constructor(redisUrl?: string) {
+    // Utiliser REDIS_URL de l'environnement ou la valeur par défaut
+    const url = redisUrl || process.env.REDIS_URL || 'redis://redis:6379';
+    this.redis = new Redis(url);
+    console.log(`[TranslationCache] Redis initialized at ${url}`);
   }
 
   /**
