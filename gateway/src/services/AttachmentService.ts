@@ -281,13 +281,28 @@ export class AttachmentService {
     videoCodec: string;
     bitrate: number;
   }> {
-    try {
-      const fullPath = path.join(this.uploadBasePath, videoPath);
+    const fullPath = path.join(this.uploadBasePath, videoPath);
 
-      return new Promise((resolve, reject) => {
-        // Timeout de 30 secondes pour éviter les blocages sur gros fichiers
-        const timeout = setTimeout(() => {
-          console.warn('[AttachmentService] ⚠️ Timeout ffprobe pour:', videoPath);
+    return new Promise((resolve, reject) => {
+      // Timeout de 30 secondes pour éviter les blocages sur gros fichiers
+      const timeout = setTimeout(() => {
+        console.warn('[AttachmentService] ⚠️ Timeout ffprobe pour:', videoPath);
+        reject(new Error('ffprobe timeout after 30 seconds'));
+      }, 30000);
+
+      ffmpeg.ffprobe(fullPath, (err, metadata) => {
+        clearTimeout(timeout);
+
+        if (err) {
+          // Propager l'erreur pour que l'appelant puisse la gérer
+          reject(err);
+          return;
+        }
+
+        const videoStream = metadata.streams?.find((s) => s.codec_type === 'video');
+
+        if (!videoStream) {
+          // Pas de stream vidéo trouvé, retourner des valeurs par défaut
           resolve({
             duration: 0,
             width: 0,
@@ -296,70 +311,26 @@ export class AttachmentService {
             videoCodec: 'unknown',
             bitrate: 0,
           });
-        }, 30000);
+          return;
+        }
 
-        ffmpeg.ffprobe(fullPath, (err, metadata) => {
-          clearTimeout(timeout);
+        // Calculer le FPS
+        let fps = 0;
+        if (videoStream.r_frame_rate) {
+          const [num, den] = videoStream.r_frame_rate.split('/').map(Number);
+          fps = den ? num / den : 0;
+        }
 
-          if (err) {
-            console.error('[AttachmentService] Erreur ffprobe:', err.message);
-            resolve({
-              duration: 0,
-              width: 0,
-              height: 0,
-              fps: 0,
-              videoCodec: 'unknown',
-              bitrate: 0,
-            });
-            return;
-          }
-
-          const videoStream = metadata.streams?.find((s) => s.codec_type === 'video');
-
-          if (!videoStream) {
-            resolve({
-              duration: 0,
-              width: 0,
-              height: 0,
-              fps: 0,
-              videoCodec: 'unknown',
-              bitrate: 0,
-            });
-            return;
-          }
-
-          // Calculer le FPS
-          let fps = 0;
-          if (videoStream.r_frame_rate) {
-            const [num, den] = videoStream.r_frame_rate.split('/').map(Number);
-            fps = den ? num / den : 0;
-          }
-
-          resolve({
-            duration: Math.round(metadata.format?.duration || 0),
-            width: videoStream.width || 0,
-            height: videoStream.height || 0,
-            fps: Math.round(fps * 100) / 100, // Arrondir à 2 décimales
-            videoCodec: videoStream.codec_name || 'unknown',
-            bitrate: parseInt(String(metadata.format?.bit_rate || 0), 10),
-          });
+        resolve({
+          duration: Math.round(metadata.format?.duration || 0),
+          width: videoStream.width || 0,
+          height: videoStream.height || 0,
+          fps: Math.round(fps * 100) / 100, // Arrondir à 2 décimales
+          videoCodec: videoStream.codec_name || 'unknown',
+          bitrate: parseInt(String(metadata.format?.bit_rate || 0), 10),
         });
       });
-    } catch (error) {
-      console.warn('[AttachmentService] ⚠️ Erreur extraction métadonnées vidéo:', {
-        filePath: videoPath,
-        error: error instanceof Error ? error.message : error,
-      });
-
-      return {
-        duration: 0,
-        width: 0,
-        height: 0,
-        fps: 0,
-        videoCodec: 'unknown',
-        bitrate: 0,
-      };
-    }
+    });
   }
 
   /**
@@ -458,13 +429,25 @@ export class AttachmentService {
 
     // Si c'est une vidéo, extraire les métadonnées vidéo complètes
     if (attachmentType === 'video') {
-      const videoMeta = await this.extractVideoMetadata(filePath);
-      metadata.duration = videoMeta.duration;
-      metadata.width = videoMeta.width;
-      metadata.height = videoMeta.height;
-      metadata.fps = videoMeta.fps;
-      metadata.videoCodec = videoMeta.videoCodec; // Stocker dans videoCodec pour les vidéos
-      metadata.bitrate = videoMeta.bitrate;
+      try {
+        const videoMeta = await this.extractVideoMetadata(filePath);
+        metadata.duration = videoMeta.duration;
+        metadata.width = videoMeta.width;
+        metadata.height = videoMeta.height;
+        metadata.fps = videoMeta.fps;
+        metadata.videoCodec = videoMeta.videoCodec; // Stocker dans videoCodec pour les vidéos
+        metadata.bitrate = videoMeta.bitrate;
+      } catch (error) {
+        // Si ffprobe n'est pas disponible, continuer sans métadonnées vidéo
+        console.warn('[AttachmentService] ⚠️ Impossible d\'extraire métadonnées vidéo, upload continue:',
+          error instanceof Error ? error.message : error);
+        metadata.duration = 0;
+        metadata.width = 0;
+        metadata.height = 0;
+        metadata.fps = 0;
+        metadata.videoCodec = 'unknown';
+        metadata.bitrate = 0;
+      }
     }
 
     // Si c'est un PDF, extraire le nombre de pages
