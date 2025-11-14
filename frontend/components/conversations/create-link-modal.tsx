@@ -267,13 +267,29 @@ export function CreateLinkModalV2({
     }
   }, [isOpen, preGeneratedLink, preGeneratedToken]);
 
-  // Fonction pour générer un identifiant
-  const generateIdentifier = (baseText: string) => {
-    return baseText
+  // Fonction pour générer un identifiant basé sur le titre avec suffixe hex aléatoire
+  const generateIdentifier = (baseText: string): string => {
+    if (!baseText.trim()) return '';
+
+    const baseIdentifier = baseText
       .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, '')
-      .replace(/\s+/g, '-')
-      .substring(0, 30) + '-' + Math.random().toString(36).substring(2, 8);
+      .replace(/[^a-z0-9\s-]/g, '') // Keep only letters, numbers, spaces and hyphens
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single
+      .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
+      .substring(0, 30); // Limit base identifier length
+
+    if (!baseIdentifier) return '';
+
+    // Generate 6-10 character random hex suffix for uniqueness
+    const hexLength = Math.floor(Math.random() * 5) + 6; // Random between 6 and 10
+    const hexBytes = Math.ceil(hexLength / 2);
+    const hexSuffix = Array.from(crypto.getRandomValues(new Uint8Array(hexBytes)))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('')
+      .substring(0, hexLength); // Trim to exact length
+
+    return `${baseIdentifier}-${hexSuffix}`;
   };
 
   // Charger les conversations disponibles

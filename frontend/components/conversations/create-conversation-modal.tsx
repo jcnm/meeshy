@@ -95,21 +95,24 @@ export function CreateConversationModal({
   // Generate identifier from title with hex suffix for uniqueness
   const generateIdentifierFromTitle = (title: string): string => {
     if (!title.trim()) return '';
-    
+
     const baseIdentifier = title
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, '') // Keep only letters, numbers, spaces and hyphens
       .replace(/\s+/g, '-') // Replace spaces with hyphens
       .replace(/-+/g, '-') // Replace multiple hyphens with single
       .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
-    
+
     if (!baseIdentifier) return '';
-    
-    // Generate 4-byte hex suffix for uniqueness (like conversation links)
-    const hexSuffix = Array.from(crypto.getRandomValues(new Uint8Array(4)))
+
+    // Generate 6-10 character random hex suffix for uniqueness
+    const hexLength = Math.floor(Math.random() * 5) + 6; // Random between 6 and 10
+    const hexBytes = Math.ceil(hexLength / 2);
+    const hexSuffix = Array.from(crypto.getRandomValues(new Uint8Array(hexBytes)))
       .map(b => b.toString(16).padStart(2, '0'))
-      .join('');
-    
+      .join('')
+      .substring(0, hexLength); // Trim to exact length
+
     return `${baseIdentifier}-${hexSuffix}`;
   };
 
