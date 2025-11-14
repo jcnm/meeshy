@@ -28,7 +28,8 @@ import {
   Users,
   Calendar,
   Clock,
-  BarChart
+  BarChart,
+  Edit
 } from 'lucide-react';
 import type { TrackingLink } from '@shared/types/tracking-link';
 import { useI18n } from '@/hooks/useI18n';
@@ -37,6 +38,7 @@ import { useRouter } from 'next/navigation';
 interface ExpandableTrackingLinkCardProps {
   link: TrackingLink;
   onCopy: () => void;
+  onEdit: () => void;
   onToggle: () => void;
   onDelete: () => void;
 }
@@ -44,6 +46,7 @@ interface ExpandableTrackingLinkCardProps {
 export function ExpandableTrackingLinkCard({
   link,
   onCopy,
+  onEdit,
   onToggle,
   onDelete
 }: ExpandableTrackingLinkCardProps) {
@@ -104,6 +107,10 @@ export function ExpandableTrackingLinkCard({
                     <DropdownMenuItem onClick={() => router.push(`/links/tracked/${link.token}`)} className="py-3">
                       <BarChart className="h-4 w-4 mr-3" />
                       <span className="font-medium">{t('tracking.actions.viewStats')}</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={onEdit} className="py-3">
+                      <Edit className="h-4 w-4 mr-3" />
+                      <span className="font-medium">{t('tracking.actions.edit')}</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={onToggle} className="py-3">
                       {link.isActive ? (

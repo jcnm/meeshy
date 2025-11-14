@@ -84,6 +84,7 @@ import { LinkEditModal } from '@/components/links/link-edit-modal';
 import { CreateLinkButton } from '@/components/links/create-link-button';
 import { CreateLinkModalV2 } from '@/components/conversations/create-link-modal';
 import { CreateTrackingLinkModal } from '@/components/links/create-tracking-link-modal';
+import { EditTrackingLinkModal } from '@/components/links/edit-tracking-link-modal';
 import { CreateConversationModal } from '@/components/conversations/create-conversation-modal';
 import { copyToClipboard } from '@/lib/clipboard';
 import { useUser } from '@/stores';
@@ -106,6 +107,7 @@ export default function LinksPage() {
   const [selectedLink, setSelectedLink] = useState<ConversationLink | null>(null);
   const [selectedTrackingLink, setSelectedTrackingLink] = useState<TrackingLink | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showEditTrackingLinkModal, setShowEditTrackingLinkModal] = useState(false);
   const [showCreateConversationModal, setShowCreateConversationModal] = useState(false);
   const [showCreateLinkModal, setShowCreateLinkModal] = useState(false);
   const [showCreateTrackingLinkModal, setShowCreateTrackingLinkModal] = useState(false);
@@ -753,6 +755,10 @@ export default function LinksPage() {
                       key={link.id}
                       link={link}
                       onCopy={() => handleCopyTrackingLink(link.shortUrl)}
+                      onEdit={() => {
+                        setSelectedTrackingLink(link);
+                        setShowEditTrackingLinkModal(true);
+                      }}
                       onToggle={() => handleToggleTrackingLink(link)}
                       onDelete={() => handleDeleteTrackingLink(link)}
                     />
@@ -826,6 +832,21 @@ export default function LinksPage() {
           isOpen={showCreateTrackingLinkModal}
           onClose={() => setShowCreateTrackingLinkModal(false)}
           onLinkCreated={loadTrackingLinks}
+        />
+
+        {/* Modal d'édition de tracking link */}
+        <EditTrackingLinkModal
+          isOpen={showEditTrackingLinkModal}
+          onClose={() => {
+            setShowEditTrackingLinkModal(false);
+            setSelectedTrackingLink(null);
+          }}
+          link={selectedTrackingLink}
+          onSuccess={() => {
+            loadTrackingLinks();
+            setShowEditTrackingLinkModal(false);
+            setSelectedTrackingLink(null);
+          }}
         />
         </div>
       </DashboardLayout>
