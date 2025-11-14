@@ -285,10 +285,32 @@ export class AttachmentService {
       const fullPath = path.join(this.uploadBasePath, videoPath);
 
       return new Promise((resolve, reject) => {
+        // Timeout de 30 secondes pour éviter les blocages sur gros fichiers
+        const timeout = setTimeout(() => {
+          console.warn('[AttachmentService] ⚠️ Timeout ffprobe pour:', videoPath);
+          resolve({
+            duration: 0,
+            width: 0,
+            height: 0,
+            fps: 0,
+            videoCodec: 'unknown',
+            bitrate: 0,
+          });
+        }, 30000);
+
         ffmpeg.ffprobe(fullPath, (err, metadata) => {
+          clearTimeout(timeout);
+
           if (err) {
-            console.error('[AttachmentService] Erreur ffprobe:', err);
-            reject(err);
+            console.error('[AttachmentService] Erreur ffprobe:', err.message);
+            resolve({
+              duration: 0,
+              width: 0,
+              height: 0,
+              fps: 0,
+              videoCodec: 'unknown',
+              bitrate: 0,
+            });
             return;
           }
 
@@ -324,7 +346,7 @@ export class AttachmentService {
         });
       });
     } catch (error) {
-      console.error('[AttachmentService] Erreur extraction métadonnées vidéo:', {
+      console.warn('[AttachmentService] ⚠️ Erreur extraction métadonnées vidéo:', {
         filePath: videoPath,
         error: error instanceof Error ? error.message : error,
       });
@@ -542,16 +564,19 @@ export class AttachmentService {
         const fileMetadata = metadataMap?.get(i);
         const result = await this.uploadFile(file, userId, isAnonymous, messageId, fileMetadata);
         results.push(result);
+        console.log(`[AttachmentService] ✅ Fichier uploadé avec succès: ${file.filename} (${(file.size / (1024 * 1024)).toFixed(1)}MB)`);
       } catch (error) {
         console.error('[AttachmentService] ❌ Erreur upload fichier:', {
           filename: file.filename,
+          size: `${(file.size / (1024 * 1024)).toFixed(1)}MB`,
           error: error instanceof Error ? error.message : error,
-          stack: error instanceof Error ? error.stack : undefined,
         });
-        // Continuer avec les autres fichiers
+        // Ne pas ajouter le fichier aux résultats si l'upload a échoué
+        // L'erreur sera propagée au client via le tableau results (taille réduite)
       }
     }
 
+    console.log(`[AttachmentService] 📊 Résultat upload: ${results.length}/${files.length} fichier(s) uploadé(s)`);
 
     return results;
   }

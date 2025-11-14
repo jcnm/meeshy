@@ -187,7 +187,15 @@ export class AuthMiddleware {
       };
 
     } catch (error) {
-      console.error('[UnifiedAuth] JWT validation failed:', error);
+      // Logging maîtrisé selon le type d'erreur JWT
+      if (error instanceof jwt.TokenExpiredError) {
+        console.warn('[UnifiedAuth] JWT expiré:', new Date(error.expiredAt).toISOString());
+      } else if (error instanceof jwt.JsonWebTokenError) {
+        console.warn('[UnifiedAuth] JWT invalide:', error.message);
+      } else {
+        // Erreurs inattendues uniquement
+        console.error('[UnifiedAuth] Erreur JWT inattendue:', error);
+      }
       throw new Error('Invalid JWT token');
     }
   }
@@ -272,7 +280,8 @@ export class AuthMiddleware {
       };
 
     } catch (error) {
-      console.error('[UnifiedAuth] Session token validation failed:', error);
+      // Logging maîtrisé pour les tokens de session
+      console.warn('[UnifiedAuth] Session token invalide ou participant inactif');
       throw new Error('Invalid session token');
     }
   }
@@ -356,15 +365,17 @@ export function createUnifiedAuthMiddleware(
 
 
     } catch (error) {
-      console.error('[UnifiedAuth] Authentication failed:', error);
-      
+      // Logging maîtrisé - éviter les stack traces complètes
+      const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
+      console.warn('[UnifiedAuth] Échec authentification:', errorMessage);
+
       if (options.requireAuth) {
         return reply.status(401).send({
-          error: error instanceof Error ? error.message : 'Authentication failed',
+          error: errorMessage,
           code: 'AUTH_FAILED'
         });
       }
-      
+
       // Si l'auth n'est pas requise, continuer avec contexte non authentifié
       const authMiddleware = new AuthMiddleware(prisma);
       (request as UnifiedAuthRequest).authContext = await authMiddleware.createAuthContext();
