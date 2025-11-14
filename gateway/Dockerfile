@@ -86,6 +86,7 @@ RUN apk add --no-cache \
         python3 \
         make \
         g++ \
+        ffmpeg \
     && corepack enable pnpm \
     && corepack prepare pnpm@${PNPM_VERSION} --activate \
     && addgroup -g 1001 -S nodejs \
