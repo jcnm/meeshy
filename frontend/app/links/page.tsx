@@ -8,11 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Link2, 
-  Search, 
-  Calendar, 
-  Users, 
+import {
+  Link2,
+  Search,
+  Calendar,
+  Users,
   Activity,
   MoreVertical,
   Eye,
@@ -30,7 +30,8 @@ import {
   AlertCircle,
   Zap,
   ExternalLink,
-  MousePointerClick
+  MousePointerClick,
+  ChevronDown
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -716,9 +717,6 @@ export default function LinksPage() {
         ) : (
           /* Tracking Links Content */
           <div className="space-y-6">
-            {(() => {
-              return null;
-            })()}
             {isLoading ? (
               <Card className="border-2 bg-white dark:bg-gray-950">
                 <CardContent className="flex flex-col items-center justify-center py-16">
