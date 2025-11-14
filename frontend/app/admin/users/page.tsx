@@ -10,7 +10,8 @@ import { Input } from '@/components/ui/input';
 import {
   Users, ArrowLeft, UserPlus, Search, ChevronLeft, ChevronRight,
   Eye, Ghost, Crown, Shield, User as UserIcon, Activity, TrendingUp,
-  Clock, Mail, Calendar, RefreshCw
+  Clock, Mail, Calendar, RefreshCw, Trophy, Award, Medal, Target,
+  MessageSquare, MessageCircle, Heart, AtSign
 } from 'lucide-react';
 import { adminService } from '@/services/admin.service';
 import type { User } from '@/services/admin.service';
@@ -44,6 +45,10 @@ export default function AdminUsersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize, setPageSize] = useState(20);
+
+  // Filtres de classement
+  const [rankingPeriod, setRankingPeriod] = useState<'week' | 'month' | 'quarter' | 'semester' | 'year'>('week');
+  const [rankingMetric, setRankingMetric] = useState<'messages' | 'conversations' | 'reactionsGiven' | 'reactionsReceived' | 'mentions'>('messages');
 
   // Debounce pour la recherche
   useEffect(() => {
@@ -181,6 +186,95 @@ export default function AdminUsersPage() {
     }
   };
 
+  // Fonctions pour le classement
+  const getPeriodLabel = (period: string) => {
+    const labels: Record<string, string> = {
+      'week': 'Cette semaine',
+      'month': 'Ce mois',
+      'quarter': 'Ce trimestre',
+      'semester': 'Ce semestre',
+      'year': 'Cette année'
+    };
+    return labels[period] || period;
+  };
+
+  const getMetricLabel = (metric: string) => {
+    const labels: Record<string, string> = {
+      'messages': 'Messages envoyés',
+      'conversations': 'Conversations créées',
+      'reactionsGiven': 'Réactions données',
+      'reactionsReceived': 'Réactions reçues',
+      'mentions': 'Mentions'
+    };
+    return labels[metric] || metric;
+  };
+
+  const getMetricIcon = (metric: string) => {
+    const icons: Record<string, any> = {
+      'messages': MessageSquare,
+      'conversations': MessageCircle,
+      'reactionsGiven': Heart,
+      'reactionsReceived': Heart,
+      'mentions': AtSign
+    };
+    return icons[metric] || Target;
+  };
+
+  const getRankIcon = (rank: number) => {
+    if (rank === 1) return Trophy;
+    if (rank === 2) return Award;
+    if (rank === 3) return Medal;
+    return null;
+  };
+
+  const getRankColor = (rank: number) => {
+    if (rank === 1) return 'text-yellow-500';
+    if (rank === 2) return 'text-gray-400';
+    if (rank === 3) return 'text-orange-600';
+    return 'text-muted-foreground';
+  };
+
+  // Générer des données de classement (mock - à remplacer par de vraies données)
+  const generateRankingData = () => {
+    const names = [
+      'Alice Martin', 'Bob Dubois', 'Charlie Lefèvre', 'Diana Moreau', 'Étienne Petit',
+      'Fanny Girard', 'Gabriel Roux', 'Hélène Lambert', 'Igor Rousseau', 'Julie Simon',
+      'Kevin Blanchard', 'Laura Mercier', 'Marc Fontaine', 'Nina Gauthier', 'Oscar Dupuis'
+    ];
+
+    const multipliers: Record<string, number> = {
+      'week': 1,
+      'month': 4,
+      'quarter': 12,
+      'semester': 24,
+      'year': 48
+    };
+
+    const baseValues: Record<string, number> = {
+      'messages': 50,
+      'conversations': 5,
+      'reactionsGiven': 30,
+      'reactionsReceived': 25,
+      'mentions': 10
+    };
+
+    const multiplier = multipliers[rankingPeriod];
+    const baseValue = baseValues[rankingMetric];
+
+    return names
+      .map((name, index) => ({
+        rank: index + 1,
+        userId: `user-${index}`,
+        name,
+        value: Math.floor((baseValue * multiplier) * (1 - index * 0.12) + Math.random() * 20),
+        trend: Math.random() > 0.5 ? Math.floor(Math.random() * 20) : -Math.floor(Math.random() * 15),
+        role: index < 2 ? 'ADMIN' : index < 5 ? 'MODO' : 'USER'
+      }))
+      .sort((a, b) => b.value - a.value)
+      .map((item, index) => ({ ...item, rank: index + 1 }))
+      .slice(0, 15);
+  };
+
   // Statistiques avancées
   const advancedStats: StatItem[] = [
     {
@@ -289,6 +383,178 @@ export default function AdminUsersPage() {
             />
           )}
         </div>
+
+        {/* Classement des utilisateurs */}
+        <Card className="border-2 border-purple-500/20 shadow-lg">
+          <CardHeader className="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-t-lg">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <CardTitle className="flex items-center gap-2">
+                <Trophy className="h-6 w-6" />
+                <span>Classement des utilisateurs</span>
+              </CardTitle>
+
+              {/* Filtres de classement */}
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <select
+                  className="px-3 py-2 border rounded-md text-sm bg-white text-gray-900 font-medium"
+                  value={rankingPeriod}
+                  onChange={(e) => setRankingPeriod(e.target.value as any)}
+                >
+                  <option value="week">Cette semaine</option>
+                  <option value="month">Ce mois</option>
+                  <option value="quarter">Ce trimestre</option>
+                  <option value="semester">Ce semestre</option>
+                  <option value="year">Cette année</option>
+                </select>
+                <select
+                  className="px-3 py-2 border rounded-md text-sm bg-white text-gray-900 font-medium"
+                  value={rankingMetric}
+                  onChange={(e) => setRankingMetric(e.target.value as any)}
+                >
+                  <option value="messages">Messages envoyés</option>
+                  <option value="conversations">Conversations créées</option>
+                  <option value="reactionsGiven">Réactions données</option>
+                  <option value="reactionsReceived">Réactions reçues</option>
+                  <option value="mentions">Mentions</option>
+                </select>
+              </div>
+            </div>
+            <p className="text-purple-100 text-sm mt-2">
+              Classement basé sur {getMetricLabel(rankingMetric).toLowerCase()} - {getPeriodLabel(rankingPeriod)}
+            </p>
+          </CardHeader>
+
+          <CardContent className="p-6">
+            {/* Graphique de classement */}
+            <div className="mb-6">
+              <h4 className="text-sm font-semibold text-muted-foreground mb-4 flex items-center gap-2">
+                {React.createElement(getMetricIcon(rankingMetric), { className: 'h-4 w-4' })}
+                Top 15 - {getMetricLabel(rankingMetric)}
+              </h4>
+              <div className="space-y-3">
+                {generateRankingData().slice(0, 10).map((item) => {
+                  const maxValue = generateRankingData()[0]?.value || 1;
+                  const percentage = (item.value / maxValue) * 100;
+                  const RankIcon = getRankIcon(item.rank);
+
+                  return (
+                    <div key={item.userId} className="space-y-1">
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <span className={`font-bold w-6 text-right flex-shrink-0 ${getRankColor(item.rank)}`}>
+                            {item.rank}
+                          </span>
+                          {RankIcon && <RankIcon className={`h-4 w-4 flex-shrink-0 ${getRankColor(item.rank)}`} />}
+                          <span className="font-medium truncate">
+                            <SensitiveText fallback="••••••">
+                              {item.name}
+                            </SensitiveText>
+                          </span>
+                          <Badge variant={getRoleBadgeVariant(item.role)} className="text-xs flex-shrink-0">
+                            {getRoleLabel(item.role)}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <span className="font-bold text-purple-600 dark:text-purple-400">
+                            {item.value.toLocaleString()}
+                          </span>
+                          {item.trend !== 0 && (
+                            <Badge
+                              variant="outline"
+                              className={`text-xs ${item.trend > 0 ? 'text-green-600 border-green-600' : 'text-red-600 border-red-600'}`}
+                            >
+                              {item.trend > 0 ? '+' : ''}{item.trend}%
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      <div className="relative h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <div
+                          className="absolute top-0 left-0 h-full bg-gradient-to-r from-purple-500 to-blue-500 rounded-full transition-all duration-500"
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Table détaillée du classement */}
+            <div className="border-t pt-6">
+              <h4 className="text-sm font-semibold text-muted-foreground mb-4">
+                Classement complet
+              </h4>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-muted/50">
+                    <tr>
+                      <th className="text-left p-3 text-sm font-semibold w-16">Rang</th>
+                      <th className="text-left p-3 text-sm font-semibold">Utilisateur</th>
+                      <th className="text-left p-3 text-sm font-semibold">Rôle</th>
+                      <th className="text-right p-3 text-sm font-semibold">{getMetricLabel(rankingMetric)}</th>
+                      <th className="text-center p-3 text-sm font-semibold">Tendance</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {generateRankingData().map((item) => {
+                      const RankIcon = getRankIcon(item.rank);
+                      return (
+                        <tr key={item.userId} className="hover:bg-muted/30 transition-colors">
+                          <td className="p-3">
+                            <div className={`flex items-center justify-center gap-1 font-bold ${getRankColor(item.rank)}`}>
+                              {RankIcon && <RankIcon className="h-4 w-4" />}
+                              <span>{item.rank}</span>
+                            </div>
+                          </td>
+                          <td className="p-3">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
+                                {item.name[0]}
+                              </div>
+                              <span className="font-medium">
+                                <SensitiveText fallback="••••••">
+                                  {item.name}
+                                </SensitiveText>
+                              </span>
+                            </div>
+                          </td>
+                          <td className="p-3">
+                            <Badge variant={getRoleBadgeVariant(item.role)}>
+                              {getRoleLabel(item.role)}
+                            </Badge>
+                          </td>
+                          <td className="p-3 text-right">
+                            <span className="font-bold text-lg text-purple-600 dark:text-purple-400">
+                              {item.value.toLocaleString()}
+                            </span>
+                          </td>
+                          <td className="p-3 text-center">
+                            {item.trend !== 0 ? (
+                              <Badge
+                                variant="outline"
+                                className={`${item.trend > 0 ? 'text-green-600 border-green-600' : 'text-red-600 border-red-600'}`}
+                              >
+                                {item.trend > 0 ? (
+                                  <TrendingUp className="h-3 w-3 mr-1 inline" />
+                                ) : (
+                                  <Activity className="h-3 w-3 mr-1 inline" />
+                                )}
+                                {item.trend > 0 ? '+' : ''}{item.trend}%
+                              </Badge>
+                            ) : (
+                              <span className="text-muted-foreground">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Liste des utilisateurs */}
         <Card>
