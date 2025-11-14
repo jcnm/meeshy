@@ -22,7 +22,13 @@ import {
   X,
   Sun,
   Moon,
-  Laptop
+  Laptop,
+  MessageSquare,
+  Link2,
+  Globe,
+  Flag,
+  UserCheck,
+  UserPlus
 } from 'lucide-react';
 import { PermissionsService } from '@/services/permissions.service';
 import { toast } from 'sonner';
@@ -33,6 +39,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
+import { SensitiveText } from '@/components/admin/privacy/SensitiveText';
+import { PrivacyToggle, PrivacyModeIndicator } from '@/components/admin/privacy/PrivacyToggle';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -74,39 +82,75 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage }) => {
   const navigationItems = [
     {
       icon: BarChart3,
-      label: 'Tableau de bord',
+      label: 'Dashboard',
       href: '/admin',
       permission: 'canAccessAdmin',
     },
     {
+      icon: BarChart3,
+      label: 'Analytics',
+      href: '/admin/analytics',
+      permission: 'canViewAnalytics',
+    },
+    {
       icon: Users,
-      label: 'Gestion utilisateurs',
+      label: 'Utilisateurs',
       href: '/admin/users',
       permission: 'canManageUsers',
+    },
+    {
+      icon: UserCheck,
+      label: 'Anonymes',
+      href: '/admin/anonymous-users',
+      permission: 'canAccessAdmin',
+    },
+    {
+      icon: MessageSquare,
+      label: 'Messages',
+      href: '/admin/messages',
+      permission: 'canAccessAdmin',
+    },
+    {
+      icon: Users,
+      label: 'Communautés',
+      href: '/admin/communities',
+      permission: 'canAccessAdmin',
+    },
+    {
+      icon: Globe,
+      label: 'Traductions',
+      href: '/admin/translations',
+      permission: 'canManageTranslations',
+    },
+    {
+      icon: Link2,
+      label: 'Liens partagés',
+      href: '/admin/share-links',
+      permission: 'canAccessAdmin',
+    },
+    {
+      icon: Flag,
+      label: 'Signalements',
+      href: '/admin/reports',
+      permission: 'canModerateContent',
+    },
+    {
+      icon: UserPlus,
+      label: 'Invitations',
+      href: '/admin/invitations',
+      permission: 'canAccessAdmin',
+    },
+    {
+      icon: Globe,
+      label: 'Langues',
+      href: '/admin/languages',
+      permission: 'canAccessAdmin',
     },
     {
       icon: Shield,
       label: 'Modération',
       href: '/admin/moderation',
       permission: 'canModerateContent',
-    },
-    {
-      icon: FileText,
-      label: 'Logs d\'audit',
-      href: '/admin/audit',
-      permission: 'canViewAuditLogs',
-    },
-    {
-      icon: BarChart3,
-      label: 'Analyses',
-      href: '/admin/analytics',
-      permission: 'canViewAnalytics',
-    },
-    {
-      icon: Settings,
-      label: 'Paramètres système',
-      href: '/admin/settings',
-      permission: 'canManageTranslations',
     },
   ];
 
@@ -190,19 +234,21 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage }) => {
             </div>
           </div>
 
-          {/* User Info */}
-          <div className="p-4 border-b">
+          {/* User Info - Données sensibles masquées par défaut */}
+          <div className="p-4 border-b dark:border-gray-700">
             <div className={`flex items-center space-x-3 ${!isSidebarOpen && 'justify-center'}`}>
-              <Avatar className="w-10 h-10">
-                <AvatarImage src={user.avatar} alt={user.displayName || user.username} />
-                <AvatarFallback>
-                  {(user.displayName || user.username).slice(0, 2).toUpperCase()}
+              <Avatar className="w-10 h-10 ring-2 ring-purple-500/20">
+                <AvatarImage src={user.avatar} alt="Admin" />
+                <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-600 text-white">
+                  {getRoleIcon(user.role)}
                 </AvatarFallback>
               </Avatar>
               {isSidebarOpen && (
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    {user.displayName || user.username}
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                    <SensitiveText fallback="Admin">
+                      {user.displayName || user.username}
+                    </SensitiveText>
                   </p>
                   <Badge className={`text-xs ${getRoleColor(user.role)}`}>
                     {getRoleIcon(user.role)} {user.role}
@@ -288,7 +334,11 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage }) => {
                 </div>
               </div>
 
-              <div className="flex items-center space-x-2 sm:space-x-4">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                {/* Privacy Mode Indicator & Toggle */}
+                <PrivacyModeIndicator />
+                <PrivacyToggle />
+
                 {/* Dark Mode Toggle */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -314,10 +364,11 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage }) => {
                   </DropdownMenuContent>
                 </DropdownMenu>
 
-                <Badge variant="outline" className="text-green-600 border-green-200 dark:text-green-400 dark:border-green-800 hidden sm:flex">
+                <Badge variant="outline" className="text-green-600 border-green-200 dark:text-green-400 dark:border-green-800 hidden lg:flex">
+                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
                   En ligne
                 </Badge>
-                <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 hidden md:block">
+                <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 hidden xl:block">
                   {new Date().toLocaleDateString('fr-FR', {
                     weekday: 'long',
                     year: 'numeric',
