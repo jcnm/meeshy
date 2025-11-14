@@ -8,6 +8,7 @@ import { useConversationMessages } from '@/hooks/use-conversation-messages';
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { useConversationsPagination } from '@/hooks/use-conversations-pagination';
 import { useNotifications } from '@/hooks/use-notifications';
+import { useVirtualKeyboard } from '@/hooks/use-virtual-keyboard';
 import { conversationsService } from '@/services/conversations.service';
 import { messageService } from '@/services/message.service';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -169,6 +170,9 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   }, [isResizing]);
   const [isMobile, setIsMobile] = useState(false);
   const [showConversationList, setShowConversationList] = useState(true);
+
+  // Gérer le clavier virtuel sur mobile
+  const keyboardState = useVirtualKeyboard();
   const [newMessage, setNewMessage] = useState('');
 
   // État pour les attachments
@@ -1500,8 +1504,13 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       {/* Mode mobile avec conversation ouverte - Layout plein écran */}
       {isMobile && selectedConversation ? (
         <div className="fixed inset-0 z-50 flex flex-col bg-white dark:bg-gray-950 overflow-hidden">
-          {/* Header de conversation */}
-          <header className="flex-shrink-0 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 shadow-md border-b-2 border-gray-200 dark:border-gray-700">
+          {/* Header de conversation - Réduit quand clavier ouvert pour garder composer visible */}
+          <header
+            className={cn(
+              "flex-shrink-0 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 shadow-md border-b-2 border-gray-200 dark:border-gray-700 transition-all duration-300",
+              keyboardState.isOpen && "max-h-14 overflow-hidden" // Réduire header quand clavier ouvert
+            )}
+          >
             <ConversationHeader
               conversation={selectedConversation}
               currentUser={user}

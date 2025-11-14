@@ -621,6 +621,41 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     }
   }, [onKeyPress]);
 
+  // Gérer le focus sur mobile - scroller le textarea dans la vue quand le clavier s'ouvre
+  useEffect(() => {
+    if (!isMobile || !textareaRef.current) return;
+
+    const textarea = textareaRef.current;
+
+    const handleFocus = () => {
+      // Petit délai pour laisser le clavier s'ouvrir
+      setTimeout(() => {
+        // Scroller le textarea dans la vue
+        textarea.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+          inline: 'nearest'
+        });
+
+        // Sur iOS, forcer un scroll supplémentaire pour compenser le comportement du clavier
+        if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+          setTimeout(() => {
+            window.scrollTo({
+              top: window.scrollY + 50,
+              behavior: 'smooth'
+            });
+          }, 300);
+        }
+      }, 300);
+    };
+
+    textarea.addEventListener('focus', handleFocus);
+
+    return () => {
+      textarea.removeEventListener('focus', handleFocus);
+    };
+  }, [isMobile]);
+
   // Handle blur for mobile to ensure zoom out - mémorisé
   const handleBlur = useCallback(() => {
     if (isMobile && textareaRef.current) {
