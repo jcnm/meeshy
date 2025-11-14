@@ -573,8 +573,12 @@ export class NotificationService {
         messagePreview = this.truncateMessage(commonData.messageContent, 20);
       }
 
-      const conversationName = commonData.conversationTitle || 'une conversation';
-      const title = `${commonData.senderUsername} vous a mentionné dans "${conversationName}"`;
+      // Déterminer le titre selon le nombre de mentions
+      // Si plusieurs utilisateurs mentionnés: "XXX vous a mentionné au côtés d'autres"
+      // Sinon: "XXX vous a mentionné"
+      const title = mentionedUserIds.length > 1
+        ? `${commonData.senderUsername} vous a mentionné au côtés d'autres`
+        : `${commonData.senderUsername} vous a mentionné`;
 
       // Filtrer les utilisateurs qui ont dépassé le rate limit
       const validMentionedUserIds: string[] = [];
@@ -785,9 +789,8 @@ export class NotificationService {
       messagePreview = this.truncateMessage(data.messageContent, 20);
     }
 
-    // Titre: "@username vous a mentionné dans "Titre de conversation""
-    const conversationName = data.conversationTitle || 'une conversation';
-    const title = `${data.senderUsername} vous a mentionné dans "${conversationName}"`;
+    // Titre simplifié (conversation name déjà dans timestamp)
+    const title = `${data.senderUsername} vous a mentionné`;
 
     // Déterminer le contenu et les données selon si l'utilisateur est membre
     let content: string;
