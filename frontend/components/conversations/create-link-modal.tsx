@@ -21,18 +21,18 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { copyToClipboard } from '@/lib/clipboard';
 import { toast } from 'sonner';
-import { 
-  Link2, 
-  Copy, 
-  Calendar, 
-  Clock, 
-  Shield, 
-  Globe, 
-  Users, 
-  MessageSquare, 
-  Settings, 
-  Eye, 
-  FileText, 
+import {
+  Link2,
+  Copy,
+  Calendar,
+  Clock,
+  Shield,
+  Globe,
+  Users,
+  MessageSquare,
+  Settings,
+  Eye,
+  FileText,
   Image,
   ChevronRight,
   ChevronLeft,
@@ -46,9 +46,11 @@ import {
   Check,
   RefreshCw,
   Info,
-  ChevronDown
+  ChevronDown,
+  X
 } from 'lucide-react';
 import { conversationsService } from '@/services/conversations.service';
+import { apiService } from '@/services/api.service';
 import { Conversation } from '@shared/types';
 import { User } from '@shared/types';
 import { useI18n } from '@/hooks/useI18n';
@@ -259,6 +261,11 @@ export function CreateLinkModalV2({
   // Debounce pour la recherche d'utilisateurs
   const [userSearchDebounce, setUserSearchDebounce] = useState<NodeJS.Timeout | null>(null);
 
+  // Link identifier availability check states
+  const [isCheckingLinkIdentifier, setIsCheckingLinkIdentifier] = useState(false);
+  const [linkIdentifierAvailable, setLinkIdentifierAvailable] = useState<boolean | null>(null);
+  const [linkIdentifierCheckMessage, setLinkIdentifierCheckMessage] = useState<string>('');
+
   // Effet pour initialiser les liens pré-générés
   useEffect(() => {
     if (isOpen && preGeneratedLink && preGeneratedToken) {
@@ -291,6 +298,46 @@ export function CreateLinkModalV2({
 
     return `${baseIdentifier}-${hexSuffix}`;
   };
+
+  // Validation function for link identifier
+  const validateLinkIdentifier = (identifier: string): boolean => {
+    const regex = /^[a-zA-Z0-9\-_@]+$/;
+    return regex.test(identifier);
+  };
+
+  // Check link identifier availability
+  const checkLinkIdentifierAvailability = useCallback(async (identifier: string) => {
+    if (!identifier || !identifier.trim() || !validateLinkIdentifier(identifier)) {
+      setLinkIdentifierAvailable(null);
+      setLinkIdentifierCheckMessage('');
+      return;
+    }
+
+    setIsCheckingLinkIdentifier(true);
+    setLinkIdentifierCheckMessage('');
+
+    try {
+      const response = await apiService.get<{ success: boolean; available: boolean; identifier: string }>(
+        `/api/links/check-identifier/${encodeURIComponent(identifier)}`
+      );
+
+      if (response.data.success) {
+        const available = response.data.available;
+        setLinkIdentifierAvailable(available);
+        setLinkIdentifierCheckMessage(
+          available
+            ? '✓ Identifiant disponible'
+            : '✗ Identifiant déjà utilisé'
+        );
+      }
+    } catch (error) {
+      console.error('Error checking link identifier availability:', error);
+      setLinkIdentifierAvailable(null);
+      setLinkIdentifierCheckMessage('Erreur lors de la vérification');
+    } finally {
+      setIsCheckingLinkIdentifier(false);
+    }
+  }, []);
 
   // Charger les conversations disponibles
   const loadConversations = useCallback(async () => {
@@ -378,6 +425,22 @@ export function CreateLinkModalV2({
       }
     };
   }, [userSearchQuery, loadUsers]);
+
+  // Check link identifier availability with debounce
+  useEffect(() => {
+    if (!linkIdentifier || !linkIdentifier.trim()) {
+      setLinkIdentifierAvailable(null);
+      setLinkIdentifierCheckMessage('');
+      return;
+    }
+
+    // Debounce the check to avoid too many API calls
+    const timer = setTimeout(() => {
+      checkLinkIdentifierAvailability(linkIdentifier);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [linkIdentifier, checkLinkIdentifierAvailability]);
 
   // Générer le lien
   const generateLink = async () => {
@@ -589,6 +652,14 @@ export function CreateLinkModalV2({
     if (!createNewConversation) {
       const selectedConv = conversations.find(c => c.id === selectedConversationId);
       if (!selectedConv?.title) return false;
+    }
+
+    // Vérifier la disponibilité de l'identifiant du lien
+    if (linkIdentifier && linkIdentifier.trim()) {
+      // Si l'identifiant est invalide ou en cours de vérification, empêcher la création
+      if (!validateLinkIdentifier(linkIdentifier)) return false;
+      if (isCheckingLinkIdentifier) return false;
+      if (linkIdentifierAvailable === false) return false;
     }
 
     return true;
@@ -1215,6 +1286,27 @@ export function CreateLinkModalV2({
                 <RefreshCw className="h-4 w-4" />
               </Button>
             </div>
+            {/* Link identifier availability indicator */}
+            {linkIdentifier && validateLinkIdentifier(linkIdentifier) && (
+              <div className="mt-2">
+                {isCheckingLinkIdentifier ? (
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <span className="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+                    Vérification...
+                  </p>
+                ) : linkIdentifierAvailable === true ? (
+                  <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+                    <Check className="h-3 w-3" />
+                    {linkIdentifierCheckMessage}
+                  </p>
+                ) : linkIdentifierAvailable === false ? (
+                  <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                    <X className="h-3 w-3" />
+                    {linkIdentifierCheckMessage}
+                  </p>
+                ) : null}
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
