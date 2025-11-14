@@ -1,5 +1,6 @@
 import { buildApiUrl } from '@/lib/config';
 import { authManager } from './auth-manager.service';
+import { authService } from './auth.service';
 
 interface ApiConfig {
   timeout: number;
@@ -32,6 +33,9 @@ class ApiServiceError extends Error {
 
 class ApiService {
   private config: ApiConfig;
+  private refreshPromise: Promise<boolean> | null = null;
+  private isRefreshing = false;
+
   constructor(config: Partial<ApiConfig> = {}) {
     this.config = {
       timeout: 15000, // 15 seconds - augmenté pour les requêtes complexes (conversations, traductions)
@@ -42,10 +46,87 @@ class ApiService {
     };
   }
 
+  /**
+   * Vérifie si le token est proche de l'expiration (dans les 5 minutes)
+   * et le rafraîchit préventivement si nécessaire
+   */
+  private async ensureTokenFresh(): Promise<void> {
+    const token = authManager.getAuthToken();
+    if (!token) return;
+
+    // Vérifier si le token expire bientôt (dans les 5 minutes)
+    const payload = authManager.decodeJWT(token);
+    if (!payload || !payload.exp) return;
+
+    const now = Math.floor(Date.now() / 1000);
+    const expiresIn = payload.exp - now;
+
+    // Si le token expire dans moins de 5 minutes, le rafraîchir
+    if (expiresIn < 300) {
+      console.log('[API_SERVICE] Token expires soon, refreshing...');
+      await this.refreshAuthToken();
+    }
+  }
+
+  /**
+   * Rafraîchit le token d'authentification
+   * Utilise un pattern pour éviter les refreshs multiples simultanés
+   */
+  private async refreshAuthToken(): Promise<boolean> {
+    // Si un refresh est déjà en cours, attendre sa fin
+    if (this.isRefreshing && this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    this.isRefreshing = true;
+    this.refreshPromise = (async () => {
+      try {
+        const response = await authService.refreshToken();
+
+        if (response.success) {
+          console.log('[API_SERVICE] Token refreshed successfully');
+          return true;
+        }
+
+        console.warn('[API_SERVICE] Token refresh failed, logging out...');
+        // Si le refresh échoue, déconnecter l'utilisateur
+        authManager.clearAllSessions();
+
+        // Rediriger vers la page de connexion
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login?expired=true';
+        }
+
+        return false;
+      } catch (error) {
+        console.error('[API_SERVICE] Token refresh error:', error);
+        // En cas d'erreur, déconnecter l'utilisateur
+        authManager.clearAllSessions();
+
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login?expired=true';
+        }
+
+        return false;
+      } finally {
+        this.isRefreshing = false;
+        this.refreshPromise = null;
+      }
+    })();
+
+    return this.refreshPromise;
+  }
+
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    isRetry = false
   ): Promise<ApiResponse<T>> {
+    // Vérifier et rafraîchir le token si nécessaire (sauf pour les endpoints d'auth)
+    if (!endpoint.includes('/auth/') && !endpoint.includes('/anonymous/')) {
+      await this.ensureTokenFresh();
+    }
+
     const url = buildApiUrl(endpoint);
 
     // Get token from AuthManager (source unique de vérité)
@@ -88,6 +169,26 @@ class ApiService {
           `Erreur serveur (${response.status}): ${text || 'Réponse invalide'}`,
           response.status,
           'PARSE_ERROR'
+        );
+      }
+
+      // Intercepter les erreurs 401 (Unauthorized) et tenter un refresh
+      if (response.status === 401 && !isRetry && !endpoint.includes('/auth/')) {
+        console.log('[API_SERVICE] 401 Unauthorized, attempting token refresh...');
+
+        const refreshed = await this.refreshAuthToken();
+
+        if (refreshed) {
+          // Réessayer la requête avec le nouveau token
+          console.log('[API_SERVICE] Token refreshed, retrying request...');
+          return this.request<T>(endpoint, options, true);
+        }
+
+        // Si le refresh échoue, laisser l'erreur se propager
+        throw new ApiServiceError(
+          'Session expirée, veuillez vous reconnecter',
+          401,
+          'TOKEN_EXPIRED'
         );
       }
 

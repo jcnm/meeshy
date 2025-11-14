@@ -103,7 +103,7 @@ class AuthService {
    */
   async logout(): Promise<void> {
     try {
-      const token = this.getToken();
+      const token = authManager.getAuthToken();
       if (token) {
         await fetch(buildApiUrl('/auth/logout'), {
           method: 'POST',
