@@ -4,7 +4,7 @@
  * Protects against:
  * - Message spam (max 20 messages/minute)
  * - Mention abuse (max 50 mentions/message, max 5 mentions/minute per recipient)
- * - API abuse (max 100 requests/minute)
+ * - API abuse (max 300 requests/minute)
  */
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
@@ -46,15 +46,21 @@ export async function registerMessageRateLimiter(fastify: FastifyInstance) {
 
 /**
  * Rate limiter global pour toutes les routes API
- * Max 100 requêtes par minute par IP
+ * Max 300 requêtes par minute par IP (augmenté pour permettre l'édition de liens)
  */
 export async function registerGlobalRateLimiter(fastify: FastifyInstance) {
   await fastify.register(rateLimit, {
     global: true,
-    max: 100,
+    max: 300, // Augmenté de 100 à 300 pour l'édition de liens
     timeWindow: '1 minute',
     keyGenerator: (request: FastifyRequest) => {
       return `global:${request.ip}`;
+    },
+    skipOnError: false,
+    skip: (request: FastifyRequest) => {
+      // Exclure les routes de healthcheck/monitoring
+      const path = request.url.split('?')[0]; // Enlever query params
+      return path === '/health' || path === '/healthz' || path === '/ready';
     },
     errorResponseBuilder: (request, context) => {
       return {

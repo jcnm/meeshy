@@ -615,7 +615,7 @@ export async function trackingLinksRoutes(fastify: FastifyInstance) {
 
       // Vérifier que l'utilisateur est le créateur du lien
       const trackingLink = await trackingLinkService.getTrackingLinkByToken(token);
-      
+
       if (!trackingLink) {
         return reply.status(404).send({
           success: false,
@@ -639,6 +639,153 @@ export async function trackingLinksRoutes(fastify: FastifyInstance) {
 
     } catch (error) {
       logError(fastify.log, 'Delete tracking link error:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Erreur interne du serveur'
+      });
+    }
+  });
+
+  /**
+   * 10. Mettre à jour un lien de tracking
+   * PATCH /api/tracking-links/:token
+   */
+  fastify.patch('/tracking-links/:token', {
+    onRequest: [authRequired]
+  }, async (request: UnifiedAuthRequest, reply: FastifyReply) => {
+    try {
+      const { token } = request.params as { token: string };
+      const body = request.body as {
+        originalUrl?: string;
+        expiresAt?: string | null;
+        isActive?: boolean;
+        newToken?: string;
+      };
+
+      if (!isRegisteredUser(request.authContext)) {
+        return reply.status(403).send({
+          success: false,
+          error: 'Utilisateur enregistré requis'
+        });
+      }
+
+      const userId = request.authContext.registeredUser!.id;
+
+      // Vérifier que l'utilisateur est le créateur du lien
+      const trackingLink = await trackingLinkService.getTrackingLinkByToken(token);
+
+      if (!trackingLink) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Lien de tracking non trouvé'
+        });
+      }
+
+      if (trackingLink.createdBy && trackingLink.createdBy !== userId) {
+        return reply.status(403).send({
+          success: false,
+          error: 'Seul le créateur peut modifier ce lien'
+        });
+      }
+
+      // Valider le nouveau token si fourni (6 caractères alphanumériques)
+      if (body.newToken && !/^[a-zA-Z0-9]{6}$/.test(body.newToken)) {
+        return reply.status(400).send({
+          success: false,
+          error: 'Le token doit contenir exactement 6 caractères alphanumériques'
+        });
+      }
+
+      // Valider l'URL si fournie
+      if (body.originalUrl) {
+        try {
+          new URL(body.originalUrl);
+        } catch {
+          return reply.status(400).send({
+            success: false,
+            error: 'URL invalide'
+          });
+        }
+      }
+
+      // Mettre à jour le lien
+      const updatedLink = await trackingLinkService.updateTrackingLink({
+        token,
+        originalUrl: body.originalUrl,
+        expiresAt: body.expiresAt === null ? null : (body.expiresAt ? new Date(body.expiresAt) : undefined),
+        isActive: body.isActive,
+        newToken: body.newToken
+      });
+
+      return reply.send({
+        success: true,
+        data: {
+          trackingLink: enrichTrackingLink(updatedLink, request)
+        },
+        message: 'Lien mis à jour avec succès'
+      });
+
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === 'Tracking link not found') {
+          return reply.status(404).send({
+            success: false,
+            error: 'Lien de tracking non trouvé'
+          });
+        }
+        if (error.message === 'Token already exists') {
+          return reply.status(409).send({
+            success: false,
+            error: 'Ce token existe déjà'
+          });
+        }
+      }
+
+      logError(fastify.log, 'Update tracking link error:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Erreur interne du serveur'
+      });
+    }
+  });
+
+  /**
+   * 11. Vérifier la disponibilité d'un token
+   * GET /api/tracking-links/check-token/:token
+   */
+  fastify.get('/tracking-links/check-token/:token', {
+    onRequest: [authRequired]
+  }, async (request: UnifiedAuthRequest, reply: FastifyReply) => {
+    try {
+      const { token } = request.params as { token: string };
+
+      if (!isRegisteredUser(request.authContext)) {
+        return reply.status(403).send({
+          success: false,
+          error: 'Utilisateur enregistré requis'
+        });
+      }
+
+      // Valider le format du token (6 caractères alphanumériques)
+      if (!/^[a-zA-Z0-9]{6}$/.test(token)) {
+        return reply.status(400).send({
+          success: false,
+          error: 'Le token doit contenir exactement 6 caractères alphanumériques'
+        });
+      }
+
+      const isAvailable = await trackingLinkService.isTokenAvailable(token);
+
+      return reply.send({
+        success: true,
+        data: {
+          token,
+          available: isAvailable
+        }
+      });
+
+    } catch (error) {
+      logError(fastify.log, 'Check token availability error:', error);
       return reply.status(500).send({
         success: false,
         error: 'Erreur interne du serveur'

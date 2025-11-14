@@ -372,9 +372,9 @@ class MeeshyServer {
       secret: config.jwtSecret
     });
 
-    // SÉCURITÉ P1.1: Rate limiting global (100 requêtes/min par IP)
+    // SÉCURITÉ P1.1: Rate limiting global (300 requêtes/min par IP)
     await registerGlobalRateLimiter(this.server);
-    logger.info('✅ Global rate limiter configured (100 req/min per IP)');
+    logger.info('✅ Global rate limiter configured (300 req/min per IP)');
 
     // Socket.IO will be configured after server initialization
     // No need to register a plugin as Socket.IO attaches directly to the HTTP server

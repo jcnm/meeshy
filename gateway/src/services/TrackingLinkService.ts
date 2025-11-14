@@ -621,5 +621,61 @@ export class TrackingLinkService {
     });
 
   }
+
+  /**
+   * Met à jour un lien de tracking
+   */
+  async updateTrackingLink(params: {
+    token: string;
+    originalUrl?: string;
+    expiresAt?: Date | null;
+    isActive?: boolean;
+    newToken?: string;
+  }): Promise<TrackingLink> {
+    const trackingLink = await this.getTrackingLinkByToken(params.token);
+
+    if (!trackingLink) {
+      throw new Error('Tracking link not found');
+    }
+
+    // Si un nouveau token est fourni, vérifier qu'il n'existe pas déjà
+    if (params.newToken && params.newToken !== params.token) {
+      const existingWithNewToken = await this.tokenExists(params.newToken);
+      if (existingWithNewToken) {
+        throw new Error('Token already exists');
+      }
+    }
+
+    // Mettre à jour le lien
+    const updateData: any = {};
+
+    if (params.originalUrl !== undefined) {
+      updateData.originalUrl = params.originalUrl;
+    }
+    if (params.expiresAt !== undefined) {
+      updateData.expiresAt = params.expiresAt;
+    }
+    if (params.isActive !== undefined) {
+      updateData.isActive = params.isActive;
+    }
+    if (params.newToken && params.newToken !== params.token) {
+      updateData.token = params.newToken;
+      updateData.shortUrl = `/l/${params.newToken}`;
+    }
+
+    const updatedLink = await this.prisma.trackingLink.update({
+      where: { token: params.token },
+      data: updateData
+    });
+
+    return updatedLink as TrackingLink;
+  }
+
+  /**
+   * Vérifie si un token est disponible
+   */
+  async isTokenAvailable(token: string): Promise<boolean> {
+    return !(await this.tokenExists(token));
+  }
 }
 
