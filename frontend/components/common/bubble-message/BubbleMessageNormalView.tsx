@@ -63,6 +63,7 @@ import type { BubbleMessage, MessageTranslation, MessageVersion, MessageSender, 
 import { MessageActionsBar } from './MessageActionsBar';
 import { getAttachmentType } from '@shared/types/attachment';
 import { LanguageSelectionMessageView } from './LanguageSelectionMessageView';
+import { ImageLightbox } from '@/components/attachments/ImageLightbox';
 
 interface BubbleMessageNormalViewProps {
   message: Omit<Message, 'translations'> & {
@@ -135,6 +136,9 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
   const [hoveredEmoji, setHoveredEmoji] = useState<string | null>(null);
   const [deletedAttachmentIds, setDeletedAttachmentIds] = useState<string[]>([]);
   const messageRef = useRef<HTMLDivElement>(null);
+
+  // État pour le lightbox de l'avatar
+  const [showAvatarLightbox, setShowAvatarLightbox] = useState(false);
 
   // Hook centralisé pour gérer les réactions - sera partagé avec MessageReactions via props
   const messageReactionsHook = useMessageReactions({
@@ -440,8 +444,8 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
               e.stopPropagation();
               const avatarUrl = (message.sender as MessageSender)?.avatar;
               if (avatarUrl) {
-                // Ouvrir l'avatar dans une nouvelle fenêtre pour le voir en grand
-                window.open(avatarUrl, '_blank', 'noopener,noreferrer');
+                // Ouvrir l'avatar dans ImageLightbox au lieu d'une nouvelle fenêtre
+                setShowAvatarLightbox(true);
               }
             }}
           >
@@ -753,6 +757,27 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
         {/* Empty space for received messages (30% = 3 columns) */}
         {!isOwnMessage && <div className="col-span-3" />}
       </motion.div>
+
+      {/* Lightbox pour afficher l'avatar en grand */}
+      {showAvatarLightbox && (message.sender as MessageSender)?.avatar && (
+        <ImageLightbox
+          images={[{
+            id: `avatar-${message.sender?.id}`,
+            messageId: message.id,
+            fileName: 'avatar.jpg',
+            fileUrl: (message.sender as MessageSender).avatar!,
+            originalName: `Avatar de ${message.sender?.firstName || message.sender?.username || 'Utilisateur'}`,
+            mimeType: 'image/jpeg',
+            fileSize: 0,
+            uploadedAt: new Date(),
+            uploadedBy: message.sender?.id || '',
+            conversationId: message.conversationId || ''
+          }]}
+          initialIndex={0}
+          isOpen={showAvatarLightbox}
+          onClose={() => setShowAvatarLightbox(false)}
+        />
+      )}
     </TooltipProvider>
   );
 });

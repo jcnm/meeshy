@@ -205,7 +205,14 @@ export function adjustPositionForViewport(
   lineHeight: number = 24
 ): { top?: number; bottom?: number; left: number } {
   const viewportWidth = window.innerWidth;
-  const viewportHeight = window.innerHeight;
+
+  // Utiliser Visual Viewport API pour obtenir le vrai espace visible
+  // (sans le clavier virtuel sur mobile)
+  const viewportHeight = window.visualViewport?.height || window.innerHeight;
+
+  // Détecter mobile et adapter la hauteur de l'autocomplete
+  const isMobile = window.innerWidth < 768;
+  const effectiveAutocompleteHeight = isMobile ? Math.min(autocompleteHeight, 180) : autocompleteHeight;
 
   // Ajuster la position horizontale
   let adjustedLeft = x;
@@ -222,22 +229,22 @@ export function adjustPositionForViewport(
   const spaceBelow = viewportHeight - yBelow;
   const spaceAbove = y;
 
-  if (spaceBelow >= autocompleteHeight + 10) {
+  if (spaceBelow >= effectiveAutocompleteHeight + 10) {
     // Assez d'espace en dessous - afficher sous la ligne du curseur
     return {
       top: yBelow + 5, // Petit décalage sous la ligne
       left: adjustedLeft
     };
-  } else if (spaceAbove >= autocompleteHeight + 10) {
+  } else if (spaceAbove >= effectiveAutocompleteHeight + 10) {
     // Pas assez d'espace en dessous mais assez au-dessus - afficher au-dessus de la ligne
     return {
-      top: y - autocompleteHeight - 5, // Au-dessus de la ligne du curseur
+      top: y - effectiveAutocompleteHeight - 5, // Au-dessus de la ligne du curseur
       left: adjustedLeft
     };
   } else {
     // Pas assez d'espace des deux côtés - centrer verticalement
     return {
-      top: Math.max(20, (viewportHeight - autocompleteHeight) / 2),
+      top: Math.max(20, (viewportHeight - effectiveAutocompleteHeight) / 2),
       left: adjustedLeft
     };
   }
