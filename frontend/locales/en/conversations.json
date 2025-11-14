@@ -76,7 +76,8 @@
       "all": "All",
       "archived": "Archived",
       "reacted": "Favorites",
-      "pinned": "Pinned"
+      "pinned": "Pinned",
+      "uncategorized": "Uncategorized"
     },
     "replyToMessage": "Reply to message",
     "replyingTo": "Replying to",

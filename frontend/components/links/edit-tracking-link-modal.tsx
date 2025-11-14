@@ -17,6 +17,7 @@ import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import type { TrackingLink } from '@shared/types/tracking-link';
 import { buildApiUrl } from '@/lib/config';
 import { toast } from 'sonner';
+import { authManager } from '@/services/auth-manager.service';
 
 interface EditTrackingLinkModalProps {
   isOpen: boolean;
@@ -62,7 +63,7 @@ export function EditTrackingLinkModal({
       setTokenAvailability('checking');
 
       try {
-        const token = localStorage.getItem('auth_token');
+        const token = authManager.getAuthToken();
         const response = await fetch(buildApiUrl(`/tracking-links/check-token/${newToken}`), {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -119,7 +120,7 @@ export function EditTrackingLinkModal({
     setIsSubmitting(true);
 
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = authManager.getAuthToken();
       const updateData: any = {
         originalUrl: originalUrl.trim(),
         isActive,

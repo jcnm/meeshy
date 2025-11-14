@@ -752,8 +752,9 @@ export function ConversationList({
       }
     });
 
-    // Ajouter le groupe "Uncategorized" si nécessaire
-    if (uncategorized.length > 0) {
+    // Ajouter le groupe "Uncategorized" si des catégories existent
+    // La section est toujours créée si des catégories sont définies, même si elle est vide
+    if (categories.length > 0) {
       groups.push({
         type: 'uncategorized',
         conversations: uncategorized
@@ -910,7 +911,7 @@ export function ConversationList({
               return (
                 <div key={`group-${group.type}-${group.categoryId || groupIndex}`} className="mb-4">
                   {/* Header de section */}
-                  {(group.type === 'pinned' || group.type === 'category') && (
+                  {(group.type === 'pinned' || group.type === 'category' || group.type === 'uncategorized') && (
                     <div
                       className="flex items-center gap-2 px-2 py-1.5 mb-1 cursor-pointer hover:bg-accent/50 rounded-md transition-colors"
                       onClick={() => toggleSection(sectionId)}
@@ -930,6 +931,16 @@ export function ConversationList({
                             hasUnreadMessages && "font-bold text-foreground"
                           )}>
                             {t('conversationsList.pinned') || 'Épinglées'}
+                          </h4>
+                        </>
+                      ) : group.type === 'uncategorized' ? (
+                        <>
+                          <Folder className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <h4 className={cn(
+                            "text-xs font-semibold text-muted-foreground uppercase tracking-wide",
+                            hasUnreadMessages && "font-bold text-foreground"
+                          )}>
+                            {t('conversationsList.uncategorized') || 'Sans catégorie'}
                           </h4>
                         </>
                       ) : (

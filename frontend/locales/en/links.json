@@ -301,6 +301,7 @@
       "actions": {
         "viewStats": "View statistics",
         "copyShortUrl": "Copy short URL",
+        "edit": "Edit",
         "deactivate": "Deactivate",
         "activate": "Activate"
       },
