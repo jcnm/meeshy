@@ -70,7 +70,7 @@ export async function registerGlobalRateLimiter(fastify: FastifyInstance) {
         statusCode: 429
       };
     }
-  });
+  } as any); // Type cast pour contourner limitation typage @fastify/rate-limit
 }
 
 /**
