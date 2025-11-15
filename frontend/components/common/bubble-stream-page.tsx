@@ -115,6 +115,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   const router = useRouter();
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const messageComposerRef = useRef<any>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // Ref pour éviter les reconnexions multiples au montage
@@ -351,8 +352,8 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     });
     
     // Focus sur la zone de saisie
-    if (textareaRef.current) {
-      textareaRef.current.focus();
+    if (messageComposerRef.current) {
+      messageComposerRef.current.focus();
     }
   }, []);
 
@@ -781,9 +782,8 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   // Hook pour les statistiques de traduction de messages
   const { stats: translationStats, incrementTranslationCount } = useMessageTranslation();
   
-  const { 
+  const {
     sendMessage: sendMessageToService,
-    sendMessageWithAttachments: sendMessageWithAttachmentsToService,
     connectionStatus,
     startTyping,
     stopTyping,
@@ -1230,17 +1230,8 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     setAttachmentMimeTypes([]);
     
     // Clear les attachments du composer
-    if (textareaRef.current && (textareaRef.current as any).clearAttachments) {
-      (textareaRef.current as any).clearAttachments();
-    }
-    
-    // Réinitialiser la hauteur du textarea
-    if (textareaRef.current && textareaRef.current.style) {
-      try {
-        textareaRef.current.style.height = 'auto';
-      } catch (error) {
-        console.warn('Erreur lors de la réinitialisation du textarea:', error);
-      }
+    if (messageComposerRef.current && messageComposerRef.current.clearAttachments) {
+      messageComposerRef.current.clearAttachments();
     }
 
     try {
@@ -1266,20 +1257,29 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         };
         
         
-        // Envoyer le message avec ou sans attachments selon le cas
-        if (hasAttachments) {
-        } else {
-        }
-        
-        const sendResult = hasAttachments
-          ? await sendMessageWithAttachmentsToService(messageContent, currentAttachmentIds, attachmentMimeTypes, selectedInputLanguage, replyToId)
-          : await sendMessageToService(messageContent, selectedInputLanguage, replyToId);
+        // Extraire les mentions depuis le composer
+        const mentionedUserIds = messageComposerRef.current?.getMentionedUserIds?.() || [];
+
+        // Envoyer le message (avec ou sans attachments, avec ou sans mentions)
+        const sendResult = await sendMessageToService(
+          messageContent,
+          selectedInputLanguage,
+          replyToId,
+          mentionedUserIds,
+          hasAttachments ? currentAttachmentIds : undefined,
+          hasAttachments ? attachmentMimeTypes : undefined
+        );
         
         if (sendResult) {
           toast.success(tCommon('messages.messageSent'));
-          
+
+          // Clear les mentions du composer après envoi réussi
+          if (messageComposerRef.current && messageComposerRef.current.clearMentionedUserIds) {
+            messageComposerRef.current.clearMentionedUserIds();
+          }
+
           // Log pour le debug - La langue source sera utilisée côté serveur
-          
+
           // Scroll automatique vers le HAUT pour voir le message envoyé (scrollDirection='down')
           // Utiliser plusieurs tentatives pour s'assurer que le scroll fonctionne
           const scrollToTop = () => {
@@ -1580,7 +1580,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
             <div className="z-30 row-start-3 border-t border-gray-200/70 bg-white/98 backdrop-blur-xl shadow-2xl dark:border-gray-700/70 dark:bg-gray-950/98">
               <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
                 <MessageComposer
-                  ref={textareaRef}
+                  ref={messageComposerRef}
                   value={newMessage}
                   onChange={handleTyping}
                   onSend={handleSendMessage}
