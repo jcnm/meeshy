@@ -44,13 +44,12 @@ interface UseMessagingReturn {
   // État d'envoi
   isSending: boolean;
   sendError: string | null;
-  
+
   // Actions de messagerie
-  sendMessage: (content: string, originalLanguage?: string, replyToId?: string) => Promise<boolean>;
-  sendMessageWithAttachments: (content: string, attachmentIds: string[], originalLanguage?: string, replyToId?: string) => Promise<boolean>;
+  sendMessage: (content: string, originalLanguage?: string, replyToId?: string, attachmentIds?: string[], attachmentMimeTypes?: string[]) => Promise<boolean>;
   editMessage: (messageId: string, newContent: string) => Promise<boolean>;
   deleteMessage: (messageId: string) => Promise<boolean>;
-  
+
   // Indicateurs de frappe
   typingUsers: TypingUser[];
   isTyping: boolean;
@@ -168,18 +167,23 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
     }
   }, [isTyping, conversationId, currentUser, socketMessaging]);
 
-  // Envoi de message
-  const sendMessage = useCallback(async (content: string, originalLanguage?: string, replyToId?: string): Promise<boolean> => {
+  // Envoi de message (avec ou sans attachments)
+  const sendMessage = useCallback(async (
+    content: string,
+    originalLanguage?: string,
+    replyToId?: string,
+    attachmentIds?: string[],
+    attachmentMimeTypes?: string[]
+  ): Promise<boolean> => {
     if (!conversationId || !currentUser) {
       console.error('[MESSAGING] Cannot send message: missing conversationId or currentUser');
       return false;
     }
 
-    // Validation du contenu
-    const validationResult = validateMessageContent(content);
-    if (!validationResult.isValid) {
-      setSendError(validationResult.error || 'Invalid message content');
-      toast.error(validationResult.error || 'Invalid message content');
+    // Validation du contenu (peut être vide si on a des attachments)
+    if (!content.trim() && (!attachmentIds || attachmentIds.length === 0)) {
+      setSendError('Message vide sans attachments');
+      toast.error('Veuillez saisir un message ou ajouter un fichier');
       return false;
     }
 
@@ -189,16 +193,23 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
     try {
       // Déterminer la langue source (originalLanguage ou langue système de l'utilisateur)
       const sourceLanguage = originalLanguage || currentUser?.systemLanguage || 'fr';
-      
+
       // Préparer les métadonnées
       const metadata = prepareMessageMetadata(content, sourceLanguage);
-      
+
       // Log de l'envoi avec les BONS paramètres
       logMessageSend(content, sourceLanguage, conversationId);
 
       // Envoyer via Socket.IO avec la langue correcte
-      // socketMessaging.sendMessage prend (content, language, replyToId)
-      const success = await socketMessaging.sendMessage(content, sourceLanguage, replyToId);
+      // socketMessaging.sendMessage prend (content, language, replyToId, mentionedUserIds, attachmentIds, attachmentMimeTypes)
+      const success = await socketMessaging.sendMessage(
+        content,
+        sourceLanguage,
+        replyToId,
+        undefined, // mentionedUserIds - géré par le composer si nécessaire
+        attachmentIds,
+        attachmentMimeTypes
+      );
 
       if (success) {
         // Arrêter la frappe
@@ -226,7 +237,7 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
           conversationId,
           content,
           originalLanguage: originalLanguage || currentUser?.systemLanguage || 'fr',
-          attachmentIds: [],
+          attachmentIds: attachmentIds || [],
           replyToId,
           error: errorMessage,
         });
@@ -248,85 +259,6 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
       // Callback d'erreur
       onMessageFailed?.(content, error as Error);
       
-      return false;
-    } finally {
-      setIsSending(false);
-    }
-  }, [conversationId, currentUser, socketMessaging, onMessageSent, onMessageFailed, stopTyping, addFailedMessage]);
-
-  // Envoi de message avec attachments
-  const sendMessageWithAttachments = useCallback(async (
-    content: string, 
-    attachmentIds: string[], 
-    originalLanguage?: string, 
-    replyToId?: string
-  ): Promise<boolean> => {
-    if (!conversationId || !currentUser) {
-      console.error('[MESSAGING] Cannot send message: missing conversationId or currentUser');
-      return false;
-    }
-
-    // Validation du contenu (peut être vide si on a des attachments)
-    if (!content.trim() && attachmentIds.length === 0) {
-      setSendError('Message vide sans attachments');
-      toast.error('Veuillez saisir un message ou ajouter un fichier');
-      return false;
-    }
-
-    setIsSending(true);
-    setSendError(null);
-
-    try {
-      // Déterminer la langue source
-      const sourceLanguage = originalLanguage || currentUser?.systemLanguage || 'fr';
-      
-
-      // Envoyer via Socket.IO avec attachments
-      // Note: conversationId est géré par socketMessaging (useSocketIOMessaging hook)
-      const success = await socketMessaging.sendMessageWithAttachments(
-        content, 
-        attachmentIds, 
-        sourceLanguage, 
-        replyToId
-      );
-
-      if (success) {
-        stopTyping();
-        onMessageSent?.(content, sourceLanguage);
-        return true;
-      } else {
-        throw new Error('Failed to send message with attachments via Socket.IO');
-      }
-    } catch (error) {
-      const errorMessage = handleMessageError(error, content);
-      setSendError(errorMessage);
-      
-      // NOUVEAU: Sauvegarder automatiquement le message avec attachments en échec
-      if (conversationId) {
-        const failedMsgId = addFailedMessage({
-          conversationId,
-          content,
-          originalLanguage: originalLanguage || currentUser?.systemLanguage || 'fr',
-          attachmentIds,
-          replyToId,
-          error: errorMessage,
-        });
-        
-        // Toast avec action de restauration
-        toast.error(errorMessage, {
-          action: {
-            label: 'Restaurer',
-            onClick: () => {
-              // Le composant parent gérera la restauration via FailedMessageBanner
-            }
-          },
-          duration: 5000,
-        });
-      } else {
-        toast.error(errorMessage);
-      }
-      
-      onMessageFailed?.(content, error as Error);
       return false;
     } finally {
       setIsSending(false);
@@ -400,13 +332,12 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
     // État d'envoi
     isSending,
     sendError,
-    
+
     // Actions de messagerie
     sendMessage,
-    sendMessageWithAttachments,
     editMessage,
     deleteMessage,
-    
+
     // Indicateurs de frappe
     typingUsers,
     isTyping,

@@ -175,7 +175,9 @@ export function useSocketIOMessaging(options: UseSocketIOMessagingOptions = {}) 
     content: string,
     language: string,
     replyToId?: string,
-    mentionedUserIds?: string[]
+    mentionedUserIds?: string[],
+    attachmentIds?: string[],
+    attachmentMimeTypes?: string[]
   ): Promise<boolean> => {
     if (!conversationId) {
       console.error('❌ [useSocketIOMessaging] Pas de conversationId');
@@ -183,31 +185,14 @@ export function useSocketIOMessaging(options: UseSocketIOMessagingOptions = {}) 
     }
 
     // Passer l'identifiant directement - le service gère la conversion
-    return await meeshySocketIOService.sendMessage(conversationId, content, language, replyToId, mentionedUserIds);
-  }, [conversationId]);
-
-  const sendMessageWithAttachments = useCallback(async (
-    content: string,
-    attachmentIds: string[],
-    attachmentMimeTypes: string[],
-    language: string,
-    replyToId?: string,
-    mentionedUserIds?: string[]
-  ): Promise<boolean> => {
-    if (!conversationId) {
-      console.error('❌ [useSocketIOMessaging] Pas de conversationId');
-      return false;
-    }
-
-    // Passer l'identifiant directement - le service gère la conversion
-    return await meeshySocketIOService.sendMessageWithAttachments(
+    return await meeshySocketIOService.sendMessage(
       conversationId,
       content,
-      attachmentIds,
-      attachmentMimeTypes,
       language,
       replyToId,
-      mentionedUserIds
+      mentionedUserIds,
+      attachmentIds,
+      attachmentMimeTypes
     );
   }, [conversationId]);
 
@@ -259,7 +244,6 @@ export function useSocketIOMessaging(options: UseSocketIOMessagingOptions = {}) 
     status: connectionStatus, // Retourner l'objet complet
     connectionStatus, // CORRECTION: Retourner l'objet complet avec isConnected ET hasSocket
     sendMessage,
-    sendMessageWithAttachments,
     editMessage,
     deleteMessage,
     startTyping,

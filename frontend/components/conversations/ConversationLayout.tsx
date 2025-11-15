@@ -359,7 +359,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   // Hook Socket.IO messaging pour la communication temps réel
   const {
     sendMessage: sendMessageViaSocket,
-    sendMessageWithAttachments: sendMessageWithAttachmentsViaSocket,
     connectionStatus: socketConnectionStatus,
     startTyping,
     stopTyping
@@ -1130,12 +1129,15 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         typingTimeoutRef.current = null;
       }
 
-      // Envoyer avec ou sans attachments
-      if (hasAttachments && sendMessageWithAttachmentsViaSocket) {
-        await sendMessageWithAttachmentsViaSocket(content, currentAttachmentIds, currentAttachmentMimeTypes, selectedLanguage, replyToId, mentionedUserIds);
-      } else {
-        await sendMessageViaSocket(content, selectedLanguage, replyToId, mentionedUserIds);
-      }
+      // Envoyer le message (avec ou sans attachments)
+      await sendMessageViaSocket(
+        content,
+        selectedLanguage,
+        replyToId,
+        mentionedUserIds,
+        hasAttachments ? currentAttachmentIds : undefined,
+        hasAttachments ? currentAttachmentMimeTypes : undefined
+      );
 
 
       // CORRECTION MAJEURE: Marquer la conversation comme lue après l'envoi d'un message
@@ -1191,7 +1193,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       // Restaurer les attachments en cas d'erreur
       setAttachmentIds(currentAttachmentIds);
     }
-  }, [newMessage, selectedConversation?.id, sendMessageViaSocket, sendMessageWithAttachmentsViaSocket, selectedLanguage, user, attachmentIds, attachmentMimeTypes, isTyping, stopTyping]);
+  }, [newMessage, selectedConversation?.id, sendMessageViaSocket, selectedLanguage, user, attachmentIds, attachmentMimeTypes, isTyping, stopTyping]);
 
   // Gestion de la saisie avec indicateurs de frappe
   const handleTyping = useCallback((value: string) => {
@@ -1295,27 +1297,19 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     }
     
     try {
-      let success = false;
-      
-      // Envoyer avec ou sans attachments
-      if (failedMsg.attachmentIds.length > 0 && sendMessageWithAttachmentsViaSocket) {
-        // TODO: Ajouter mimeTypes dans FailedMessage store
-        const mimeTypes: string[] = []; // Pour l'instant, tableau vide (sera déterminé côté serveur)
-        success = await sendMessageWithAttachmentsViaSocket(
-          failedMsg.content,
-          failedMsg.attachmentIds,
-          mimeTypes,
-          failedMsg.originalLanguage,
-          failedMsg.replyToId
-        );
-      } else {
-        success = await sendMessageViaSocket(
-          failedMsg.content,
-          failedMsg.originalLanguage,
-          failedMsg.replyToId
-        );
-      }
-      
+      // TODO: Ajouter mimeTypes dans FailedMessage store
+      const mimeTypes: string[] = []; // Pour l'instant, tableau vide (sera déterminé côté serveur)
+
+      // Envoyer le message (avec ou sans attachments)
+      const success = await sendMessageViaSocket(
+        failedMsg.content,
+        failedMsg.originalLanguage,
+        failedMsg.replyToId,
+        undefined, // mentionedUserIds - pas stocké dans FailedMessage actuellement
+        failedMsg.attachmentIds.length > 0 ? failedMsg.attachmentIds : undefined,
+        failedMsg.attachmentIds.length > 0 ? mimeTypes : undefined
+      );
+
       if (success) {
         return true;
       } else {
@@ -1326,7 +1320,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       console.error('❌ Erreur lors du renvoi:', error);
       return false;
     }
-  }, [selectedConversation?.id, user, sendMessageViaSocket, sendMessageWithAttachmentsViaSocket]);
+  }, [selectedConversation?.id, user, sendMessageViaSocket]);
 
   // Surveillance de l'état de connexion WebSocket
   useEffect(() => {
