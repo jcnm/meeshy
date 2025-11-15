@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { SUPPORTED_LANGUAGES, formatLanguageName } from "@/utils/language-detection";
 import { INTERFACE_LANGUAGES } from "@/types/frontend";
@@ -51,24 +51,24 @@ export function LanguageFlagSelector({
   );
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
         <Button
-          variant="outline"
+          variant="ghost"
           role="combobox"
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "justify-center h-4 w-4 sm:h-4 sm:w-4 px-0 border-gray-200 hover:border-blue-300 min-w-0 min-h-0",
+            "h-[30px] w-[30px] sm:h-[32px] sm:w-[32px] p-0 rounded-full hover:bg-gray-100 relative min-w-0 min-h-0",
             className
           )}
         >
-          <span className="text-xs sm:text-sm leading-none">
+          <span className="text-base sm:text-lg leading-none">
             {selectedLanguage?.flag || '🌐'}
           </span>
         </Button>
-      </PopoverTrigger>
-      <PopoverContent
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
         align={popoverAlign}
         side={popoverSide}
         sideOffset={popoverSideOffset}
@@ -105,7 +105,7 @@ export function LanguageFlagSelector({
             </Button>
           ))}
         </div>
-      </PopoverContent>
-    </Popover>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
