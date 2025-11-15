@@ -181,7 +181,7 @@ export function RegisterForm({
       } else {
         // Mode inscription normale
         if (data.success && data.data?.user && data.data?.token) {
-          toast.success(`${t('register.success.welcome', { name: formData.firstName })} ${formData.firstName}!`);
+          toast.success(t('register.success.welcome', { name: formData.firstName }));
           login(data.data.user, data.data.token);
           
           if (onSuccess) {
@@ -312,7 +312,10 @@ export function RegisterForm({
           type="email"
           placeholder={t('register.emailPlaceholder')}
           value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          onChange={(e) => {
+            const value = e.target.value.replace(/\s/g, ''); // Supprimer tous les espaces
+            setFormData({ ...formData, email: value });
+          }}
           disabled={isLoading || disabled}
           required
         />

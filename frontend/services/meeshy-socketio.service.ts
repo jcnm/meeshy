@@ -933,6 +933,19 @@ class MeeshySocketIOService {
             width: att.width ? Number(att.width) : undefined,
             height: att.height ? Number(att.height) : undefined,
             duration: att.duration ? Number(att.duration) : undefined,
+            // Métadonnées audio
+            bitrate: att.bitrate ? Number(att.bitrate) : undefined,
+            sampleRate: att.sampleRate ? Number(att.sampleRate) : undefined,
+            codec: att.codec ? String(att.codec) : undefined,
+            channels: att.channels ? Number(att.channels) : undefined,
+            // Métadonnées vidéo
+            fps: att.fps ? Number(att.fps) : undefined,
+            videoCodec: att.videoCodec ? String(att.videoCodec) : undefined,
+            // Métadonnées documents
+            pageCount: att.pageCount ? Number(att.pageCount) : undefined,
+            // Métadonnées code/texte
+            lineCount: att.lineCount ? Number(att.lineCount) : undefined,
+            // Général
             uploadedBy: String(att.uploadedBy || socketMessage.senderId || (socketMessage as any).anonymousSenderId || ''),
             isAnonymous: Boolean(att.isAnonymous),
             createdAt: String(att.createdAt || new Date().toISOString()),
