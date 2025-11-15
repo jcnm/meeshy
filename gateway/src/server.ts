@@ -36,10 +36,12 @@ import { communityRoutes } from './routes/communities';
 import { adminRoutes } from './routes/admin';
 import { userAdminRoutes } from './routes/admin/users';
 import { reportRoutes } from './routes/admin/reports';
+import { invitationRoutes } from './routes/admin/invitations';
+import { analyticsRoutes } from './routes/admin/analytics';
+import { languagesRoutes } from './routes/admin/languages';
+import { messagesRoutes } from './routes/admin/messages';
 // import { communityAdminRoutes } from './routes/admin/communities';
-// import { analyticsAdminRoutes } from './routes/admin/analytics';
 // import { linksAdminRoutes } from './routes/admin/links';
-// import { messagesAdminRoutes } from './routes/admin/messages';
 import { userRoutes } from './routes/users';
 import userPreferencesRoutes from './routes/user-preferences';
 import conversationPreferencesRoutes from './routes/conversation-preferences';
@@ -631,17 +633,24 @@ class MeeshyServer {
 
     // Register admin report routes (at /api/admin/reports)
     await this.server.register(reportRoutes, { prefix: '/api/admin/reports' });
-    // Register admin communities routes (at /api/admin/communities)
-    //     await this.server.register(communityAdminRoutes, { prefix: '/api/admin/communities' });
+
+    // Register admin invitations routes (at /api/admin/invitations)
+    await this.server.register(invitationRoutes, { prefix: '/api/admin/invitations' });
 
     // Register admin analytics routes (at /api/admin/analytics)
-    //     await this.server.register(analyticsAdminRoutes, { prefix: '/api/admin/analytics' });
-    // 
+    await this.server.register(analyticsRoutes, { prefix: '/api/admin/analytics' });
+
+    // Register admin languages routes (at /api/admin/languages)
+    await this.server.register(languagesRoutes, { prefix: '/api/admin/languages' });
+
+    // Register admin messages routes (at /api/admin/messages)
+    await this.server.register(messagesRoutes, { prefix: '/api/admin/messages' });
+
+    // Register admin communities routes (at /api/admin/communities)
+    //     await this.server.register(communityAdminRoutes, { prefix: '/api/admin/communities' });
+    //
     //     // Register admin links routes (at /api/admin/links)
     //     await this.server.register(linksAdminRoutes, { prefix: '/api/admin/links' });
-    // 
-    //     // Register admin messages routes (at /api/admin/messages)
-    //     await this.server.register(messagesAdminRoutes, { prefix: '/api/admin/messages' });
 
     // Register user routes
     await this.server.register(userRoutes, { prefix: '/api' });
