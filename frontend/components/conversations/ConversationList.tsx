@@ -28,6 +28,7 @@ import { toast } from 'sonner';
 import { OnlineIndicator } from '@/components/ui/online-indicator';
 import { getUserStatus } from '@/lib/user-status';
 import { formatConversationDate, formatRelativeDate } from '@/utils/date-format';
+import { useUserStore } from '@/stores/user-store';
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -82,6 +83,10 @@ const ConversationItem = memo(function ConversationItem({
   const [localIsMuted, setLocalIsMuted] = useState(isMuted);
   const [localIsArchived, setLocalIsArchived] = useState(isArchived);
   const [localReaction, setLocalReaction] = useState(reaction);
+
+  // Store global des utilisateurs (statuts en temps réel)
+  const userStore = useUserStore();
+  const _lastStatusUpdate = userStore._lastStatusUpdate; // Force re-render quand un statut change
 
   // Sync with props
   useEffect(() => {
@@ -268,7 +273,10 @@ const ConversationItem = memo(function ConversationItem({
         {conversation.type === 'direct' && (() => {
           const participantUser = getOtherParticipantUser();
           if (participantUser) {
-            const status = getUserStatus(participantUser);
+            // PRIORITÉ: Utiliser le store global pour les données en temps réel
+            const userFromStore = userStore.getUserById(participantUser.id);
+            const effectiveUser = userFromStore || participantUser;
+            const status = getUserStatus(effectiveUser);
             return (
               <OnlineIndicator
                 isOnline={status === 'online'}

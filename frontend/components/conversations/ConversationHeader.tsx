@@ -37,6 +37,7 @@ import { AttachmentService } from '@/services/attachmentService';
 import { conversationsService } from '@/services/conversations.service';
 import { userPreferencesService } from '@/services/user-preferences.service';
 import { getUserStatus, type UserStatus } from '@/lib/user-status';
+import { useUserStore } from '@/stores/user-store';
 
 // Helper pour détecter si un utilisateur est anonyme
 function isAnonymousUser(user: any): user is AnonymousParticipant {
@@ -90,6 +91,10 @@ export function ConversationHeader({
   const { currentCall, isInCall } = useCallStore();
   const [callDuration, setCallDuration] = useState(0);
   const [showCallBanner, setShowCallBanner] = useState(false);
+
+  // Store global des utilisateurs (statuts en temps réel)
+  const userStore = useUserStore();
+  const _lastStatusUpdate = userStore._lastStatusUpdate; // Force re-render quand un statut change
 
   // Charger les préférences utilisateur
   useEffect(() => {
@@ -370,23 +375,27 @@ export function ConversationHeader({
   // Obtenir le statut de l'autre participant pour les conversations directes
   const getOtherParticipantStatus = useCallback((): UserStatus => {
     if (conversation.type === 'direct') {
-      // 1. Essayer avec conversationParticipants
+      // 1. Trouver l'ID de l'autre participant
+      let otherUserId: string | undefined;
       const otherParticipant = conversationParticipants.find(p => p.userId !== currentUser?.id);
-      if (otherParticipant?.user) {
-        return getUserStatus(otherParticipant.user);
+      if (otherParticipant) {
+        otherUserId = otherParticipant.userId;
+      } else {
+        // Fallback: chercher dans conversation.participants
+        const otherConvParticipant = (conversation as any).participants?.find((p: any) => p.userId !== currentUser?.id);
+        otherUserId = otherConvParticipant?.userId;
       }
 
-      // 2. Fallback: utiliser conversation.participants
-      const otherConvParticipant = (conversation as any).participants?.find((p: any) => p.userId !== currentUser?.id);
-      if (otherConvParticipant?.user) {
-        return getUserStatus(otherConvParticipant.user);
-      }
+      if (otherUserId) {
+        // 2. PRIORITÉ: Utiliser le store global pour les données en temps réel
+        const userFromStore = userStore.getUserById(otherUserId);
+        if (userFromStore) {
+          return getUserStatus(userFromStore);
+        }
 
-      // 3. Fallback: utiliser conversation.members si disponible
-      if ((conversation as any).members) {
-        const otherMember = (conversation as any).members.find((m: any) => m.userId !== currentUser?.id);
-        if (otherMember?.user) {
-          return getUserStatus(otherMember.user);
+        // 3. Fallback: utiliser les données des props (peuvent être obsolètes)
+        if (otherParticipant?.user) {
+          return getUserStatus(otherParticipant.user);
         }
       }
 
@@ -394,7 +403,7 @@ export function ConversationHeader({
       return 'offline';
     }
     return 'online'; // Pour les conversations de groupe, toujours afficher comme online
-  }, [conversation, conversationParticipants, currentUser?.id]);
+  }, [conversation, conversationParticipants, currentUser?.id, userStore, _lastStatusUpdate]);
 
   // Handlers pour les préférences utilisateur
   const handleTogglePin = useCallback(async () => {

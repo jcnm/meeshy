@@ -33,6 +33,8 @@ import { useFailedMessagesStore, type FailedMessage } from '@/stores/failed-mess
 import { ConnectionStatusIndicator } from './connection-status-indicator';
 import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
 import { logger } from '@/utils/logger';
+import { useUserStatusRealtime } from '@/hooks/use-user-status-realtime';
+import { useUserStore } from '@/stores/user-store';
 
 interface ConversationLayoutProps {
   selectedConversationId?: string;
@@ -100,6 +102,12 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
   // Hook pour gérer les notifications
   const { notifications, markAsRead } = useNotifications();
+
+  // Activer les mises à jour de statut utilisateur en temps réel (via WebSocket)
+  useUserStatusRealtime();
+
+  // Store global des utilisateurs (mis à jour en temps réel)
+  const userStore = useUserStore();
 
   // Ref pour tracker les notifications déjà marquées
   const markedNotificationsRef = useRef<Set<string>>(new Set());
@@ -666,13 +674,16 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       
       const uniqueParticipants = Array.from(participantsMap.values());
 
+      // Synchroniser le store global avec les participants chargés
+      const users = uniqueParticipants.map(p => p.user).filter(Boolean);
+      userStore.setParticipants(users as any[]);
 
       setParticipants(uniqueParticipants);
     } catch (error) {
       console.error('[ConversationLayout] ❌ Erreur lors du chargement des participants:', error);
       setParticipants([]);
     }
-  }, []);
+  }, [userStore]);
 
   // Fonction pour charger une conversation directement
   const loadDirectConversation = useCallback(async (conversationId: string) => {
