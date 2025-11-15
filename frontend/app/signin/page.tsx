@@ -460,15 +460,15 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
                     />
                     {isCheckingUsername ? (
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        Vérification...
+                        {t('register.validation.checking')}
                       </p>
                     ) : usernameAvailable === false ? (
                       <p className="text-xs text-red-600 mt-1">
-                        ❌ Ce nom d'utilisateur est déjà pris
+                        ❌ {t('register.errors.usernameExists')}
                       </p>
                     ) : usernameAvailable === true ? (
                       <p className="text-xs text-green-600 mt-1">
-                        ✓ Ce nom d'utilisateur est disponible
+                        ✓ {t('register.validation.usernameAvailable')}
                       </p>
                     ) : (
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -497,15 +497,15 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
                     />
                     {isCheckingEmail ? (
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        Vérification...
+                        {t('register.validation.checking')}
                       </p>
                     ) : emailAvailable === false ? (
                       <p className="text-xs text-red-600 mt-1">
-                        ❌ Cet email est déjà utilisé
+                        ❌ {t('register.errors.emailExists')}
                       </p>
                     ) : emailAvailable === true ? (
                       <p className="text-xs text-green-600 mt-1">
-                        ✓ Cet email est disponible
+                        ✓ {t('register.validation.emailAvailable')}
                       </p>
                     ) : null}
                   </div>
