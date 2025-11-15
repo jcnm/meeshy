@@ -273,7 +273,7 @@ export function useAuth() {
     // NOUVEAU: Utiliser AuthManager (source unique)
     // Nettoie automatiquement les sessions précédentes
     authManager.setCredentials(user, token);
-    
+
     // Mettre à jour l'état immédiatement de manière synchrone
     const newAuthState = {
       isAuthenticated: true,
@@ -282,18 +282,22 @@ export function useAuth() {
       isChecking: false,
       isAnonymous: false
     };
-    
+
+    // CRITIQUE: Mettre à jour le cache aussi pour éviter les bugs de vérification
+    authCache.result = newAuthState;
+    authCache.lastCheck = Date.now();
+
     // Force immediate state update
     setAuthState(newAuthState);
     setUserRef.current(user);
-    
+
     devLog('[USE_AUTH] État mis à jour immédiatement:', newAuthState);
   }, []);
 
   // Se déconnecter
   const logout = useCallback(() => {
     devLog('[USE_AUTH] Déconnexion utilisateur');
-    
+
     clearAllAuthData();
     const newAuthState = {
       isAuthenticated: false,
@@ -302,7 +306,11 @@ export function useAuth() {
       isChecking: false,
       isAnonymous: false
     };
-    
+
+    // CRITIQUE: Mettre à jour le cache aussi pour éviter les bugs
+    authCache.result = newAuthState;
+    authCache.lastCheck = Date.now();
+
     setAuthState(newAuthState);
     setUserRef.current(null);
     router.push('/');
@@ -334,7 +342,7 @@ export function useAuth() {
         localStorage.removeItem('anonymous_just_joined');
       }, 3000);
     }
-    
+
     const newAuthState = {
       isAuthenticated: true,
       user: participant,
@@ -342,10 +350,14 @@ export function useAuth() {
       isChecking: false,
       isAnonymous: true
     };
-    
+
+    // CRITIQUE: Mettre à jour le cache aussi
+    authCache.result = newAuthState;
+    authCache.lastCheck = Date.now();
+
     setAuthState(newAuthState);
     setUserRef.current(participant);
-    
+
     devLog('[USE_AUTH] Session anonyme créée avec succès');
   }, []);
 
@@ -364,6 +376,10 @@ export function useAuth() {
       isChecking: false,
       isAnonymous: false
     };
+
+    // CRITIQUE: Mettre à jour le cache aussi
+    authCache.result = newAuthState;
+    authCache.lastCheck = Date.now();
 
     setAuthState(newAuthState);
     setUserRef.current(null);
@@ -387,6 +403,11 @@ export function useAuth() {
       isChecking: false,
       isAnonymous: false
     };
+
+    // CRITIQUE: Mettre à jour le cache aussi
+    authCache.result = newAuthState;
+    authCache.lastCheck = Date.now();
+
     setAuthState(newAuthState);
     setUserRef.current(null);
   }, []);
