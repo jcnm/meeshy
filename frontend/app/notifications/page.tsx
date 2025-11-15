@@ -347,16 +347,6 @@ function NotificationsPageContent() {
                         </Button>
                       )}
 
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => router.push('/notifications/preferences')}
-                        className="hidden sm:flex"
-                      >
-                        <Settings className="h-4 w-4 mr-2" />
-                        {t('preferences')}
-                      </Button>
-
                       {unreadCount > 0 && (
                         <Button
                           variant="outline"
