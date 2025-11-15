@@ -6,30 +6,22 @@ import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { 
-  Globe, 
-  ArrowLeft, 
+import { Input } from '@/components/ui/input';
+import {
+  Globe,
+  ArrowLeft,
   TrendingUp,
-  Calendar,
   MessageSquare,
   Users,
-  BarChart3,
-  PieChart,
-  Activity
+  Languages as LanguagesIcon,
+  Search,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { adminService } from '@/services/admin.service';
 import { toast } from 'sonner';
-
-interface LanguageStats {
-  language: string;
-  count: number;
-  percentage: number;
-  trend: 'up' | 'down' | 'stable';
-  messages: number;
-  users: number;
-  translations: number;
-}
+import { StatsGrid, TimeSeriesChart, DonutChart, type StatItem } from '@/components/admin/Charts';
+import { StatCardSkeleton } from '@/components/admin/TableSkeleton';
 
 interface LanguageData {
   topLanguages: Array<{
@@ -88,28 +80,41 @@ const languageNames: Record<string, string> = {
   'gl': 'Galicien'
 };
 
+const languageFlags: Record<string, string> = {
+  'fr': '🇫🇷', 'en': '🇺🇸', 'es': '🇪🇸', 'de': '🇩🇪', 'it': '🇮🇹',
+  'pt': '🇵🇹', 'ru': '🇷🇺', 'zh': '🇨🇳', 'ja': '🇯🇵', 'ko': '🇰🇷',
+  'ar': '🇸🇦', 'hi': '🇮🇳', 'nl': '🇳🇱', 'sv': '🇸🇪', 'da': '🇩🇰',
+  'no': '🇳🇴', 'fi': '🇫🇮', 'pl': '🇵🇱', 'tr': '🇹🇷', 'th': '🇹🇭',
+  'vi': '🇻🇳', 'id': '🇮🇩', 'he': '🇮🇱', 'uk': '🇺🇦', 'cs': '🇨🇿',
+  'hu': '🇭🇺', 'ro': '🇷🇴', 'bg': '🇧🇬', 'hr': '🇭🇷', 'sk': '🇸🇰',
+  'sl': '🇸🇮', 'et': '🇪🇪', 'lv': '🇱🇻', 'lt': '🇱🇹', 'mt': '🇲🇹',
+  'cy': '🇬🇧', 'ga': '🇮🇪', 'is': '🇮🇸', 'eu': '🇪🇸', 'ca': '🇪🇸', 'gl': '🇪🇸'
+};
+
 export default function AdminLanguagesPage() {
   const router = useRouter();
   const [languageData, setLanguageData] = useState<LanguageData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedPeriod, setSelectedPeriod] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     loadLanguageStats();
-  }, [selectedPeriod]);
+  }, []);
 
   const loadLanguageStats = async () => {
     try {
       setLoading(true);
       const response = await adminService.getDashboardStats();
-      
+
       if (response.data) {
-        const stats = response.data.statistics;
+        const stats = response.data.statistics || response.data.data?.statistics;
         setLanguageData({
-          topLanguages: stats.topLanguages || [],
-          totalMessages: stats.totalMessages || 0,
-          totalUsers: stats.totalUsers || 0,
-          totalTranslations: stats.totalTranslations || 0
+          topLanguages: stats?.topLanguages || [],
+          totalMessages: stats?.totalMessages || 0,
+          totalUsers: stats?.totalUsers || 0,
+          totalTranslations: stats?.totalTranslations || 0
         });
       }
     } catch (error) {
@@ -125,70 +130,96 @@ export default function AdminLanguagesPage() {
   };
 
   const getLanguageFlag = (code: string) => {
-    // Emojis de drapeaux pour les langues principales
-    const flags: Record<string, string> = {
-      'fr': '🇫🇷',
-      'en': '🇺🇸',
-      'es': '🇪🇸',
-      'de': '🇩🇪',
-      'it': '🇮🇹',
-      'pt': '🇵🇹',
-      'ru': '🇷🇺',
-      'zh': '🇨🇳',
-      'ja': '🇯🇵',
-      'ko': '🇰🇷',
-      'ar': '🇸🇦',
-      'hi': '🇮🇳',
-      'nl': '🇳🇱',
-      'sv': '🇸🇪',
-      'da': '🇩🇰',
-      'no': '🇳🇴',
-      'fi': '🇫🇮',
-      'pl': '🇵🇱',
-      'tr': '🇹🇷',
-      'th': '🇹🇭',
-      'vi': '🇻🇳',
-      'id': '🇮🇩',
-      'he': '🇮🇱',
-      'uk': '🇺🇦',
-      'cs': '🇨🇿',
-      'hu': '🇭🇺',
-      'ro': '🇷🇴',
-      'bg': '🇧🇬',
-      'hr': '🇭🇷',
-      'sk': '🇸🇰',
-      'sl': '🇸🇮',
-      'et': '🇪🇪',
-      'lv': '🇱🇻',
-      'lt': '🇱🇹',
-      'mt': '🇲🇹',
-      'cy': '🇬🇧',
-      'ga': '🇮🇪',
-      'is': '🇮🇸',
-      'eu': '🇪🇸',
-      'ca': '🇪🇸',
-      'gl': '🇪🇸'
-    };
-    return flags[code] || '🌐';
+    return languageFlags[code] || '🌐';
   };
 
-  const getTrendIcon = (trend: string) => {
-    switch (trend) {
-      case 'up':
-        return <TrendingUp className="h-4 w-4 text-green-600" />;
-      case 'down':
-        return <TrendingUp className="h-4 w-4 text-red-600 rotate-180" />;
-      default:
-        return <Activity className="h-4 w-4 text-gray-600" />;
+  // Filtrer les langues selon la recherche
+  const filteredLanguages = languageData?.topLanguages.filter(lang => {
+    const name = getLanguageName(lang.language).toLowerCase();
+    const code = lang.language.toLowerCase();
+    const query = searchQuery.toLowerCase();
+    return name.includes(query) || code.includes(query);
+  }) || [];
+
+  // Pagination
+  const totalPages = Math.ceil(filteredLanguages.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedLanguages = filteredLanguages.slice(startIndex, startIndex + itemsPerPage);
+
+  // Statistiques pour StatsGrid
+  const stats: StatItem[] = [
+    {
+      title: 'Langues détectées',
+      value: languageData?.topLanguages.length || 0,
+      description: 'Langues uniques',
+      icon: Globe,
+      iconColor: 'text-slate-600 dark:text-slate-400',
+      iconBgColor: 'bg-slate-100 dark:bg-slate-900/30',
+      trend: { value: 5, isPositive: true }
+    },
+    {
+      title: 'Messages analysés',
+      value: languageData?.totalMessages || 0,
+      description: 'Total messages',
+      icon: MessageSquare,
+      iconColor: 'text-blue-600 dark:text-blue-400',
+      iconBgColor: 'bg-blue-100 dark:bg-blue-900/30',
+      trend: { value: 12, isPositive: true }
+    },
+    {
+      title: 'Utilisateurs multilingues',
+      value: languageData?.totalUsers || 0,
+      description: 'Utilisateurs actifs',
+      icon: Users,
+      iconColor: 'text-green-600 dark:text-green-400',
+      iconBgColor: 'bg-green-100 dark:bg-green-900/30'
+    },
+    {
+      title: 'Traductions',
+      value: languageData?.totalTranslations || 0,
+      description: 'Traductions effectuées',
+      icon: LanguagesIcon,
+      iconColor: 'text-purple-600 dark:text-purple-400',
+      iconBgColor: 'bg-purple-100 dark:bg-purple-900/30',
+      trend: { value: 8, isPositive: true }
     }
-  };
+  ];
+
+  // Données pour TimeSeriesChart (mockup)
+  const timeSeriesData = [
+    { name: 'Lun', value: 30 },
+    { name: 'Mar', value: 45 },
+    { name: 'Mer', value: 35 },
+    { name: 'Jeu', value: 50 },
+    { name: 'Ven', value: 42 },
+    { name: 'Sam', value: 38 },
+    { name: 'Dim', value: 48 }
+  ];
+
+  // Données pour DonutChart
+  const donutData = languageData?.topLanguages.slice(0, 5).map((lang, index) => {
+    const colors = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
+    return {
+      name: `${getLanguageFlag(lang.language)} ${getLanguageName(lang.language)}`,
+      value: lang.count,
+      color: colors[index % colors.length]
+    };
+  }) || [];
 
   if (loading) {
     return (
       <AdminLayout currentPage="/admin/languages">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <span className="ml-2">Chargement des statistiques de langues...</span>
+        <div className="space-y-6">
+          {/* Header Skeleton */}
+          <div className="bg-gradient-to-r from-slate-600 to-gray-600 rounded-lg p-6 text-white shadow-lg animate-pulse">
+            <div className="h-8 bg-white/20 rounded w-64 mb-2"></div>
+            <div className="h-4 bg-white/20 rounded w-96"></div>
+          </div>
+
+          {/* Stats Skeleton */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            {[1, 2, 3, 4].map(i => <StatCardSkeleton key={i} />)}
+          </div>
         </div>
       </AdminLayout>
     );
@@ -197,253 +228,238 @@ export default function AdminLanguagesPage() {
   return (
     <AdminLayout currentPage="/admin/languages">
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button 
-              variant="outline" 
-              onClick={() => router.push('/admin')}
-              className="flex items-center space-x-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Retour</span>
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Statistiques des langues</h1>
-              <p className="text-gray-600">Analyse de l'utilisation des langues sur la plateforme</p>
+        {/* Header avec gradient slate→gray */}
+        <div className="bg-gradient-to-r from-slate-600 to-gray-600 rounded-lg p-6 text-white shadow-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                onClick={() => router.push('/admin')}
+                className="text-white hover:bg-white/20"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Retour
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold">Statistiques des langues</h1>
+                <p className="text-slate-100 mt-1">Analyse de l&apos;utilisation des langues sur la plateforme</p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Statistiques générales */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Langues détectées</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{languageData?.topLanguages.length || 0}</div>
-              <Badge variant="outline" className="mt-1">Langues uniques</Badge>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Messages analysés</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{languageData?.totalMessages || 0}</div>
-              <Badge variant="outline" className="mt-1">Total messages</Badge>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Utilisateurs multilingues</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">{languageData?.totalUsers || 0}</div>
-              <Badge variant="outline" className="mt-1">Utilisateurs actifs</Badge>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Traductions effectuées</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-purple-600">{languageData?.totalTranslations || 0}</div>
-              <Badge variant="outline" className="mt-1">Traductions totales</Badge>
-            </CardContent>
-          </Card>
+        {/* Statistiques principales */}
+        <StatsGrid stats={stats} />
+
+        {/* Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <TimeSeriesChart
+            data={timeSeriesData}
+            title="Évolution des messages multilingues"
+            description="Nombre de messages traduits par jour"
+            color="#64748b"
+            dataKey="value"
+          />
+
+          <DonutChart
+            data={donutData}
+            title="Top 5 des langues"
+            description="Répartition des langues les plus utilisées"
+          />
         </div>
 
-        {/* Classement des langues */}
+        {/* Filtres et recherche */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <BarChart3 className="h-5 w-5" />
-              <span>Classement des langues les plus utilisées</span>
-            </CardTitle>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+              <CardTitle className="flex items-center space-x-2">
+                <Globe className="h-5 w-5" />
+                <span>Classement des langues</span>
+                <Badge variant="secondary">{filteredLanguages.length} langues</Badge>
+              </CardTitle>
+
+              <div className="flex items-center space-x-2 w-full sm:w-auto">
+                <div className="relative flex-1 sm:w-64">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    type="text"
+                    placeholder="Rechercher une langue..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
-            {languageData?.topLanguages.length === 0 ? (
-              <div className="text-center py-12">
-                <Globe className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Aucune donnée de langue disponible
-                </h3>
-                <p className="text-gray-600">
-                  Les statistiques de langues seront disponibles une fois que des messages auront été analysés.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {languageData?.topLanguages.map((lang, index) => {
-                  const percentage = languageData.totalMessages > 0 
-                    ? (lang.count / languageData.totalMessages) * 100 
+            {/* Tableau des langues */}
+            <div className="space-y-3">
+              {paginatedLanguages.length === 0 ? (
+                <div className="text-center py-12">
+                  <Globe className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Aucune langue trouvée
+                  </h3>
+                  <p className="text-gray-600">
+                    {searchQuery ? 'Essayez avec un autre terme de recherche' : 'Les statistiques seront disponibles une fois que des messages auront été analysés'}
+                  </p>
+                </div>
+              ) : (
+                paginatedLanguages.map((lang, index) => {
+                  const globalIndex = startIndex + index;
+                  const percentage = languageData && languageData.totalMessages > 0
+                    ? (lang.count / languageData.totalMessages) * 100
                     : 0;
-                  
+
+                  const rankColors = [
+                    'from-yellow-400 to-yellow-600',
+                    'from-gray-300 to-gray-500',
+                    'from-orange-400 to-orange-600',
+                    'from-blue-400 to-blue-600'
+                  ];
+
                   return (
-                    <div key={lang.language} className="flex items-center space-x-4 p-4 border rounded-lg hover:bg-gray-50">
+                    <div
+                      key={lang.language}
+                      className="flex items-center space-x-4 p-4 border dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                    >
                       {/* Position */}
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
-                        {index + 1}
+                      <div className={`flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br ${rankColors[Math.min(globalIndex, 3)]} flex items-center justify-center text-white font-bold text-sm shadow-md`}>
+                        {globalIndex + 1}
                       </div>
 
                       {/* Drapeau et nom */}
-                      <div className="flex items-center space-x-3 flex-shrink-0">
-                        <span className="text-2xl">{getLanguageFlag(lang.language)}</span>
+                      <div className="flex items-center space-x-3 flex-shrink-0 min-w-[180px]">
+                        <span className="text-3xl">{getLanguageFlag(lang.language)}</span>
                         <div>
-                          <div className="font-semibold text-gray-900">
+                          <div className="font-semibold text-gray-900 dark:text-gray-100">
                             {getLanguageName(lang.language)}
                           </div>
-                          <div className="text-sm text-gray-500">
-                            {lang.language.toUpperCase()}
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            Code: {lang.language.toUpperCase()}
                           </div>
                         </div>
                       </div>
 
-                      {/* Barre de progression */}
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-medium text-gray-700">
+                      {/* Statistiques */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                             {lang.count.toLocaleString()} messages
                           </span>
-                          <span className="text-sm text-gray-500">
+                          <span className="text-sm font-semibold text-slate-600 dark:text-slate-400">
                             {percentage.toFixed(1)}%
                           </span>
                         </div>
-                        <Progress value={percentage} className="h-2" />
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
+                          <div
+                            className="bg-gradient-to-r from-slate-500 to-gray-500 h-2.5 rounded-full transition-all duration-500"
+                            style={{ width: `${Math.min(percentage, 100)}%` }}
+                          />
+                        </div>
                       </div>
 
-                      {/* Statistiques supplémentaires */}
-                      <div className="flex items-center space-x-4 text-sm text-gray-600 flex-shrink-0">
-                        <div className="flex items-center space-x-1">
-                          <MessageSquare className="h-4 w-4" />
-                          <span>{lang.count}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          {getTrendIcon('stable')}
-                          <span>Stable</span>
-                        </div>
+                      {/* Badge */}
+                      <div className="flex-shrink-0">
+                        {globalIndex < 3 ? (
+                          <Badge className="bg-gradient-to-r from-slate-600 to-gray-600 text-white">
+                            Top {globalIndex + 1}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline">
+                            #{globalIndex + 1}
+                          </Badge>
+                        )}
                       </div>
                     </div>
                   );
-                })}
+                })
+              )}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between mt-6 pt-4 border-t dark:border-gray-700">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  Page {currentPage} sur {totalPages} • {filteredLanguages.length} langue(s)
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Répartition par langues */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <PieChart className="h-5 w-5" />
-                <span>Répartition des langues</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {languageData?.topLanguages.length === 0 ? (
-                <div className="text-center py-8">
-                  <PieChart className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-600">Aucune donnée disponible</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {languageData?.topLanguages.slice(0, 8).map((lang, index) => {
-                    const percentage = languageData.totalMessages > 0 
-                      ? (lang.count / languageData.totalMessages) * 100 
-                      : 0;
-                    
-                    const colors = [
-                      'bg-blue-500',
-                      'bg-green-500',
-                      'bg-purple-500',
-                      'bg-orange-500',
-                      'bg-red-500',
-                      'bg-yellow-500',
-                      'bg-pink-500',
-                      'bg-indigo-500'
-                    ];
-                    
-                    return (
-                      <div key={lang.language} className="flex items-center space-x-3">
-                        <div className={`w-4 h-4 rounded-full ${colors[index % colors.length]}`}></div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">
-                              {getLanguageFlag(lang.language)} {getLanguageName(lang.language)}
-                            </span>
-                            <span className="text-sm text-gray-500">
-                              {percentage.toFixed(1)}%
-                            </span>
-                          </div>
-                          <Progress value={percentage} className="h-1 mt-1" />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <TrendingUp className="h-5 w-5" />
-                <span>Tendances d'utilisation</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="text-center py-8">
-                  <TrendingUp className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-600">Les tendances seront disponibles prochainement</p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Analyse des évolutions d'utilisation des langues dans le temps
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Informations sur la détection de langues */}
+        {/* Informations sur la détection */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <Globe className="h-5 w-5" />
+              <LanguagesIcon className="h-5 w-5" />
               <span>À propos de la détection de langues</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Comment ça marche ?</h4>
-                <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• Analyse automatique du contenu des messages</li>
-                  <li>• Détection basée sur des modèles de langage avancés</li>
-                  <li>• Support de plus de 40 langues</li>
-                  <li>• Mise à jour en temps réel des statistiques</li>
+                <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center space-x-2">
+                  <TrendingUp className="h-4 w-4 text-slate-600" />
+                  <span>Comment ça marche ?</span>
+                </h4>
+                <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-2">
+                  <li className="flex items-start space-x-2">
+                    <span className="text-slate-600 dark:text-slate-400">•</span>
+                    <span>Analyse automatique du contenu des messages</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-slate-600 dark:text-slate-400">•</span>
+                    <span>Détection basée sur des modèles de langage avancés</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-slate-600 dark:text-slate-400">•</span>
+                    <span>Support de plus de {Object.keys(languageNames).length} langues</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-slate-600 dark:text-slate-400">•</span>
+                    <span>Mise à jour en temps réel des statistiques</span>
+                  </li>
                 </ul>
               </div>
               <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Langues supportées</h4>
-                <div className="text-sm text-gray-600">
-                  <p className="mb-2">
+                <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center space-x-2">
+                  <Globe className="h-4 w-4 text-slate-600" />
+                  <span>Langues supportées</span>
+                </h4>
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="mb-3">
                     Notre système détecte automatiquement les langues suivantes :
                   </p>
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1.5">
                     {Object.entries(languageNames).slice(0, 12).map(([code, name]) => (
                       <Badge key={code} variant="outline" className="text-xs">
                         {getLanguageFlag(code)} {name}
                       </Badge>
                     ))}
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="secondary" className="text-xs">
                       +{Object.keys(languageNames).length - 12} autres
                     </Badge>
                   </div>
