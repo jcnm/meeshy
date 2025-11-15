@@ -120,6 +120,11 @@ export interface AttachmentMetadata {
   pageCount?: number;
   lineCount?: number;
   thumbnailGenerated?: boolean;
+  /**
+   * Timeline des effets audio appliqués pendant l'enregistrement
+   * Uniquement pour les fichiers audio enregistrés avec des effets
+   */
+  audioEffectsTimeline?: import('./audio-effects-timeline').AudioEffectsTimeline;
 }
 
 /**

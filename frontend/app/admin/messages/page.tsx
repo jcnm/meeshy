@@ -55,6 +55,24 @@ interface Message {
     translations: number;
     replies: number;
   };
+  attachments?: Array<{
+    id: string;
+    fileName: string;
+    originalName: string;
+    mimeType: string;
+    fileSize: number;
+    duration?: number;
+    fps?: number;
+    pageCount?: number;
+    lineCount?: number;
+    width?: number;
+    height?: number;
+    bitrate?: number;
+    sampleRate?: number;
+    codec?: string;
+    channels?: number;
+    videoCodec?: string;
+  }>;
 }
 
 export default function AdminMessagesPage() {
@@ -350,6 +368,58 @@ export default function AdminMessagesPage() {
                             {message.content}
                           </p>
                         </div>
+
+                        {/* Attachments */}
+                        {message.attachments && message.attachments.length > 0 && (
+                          <div className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <p className="text-sm font-medium text-gray-700 mb-2">
+                              📎 {message.attachments.length} fichier(s) joint(s)
+                            </p>
+                            <div className="space-y-2">
+                              {message.attachments.map((att) => (
+                                <div key={att.id} className="flex items-start space-x-2 text-sm">
+                                  <div className="flex-1">
+                                    <p className="font-medium text-gray-900">{att.originalName}</p>
+                                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-600">
+                                      <span>{att.mimeType}</span>
+                                      <span>{(att.fileSize / 1024).toFixed(2)} KB</span>
+                                      {att.duration && (
+                                        <span>⏱️ {Math.floor(att.duration / 60)}:{(att.duration % 60).toString().padStart(2, '0')}</span>
+                                      )}
+                                      {att.width && att.height && (
+                                        <span>📐 {att.width}×{att.height}</span>
+                                      )}
+                                      {att.fps && (
+                                        <span>🎬 {att.fps}fps</span>
+                                      )}
+                                      {att.pageCount && (
+                                        <span>📄 {att.pageCount} page{att.pageCount > 1 ? 's' : ''}</span>
+                                      )}
+                                      {att.lineCount && (
+                                        <span>📝 {att.lineCount} ligne{att.lineCount > 1 ? 's' : ''}</span>
+                                      )}
+                                      {att.bitrate && (
+                                        <span>🎵 {Math.floor(att.bitrate / 1000)}kbps</span>
+                                      )}
+                                      {att.sampleRate && (
+                                        <span>{(att.sampleRate / 1000).toFixed(1)}kHz</span>
+                                      )}
+                                      {att.codec && (
+                                        <span>codec: {att.codec}</span>
+                                      )}
+                                      {att.channels && (
+                                        <span>{att.channels === 1 ? 'Mono' : att.channels === 2 ? 'Stereo' : `${att.channels}ch`}</span>
+                                      )}
+                                      {att.videoCodec && (
+                                        <span>video: {att.videoCodec}</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
 
                         <div className="flex items-center space-x-4 text-sm text-gray-600">
                           <div className="flex items-center space-x-1">

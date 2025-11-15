@@ -1,0 +1,189 @@
+{
+  "audioEffects": {
+    "title": "Audio Effects",
+    "noEffectsActive": "No effects active",
+    "toggleEffect": "Toggle Effect",
+    "configure": "Configure",
+    "close": "Close",
+    "apply": "Apply",
+    "reset": "Reset",
+
+    "effects": {
+      "voice-coder": {
+        "name": "Perfect Voice",
+        "shortName": "Perfect",
+        "description": "Automatic pitch correction (auto-tune)",
+        "icon": "🎵",
+        "params": {
+          "pitch": {
+            "label": "Pitch",
+            "unit": "semitones",
+            "description": "Transpose voice up or down"
+          },
+          "harmonization": {
+            "label": "Harmonization",
+            "description": "Add harmonies to your voice"
+          },
+          "strength": {
+            "label": "Strength",
+            "unit": "%",
+            "description": "Auto-tune correction strength"
+          },
+          "retuneSpeed": {
+            "label": "Correction Speed",
+            "unit": "%",
+            "description": "Correction speed (0=natural, 100=robotic)"
+          },
+          "scale": {
+            "label": "Musical Scale",
+            "description": "Allowed notes for correction",
+            "options": {
+              "chromatic": "Chromatic (all notes)",
+              "major": "Major",
+              "minor": "Minor",
+              "pentatonic": "Pentatonic"
+            }
+          },
+          "key": {
+            "label": "Key",
+            "description": "Reference key"
+          },
+          "naturalVibrato": {
+            "label": "Natural Vibrato",
+            "unit": "%",
+            "description": "Preserve natural vibrato"
+          }
+        },
+        "presets": {
+          "title": "Presets",
+          "voix-naturelle": {
+            "name": "Natural Voice",
+            "description": "Very subtle correction for natural sound"
+          },
+          "pop-star": {
+            "name": "Pop Star",
+            "description": "Modern effect for perfect pop voice"
+          },
+          "effet-robot": {
+            "name": "Robot Effect",
+            "description": "Instant correction T-Pain style"
+          },
+          "correction-subtile": {
+            "name": "Subtle Correction",
+            "description": "Discrete and pleasant enhancement"
+          },
+          "custom": "Custom"
+        }
+      },
+
+      "baby-voice": {
+        "name": "Baby Voice",
+        "shortName": "Baby",
+        "description": "Transform your voice into a child's voice",
+        "icon": "👶",
+        "params": {
+          "pitch": {
+            "label": "Pitch",
+            "unit": "semitones",
+            "description": "Child voice pitch"
+          },
+          "formant": {
+            "label": "Timbre",
+            "unit": "×",
+            "description": "Vocal timbre modification"
+          },
+          "breathiness": {
+            "label": "Breathiness",
+            "unit": "%",
+            "description": "Add breathiness to voice"
+          }
+        }
+      },
+
+      "demon-voice": {
+        "name": "Demon Voice",
+        "shortName": "Demon",
+        "description": "Deep and menacing voice with distortion",
+        "icon": "😈",
+        "params": {
+          "pitch": {
+            "label": "Pitch",
+            "unit": "semitones",
+            "description": "Voice pitch (negative = deeper)"
+          },
+          "distortion": {
+            "label": "Distortion",
+            "unit": "%",
+            "description": "Saturation and graininess"
+          },
+          "reverb": {
+            "label": "Reverb",
+            "unit": "%",
+            "description": "Cathedral echo"
+          }
+        }
+      },
+
+      "back-sound": {
+        "name": "Background Sound",
+        "shortName": "Background",
+        "description": "Add background music or ambiance",
+        "icon": "🎼",
+        "params": {
+          "soundFile": {
+            "label": "Audio file",
+            "description": "Choose an audio file",
+            "placeholder": "No file selected"
+          },
+          "volume": {
+            "label": "Volume",
+            "unit": "%",
+            "description": "Background sound volume"
+          },
+          "loopMode": {
+            "label": "Loop Mode",
+            "description": "How to repeat the sound",
+            "options": {
+              "N_TIMES": "Number of times",
+              "N_MINUTES": "Duration in minutes"
+            }
+          },
+          "loopValue": {
+            "label": "Value",
+            "description": "Number of repeats or duration"
+          }
+        }
+      }
+    },
+
+    "timeline": {
+      "title": "Effects Timeline",
+      "duration": "Duration",
+      "effectsUsed": "Effects Used",
+      "noTimeline": "No effects timeline available",
+      "activatedAt": "Activated at",
+      "deactivatedAt": "Deactivated at",
+      "updatedAt": "Updated at",
+      "viewDetails": "View Details",
+      "hide": "Hide",
+      "stats": {
+        "title": "Statistics",
+        "totalActiveTime": "Total time with effects",
+        "activations": "Activations",
+        "parameterChanges": "Changes"
+      }
+    },
+
+    "badge": {
+      "hasEffects": "Audio effects",
+      "clickToView": "Click to view timeline"
+    },
+
+    "status": {
+      "on": "On",
+      "off": "Off",
+      "active": "Active",
+      "inactive": "Inactive"
+    }
+  }
+}

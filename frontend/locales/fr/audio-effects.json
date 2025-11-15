@@ -1,0 +1,189 @@
+{
+  "audioEffects": {
+    "title": "Effets Audio",
+    "noEffectsActive": "Aucun effet actif",
+    "toggleEffect": "Activer/Désactiver",
+    "configure": "Configurer",
+    "close": "Fermer",
+    "apply": "Appliquer",
+    "reset": "Réinitialiser",
+
+    "effects": {
+      "voice-coder": {
+        "name": "Voix Parfaite",
+        "shortName": "Parfaite",
+        "description": "Correction automatique de la justesse (auto-tune)",
+        "icon": "🎵",
+        "params": {
+          "pitch": {
+            "label": "Hauteur",
+            "unit": "demi-tons",
+            "description": "Transpose la voix vers le haut ou le bas"
+          },
+          "harmonization": {
+            "label": "Harmonisation",
+            "description": "Ajoute des harmonies à votre voix"
+          },
+          "strength": {
+            "label": "Intensité",
+            "unit": "%",
+            "description": "Force de la correction automatique"
+          },
+          "retuneSpeed": {
+            "label": "Vitesse de correction",
+            "unit": "%",
+            "description": "Rapidité de la correction (0=naturel, 100=robotique)"
+          },
+          "scale": {
+            "label": "Gamme musicale",
+            "description": "Notes autorisées pour la correction",
+            "options": {
+              "chromatic": "Chromatique (toutes les notes)",
+              "major": "Majeure",
+              "minor": "Mineure",
+              "pentatonic": "Pentatonique"
+            }
+          },
+          "key": {
+            "label": "Tonalité",
+            "description": "Tonalité de référence"
+          },
+          "naturalVibrato": {
+            "label": "Vibrato naturel",
+            "unit": "%",
+            "description": "Préservation du vibrato naturel"
+          }
+        },
+        "presets": {
+          "title": "Préréglages",
+          "voix-naturelle": {
+            "name": "Voix Naturelle",
+            "description": "Correction très subtile pour un son naturel"
+          },
+          "pop-star": {
+            "name": "Pop Star",
+            "description": "Effet moderne pour voix pop parfaite"
+          },
+          "effet-robot": {
+            "name": "Effet Robot",
+            "description": "Correction instantanée style T-Pain"
+          },
+          "correction-subtile": {
+            "name": "Correction Subtile",
+            "description": "Amélioration discrète et agréable"
+          },
+          "custom": "Personnalisé"
+        }
+      },
+
+      "baby-voice": {
+        "name": "Voix Enfantine",
+        "shortName": "Enfantine",
+        "description": "Transforme votre voix en voix d'enfant",
+        "icon": "👶",
+        "params": {
+          "pitch": {
+            "label": "Hauteur",
+            "unit": "demi-tons",
+            "description": "Hauteur de la voix enfantine"
+          },
+          "formant": {
+            "label": "Timbre",
+            "unit": "×",
+            "description": "Modification du timbre vocal"
+          },
+          "breathiness": {
+            "label": "Souffle",
+            "unit": "%",
+            "description": "Ajout de souffle à la voix"
+          }
+        }
+      },
+
+      "demon-voice": {
+        "name": "Voix Démoniaque",
+        "shortName": "Démoniaque",
+        "description": "Voix grave et menaçante avec distorsion",
+        "icon": "😈",
+        "params": {
+          "pitch": {
+            "label": "Hauteur",
+            "unit": "demi-tons",
+            "description": "Hauteur de la voix (négatif = plus grave)"
+          },
+          "distortion": {
+            "label": "Distorsion",
+            "unit": "%",
+            "description": "Saturation et grain de la voix"
+          },
+          "reverb": {
+            "label": "Réverbération",
+            "unit": "%",
+            "description": "Écho de cathédrale"
+          }
+        }
+      },
+
+      "back-sound": {
+        "name": "Fond Sonore",
+        "shortName": "Fond",
+        "description": "Ajoute une musique ou ambiance de fond",
+        "icon": "🎼",
+        "params": {
+          "soundFile": {
+            "label": "Fichier audio",
+            "description": "Choisissez un fichier audio",
+            "placeholder": "Aucun fichier sélectionné"
+          },
+          "volume": {
+            "label": "Volume",
+            "unit": "%",
+            "description": "Volume du fond sonore"
+          },
+          "loopMode": {
+            "label": "Mode de boucle",
+            "description": "Comment répéter le son",
+            "options": {
+              "N_TIMES": "Nombre de fois",
+              "N_MINUTES": "Durée en minutes"
+            }
+          },
+          "loopValue": {
+            "label": "Valeur",
+            "description": "Nombre de répétitions ou durée"
+          }
+        }
+      }
+    },
+
+    "timeline": {
+      "title": "Timeline des Effets",
+      "duration": "Durée",
+      "effectsUsed": "Effets utilisés",
+      "noTimeline": "Aucune timeline d'effets disponible",
+      "activatedAt": "Activé à",
+      "deactivatedAt": "Désactivé à",
+      "updatedAt": "Modifié à",
+      "viewDetails": "Voir les détails",
+      "hide": "Masquer",
+      "stats": {
+        "title": "Statistiques",
+        "totalActiveTime": "Temps total avec effets",
+        "activations": "Activations",
+        "parameterChanges": "Modifications"
+      }
+    },
+
+    "badge": {
+      "hasEffects": "Effets audio",
+      "clickToView": "Cliquer pour voir la timeline"
+    },
+
+    "status": {
+      "on": "Activé",
+      "off": "Désactivé",
+      "active": "Actif",
+      "inactive": "Inactif"
+    }
+  }
+}
