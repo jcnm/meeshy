@@ -90,21 +90,24 @@ export interface MessageRequest {
   // Champs requis
   readonly conversationId: string;
   readonly content: string;
-  
+
   // Champs optionnels avec defaults intelligents
   readonly originalLanguage?: string;        // Default: détection auto ou langue utilisateur
   readonly messageType?: string;             // Default: "text"
   readonly replyToId?: string;              // Pour les réponses/threads
-  
+
+  // Mentions d'utilisateurs - envoyées depuis le frontend
+  readonly mentionedUserIds?: readonly string[];  // IDs des utilisateurs mentionnés (@user)
+
   // Extensions pour messaging anonyme - DEPRECATED, utiliser authContext
   readonly isAnonymous?: boolean;           // Default: false
   readonly anonymousDisplayName?: string;   // Requis si isAnonymous = true
-  
+
   // Metadata optionnelle
   readonly priority?: MessagePriority;
   readonly encrypted?: boolean;             // Default: false
   readonly attachments?: readonly MessageAttachment[];
-  
+
   // Preferences de traduction spécifiques à ce message
   readonly translationPreferences?: MessageTranslationPreferences;
 
