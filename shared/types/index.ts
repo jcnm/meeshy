@@ -36,6 +36,9 @@ export * from './attachment';
 export * from './video-call';
 export * from './attachment';
 
+// Export des types unifiés Phase 7 - Audio Effects Timeline
+export * from './audio-effects-timeline';
+
 // Export des types communauté
 export * from './community';
 
