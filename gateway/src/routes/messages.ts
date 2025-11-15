@@ -450,47 +450,31 @@ export default async function messageRoutes(fastify: FastifyInstance) {
       }
 
       if (status === 'read') {
-        // Vérifier si le statut de lecture existe déjà
-        const existingReadStatus = await prisma.messageStatus.findFirst({
+        // Utiliser upsert pour créer ou mettre à jour le statut de lecture
+        const status = await prisma.messageStatus.upsert({
           where: {
+            messageId_userId: {
+              messageId: messageId,
+              userId: userId
+            }
+          },
+          create: {
             messageId: messageId,
-            userId: userId
+            userId: userId,
+            readAt: new Date()
+          },
+          update: {
+            readAt: new Date()
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true
+              }
+            }
           }
         });
-
-        let status;
-        if (existingReadStatus) {
-          // Mettre à jour
-          status = await prisma.messageStatus.update({
-            where: { id: existingReadStatus.id },
-            data: { readAt: new Date() },
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  username: true
-                }
-              }
-            }
-          });
-        } else {
-          // Créer nouveau
-          status = await prisma.messageStatus.create({
-            data: {
-              messageId: messageId,
-              userId: userId,
-              readAt: new Date()
-            },
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  username: true
-                }
-              }
-            }
-          });
-        }
 
         // Diffuser le statut de lecture via Socket.IO
         try {

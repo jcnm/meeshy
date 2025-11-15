@@ -1119,26 +1119,31 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         const messageIds = messages.map(m => m.id);
 
         try {
-          // Optimisation : Créer les status seulement si pas déjà marqué comme lu
-          // On utilise createMany pour créer les statuts de lecture
-          // Note: On ignore les erreurs de duplication car certains messages peuvent déjà être lus
+          // Optimisation : Marquer les messages comme reçus (utiliser upsert pour éviter les erreurs de duplication)
           for (const messageId of messageIds) {
             try {
-              await prisma.messageStatus.create({
-                data: {
+              await prisma.messageStatus.upsert({
+                where: {
+                  messageId_userId: {
+                    messageId,
+                    userId
+                  }
+                },
+                create: {
                   messageId,
-                  userId
+                  userId,
+                  receivedAt: new Date()
+                },
+                update: {
+                  receivedAt: new Date()
                 }
               });
             } catch (err) {
-              // Ignorer les erreurs de duplication (message déjà lu)
-              if ((err as any)?.code !== 'P2002') {
-                console.warn('[GATEWAY] Error creating message status:', err);
-              }
+              console.warn('[GATEWAY] Error upserting message status:', err);
             }
           }
         } catch (error) {
-          console.warn('[GATEWAY] Error marking messages as read:', error);
+          console.warn('[GATEWAY] Error marking messages as received:', error);
         }
       }
 
@@ -1214,16 +1219,29 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // Marquer tous les messages comme lus
-      const statusData = unreadMessages.map(message => ({
-        messageId: message.id,
-        userId: userId,
-        readAt: new Date()
-      }));
-
-      await prisma.messageStatus.createMany({
-        data: statusData
-      });
+      // Marquer tous les messages comme lus (utiliser des upserts pour éviter les erreurs de duplication)
+      for (const message of unreadMessages) {
+        try {
+          await prisma.messageStatus.upsert({
+            where: {
+              messageId_userId: {
+                messageId: message.id,
+                userId: userId
+              }
+            },
+            create: {
+              messageId: message.id,
+              userId: userId,
+              readAt: new Date()
+            },
+            update: {
+              readAt: new Date()
+            }
+          });
+        } catch (err) {
+          console.warn('[GATEWAY] Error upserting message status for marking as read:', err);
+        }
+      }
 
       return reply.send({
         success: true,
@@ -1367,11 +1385,18 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       });
 
       // Marquer le message comme lu pour l'expéditeur
-      await prisma.messageStatus.create({
-        data: {
+      await prisma.messageStatus.upsert({
+        where: {
+          messageId_userId: {
+            messageId: message.id,
+            userId
+          }
+        },
+        create: {
           messageId: message.id,
           userId
-        }
+        },
+        update: {}
       });
 
       // TRAITEMENT DES MENTIONS ET NOTIFICATIONS
@@ -1554,9 +1579,29 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       });
 
       if (unreadMessages.length > 0) {
-        await prisma.messageStatus.createMany({
-          data: unreadMessages.map(m => ({ messageId: m.id, userId }))
-        });
+        // Utiliser des upserts pour éviter les erreurs de duplication
+        for (const message of unreadMessages) {
+          try {
+            await prisma.messageStatus.upsert({
+              where: {
+                messageId_userId: {
+                  messageId: message.id,
+                  userId
+                }
+              },
+              create: {
+                messageId: message.id,
+                userId,
+                readAt: new Date()
+              },
+              update: {
+                readAt: new Date()
+              }
+            });
+          } catch (err) {
+            console.warn('[GATEWAY] Error upserting message status:', err);
+          }
+        }
       }
 
       reply.send({ success: true, data: { markedCount: unreadMessages.length } });

@@ -878,18 +878,24 @@ export class MessagingService {
    */
   private async markAsRead(messageId: string, userId: string): Promise<void> {
     try {
-      await this.prisma.messageStatus.create({
-        data: {
+      await this.prisma.messageStatus.upsert({
+        where: {
+          messageId_userId: {
+            messageId,
+            userId
+          }
+        },
+        create: {
           messageId,
           userId,
+          readAt: new Date()
+        },
+        update: {
           readAt: new Date()
         }
       });
     } catch (error) {
-      // Ignore les erreurs de contrainte unique (déjà lu)
-      if (!error.code || error.code !== 'P2002') {
-        console.error('[UnifiedMessageHandler] Error marking message as read:', error);
-      }
+      console.error('[UnifiedMessageHandler] Error marking message as read:', error);
     }
   }
 
