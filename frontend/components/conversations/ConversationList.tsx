@@ -361,9 +361,8 @@ const ConversationItem = memo(function ConversationItem({
                     return (
                       <>
                         <span className="inline-flex text-blue-500">📷</span>
-                        <span>Image</span>
                         {attachment.width && attachment.height && (
-                          <span className="text-xs">• {attachment.width}×{attachment.height}</span>
+                          <span className="text-xs">{attachment.width}×{attachment.height}</span>
                         )}
                       </>
                     );
@@ -371,9 +370,8 @@ const ConversationItem = memo(function ConversationItem({
                     return (
                       <>
                         <span className="inline-flex text-red-500">🎥</span>
-                        <span>Vidéo</span>
                         {attachment.duration && (
-                          <span className="text-xs">• {Math.floor(attachment.duration / 60)}:{(attachment.duration % 60).toString().padStart(2, '0')}</span>
+                          <span className="text-xs">{Math.floor(attachment.duration / 60)}:{(attachment.duration % 60).toString().padStart(2, '0')}</span>
                         )}
                         {attachment.width && attachment.height && (
                           <span className="text-xs">• {attachment.width}×{attachment.height}</span>
@@ -387,9 +385,14 @@ const ConversationItem = memo(function ConversationItem({
                     return (
                       <>
                         <span className="inline-flex text-purple-500">🎵</span>
-                        <span>Audio</span>
                         {attachment.duration && (
-                          <span className="text-xs">• {Math.floor(attachment.duration / 60)}:{(attachment.duration % 60).toString().padStart(2, '0')}</span>
+                          <span className="text-xs">{Math.floor(attachment.duration / 60)}:{(attachment.duration % 60).toString().padStart(2, '0')}</span>
+                        )}
+                        {attachment.bitrate && (
+                          <span className="text-xs">• {Math.round(attachment.bitrate / 1000)}kbps</span>
+                        )}
+                        {(attachment as any).audioEffectsTimeline && (
+                          <span className="text-xs">• 🎚️</span>
                         )}
                       </>
                     );
@@ -397,9 +400,17 @@ const ConversationItem = memo(function ConversationItem({
                     return (
                       <>
                         <span className="inline-flex text-orange-500">📄</span>
-                        <span>PDF</span>
                         {attachment.pageCount && (
-                          <span className="text-xs">• {attachment.pageCount} page{attachment.pageCount > 1 ? 's' : ''}</span>
+                          <span className="text-xs">{attachment.pageCount} page{attachment.pageCount > 1 ? 's' : ''}</span>
+                        )}
+                      </>
+                    );
+                  } else if (mimeType.includes('markdown') || (attachment.originalName && attachment.originalName.endsWith('.md'))) {
+                    return (
+                      <>
+                        <span className="inline-flex text-blue-500">📝</span>
+                        {attachment.lineCount && (
+                          <span className="text-xs">{attachment.lineCount} ligne{attachment.lineCount > 1 ? 's' : ''}</span>
                         )}
                       </>
                     );
@@ -407,9 +418,8 @@ const ConversationItem = memo(function ConversationItem({
                     return (
                       <>
                         <span className="inline-flex text-green-500">💻</span>
-                        <span>Code</span>
                         {attachment.lineCount && (
-                          <span className="text-xs">• {attachment.lineCount} ligne{attachment.lineCount > 1 ? 's' : ''}</span>
+                          <span className="text-xs">{attachment.lineCount} ligne{attachment.lineCount > 1 ? 's' : ''}</span>
                         )}
                       </>
                     );
@@ -417,13 +427,12 @@ const ConversationItem = memo(function ConversationItem({
                     return (
                       <>
                         <span className="inline-flex text-gray-500">📎</span>
-                        <span>Fichier</span>
                       </>
                     );
                   }
                 })()}
                 {conversation.lastMessage.attachments.length > 1 && (
-                  <span className="text-xs">+{conversation.lastMessage.attachments.length - 1}</span>
+                  <span className="text-xs font-medium">+{conversation.lastMessage.attachments.length - 1}</span>
                 )}
               </span>
             ) : (
