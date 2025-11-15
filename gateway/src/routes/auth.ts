@@ -342,13 +342,69 @@ export async function authRoutes(fastify: FastifyInstance) {
     }
   });
 
+  // Route pour vérifier la disponibilité d'un username ou email
+  fastify.get('/check-availability', {
+    schema: {
+      querystring: {
+        type: 'object',
+        properties: {
+          username: { type: 'string' },
+          email: { type: 'string' }
+        }
+      }
+    }
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { username, email } = request.query as { username?: string; email?: string };
+
+      if (!username && !email) {
+        return reply.status(400).send({
+          success: false,
+          error: 'Username ou email requis'
+        });
+      }
+
+      const prisma = (fastify as any).prisma;
+      const result: { usernameAvailable?: boolean; emailAvailable?: boolean } = {};
+
+      // Vérifier le username
+      if (username) {
+        const normalizedUsername = username.trim().toLowerCase();
+        const existingUser = await prisma.user.findFirst({
+          where: { username: normalizedUsername }
+        });
+        result.usernameAvailable = !existingUser;
+      }
+
+      // Vérifier l'email
+      if (email) {
+        const normalizedEmail = email.trim().toLowerCase();
+        const existingUser = await prisma.user.findFirst({
+          where: { email: normalizedEmail }
+        });
+        result.emailAvailable = !existingUser;
+      }
+
+      return reply.send({
+        success: true,
+        data: result
+      });
+    } catch (error) {
+      console.error('[GATEWAY] Error checking availability:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Erreur lors de la vérification'
+      });
+    }
+  });
+
   // Route pour forcer l'initialisation (temporaire)
   fastify.post('/force-init', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const { InitService } = await import('../services/init.service');
       const initService = new InitService((fastify as any).prisma);
       await initService.initializeDatabase();
-      
+
       return reply.send({
         success: true,
         message: 'Database initialized successfully'

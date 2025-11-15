@@ -39,6 +39,10 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
   } | null>(null);
   const [isValidatingAffiliate, setIsValidatingAffiliate] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [emailAvailable, setEmailAvailable] = useState<boolean | null>(null);
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   // Pas d'utilisation de useAuth - gestion manuelle de l'authentification
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -154,6 +158,78 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
     return usernameRegex.test(username);
   };
 
+  const checkUsernameAvailability = async (username: string) => {
+    if (!username || username.length < 4) {
+      setUsernameAvailable(null);
+      return;
+    }
+
+    setIsCheckingUsername(true);
+    try {
+      const response = await fetch(buildApiUrl(`/auth/check-availability?username=${encodeURIComponent(username)}`));
+      if (response.ok) {
+        const data = await response.json();
+        setUsernameAvailable(data.data.usernameAvailable);
+      } else {
+        setUsernameAvailable(null);
+      }
+    } catch (error) {
+      console.error('Erreur vérification username:', error);
+      setUsernameAvailable(null);
+    } finally {
+      setIsCheckingUsername(false);
+    }
+  };
+
+  const checkEmailAvailability = async (email: string) => {
+    if (!email || !email.includes('@')) {
+      setEmailAvailable(null);
+      return;
+    }
+
+    setIsCheckingEmail(true);
+    try {
+      const response = await fetch(buildApiUrl(`/auth/check-availability?email=${encodeURIComponent(email)}`));
+      if (response.ok) {
+        const data = await response.json();
+        setEmailAvailable(data.data.emailAvailable);
+      } else {
+        setEmailAvailable(null);
+      }
+    } catch (error) {
+      console.error('Erreur vérification email:', error);
+      setEmailAvailable(null);
+    } finally {
+      setIsCheckingEmail(false);
+    }
+  };
+
+  // Debounce pour vérifier le username
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (formData.username && validateUsername(formData.username)) {
+        checkUsernameAvailability(formData.username);
+      } else {
+        setUsernameAvailable(null);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [formData.username]);
+
+  // Debounce pour vérifier l'email
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (formData.email) {
+        checkEmailAvailability(formData.email);
+      } else {
+        setEmailAvailable(null);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [formData.email]);
+
   const handleNextStep = () => {
     // Validation de l'étape 1
     if (currentStep === 1) {
@@ -161,19 +237,31 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
         toast.error(t('register.fillRequiredFields'));
         return;
       }
-      
+
       // Validation du nom d'utilisateur
       if (!validateUsername(formData.username)) {
         toast.error(t('register.validation.usernameInvalid'));
         return;
       }
-      
+
+      // Vérifier disponibilité du username
+      if (usernameAvailable === false) {
+        toast.error(t('register.errors.usernameExists'));
+        return;
+      }
+
+      // Vérifier disponibilité de l'email
+      if (emailAvailable === false) {
+        toast.error(t('register.errors.emailExists'));
+        return;
+      }
+
       if (formData.password !== confirmPassword) {
         toast.error(t('register.validation.passwordMismatch'));
         return;
       }
     }
-    
+
     setCurrentStep(2);
   };
 
@@ -370,9 +458,23 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
                       required
                       className="h-10"
                     />
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      {t('register.usernameHelp')}
-                    </p>
+                    {isCheckingUsername ? (
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Vérification...
+                      </p>
+                    ) : usernameAvailable === false ? (
+                      <p className="text-xs text-red-600 mt-1">
+                        ❌ Ce nom d'utilisateur est déjà pris
+                      </p>
+                    ) : usernameAvailable === true ? (
+                      <p className="text-xs text-green-600 mt-1">
+                        ✓ Ce nom d'utilisateur est disponible
+                      </p>
+                    ) : (
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {t('register.usernameHelp')}
+                      </p>
+                    )}
                   </div>
 
                   {/* Email */}
@@ -393,6 +495,19 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
                       required
                       className="h-10"
                     />
+                    {isCheckingEmail ? (
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Vérification...
+                      </p>
+                    ) : emailAvailable === false ? (
+                      <p className="text-xs text-red-600 mt-1">
+                        ❌ Cet email est déjà utilisé
+                      </p>
+                    ) : emailAvailable === true ? (
+                      <p className="text-xs text-green-600 mt-1">
+                        ✓ Cet email est disponible
+                      </p>
+                    ) : null}
                   </div>
 
                   {/* Mot de passe et confirmation */}
