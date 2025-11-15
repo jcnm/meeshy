@@ -192,14 +192,18 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
 
     // Validation de l'acceptation des conditions
     if (!acceptTerms) {
-        toast.error('You must accept the terms and conditions');
+      toast.error(t('register.errors.acceptTermsRequired'));
       return;
     }
 
     setIsLoading(true);
+    console.log('[SIGNIN_PAGE] Tentative d\'inscription pour:', formData.username);
+
     try {
-      
-      const response = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.REGISTER), {
+      const apiUrl = buildApiUrl(API_ENDPOINTS.AUTH.REGISTER);
+      console.log('[SIGNIN_PAGE] URL API:', apiUrl);
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -207,14 +211,46 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
         body: JSON.stringify(formData),
       });
 
+      console.log('[SIGNIN_PAGE] Réponse HTTP:', response.status, response.statusText);
+
+      // Gérer les erreurs HTTP avec messages spécifiques
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || t('register.errors.registrationError'));
+        const errorData = await response.json().catch(() => ({}));
+        let errorMessage = errorData.error || t('register.errors.registrationError');
+
+        if (response.status === 400) {
+          // Erreur de validation ou données existantes
+          if (errorData.error) {
+            if (errorData.error.includes('email') || errorData.error.includes('Email')) {
+              errorMessage = t('register.errors.emailExists');
+            } else if (errorData.error.includes('username') || errorData.error.includes('utilisateur')) {
+              errorMessage = t('register.errors.usernameExists');
+            } else if (errorData.error.includes('phone') || errorData.error.includes('téléphone')) {
+              errorMessage = t('register.errors.phoneExists');
+            } else {
+              errorMessage = t('register.errors.invalidData');
+            }
+          }
+          console.error('[SIGNIN_PAGE] Échec 400: Données invalides -', errorData.error);
+        } else if (response.status === 500) {
+          errorMessage = t('register.errors.serverError');
+          console.error('[SIGNIN_PAGE] Échec 500: Erreur serveur');
+        } else if (response.status >= 400) {
+          errorMessage = t('register.errors.unknownError');
+          console.error('[SIGNIN_PAGE] Échec', response.status, ':', response.statusText, errorData);
+        }
+
+        toast.error(errorMessage);
+        setIsLoading(false);
+        return;
       }
 
       const data = await response.json();
+      console.log('[SIGNIN_PAGE] Données reçues:', { success: data.success, hasToken: !!data.data?.token, hasUser: !!data.data?.user });
 
       if (data.success && data.data?.user && data.data?.token) {
+        console.log('[SIGNIN_PAGE] ✅ Inscription réussie pour:', data.data.user.username);
+
         // Stocker les données d'authentification via authManager (source unique)
         authManager.setCredentials(data.data.user, data.data.token);
 
@@ -231,29 +267,36 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
                 referredUserId: data.data.user.id
               })
             });
-            
+
             // Nettoyer le token d'affiliation après utilisation
             localStorage.removeItem('meeshy_affiliate_token');
             // Supprimer également le cookie
             document.cookie = 'meeshy_affiliate_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
           } catch (affiliateError) {
-            console.error('Erreur enregistrement affiliation:', affiliateError);
+            console.error('[SIGNIN_PAGE] Erreur enregistrement affiliation:', affiliateError);
             // Ne pas bloquer l'inscription si l'affiliation échoue
           }
         }
-        
-        toast.success(`${t('register.success.welcome', { name: formData.firstName })} ${formData.firstName}!`);
 
-        // CORRECTION CRITIQUE: Forcer un hard redirect pour rafraîchir complètement l'état
+        // Toast de succès
+        toast.success(t('register.success.registrationSuccess'));
+
+        // Redirection
         const redirectUrl = returnUrl || '/dashboard';
+        console.log('[SIGNIN_PAGE] Redirection vers:', redirectUrl);
         window.location.href = redirectUrl;
       } else {
-        throw new Error('Invalid response data');
+        const errorMsg = t('register.errors.registrationError');
+        console.error('[SIGNIN_PAGE] ❌ Réponse invalide:', data);
+        toast.error(errorMsg);
+        setIsLoading(false);
       }
     } catch (error) {
-      console.error('[SIGNIN_PAGE] Erreur d\'inscription:', error);
-      toast.error(error instanceof Error ? error.message : t('register.errors.registrationError'));
-    } finally {
+      console.error('[SIGNIN_PAGE] ❌ Erreur réseau ou exception:', error);
+      const errorMsg = error instanceof Error
+        ? `${t('register.errors.networkError')}: ${error.message}`
+        : t('register.errors.networkError');
+      toast.error(errorMsg);
       setIsLoading(false);
     }
   };

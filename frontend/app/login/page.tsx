@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/use-auth';
 import { LargeLogo } from '@/components/branding';
@@ -140,16 +141,21 @@ function QuickLoginPageContent() {
         let errorMessage = t('login.errors.loginFailed');
 
         if (response.status === 401) {
-          errorMessage = 'Nom d\'utilisateur/email ou mot de passe invalide';
+          errorMessage = t('login.errors.invalidCredentials');
           console.error('[LOGIN] Échec 401: Identifiants invalides');
         } else if (response.status === 500) {
-          errorMessage = 'Erreur serveur. Veuillez réessayer dans quelques instants.';
+          errorMessage = t('login.errors.serverError');
           console.error('[LOGIN] Échec 500: Erreur serveur');
+        } else if (response.status === 400) {
+          errorMessage = t('login.errors.loginFailed');
+          console.error('[LOGIN] Échec 400: Données invalides');
         } else if (response.status >= 400) {
+          errorMessage = t('login.errors.unknownError');
           console.error('[LOGIN] Échec', response.status, ':', response.statusText);
         }
 
         setError(errorMessage);
+        toast.error(errorMessage);
         setIsLoading(false);
         return;
       }
@@ -165,6 +171,9 @@ function QuickLoginPageContent() {
         // Mettre à jour le store d'authentification
         authLogin(data.data.user, data.data.token);
 
+        // Toast de succès
+        toast.success(t('login.success.loginSuccess'));
+
         // Redirection
         const redirectUrl = returnUrl || '/dashboard';
         console.log('[LOGIN] Redirection vers:', redirectUrl);
@@ -173,18 +182,20 @@ function QuickLoginPageContent() {
         router.replace(redirectUrl);
       } else {
         // Réponse invalide ou erreur métier
-        const errorMsg = data.error || 'Erreur lors de la connexion. Veuillez vérifier vos identifiants.';
+        const errorMsg = data.error || t('login.errors.loginFailed');
         console.error('[LOGIN] ❌ Échec de connexion:', errorMsg);
         setError(errorMsg);
+        toast.error(errorMsg);
         setIsLoading(false);
       }
     } catch (error) {
       // Erreur réseau ou autre erreur inattendue
       console.error('[LOGIN] ❌ Erreur réseau ou exception:', error);
       const errorMsg = error instanceof Error
-        ? `Erreur de connexion: ${error.message}`
-        : 'Erreur réseau. Vérifiez votre connexion internet.';
+        ? `${t('login.errors.networkError')}: ${error.message}`
+        : t('login.errors.networkError');
       setError(errorMsg);
+      toast.error(errorMsg);
       setIsLoading(false);
     }
   };

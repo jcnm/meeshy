@@ -117,20 +117,20 @@ export function RegisterForm({
     // Validation différente selon le mode
     if (linkId) {
       // Mode lien d'invitation - pas de username requis
-      if (!formData.firstName.trim() || !formData.lastName.trim() || 
+      if (!formData.firstName.trim() || !formData.lastName.trim() ||
           !formData.email.trim() || !formData.password.trim()) {
-        toast.error('Veuillez remplir tous les champs obligatoires');
+        toast.error(t('register.fillRequiredFields'));
         return;
       }
     } else {
       // Mode inscription normale - username requis
-      if (!formData.username.trim() || !formData.password.trim() || 
-          !formData.firstName.trim() || !formData.lastName.trim() || 
+      if (!formData.username.trim() || !formData.password.trim() ||
+          !formData.firstName.trim() || !formData.lastName.trim() ||
           !formData.email.trim()) {
         toast.error(t('register.fillRequiredFields'));
         return;
       }
-      
+
       // Validation du nom d'utilisateur
       if (!validateUsername(formData.username)) {
         toast.error(t('register.validation.usernameInvalid'));
@@ -139,6 +139,8 @@ export function RegisterForm({
     }
 
     setIsLoading(true);
+    console.log('[REGISTER_FORM] Tentative d\'inscription pour:', formData.username || formData.email);
+
     try {
       // Générer un username sécurisé à partir de l'email en mode lien (uniquement lettres, chiffres, tirets et underscores)
       const emailUsername = formData.email.split('@')[0];
@@ -159,7 +161,10 @@ export function RegisterForm({
         ...formData
       };
 
-      const response = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.REGISTER), {
+      const apiUrl = buildApiUrl(API_ENDPOINTS.AUTH.REGISTER);
+      console.log('[REGISTER_FORM] URL API:', apiUrl);
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -167,51 +172,86 @@ export function RegisterForm({
         body: JSON.stringify(requestBody),
       });
 
+      console.log('[REGISTER_FORM] Réponse HTTP:', response.status, response.statusText);
+
+      // Gérer les erreurs HTTP avec messages spécifiques
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Registration failed');
+        const errorData = await response.json().catch(() => ({}));
+        let errorMessage = errorData.error || t('register.errors.registrationError');
+
+        if (response.status === 400) {
+          // Erreur de validation ou données existantes
+          if (errorData.error) {
+            if (errorData.error.includes('email') || errorData.error.includes('Email')) {
+              errorMessage = t('register.errors.emailExists');
+            } else if (errorData.error.includes('username') || errorData.error.includes('utilisateur')) {
+              errorMessage = t('register.errors.usernameExists');
+            } else if (errorData.error.includes('phone') || errorData.error.includes('téléphone')) {
+              errorMessage = t('register.errors.phoneExists');
+            } else {
+              errorMessage = t('register.errors.invalidData');
+            }
+          }
+          console.error('[REGISTER_FORM] Échec 400: Données invalides -', errorData.error);
+        } else if (response.status === 500) {
+          errorMessage = t('register.errors.serverError');
+          console.error('[REGISTER_FORM] Échec 500: Erreur serveur');
+        } else if (response.status >= 400) {
+          errorMessage = t('register.errors.unknownError');
+          console.error('[REGISTER_FORM] Échec', response.status, ':', response.statusText, errorData);
+        }
+
+        toast.error(errorMessage);
+        setIsLoading(false);
+        return;
       }
 
       const data = await response.json();
-      
+      console.log('[REGISTER_FORM] Données reçues:', { success: data.success, hasToken: !!data.data?.token, hasUser: !!data.data?.user });
+
       if (linkId && onJoinSuccess) {
         // Mode lien d'invitation
-        toast.success('Compte créé avec succès !');
+        console.log('[REGISTER_FORM] ✅ Inscription via lien réussie');
+        toast.success(t('register.success.registrationSuccess'));
         onJoinSuccess(data);
       } else {
         // Mode inscription normale
         if (data.success && data.data?.user && data.data?.token) {
-          toast.success(t('register.success.welcome', { name: formData.firstName }));
+          console.log('[REGISTER_FORM] ✅ Inscription réussie pour:', data.data.user.username);
+          toast.success(t('register.success.registrationSuccess'));
           login(data.data.user, data.data.token);
-          
+
           if (onSuccess) {
             onSuccess(data.data.user, data.data.token);
           } else {
             // Comportement par défaut : Recharger la page si on est sur "/" sinon rediriger
             const currentPath = window.location.pathname;
-            
+
+            console.log('[REGISTER_FORM] Redirection après inscription...');
             // Petit délai pour permettre à l'état d'être mis à jour
             setTimeout(() => {
               if (currentPath === '/') {
-                // Sur la page d'accueil, recharger la page pour afficher la conversation meeshy
+                console.log('[REGISTER_FORM] Rechargement de la page d\'accueil');
                 window.location.reload();
               } else {
-                // Sur les autres pages, redirection normale vers le dashboard
+                console.log('[REGISTER_FORM] Redirection vers dashboard');
                 router.push('/dashboard');
               }
             }, 100);
           }
         } else {
-          throw new Error('Invalid response data');
+          const errorMsg = t('register.errors.registrationError');
+          console.error('[REGISTER_FORM] ❌ Réponse invalide:', data);
+          toast.error(errorMsg);
+          setIsLoading(false);
         }
       }
     } catch (error) {
-      console.error('Registration error:', error);
-      const errorMessage = linkId 
-        ? 'Erreur lors de la création du compte' 
-        : t('register.errors.registrationError');
-      toast.error(errorMessage);
-    } finally {
+      console.error('[REGISTER_FORM] ❌ Erreur réseau ou exception:', error);
+      const errorMsg = error instanceof Error
+        ? `${t('register.errors.networkError')}: ${error.message}`
+        : t('register.errors.networkError');
+      toast.error(errorMsg);
       setIsLoading(false);
     }
   };

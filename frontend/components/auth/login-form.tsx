@@ -67,12 +67,16 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         let errorMessage = errorData.error || t('login.errors.loginFailed');
 
         if (response.status === 401) {
-          errorMessage = 'Nom d\'utilisateur/email ou mot de passe invalide';
+          errorMessage = t('login.errors.invalidCredentials');
           console.error('[LOGIN_FORM] Échec 401: Identifiants invalides');
         } else if (response.status === 500) {
-          errorMessage = 'Erreur serveur. Veuillez réessayer dans quelques instants.';
+          errorMessage = t('login.errors.serverError');
           console.error('[LOGIN_FORM] Échec 500: Erreur serveur');
+        } else if (response.status === 400) {
+          errorMessage = t('login.errors.loginFailed');
+          console.error('[LOGIN_FORM] Échec 400: Données invalides');
         } else if (response.status >= 400) {
+          errorMessage = t('login.errors.unknownError');
           console.error('[LOGIN_FORM] Échec', response.status, ':', response.statusText, errorData);
         }
 
@@ -155,8 +159,8 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     } catch (error) {
       console.error('[LOGIN_FORM] ❌ Erreur réseau ou exception:', error);
       const errorMsg = error instanceof Error
-        ? error.message
-        : 'Erreur réseau. Vérifiez votre connexion internet.';
+        ? `${t('login.errors.networkError')}: ${error.message}`
+        : t('login.errors.networkError');
       setError(errorMsg);
       toast.error(errorMsg);
       setIsLoading(false);
