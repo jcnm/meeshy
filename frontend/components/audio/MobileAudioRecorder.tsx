@@ -639,7 +639,7 @@ export const MobileAudioRecorder: React.FC<MobileAudioRecorderProps> = ({
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
                   whileTap={{ scale: 0.95 }}
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-2.5 h-2.5" />
                   <span>Annuler</span>
                 </motion.button>
 
