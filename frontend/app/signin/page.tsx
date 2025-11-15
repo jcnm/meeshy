@@ -204,30 +204,44 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
     }
   };
 
-  // Debounce pour vérifier le username
+  // Debounce pour vérifier le username en temps réel
   useEffect(() => {
+    // Réinitialiser l'état si le champ est vide
+    if (!formData.username || formData.username.length < 4) {
+      setUsernameAvailable(null);
+      return;
+    }
+
+    // Vérifier le format avant de faire la requête
+    if (!validateUsername(formData.username)) {
+      setUsernameAvailable(null);
+      return;
+    }
+
+    // Debounce de 300ms pour éviter trop de requêtes
     const timer = setTimeout(() => {
-      if (formData.username && validateUsername(formData.username)) {
-        checkUsernameAvailability(formData.username);
-      } else {
-        setUsernameAvailable(null);
-      }
-    }, 500);
+      checkUsernameAvailability(formData.username);
+    }, 300);
 
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.username]);
 
-  // Debounce pour vérifier l'email
+  // Debounce pour vérifier l'email en temps réel
   useEffect(() => {
+    // Réinitialiser l'état si le champ est vide
+    if (!formData.email || !formData.email.includes('@')) {
+      setEmailAvailable(null);
+      return;
+    }
+
+    // Debounce de 300ms pour éviter trop de requêtes
     const timer = setTimeout(() => {
-      if (formData.email) {
-        checkEmailAvailability(formData.email);
-      } else {
-        setEmailAvailable(null);
-      }
-    }, 500);
+      checkEmailAvailability(formData.email);
+    }, 300);
 
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.email]);
 
   const handleNextStep = () => {

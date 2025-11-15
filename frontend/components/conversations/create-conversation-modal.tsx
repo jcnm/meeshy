@@ -75,14 +75,18 @@ export function CreateConversationModal({
   const [title, setTitle] = useState('');
   const [customIdentifier, setCustomIdentifier] = useState('');
   const [isLoadingCommunities, setIsLoadingCommunities] = useState(false);
-  
+
   // New modern UI states
   const [conversationType, setConversationType] = useState<'direct' | 'group' | 'public'>('direct');
   const [step, setStep] = useState<'members' | 'details'>('members');
-  
+
   // New state for community toggle and preview accordion
   const [showCommunitySection, setShowCommunitySection] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
+  // État pour validation temps réel de l'identifier
+  const [identifierAvailable, setIdentifierAvailable] = useState<boolean | null>(null);
+  const [isCheckingIdentifier, setIsCheckingIdentifier] = useState(false);
 
   // Validation function for identifier (allows hex suffix)
   const validateIdentifier = (identifier: string): boolean => {
@@ -240,6 +244,58 @@ export function CreateConversationModal({
     }
   }, [communitySearchQuery, loadCommunities]);
 
+  // Fonction pour vérifier la disponibilité de l'identifier
+  const checkIdentifierAvailability = useCallback(async (identifier: string) => {
+    if (!identifier || identifier.length < 3) {
+      setIdentifierAvailable(null);
+      return;
+    }
+
+    setIsCheckingIdentifier(true);
+    try {
+      const response = await apiService.get<{ success: boolean; available: boolean }>(`/api/conversations/check-identifier/${encodeURIComponent(identifier)}`);
+      if (response.data && response.data.success) {
+        setIdentifierAvailable(response.data.available);
+      } else {
+        setIdentifierAvailable(null);
+      }
+    } catch (error) {
+      console.error('Erreur vérification identifier:', error);
+      setIdentifierAvailable(null);
+    } finally {
+      setIsCheckingIdentifier(false);
+    }
+  }, []);
+
+  // Debounce pour vérifier l'identifier en temps réel
+  useEffect(() => {
+    // Ne vérifier que pour les conversations de type group ou public
+    if (conversationType === 'direct') {
+      setIdentifierAvailable(null);
+      return;
+    }
+
+    // Réinitialiser si l'identifier est vide ou trop court
+    if (!customIdentifier || customIdentifier.length < 3) {
+      setIdentifierAvailable(null);
+      return;
+    }
+
+    // Vérifier le format avant de faire la requête
+    if (!validateIdentifier(customIdentifier)) {
+      setIdentifierAvailable(null);
+      return;
+    }
+
+    // Debounce de 300ms pour éviter trop de requêtes
+    const timer = setTimeout(() => {
+      checkIdentifierAvailability(customIdentifier);
+    }, 300);
+
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customIdentifier, conversationType]);
+
   // Helper function to get user display name with fallback
   const getUserDisplayName = (user: User): string => {
     return user.displayName || user.username || user.firstName || user.lastName || 'Unknown User';
@@ -316,6 +372,12 @@ export function CreateConversationModal({
 
       if (!validateIdentifier(customIdentifier)) {
         toast.error(t('createConversationModal.errors.invalidIdentifier'));
+        return;
+      }
+
+      // Vérifier la disponibilité de l'identifier
+      if (identifierAvailable === false) {
+        toast.error(t('createConversationModal.errors.identifierTaken') || 'Cet identifiant est déjà utilisé');
         return;
       }
     }
@@ -670,12 +732,26 @@ export function CreateConversationModal({
                       required
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {t('createConversationModal.conversationDetails.identifierInfo')}
-                  </p>
-                  {customIdentifier && !validateIdentifier(customIdentifier) && (
+                  {/* Indicateurs de validation en temps réel */}
+                  {isCheckingIdentifier ? (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {t('createConversationModal.conversationDetails.checkingIdentifier') || 'Vérification...'}
+                    </p>
+                  ) : customIdentifier && !validateIdentifier(customIdentifier) ? (
                     <p className="text-xs text-red-500 mt-1">
                       {t('createConversationModal.conversationDetails.identifierError')}
+                    </p>
+                  ) : identifierAvailable === false ? (
+                    <p className="text-xs text-red-600 mt-1">
+                      ❌ {t('createConversationModal.conversationDetails.identifierTaken') || 'Cet identifiant est déjà utilisé'}
+                    </p>
+                  ) : identifierAvailable === true ? (
+                    <p className="text-xs text-green-600 mt-1">
+                      ✓ {t('createConversationModal.conversationDetails.identifierAvailable') || 'Cet identifiant est disponible'}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t('createConversationModal.conversationDetails.identifierInfo')}
                     </p>
                   )}
                 </div>
