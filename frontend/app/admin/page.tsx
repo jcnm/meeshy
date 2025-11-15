@@ -445,111 +445,143 @@ const AdminDashboard: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Activity className="w-5 h-5" />
-              <span>Actions rapides - Pages dédiées</span>
+              <span>Navigation - Toutes les pages admin</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              {/* 1. Utilisateurs */}
-              <Button 
-                className="h-20 flex flex-col space-y-2" 
-                onClick={() => router.push('/admin/users')}
-              >
-                <Users className="w-6 h-6" />
-                <span>Utilisateurs</span>
-              </Button>
+            {/* Ligne 1 - Gestion des utilisateurs et contenus */}
+            <div className="mb-3">
+              <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">Gestion des utilisateurs et contenus</h4>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                <Button
+                  variant="outline"
+                  className="h-20 flex flex-col space-y-2"
+                  onClick={() => router.push('/admin/users')}
+                >
+                  <Users className="w-6 h-6" />
+                  <span className="text-sm">Utilisateurs</span>
+                </Button>
 
-              {/* 2. Utilisateurs anonymes */}
-              <Button 
-                variant="outline" 
-                className="h-20 flex flex-col space-y-2" 
-                onClick={() => router.push('/admin/anonymous-users')}
-              >
-                <UserCheck className="w-6 h-6" />
-                <span>Anonymes</span>
-              </Button>
+                <Button
+                  variant="outline"
+                  className="h-20 flex flex-col space-y-2"
+                  onClick={() => router.push('/admin/anonymous-users')}
+                >
+                  <UserCheck className="w-6 h-6" />
+                  <span className="text-sm">Anonymes</span>
+                </Button>
 
-              {/* 3. Messages */}
-              <Button 
-                variant="outline" 
-                className="h-20 flex flex-col space-y-2" 
-                onClick={() => router.push('/admin/messages')}
-              >
-                <Activity className="w-6 h-6" />
-                <span>Messages</span>
-              </Button>
+                <Button
+                  variant="outline"
+                  className="h-20 flex flex-col space-y-2"
+                  onClick={() => router.push('/admin/messages')}
+                >
+                  <Activity className="w-6 h-6" />
+                  <span className="text-sm">Messages</span>
+                </Button>
 
-              {/* 4. Communautés */}
-              <Button 
-                variant="outline" 
-                className="h-20 flex flex-col space-y-2" 
-                onClick={() => router.push('/admin/communities')}
-              >
-                <Users className="w-6 h-6" />
-                <span>Communautés</span>
-              </Button>
+                <Button
+                  variant="outline"
+                  className="h-20 flex flex-col space-y-2"
+                  onClick={() => router.push('/admin/communities')}
+                >
+                  <Users className="w-6 h-6" />
+                  <span className="text-sm">Communautés</span>
+                </Button>
 
-              {/* 5. Traductions */}
-              <Button 
-                variant="outline" 
-                className="h-20 flex flex-col space-y-2" 
-                onClick={() => router.push('/admin/translations')}
-              >
-                <TrendingUp className="w-6 h-6" />
-                <span>Traductions</span>
-              </Button>
+                <Button
+                  variant="outline"
+                  className="h-20 flex flex-col space-y-2"
+                  onClick={() => router.push('/admin/share-links')}
+                >
+                  <Activity className="w-6 h-6" />
+                  <span className="text-sm">Liens créés</span>
+                </Button>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mt-4">
-              {/* 6. Liens de conversation */}
-              <Button 
-                variant="outline" 
-                className="h-20 flex flex-col space-y-2" 
-                onClick={() => router.push('/admin/share-links')}
-              >
-                <Activity className="w-6 h-6" />
-                <span>Liens créés</span>
-              </Button>
+            {/* Ligne 2 - Modération et traductions */}
+            <div className="mb-3">
+              <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">Modération et langues</h4>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                <Button
+                  variant="outline"
+                  className="h-20 flex flex-col space-y-2"
+                  onClick={() => router.push('/admin/reports')}
+                >
+                  <AlertCircle className="w-6 h-6" />
+                  <span className="text-sm">Signalements</span>
+                </Button>
 
-              {/* 7. Signalements */}
-              <Button 
-                variant="outline" 
-                className="h-20 flex flex-col space-y-2" 
-                onClick={() => router.push('/admin/reports')}
-              >
-                <AlertCircle className="w-6 h-6" />
-                <span>Signalements</span>
-              </Button>
+                <Button
+                  variant="outline"
+                  className="h-20 flex flex-col space-y-2"
+                  onClick={() => router.push('/admin/moderation')}
+                >
+                  <Shield className="w-6 h-6" />
+                  <span className="text-sm">Modération</span>
+                </Button>
 
-              {/* 8. Invitations */}
-              <Button 
-                variant="outline" 
-                className="h-20 flex flex-col space-y-2" 
-                onClick={() => router.push('/admin/invitations')}
-              >
-                <Users className="w-6 h-6" />
-                <span>Invitations</span>
-              </Button>
+                <Button
+                  variant="outline"
+                  className="h-20 flex flex-col space-y-2"
+                  onClick={() => router.push('/admin/translations')}
+                >
+                  <TrendingUp className="w-6 h-6" />
+                  <span className="text-sm">Traductions</span>
+                </Button>
 
-              {/* 9. Langues */}
-              <Button 
-                variant="outline" 
-                className="h-20 flex flex-col space-y-2" 
-                onClick={() => router.push('/admin/languages')}
-              >
-                <TrendingUp className="w-6 h-6" />
-                <span>Langues</span>
-              </Button>
+                <Button
+                  variant="outline"
+                  className="h-20 flex flex-col space-y-2"
+                  onClick={() => router.push('/admin/languages')}
+                >
+                  <TrendingUp className="w-6 h-6" />
+                  <span className="text-sm">Langues</span>
+                </Button>
 
-              {/* Analytics */}
-              <Button 
-                variant="outline" 
-                className="h-20 flex flex-col space-y-2" 
-                onClick={() => router.push('/admin/analytics')}
-              >
-                <TrendingUp className="w-6 h-6" />
-                <span>Analyses</span>
-              </Button>
+                <Button
+                  variant="outline"
+                  className="h-20 flex flex-col space-y-2"
+                  onClick={() => router.push('/admin/invitations')}
+                >
+                  <Users className="w-6 h-6" />
+                  <span className="text-sm">Invitations</span>
+                </Button>
+              </div>
+            </div>
+
+            {/* Ligne 3 - Analytics, Audit et Configuration */}
+            <div>
+              <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">Analytics et configuration</h4>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                <Button
+                  variant="outline"
+                  className="h-20 flex flex-col space-y-2"
+                  onClick={() => router.push('/admin/analytics')}
+                >
+                  <TrendingUp className="w-6 h-6" />
+                  <span className="text-sm">Analytics</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="h-20 flex flex-col space-y-2"
+                  onClick={() => router.push('/admin/audit-logs')}
+                >
+                  <Shield className="w-6 h-6" />
+                  <span className="text-sm">Audit Logs</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="h-20 flex flex-col space-y-2"
+                  onClick={() => router.push('/admin/settings')}
+                >
+                  <Server className="w-6 h-6" />
+                  <span className="text-sm">Settings</span>
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
