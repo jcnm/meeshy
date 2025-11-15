@@ -99,7 +99,7 @@ export async function authRoutes(fastify: FastifyInstance) {
           password: { type: 'string', minLength: 1 },
           firstName: { type: 'string', minLength: 1 },
           lastName: { type: 'string', minLength: 1 },
-          email: { type: 'string', format: 'email' },
+          email: { type: 'string', pattern: '^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$' },
           phoneNumber: { type: 'string' },
           systemLanguage: { type: 'string' },
           regionalLanguage: { type: 'string' }
