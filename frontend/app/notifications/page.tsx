@@ -46,6 +46,7 @@ function NotificationsPageContent() {
   const [sortOption, setSortOption] = useState<SortOption>('date-desc');
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedNotifications, setSelectedNotifications] = useState<Set<string>>(new Set());
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const {
     notifications,
     unreadNotifications,
@@ -57,6 +58,16 @@ function NotificationsPageContent() {
     clearAll,
     isConnected
   } = useNotifications();
+
+  // Gérer le chargement initial pour éviter l'incohérence d'affichage
+  useEffect(() => {
+    // Attendre un court instant pour que les données se chargent
+    const timer = setTimeout(() => {
+      setIsInitialLoading(false);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // Filtrer, rechercher et trier les notifications
   const filteredNotifications = useMemo(() => {
@@ -276,9 +287,13 @@ function NotificationsPageContent() {
                   <h1 className="text-2xl sm:text-3xl font-bold text-foreground truncate">
                     {t('pageTitle')}
                   </h1>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {getUnreadCountMessage()}
-                  </p>
+                  {isInitialLoading ? (
+                    <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-48 mt-1 animate-pulse"></div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {getUnreadCountMessage()}
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-2 flex-wrap">
@@ -326,7 +341,8 @@ function NotificationsPageContent() {
                       <select
                         value={sortOption}
                         onChange={(e) => setSortOption(e.target.value as SortOption)}
-                        className="h-9 px-3 rounded-md border border-input bg-background text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
+                        disabled={isInitialLoading}
+                        className="h-9 px-3 rounded-md border border-input bg-background text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <option value="date-desc">Plus récentes</option>
                         <option value="date-asc">Plus anciennes</option>
@@ -335,7 +351,7 @@ function NotificationsPageContent() {
                       </select>
 
                       {/* Bouton de sélection */}
-                      {totalCount > 0 && (
+                      {totalCount > 0 && !isInitialLoading && (
                         <Button
                           variant="outline"
                           size="sm"
@@ -347,7 +363,7 @@ function NotificationsPageContent() {
                         </Button>
                       )}
 
-                      {unreadCount > 0 && (
+                      {unreadCount > 0 && !isInitialLoading && (
                         <Button
                           variant="outline"
                           size="sm"
@@ -371,6 +387,7 @@ function NotificationsPageContent() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={t('search')}
+                  disabled={isInitialLoading}
                   className="pl-9 pr-9 h-10 w-full"
                 />
                 {searchQuery && (
@@ -384,13 +401,15 @@ function NotificationsPageContent() {
               </div>
 
               {/* Filtres par type - responsive */}
-              <div className="mt-4">
-                <NotificationFilters
-                  selectedType={selectedFilter}
-                  onTypeChange={setSelectedFilter}
-                  counts={typeCounts}
-                />
-              </div>
+              {!isInitialLoading && (
+                <div className="mt-4">
+                  <NotificationFilters
+                    selectedType={selectedFilter}
+                    onTypeChange={setSelectedFilter}
+                    counts={typeCounts}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -427,7 +446,25 @@ function NotificationsPageContent() {
                   </div>
                 )}
 
-                {totalCount === 0 ? (
+                {isInitialLoading ? (
+                  // Skeleton loading - afficher pendant le chargement initial
+                  <div className="space-y-2">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <Card key={i} className="animate-pulse">
+                        <CardContent className="p-3 sm:p-4">
+                          <div className="flex items-start gap-3">
+                            <div className="h-10 w-10 sm:h-12 sm:w-12 bg-gray-200 dark:bg-gray-700 rounded-full flex-shrink-0"></div>
+                            <div className="flex-1 space-y-2">
+                              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : totalCount === 0 ? (
                   <Card>
                     <CardContent className="flex flex-col items-center justify-center py-16 sm:py-24">
                       <div className="w-16 h-16 sm:w-20 sm:h-20 bg-muted rounded-full flex items-center justify-center mb-4">
@@ -613,34 +650,45 @@ function NotificationsPageContent() {
 
               {/* Sidebar - cachée sur mobile, visible sur large écran */}
               <div className="hidden lg:block space-y-6">
-                <Card>
-                  <CardContent className="p-4 space-y-4">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Settings className="h-5 w-5 text-muted-foreground" />
-                      <span className="font-semibold">{t('systemStatus')}</span>
-                    </div>
+                {isInitialLoading ? (
+                  <Card className="animate-pulse">
+                    <CardContent className="p-4 space-y-4">
+                      <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <Card>
+                    <CardContent className="p-4 space-y-4">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Settings className="h-5 w-5 text-muted-foreground" />
+                        <span className="font-semibold">{t('systemStatus')}</span>
+                      </div>
 
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">{t('service')}</span>
-                      <div className={cn(
-                        "w-2.5 h-2.5 rounded-full",
-                        isConnected ? 'bg-green-500' : 'bg-red-500'
-                      )} />
-                    </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">{t('service')}</span>
+                        <div className={cn(
+                          "w-2.5 h-2.5 rounded-full",
+                          isConnected ? 'bg-green-500' : 'bg-red-500'
+                        )} />
+                      </div>
 
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">{t('totalNotifications')}</span>
-                      <Badge variant="secondary">{totalCount}</Badge>
-                    </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">{t('totalNotifications')}</span>
+                        <Badge variant="secondary">{totalCount}</Badge>
+                      </div>
 
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">{t('unread')}</span>
-                      <Badge variant={unreadCount > 0 ? "destructive" : "secondary"}>
-                        {unreadCount}
-                      </Badge>
-                    </div>
-                  </CardContent>
-                </Card>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">{t('unread')}</span>
+                        <Badge variant={unreadCount > 0 ? "destructive" : "secondary"}>
+                          {unreadCount}
+                        </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Quick Actions */}
                 {process.env.NODE_ENV === 'development' && (
