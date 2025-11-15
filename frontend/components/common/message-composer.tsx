@@ -928,22 +928,16 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
           />
         </div>
 
-        {/* Bouton Microphone/Stop (Audio) - Agrandi pour mobile */}
+        {/* Bouton Microphone (Audio) - Agrandi pour mobile */}
         <Button
           onClick={handleMicrophoneClick}
           disabled={!isComposingEnabled}
           size="sm"
           variant="ghost"
-          className={`h-[30px] w-[30px] sm:h-[32px] sm:w-[32px] p-0 rounded-full hover:bg-gray-100 relative min-w-0 min-h-0 ${
-            isRecording ? 'bg-red-50 hover:bg-red-100' : ''
-          }`}
-          title={isRecording ? "Arrêter et démarrer nouvel enregistrement" : "Enregistrer un message vocal"}
+          className="h-[30px] w-[30px] sm:h-[32px] sm:w-[32px] p-0 rounded-full hover:bg-gray-100 relative min-w-0 min-h-0"
+          title="Enregistrer un message vocal"
         >
-          {isRecording ? (
-            <Square className="h-[20px] w-[20px] sm:h-[22px] sm:w-[22px] text-red-600 fill-red-600" />
-          ) : (
-            <Mic className={`h-[20px] w-[20px] sm:h-[22px] sm:w-[22px] ${showAudioRecorder ? 'text-blue-600' : 'text-gray-600'}`} />
-          )}
+          <Mic className={`h-[20px] w-[20px] sm:h-[22px] sm:w-[22px] ${showAudioRecorder ? 'text-blue-600' : 'text-gray-600'}`} />
         </Button>
 
         {/* Bouton d'attachement (Document) - Agrandi pour mobile */}

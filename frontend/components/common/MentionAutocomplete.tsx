@@ -158,16 +158,25 @@ export function MentionAutocomplete({
     }
   };
 
+  // Détecter mobile
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
   // Utiliser un portail React pour "teleporter" le composant au niveau body
   // Cela garantit qu'il apparaît au-dessus de TOUS les autres éléments
+  // Sur mobile: afficher en modal centré en haut pour garantir la visibilité
+  // Sur desktop: positionner relatif au curseur
   const autocompleteContent = (
     <div
       ref={containerRef}
-      className="fixed bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-2xl max-h-64 w-56 overflow-y-auto"
+      className={`fixed bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-2xl overflow-y-auto ${
+        isMobile
+          ? 'left-1/2 -translate-x-1/2 top-4 w-[90vw] max-w-sm max-h-[40vh]'
+          : 'max-h-64 w-56'
+      }`}
       style={{
-        ...(position.top !== undefined && { top: `${position.top}px` }),
-        ...(position.bottom !== undefined && { bottom: `${position.bottom}px` }),
-        left: `${position.left}px`,
+        ...(!isMobile && position.top !== undefined && { top: `${position.top}px` }),
+        ...(!isMobile && position.bottom !== undefined && { bottom: `${position.bottom}px` }),
+        ...(!isMobile && { left: `${position.left}px` }),
         zIndex: 2147483647 // Valeur maximale pour z-index (2^31 - 1)
       }}
     >

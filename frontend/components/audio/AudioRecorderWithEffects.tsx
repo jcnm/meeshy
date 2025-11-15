@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { createPortal } from 'react-dom';
-import { Square, Trash2, Mic, Loader2, Radio } from 'lucide-react';
+import { Square, X, Mic, Loader2, Radio } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAudioEffects } from '@/hooks/use-audio-effects';
 import { AudioEffectsCarousel } from '@/components/video-calls/AudioEffectsCarousel';
@@ -388,7 +388,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
           onClick={onRemove}
           className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-md z-10"
         >
-          <Trash2 className="w-5 h-5" />
+          <X className="w-5 h-5" />
         </button>
       </div>
     );
@@ -408,7 +408,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
           onClick={onRemove}
           className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-md z-10"
         >
-          <Trash2 className="w-5 h-5" />
+          <X className="w-5 h-5" />
         </button>
       </div>
     );
@@ -538,7 +538,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
           onClick={onRemove}
           className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10"
         >
-          <Trash2 className="w-5 h-5" />
+          <X className="w-5 h-5" />
         </button>
       )}
       </div>
