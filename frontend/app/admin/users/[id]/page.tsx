@@ -45,6 +45,7 @@ export default function UserDetailPage() {
     firstName: '',
     lastName: '',
     displayName: '',
+    username: '',
     bio: '',
     systemLanguage: 'fr',
     regionalLanguage: 'fr'
@@ -81,6 +82,7 @@ export default function UserDetailPage() {
           firstName: userData.firstName || '',
           lastName: userData.lastName || '',
           displayName: userData.displayName || '',
+          username: userData.username || '',
           bio: userData.bio || '',
           systemLanguage: userData.systemLanguage || 'fr',
           regionalLanguage: userData.regionalLanguage || 'fr'
@@ -351,6 +353,20 @@ export default function UserDetailPage() {
                       />
                     </div>
                     <div className="space-y-2">
+                      <label className="text-sm font-medium">Nom d'utilisateur (username)</label>
+                      <Input
+                        value={formData.username}
+                        onChange={(e) => {
+                          // Filtrer les caractères non autorisés en temps réel
+                          const value = e.target.value.replace(/[^a-zA-Z0-9_-]/g, '');
+                          setFormData({ ...formData, username: value });
+                        }}
+                        className="font-mono"
+                        placeholder="nom-utilisateur"
+                      />
+                      <p className="text-xs text-gray-500">Uniquement lettres, chiffres, tirets et underscores</p>
+                    </div>
+                    <div className="space-y-2">
                       <label className="text-sm font-medium">Biographie</label>
                       <textarea
                         className="w-full p-2 border rounded-md text-sm min-h-[80px]"
@@ -411,6 +427,13 @@ export default function UserDetailPage() {
                     <div className="flex items-center text-sm">
                       <span className="w-32 text-gray-600">Nom complet:</span>
                       <span className="font-medium">{user.firstName} {user.lastName}</span>
+                    </div>
+                    <div className="flex items-center text-sm">
+                      <span className="w-32 text-gray-600">Username:</span>
+                      <span className="font-medium font-mono flex items-center">
+                        <User className="h-4 w-4 mr-2 text-gray-400" />
+                        @{user.username}
+                      </span>
                     </div>
                     <div className="flex items-center text-sm">
                       <span className="w-32 text-gray-600">Email:</span>
