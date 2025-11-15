@@ -368,11 +368,13 @@ model FriendRequest {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   senderId   String   @db.ObjectId
   receiverId String   @db.ObjectId
+  /// Message optionnel accompagnant la demande d'amitié
+  message    String?
   /// pending, accepted, rejected, blocked
   status     String   @default("pending")
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  
+
   receiver   User     @relation("FriendRequestReceiver", fields: [receiverId], references: [id])
   sender     User     @relation("FriendRequestSender", fields: [senderId], references: [id])
 }

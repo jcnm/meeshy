@@ -1,10 +1,12 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { logError } from '../utils/logger';
+import type { NotificationService } from '../services/NotificationService';
 
 // Schémas de validation
 const createFriendRequestSchema = z.object({
-  receiverId: z.string()
+  receiverId: z.string(),
+  message: z.string().optional()
 });
 
 const updateFriendRequestSchema = z.object({
@@ -53,7 +55,8 @@ export async function friendRequestRoutes(fastify: FastifyInstance) {
       const friendRequest = await fastify.prisma.friendRequest.create({
         data: {
           senderId: userId,
-          receiverId: body.receiverId
+          receiverId: body.receiverId,
+          message: body.message
         },
         include: {
           sender: {
@@ -78,6 +81,50 @@ export async function friendRequestRoutes(fastify: FastifyInstance) {
           }
         }
       });
+
+      // Créer une notification pour le destinataire avec actions
+      const notificationService = (fastify as any).notificationService as NotificationService;
+      if (notificationService) {
+        const senderName = friendRequest.sender.displayName ||
+                          friendRequest.sender.username ||
+                          `${friendRequest.sender.firstName} ${friendRequest.sender.lastName}`.trim();
+
+        const title = 'Nouvelle demande d\'amitié';
+        const content = body.message
+          ? `${senderName} vous a envoyé une demande d'amitié : "${body.message}"`
+          : `${senderName} vous a envoyé une demande d'amitié`;
+
+        await notificationService.createNotification({
+          userId: body.receiverId,
+          type: 'friend_request' as any, // TypeScript: on étendra le type plus tard
+          title,
+          content,
+          priority: 'normal',
+          senderId: userId,
+          senderUsername: friendRequest.sender.username,
+          senderAvatar: friendRequest.sender.avatar || undefined,
+          data: {
+            friendRequestId: friendRequest.id,
+            message: body.message,
+            actions: [
+              {
+                type: 'accept',
+                label: 'Accepter',
+                endpoint: `/api/friend-requests/${friendRequest.id}`,
+                method: 'PATCH',
+                payload: { status: 'accepted' }
+              },
+              {
+                type: 'reject',
+                label: 'Refuser',
+                endpoint: `/api/friend-requests/${friendRequest.id}`,
+                method: 'PATCH',
+                payload: { status: 'rejected' }
+              }
+            ]
+          }
+        });
+      }
 
       return reply.status(201).send({
         success: true,
@@ -242,6 +289,65 @@ export async function friendRequestRoutes(fastify: FastifyInstance) {
           }
         }
       });
+
+      // Marquer la notification de requête d'amitié comme lue
+      const notificationService = (fastify as any).notificationService as NotificationService;
+      try {
+        await fastify.prisma.notification.updateMany({
+          where: {
+            userId: userId,
+            type: 'friend_request',
+            data: {
+              contains: `"friendRequestId":"${id}"`
+            }
+          },
+          data: {
+            isRead: true
+          }
+        });
+      } catch (error) {
+        // Log mais ne pas bloquer
+        logError(fastify.log, 'Error marking friend request notification as read:', error);
+      }
+
+      // Envoyer une notification à l'expéditeur selon la réponse
+      if (notificationService) {
+        const receiverName = updatedRequest.receiver.displayName ||
+                            updatedRequest.receiver.username ||
+                            `${updatedRequest.receiver.firstName} ${updatedRequest.receiver.lastName}`.trim();
+
+        if (body.status === 'accepted') {
+          await notificationService.createNotification({
+            userId: updatedRequest.senderId,
+            type: 'friend_request' as any,
+            title: 'Demande d\'amitié acceptée',
+            content: `${receiverName} a accepté votre demande d'amitié`,
+            priority: 'normal',
+            senderId: userId,
+            senderUsername: updatedRequest.receiver.username,
+            senderAvatar: updatedRequest.receiver.avatar || undefined,
+            data: {
+              friendRequestId: id,
+              action: 'accepted'
+            }
+          });
+        } else if (body.status === 'rejected') {
+          await notificationService.createNotification({
+            userId: updatedRequest.senderId,
+            type: 'friend_request' as any,
+            title: 'Demande d\'amitié refusée',
+            content: `${receiverName} a refusé votre demande d'amitié`,
+            priority: 'low',
+            senderId: userId,
+            senderUsername: updatedRequest.receiver.username,
+            senderAvatar: updatedRequest.receiver.avatar || undefined,
+            data: {
+              friendRequestId: id,
+              action: 'rejected'
+            }
+          });
+        }
+      }
 
       // Si acceptée, créer une conversation directe entre les utilisateurs
       if (body.status === 'accepted') {
