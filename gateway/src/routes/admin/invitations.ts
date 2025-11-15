@@ -91,7 +91,6 @@ export async function invitationRoutes(fastify: FastifyInstance) {
         receiverId: fr.receiverId,
         type: 'friend' as const,
         status: fr.status,
-        message: fr.message || undefined,
         createdAt: fr.createdAt,
         updatedAt: fr.updatedAt,
         sender: fr.sender,
@@ -236,7 +235,6 @@ export async function invitationRoutes(fastify: FastifyInstance) {
           receiverId: invitation.receiverId,
           type: 'friend',
           status: invitation.status,
-          message: invitation.message,
           createdAt: invitation.createdAt,
           updatedAt: invitation.updatedAt,
           sender: invitation.sender,
@@ -291,26 +289,8 @@ export async function invitationRoutes(fastify: FastifyInstance) {
         }
       });
 
-      // Si acceptée, créer la relation Friend si elle n'existe pas
-      if (status === 'accepted') {
-        const existingFriendship = await fastify.prisma.friend.findFirst({
-          where: {
-            OR: [
-              { userId: invitation.senderId, friendId: invitation.receiverId },
-              { userId: invitation.receiverId, friendId: invitation.senderId }
-            ]
-          }
-        });
-
-        if (!existingFriendship) {
-          await fastify.prisma.friend.createMany({
-            data: [
-              { userId: invitation.senderId, friendId: invitation.receiverId },
-              { userId: invitation.receiverId, friendId: invitation.senderId }
-            ]
-          });
-        }
-      }
+      // Note: Le modèle Friend n'existe pas dans le schéma Prisma actuel
+      // La logique d'amitié est gérée uniquement via FriendRequest avec status 'accepted'
 
       return reply.send({
         success: true,

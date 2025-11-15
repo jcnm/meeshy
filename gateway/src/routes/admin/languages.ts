@@ -135,11 +135,11 @@ export async function languagesRoutes(fastify: FastifyInstance) {
           : 0
       }));
 
-      // Utilisateurs par langue préférée (langue d'interface)
+      // Utilisateurs par langue préférée (langue système)
       const usersByLanguage = await fastify.prisma.user.groupBy({
-        by: ['language'],
+        by: ['systemLanguage'],
         where: {
-          language: { not: null }
+          systemLanguage: { not: null }
         },
         _count: {
           id: true
@@ -147,8 +147,8 @@ export async function languagesRoutes(fastify: FastifyInstance) {
       });
 
       const usersLanguageMap = usersByLanguage.reduce((acc, item) => {
-        if (item.language) {
-          acc[item.language] = item._count.id;
+        if (item.systemLanguage) {
+          acc[item.systemLanguage] = item._count.id;
         }
         return acc;
       }, {} as Record<string, number>);
