@@ -328,13 +328,28 @@ export function reconstructEffectsStateAt(
 }
 
 /**
+ * Type mutable pour construction interne des stats
+ */
+type MutableEffectsStats = {
+  totalActiveTime: number;
+  byEffect: {
+    [K in AudioEffectType]?: {
+      activationCount: number;
+      totalDuration: number;
+      parameterChanges: number;
+      averageParams?: Record<string, number>;
+    };
+  };
+};
+
+/**
  * Calcule les statistiques d'utilisation d'une timeline
  *
  * @param timeline Timeline complète
  * @returns Statistiques détaillées
  */
 export function calculateEffectsStats(timeline: AudioEffectsTimeline): AudioEffectsStats {
-  const stats: AudioEffectsStats = {
+  const stats: MutableEffectsStats = {
     totalActiveTime: 0,
     byEffect: {},
   };
@@ -404,7 +419,7 @@ export function calculateEffectsStats(timeline: AudioEffectsTimeline): AudioEffe
     stats.totalActiveTime += timeline.duration - anyEffectActiveStart;
   }
 
-  return stats;
+  return stats as AudioEffectsStats;
 }
 
 /**
