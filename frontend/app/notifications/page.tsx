@@ -16,7 +16,8 @@ import {
   PhoneMissed,
   Trash2,
   Search,
-  X
+  X,
+  UserPlus
 } from '@/lib/icons';
 import {
   Filter,
@@ -35,6 +36,9 @@ import { AuthGuard } from '@/components/auth/AuthGuard';
 import { NotificationFilters, type NotificationType } from '@/components/notifications/NotificationFilters';
 import { cn } from '@/lib/utils';
 import { AttachmentDetails } from '@/components/attachments/AttachmentDetails';
+import { buildApiUrl } from '@/lib/config';
+import { authManager } from '@/services/auth-manager.service';
+import { toast } from 'sonner';
 
 type SortOption = 'date-desc' | 'date-asc' | 'unread-first' | 'type';
 
@@ -168,6 +172,7 @@ function NotificationsPageContent() {
     missed_call: notifications.filter(n => n.type === 'missed_call').length,
     system: notifications.filter(n => n.type === 'system').length,
     conversation: notifications.filter(n => n.type === 'conversation').length,
+    friend_request: notifications.filter(n => n.type === 'friend_request').length,
   }), [notifications]);
 
   const getNotificationIcon = (type: string) => {
@@ -179,6 +184,8 @@ function NotificationsPageContent() {
         return <PhoneMissed className="h-4 w-4" />;
       case 'system':
         return <Settings className="h-4 w-4" />;
+      case 'friend_request':
+        return <UserPlus className="h-4 w-4" />;
       default:
         return <Bell className="h-4 w-4" />;
     }
@@ -216,6 +223,8 @@ function NotificationsPageContent() {
         return 'bg-yellow-500/10 text-yellow-700 border-yellow-200 dark:bg-yellow-500/20 dark:text-yellow-400 dark:border-yellow-800';
       case 'conversation':
         return 'bg-purple-500/10 text-purple-700 border-purple-200 dark:bg-purple-500/20 dark:text-purple-400 dark:border-purple-800';
+      case 'friend_request':
+        return 'bg-green-500/10 text-green-700 border-green-200 dark:bg-green-500/20 dark:text-green-400 dark:border-green-800';
       default:
         return 'bg-gray-500/10 text-gray-700 border-gray-200 dark:bg-gray-500/20 dark:text-gray-400 dark:border-gray-800';
     }
@@ -599,6 +608,45 @@ function NotificationsPageContent() {
                                 )}>
                                   {notification.messagePreview || notification.message}
                                 </p>
+                              )}
+
+                              {/* Actions pour les requêtes d'amitié */}
+                              {notification.type === 'friend_request' && notification.data?.actions && !notification.isRead && (
+                                <div className="flex gap-2 mt-3 mb-2">
+                                  {notification.data.actions.map((action: any) => (
+                                    <Button
+                                      key={action.type}
+                                      size="sm"
+                                      variant={action.type === 'accept' ? 'default' : 'outline'}
+                                      onClick={async (e) => {
+                                        e.stopPropagation();
+                                        try {
+                                          const response = await fetch(buildApiUrl(action.endpoint), {
+                                            method: action.method,
+                                            headers: {
+                                              'Content-Type': 'application/json',
+                                              Authorization: `Bearer ${authManager.getAuthToken()}`
+                                            },
+                                            body: JSON.stringify(action.payload)
+                                          });
+
+                                          if (response.ok) {
+                                            toast.success(action.type === 'accept' ? 'Demande acceptée' : 'Demande refusée');
+                                            markAsRead(notification.id);
+                                          } else {
+                                            toast.error('Erreur lors du traitement de la demande');
+                                          }
+                                        } catch (error) {
+                                          console.error('Error handling friend request action:', error);
+                                          toast.error('Erreur de connexion');
+                                        }
+                                      }}
+                                      className="flex-1"
+                                    >
+                                      {action.label}
+                                    </Button>
+                                  ))}
+                                </div>
                               )}
 
                               <div className="flex items-center justify-between">

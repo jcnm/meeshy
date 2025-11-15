@@ -2,10 +2,10 @@
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, MessageSquare, PhoneMissed, Settings, Users } from '@/lib/icons';
+import { Bell, MessageSquare, PhoneMissed, Settings, Users, UserPlus } from '@/lib/icons';
 import type { LucideIcon } from 'lucide-react';
 
-export type NotificationType = 'all' | 'new_message' | 'missed_call' | 'system' | 'conversation';
+export type NotificationType = 'all' | 'new_message' | 'missed_call' | 'system' | 'conversation' | 'friend_request';
 
 interface NotificationFiltersProps {
   selectedType: NotificationType;
@@ -16,6 +16,7 @@ interface NotificationFiltersProps {
     missed_call: number;
     system: number;
     conversation: number;
+    friend_request: number;
   };
 }
 
@@ -23,6 +24,7 @@ export function NotificationFilters({ selectedType, onTypeChange, counts }: Noti
   const filters: { label: string; value: NotificationType; Icon: LucideIcon }[] = [
     { label: 'Toutes', value: 'all', Icon: Bell },
     { label: 'Messages', value: 'new_message', Icon: MessageSquare },
+    { label: 'Contacts', value: 'friend_request', Icon: UserPlus },
     { label: 'Appels manqués', value: 'missed_call', Icon: PhoneMissed },
     { label: 'Système', value: 'system', Icon: Settings },
     { label: 'Conversations', value: 'conversation', Icon: Users },
