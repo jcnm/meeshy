@@ -186,7 +186,9 @@ export const API_ENDPOINTS = {
     GET_CONVERSATION_LINKS: (conversationId: string) => `/conversations/${conversationId}/links`,
     GET_LINK_CONVERSATION: (linkId: string) => `/api/links/${linkId}/conversations`,
     MESSAGES: '/conversations/:id/messages',
-    GET_GROUP_CONVERSATIONS: (groupId: string) => `/conversations/group/${groupId}`
+    GET_GROUP_CONVERSATIONS: (groupId: string) => `/conversations/group/${groupId}`,
+    CHECK_IDENTIFIER: (identifier: string) => `/conversations/check-identifier/${identifier}`,
+    CHECK_LINK_IDENTIFIER: (identifier: string) => `/links/check-identifier/${identifier}`
   },
   MESSAGE: {
     LIST: '/messages/conversation',
@@ -218,7 +220,8 @@ export const API_ENDPOINTS = {
     CONVERSATION_LINKS: (conversationId: string) => `/api/tracking-links/conversation/${conversationId}`,
     DEACTIVATE: (token: string) => `/api/tracking-links/${token}/deactivate`,
     DELETE: (token: string) => `/api/tracking-links/${token}`,
-    REDIRECT: (token: string) => `/l/${token}`
+    REDIRECT: (token: string) => `/l/${token}`,
+    CHECK_TOKEN: (token: string) => `/api/tracking-links/check-token/${token}`
   }
 };
 

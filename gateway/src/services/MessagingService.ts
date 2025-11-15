@@ -163,7 +163,8 @@ export class MessagingService {
         originalLanguage,
         conversationId,
         senderId: actualSenderId,
-        anonymousSenderId: actualAnonymousSenderId
+        anonymousSenderId: actualAnonymousSenderId,
+        mentionedUserIds: request.mentionedUserIds
       });
 
       // 7. Mise à jour de la conversation
@@ -652,6 +653,7 @@ export class MessagingService {
     messageType?: string;
     replyToId?: string;
     encrypted?: boolean;
+    mentionedUserIds?: readonly string[];  // IDs des utilisateurs mentionnés depuis le frontend
   }): Promise<Message> {
     // ÉTAPE 1: Traiter les liens AVANT de sauvegarder le message
     const processedContent = await this.processLinksInContent(
@@ -749,82 +751,102 @@ export class MessagingService {
     // ÉTAPE 4: Traiter les mentions d'utilisateurs
     try {
       console.log('[MessagingService] ÉTAPE 4: Début traitement mentions');
-      console.log('[MessagingService] Content pour extraction:', processedContent);
 
-      // Extraire les usernames mentionnés
-      const mentionedUsernames = this.mentionService.extractMentions(processedContent);
-      console.log('[MessagingService] Mentions extraites:', mentionedUsernames);
-      console.log('[MessagingService] senderId:', data.senderId);
+      let mentionedUserIds: string[] = [];
+      let validatedUsernames: string[] = [];
 
-      if (mentionedUsernames.length > 0 && data.senderId) {
-        console.log('[MessagingService] → Résolution des usernames...');
-        // Résoudre les usernames en utilisateurs réels
-        const userMap = await this.mentionService.resolveUsernames(mentionedUsernames);
-        console.log('[MessagingService] UserMap size:', userMap.size);
-        const mentionedUserIds = Array.from(userMap.values()).map(user => user.id);
-        console.log('[MessagingService] UserIds trouvés:', mentionedUserIds);
+      // NOUVEAU : Utiliser les mentions envoyées par le frontend si disponibles
+      if (data.mentionedUserIds && data.mentionedUserIds.length > 0) {
+        console.log('[MessagingService] ✨ Utilisation mentions depuis frontend:', data.mentionedUserIds);
+        mentionedUserIds = Array.from(data.mentionedUserIds); // Convertir readonly en array
+        console.log('[MessagingService] senderId:', data.senderId);
+      } else {
+        // LEGACY : Parser le contenu pour extraire les mentions (compatibilité)
+        console.log('[MessagingService] Content pour extraction:', processedContent);
+        const mentionedUsernames = this.mentionService.extractMentions(processedContent);
+        console.log('[MessagingService] Mentions extraites (legacy):', mentionedUsernames);
+        console.log('[MessagingService] senderId:', data.senderId);
 
-        if (mentionedUserIds.length > 0) {
-          console.log('[MessagingService] → Validation des permissions...');
-          // Valider les permissions de mention
-          const validationResult = await this.mentionService.validateMentionPermissions(
-            data.conversationId,
-            mentionedUserIds,
-            data.senderId
+        if (mentionedUsernames.length > 0 && data.senderId) {
+          console.log('[MessagingService] → Résolution des usernames...');
+          // Résoudre les usernames en utilisateurs réels
+          const userMap = await this.mentionService.resolveUsernames(mentionedUsernames);
+          console.log('[MessagingService] UserMap size:', userMap.size);
+          mentionedUserIds = Array.from(userMap.values()).map(user => user.id);
+          console.log('[MessagingService] UserIds trouvés:', mentionedUserIds);
+
+          // Extraire les usernames validés pour le champ validatedMentions
+          validatedUsernames = Array.from(userMap.keys());
+        }
+      }
+
+      if (mentionedUserIds.length > 0 && data.senderId) {
+        console.log('[MessagingService] → Validation des permissions...');
+        // Valider les permissions de mention
+        const validationResult = await this.mentionService.validateMentionPermissions(
+          data.conversationId,
+          mentionedUserIds,
+          data.senderId
+        );
+        console.log('[MessagingService] Validation result:', {
+          isValid: validationResult.isValid,
+          validUserIdsCount: validationResult.validUserIds.length,
+          errors: validationResult.errors
+        });
+
+        if (validationResult.validUserIds.length > 0) {
+          console.log('[MessagingService] → Création des mentions en DB...');
+          // Créer les entrées de mention dans la DB
+          await this.mentionService.createMentions(
+            message.id,
+            validationResult.validUserIds
           );
-          console.log('[MessagingService] Validation result:', {
-            isValid: validationResult.isValid,
-            validUserIdsCount: validationResult.validUserIds.length,
-            errors: validationResult.errors
+
+          // Récupérer les usernames des utilisateurs validés pour le champ validatedMentions
+          let finalValidatedUsernames: string[] = validatedUsernames;
+
+          // Si mentions depuis frontend, récupérer les usernames depuis les IDs
+          if (data.mentionedUserIds && data.mentionedUserIds.length > 0) {
+            const users = await this.prisma.user.findMany({
+              where: {
+                id: { in: validationResult.validUserIds }
+              },
+              select: { username: true }
+            });
+            finalValidatedUsernames = users.map(u => u.username);
+          }
+
+          console.log('[MessagingService] → Mise à jour du message avec validatedMentions:', finalValidatedUsernames);
+
+          // Mettre à jour le message avec les usernames validés (scalable avec millions d'users)
+          await this.prisma.message.update({
+            where: { id: message.id },
+            data: { validatedMentions: finalValidatedUsernames }
           });
 
-          if (validationResult.validUserIds.length > 0) {
-            console.log('[MessagingService] → Création des mentions en DB...');
-            // Créer les entrées de mention dans la DB
-            await this.mentionService.createMentions(
+          // IMPORTANT: Mettre à jour l'objet message en mémoire pour que le retour inclue validatedMentions
+          message.validatedMentions = finalValidatedUsernames;
+
+          console.log(`[MessagingService] ✅ ${validationResult.validUserIds.length} mention(s) créée(s) pour le message ${message.id}`);
+
+          // Déclencher les notifications de mention
+          if (this.notificationService) {
+            await this.sendMentionNotifications(
+              validationResult.validUserIds,
+              data.senderId,
+              data.conversationId,
               message.id,
-              validationResult.validUserIds
+              processedContent
             );
-
-            // Extraire les usernames validés pour le champ validatedMentions (évite les JOINs)
-            const validatedUsernames = Array.from(userMap.entries())
-              .filter(([_, user]) => validationResult.validUserIds.includes(user.id))
-              .map(([username, _]) => username);
-
-            console.log('[MessagingService] → Mise à jour du message avec validatedMentions:', validatedUsernames);
-
-            // Mettre à jour le message avec les usernames validés (scalable avec millions d'users)
-            await this.prisma.message.update({
-              where: { id: message.id },
-              data: { validatedMentions: validatedUsernames }
-            });
-
-            // IMPORTANT: Mettre à jour l'objet message en mémoire pour que le retour inclue validatedMentions
-            message.validatedMentions = validatedUsernames;
-
-            console.log(`[MessagingService] ✅ ${validationResult.validUserIds.length} mention(s) créée(s) pour le message ${message.id}`);
-
-            // Déclencher les notifications de mention
-            if (this.notificationService) {
-              await this.sendMentionNotifications(
-                validationResult.validUserIds,
-                data.senderId,
-                data.conversationId,
-                message.id,
-                processedContent
-              );
-            }
           }
+        }
 
-          if (!validationResult.isValid) {
-            console.warn(`[MessagingService] ⚠️ Certaines mentions invalides:`, validationResult.errors);
-          }
-        } else {
-          console.log('[MessagingService] ℹ️ Aucun utilisateur trouvé pour les mentions');
+        if (!validationResult.isValid) {
+          console.warn(`[MessagingService] ⚠️ Certaines mentions invalides:`, validationResult.errors);
         }
       } else {
         console.log('[MessagingService] ℹ️ Aucune mention à traiter:', {
-          mentionCount: mentionedUsernames.length,
+          mentionCount: mentionedUserIds.length,
           hasSenderId: !!data.senderId
         });
       }

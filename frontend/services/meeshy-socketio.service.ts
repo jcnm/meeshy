@@ -1148,8 +1148,17 @@ class MeeshySocketIOService {
 
   /**
    * Envoie un message (accepte soit un ID soit un objet conversation)
+   * Gère automatiquement les messages avec ou sans attachments
    */
-  public async sendMessage(conversationOrId: any, content: string, originalLanguage?: string, replyToId?: string): Promise<boolean> {
+  public async sendMessage(
+    conversationOrId: any,
+    content: string,
+    originalLanguage?: string,
+    replyToId?: string,
+    mentionedUserIds?: string[],
+    attachmentIds?: string[],
+    attachmentMimeTypes?: string[]
+  ): Promise<boolean> {
     return new Promise(async (resolve) => {
       // CORRECTION CRITIQUE: S'assurer que la connexion est établie
       this.ensureConnection();
@@ -1228,13 +1237,30 @@ class MeeshySocketIOService {
           conversationId = getConversationApiId(conversationOrId);
         }
 
-        // Utiliser l'ObjectId pour l'envoi au backend
-        const messageData = { 
-          conversationId, 
+        // Déterminer s'il y a des attachments
+        const hasAttachments = attachmentIds && attachmentIds.length > 0;
+
+        // Construire le payload de base
+        const messageData: any = {
+          conversationId,
           content,
           ...(originalLanguage && { originalLanguage }),
-          ...(replyToId && { replyToId })
+          ...(replyToId && { replyToId }),
+          ...(mentionedUserIds && mentionedUserIds.length > 0 && { mentionedUserIds })
         };
+
+        // Si attachments, ajouter les données spécifiques
+        if (hasAttachments) {
+          messageData.attachmentIds = attachmentIds;
+          messageData.messageType = attachmentMimeTypes && attachmentMimeTypes.length > 0
+            ? this.determineMessageTypeFromMime(attachmentMimeTypes[0])
+            : 'file';
+        }
+
+        // Choisir le bon événement selon la présence d'attachments
+        const eventType = hasAttachments
+          ? CLIENT_EVENTS.MESSAGE_SEND_WITH_ATTACHMENTS
+          : CLIENT_EVENTS.MESSAGE_SEND;
 
         // Ajouter un timeout pour éviter que la promesse reste en attente
         const timeout = setTimeout(() => {
@@ -1242,9 +1268,9 @@ class MeeshySocketIOService {
           resolve(false);
         }, 10000); // 10 secondes de timeout
 
-        this.socket.emit(CLIENT_EVENTS.MESSAGE_SEND, messageData, (response: any) => {
+        this.socket.emit(eventType, messageData, (response: any) => {
           clearTimeout(timeout); // Annuler le timeout si on reçoit une réponse
-          
+
           if (response?.success) {
             resolve(true);
           } else {
@@ -1273,124 +1299,6 @@ class MeeshySocketIOService {
     if (mimeType === 'application/pdf') return 'file';
     if (mimeType.startsWith('text/')) return 'text';
     return 'file';
-  }
-
-  /**
-   * Envoie un message avec des attachments
-   */
-  public async sendMessageWithAttachments(
-    conversationOrId: any,
-    content: string,
-    attachmentIds: string[],
-    attachmentMimeTypes: string[],
-    originalLanguage?: string,
-    replyToId?: string
-  ): Promise<boolean> {
-    return new Promise(async (resolve) => {
-      // S'assurer que la connexion est établie
-      this.ensureConnection();
-
-      if (!this.socket) {
-        // Dernière tentative: forcer l'initialisation
-        const hasAuthToken = !!authManager.getAuthToken();
-        const hasSessionToken = !!authManager.getAnonymousSession()?.token;
-
-        if (hasAuthToken || hasSessionToken) {
-          this.initializeConnection();
-
-          // Attendre que le socket se crée
-          await new Promise(wait => setTimeout(wait, 500));
-
-          if (!this.socket) {
-            toast.error('Impossible d\'initialiser la connexion WebSocket');
-            resolve(false);
-            return;
-          }
-        } else {
-          toast.error('Veuillez vous connecter pour envoyer des messages');
-          resolve(false);
-          return;
-        }
-      }
-
-      // Vérifier l'état RÉEL du socket
-      const socketConnected = this.socket.connected === true;
-      const socketDisconnected = this.socket.disconnected === true;
-
-      if (!socketConnected || socketDisconnected) {
-        // Tenter une reconnexion immédiate et attendre
-        toast.info('Connexion perdue. Reconnexion en cours...');
-
-        this.reconnect();
-
-        // Attendre jusqu'à 5 secondes pour la reconnexion
-        let reconnected = false;
-        for (let i = 0; i < 10; i++) {
-          await new Promise(wait => setTimeout(wait, 500));
-
-          if (this.socket && this.socket.connected) {
-            reconnected = true;
-            toast.success('Reconnecté ! Envoi du message...');
-            break;
-          }
-        }
-
-        if (!reconnected) {
-          toast.error('Impossible de se reconnecter. Veuillez réessayer.');
-          resolve(false);
-          return;
-        }
-      }
-
-      try {
-        // Déterminer l'ID de conversation
-        let conversationId: string;
-        
-        if (typeof conversationOrId === 'string') {
-          const idType = getConversationIdType(conversationOrId);
-          if (idType === 'objectId') {
-            conversationId = conversationOrId;
-          } else if (idType === 'identifier') {
-            conversationId = conversationOrId;
-          } else {
-            throw new Error(`Invalid conversation identifier: ${conversationOrId}`);
-          }
-        } else {
-          conversationId = getConversationApiId(conversationOrId);
-        }
-
-        // Déterminer le type de message basé sur le premier MIME type
-        const messageType = attachmentMimeTypes && attachmentMimeTypes.length > 0
-          ? this.determineMessageTypeFromMime(attachmentMimeTypes[0])
-          : 'file';
-
-        // Utiliser l'ObjectId pour l'envoi au backend
-        const messageData = {
-          conversationId,
-          content,
-          attachmentIds,
-          messageType,
-          originalLanguage: originalLanguage || 'fr',
-          replyToId
-        };
-
-        // Émettre l'événement avec callback
-        this.socket.emit(CLIENT_EVENTS.MESSAGE_SEND_WITH_ATTACHMENTS, messageData, (response: any) => {
-          if (response?.success) {
-            resolve(true);
-          } else {
-            const errorMsg = response?.message || response?.error || 'Erreur lors de l\'envoi du message';
-            toast.error(`Erreur: ${errorMsg}`);
-            resolve(false);
-          }
-        });
-      
-      } catch (error) {
-        console.error('❌ MeeshySocketIOService: Erreur lors de l\'envoi message avec attachments:', error);
-        toast.error('Erreur lors de l\'envoi du message');
-        resolve(false);
-      }
-    });
   }
 
   /**

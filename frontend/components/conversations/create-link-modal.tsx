@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo, Fragment } from 'react';
+import { useState, useEffect, useCallback, useMemo, Fragment, useRef } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -21,18 +21,18 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { copyToClipboard } from '@/lib/clipboard';
 import { toast } from 'sonner';
-import { 
-  Link2, 
-  Copy, 
-  Calendar, 
-  Clock, 
-  Shield, 
-  Globe, 
-  Users, 
-  MessageSquare, 
-  Settings, 
-  Eye, 
-  FileText, 
+import {
+  Link2,
+  Copy,
+  Calendar,
+  Clock,
+  Shield,
+  Globe,
+  Users,
+  MessageSquare,
+  Settings,
+  Eye,
+  FileText,
   Image,
   ChevronRight,
   ChevronLeft,
@@ -46,7 +46,8 @@ import {
   Check,
   RefreshCw,
   Info,
-  ChevronDown
+  ChevronDown,
+  X
 } from 'lucide-react';
 import { conversationsService } from '@/services/conversations.service';
 import { Conversation } from '@shared/types';
@@ -55,6 +56,7 @@ import { useI18n } from '@/hooks/useI18n';
 import { useUser } from '@/stores';
 import { generateLinkName } from '@/utils/link-name-generator';
 import { authManager } from '@/services/auth-manager.service';
+import { cn } from '@/lib/utils';
 
 // Langues supportées
 const SUPPORTED_LANGUAGES = [
@@ -231,6 +233,10 @@ export function CreateLinkModalV2({
   const [maxConcurrentUsers, setMaxConcurrentUsers] = useState<number | undefined>(undefined);
   const [maxUniqueSessions, setMaxUniqueSessions] = useState<number | undefined>(undefined);
 
+  // État pour la validation du linkIdentifier
+  const [linkIdentifierCheckStatus, setLinkIdentifierCheckStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
+  const linkIdentifierCheckTimeout = useRef<NodeJS.Timeout | null>(null);
+
   // États des permissions
   const [allowAnonymousMessages, setAllowAnonymousMessages] = useState(true);
   const [allowAnonymousFiles, setAllowAnonymousFiles] = useState(false);
@@ -266,6 +272,53 @@ export function CreateLinkModalV2({
       setGeneratedToken(preGeneratedToken);
     }
   }, [isOpen, preGeneratedLink, preGeneratedToken]);
+
+  // Vérification de disponibilité du linkIdentifier avec debounce
+  useEffect(() => {
+    // Clear le timeout précédent
+    if (linkIdentifierCheckTimeout.current) {
+      clearTimeout(linkIdentifierCheckTimeout.current);
+    }
+
+    // Si l'identifiant est vide, reset le statut
+    if (!linkIdentifier.trim()) {
+      setLinkIdentifierCheckStatus('idle');
+      return;
+    }
+
+    // Indiquer qu'on est en train de vérifier
+    setLinkIdentifierCheckStatus('checking');
+
+    // Debounce: attendre 500ms avant de lancer la vérification
+    linkIdentifierCheckTimeout.current = setTimeout(async () => {
+      try {
+        const response = await fetch(
+          buildApiUrl(API_ENDPOINTS.CONVERSATION.CHECK_LINK_IDENTIFIER(encodeURIComponent(linkIdentifier.trim())))
+        );
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            setLinkIdentifierCheckStatus(result.available ? 'available' : 'taken');
+          } else {
+            setLinkIdentifierCheckStatus('idle');
+          }
+        } else {
+          setLinkIdentifierCheckStatus('idle');
+        }
+      } catch (error) {
+        console.error('Erreur vérification identifiant lien:', error);
+        setLinkIdentifierCheckStatus('idle');
+      }
+    }, 500);
+
+    // Cleanup
+    return () => {
+      if (linkIdentifierCheckTimeout.current) {
+        clearTimeout(linkIdentifierCheckTimeout.current);
+      }
+    };
+  }, [linkIdentifier]);
 
   // Fonction pour générer un identifiant
   const generateIdentifier = (baseText: string) => {
@@ -1172,25 +1225,47 @@ export function CreateLinkModalV2({
               <InfoIcon content={t('createLinkModal.linkDetails.linkIdentifierInfo')} />
             </div>
             <div className="flex items-center space-x-2">
-              <Input
-                id="linkIdentifier"
-                value={linkIdentifier || (() => {
-                  const baseText = linkTitle || (createNewConversation 
-                    ? newConversationData.title 
-                    : conversations.find(c => c.id === selectedConversationId)?.title || 'link');
-                  return generateIdentifier(baseText);
-                })()}
-                onChange={(e) => setLinkIdentifier(e.target.value)}
-                className="flex-1 font-mono text-sm"
-                placeholder="Identifiant du lien..."
-              />
+              <div className="flex-1 relative">
+                <Input
+                  id="linkIdentifier"
+                  value={linkIdentifier || (() => {
+                    const baseText = linkTitle || (createNewConversation
+                      ? newConversationData.title
+                      : conversations.find(c => c.id === selectedConversationId)?.title || 'link');
+                    return generateIdentifier(baseText);
+                  })()}
+                  onChange={(e) => setLinkIdentifier(e.target.value)}
+                  className={cn(
+                    "font-mono text-sm pr-10",
+                    linkIdentifierCheckStatus === 'available' && "border-green-500 focus-visible:ring-green-500",
+                    linkIdentifierCheckStatus === 'taken' && "border-red-500 focus-visible:ring-red-500"
+                  )}
+                  placeholder="Identifiant du lien..."
+                />
+                {/* Indicateur de statut */}
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  {linkIdentifierCheckStatus === 'checking' && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                  )}
+                  {linkIdentifierCheckStatus === 'available' && (
+                    <div className="flex items-center justify-center h-5 w-5 rounded-full bg-green-500">
+                      <Check className="h-3 w-3 text-white" />
+                    </div>
+                  )}
+                  {linkIdentifierCheckStatus === 'taken' && (
+                    <div className="flex items-center justify-center h-5 w-5 rounded-full bg-red-500">
+                      <X className="h-3 w-3 text-white" />
+                    </div>
+                  )}
+                </div>
+              </div>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  const baseText = linkTitle || (createNewConversation 
-                    ? newConversationData.title 
+                  const baseText = linkTitle || (createNewConversation
+                    ? newConversationData.title
                     : conversations.find(c => c.id === selectedConversationId)?.title || 'link');
                   setLinkIdentifier(generateIdentifier(baseText));
                 }}
@@ -1199,6 +1274,19 @@ export function CreateLinkModalV2({
                 <RefreshCw className="h-4 w-4" />
               </Button>
             </div>
+            {/* Messages de feedback */}
+            {linkIdentifierCheckStatus === 'available' && (
+              <p className="text-xs text-green-600 flex items-center gap-1">
+                <Check className="h-3 w-3" />
+                Identifiant disponible
+              </p>
+            )}
+            {linkIdentifierCheckStatus === 'taken' && (
+              <p className="text-xs text-red-500 flex items-center gap-1">
+                <X className="h-3 w-3" />
+                Cet identifiant est déjà utilisé
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
