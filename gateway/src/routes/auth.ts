@@ -25,17 +25,21 @@ export async function authRoutes(fastify: FastifyInstance) {
   }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const { username, password } = request.body as LoginCredentials;
-      
+      console.log('[AUTH] Tentative de connexion pour:', username);
+
       // Authentifier l'utilisateur avec Prisma
       const user = await authService.authenticate({ username, password });
-      
+
       if (!user) {
+        console.error('[AUTH] ❌ Échec de connexion pour:', username, '- Identifiants invalides');
         return reply.status(401).send({
           success: false,
           error: 'Identifiants invalides'
         });
       }
-      
+
+      console.log('[AUTH] ✅ Connexion réussie pour:', user.username, '(ID:', user.id, ')');
+
       // Générer le token
       const token = authService.generateToken(user);
       
@@ -73,7 +77,10 @@ export async function authRoutes(fastify: FastifyInstance) {
       });
       
     } catch (error) {
-      console.error('[GATEWAY] Error in login:', error);
+      console.error('[AUTH] ❌ Erreur serveur lors de la connexion:', error);
+      if (error instanceof Error) {
+        console.error('[AUTH] Détails de l\'erreur:', error.message, error.stack);
+      }
       reply.status(500).send({
         success: false,
         error: 'Erreur lors de la connexion'

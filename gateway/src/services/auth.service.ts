@@ -42,7 +42,8 @@ export class AuthService {
     try {
       // Normaliser le username/email en minuscules pour la recherche
       const normalizedIdentifier = credentials.username.trim().toLowerCase();
-      
+      console.log('[AUTH_SERVICE] Recherche utilisateur avec identifiant:', normalizedIdentifier);
+
       // Rechercher l'utilisateur par username ou email (normalisés)
       const user = await this.prisma.user.findFirst({
         where: {
@@ -56,14 +57,20 @@ export class AuthService {
       });
 
       if (!user) {
+        console.warn('[AUTH_SERVICE] ❌ Aucun utilisateur trouvé pour:', normalizedIdentifier);
         return null;
       }
+
+      console.log('[AUTH_SERVICE] Utilisateur trouvé:', user.username, '- Vérification du mot de passe...');
 
       // Vérifier le mot de passe
       const passwordValid = await bcrypt.compare(credentials.password, user.password);
       if (!passwordValid) {
+        console.warn('[AUTH_SERVICE] ❌ Mot de passe invalide pour:', user.username);
         return null;
       }
+
+      console.log('[AUTH_SERVICE] ✅ Mot de passe valide pour:', user.username);
 
       // Mettre à jour la dernière connexion
       await this.prisma.user.update({
@@ -79,7 +86,10 @@ export class AuthService {
       return this.userToSocketIOUser(user);
 
     } catch (error) {
-      console.error('Error in authenticate:', error);
+      console.error('[AUTH_SERVICE] ❌ Erreur dans authenticate:', error);
+      if (error instanceof Error) {
+        console.error('[AUTH_SERVICE] Détails:', error.message, error.stack);
+      }
       return null;
     }
   }

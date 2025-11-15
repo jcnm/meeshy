@@ -71,7 +71,8 @@ function QuickLoginPageContent() {
     password: ''
   });
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [error, setError] = useState<string | null>(null);
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get('returnUrl');
@@ -102,18 +103,27 @@ function QuickLoginPageContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    // Réinitialiser l'erreur précédente
+    setError(null);
+
+    // Validation des champs
     if (!formData.username.trim() || !formData.password.trim()) {
-      alert(t('login.validation.required'));
+      const errorMsg = t('login.validation.required');
+      setError(errorMsg);
+      console.warn('[LOGIN] Validation échouée: champs requis vides');
       return;
     }
 
     setIsLoading(true);
-    
-    try {
-      // Construire l'URL de l'API en utilisant buildApiUrl()
-      const apiUrl = buildApiUrl('/auth/login');
+    console.log('[LOGIN] Tentative de connexion pour:', formData.username.trim());
 
+    try {
+      // Construire l'URL de l'API
+      const apiUrl = buildApiUrl('/auth/login');
+      console.log('[LOGIN] URL API:', apiUrl);
+
+      // Effectuer la requête de connexion
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -123,27 +133,58 @@ function QuickLoginPageContent() {
         }),
       });
 
-      const data = await response.json();
+      console.log('[LOGIN] Réponse HTTP:', response.status, response.statusText);
 
+      // Gérer les erreurs HTTP
+      if (!response.ok) {
+        let errorMessage = t('login.errors.loginFailed');
+
+        if (response.status === 401) {
+          errorMessage = 'Nom d\'utilisateur/email ou mot de passe invalide';
+          console.error('[LOGIN] Échec 401: Identifiants invalides');
+        } else if (response.status === 500) {
+          errorMessage = 'Erreur serveur. Veuillez réessayer dans quelques instants.';
+          console.error('[LOGIN] Échec 500: Erreur serveur');
+        } else if (response.status >= 400) {
+          console.error('[LOGIN] Échec', response.status, ':', response.statusText);
+        }
+
+        setError(errorMessage);
+        setIsLoading(false);
+        return;
+      }
+
+      // Parser la réponse JSON
+      const data = await response.json();
+      console.log('[LOGIN] Données reçues:', { success: data.success, hasToken: !!data.data?.token, hasUser: !!data.data?.user });
+
+      // Vérifier le succès de la connexion
       if (data.success && data.data?.token) {
-        // Utiliser le hook d'authentification pour mettre à jour le store
+        console.log('[LOGIN] ✅ Connexion réussie pour utilisateur:', data.data.user?.username);
+
+        // Mettre à jour le store d'authentification
         authLogin(data.data.user, data.data.token);
 
-        // Notification de succès simple
-
-        // CORRECTION CRITIQUE: Forcer un hard redirect pour rafraîchir complètement l'état
-        // router.replace() ne force pas le rechargement de tous les composants
+        // Redirection
         const redirectUrl = returnUrl || '/dashboard';
+        console.log('[LOGIN] Redirection vers:', redirectUrl);
 
-        // Utiliser window.location.href pour un vrai reload qui force tous les composants à se réinitialiser
-        window.location.href = redirectUrl;
+        // Utiliser router.replace pour éviter les problèmes de timing
+        router.replace(redirectUrl);
       } else {
-        alert(data.error || t('login.errors.loginFailed'));
+        // Réponse invalide ou erreur métier
+        const errorMsg = data.error || 'Erreur lors de la connexion. Veuillez vérifier vos identifiants.';
+        console.error('[LOGIN] ❌ Échec de connexion:', errorMsg);
+        setError(errorMsg);
+        setIsLoading(false);
       }
     } catch (error) {
-      console.error('Erreur de connexion:', error);
-      alert(t('login.errors.loginFailed'));
-    } finally {
+      // Erreur réseau ou autre erreur inattendue
+      console.error('[LOGIN] ❌ Erreur réseau ou exception:', error);
+      const errorMsg = error instanceof Error
+        ? `Erreur de connexion: ${error.message}`
+        : 'Erreur réseau. Vérifiez votre connexion internet.';
+      setError(errorMsg);
       setIsLoading(false);
     }
   };
@@ -187,17 +228,24 @@ function QuickLoginPageContent() {
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('login.title')}</h2>
             <p className="text-gray-600 dark:text-gray-400 text-sm">{t('login.formDescription')}</p>
           </div>
-          
+
+          {/* Message d'erreur visible */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+              <p className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {t('login.usernameLabel')}
+                Nom d'utilisateur ou Email
               </label>
               <SimpleInput
                 type="text"
                 value={formData.username}
                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                placeholder={t('login.usernamePlaceholder')}
+                placeholder="Entrez votre nom d'utilisateur ou email"
                 disabled={isLoading}
               />
             </div>

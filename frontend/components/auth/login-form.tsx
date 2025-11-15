@@ -24,19 +24,31 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     password: '',
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    // Réinitialiser l'erreur précédente
+    setError(null);
+
+    // Validation des champs
     if (!formData.username.trim() || !formData.password.trim()) {
-      toast.error(t('login.validation.required'));
+      const errorMsg = t('login.validation.required');
+      setError(errorMsg);
+      toast.error(errorMsg);
+      console.warn('[LOGIN_FORM] Validation échouée: champs requis vides');
       return;
     }
 
     setIsLoading(true);
+    console.log('[LOGIN_FORM] Tentative de connexion pour:', formData.username.trim());
+
     try {
-      
-      const response = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.LOGIN), {
+      const apiUrl = buildApiUrl(API_ENDPOINTS.AUTH.LOGIN);
+      console.log('[LOGIN_FORM] URL API:', apiUrl);
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -47,18 +59,39 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         }),
       });
 
-      
+      console.log('[LOGIN_FORM] Réponse HTTP:', response.status, response.statusText);
+
+      // Gérer les erreurs HTTP avec messages spécifiques
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error('[LOGIN_FORM] Erreur HTTP:', response.status, errorData);
-        throw new Error(errorData.error || `Erreur ${response.status}: ${response.statusText}`);
+        let errorMessage = errorData.error || t('login.errors.loginFailed');
+
+        if (response.status === 401) {
+          errorMessage = 'Nom d\'utilisateur/email ou mot de passe invalide';
+          console.error('[LOGIN_FORM] Échec 401: Identifiants invalides');
+        } else if (response.status === 500) {
+          errorMessage = 'Erreur serveur. Veuillez réessayer dans quelques instants.';
+          console.error('[LOGIN_FORM] Échec 500: Erreur serveur');
+        } else if (response.status >= 400) {
+          console.error('[LOGIN_FORM] Échec', response.status, ':', response.statusText, errorData);
+        }
+
+        setError(errorMessage);
+        toast.error(errorMessage);
+        setIsLoading(false);
+        return;
       }
 
       const result = await response.json();
+      console.log('[LOGIN_FORM] Données reçues:', {
+        success: result.success,
+        hasToken: !!(result.data?.token || result.token || result.access_token),
+        hasUser: !!(result.data?.user || result.user)
+      });
 
       // Gérer les différents formats de réponse
       let userData, token;
-      
+
       if (result.success && result.data?.user && result.data?.token) {
         // Format standardisé: { success: true, data: { user: {...}, token: "..." } }
         userData = result.data.user;
@@ -72,66 +105,86 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         userData = result.user;
         token = result.token;
       } else {
-        console.error('[LOGIN_FORM] Format de réponse inattendu:', result);
+        console.error('[LOGIN_FORM] ❌ Format de réponse inattendu:', result);
         console.error('[LOGIN_FORM] URL appelée:', buildApiUrl(API_ENDPOINTS.AUTH.LOGIN));
-        throw new Error('Format de réponse invalide - vérifiez la configuration du serveur');
+        const errorMsg = 'Format de réponse invalide - vérifiez la configuration du serveur';
+        setError(errorMsg);
+        toast.error(errorMsg);
+        setIsLoading(false);
+        return;
       }
 
       if (userData && token) {
+        console.log('[LOGIN_FORM] ✅ Connexion réussie pour utilisateur:', userData.username);
         toast.success(t('login.success.loginSuccess'));
-        
-        // Use useAuth hook for authentication
+
+        // Mettre à jour le store d'authentification
         login(userData, token);
-        
-        // Call optional success callback if provided
+
+        // Appeler le callback de succès si fourni
         if (onSuccess) {
           onSuccess(userData, token);
         } else {
-          // Comportement par défaut : TOUJOURS recharger pour forcer le refresh des données
+          // Comportement par défaut : redirection
           const currentPath = window.location.pathname;
           const urlParams = new URLSearchParams(window.location.search);
           const returnUrl = urlParams.get('returnUrl');
 
+          console.log('[LOGIN_FORM] Redirection après connexion...');
           // Petit délai pour permettre à l'état d'être mis à jour
           setTimeout(() => {
             if (currentPath === '/') {
-              // Sur la page d'accueil, recharger la page pour afficher la conversation meeshy
+              console.log('[LOGIN_FORM] Rechargement de la page d\'accueil');
               window.location.reload();
             } else if (returnUrl) {
-              // Redirection avec rechargement forcé vers returnUrl
+              console.log('[LOGIN_FORM] Redirection vers:', returnUrl);
               window.location.href = returnUrl;
             } else {
-              // Redirection avec rechargement forcé vers dashboard
+              console.log('[LOGIN_FORM] Redirection vers dashboard');
               window.location.href = '/dashboard';
             }
           }, 100);
         }
       } else {
-        throw new Error('Données utilisateur ou token manquantes');
+        const errorMsg = 'Données utilisateur ou token manquantes';
+        console.error('[LOGIN_FORM] ❌', errorMsg);
+        setError(errorMsg);
+        toast.error(errorMsg);
+        setIsLoading(false);
       }
     } catch (error) {
-      console.error('[LOGIN_FORM] Erreur login:', error);
-      toast.error(error instanceof Error ? error.message : t('login.errors.loginFailed'));
-    } finally {
+      console.error('[LOGIN_FORM] ❌ Erreur réseau ou exception:', error);
+      const errorMsg = error instanceof Error
+        ? error.message
+        : 'Erreur réseau. Vérifiez votre connexion internet.';
+      setError(errorMsg);
+      toast.error(errorMsg);
       setIsLoading(false);
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Message d'erreur visible */}
+      {error && (
+        <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+          <p className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>
+        </div>
+      )}
+
       <div className="space-y-2">
-        <Label htmlFor="login-form-username">{t('login.usernameLabel')}</Label>
+        <Label htmlFor="login-form-username">Nom d'utilisateur ou Email</Label>
         <Input
           id="login-form-username"
           type="text"
-          placeholder={t('login.usernamePlaceholder')}
+          placeholder="Entrez votre nom d'utilisateur ou email"
           value={formData.username}
           onChange={(e) => setFormData({ ...formData, username: e.target.value })}
           disabled={isLoading}
           required
         />
         <p className="text-xs text-gray-500">
-          {t('login.usernameHelp')}
+          Vous pouvez vous connecter avec votre nom d'utilisateur ou votre email
         </p>
       </div>
 
