@@ -925,6 +925,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
             popoverSide="top"
             popoverAlign="start"
             popoverSideOffset={8}
+            showLanguageName={false}
           />
         </div>
 

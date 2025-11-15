@@ -72,9 +72,14 @@ export function LanguageFlagSelector({
         align={popoverAlign}
         side={popoverSide}
         sideOffset={popoverSideOffset}
-        className="p-2 w-[90px] max-w-[96vw] sm:max-w-[160px] min-w-[70px]"
+        className={cn(
+          "p-2",
+          showLanguageName
+            ? "w-[90px] max-w-[96vw] sm:max-w-[160px] min-w-[70px]"
+            : "w-[50px] max-w-[96vw] min-w-[50px]"
+        )}
       >
-        <div className="flex flex-col gap-2 items-center max-h-[60vh] overflow-y-auto">
+        <div className="flex flex-col gap-2 items-center max-h-[50vh] overflow-y-auto">
           {availableLanguages.map((language) => (
             <Button
               key={language.code}
@@ -85,15 +90,18 @@ export function LanguageFlagSelector({
                 setOpen(false);
               }}
               className={cn(
-                "flex flex-row items-center justify-start h-10 w-full px-3 gap-2 hover:bg-blue-100",
+                "flex flex-row items-center h-10 w-full gap-2 hover:bg-blue-100",
+                showLanguageName ? "justify-start px-3" : "justify-center px-0",
                 value === language.code && "bg-blue-50 dark:bg-blue-900/30"
               )}
               title={formatLanguageName(language.code)}
             >
               <span className="text-base">{language.flag}</span>
-              <span className="font-medium text-sm">
-                {language.name}
-              </span>
+              {showLanguageName && (
+                <span className="font-medium text-sm">
+                  {language.name}
+                </span>
+              )}
             </Button>
           ))}
         </div>
