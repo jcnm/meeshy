@@ -283,9 +283,9 @@ function DashboardPageContent() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center space-y-2">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="text-muted-foreground">{t('loading')}</p>
+          <div className="text-center space-y-3">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
+            <p className="text-sm text-muted-foreground">{t('loading')}</p>
           </div>
         </div>
       </DashboardLayout>

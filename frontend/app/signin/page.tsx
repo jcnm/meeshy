@@ -404,14 +404,13 @@ function SigninPageContent({ affiliateToken: propAffiliateToken }: { affiliateTo
   };
 
 
-  // Afficher un écran de chargement pendant la vérification de session
+  // Afficher un écran de chargement unifié (h-12 w-12) pendant la vérification de session
   if (isCheckingSession) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
-        <div className="text-center space-y-4">
-          <LargeLogo href="/" />
-          <p className="text-gray-600 dark:text-gray-400">{t('register.checkingSession') || 'Vérification de session...'}</p>
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        <div className="text-center space-y-3">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">{t('register.checkingSession') || 'Vérification de session...'}</p>
         </div>
       </div>
     );
@@ -800,14 +799,9 @@ export default function SigninPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
-        <div className="w-full max-w-md space-y-6">
-          <div className="text-center space-y-4">
-            <LargeLogo href="/" />
-            <p className="text-gray-600 dark:text-gray-400">Loading...</p>
-            <div className="flex justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            </div>
-          </div>
+        <div className="text-center space-y-3">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Chargement...</p>
         </div>
       </div>
     }>

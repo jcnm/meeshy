@@ -18,11 +18,14 @@ export function AuthGuard({
 }: AuthGuardProps) {
   const { isAuthenticated, isChecking, isAnonymous } = useAuth();
 
-  // Pendant la vérification, afficher un loader
+  // Pendant la vérification, afficher un loader unifié (h-12 w-12)
   if (isChecking) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 dark:border-indigo-400 mx-auto"></div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Vérification...</p>
+        </div>
       </div>
     );
   }

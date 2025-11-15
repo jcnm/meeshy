@@ -24,7 +24,7 @@ const devLog = (message: string, ...args: any[]) => {
 // Cache global pour éviter les vérifications d'authentification multiples
 const authCache = {
   lastCheck: 0,
-  cacheDuration: 5000, // 5 secondes
+  cacheDuration: 300000, // 5 minutes (au lieu de 5 secondes)
   result: null as AuthState | null
 };
 
