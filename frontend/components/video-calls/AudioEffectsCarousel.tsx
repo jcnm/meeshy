@@ -210,8 +210,8 @@ export function AudioEffectsCarousel({
                   if (tile.id === 'reset') {
                     handleResetAll();
                   } else {
-                    // Toggle ON/OFF de l'effet
-                    onToggleEffect(tile.id as AudioEffectType);
+                    // Ouvrir la configuration de l'effet
+                    setSelectedEffect(isSelected ? null : tile.id);
                   }
                 }}
                 className={cn(
@@ -231,18 +231,22 @@ export function AudioEffectsCarousel({
                     <p className="text-xs font-semibold leading-tight">{tile.title}</p>
                   </div>
 
-                  {/* Status */}
+                  {/* Switch ON/OFF (pour activer/désactiver sans ouvrir) */}
                   {tile.id !== 'reset' && (
-                    <div className="flex items-center gap-1">
-                      <div
-                        className={cn(
-                          'w-2 h-2 rounded-full',
-                          isActive ? 'bg-green-400 animate-pulse' : 'bg-gray-500'
-                        )}
-                      />
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation(); // Ne pas ouvrir la config
+                      }}
+                      className="flex items-center gap-2"
+                    >
                       <span className="text-[8px] uppercase font-bold">
                         {isActive ? 'ON' : 'OFF'}
                       </span>
+                      <Switch
+                        checked={isActive}
+                        onCheckedChange={() => onToggleEffect(tile.id as AudioEffectType)}
+                        className="scale-75 data-[state=checked]:bg-green-500"
+                      />
                     </div>
                   )}
 
@@ -250,20 +254,6 @@ export function AudioEffectsCarousel({
                     <RotateCcw className="w-4 h-4 opacity-70" />
                   )}
                 </div>
-
-                {/* Settings Button (pour ouvrir les détails) */}
-                {tile.id !== 'reset' && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation(); // Ne pas trigger le toggle
-                      setSelectedEffect(isSelected ? null : tile.id);
-                    }}
-                    className="absolute top-1 right-1 w-6 h-6 bg-black/40 hover:bg-black/70 rounded-full flex items-center justify-center transition-colors"
-                    title="Configurer"
-                  >
-                    <Settings className="w-3 h-3 text-white" />
-                  </button>
-                )}
               </Card>
             );
           })}
