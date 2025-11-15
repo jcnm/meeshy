@@ -587,11 +587,11 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       return;
     }
 
-    // Sinon, ouvrir le recorder et démarrer enregistrement
+    // Sinon, ouvrir le recorder (l'utilisateur démarrera l'enregistrement en cliquant sur le bouton Start)
     if (!showAudioRecorder) {
       setShowAudioRecorder(true);
       setAudioRecorderKey(prev => prev + 1);
-      setIsRecording(true);
+      // Note: isRecording sera mis à jour par handleRecordingStateChange quand l'utilisateur clique sur Start
     }
   }, [showAudioRecorder, isRecording, handleFilesSelected, getAudioFileExtension]);
 
