@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { SUPPORTED_LANGUAGES, formatLanguageName } from "@/utils/language-detection";
 import { INTERFACE_LANGUAGES } from "@/types/frontend";
@@ -51,8 +51,8 @@ export function LanguageFlagSelector({
   );
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
         <Button
           variant="outline"
           role="combobox"
@@ -67,35 +67,37 @@ export function LanguageFlagSelector({
             {selectedLanguage?.flag || '🌐'}
           </span>
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
+      </PopoverTrigger>
+      <PopoverContent
         align={popoverAlign}
         side={popoverSide}
         sideOffset={popoverSideOffset}
-        className="p-2 w-[90px] max-w-[96vw] sm:max-w-[160px] min-w-[70px] flex flex-col gap-2 items-center max-h-[40vh] overflow-y-auto"
+        className="p-2 w-[90px] max-w-[96vw] sm:max-w-[160px] min-w-[70px]"
       >
-        {availableLanguages.map((language) => (
-          <Button
-            key={language.code}
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              onValueChange(language.code);
-              setOpen(false);
-            }}
-            className={cn(
-              "flex flex-row items-center justify-start h-10 w-full px-3 gap-2 hover:bg-blue-100",
-              value === language.code && "bg-blue-50 dark:bg-blue-900/30"
-            )}
-            title={formatLanguageName(language.code)}
-          >
-            <span className="text-base">{language.flag}</span>
-            <span className="font-medium text-sm">
-              {language.name}
-            </span>
-          </Button>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+        <div className="flex flex-col gap-2 items-center max-h-[60vh] overflow-y-auto">
+          {availableLanguages.map((language) => (
+            <Button
+              key={language.code}
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                onValueChange(language.code);
+                setOpen(false);
+              }}
+              className={cn(
+                "flex flex-row items-center justify-start h-10 w-full px-3 gap-2 hover:bg-blue-100",
+                value === language.code && "bg-blue-50 dark:bg-blue-900/30"
+              )}
+              title={formatLanguageName(language.code)}
+            >
+              <span className="text-base">{language.flag}</span>
+              <span className="font-medium text-sm">
+                {language.name}
+              </span>
+            </Button>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
