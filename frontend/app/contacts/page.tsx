@@ -342,24 +342,13 @@ export default function ContactsPage() {
       const token = authManager.getAuthToken();
       if (!token) return;
 
-      // Demander un message optionnel
-      const message = window.prompt('Message optionnel pour accompagner votre demande d\'amitié (facultatif):');
-
-      // Si l'utilisateur clique sur "Annuler", ne pas envoyer la requête
-      if (message === null) {
-        return;
-      }
-
       const response = await fetch(buildApiUrl('/users/friend-requests'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({
-          receiverId: userId,
-          message: message.trim() || undefined // Envoyer undefined si vide
-        })
+        body: JSON.stringify({ receiverId: userId })
       });
 
       if (response.ok) {
