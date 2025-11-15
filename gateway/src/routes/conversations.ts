@@ -446,6 +446,31 @@ export async function conversationRoutes(fastify: FastifyInstance) {
                   displayName: true,
                   avatar: true
                 }
+              },
+              attachments: {
+                select: {
+                  id: true,
+                  fileName: true,
+                  originalName: true,
+                  mimeType: true,
+                  fileSize: true,
+                  fileUrl: true,
+                  thumbnailUrl: true,
+                  width: true,
+                  height: true,
+                  duration: true,
+                  bitrate: true,
+                  sampleRate: true,
+                  codec: true,
+                  channels: true,
+                  fps: true,
+                  videoCodec: true,
+                  pageCount: true,
+                  lineCount: true,
+                  uploadedBy: true,
+                  isAnonymous: true,
+                  createdAt: true
+                }
               }
             }
           }
