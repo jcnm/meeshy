@@ -405,9 +405,9 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
         {/* Bouton supprimer */}
         <button
           onClick={onRemove}
-          className="absolute -top-0.5 -right-0.5 !w-3 !h-3 !min-w-[12px] !min-h-[12px] !max-w-[12px] !max-h-[12px] bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-md z-10 !p-0"
+          className="absolute -top-0.5 -right-0.5 !w-5 !h-5 !min-w-[20px] !min-h-[20px] !max-w-[20px] !max-h-[20px] bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-md z-10 !p-0"
         >
-          <Trash2 className="!w-1.5 !h-1.5" />
+          <Trash2 className="!w-5 !h-5" />
         </button>
       </div>
     );
@@ -426,9 +426,9 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
         {/* Bouton supprimer */}
         <button
           onClick={onRemove}
-          className="absolute -top-0.5 -right-0.5 !w-3 !h-3 !min-w-[12px] !min-h-[12px] !max-w-[12px] !max-h-[12px] bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-md z-10 !p-0"
+          className="absolute -top-0.5 -right-0.5 !w-5 !h-5 !min-w-[20px] !min-h-[20px] !max-w-[20px] !max-h-[20px] bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-md z-10 !p-0"
         >
-          <Trash2 className="!w-1.5 !h-1.5" />
+          <Trash2 className="!w-5 !h-5" />
         </button>
       </div>
     );
@@ -517,9 +517,9 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
         {/* Bouton supprimer */}
         <button
           onClick={onRemove}
-          className="absolute -top-0.5 -right-0.5 !w-3 !h-3 !min-w-[12px] !min-h-[12px] !max-w-[12px] !max-h-[12px] bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10 !p-0"
+          className="absolute -top-0.5 -right-0.5 !w-5 !h-5 !min-w-[20px] !min-h-[20px] !max-w-[20px] !max-h-[20px] bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10 !p-0"
         >
-          <Trash2 className="!w-1.5 !h-1.5" />
+          <Trash2 className="!w-5 !h-5" />
         </button>
       </div>
     );
