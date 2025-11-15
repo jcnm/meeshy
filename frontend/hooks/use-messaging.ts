@@ -46,7 +46,7 @@ interface UseMessagingReturn {
   sendError: string | null;
 
   // Actions de messagerie
-  sendMessage: (content: string, originalLanguage?: string, replyToId?: string, attachmentIds?: string[], attachmentMimeTypes?: string[]) => Promise<boolean>;
+  sendMessage: (content: string, originalLanguage?: string, replyToId?: string, mentionedUserIds?: string[], attachmentIds?: string[], attachmentMimeTypes?: string[]) => Promise<boolean>;
   editMessage: (messageId: string, newContent: string) => Promise<boolean>;
   deleteMessage: (messageId: string) => Promise<boolean>;
 
@@ -172,6 +172,7 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
     content: string,
     originalLanguage?: string,
     replyToId?: string,
+    mentionedUserIds?: string[],
     attachmentIds?: string[],
     attachmentMimeTypes?: string[]
   ): Promise<boolean> => {
@@ -206,7 +207,7 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
         content,
         sourceLanguage,
         replyToId,
-        undefined, // mentionedUserIds - géré par le composer si nécessaire
+        mentionedUserIds,
         attachmentIds,
         attachmentMimeTypes
       );
