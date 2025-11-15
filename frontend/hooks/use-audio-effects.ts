@@ -35,31 +35,33 @@ import type {
 } from '@shared/types/video-call';
 
 // Default parameters for each effect
+// IMPORTANT: Tous les paramètres sont initialisés à ZÉRO lors de l'activation
+// L'utilisateur doit ajuster manuellement les paramètres après activation
 const DEFAULT_VOICE_CODER: VoiceCoderParams = {
   pitch: 0,
   harmonization: false,
-  strength: 50,
-  retuneSpeed: 50, // Medium speed - balance between natural and responsive
+  strength: 0, // Initialisé à zéro
+  retuneSpeed: 0, // Initialisé à zéro
   scale: 'chromatic', // All notes allowed by default
   key: 'C', // C major/minor
-  naturalVibrato: 30, // Preserve some natural vibrato
+  naturalVibrato: 0, // Initialisé à zéro
 };
 
 const DEFAULT_BABY_VOICE: BabyVoiceParams = {
-  pitch: 8,
-  formant: 1.3,
-  breathiness: 20,
+  pitch: 0, // Initialisé à zéro
+  formant: 1.0, // Valeur neutre (1.0 = pas de changement formantique)
+  breathiness: 0, // Initialisé à zéro
 };
 
 const DEFAULT_DEMON_VOICE: DemonVoiceParams = {
-  pitch: -10,
-  distortion: 30,
-  reverb: 60,
+  pitch: 0, // Initialisé à zéro
+  distortion: 0, // Initialisé à zéro
+  reverb: 0, // Initialisé à zéro
 };
 
 const DEFAULT_BACK_SOUND: BackSoundParams = {
-  soundFile: BACK_SOUNDS.length > 0 ? BACK_SOUNDS[0].id : '', // Empty string si aucun son disponible
-  volume: 20,
+  soundFile: '', // Pas de fichier sélectionné par défaut
+  volume: 0, // Initialisé à zéro
   loopMode: 'N_TIMES',
   loopValue: 1,
 };
