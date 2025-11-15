@@ -172,17 +172,18 @@ export function useSocketIOMessaging(options: UseSocketIOMessagingOptions = {}) 
 
   // ÉTAPE 5: Actions
   const sendMessage = useCallback(async (
-    content: string, 
+    content: string,
     language: string,
-    replyToId?: string
+    replyToId?: string,
+    mentionedUserIds?: string[]
   ): Promise<boolean> => {
     if (!conversationId) {
       console.error('❌ [useSocketIOMessaging] Pas de conversationId');
       return false;
     }
-    
+
     // Passer l'identifiant directement - le service gère la conversion
-    return await meeshySocketIOService.sendMessage(conversationId, content, language, replyToId);
+    return await meeshySocketIOService.sendMessage(conversationId, content, language, replyToId, mentionedUserIds);
   }, [conversationId]);
 
   const sendMessageWithAttachments = useCallback(async (
@@ -190,7 +191,8 @@ export function useSocketIOMessaging(options: UseSocketIOMessagingOptions = {}) 
     attachmentIds: string[],
     attachmentMimeTypes: string[],
     language: string,
-    replyToId?: string
+    replyToId?: string,
+    mentionedUserIds?: string[]
   ): Promise<boolean> => {
     if (!conversationId) {
       console.error('❌ [useSocketIOMessaging] Pas de conversationId');
@@ -204,7 +206,8 @@ export function useSocketIOMessaging(options: UseSocketIOMessagingOptions = {}) 
       attachmentIds,
       attachmentMimeTypes,
       language,
-      replyToId
+      replyToId,
+      mentionedUserIds
     );
   }, [conversationId]);
 

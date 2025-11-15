@@ -44,6 +44,8 @@ export interface MessageComposerRef {
   focus: () => void;
   blur: () => void;
   clearAttachments?: () => void;
+  getMentionedUserIds?: () => string[]; // Exposer les mentions
+  clearMentionedUserIds?: () => void; // Nettoyer les mentions après envoi
 }
 
 /**
@@ -104,6 +106,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   const [mentionQuery, setMentionQuery] = useState('');
   const [mentionPosition, setMentionPosition] = useState<{ top?: number; bottom?: number; left: number }>({ left: 0 });
   const [mentionCursorStart, setMentionCursorStart] = useState(0);
+  const [mentionedUserIds, setMentionedUserIds] = useState<string[]>([]); // Tracker les IDs des utilisateurs mentionnés
 
   // Utiliser le placeholder fourni ou la traduction par défaut
   const finalPlaceholder = placeholder || t('conversationSearch.shareMessage');
@@ -602,6 +605,8 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     focus: () => textareaRef.current?.focus(),
     blur: () => textareaRef.current?.blur(),
     clearAttachments, // Exposer la fonction pour clear les attachments
+    getMentionedUserIds: () => mentionedUserIds, // Exposer les mentions
+    clearMentionedUserIds: () => setMentionedUserIds([]) // Nettoyer les mentions
   } as any));
 
   // Initialiser la hauteur du textarea au montage
@@ -753,7 +758,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   }, [onChange, conversationId]);
 
   // Handler pour la sélection d'une mention - mémorisé
-  const handleMentionSelect = useCallback((username: string) => {
+  const handleMentionSelect = useCallback((username: string, userId: string) => {
     if (!textareaRef.current) return;
 
     const currentValue = value;
@@ -764,6 +769,14 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     onChange(newValue);
     setShowMentionAutocomplete(false);
     setMentionQuery('');
+
+    // Ajouter l'userId à la liste des mentions (éviter les doublons)
+    setMentionedUserIds(prev => {
+      if (!prev.includes(userId)) {
+        return [...prev, userId];
+      }
+      return prev;
+    });
 
     // Placer le curseur après la mention insérée
     setTimeout(() => {

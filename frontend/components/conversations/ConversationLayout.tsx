@@ -1091,6 +1091,9 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     const content = newMessage.trim();
     const replyToId = useReplyStore.getState().replyingTo?.id;
 
+    // Extraire les mentions depuis le composer
+    const mentionedUserIds = messageComposerRef.current?.getMentionedUserIds?.() || [];
+
     const hasAttachments = attachmentIds.length > 0;
 
 
@@ -1129,9 +1132,9 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
       // Envoyer avec ou sans attachments
       if (hasAttachments && sendMessageWithAttachmentsViaSocket) {
-        await sendMessageWithAttachmentsViaSocket(content, currentAttachmentIds, currentAttachmentMimeTypes, selectedLanguage, replyToId);
+        await sendMessageWithAttachmentsViaSocket(content, currentAttachmentIds, currentAttachmentMimeTypes, selectedLanguage, replyToId, mentionedUserIds);
       } else {
-        await sendMessageViaSocket(content, selectedLanguage, replyToId);
+        await sendMessageViaSocket(content, selectedLanguage, replyToId, mentionedUserIds);
       }
 
 
@@ -1157,6 +1160,11 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       // Clear les attachments du composer
       if (messageComposerRef.current && messageComposerRef.current.clearAttachments) {
         messageComposerRef.current.clearAttachments();
+      }
+
+      // Clear les mentions du composer
+      if (messageComposerRef.current && messageComposerRef.current.clearMentionedUserIds) {
+        messageComposerRef.current.clearMentionedUserIds();
       }
 
       // Effacer l'état de réponse

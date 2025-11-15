@@ -1149,7 +1149,7 @@ class MeeshySocketIOService {
   /**
    * Envoie un message (accepte soit un ID soit un objet conversation)
    */
-  public async sendMessage(conversationOrId: any, content: string, originalLanguage?: string, replyToId?: string): Promise<boolean> {
+  public async sendMessage(conversationOrId: any, content: string, originalLanguage?: string, replyToId?: string, mentionedUserIds?: string[]): Promise<boolean> {
     return new Promise(async (resolve) => {
       // CORRECTION CRITIQUE: S'assurer que la connexion est établie
       this.ensureConnection();
@@ -1229,11 +1229,12 @@ class MeeshySocketIOService {
         }
 
         // Utiliser l'ObjectId pour l'envoi au backend
-        const messageData = { 
-          conversationId, 
+        const messageData = {
+          conversationId,
           content,
           ...(originalLanguage && { originalLanguage }),
-          ...(replyToId && { replyToId })
+          ...(replyToId && { replyToId }),
+          ...(mentionedUserIds && mentionedUserIds.length > 0 && { mentionedUserIds })
         };
 
         // Ajouter un timeout pour éviter que la promesse reste en attente
@@ -1284,7 +1285,8 @@ class MeeshySocketIOService {
     attachmentIds: string[],
     attachmentMimeTypes: string[],
     originalLanguage?: string,
-    replyToId?: string
+    replyToId?: string,
+    mentionedUserIds?: string[]
   ): Promise<boolean> {
     return new Promise(async (resolve) => {
       // S'assurer que la connexion est établie
@@ -1371,7 +1373,8 @@ class MeeshySocketIOService {
           attachmentIds,
           messageType,
           originalLanguage: originalLanguage || 'fr',
-          replyToId
+          replyToId,
+          ...(mentionedUserIds && mentionedUserIds.length > 0 && { mentionedUserIds })
         };
 
         // Émettre l'événement avec callback

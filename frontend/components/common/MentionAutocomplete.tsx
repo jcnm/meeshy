@@ -11,7 +11,7 @@ import type { MentionSuggestion } from '../../../shared/types/mention';
 interface MentionAutocompleteProps {
   conversationId: string;
   query: string;
-  onSelect: (username: string) => void;
+  onSelect: (username: string, userId: string) => void;
   onClose: () => void;
   position: { top?: number; bottom?: number; left: number };
   maxSuggestions?: number;
@@ -96,7 +96,7 @@ export function MentionAutocomplete({
         case 'Enter':
           e.preventDefault();
           if (suggestions[selectedIndex]) {
-            onSelect(suggestions[selectedIndex].username);
+            onSelect(suggestions[selectedIndex].username, suggestions[selectedIndex].id);
           }
           break;
         case 'Escape':
@@ -198,7 +198,7 @@ export function MentionAutocomplete({
                   ? 'bg-blue-50 dark:bg-blue-900/20'
                   : ''
               }`}
-              onClick={() => onSelect(suggestion.username)}
+              onClick={() => onSelect(suggestion.username, suggestion.id)}
               onMouseEnter={() => setSelectedIndex(index)}
             >
               <Avatar className="h-8 w-8 flex-shrink-0">
