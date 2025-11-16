@@ -233,20 +233,6 @@ export function AudioEffectsCarousel({
                   </div>
                 )}
 
-                {/* Switch ON/OFF en bas à droite - ne pas ouvrir la config */}
-                {tile.id !== 'reset' && (
-                  <div
-                    className="absolute bottom-2 right-2 z-10"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Switch
-                      checked={isActive}
-                      onCheckedChange={() => onToggleEffect(tile.id as AudioEffectType)}
-                      className="scale-75"
-                    />
-                  </div>
-                )}
-
                 {/* Clic sur toute la tuile: ouvrir la config */}
                 <div
                   onClick={(e) => {
@@ -284,7 +270,7 @@ export function AudioEffectsCarousel({
                       "mt-2 text-[10px] font-bold uppercase tracking-wide transition-all",
                       isActive ? "text-green-300" : "text-gray-400"
                     )}>
-                      {isActive ? "✓ Actif" : "Tap to enable"}
+                      {isActive ? "✓ Actif" : "Tap to configure"}
                     </div>
                   )}
 
