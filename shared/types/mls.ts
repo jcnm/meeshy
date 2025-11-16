@@ -559,6 +559,27 @@ export interface ConversationEncryptionStatus {
   readonly participantsWithTranslationDisabled: string[]; // User IDs
 }
 
+/**
+ * Detailed conversation encryption status response
+ * Includes MLS group state and participant information
+ */
+export interface ConversationEncryptionStatusResponse {
+  readonly conversationId: string;
+  readonly encryptionMode: EncryptionMode;
+  readonly isEncrypted: boolean;
+  readonly hasServerKey: boolean;
+  readonly serverKeyCreatedAt?: Date;
+  readonly serverKeyExpiresAt?: Date;
+  readonly serverKeyNeedsRotation: boolean;
+  readonly mlsGroupId?: string;
+  readonly mlsEpoch?: number;
+  readonly mlsCipherSuite?: string;
+  readonly mlsLastUpdated?: Date;
+  readonly membersAllowingServerTranslation: number;
+  readonly totalMembers: number;
+  readonly allMembersAllowServerTranslation: boolean;
+}
+
 // ===== HYBRID ENCRYPTION CONSTANTS =====
 
 /**
