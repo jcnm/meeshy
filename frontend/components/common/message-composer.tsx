@@ -596,6 +596,18 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     }
   }, [showAudioRecorder, isRecording, handleFilesSelected, getAudioFileExtension]);
 
+  // Handle blur for mobile to ensure zoom out - mémorisé
+  const handleBlur = useCallback(() => {
+    if (isMobile && textareaRef.current) {
+      // Force blur and zoom out on mobile devices
+      textareaRef.current.blur();
+      // Slight delay to ensure keyboard is fully dismissed before zoom reset
+      setTimeout(() => {
+        window.scrollTo(0, window.scrollY);
+      }, 100);
+    }
+  }, [isMobile]);
+
   // Fonction pour réinitialiser la taille du textarea - mémorisée
   const resetTextareaSize = useCallback(() => {
     if (textareaRef.current && textareaRef.current.style) {
@@ -680,18 +692,6 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     return () => {
       textarea.removeEventListener('focus', handleFocus);
     };
-  }, [isMobile]);
-
-  // Handle blur for mobile to ensure zoom out - mémorisé
-  const handleBlur = useCallback(() => {
-    if (isMobile && textareaRef.current) {
-      // Force blur and zoom out on mobile devices
-      textareaRef.current.blur();
-      // Slight delay to ensure keyboard is fully dismissed before zoom reset
-      setTimeout(() => {
-        window.scrollTo(0, window.scrollY);
-      }, 100);
-    }
   }, [isMobile]);
 
   // Auto-resize du textarea comme dans BubbleStreamPage - mémorisé
