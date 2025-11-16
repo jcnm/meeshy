@@ -1155,10 +1155,15 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
 
             {/* Bouton Download */}
             <a
-              href={attachmentFileUrl}
-              download
+              href={objectUrl || '#'}
+              download={attachment.originalName}
               className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all"
               title="Télécharger l'audio"
+              onClick={(e) => {
+                if (!objectUrl) {
+                  e.preventDefault();
+                }
+              }}
             >
               <Download className="w-3 h-3 text-gray-700 dark:text-gray-200" />
             </a>
