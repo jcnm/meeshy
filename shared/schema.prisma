@@ -83,6 +83,12 @@ model User {
   // MLS relations
   mlsKeyPackages              MLSKeyPackage[]          @relation("UserMLSKeyPackages")
   mlsCredential               MLSCredential?
+
+  // MLS Hybrid Encryption Preferences
+  /// Autoriser le serveur à déchiffrer les messages pour traduction (mode hybrid uniquement)
+  allowServerSideTranslation  Boolean                  @default(true)
+  /// Mode de chiffrement par défaut pour les nouvelles conversations créées par cet utilisateur
+  defaultEncryptionMode       EncryptionMode           @default(hybrid)
 }
 
 /// Conversation entre utilisateurs (direct, group, public, global)
@@ -115,6 +121,16 @@ model Conversation {
 
   // MLS relation
   mlsGroupState         MLSGroupState?
+
+  // MLS Hybrid Encryption Settings
+  /// Mode de chiffrement E2E: none (pas de chiffrement), hybrid (E2E + traduction serveur), e2e_only (E2E pur sans traduction serveur)
+  encryptionMode        EncryptionMode           @default(none)
+  /// Clé serveur chiffrée (pour mode hybrid uniquement) - chiffrée avec master key
+  serverEncryptionKey   String?
+  /// Date de création de la clé serveur
+  serverKeyCreatedAt    DateTime?
+  /// Date d'expiration de la clé serveur (rotation tous les 30 jours)
+  serverKeyExpiresAt    DateTime?
 }
 
 /// Appartenance d'un utilisateur à une conversation
@@ -1170,4 +1186,14 @@ model MLSAuditEvent {
   @@index([severity])
 
   @@map("mls_audit_events")
+}
+
+/// Mode de chiffrement pour les conversations
+/// - none: Pas de chiffrement E2E (traduction serveur instantanée, compatibilité maximale)
+/// - hybrid: Chiffrement E2E + traduction serveur (recommandé - privacy + UX)
+/// - e2e_only: Chiffrement E2E pur (privacy maximale, pas de traduction serveur)
+enum EncryptionMode {
+  none       // Pas de chiffrement
+  hybrid     // E2E + serveur (recommandé)
+  e2e_only   // E2E pur
 }

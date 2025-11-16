@@ -477,3 +477,134 @@ export const KEY_PACKAGE_EXPIRATION_DAYS = 30;
  * MLS Group epoch increment
  */
 export const MLS_GROUP_EPOCH_INCREMENT = 1;
+
+// ===== HYBRID ENCRYPTION TYPES =====
+
+/**
+ * Mode de chiffrement pour les conversations
+ *
+ * - `none`: Pas de chiffrement E2E (traduction serveur instantanée, compatibilité maximale)
+ * - `hybrid`: Chiffrement E2E + traduction serveur (recommandé - privacy + UX)
+ * - `e2e_only`: Chiffrement E2E pur (privacy maximale, pas de traduction serveur)
+ */
+export type EncryptionMode = 'none' | 'hybrid' | 'e2e_only';
+
+/**
+ * Encryption type for encrypted data
+ *
+ * - `mls_1_1`: 1:1 conversation with MLS/TweetNaCl
+ * - `mls_group`: Group conversation with full MLS protocol
+ * - `hybrid_double`: Double encryption (E2E + server layer)
+ */
+export type EncryptionType = 'mls_1_1' | 'mls_group' | 'hybrid_double';
+
+/**
+ * Extended encrypted data for hybrid encryption
+ * Includes server layer nonce for double encryption
+ */
+export interface HybridEncryptedData extends EncryptedData {
+  readonly encryptionType: 'hybrid_double';
+  readonly serverLayerNonce: string; // Base64 encoded nonce for server layer decryption
+}
+
+/**
+ * Request to update user encryption preferences
+ */
+export interface UpdateEncryptionPreferencesRequest {
+  readonly userId: string;
+  readonly allowServerSideTranslation?: boolean;
+  readonly defaultEncryptionMode?: EncryptionMode;
+}
+
+/**
+ * Response for encryption preferences update
+ */
+export interface UpdateEncryptionPreferencesResponse {
+  readonly userId: string;
+  readonly allowServerSideTranslation: boolean;
+  readonly defaultEncryptionMode: EncryptionMode;
+  readonly updatedAt: Date;
+}
+
+/**
+ * Request to update conversation encryption mode
+ * ⚠️ WARNING: Cannot change encryption mode after conversation creation
+ */
+export interface UpdateConversationEncryptionRequest {
+  readonly conversationId: string;
+  readonly encryptionMode: EncryptionMode;
+}
+
+/**
+ * Response for conversation encryption update
+ */
+export interface UpdateConversationEncryptionResponse {
+  readonly conversationId: string;
+  readonly encryptionMode: EncryptionMode;
+  readonly serverKeyCreatedAt?: Date;
+  readonly serverKeyExpiresAt?: Date;
+  readonly error?: string; // If encryption mode cannot be changed
+}
+
+/**
+ * Conversation encryption status
+ */
+export interface ConversationEncryptionStatus {
+  readonly conversationId: string;
+  readonly encryptionMode: EncryptionMode;
+  readonly isEncrypted: boolean;
+  readonly supportsServerTranslation: boolean;
+  readonly serverKeyExists: boolean;
+  readonly serverKeyExpiresAt?: Date;
+  readonly allParticipantsAllowTranslation: boolean;
+  readonly participantsWithTranslationDisabled: string[]; // User IDs
+}
+
+// ===== HYBRID ENCRYPTION CONSTANTS =====
+
+/**
+ * Server encryption key rotation period in days
+ */
+export const SERVER_KEY_ROTATION_DAYS = 30;
+
+/**
+ * Server encryption key cache duration in hours
+ */
+export const SERVER_KEY_CACHE_HOURS = 24;
+
+/**
+ * Maximum time plaintext can exist in server RAM (milliseconds)
+ */
+export const MAX_PLAINTEXT_LIFETIME_MS = 100;
+
+/**
+ * Default encryption mode for new conversations
+ */
+export const DEFAULT_ENCRYPTION_MODE: EncryptionMode = 'hybrid';
+
+/**
+ * Encryption mode labels for UI
+ */
+export const ENCRYPTION_MODE_LABELS: Readonly<Record<EncryptionMode, string>> = {
+  none: 'Aucun chiffrement',
+  hybrid: 'Chiffrement hybride (Recommandé)',
+  e2e_only: 'Chiffrement E2E pur',
+};
+
+/**
+ * Encryption mode descriptions for UI
+ */
+export const ENCRYPTION_MODE_DESCRIPTIONS: Readonly<Record<EncryptionMode, string>> = {
+  none: 'Traduction instantanée, compatibilité maximale. Pas de chiffrement E2E.',
+  hybrid: 'Privacy + Traduction serveur. Le serveur peut déchiffrer temporairement pour traduire.',
+  e2e_only: 'Privacy maximale. Le serveur ne peut jamais déchiffrer. Pas de traduction serveur.',
+};
+
+/**
+ * Encryption mode icons for UI
+ */
+export const ENCRYPTION_MODE_ICONS: Readonly<Record<EncryptionMode, string>> = {
+  none: '🔓',
+  hybrid: '🔐',
+  e2e_only: '🔒',
+};

@@ -607,7 +607,7 @@ export class MLSService {
         conversationId: request.conversationId,
         groupId: request.groupId,
         keyPackageId: request.keyPackageId,
-        details: request.details,
+        details: request.details ? (request.details as any) : undefined, // Convert readonly to InputJsonValue
         ipAddress: request.ipAddress,
         userAgent: request.userAgent,
       },

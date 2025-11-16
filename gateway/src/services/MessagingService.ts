@@ -170,7 +170,7 @@ export class MessagingService {
         anonymousSenderId: actualAnonymousSenderId,
         mentionedUserIds: request.mentionedUserIds,
         encrypted: request.encrypted,
-        encryptedData: request.encryptedData
+        encryptedData: (request as any).encryptedData // Type assertion for MLS encrypted data
       });
 
       // 7. Mise à jour de la conversation
