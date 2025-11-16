@@ -169,7 +169,17 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
   const effectsTimeline = useMemo(() => {
     const timeline = (attachment as any).audioEffectsTimeline || (attachment as any).metadata?.audioEffectsTimeline;
 
+    console.log('📊 [SimpleAudioPlayer] Extraction timeline segments:', {
+      hasTimeline: !!timeline,
+      hasEvents: !!timeline?.events,
+      eventsCount: timeline?.events?.length || 0,
+      events: timeline?.events,
+      currentDuration: duration,
+      attachmentDuration: attachmentDuration,
+    });
+
     if (!timeline || !timeline.events || timeline.events.length === 0) {
+      console.log('⚠️ [SimpleAudioPlayer] Pas de timeline events pour les segments');
       return [];
     }
 
@@ -184,6 +194,12 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     const activeEffects = new Map<AudioEffectType, number>(); // effectType -> startTime
 
     for (const event of timeline.events) {
+      console.log('🔄 [SimpleAudioPlayer] Timeline event:', {
+        action: event.action,
+        effectType: event.effectType,
+        timestamp: event.timestamp,
+      });
+
       if (event.action === 'activate') {
         // Marquer le début d'activation
         activeEffects.set(event.effectType, event.timestamp);
@@ -191,11 +207,13 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
         // Marquer la fin d'activation
         const startTime = activeEffects.get(event.effectType);
         if (startTime !== undefined) {
-          segments.push({
+          const segment = {
             effectType: event.effectType,
             startTime,
             endTime: event.timestamp,
-          });
+          };
+          segments.push(segment);
+          console.log('✅ [SimpleAudioPlayer] Segment créé:', segment);
           activeEffects.delete(event.effectType);
         }
       }
@@ -203,12 +221,25 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
 
     // Pour les effets encore actifs à la fin, utiliser la durée totale
     const totalDuration = duration || attachmentDuration || 0;
+    console.log('⏱️ [SimpleAudioPlayer] Effets encore actifs:', {
+      count: activeEffects.size,
+      effects: Array.from(activeEffects.keys()),
+      totalDuration,
+    });
+
     activeEffects.forEach((startTime, effectType) => {
-      segments.push({
+      const segment = {
         effectType,
         startTime,
         endTime: totalDuration,
-      });
+      };
+      segments.push(segment);
+      console.log('✅ [SimpleAudioPlayer] Segment actif jusqu\'à la fin:', segment);
+    });
+
+    console.log('📊 [SimpleAudioPlayer] Segments extraits:', {
+      count: segments.length,
+      segments,
     });
 
     return segments;
@@ -217,6 +248,13 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
   // Extraire les configurations des effets pour les graphiques
   const effectsConfigurations = useMemo(() => {
     const timeline = (attachment as any).audioEffectsTimeline || (attachment as any).metadata?.audioEffectsTimeline;
+
+    console.log('🎨 [SimpleAudioPlayer] Extraction configurations:', {
+      hasTimeline: !!timeline,
+      hasEvents: !!timeline?.events,
+      eventsCount: timeline?.events?.length || 0,
+      events: timeline?.events,
+    });
 
     if (!timeline || !timeline.events || timeline.events.length === 0) {
       return {};
@@ -228,6 +266,13 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     }>> = {} as any;
 
     for (const event of timeline.events) {
+      console.log('🔍 [SimpleAudioPlayer] Event:', {
+        action: event.action,
+        effectType: event.effectType,
+        hasConfig: !!event.config,
+        config: event.config,
+      });
+
       if (event.action === 'activate' && event.config) {
         if (!configs[event.effectType]) {
           configs[event.effectType] = [];
@@ -238,6 +283,8 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
         });
       }
     }
+
+    console.log('✅ [SimpleAudioPlayer] Configurations extraites:', configs);
 
     return configs;
   }, [attachment]);
@@ -837,29 +884,47 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
         hasError ? 'border-red-300 dark:border-red-700' : 'border-blue-200 dark:border-gray-700'
       } shadow-md hover:shadow-lg transition-all duration-200 w-full sm:max-w-2xl ${className}`}
     >
-      {/* Ligne principale: Play + Zone centrale (Gauge/% + Barre + Timer) + Colonne actions (Effet + Download) */}
+      {/* Ligne principale: Colonne Play+Download + Zone centrale (Gauge/% + Barre + Timer) + Colonne actions (Effet) */}
       <div className="flex items-center gap-3">
-        {/* Bouton Play/Pause - Design moderne compact */}
-        <Button
-          onClick={togglePlay}
-          disabled={isLoading || hasError}
-          size="sm"
-          className={`flex-shrink-0 w-7 h-7 rounded-full ${
-            hasError
-              ? 'bg-red-500 hover:bg-red-600'
-              : 'bg-blue-600 hover:bg-blue-700'
-          } text-white shadow-lg hover:shadow-xl transition-all duration-200 p-0 flex items-center justify-center disabled:opacity-50`}
-        >
-          {isLoading ? (
-            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          ) : hasError ? (
-            <AlertTriangle className="w-3 h-3" />
-          ) : isPlaying ? (
-            <Pause className="w-3 h-3 fill-current" />
-          ) : (
-            <Play className="w-3 h-3 ml-0.5 fill-current" />
-          )}
-        </Button>
+        {/* Colonne gauche: Play/Pause + Download */}
+        <div className="flex flex-col gap-1 items-center">
+          {/* Bouton Play/Pause - Design moderne compact */}
+          <Button
+            onClick={togglePlay}
+            disabled={isLoading || hasError}
+            size="sm"
+            className={`flex-shrink-0 w-7 h-7 rounded-full ${
+              hasError
+                ? 'bg-red-500 hover:bg-red-600'
+                : 'bg-blue-600 hover:bg-blue-700'
+            } text-white shadow-lg hover:shadow-xl transition-all duration-200 p-0 flex items-center justify-center disabled:opacity-50`}
+          >
+            {isLoading ? (
+              <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : hasError ? (
+              <AlertTriangle className="w-3 h-3" />
+            ) : isPlaying ? (
+              <Pause className="w-3 h-3 fill-current" />
+            ) : (
+              <Play className="w-3 h-3 ml-0.5 fill-current" />
+            )}
+          </Button>
+
+          {/* Bouton télécharger - avec icône Gauge */}
+          <a
+            href={objectUrl || '#'}
+            download={attachment.originalName}
+            className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-sm transition-all"
+            title="Télécharger"
+            onClick={(e) => {
+              if (!objectUrl) {
+                e.preventDefault();
+              }
+            }}
+          >
+            <Gauge className="w-2.5 h-2.5 text-gray-700 dark:text-gray-200" />
+          </a>
+        </div>
 
         {/* Zone centrale: Gauge/% au-dessus + Barre de progression + Timer en dessous */}
         <div className="flex-1 min-w-0 flex flex-col gap-1">
@@ -927,9 +992,9 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
               }}
             />
 
-            {/* Pourcentage centré dans la barre */}
+            {/* Pourcentage centré dans la barre (horizontalement ET verticalement) */}
             {duration > 0 && (
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <span className="text-[9px] font-semibold text-white dark:text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
                   {progress.toFixed(0)}%
                 </span>
@@ -968,7 +1033,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
           </div>
         </div>
 
-        {/* Colonne actions: Effet (au-dessus) + Download (en dessous) */}
+        {/* Colonne actions droite: Effet uniquement */}
         <div className="flex flex-col gap-1 items-center">
           {/* Badge des effets appliqués - Cliquable */}
           {appliedEffects.length > 0 && (
@@ -999,50 +1064,65 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                   <TabsContent value="overview" className="mt-4 space-y-3">
                     <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Timeline des effets</h3>
 
-                    {/* Graphique de timeline */}
-                    <div className="space-y-2">
-                      {appliedEffects.map((effect) => {
-                        const segments = effectsTimeline.filter(s => s.effectType === effect);
-                        const totalDuration = duration || attachmentDuration || 1;
+                    {effectsTimeline.length === 0 ? (
+                      <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded">
+                        Aucune donnée de timeline disponible. Vérifiez la console pour les détails.
+                      </div>
+                    ) : (
+                      <>
+                        {/* Graphique de timeline */}
+                        <div className="space-y-2">
+                          {appliedEffects.map((effect) => {
+                            const segments = effectsTimeline.filter(s => s.effectType === effect);
+                            const totalDuration = duration || attachmentDuration || 1;
 
-                        return (
-                          <div key={effect} className="space-y-1">
-                            <div className="flex items-center gap-2 text-xs">
-                              <span>{effectIcons[effect]}</span>
-                              <span className="font-medium text-gray-700 dark:text-gray-300">{effectNames[effect]}</span>
-                            </div>
+                            return (
+                              <div key={effect} className="space-y-1">
+                                <div className="flex items-center gap-2 text-xs">
+                                  <span>{effectIcons[effect]}</span>
+                                  <span className="font-medium text-gray-700 dark:text-gray-300">{effectNames[effect]}</span>
+                                  <span className="text-gray-400">({segments.length} segment{segments.length > 1 ? 's' : ''})</span>
+                                </div>
 
-                            {/* Barre de timeline */}
-                            <div className="relative h-6 bg-gray-100 dark:bg-gray-800 rounded overflow-hidden">
-                              {segments.map((segment, idx) => {
-                                const startPercent = (segment.startTime / totalDuration) * 100;
-                                const widthPercent = ((segment.endTime - segment.startTime) / totalDuration) * 100;
+                                {/* Barre de timeline */}
+                                <div className="relative h-6 bg-gray-100 dark:bg-gray-800 rounded overflow-hidden">
+                                  {segments.length === 0 ? (
+                                    <div className="absolute inset-0 flex items-center justify-center text-[10px] text-gray-400">
+                                      Aucun segment
+                                    </div>
+                                  ) : (
+                                    segments.map((segment, idx) => {
+                                      const startPercent = (segment.startTime / totalDuration) * 100;
+                                      const widthPercent = ((segment.endTime - segment.startTime) / totalDuration) * 100;
 
-                                return (
-                                  <div
-                                    key={idx}
-                                    className="absolute h-full rounded"
-                                    style={{
-                                      left: `${startPercent}%`,
-                                      width: `${widthPercent}%`,
-                                      backgroundColor: effectColors[effect],
-                                      opacity: 0.8,
-                                    }}
-                                    title={`${segment.startTime.toFixed(2)}s - ${segment.endTime.toFixed(2)}s`}
-                                  />
-                                );
-                              })}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                                      return (
+                                        <div
+                                          key={idx}
+                                          className="absolute h-full rounded"
+                                          style={{
+                                            left: `${startPercent}%`,
+                                            width: `${widthPercent}%`,
+                                            backgroundColor: effectColors[effect],
+                                            opacity: 0.8,
+                                          }}
+                                          title={`${segment.startTime.toFixed(2)}s - ${segment.endTime.toFixed(2)}s`}
+                                        />
+                                      );
+                                    })
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
 
-                    {/* Légende du temps */}
-                    <div className="flex justify-between text-[10px] text-gray-500 dark:text-gray-400 mt-1">
-                      <span>0:00</span>
-                      <span>{formatTime(duration || attachmentDuration || 0)}</span>
-                    </div>
+                        {/* Légende du temps */}
+                        <div className="flex justify-between text-[10px] text-gray-500 dark:text-gray-400 mt-1">
+                          <span>0:00</span>
+                          <span>{formatTime(duration || attachmentDuration || 0)}</span>
+                        </div>
+                      </>
+                    )}
                   </TabsContent>
 
                   {/* Tabs individuels pour chaque effet */}
@@ -1074,7 +1154,13 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                         {/* Graphique des configurations */}
                         <div className="space-y-2">
                           <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300">Évolution des paramètres</h4>
-                          {renderEffectGraph(effect)}
+                          {effectsConfigurations[effect] && effectsConfigurations[effect].length > 0 ? (
+                            renderEffectGraph(effect)
+                          ) : (
+                            <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded">
+                              Aucune configuration disponible pour cet effet. Vérifiez la console pour les détails.
+                            </div>
+                          )}
                         </div>
                       </TabsContent>
                     );
@@ -1083,21 +1169,6 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-
-          {/* Bouton télécharger */}
-          <a
-            href={objectUrl || '#'}
-            download={attachment.originalName}
-            className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-sm transition-all"
-            title="Télécharger"
-            onClick={(e) => {
-              if (!objectUrl) {
-                e.preventDefault();
-              }
-            }}
-          >
-            <Download className="w-2.5 h-2.5 text-gray-700 dark:text-gray-200" />
-          </a>
         </div>
       </div>
 
