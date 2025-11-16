@@ -884,8 +884,10 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                     cy={p.y}
                     r="4"
                     fill={curveColors[idx % curveColors.length]}
-                    className="cursor-pointer hover:r-6 transition-all"
+                    className="cursor-pointer transition-all"
                     onClick={() => handleSeekToTime(p.timestamp)}
+                    onMouseEnter={(e) => e.currentTarget.setAttribute('r', '6')}
+                    onMouseLeave={(e) => e.currentTarget.setAttribute('r', '4')}
                     style={{ cursor: 'pointer' }}
                   >
                     <title>{`${key}: ${p.value.toFixed(2)} à ${formatTime(p.timestamp)} - Cliquez pour aller à ce moment`}</title>
