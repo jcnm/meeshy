@@ -74,7 +74,8 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
       hasMetadataTimeline: !!(attachment as any).metadata?.audioEffectsTimeline,
       timeline: timeline,
       timelineEvents: timeline?.events,
-      fullAttachment: attachment
+      attachmentKeys: Object.keys(attachment),
+      fullAttachmentStringified: JSON.stringify(attachment, null, 2)
     });
 
     if (!timeline || !timeline.events || timeline.events.length === 0) {
