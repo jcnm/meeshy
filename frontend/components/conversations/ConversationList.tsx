@@ -382,17 +382,37 @@ const ConversationItem = memo(function ConversationItem({
                       </>
                     );
                   } else if (mimeType.startsWith('audio/')) {
+                    // Extraire les effets appliqués depuis la timeline
+                    const effectIcons: Record<string, string> = {
+                      'voice-coder': '🎵',
+                      'baby-voice': '👶',
+                      'demon-voice': '😈',
+                      'back-sound': '🎶',
+                    };
+                    const appliedEffects: string[] = [];
+                    if ((attachment as any).audioEffectsTimeline?.events) {
+                      const effects = new Set<string>();
+                      for (const event of (attachment as any).audioEffectsTimeline.events) {
+                        if (event.action === 'activate') {
+                          effects.add(event.effectType);
+                        }
+                      }
+                      appliedEffects.push(...Array.from(effects));
+                    }
+
                     return (
                       <>
                         <span className="inline-flex text-purple-500">🎵</span>
                         {attachment.duration && (
                           <span className="text-xs">{Math.floor(attachment.duration / 60)}:{(attachment.duration % 60).toString().padStart(2, '0')}</span>
                         )}
-                        {attachment.bitrate && (
-                          <span className="text-xs">• {Math.round(attachment.bitrate / 1000)}kbps</span>
+                        {attachment.sampleRate && (
+                          <span className="text-xs">• {(attachment.sampleRate / 1000).toFixed(1)}kHz</span>
                         )}
-                        {(attachment as any).audioEffectsTimeline && (
-                          <span className="text-xs">• 🎚️</span>
+                        {appliedEffects.length > 0 && (
+                          <span className="text-xs inline-flex gap-0.5">
+                            • {appliedEffects.map(effect => effectIcons[effect] || '🎚️').join('')}
+                          </span>
                         )}
                       </>
                     );
