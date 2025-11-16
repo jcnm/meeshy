@@ -400,6 +400,16 @@ const ConversationItem = memo(function ConversationItem({
                       appliedEffects.push(...Array.from(effects));
                     }
 
+                    // Déterminer l'icône d'effet à afficher
+                    let effectDisplay = '';
+                    if (appliedEffects.length === 1) {
+                      // Un seul effet : afficher son icône
+                      effectDisplay = effectIcons[appliedEffects[0]] || '🎚️';
+                    } else if (appliedEffects.length > 1) {
+                      // Plusieurs effets : afficher l'icône générique
+                      effectDisplay = '🎚️';
+                    }
+
                     return (
                       <>
                         <span className="inline-flex text-purple-500">🎵</span>
@@ -409,10 +419,8 @@ const ConversationItem = memo(function ConversationItem({
                         {attachment.sampleRate && (
                           <span className="text-xs">• {(attachment.sampleRate / 1000).toFixed(1)}kHz</span>
                         )}
-                        {appliedEffects.length > 0 && (
-                          <span className="text-xs inline-flex gap-0.5">
-                            • {appliedEffects.map(effect => effectIcons[effect] || '🎚️').join('')}
-                          </span>
+                        {effectDisplay && (
+                          <span className="text-xs">• {effectDisplay}</span>
                         )}
                       </>
                     );
