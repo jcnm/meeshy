@@ -3,6 +3,7 @@ packages:
   - 'gateway'
   - 'translator'
   - 'shared'
+  - 'packages/mls-core'
 
 ignoredBuiltDependencies:
   - '@tensorflow/tfjs-node'

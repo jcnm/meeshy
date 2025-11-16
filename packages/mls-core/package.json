@@ -1,0 +1,73 @@
+{
+  "name": "@meeshy/mls-core",
+  "version": "0.1.0",
+  "description": "MLS (Messaging Layer Security) implementation for Meeshy - E2E encryption core library",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./dist/client/index.d.ts",
+      "import": "./dist/client/index.js"
+    },
+    "./server": {
+      "types": "./dist/server/index.d.ts",
+      "import": "./dist/server/index.js"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "build:watch": "tsc --watch --project tsconfig.json",
+    "clean": "rm -rf dist node_modules",
+    "typecheck": "tsc --noEmit --project tsconfig.json",
+    "test": "jest --config=jest.config.json",
+    "test:watch": "jest --config=jest.config.json --watch",
+    "test:coverage": "jest --config=jest.config.json --coverage",
+    "prebuild": "npm run clean:dist",
+    "clean:dist": "rm -rf dist"
+  },
+  "keywords": [
+    "mls",
+    "messaging-layer-security",
+    "e2e-encryption",
+    "end-to-end-encryption",
+    "cryptography",
+    "meeshy",
+    "dma",
+    "digital-markets-act"
+  ],
+  "author": "Meeshy Team",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@meeshy/shared": "workspace:*",
+    "tweetnacl": "^1.0.3",
+    "uuid": "^11.0.3"
+  },
+  "devDependencies": {
+    "@jest/globals": "^30.0.5",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.11.30",
+    "@types/uuid": "^10.0.0",
+    "jest": "^30.0.5",
+    "ts-jest": "^29.4.0",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  }
+}
