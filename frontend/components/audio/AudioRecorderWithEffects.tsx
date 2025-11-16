@@ -5,8 +5,10 @@ import { createPortal } from 'react-dom';
 import { Square, X, Mic, Loader2, Radio } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAudioEffects } from '@/hooks/use-audio-effects';
+import { useAudioEffectsTimeline } from '@/hooks/use-audio-effects-timeline';
 import { AudioEffectsCarousel } from '@/components/video-calls/AudioEffectsCarousel';
 import type { AudioEffectType } from '@shared/types/video-call';
+import type { AudioEffectsTimeline } from '@shared/types/audio-effects-timeline';
 
 // Types
 interface AudioMetadata {
@@ -15,6 +17,7 @@ interface AudioMetadata {
   mimeType: string;
   bitrate?: number;
   sampleRate?: number;
+  audioEffectsTimeline?: AudioEffectsTimeline;
 }
 
 interface AudioRecorderWithEffectsProps {
@@ -74,6 +77,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
   const rawStreamRef = useRef<MediaStream | null>(null); // Stream du micro brut
   const [rawStream, setRawStream] = useState<MediaStream | null>(null); // State pour trigger useAudioEffects
   const processedAudioStreamRef = useRef<MediaStream | null>(null); // Ref pour accéder à la dernière valeur
+  const previousEffectsStateRef = useRef<typeof effectsState | null>(null); // Pour détecter les changements d'effets
 
   const effectiveDuration = Math.min(maxDuration, MAX_ALLOWED_DURATION);
 
@@ -90,6 +94,15 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
   } = useAudioEffects({
     inputStream: rawStream,
   });
+
+  // Initialiser le tracking de la timeline des effets
+  const {
+    startTracking,
+    stopTracking,
+    recordActivation,
+    recordDeactivation,
+    recordUpdate,
+  } = useAudioEffectsTimeline();
 
   // Vérifier si des effets sont actifs
   const audioEffectsActive = Object.values(effectsState).some(effect => effect.enabled);
@@ -250,6 +263,9 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
       mediaRecorder.onstop = async () => {
         const blob = new Blob(chunksRef.current, { type: mimeType });
 
+        // Arrêter le tracking et récupérer la timeline des effets
+        const audioEffectsTimeline = stopTracking();
+
         // Arrêter tous les tracks du stream brut
         newRawStream.getTracks().forEach(track => track.stop());
         setRawStream(null); // Reset le state
@@ -263,12 +279,19 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
           duration: recordingTime / 1000,
           codec: format,
           mimeType: mimeType,
+          ...(audioEffectsTimeline && { audioEffectsTimeline }),
         };
 
         onRecordingComplete(blob, metadata.duration, metadata);
       };
 
       mediaRecorder.start();
+
+      // Démarrer le tracking de la timeline des effets audio
+      startTracking({
+        sampleRate: 48000, // Même sample rate que le stream
+        channels: 2,
+      });
 
       // requestData() manuel
       requestDataIntervalRef.current = setInterval(() => {
@@ -353,6 +376,53 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
       window.removeEventListener('resize', updatePanelPosition);
     };
   }, [showEffectsPanel, updatePanelPosition]);
+
+  // Tracker les changements d'effets audio pour la timeline
+  useEffect(() => {
+    // Ne pas tracker si on n'est pas en train d'enregistrer
+    if (!isRecording) return;
+
+    // Première initialisation - stocker l'état initial sans enregistrer d'événements
+    if (!previousEffectsStateRef.current) {
+      previousEffectsStateRef.current = effectsState;
+      return;
+    }
+
+    const previousState = previousEffectsStateRef.current;
+
+    // Vérifier les changements pour chaque effet
+    Object.keys(effectsState).forEach((key) => {
+      const effectKey = key as keyof typeof effectsState;
+      const currentEffect = effectsState[effectKey];
+      const previousEffect = previousState[effectKey];
+
+      // Détection activation/désactivation
+      if (currentEffect.enabled !== previousEffect.enabled) {
+        if (currentEffect.enabled) {
+          // Effet activé
+          recordActivation(currentEffect.type);
+        } else {
+          // Effet désactivé
+          recordDeactivation(currentEffect.type);
+        }
+      }
+      // Détection changement de paramètres (seulement si l'effet est actif)
+      else if (currentEffect.enabled && JSON.stringify(currentEffect.params) !== JSON.stringify(previousEffect.params)) {
+        // Paramètres modifiés
+        recordUpdate(currentEffect.type, currentEffect.params);
+      }
+    });
+
+    // Mettre à jour l'état précédent
+    previousEffectsStateRef.current = effectsState;
+  }, [effectsState, isRecording, recordActivation, recordDeactivation, recordUpdate]);
+
+  // Reset de l'état précédent quand l'enregistrement démarre
+  useEffect(() => {
+    if (isRecording) {
+      previousEffectsStateRef.current = null;
+    }
+  }, [isRecording]);
 
   // Cleanup
   useEffect(() => {

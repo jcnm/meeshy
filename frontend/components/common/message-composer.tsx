@@ -283,7 +283,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   }, [attachmentIdsString, onAttachmentsChange]);
 
   // Handler pour la sélection de fichiers - mémorisé et optimisé
-  const handleFilesSelected = useCallback(async (files: File[]) => {
+  const handleFilesSelected = useCallback(async (files: File[], additionalMetadata?: any) => {
     if (files.length === 0) return;
 
     // Log compact pour ne pas ralentir l'UI sur mobile
@@ -351,7 +351,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       const response = await AttachmentService.uploadFiles(
         uniqueFiles,
         token,
-        undefined, // pas de metadata
+        additionalMetadata, // métadonnées additionnelles (ex: audioEffectsTimeline)
         (percentage, loaded, total) => {
           // Mettre à jour la progression globale
           setUploadProgress(prev => ({ ...prev, 0: percentage }));
@@ -531,7 +531,8 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       setIsRecording(false);
 
       // Upload le fichier en arrière-plan (après reset de l'UI)
-      await handleFilesSelected([audioFile]);
+      // Passer les métadonnées (incluant audioEffectsTimeline si présent) sous forme de tableau
+      await handleFilesSelected([audioFile], metadata ? [metadata] : undefined);
     }
   }, [handleFilesSelected, getAudioFileExtension]);
 

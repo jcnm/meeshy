@@ -52,6 +52,7 @@ export interface UploadResult {
   sampleRate?: number;
   codec?: string;
   channels?: number;
+  audioEffectsTimeline?: any; // Timeline des effets audio appliqués
   uploadedBy: string;
   isAnonymous: boolean;
   createdAt: Date;
@@ -417,6 +418,11 @@ export class AttachmentService {
         metadata.sampleRate = providedMetadata.sampleRate || 0;
         metadata.codec = providedMetadata.codec || 'unknown';
         metadata.channels = providedMetadata.channels || 1;
+
+        // Si audioEffectsTimeline est fourni, le stocker dans les métadonnées
+        if (providedMetadata.audioEffectsTimeline) {
+          metadata.audioEffectsTimeline = providedMetadata.audioEffectsTimeline;
+        }
       } else {
         const audioMeta = await this.extractAudioMetadata(filePath);
         metadata.duration = audioMeta.duration;
@@ -470,6 +476,9 @@ export class AttachmentService {
     // Cela évite l'erreur Prisma car messageId doit être un ObjectId valide
     const tempMessageId = messageId || '000000000000000000000000'; // ObjectId temporaire valide (24 hex chars)
 
+    // Préparer le champ metadata pour stocker audioEffectsTimeline et autres métadonnées supplémentaires
+    const metadataJson = metadata.audioEffectsTimeline ? { audioEffectsTimeline: metadata.audioEffectsTimeline } : undefined;
+
     // Créer l'enregistrement en base de données
     const attachment = await this.prisma.messageAttachment.create({
       data: {
@@ -493,11 +502,15 @@ export class AttachmentService {
         videoCodec: metadata.videoCodec,
         pageCount: metadata.pageCount,
         lineCount: metadata.lineCount,
+        metadata: metadataJson, // Stocker audioEffectsTimeline dans le champ metadata JSON
         uploadedBy: userId,
         isAnonymous: isAnonymous,
       },
     });
 
+
+    // Extraire audioEffectsTimeline du champ metadata JSON
+    const audioEffectsTimeline = (attachment.metadata as any)?.audioEffectsTimeline || undefined;
 
     const result = {
       id: attachment.id,
@@ -515,6 +528,7 @@ export class AttachmentService {
       sampleRate: attachment.sampleRate || undefined,
       codec: attachment.codec || undefined,
       channels: attachment.channels || undefined,
+      audioEffectsTimeline: audioEffectsTimeline,
       fps: attachment.fps || undefined,
       videoCodec: attachment.videoCodec || undefined,
       pageCount: attachment.pageCount || undefined,
