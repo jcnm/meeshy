@@ -12,7 +12,18 @@
     "addFriend": "Ajouter",
     "userNotFound": "Utilisateur introuvable",
     "userNotFoundDescription": "Cet utilisateur n'existe pas ou n'est plus disponible",
-    "loading": "Chargement du profil..."
+    "loading": "Chargement du profil...",
+    "errors": {
+      "cannotMessageYourself": "Vous ne pouvez pas créer une conversation avec vous-même",
+      "invalidUser": "Impossible de créer la conversation: utilisateur invalide",
+      "conversationCreationFailed": "Impossible de créer la conversation",
+      "sessionExpired": "Session expirée",
+      "sendFriendRequestFailed": "Erreur lors de l'envoi de la demande"
+    },
+    "success": {
+      "conversationCreated": "Conversation créée",
+      "friendRequestSent": "Demande d'ami envoyée"
+    }
   }
 }
 
