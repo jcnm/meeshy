@@ -207,7 +207,7 @@ export function AudioEffectsCarousel({
               <Card
                 key={tile.id}
                 className={cn(
-                  'relative flex-shrink-0 w-32 h-32 p-3 cursor-pointer transition-all duration-300',
+                  'relative flex-shrink-0 w-28 h-28 sm:w-32 sm:h-32 p-2 sm:p-3 cursor-pointer transition-all duration-300',
                   `bg-gradient-to-br ${tile.gradient}`,
                   'hover:scale-105 hover:shadow-xl',
                   isSelected && 'ring-2 ring-white scale-105',
@@ -249,33 +249,23 @@ export function AudioEffectsCarousel({
                   {/* Icon - plus grand si actif */}
                   <div className={cn(
                     "transition-all duration-300",
-                    isActive ? "text-4xl" : "text-3xl"
+                    isActive ? "text-3xl sm:text-4xl" : "text-2xl sm:text-3xl"
                   )}>
                     {tile.icon}
                   </div>
 
                   {/* Title */}
-                  <div className="text-center mt-2">
+                  <div className="text-center mt-1 sm:mt-2">
                     <p className={cn(
-                      "text-xs font-semibold leading-tight transition-all",
+                      "text-[10px] sm:text-xs font-semibold leading-tight transition-all",
                       isActive && "text-white drop-shadow-lg"
                     )}>
                       {tile.title}
                     </p>
                   </div>
 
-                  {/* Mini indicateur texte */}
-                  {tile.id !== 'reset' && (
-                    <div className={cn(
-                      "mt-2 text-[10px] font-bold uppercase tracking-wide transition-all",
-                      isActive ? "text-green-300" : "text-gray-400"
-                    )}>
-                      {isActive ? "✓ Actif" : "Tap to configure"}
-                    </div>
-                  )}
-
                   {tile.id === 'reset' && (
-                    <RotateCcw className="w-4 h-4 opacity-70 mt-2" />
+                    <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 opacity-70 mt-1 sm:mt-2" />
                   )}
                 </div>
               </Card>
