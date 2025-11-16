@@ -886,7 +886,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     >
       {/* Ligne principale: Colonne Play+Download + Zone centrale (Gauge/% + Barre + Timer) + Colonne actions (Effet) */}
       <div className="flex items-center gap-3">
-        {/* Colonne gauche: Play/Pause + Download + Gauge */}
+        {/* Colonne gauche: Play/Pause + Gauge (copie du télécharger) */}
         <div className="flex flex-col gap-1 items-center">
           {/* Bouton Play/Pause - Design moderne compact */}
           <Button
@@ -910,28 +910,20 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
             )}
           </Button>
 
-          {/* Bouton télécharger - avec icône Download */}
+          {/* Bouton Gauge - COPIE EXACTE du bouton télécharger avec icône Gauge */}
           <a
             href={objectUrl || '#'}
             download={attachment.originalName}
             className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-sm transition-all"
-            title="Télécharger"
+            title="Gauge"
             onClick={(e) => {
               if (!objectUrl) {
                 e.preventDefault();
               }
             }}
           >
-            <Download className="w-2.5 h-2.5 text-gray-700 dark:text-gray-200" />
-          </a>
-
-          {/* Bouton Gauge - style uniforme */}
-          <button
-            className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-sm transition-all"
-            title="Gauge"
-          >
             <Gauge className="w-2.5 h-2.5 text-gray-700 dark:text-gray-200" />
-          </button>
+          </a>
         </div>
 
         {/* Zone centrale: Gauge/% au-dessus + Barre de progression + Timer en dessous */}
@@ -1041,7 +1033,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
           </div>
         </div>
 
-        {/* Colonne actions droite: Effet uniquement */}
+        {/* Colonne actions droite: Effet + Download */}
         <div className="flex flex-col gap-1 items-center">
           {/* Badge des effets appliqués - Cliquable */}
           {appliedEffects.length > 0 && (
@@ -1177,6 +1169,21 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
               </DropdownMenuContent>
             </DropdownMenu>
           )}
+
+          {/* Bouton télécharger - remis à sa place d'origine */}
+          <a
+            href={objectUrl || '#'}
+            download={attachment.originalName}
+            className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-sm transition-all"
+            title="Télécharger"
+            onClick={(e) => {
+              if (!objectUrl) {
+                e.preventDefault();
+              }
+            }}
+          >
+            <Download className="w-2.5 h-2.5 text-gray-700 dark:text-gray-200" />
+          </a>
         </div>
       </div>
 
