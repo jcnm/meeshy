@@ -660,6 +660,15 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     }
   };
 
+  // Handler pour chercher à un moment spécifique (en secondes)
+  const handleSeekToTime = useCallback((timeInSeconds: number) => {
+    if (audioRef.current && isFinite(timeInSeconds) && timeInSeconds >= 0) {
+      const clampedTime = Math.min(timeInSeconds, duration || 0);
+      audioRef.current.currentTime = clampedTime;
+      setCurrentTime(clampedTime);
+    }
+  }, [duration]);
+
   // Formater le temps avec millisecondes (MM:SS.ms pour le décompteur)
   const formatTime = (seconds: number): string => {
     if (!isFinite(seconds) || isNaN(seconds) || seconds < 0) return '0:00.00';
@@ -843,17 +852,19 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
           {configKeys.map((key, idx) => {
             if (currentVisibility[key] === false) return null;
 
-            const points = configs
+            const pointsData = configs
               .filter(c => typeof c.config[key] === 'number' && isFinite(c.config[key]))
               .map(c => ({
                 x: padding.left + timeToX(c.timestamp / 1000), // Convertir ms en secondes
                 y: padding.top + valueToY(c.config[key] as number),
+                timestamp: c.timestamp / 1000, // Timestamp en secondes pour le seek
+                value: c.config[key] as number,
               }));
 
-            if (points.length === 0) return null;
+            if (pointsData.length === 0) return null;
 
             // Créer le path SVG
-            const pathData = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+            const pathData = pointsData.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
 
             return (
               <g key={key}>
@@ -866,14 +877,19 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                   strokeLinejoin="round"
                 />
                 {/* Points */}
-                {points.map((p, i) => (
+                {pointsData.map((p, i) => (
                   <circle
                     key={i}
                     cx={p.x}
                     cy={p.y}
-                    r="3"
+                    r="4"
                     fill={curveColors[idx % curveColors.length]}
-                  />
+                    className="cursor-pointer hover:r-6 transition-all"
+                    onClick={() => handleSeekToTime(p.timestamp)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <title>{`${key}: ${p.value.toFixed(2)} à ${formatTime(p.timestamp)} - Cliquez pour aller à ce moment`}</title>
+                  </circle>
                 ))}
               </g>
             );
@@ -1116,20 +1132,23 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                                     </div>
                                   ) : (
                                     segments.map((segment, idx) => {
-                                      const startPercent = (segment.startTime / totalDuration) * 100;
-                                      const widthPercent = ((segment.endTime - segment.startTime) / totalDuration) * 100;
+                                      const startTimeSeconds = segment.startTime / 1000; // Convertir ms en secondes
+                                      const endTimeSeconds = segment.endTime / 1000;
+                                      const startPercent = (startTimeSeconds / totalDuration) * 100;
+                                      const widthPercent = ((endTimeSeconds - startTimeSeconds) / totalDuration) * 100;
 
                                       return (
                                         <div
                                           key={idx}
-                                          className="absolute h-full rounded"
+                                          className="absolute h-full rounded cursor-pointer hover:opacity-100 transition-opacity"
                                           style={{
                                             left: `${startPercent}%`,
                                             width: `${widthPercent}%`,
                                             backgroundColor: effectColors[effect],
                                             opacity: 0.8,
                                           }}
-                                          title={`${segment.startTime.toFixed(2)}s - ${segment.endTime.toFixed(2)}s`}
+                                          title={`${startTimeSeconds.toFixed(2)}s - ${endTimeSeconds.toFixed(2)}s - Cliquez pour aller à ce moment`}
+                                          onClick={() => handleSeekToTime(startTimeSeconds)}
                                         />
                                       );
                                     })
