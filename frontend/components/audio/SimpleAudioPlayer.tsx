@@ -910,22 +910,15 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
             )}
           </Button>
 
-          {/* Bouton Gauge - COPIE du bouton télécharger avec fonctionnalité Gauge */}
+          {/* Bouton Gauge - Style uniforme sans téléchargement */}
           <Popover open={isSpeedPopoverOpen} onOpenChange={setIsSpeedPopoverOpen}>
             <PopoverTrigger asChild>
-              <a
-                href={objectUrl || '#'}
-                download={attachment.originalName}
+              <button
                 className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-sm transition-all"
                 title={`Vitesse: ${playbackRate}x`}
-                onClick={(e) => {
-                  if (!objectUrl) {
-                    e.preventDefault();
-                  }
-                }}
               >
                 <Gauge className="w-2.5 h-2.5 text-gray-700 dark:text-gray-200" />
-              </a>
+              </button>
             </PopoverTrigger>
             <PopoverContent className="w-12 p-2" side="top" align="center">
               <div className="flex flex-col items-center gap-2">
@@ -1025,25 +1018,18 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
 
         {/* Colonne actions droite: Effects + Download */}
         <div className="flex flex-col gap-1 items-center">
-          {/* Bouton Effects - COPIE du bouton télécharger avec fonctionnalité Effects */}
+          {/* Bouton Effects - Style uniforme sans téléchargement */}
           {appliedEffects.length > 0 && (
             <DropdownMenu open={isEffectsDropdownOpen} onOpenChange={setIsEffectsDropdownOpen}>
               <DropdownMenuTrigger asChild>
-                <a
-                  href={objectUrl || '#'}
-                  download={attachment.originalName}
+                <button
                   className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-sm transition-all cursor-pointer"
                   title={appliedEffects.length === 1 ? `Effet: ${appliedEffects[0]}` : `${appliedEffects.length} effets appliqués`}
-                  onClick={(e) => {
-                    if (!objectUrl) {
-                      e.preventDefault();
-                    }
-                  }}
                 >
                   <span className="text-[10px]">
                     {appliedEffects.length === 1 ? effectIcons[appliedEffects[0]] : '🎚️'}
                   </span>
-                </a>
+                </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-96 p-4" side="top" align="end">
                 <Tabs value={selectedEffectTab} onValueChange={(value) => setSelectedEffectTab(value as AudioEffectType | 'overview')}>
