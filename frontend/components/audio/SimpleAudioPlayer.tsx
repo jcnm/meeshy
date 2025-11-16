@@ -71,6 +71,12 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
   const audioRef = useRef<HTMLAudioElement>(null);
   const animationFrameRef = useRef<number | null>(null);
 
+  // Extraire les valeurs primitives pour éviter les re-renders
+  const attachmentId = attachment.id;
+  const attachmentDuration = attachment.duration;
+  const attachmentMimeType = attachment.mimeType;
+  const attachmentFileUrl = attachment.fileUrl;
+
   // Extraire les effets appliqués depuis la timeline - VERSION ROBUSTE
   const appliedEffects = useMemo((): AudioEffectType[] => {
     // audioEffectsTimeline peut être soit directement sur attachment (upload response)
@@ -201,12 +207,6 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
 
     return segments;
   }, [attachment, duration, attachmentDuration]);
-
-  // Extraire les valeurs primitives pour éviter les re-renders
-  const attachmentId = attachment.id;
-  const attachmentDuration = attachment.duration;
-  const attachmentMimeType = attachment.mimeType;
-  const attachmentFileUrl = attachment.fileUrl;
 
   // Charger l'audio via apiService - fetch blob et créer object URL
   useEffect(() => {
