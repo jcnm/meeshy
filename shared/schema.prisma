@@ -85,10 +85,11 @@ model User {
   mlsCredential               MLSCredential?
 
   // MLS Hybrid Encryption Preferences
-  /// Autoriser le serveur à déchiffrer les messages pour traduction (mode hybrid uniquement)
-  allowServerSideTranslation  Boolean                  @default(true)
+  /// Date d'activation autorisation traduction serveur (null = désactivé, DateTime = activé)
+  /// Permet au serveur de déchiffrer temporairement les messages pour traduction (mode hybrid uniquement)
+  allowServerSideTranslationAt  DateTime?              @default(now())
   /// Mode de chiffrement par défaut pour les nouvelles conversations créées par cet utilisateur
-  defaultEncryptionMode       EncryptionMode           @default(hybrid)
+  defaultEncryptionMode         EncryptionMode         @default(hybrid)
 }
 
 /// Conversation entre utilisateurs (direct, group, public, global)

@@ -512,6 +512,7 @@ export interface HybridEncryptedData extends EncryptedData {
  */
 export interface UpdateEncryptionPreferencesRequest {
   readonly userId: string;
+  /** true = enable (set to now()), false = disable (set to null) */
   readonly allowServerSideTranslation?: boolean;
   readonly defaultEncryptionMode?: EncryptionMode;
 }
@@ -521,7 +522,8 @@ export interface UpdateEncryptionPreferencesRequest {
  */
 export interface UpdateEncryptionPreferencesResponse {
   readonly userId: string;
-  readonly allowServerSideTranslation: boolean;
+  /** Date when server-side translation was enabled (null = disabled) */
+  readonly allowServerSideTranslationAt: Date | null;
   readonly defaultEncryptionMode: EncryptionMode;
   readonly updatedAt: Date;
 }

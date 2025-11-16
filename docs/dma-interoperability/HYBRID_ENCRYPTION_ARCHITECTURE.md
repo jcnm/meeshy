@@ -79,7 +79,8 @@
 model User {
   ...
   // Préférence globale de l'utilisateur
-  allowServerSideTranslation Boolean @default(true)
+  // Date d'activation (null = désactivé, DateTime = activé et date d'activation)
+  allowServerSideTranslationAt DateTime? @default(now())
   defaultEncryptionMode EncryptionMode @default(hybrid)
   ...
 }
@@ -137,7 +138,7 @@ class MessagingService {
   ): Promise<MessageResponse> {
     // 1. Vérifier que tous les participants autorisent la traduction serveur
     const participants = await this.getConversationParticipants(conversation.id);
-    const allAllowTranslation = participants.every(p => p.allowServerSideTranslation);
+    const allAllowTranslation = participants.every(p => p.allowServerSideTranslationAt !== null);
 
     if (!allAllowTranslation) {
       // Fallback to e2e_only si un participant refuse
@@ -371,9 +372,17 @@ interface CreateConversationForm {
 <Toggle
   label="Autoriser la traduction serveur"
   description="Le serveur pourra déchiffrer vos messages temporairement pour les traduire. Désactiver cette option empêchera les traductions dans les conversations en mode hybride."
-  checked={user.allowServerSideTranslation}
-  onChange={updateUserPreference}
+  checked={user.allowServerSideTranslationAt !== null}
+  onChange={(enabled) => updateUserPreference({
+    allowServerSideTranslation: enabled // API accepte boolean, backend convertit en DateTime
+  })}
 />
+
+{user.allowServerSideTranslationAt && (
+  <Text size="sm" color="gray">
+    Activé le {formatDate(user.allowServerSideTranslationAt)}
+  </Text>
+)}
 ```
 
 ### 5. Types TypeScript
