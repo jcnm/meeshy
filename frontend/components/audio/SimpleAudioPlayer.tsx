@@ -8,6 +8,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
 import type { AudioEffectType } from '@/shared/types/video-call';
@@ -66,7 +71,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
   const [playbackRate, setPlaybackRate] = useState(1.0); // Vitesse de lecture (0.1 à 5)
   const [isSpeedPopoverOpen, setIsSpeedPopoverOpen] = useState(false);
-  const [isEffectsPopoverOpen, setIsEffectsPopoverOpen] = useState(false);
+  const [isEffectsDropdownOpen, setIsEffectsDropdownOpen] = useState(false);
   const [selectedEffectTab, setSelectedEffectTab] = useState<AudioEffectType | 'overview'>('overview');
   const audioRef = useRef<HTMLAudioElement>(null);
   const animationFrameRef = useRef<number | null>(null);
@@ -712,8 +717,8 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
         <div className="flex flex-col gap-1 items-center">
           {/* Badge des effets appliqués - Cliquable */}
           {appliedEffects.length > 0 && (
-            <Popover open={isEffectsPopoverOpen} onOpenChange={setIsEffectsPopoverOpen}>
-              <PopoverTrigger asChild>
+            <DropdownMenu open={isEffectsDropdownOpen} onOpenChange={setIsEffectsDropdownOpen}>
+              <DropdownMenuTrigger asChild>
                 <button
                   className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 bg-purple-500 dark:bg-purple-600 hover:bg-purple-600 dark:hover:bg-purple-700 rounded-full shadow-md transition-all cursor-pointer"
                   title={appliedEffects.length === 1 ? `Effet: ${appliedEffects[0]}` : `${appliedEffects.length} effets appliqués`}
@@ -722,8 +727,8 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                     {appliedEffects.length === 1 ? effectIcons[appliedEffects[0]] : '🎚️'}
                   </span>
                 </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-96 p-4" side="top" align="end">
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-96 p-4" side="top" align="end">
                 <Tabs value={selectedEffectTab} onValueChange={(value) => setSelectedEffectTab(value as AudioEffectType | 'overview')}>
                   <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${appliedEffects.length + 1}, 1fr)` }}>
                     <TabsTrigger value="overview" className="text-xs">Vue d'ensemble</TabsTrigger>
@@ -850,8 +855,8 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                     );
                   })}
                 </Tabs>
-              </PopoverContent>
-            </Popover>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
 
           {/* Bouton télécharger */}
