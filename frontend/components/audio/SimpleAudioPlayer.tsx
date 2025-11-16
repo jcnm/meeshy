@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { Play, Pause, Download, AlertTriangle, Gauge, RotateCcw } from 'lucide-react';
+import { Play, Pause, Download, AlertTriangle, Gauge } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -507,130 +507,143 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
 
   return (
     <div
-      className={`relative flex items-center gap-3 p-2 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg border ${
+      className={`relative flex flex-col gap-2 p-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg border ${
         hasError ? 'border-red-300 dark:border-red-700' : 'border-blue-200 dark:border-gray-700'
       } shadow-md hover:shadow-lg transition-all duration-200 w-full sm:max-w-2xl ${className}`}
     >
-      {/* Bouton Play/Pause - Design moderne */}
-      <Button
-        onClick={togglePlay}
-        disabled={isLoading || hasError}
-        size="sm"
-        className={`flex-shrink-0 w-10 h-10 rounded-full ${
-          hasError
-            ? 'bg-red-500 hover:bg-red-600'
-            : 'bg-blue-600 hover:bg-blue-700'
-        } text-white shadow-lg hover:shadow-xl transition-all duration-200 p-0 flex items-center justify-center disabled:opacity-50`}
-      >
-        {isLoading ? (
-          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-        ) : hasError ? (
-          <AlertTriangle className="w-5 h-5" />
-        ) : isPlaying ? (
-          <Pause className="w-5 h-5 fill-current" />
-        ) : (
-          <Play className="w-5 h-5 ml-0.5 fill-current" />
-        )}
-      </Button>
-
-      {/* Contrôle de vitesse de lecture - À gauche du minuteur */}
-      <Popover open={isSpeedPopoverOpen} onOpenChange={setIsSpeedPopoverOpen}>
-        <PopoverTrigger asChild>
-          <button
-            className="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-md transition-all"
-            title={`Vitesse: ${playbackRate}x`}
+      {/* Badge des effets appliqués - Au-dessus */}
+      {appliedEffects.length > 0 && (
+        <div className="flex justify-center">
+          <div
+            className="inline-flex items-center justify-center w-6 h-6 bg-purple-500 dark:bg-purple-600 rounded-full shadow-md cursor-default"
+            title={appliedEffects.length === 1 ? `Effet: ${appliedEffects[0]}` : `${appliedEffects.length} effets appliqués`}
           >
-            <Gauge className="w-3 h-3 text-gray-700 dark:text-gray-300" />
-          </button>
-        </PopoverTrigger>
-        <PopoverContent className="w-16 p-2" side="top" align="center">
-          <div className="flex flex-col items-center gap-2">
-            {/* Icône reset - visible seulement si pas à 1x */}
-            {playbackRate !== 1.0 && (
-              <button
-                onClick={() => setPlaybackRate(1.0)}
-                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-                title="Réinitialiser à 1x"
-              >
-                <RotateCcw className="w-3 h-3 text-gray-600 dark:text-gray-400" />
-              </button>
-            )}
-
-            {/* Slider vertical - toujours même taille */}
-            <div className="relative h-20 w-10 flex items-center justify-end">
-              {/* Marqueurs des points d'accroche */}
-              <div className="absolute left-0 h-full flex flex-col justify-between py-1 pointer-events-none">
-                <span className="text-[7px] text-gray-500 dark:text-gray-400">5x</span>
-                <span className="text-[7px] font-bold text-purple-600 dark:text-purple-400">3x</span>
-                <span className="text-[7px] font-bold text-purple-600 dark:text-purple-400">2x</span>
-                <span className="text-[7px] font-bold text-purple-600 dark:text-purple-400">1.5x</span>
-                <span className="text-[7px] font-bold text-blue-600 dark:text-blue-400">1x</span>
-                <span className="text-[7px] text-gray-500 dark:text-gray-400">0.1x</span>
-              </div>
-
-              {/* Slider (input vertical) */}
-              <input
-                type="range"
-                min="0.1"
-                max="5"
-                step="0.1"
-                value={playbackRate}
-                onChange={handlePlaybackRateChange}
-                className="h-full w-2 appearance-none bg-transparent cursor-pointer"
-                style={{
-                  writingMode: 'bt-lr',
-                  WebkitAppearance: 'slider-vertical',
-                }}
-              />
-            </div>
-
-            {/* Affichage de la vitesse actuelle */}
-            <div className="text-[10px] font-bold text-blue-600 dark:text-blue-400">
-              {playbackRate.toFixed(1)}x
-            </div>
+            <span className="text-[12px]">
+              {appliedEffects.length === 1 ? effectIcons[appliedEffects[0]] : '🎚️'}
+            </span>
           </div>
-        </PopoverContent>
-      </Popover>
+        </div>
+      )}
 
-      {/* Zone de progression et temps */}
-      <div className="flex-1 min-w-0">
+      {/* Ligne principale: Play + Barre de progression + Download */}
+      <div className="flex items-center gap-3">
+        {/* Bouton Play/Pause - Design moderne */}
+        <Button
+          onClick={togglePlay}
+          disabled={isLoading || hasError}
+          size="sm"
+          className={`flex-shrink-0 w-10 h-10 rounded-full ${
+            hasError
+              ? 'bg-red-500 hover:bg-red-600'
+              : 'bg-blue-600 hover:bg-blue-700'
+          } text-white shadow-lg hover:shadow-xl transition-all duration-200 p-0 flex items-center justify-center disabled:opacity-50`}
+        >
+          {isLoading ? (
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          ) : hasError ? (
+            <AlertTriangle className="w-5 h-5" />
+          ) : isPlaying ? (
+            <Pause className="w-5 h-5 fill-current" />
+          ) : (
+            <Play className="w-5 h-5 ml-0.5 fill-current" />
+          )}
+        </Button>
+
         {/* Barre de progression */}
-        <div className="relative w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-visible mb-2 group cursor-pointer">
-          {/* Barre de progression remplie avec animation fluide */}
-          <div
-            className={`absolute top-0 left-0 h-full rounded-full ${
-              isPlaying
-                ? 'bg-gradient-to-r from-blue-500 via-blue-600 to-blue-500 dark:from-blue-400 dark:via-blue-500 dark:to-blue-400'
-                : 'bg-blue-600 dark:bg-blue-500'
-            }`}
-            style={{
-              width: `${progress}%`,
-              transition: 'none', // Pas de transition pour un rendu fluide à 60fps
-            }}
-          />
+        <div className="flex-1 min-w-0">
+          <div className="relative w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-visible group cursor-pointer">
+            {/* Barre de progression remplie avec animation fluide */}
+            <div
+              className={`absolute top-0 left-0 h-full rounded-full ${
+                isPlaying
+                  ? 'bg-gradient-to-r from-blue-500 via-blue-600 to-blue-500 dark:from-blue-400 dark:via-blue-500 dark:to-blue-400'
+                  : 'bg-blue-600 dark:bg-blue-500'
+              }`}
+              style={{
+                width: `${progress}%`,
+                transition: 'none', // Pas de transition pour un rendu fluide à 60fps
+              }}
+            />
 
-          {/* Curseur de position - Visible au survol avec animation smooth */}
-          <div
-            className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white dark:bg-gray-100 rounded-full shadow-lg border-2 border-blue-600 dark:border-blue-400 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-200 pointer-events-none"
-            style={{
-              left: `calc(${progress}% - 8px)`,
-            }}
-          />
+            {/* Curseur de position - Visible au survol avec animation smooth */}
+            <div
+              className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white dark:bg-gray-100 rounded-full shadow-lg border-2 border-blue-600 dark:border-blue-400 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-200 pointer-events-none"
+              style={{
+                left: `calc(${progress}% - 8px)`,
+              }}
+            />
 
-          {/* Input range invisible pour le contrôle */}
-          <input
-            type="range"
-            min="0"
-            max={duration || 100}
-            value={currentTime}
-            onChange={handleSeek}
-            className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer z-10"
-            style={{ touchAction: 'none' }}
-          />
+            {/* Input range invisible pour le contrôle */}
+            <input
+              type="range"
+              min="0"
+              max={duration || 100}
+              value={currentTime}
+              onChange={handleSeek}
+              className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer z-10"
+              style={{ touchAction: 'none' }}
+            />
+          </div>
         </div>
 
-        {/* Affichage du temps avec pourcentage - Centré */}
-        <div className="flex justify-center items-center gap-2 text-sm font-mono text-gray-600 dark:text-gray-300">
+        {/* Bouton télécharger - En face de la barre */}
+        <a
+          href={objectUrl || '#'}
+          download={attachment.originalName}
+          className="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-md transition-all"
+          title="Télécharger"
+          onClick={(e) => {
+            if (!objectUrl) {
+              e.preventDefault();
+            }
+          }}
+        >
+          <Download className="w-4 h-4 text-gray-700 dark:text-gray-200" />
+        </a>
+      </div>
+
+      {/* Ligne secondaire: Gauge + Timer */}
+      <div className="flex items-center justify-center gap-2">
+        {/* Contrôle de vitesse de lecture */}
+        <Popover open={isSpeedPopoverOpen} onOpenChange={setIsSpeedPopoverOpen}>
+          <PopoverTrigger asChild>
+            <button
+              className="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-md transition-all"
+              title={`Vitesse: ${playbackRate}x`}
+            >
+              <Gauge className="w-3 h-3 text-gray-700 dark:text-gray-300" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-12 p-2" side="top" align="center">
+            <div className="flex flex-col items-center gap-2">
+              {/* Slider vertical simplifié */}
+              <div className="relative h-24 flex items-center justify-center">
+                {/* Slider (input vertical) */}
+                <input
+                  type="range"
+                  min="0.1"
+                  max="5"
+                  step="0.1"
+                  value={playbackRate}
+                  onChange={handlePlaybackRateChange}
+                  className="h-full w-2 appearance-none bg-transparent cursor-pointer"
+                  style={{
+                    writingMode: 'bt-lr',
+                    WebkitAppearance: 'slider-vertical',
+                  }}
+                />
+              </div>
+
+              {/* Affichage de la vitesse actuelle */}
+              <div className="text-[10px] font-bold text-blue-600 dark:text-blue-400">
+                {playbackRate.toFixed(1)}x
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        {/* Affichage du temps avec pourcentage */}
+        <div className="flex items-center gap-2 text-sm font-mono text-gray-600 dark:text-gray-300">
           {hasError ? (
             <span className="font-semibold text-red-600 dark:text-red-400 text-[10px]">
               {errorMessage}
@@ -651,33 +664,6 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
           )}
         </div>
       </div>
-
-      {/* Badge des effets appliqués - En haut à droite */}
-      {appliedEffects.length > 0 && (
-        <div
-          className="absolute top-2 right-2 z-10 inline-flex items-center justify-center w-6 h-6 bg-purple-500 dark:bg-purple-600 rounded-full shadow-md cursor-default"
-          title={appliedEffects.length === 1 ? `Effet: ${appliedEffects[0]}` : `${appliedEffects.length} effets appliqués`}
-        >
-          <span className="text-[12px]">
-            {appliedEffects.length === 1 ? effectIcons[appliedEffects[0]] : '🎚️'}
-          </span>
-        </div>
-      )}
-
-      {/* Bouton télécharger - En bas à droite */}
-      <a
-        href={objectUrl || '#'}
-        download={attachment.originalName}
-        className="absolute bottom-2 right-2 z-10 inline-flex items-center justify-center w-6 h-6 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-md transition-all"
-        title="Télécharger"
-        onClick={(e) => {
-          if (!objectUrl) {
-            e.preventDefault();
-          }
-        }}
-      >
-        <Download className="w-3 h-3 text-gray-700 dark:text-gray-200" />
-      </a>
 
       {/* Audio element caché - src from object URL */}
       <audio
