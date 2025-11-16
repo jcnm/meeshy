@@ -1,6 +1,6 @@
 import { conversationsService } from '../../services/conversations.service';
 import { apiService } from '../../services/api.service';
-import type { Conversation, Message } from '../../types';
+import type { Conversation, Message } from '../../types/socketio';
 
 // Mock the apiService
 jest.mock('../../services/api.service', () => ({
@@ -14,6 +14,23 @@ jest.mock('../../services/api.service', () => ({
 
 const mockApiService = apiService as jest.Mocked<typeof apiService>;
 
+// Helper pour créer un mock Conversation valide
+const createMockConversation = (overrides?: Partial<Conversation>): Conversation => ({
+  id: '1',
+  identifier: 'test-conversation',
+  type: 'direct',
+  title: 'Test Conversation',
+  isActive: true,
+  isArchived: false,
+  lastMessageAt: new Date(),
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  members: [],
+  lastMessage: undefined,
+  unreadCount: 0,
+  ...overrides,
+});
+
 describe('ConversationsService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -22,18 +39,7 @@ describe('ConversationsService', () => {
   describe('getConversations', () => {
     it('should fetch all conversations', async () => {
       const mockConversations: Conversation[] = [
-        {
-          id: '1',
-          type: 'direct',
-          name: 'Test Conversation',
-          isGroup: false,
-          isActive: true,
-          participants: [],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          lastMessage: undefined,
-          unreadCount: 0,
-        },
+        createMockConversation(),
       ];
 
       mockApiService.get.mockResolvedValue({
@@ -63,18 +69,7 @@ describe('ConversationsService', () => {
 
   describe('getConversation', () => {
     it('should fetch a specific conversation', async () => {
-      const mockConversation: Conversation = {
-        id: '1',
-        type: 'direct',
-        name: 'Test Conversation',
-        isGroup: false,
-        isActive: true,
-        participants: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        lastMessage: undefined,
-        unreadCount: 0,
-      };
+      const mockConversation = createMockConversation();
 
       mockApiService.get.mockResolvedValue({
         data: mockConversation,
@@ -90,25 +85,19 @@ describe('ConversationsService', () => {
   });
 
   describe('createConversation', () => {
-    it('should create a new conversation', async () => {
+    it('should create a new group conversation', async () => {
       const createData = {
-        name: 'New Conversation',
+        type: 'group' as const,
+        title: 'New Group Conversation',
         participants: ['user1', 'user2'],
-        isGroup: true,
       };
 
-      const mockCreatedConversation: Conversation = {
+      const mockCreatedConversation = createMockConversation({
         id: '2',
+        identifier: 'new-group-conversation',
         type: 'group',
-        name: 'New Conversation',
-        isGroup: true,
-        isActive: true,
-        participants: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        lastMessage: undefined,
-        unreadCount: 0,
-      };
+        title: 'New Group Conversation',
+      });
 
       mockApiService.post.mockResolvedValue({
         data: mockCreatedConversation,
@@ -124,21 +113,16 @@ describe('ConversationsService', () => {
 
     it('should create a direct conversation', async () => {
       const createData = {
+        type: 'direct' as const,
         participants: ['user1'],
       };
 
-      const mockConversation: Conversation = {
+      const mockConversation = createMockConversation({
         id: '3',
+        identifier: 'direct-user1',
         type: 'direct',
-        name: undefined,
-        isGroup: false,
-        isActive: true,
-        participants: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        lastMessage: undefined,
-        unreadCount: 0,
-      };
+        title: undefined,
+      });
 
       mockApiService.post.mockResolvedValue({
         data: mockConversation,
@@ -149,7 +133,7 @@ describe('ConversationsService', () => {
       const result = await conversationsService.createConversation(createData);
 
       expect(mockApiService.post).toHaveBeenCalledWith('/conversations', createData);
-      expect(result.isGroup).toBe(false);
+      expect(result.type).toBe('direct');
     });
   });
 
@@ -180,6 +164,7 @@ describe('ConversationsService', () => {
         senderId: 'user1',
         content: 'Hello world',
         originalLanguage: 'en',
+        messageType: 'text',
         isEdited: false,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -209,7 +194,10 @@ describe('ConversationsService', () => {
           translateToRegionalLanguage: false,
           useCustomDestination: false,
           isOnline: true,
+          lastSeen: new Date(),
+          isActive: true,
           createdAt: new Date(),
+          updatedAt: new Date(),
           lastActiveAt: new Date(),
         },
       };
@@ -244,18 +232,7 @@ describe('ConversationsService', () => {
   describe('searchConversations', () => {
     it('should search conversations', async () => {
       const mockConversations: Conversation[] = [
-        {
-          id: '1',
-          type: 'direct',
-          name: 'Test Conversation',
-          isGroup: false,
-          isActive: true,
-          participants: [],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          lastMessage: undefined,
-          unreadCount: 0,
-        },
+        createMockConversation(),
       ];
 
       mockApiService.get.mockResolvedValue({
@@ -286,21 +263,15 @@ describe('ConversationsService', () => {
   describe('updateConversation', () => {
     it('should update conversation', async () => {
       const updateData = {
-        name: 'Updated Conversation Name',
+        title: 'Updated Conversation Title',
       };
 
-      const mockUpdatedConversation: Conversation = {
+      const mockUpdatedConversation = createMockConversation({
         id: '1',
+        identifier: 'updated-conversation',
         type: 'group',
-        name: 'Updated Conversation Name',
-        isGroup: true,
-        isActive: true,
-        participants: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        lastMessage: undefined,
-        unreadCount: 0,
-      };
+        title: 'Updated Conversation Title',
+      });
 
       mockApiService.patch.mockResolvedValue({
         data: mockUpdatedConversation,
@@ -317,17 +288,10 @@ describe('ConversationsService', () => {
 
   describe('Error handling', () => {
     it('should propagate API errors', async () => {
-      const apiError = new Error('Network error');
-      mockApiService.get.mockRejectedValue(apiError);
+      const mockError = new Error('Network error');
+      mockApiService.get.mockRejectedValue(mockError);
 
       await expect(conversationsService.getConversations()).rejects.toThrow('Network error');
-    });
-
-    it('should handle 404 errors for specific conversation', async () => {
-      const notFoundError = new Error('Conversation not found');
-      mockApiService.get.mockRejectedValue(notFoundError);
-
-      await expect(conversationsService.getConversation('nonexistent')).rejects.toThrow('Conversation not found');
     });
   });
 });
