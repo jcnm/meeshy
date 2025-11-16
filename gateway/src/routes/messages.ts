@@ -145,7 +145,33 @@ export default async function messageRoutes(fastify: FastifyInstance) {
           isDeleted: false
         },
         include: {
-          attachments: true,
+          attachments: {
+            select: {
+              id: true,
+              messageId: true,
+              fileName: true,
+              originalName: true,
+              mimeType: true,
+              fileSize: true,
+              fileUrl: true,
+              thumbnailUrl: true,
+              width: true,
+              height: true,
+              duration: true,
+              bitrate: true,
+              sampleRate: true,
+              codec: true,
+              channels: true,
+              fps: true,
+              videoCodec: true,
+              pageCount: true,
+              lineCount: true,
+              metadata: true, // Inclure audioEffectsTimeline et autres métadonnées JSON
+              uploadedBy: true,
+              isAnonymous: true,
+              createdAt: true
+            }
+          },
           conversation: {
             include: {
               members: {

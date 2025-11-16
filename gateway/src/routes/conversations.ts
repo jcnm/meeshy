@@ -979,6 +979,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
           attachments: {
             select: {
               id: true,
+              messageId: true,
               fileName: true,
               originalName: true,
               mimeType: true,
@@ -987,6 +988,18 @@ export async function conversationRoutes(fastify: FastifyInstance) {
               thumbnailUrl: true,
               width: true,
               height: true,
+              duration: true,
+              bitrate: true,
+              sampleRate: true,
+              codec: true,
+              channels: true,
+              fps: true,
+              videoCodec: true,
+              pageCount: true,
+              lineCount: true,
+              metadata: true, // Inclure audioEffectsTimeline et autres métadonnées JSON
+              uploadedBy: true,
+              isAnonymous: true,
               createdAt: true
             }
           },
