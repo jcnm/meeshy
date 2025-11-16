@@ -70,13 +70,39 @@ export function AttachmentDetails({
       case 'audio': {
         const duration = attachment.duration ? formatDuration(attachment.duration) : null;
         const bitrate = attachment.bitrate ? `${Math.round(attachment.bitrate / 1000)}kbps` : null;
+        const sampleRate = attachment.sampleRate ? `${(attachment.sampleRate / 1000).toFixed(1)}kHz` : null;
+
+        // Extraire les effets appliqués depuis la timeline
+        const effectIcons: Record<string, string> = {
+          'voice-coder': '🎵',
+          'baby-voice': '👶',
+          'demon-voice': '😈',
+          'back-sound': '🎶',
+        };
+        let effectDisplay = '';
+        if ((attachment as any).audioEffectsTimeline?.events) {
+          const effects = new Set<string>();
+          for (const event of (attachment as any).audioEffectsTimeline.events) {
+            if (event.action === 'activate') {
+              effects.add(event.effectType);
+            }
+          }
+          const appliedEffects = Array.from(effects);
+          if (appliedEffects.length === 1) {
+            effectDisplay = effectIcons[appliedEffects[0]] || '🎚️';
+          } else if (appliedEffects.length > 1) {
+            effectDisplay = '🎚️';
+          }
+        }
 
         return {
           icon: <FileAudio className={iconSizeClass} />,
           iconColor: 'text-purple-500',
           details: [
             duration && <span key="duration" className="flex items-center gap-1"><Clock className="h-3 w-3" />{duration}</span>,
-            bitrate && <span key="bitrate">{bitrate}</span>
+            bitrate && <span key="bitrate">{bitrate}</span>,
+            sampleRate && <span key="sampleRate">{sampleRate}</span>,
+            effectDisplay && <span key="effect">{effectDisplay}</span>
           ].filter(Boolean)
         };
       }

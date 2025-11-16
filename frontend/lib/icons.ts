@@ -38,6 +38,7 @@ import {
   AlertTriangle,
   Timer,
   Printer,
+  Clock,
 
   // Content & Media
   Languages,
@@ -105,6 +106,7 @@ export {
   AlertTriangle,
   Timer,
   Printer,
+  Clock,
   Languages,
   Globe,
   Globe2,
@@ -157,6 +159,7 @@ export type IconName =
   | 'CheckCheck'
   | 'AlertTriangle'
   | 'Timer'
+  | 'Clock'
   | 'Languages'
   | 'Globe'
   | 'Globe2'
@@ -209,6 +212,7 @@ export const getIcon = (name: IconName) => {
     CheckCheck,
     AlertTriangle,
     Timer,
+    Clock,
     Languages,
     Globe,
     Globe2,
