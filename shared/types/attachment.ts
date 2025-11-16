@@ -93,8 +93,16 @@ export interface Attachment {
   readonly isAnonymous: boolean;
   readonly createdAt: string;
   /**
+   * Metadata JSON contenant des données additionnelles (audioEffectsTimeline, etc.)
+   */
+  readonly metadata?: {
+    audioEffectsTimeline?: import('./audio-effects-timeline').AudioEffectsTimeline;
+    [key: string]: any;
+  };
+  /**
    * Timeline des effets audio appliqués pendant l'enregistrement
    * Uniquement pour les fichiers audio enregistrés avec des effets
+   * DEPRECATED: Utiliser metadata.audioEffectsTimeline à la place
    */
   readonly audioEffectsTimeline?: import('./audio-effects-timeline').AudioEffectsTimeline;
 }
@@ -155,8 +163,16 @@ export interface UploadedAttachmentResponse {
   readonly isAnonymous: boolean;
   readonly createdAt: string;
   /**
+   * Metadata JSON contenant des données additionnelles (audioEffectsTimeline, etc.)
+   */
+  readonly metadata?: {
+    audioEffectsTimeline?: import('./audio-effects-timeline').AudioEffectsTimeline;
+    [key: string]: any;
+  };
+  /**
    * Timeline des effets audio appliqués pendant l'enregistrement
    * Uniquement pour les fichiers audio enregistrés avec des effets
+   * DEPRECATED: Utiliser metadata.audioEffectsTimeline à la place
    */
   readonly audioEffectsTimeline?: import('./audio-effects-timeline').AudioEffectsTimeline;
 }

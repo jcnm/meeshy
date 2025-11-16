@@ -330,26 +330,9 @@ export const MessageAttachments = React.memo(function MessageAttachments({
 
     // Audio attachment - Utiliser SimpleAudioPlayer
     if (type === 'audio') {
-      // Proper type conversion
-      const audioAttachment = {
-        id: attachment.id,
-        messageId: attachment.messageId,
-        fileName: attachment.fileName,
-        originalName: attachment.originalName,
-        mimeType: attachment.mimeType,
-        fileSize: attachment.fileSize,
-        fileUrl: attachment.fileUrl,
-        thumbnailUrl: attachment.thumbnailUrl,
-        width: attachment.width,
-        height: attachment.height,
-        duration: attachment.duration,
-        uploadedBy: attachment.uploadedBy,
-        isAnonymous: attachment.isAnonymous,
-        createdAt: attachment.createdAt
-      };
-
+      // Passer l'attachment complet avec TOUS les champs, notamment metadata
       return (
-        <SimpleAudioPlayer key={attachment.id} attachment={audioAttachment as any} />
+        <SimpleAudioPlayer key={attachment.id} attachment={attachment as any} />
       );
     }
 
