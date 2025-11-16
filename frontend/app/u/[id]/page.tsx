@@ -108,13 +108,13 @@ export default function ProfilePage({ params }: ProfilePageProps) {
 
     // Prevent creating conversation with oneself
     if (user.id === currentUser.id) {
-      toast.error('Vous ne pouvez pas créer une conversation avec vous-même');
+      toast.error(t('errors.cannotMessageYourself'));
       return;
     }
 
     // Validate that user has a valid ID
     if (!user.id || user.id.trim().length === 0) {
-      toast.error('Impossible de créer la conversation: utilisateur invalide');
+      toast.error(t('errors.invalidUser'));
       return;
     }
 
@@ -131,10 +131,10 @@ export default function ProfilePage({ params }: ProfilePageProps) {
       });
 
       router.push(`/conversations/${response.id}`);
-      toast.success('Conversation créée');
+      toast.success(t('success.conversationCreated'));
     } catch (error) {
       console.error('Error creating conversation:', error);
-      toast.error('Impossible de créer la conversation');
+      toast.error(t('errors.conversationCreationFailed'));
     }
   };
 
@@ -144,7 +144,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     try {
       const token = localStorage.getItem('authToken');
       if (!token) {
-        toast.error('Session expirée');
+        toast.error(t('errors.sessionExpired'));
         router.push('/login');
         return;
       }
@@ -159,14 +159,14 @@ export default function ProfilePage({ params }: ProfilePageProps) {
       });
 
       if (response.ok) {
-        toast.success('Demande d\'ami envoyée');
+        toast.success(t('success.friendRequestSent'));
       } else {
         const error = await response.json();
-        toast.error(error.error || 'Erreur lors de l\'envoi de la demande');
+        toast.error(error.error || t('errors.sendFriendRequestFailed'));
       }
     } catch (error) {
       console.error('Error sending friend request:', error);
-      toast.error('Erreur lors de l\'envoi de la demande');
+      toast.error(t('errors.sendFriendRequestFailed'));
     }
   };
 
