@@ -579,7 +579,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
         hasError ? 'border-red-300 dark:border-red-700' : 'border-blue-200 dark:border-gray-700'
       } shadow-md hover:shadow-lg transition-all duration-200 w-full sm:max-w-2xl ${className}`}
     >
-      {/* Ligne principale: Play + Barre de progression + Colonne actions (Effet + Download) */}
+      {/* Ligne principale: Play + Zone centrale (Gauge/% + Barre + Timer) + Colonne actions (Effet + Download) */}
       <div className="flex items-center gap-3">
         {/* Bouton Play/Pause - Design moderne compact */}
         <Button
@@ -603,8 +603,57 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
           )}
         </Button>
 
-        {/* Barre de progression */}
-        <div className="flex-1 min-w-0">
+        {/* Zone centrale: Gauge/% au-dessus + Barre de progression + Timer en dessous */}
+        <div className="flex-1 min-w-0 flex flex-col gap-1">
+          {/* Ligne au-dessus: Gauge + Pourcentage */}
+          <div className="flex items-center gap-2">
+            {/* Contrôle de vitesse de lecture */}
+            <Popover open={isSpeedPopoverOpen} onOpenChange={setIsSpeedPopoverOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-md transition-all"
+                  title={`Vitesse: ${playbackRate}x`}
+                >
+                  <Gauge className="w-2.5 h-2.5 text-gray-700 dark:text-gray-300" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-12 p-2" side="top" align="center">
+                <div className="flex flex-col items-center gap-2">
+                  {/* Slider vertical simplifié */}
+                  <div className="relative h-24 flex items-center justify-center">
+                    {/* Slider (input vertical) */}
+                    <input
+                      type="range"
+                      min="0.1"
+                      max="5"
+                      step="0.1"
+                      value={playbackRate}
+                      onChange={handlePlaybackRateChange}
+                      className="h-full w-2 appearance-none bg-transparent cursor-pointer"
+                      style={{
+                        writingMode: 'bt-lr',
+                        WebkitAppearance: 'slider-vertical',
+                      }}
+                    />
+                  </div>
+
+                  {/* Affichage de la vitesse actuelle */}
+                  <div className="text-[10px] font-bold text-blue-600 dark:text-blue-400">
+                    {playbackRate.toFixed(1)}x
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            {/* Pourcentage */}
+            {duration > 0 && (
+              <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                {progress.toFixed(0)}%
+              </span>
+            )}
+          </div>
+
+          {/* Barre de progression */}
           <div className="relative w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-visible group cursor-pointer">
             {/* Barre de progression remplie avec animation fluide */}
             <div
@@ -637,6 +686,25 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
               className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer z-10"
               style={{ touchAction: 'none' }}
             />
+          </div>
+
+          {/* Ligne en dessous: Timer */}
+          <div className="flex items-center justify-center">
+            <div className="text-sm font-mono text-gray-600 dark:text-gray-300">
+              {hasError ? (
+                <span className="font-semibold text-red-600 dark:text-red-400 text-[10px]">
+                  {errorMessage}
+                </span>
+              ) : duration > 0 ? (
+                <span className="font-bold text-blue-600 dark:text-blue-400 tracking-wider">
+                  {formatTime(Math.max(0, duration - currentTime))}
+                </span>
+              ) : (
+                <span className="font-semibold text-gray-400 dark:text-gray-500 text-[10px]">
+                  Chargement...
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -800,69 +868,6 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
           >
             <Download className="w-2.5 h-2.5 text-gray-700 dark:text-gray-200" />
           </a>
-        </div>
-      </div>
-
-      {/* Ligne secondaire: Gauge + Timer */}
-      <div className="flex items-center justify-center gap-2">
-        {/* Contrôle de vitesse de lecture */}
-        <Popover open={isSpeedPopoverOpen} onOpenChange={setIsSpeedPopoverOpen}>
-          <PopoverTrigger asChild>
-            <button
-              className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-md transition-all"
-              title={`Vitesse: ${playbackRate}x`}
-            >
-              <Gauge className="w-2.5 h-2.5 text-gray-700 dark:text-gray-300" />
-            </button>
-          </PopoverTrigger>
-          <PopoverContent className="w-12 p-2" side="top" align="center">
-            <div className="flex flex-col items-center gap-2">
-              {/* Slider vertical simplifié */}
-              <div className="relative h-24 flex items-center justify-center">
-                {/* Slider (input vertical) */}
-                <input
-                  type="range"
-                  min="0.1"
-                  max="5"
-                  step="0.1"
-                  value={playbackRate}
-                  onChange={handlePlaybackRateChange}
-                  className="h-full w-2 appearance-none bg-transparent cursor-pointer"
-                  style={{
-                    writingMode: 'bt-lr',
-                    WebkitAppearance: 'slider-vertical',
-                  }}
-                />
-              </div>
-
-              {/* Affichage de la vitesse actuelle */}
-              <div className="text-[10px] font-bold text-blue-600 dark:text-blue-400">
-                {playbackRate.toFixed(1)}x
-              </div>
-            </div>
-          </PopoverContent>
-        </Popover>
-
-        {/* Affichage du temps avec pourcentage */}
-        <div className="flex items-center gap-2 text-sm font-mono text-gray-600 dark:text-gray-300">
-          {hasError ? (
-            <span className="font-semibold text-red-600 dark:text-red-400 text-[10px]">
-              {errorMessage}
-            </span>
-          ) : duration > 0 ? (
-            <>
-              <span className="font-bold text-blue-600 dark:text-blue-400 tracking-wider">
-                {formatTime(Math.max(0, duration - currentTime))}
-              </span>
-              <span className="text-[10px] text-gray-400 dark:text-gray-500">
-                {progress.toFixed(0)}%
-              </span>
-            </>
-          ) : (
-            <span className="font-semibold text-gray-400 dark:text-gray-500 text-[10px]">
-              Chargement...
-            </span>
-          )}
         </div>
       </div>
 
