@@ -73,6 +73,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
   const [isSpeedPopoverOpen, setIsSpeedPopoverOpen] = useState(false);
   const [isEffectsDropdownOpen, setIsEffectsDropdownOpen] = useState(false);
   const [selectedEffectTab, setSelectedEffectTab] = useState<AudioEffectType | 'overview'>('overview');
+  const [visibleCurves, setVisibleCurves] = useState<Record<string, Record<string, boolean>>>({});
   const audioRef = useRef<HTMLAudioElement>(null);
   const animationFrameRef = useRef<number | null>(null);
 
@@ -212,6 +213,34 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
 
     return segments;
   }, [attachment, duration, attachmentDuration]);
+
+  // Extraire les configurations des effets pour les graphiques
+  const effectsConfigurations = useMemo(() => {
+    const timeline = (attachment as any).audioEffectsTimeline || (attachment as any).metadata?.audioEffectsTimeline;
+
+    if (!timeline || !timeline.events || timeline.events.length === 0) {
+      return {};
+    }
+
+    const configs: Record<AudioEffectType, Array<{
+      timestamp: number;
+      config: Record<string, number>;
+    }>> = {} as any;
+
+    for (const event of timeline.events) {
+      if (event.action === 'activate' && event.config) {
+        if (!configs[event.effectType]) {
+          configs[event.effectType] = [];
+        }
+        configs[event.effectType].push({
+          timestamp: event.timestamp,
+          config: event.config,
+        });
+      }
+    }
+
+    return configs;
+  }, [attachment]);
 
   // Charger l'audio via apiService - fetch blob et créer object URL
   useEffect(() => {
@@ -578,6 +607,230 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     };
   }
 
+  // Fonction pour générer le graphique SVG d'un effet
+  const renderEffectGraph = (effect: AudioEffectType) => {
+    const configs = effectsConfigurations[effect] || [];
+    if (configs.length === 0) return null;
+
+    const totalDuration = duration || attachmentDuration || 1;
+    const width = 350;
+    const height = 150;
+    const padding = { top: 10, right: 10, bottom: 40, left: 40 };
+    const graphWidth = width - padding.left - padding.right;
+    const graphHeight = height - padding.top - padding.bottom;
+
+    // Extraire toutes les clés de configuration
+    const configKeys = Array.from(new Set(configs.flatMap(c => Object.keys(c.config))));
+
+    // Initialiser la visibilité des courbes si nécessaire
+    if (!visibleCurves[effect]) {
+      const initialVisibility: Record<string, boolean> = {};
+      configKeys.forEach(key => {
+        initialVisibility[key] = true;
+      });
+      setVisibleCurves(prev => ({ ...prev, [effect]: initialVisibility }));
+    }
+
+    const currentVisibility = visibleCurves[effect] || {};
+
+    // Calculer les min/max pour les courbes visibles
+    let minValue = Infinity;
+    let maxValue = -Infinity;
+
+    configKeys.forEach(key => {
+      if (currentVisibility[key] !== false) {
+        configs.forEach(c => {
+          const value = c.config[key];
+          if (value !== undefined && value !== null) {
+            minValue = Math.min(minValue, value);
+            maxValue = Math.max(maxValue, value);
+          }
+        });
+      }
+    });
+
+    // Ajouter une marge de 10%
+    if (isFinite(minValue) && isFinite(maxValue)) {
+      const range = maxValue - minValue;
+      const margin = range * 0.1;
+      minValue -= margin;
+      maxValue += margin;
+    } else {
+      minValue = 0;
+      maxValue = 1;
+    }
+
+    // Fonction pour convertir les coordonnées en pixels
+    const timeToX = (time: number) => (time / totalDuration) * graphWidth;
+    const valueToY = (value: number) => graphHeight - ((value - minValue) / (maxValue - minValue)) * graphHeight;
+
+    // Couleurs pour les courbes
+    const curveColors = [
+      '#3b82f6', // blue
+      '#ef4444', // red
+      '#10b981', // green
+      '#f59e0b', // amber
+      '#8b5cf6', // purple
+      '#ec4899', // pink
+    ];
+
+    return (
+      <div className="space-y-3">
+        {/* Graphique SVG */}
+        <svg width={width} height={height} className="border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900">
+          {/* Axes */}
+          <line
+            x1={padding.left}
+            y1={padding.top}
+            x2={padding.left}
+            y2={height - padding.bottom}
+            stroke="currentColor"
+            className="text-gray-400"
+            strokeWidth="1"
+          />
+          <line
+            x1={padding.left}
+            y1={height - padding.bottom}
+            x2={width - padding.right}
+            y2={height - padding.bottom}
+            stroke="currentColor"
+            className="text-gray-400"
+            strokeWidth="1"
+          />
+
+          {/* Grille horizontale */}
+          {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => {
+            const y = padding.top + graphHeight * ratio;
+            const value = maxValue - (maxValue - minValue) * ratio;
+            return (
+              <g key={i}>
+                <line
+                  x1={padding.left}
+                  y1={y}
+                  x2={width - padding.right}
+                  y2={y}
+                  stroke="currentColor"
+                  className="text-gray-200 dark:text-gray-700"
+                  strokeWidth="0.5"
+                  strokeDasharray="2,2"
+                />
+                <text
+                  x={padding.left - 5}
+                  y={y}
+                  textAnchor="end"
+                  alignmentBaseline="middle"
+                  className="text-[8px] fill-gray-500 dark:fill-gray-400"
+                >
+                  {value.toFixed(1)}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* Grille verticale (temps) */}
+          {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => {
+            const x = padding.left + graphWidth * ratio;
+            const time = totalDuration * ratio;
+            return (
+              <g key={i}>
+                <line
+                  x1={x}
+                  y1={padding.top}
+                  x2={x}
+                  y2={height - padding.bottom}
+                  stroke="currentColor"
+                  className="text-gray-200 dark:text-gray-700"
+                  strokeWidth="0.5"
+                  strokeDasharray="2,2"
+                />
+                <text
+                  x={x}
+                  y={height - padding.bottom + 15}
+                  textAnchor="middle"
+                  className="text-[8px] fill-gray-500 dark:fill-gray-400"
+                >
+                  {formatTime(time)}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* Courbes */}
+          {configKeys.map((key, idx) => {
+            if (currentVisibility[key] === false) return null;
+
+            const points = configs
+              .filter(c => c.config[key] !== undefined && c.config[key] !== null)
+              .map(c => ({
+                x: padding.left + timeToX(c.timestamp),
+                y: padding.top + valueToY(c.config[key]),
+              }));
+
+            if (points.length === 0) return null;
+
+            // Créer le path SVG
+            const pathData = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+
+            return (
+              <g key={key}>
+                <path
+                  d={pathData}
+                  fill="none"
+                  stroke={curveColors[idx % curveColors.length]}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                {/* Points */}
+                {points.map((p, i) => (
+                  <circle
+                    key={i}
+                    cx={p.x}
+                    cy={p.y}
+                    r="3"
+                    fill={curveColors[idx % curveColors.length]}
+                  />
+                ))}
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* Légende interactive */}
+        <div className="flex flex-wrap gap-2 justify-center">
+          {configKeys.map((key, idx) => (
+            <button
+              key={key}
+              onClick={() => {
+                setVisibleCurves(prev => ({
+                  ...prev,
+                  [effect]: {
+                    ...prev[effect],
+                    [key]: !(prev[effect]?.[key] ?? true),
+                  },
+                }));
+              }}
+              className={`px-2 py-1 text-xs rounded-full border transition-all ${
+                currentVisibility[key] !== false
+                  ? 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600'
+                  : 'bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600 opacity-50'
+              }`}
+              style={{
+                borderColor: currentVisibility[key] !== false ? curveColors[idx % curveColors.length] : undefined,
+              }}
+            >
+              <span
+                className="inline-block w-3 h-3 rounded-full mr-1"
+                style={{ backgroundColor: curveColors[idx % curveColors.length] }}
+              />
+              {key}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div
       className={`relative flex flex-col gap-2 p-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg border ${
@@ -816,40 +1069,10 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                           </div>
                         </div>
 
-                        {/* Timeline détaillée */}
+                        {/* Graphique des configurations */}
                         <div className="space-y-2">
-                          <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300">Timeline</h4>
-                          <div className="relative h-8 bg-gray-100 dark:bg-gray-800 rounded overflow-hidden">
-                            {segments.map((segment, idx) => {
-                              const totalDuration = duration || attachmentDuration || 1;
-                              const startPercent = (segment.startTime / totalDuration) * 100;
-                              const widthPercent = ((segment.endTime - segment.startTime) / totalDuration) * 100;
-
-                              return (
-                                <div
-                                  key={idx}
-                                  className="absolute h-full rounded"
-                                  style={{
-                                    left: `${startPercent}%`,
-                                    width: `${widthPercent}%`,
-                                    backgroundColor: effectColors[effect],
-                                    opacity: 0.8,
-                                  }}
-                                  title={`${segment.startTime.toFixed(2)}s - ${segment.endTime.toFixed(2)}s`}
-                                />
-                              );
-                            })}
-                          </div>
-
-                          {/* Liste des segments */}
-                          <div className="space-y-1 max-h-32 overflow-y-auto">
-                            {segments.map((segment, idx) => (
-                              <div key={idx} className="flex justify-between text-xs text-gray-600 dark:text-gray-400">
-                                <span>Période {idx + 1}:</span>
-                                <span>{formatTime(segment.startTime)} → {formatTime(segment.endTime)}</span>
-                              </div>
-                            ))}
-                          </div>
+                          <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300">Évolution des paramètres</h4>
+                          {renderEffectGraph(effect)}
                         </div>
                       </TabsContent>
                     );
