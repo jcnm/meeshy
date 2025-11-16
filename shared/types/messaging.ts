@@ -106,6 +106,13 @@ export interface MessageRequest {
   // Metadata optionnelle
   readonly priority?: MessagePriority;
   readonly encrypted?: boolean;             // Default: false
+  readonly encryptedData?: {                // MLS encrypted data (when encrypted = true)
+    readonly ciphertext: string;            // Base64 encoded ciphertext
+    readonly nonce: string;                 // Base64 encoded nonce/IV
+    readonly senderKeyHash: string;         // Hash of sender's key
+    readonly encryptionType: 'mls_1_1' | 'mls_group'; // Encryption type
+    readonly groupEpoch?: number;           // For group conversations
+  };
   readonly attachments?: readonly MessageAttachment[];
 
   // Preferences de traduction spécifiques à ce message

@@ -19,11 +19,14 @@ import { conversationStatsService } from './ConversationStatsService';
 import { TrackingLinkService } from './TrackingLinkService';
 import { MentionService } from './MentionService';
 import { NotificationService } from './NotificationService';
+import { MLSService } from './MLSService';
+import type { EncryptedData } from '../../shared/types/mls';
 
 export class MessagingService {
   private trackingLinkService: TrackingLinkService;
   private mentionService: MentionService;
   private notificationService?: NotificationService;
+  private mlsService: MLSService;
 
   constructor(
     private readonly prisma: PrismaClient,
@@ -33,6 +36,7 @@ export class MessagingService {
     this.trackingLinkService = new TrackingLinkService(prisma);
     this.mentionService = new MentionService(prisma);
     this.notificationService = notificationService;
+    this.mlsService = new MLSService(prisma);
   }
 
   /**
@@ -164,7 +168,9 @@ export class MessagingService {
         conversationId,
         senderId: actualSenderId,
         anonymousSenderId: actualAnonymousSenderId,
-        mentionedUserIds: request.mentionedUserIds
+        mentionedUserIds: request.mentionedUserIds,
+        encrypted: request.encrypted,
+        encryptedData: request.encryptedData
       });
 
       // 7. Mise à jour de la conversation
@@ -653,6 +659,13 @@ export class MessagingService {
     messageType?: string;
     replyToId?: string;
     encrypted?: boolean;
+    encryptedData?: {
+      readonly ciphertext: string;
+      readonly nonce: string;
+      readonly senderKeyHash: string;
+      readonly encryptionType: 'mls_1_1' | 'mls_group';
+      readonly groupEpoch?: number;
+    };
     mentionedUserIds?: readonly string[];  // IDs des utilisateurs mentionnés depuis le frontend
   }): Promise<Message> {
     // ÉTAPE 1: Traiter les liens AVANT de sauvegarder le message
@@ -719,6 +732,26 @@ export class MessagingService {
         }
       }
     });
+
+    // ÉTAPE 2.5: Stocker les données chiffrées si le message est chiffré MLS
+    if (data.encrypted && data.encryptedData) {
+      try {
+        await this.prisma.encryptedMessageData.create({
+          data: {
+            messageId: message.id,
+            ciphertext: data.encryptedData.ciphertext,
+            nonce: data.encryptedData.nonce,
+            senderKeyHash: data.encryptedData.senderKeyHash,
+            encryptionType: data.encryptedData.encryptionType,
+            groupEpoch: data.encryptedData.groupEpoch,
+          },
+        });
+        console.log(`[MessagingService] ✅ Données chiffrées MLS stockées pour message ${message.id}`);
+      } catch (encryptError) {
+        console.error('[MessagingService] ❌ Erreur lors du stockage des données chiffrées:', encryptError);
+        // Continuer même si le stockage des données chiffrées échoue (message déjà créé)
+      }
+    }
 
     // ÉTAPE 3: Mettre à jour les liens de tracking avec le messageId
     if (processedContent !== data.content) {
