@@ -290,6 +290,13 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     const totalSize = files.reduce((sum, f) => sum + f.size, 0);
     console.log(`📎 Traitement de ${files.length} fichier(s) (${(totalSize / (1024 * 1024)).toFixed(1)}MB)`);
 
+    console.log('📋 [MessageComposer] handleFilesSelected received:', {
+      fileCount: files.length,
+      hasAdditionalMetadata: !!additionalMetadata,
+      additionalMetadata: additionalMetadata,
+      firstFileType: files[0]?.type
+    });
+
     // Filtrer les doublons basés sur nom, taille et date de modification
     // Vérifier contre selectedFiles ET uploadedAttachments
     const existingFileSignatures = new Set([
@@ -345,6 +352,13 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     setIsUploading(true);
 
     console.log(`📤 Upload démarré: ${uniqueFiles.length} fichier(s)`);
+
+    console.log('🚀 [MessageComposer] Calling AttachmentService.uploadFiles with:', {
+      fileCount: uniqueFiles.length,
+      hasMetadata: !!additionalMetadata,
+      metadata: additionalMetadata,
+      metadataIsArray: Array.isArray(additionalMetadata)
+    });
 
     try {
       // Upload les fichiers avec progress tracking
@@ -505,6 +519,14 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
 
   // Handler pour l'enregistrement audio terminé - mémorisé
   const handleAudioRecordingComplete = useCallback(async (audioBlob: Blob, duration: number, metadata?: any) => {
+    console.log('🎵 [MessageComposer] Audio recording complete:', {
+      duration,
+      hasMetadata: !!metadata,
+      metadata: metadata,
+      hasAudioEffectsTimeline: !!metadata?.audioEffectsTimeline,
+      audioEffectsTimelineEvents: metadata?.audioEffectsTimeline?.events?.length || 0
+    });
+
     // Stocker le blob dans les refs ET le state
     const blobData = { blob: audioBlob, duration };
     currentAudioBlobRef.current = blobData;
@@ -529,6 +551,12 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       setCurrentAudioBlob(null);
       setShowAudioRecorder(false);
       setIsRecording(false);
+
+      console.log('📤 [MessageComposer] Preparing to upload audio with metadata:', {
+        filename,
+        metadataArray: metadata ? [metadata] : undefined,
+        hasTimeline: !!metadata?.audioEffectsTimeline
+      });
 
       // Upload le fichier en arrière-plan (après reset de l'UI)
       // Passer les métadonnées (incluant audioEffectsTimeline si présent) sous forme de tableau

@@ -67,7 +67,18 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     // soit dans attachment.metadata (messages récupérés depuis la DB)
     const timeline = (attachment as any).audioEffectsTimeline || (attachment as any).metadata?.audioEffectsTimeline;
 
+    console.log('🎭 [SimpleAudioPlayer] Extraction timeline des effets:', {
+      attachmentId: attachment.id,
+      hasAudioEffectsTimeline: !!(attachment as any).audioEffectsTimeline,
+      hasMetadata: !!(attachment as any).metadata,
+      hasMetadataTimeline: !!(attachment as any).metadata?.audioEffectsTimeline,
+      timeline: timeline,
+      timelineEvents: timeline?.events,
+      fullAttachment: attachment
+    });
+
     if (!timeline || !timeline.events || timeline.events.length === 0) {
+      console.log('⚠️ [SimpleAudioPlayer] Pas de timeline ou pas d\'événements');
       return [];
     }
 
@@ -78,6 +89,8 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
         effects.add(event.effectType);
       }
     }
+
+    console.log('✅ [SimpleAudioPlayer] Effets appliqués extraits:', Array.from(effects));
     return Array.from(effects);
   }, [attachment]);
 

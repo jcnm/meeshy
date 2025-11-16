@@ -378,6 +378,14 @@ export class AttachmentService {
     providedMetadata?: any
   ): Promise<UploadResult> {
 
+    console.log('📥 [AttachmentService] uploadFile called:', {
+      filename: file.filename,
+      mimeType: file.mimeType,
+      size: file.size,
+      hasProvidedMetadata: !!providedMetadata,
+      providedMetadata: providedMetadata
+    });
+
     // Valider le fichier
     const validation = this.validateFile(file);
     if (!validation.valid) {
@@ -421,7 +429,14 @@ export class AttachmentService {
 
         // Si audioEffectsTimeline est fourni, le stocker dans les métadonnées
         if (providedMetadata.audioEffectsTimeline) {
+          console.log('🎬 [AttachmentService] audioEffectsTimeline found in providedMetadata:', {
+            hasEvents: !!providedMetadata.audioEffectsTimeline.events,
+            eventsCount: providedMetadata.audioEffectsTimeline.events?.length || 0,
+            timeline: providedMetadata.audioEffectsTimeline
+          });
           metadata.audioEffectsTimeline = providedMetadata.audioEffectsTimeline;
+        } else {
+          console.log('⚠️ [AttachmentService] No audioEffectsTimeline in providedMetadata');
         }
       } else {
         const audioMeta = await this.extractAudioMetadata(filePath);
@@ -481,6 +496,12 @@ export class AttachmentService {
       ? { audioEffectsTimeline: metadata.audioEffectsTimeline } as any
       : undefined;
 
+    console.log('💾 [AttachmentService] Preparing to save to database:', {
+      hasMetadataJson: !!metadataJson,
+      metadataJson: metadataJson,
+      hasAudioEffectsTimeline: !!metadata.audioEffectsTimeline
+    });
+
     // Créer l'enregistrement en base de données
     const attachment = await this.prisma.messageAttachment.create({
       data: {
@@ -510,9 +531,20 @@ export class AttachmentService {
       },
     });
 
+    console.log('✅ [AttachmentService] Attachment saved to database:', {
+      attachmentId: attachment.id,
+      hasMetadataField: !!attachment.metadata,
+      metadataField: attachment.metadata
+    });
 
     // Extraire audioEffectsTimeline du champ metadata JSON
     const audioEffectsTimeline = (attachment.metadata as any)?.audioEffectsTimeline || undefined;
+
+    console.log('📤 [AttachmentService] Extracted audioEffectsTimeline for response:', {
+      hasAudioEffectsTimeline: !!audioEffectsTimeline,
+      audioEffectsTimeline: audioEffectsTimeline,
+      eventsCount: audioEffectsTimeline?.events?.length || 0
+    });
 
     const result = {
       id: attachment.id,
@@ -540,6 +572,11 @@ export class AttachmentService {
       createdAt: attachment.createdAt,
     };
 
+    console.log('🎯 [AttachmentService] Returning result:', {
+      attachmentId: result.id,
+      hasAudioEffectsTimeline: !!result.audioEffectsTimeline,
+      audioEffectsTimelineEvents: result.audioEffectsTimeline?.events?.length || 0
+    });
 
     return result;
   }

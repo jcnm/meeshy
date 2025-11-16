@@ -266,6 +266,13 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
         // Arrêter le tracking et récupérer la timeline des effets
         const audioEffectsTimeline = stopTracking();
 
+        console.log('🎬 [AudioRecorder] Recording stopped - Timeline data:', {
+          hasTimeline: !!audioEffectsTimeline,
+          timelineEvents: audioEffectsTimeline?.events?.length || 0,
+          timelineData: audioEffectsTimeline,
+          recordingDuration: recordingTime / 1000
+        });
+
         // Arrêter tous les tracks du stream brut
         newRawStream.getTracks().forEach(track => track.stop());
         setRawStream(null); // Reset le state
@@ -281,6 +288,12 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
           mimeType: mimeType,
           ...(audioEffectsTimeline && { audioEffectsTimeline }),
         };
+
+        console.log('📦 [AudioRecorder] Metadata prepared for upload:', {
+          metadata,
+          hasAudioEffectsTimeline: !!metadata.audioEffectsTimeline,
+          audioEffectsTimelineEvents: metadata.audioEffectsTimeline?.events?.length || 0
+        });
 
         onRecordingComplete(blob, metadata.duration, metadata);
       };
@@ -385,6 +398,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
     // Première initialisation - stocker l'état initial sans enregistrer d'événements
     if (!previousEffectsStateRef.current) {
       previousEffectsStateRef.current = effectsState;
+      console.log('🎯 [AudioRecorder] Initial effects state:', effectsState);
       return;
     }
 
@@ -400,15 +414,21 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
       if (currentEffect.enabled !== previousEffect.enabled) {
         if (currentEffect.enabled) {
           // Effet activé
+          console.log('✅ [AudioRecorder] Effect activated:', currentEffect.type);
           recordActivation(currentEffect.type);
         } else {
           // Effet désactivé
+          console.log('❌ [AudioRecorder] Effect deactivated:', currentEffect.type);
           recordDeactivation(currentEffect.type);
         }
       }
       // Détection changement de paramètres (seulement si l'effet est actif)
       else if (currentEffect.enabled && JSON.stringify(currentEffect.params) !== JSON.stringify(previousEffect.params)) {
         // Paramètres modifiés
+        console.log('🔧 [AudioRecorder] Effect params updated:', {
+          type: currentEffect.type,
+          params: currentEffect.params
+        });
         recordUpdate(currentEffect.type, currentEffect.params);
       }
     });
