@@ -129,10 +129,13 @@ export const useNotifications = (): UseNotificationsReturn => {
     const getToastIcon = (type: string) => {
       switch (type) {
         case 'message':
+        case 'new_message':
           return '💬';
         case 'system':
+        case 'missed_call':
           return '🔔';
         case 'conversation':
+        case 'new_conversation':
           return '👥';
         case 'translation':
           return '🌍';
@@ -144,10 +147,13 @@ export const useNotifications = (): UseNotificationsReturn => {
     const getToastType = (type: string) => {
       switch (type) {
         case 'message':
+        case 'new_message':
           return 'success';
         case 'system':
+        case 'missed_call':
           return 'info';
         case 'conversation':
+        case 'new_conversation':
           return 'info';
         case 'translation':
           return 'success';

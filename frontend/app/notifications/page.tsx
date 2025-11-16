@@ -77,9 +77,21 @@ function NotificationsPageContent() {
   const filteredNotifications = useMemo(() => {
     let filtered = notifications;
 
-    // Filtrer par type
+    // Filtrer par type (avec mapping des types backend vers types frontend)
     if (selectedFilter !== 'all') {
-      filtered = filtered.filter(n => n.type === selectedFilter);
+      filtered = filtered.filter(n => {
+        // Mapper les types backend vers les filtres frontend
+        if (selectedFilter === 'new_message') {
+          return n.type === 'new_message' || n.type === 'message';
+        }
+        if (selectedFilter === 'conversation') {
+          return n.type === 'conversation' || n.type === 'new_conversation';
+        }
+        if (selectedFilter === 'system') {
+          return n.type === 'system' || n.type === 'missed_call';
+        }
+        return n.type === selectedFilter;
+      });
     }
 
     // Filtrer par recherche
@@ -170,8 +182,8 @@ function NotificationsPageContent() {
     all: notifications.length,
     new_message: notifications.filter(n => n.type === 'new_message' || n.type === 'message').length,
     missed_call: notifications.filter(n => n.type === 'missed_call').length,
-    system: notifications.filter(n => n.type === 'system').length,
-    conversation: notifications.filter(n => n.type === 'conversation').length,
+    system: notifications.filter(n => n.type === 'system' || n.type === 'missed_call').length,
+    conversation: notifications.filter(n => n.type === 'conversation' || n.type === 'new_conversation').length,
     friend_request: notifications.filter(n => n.type === 'friend_request').length,
   }), [notifications]);
 
@@ -184,6 +196,9 @@ function NotificationsPageContent() {
         return <PhoneMissed className="h-4 w-4" />;
       case 'system':
         return <Settings className="h-4 w-4" />;
+      case 'conversation':
+      case 'new_conversation':
+        return <MessageSquare className="h-4 w-4" />;
       case 'friend_request':
         return <UserPlus className="h-4 w-4" />;
       default:
@@ -209,7 +224,15 @@ function NotificationsPageContent() {
   };
 
   const getNotificationTypeLabel = (type: string) => {
-    return t(`types.${type}`) || type.replace('_', ' ');
+    // Mapper les types backend vers les labels frontend
+    const typeMap: Record<string, string> = {
+      'new_message': 'message',
+      'new_conversation': 'conversation',
+      'missed_call': 'system'
+    };
+
+    const mappedType = typeMap[type] || type;
+    return t(`types.${mappedType}`) || mappedType.replace('_', ' ');
   };
 
   const getNotificationColor = (type: string) => {
@@ -222,6 +245,7 @@ function NotificationsPageContent() {
       case 'system':
         return 'bg-yellow-500/10 text-yellow-700 border-yellow-200 dark:bg-yellow-500/20 dark:text-yellow-400 dark:border-yellow-800';
       case 'conversation':
+      case 'new_conversation':
         return 'bg-purple-500/10 text-purple-700 border-purple-200 dark:bg-purple-500/20 dark:text-purple-400 dark:border-purple-800';
       case 'friend_request':
         return 'bg-green-500/10 text-green-700 border-green-200 dark:bg-green-500/20 dark:text-green-400 dark:border-green-800';

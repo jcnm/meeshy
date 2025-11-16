@@ -10,7 +10,7 @@ import type { Attachment } from '@shared/types/attachment';
 
 export interface Notification {
   id: string;
-  type: 'message' | 'system' | 'user_action' | 'conversation' | 'translation' | 'new_message' | 'missed_call';
+  type: 'message' | 'system' | 'user_action' | 'conversation' | 'translation' | 'new_message' | 'missed_call' | 'new_conversation';
   title: string;
   message: string;
   data?: any;
@@ -422,15 +422,15 @@ export class NotificationService {
    */
   private updateCountsFromNotifications(): void {
     const notifications = Array.from(this.notifications.values());
-    
+
     this.counts = {
       total: notifications.length,
       unread: notifications.filter(n => !n.isRead).length,
       byType: {
-        message: notifications.filter(n => n.type === 'message').length,
-        system: notifications.filter(n => n.type === 'system').length,
+        message: notifications.filter(n => n.type === 'message' || n.type === 'new_message').length,
+        system: notifications.filter(n => n.type === 'system' || n.type === 'missed_call').length,
         user_action: notifications.filter(n => n.type === 'user_action').length,
-        conversation: notifications.filter(n => n.type === 'conversation').length,
+        conversation: notifications.filter(n => n.type === 'conversation' || n.type === 'new_conversation').length,
         translation: notifications.filter(n => n.type === 'translation').length
       }
     };
