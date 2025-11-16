@@ -39,16 +39,18 @@ export function useAuth() {
   
   const router = useRouter();
   const pathname = usePathname();
-  const { setUser } = useAuthActions();
+  const { setUser, setTokens } = useAuthActions();
   const isAuthChecking = useIsAuthChecking();
   const hasInitialized = useRef(false);
   const setUserRef = useRef(setUser);
+  const setTokensRef = useRef(setTokens);
   const redirectInProgress = useRef(false);
 
-  // Keep setUser ref updated
+  // Keep setUser and setTokens refs updated
   useEffect(() => {
     setUserRef.current = setUser;
-  }, [setUser]);
+    setTokensRef.current = setTokens;
+  }, [setUser, setTokens]);
 
   // Vérifier l'état d'authentification avec cache
   const checkAuth = useCallback(async () => {
@@ -274,6 +276,10 @@ export function useAuth() {
     // Nettoie automatiquement les sessions précédentes
     authManager.setCredentials(user, token);
 
+    // CRITIQUE: Mettre à jour le store Zustand persisté
+    setUserRef.current(user);
+    setTokensRef.current(token);
+
     // Mettre à jour l'état immédiatement de manière synchrone
     const newAuthState = {
       isAuthenticated: true,
@@ -289,7 +295,6 @@ export function useAuth() {
 
     // Force immediate state update
     setAuthState(newAuthState);
-    setUserRef.current(user);
 
     devLog('[USE_AUTH] État mis à jour immédiatement:', newAuthState);
   }, []);
