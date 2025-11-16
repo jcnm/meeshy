@@ -79,6 +79,13 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
   const processedAudioStreamRef = useRef<MediaStream | null>(null); // Ref pour accéder à la dernière valeur
   const previousEffectsStateRef = useRef<typeof effectsState | null>(null); // Pour détecter les changements d'effets
 
+  // Refs pour stocker les fonctions du hook timeline (éviter problème de closure)
+  const startTrackingRef = useRef<any>(null);
+  const stopTrackingRef = useRef<any>(null);
+  const recordActivationRef = useRef<any>(null);
+  const recordDeactivationRef = useRef<any>(null);
+  const recordUpdateRef = useRef<any>(null);
+
   const effectiveDuration = Math.min(maxDuration, MAX_ALLOWED_DURATION);
 
   // Initialiser useAudioEffects avec le stream brut (state, pas ref)
@@ -103,6 +110,15 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
     recordDeactivation,
     recordUpdate,
   } = useAudioEffectsTimeline();
+
+  // Mettre à jour les refs à chaque render pour éviter les problèmes de closure
+  useEffect(() => {
+    startTrackingRef.current = startTracking;
+    stopTrackingRef.current = stopTracking;
+    recordActivationRef.current = recordActivation;
+    recordDeactivationRef.current = recordDeactivation;
+    recordUpdateRef.current = recordUpdate;
+  }, [startTracking, stopTracking, recordActivation, recordDeactivation, recordUpdate]);
 
   // Vérifier si des effets sont actifs
   const audioEffectsActive = Object.values(effectsState).some(effect => effect.enabled);
@@ -264,7 +280,8 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
         const blob = new Blob(chunksRef.current, { type: mimeType });
 
         // Arrêter le tracking et récupérer la timeline des effets
-        const audioEffectsTimeline = stopTracking();
+        // Utiliser la ref pour éviter le problème de closure
+        const audioEffectsTimeline = stopTrackingRef.current?.();
 
         console.log('🎬 [AudioRecorder] Recording stopped - Timeline data:', {
           hasTimeline: !!audioEffectsTimeline,
@@ -301,7 +318,8 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
       mediaRecorder.start();
 
       // Démarrer le tracking de la timeline des effets audio
-      startTracking({
+      // Utiliser la ref pour éviter le problème de closure
+      startTrackingRef.current?.({
         sampleRate: 48000, // Même sample rate que le stream
         channels: 2,
       });
@@ -415,11 +433,11 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
         if (currentEffect.enabled) {
           // Effet activé
           console.log('✅ [AudioRecorder] Effect activated:', currentEffect.type);
-          recordActivation(currentEffect.type);
+          recordActivationRef.current?.(currentEffect.type);
         } else {
           // Effet désactivé
           console.log('❌ [AudioRecorder] Effect deactivated:', currentEffect.type);
-          recordDeactivation(currentEffect.type);
+          recordDeactivationRef.current?.(currentEffect.type);
         }
       }
       // Détection changement de paramètres (seulement si l'effet est actif)
@@ -429,13 +447,13 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
           type: currentEffect.type,
           params: currentEffect.params
         });
-        recordUpdate(currentEffect.type, currentEffect.params);
+        recordUpdateRef.current?.(currentEffect.type, currentEffect.params);
       }
     });
 
     // Mettre à jour l'état précédent
     previousEffectsStateRef.current = effectsState;
-  }, [effectsState, isRecording, recordActivation, recordDeactivation, recordUpdate]);
+  }, [effectsState, isRecording]); // Retirer les fonctions des dépendances car on utilise les refs maintenant
 
   // Reset de l'état précédent quand l'enregistrement démarre
   useEffect(() => {
