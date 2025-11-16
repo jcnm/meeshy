@@ -667,8 +667,16 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     const graphWidth = width - padding.left - padding.right;
     const graphHeight = height - padding.top - padding.bottom;
 
-    // Extraire toutes les clés de configuration
-    const configKeys = Array.from(new Set(configs.flatMap(c => Object.keys(c.config))));
+    // Extraire toutes les clés de configuration (seulement les valeurs numériques)
+    const configKeys = Array.from(new Set(configs.flatMap(c =>
+      Object.keys(c.config).filter(key => typeof c.config[key] === 'number')
+    )));
+
+    console.log(`📈 [renderEffectGraph] Effect: ${effect}`, {
+      configs,
+      configKeys,
+      totalDuration,
+    });
 
     // Initialiser la visibilité des courbes si nécessaire
     if (!visibleCurves[effect]) {
@@ -689,7 +697,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
       if (currentVisibility[key] !== false) {
         configs.forEach(c => {
           const value = c.config[key];
-          if (value !== undefined && value !== null) {
+          if (typeof value === 'number' && isFinite(value)) {
             minValue = Math.min(minValue, value);
             maxValue = Math.max(maxValue, value);
           }
@@ -808,10 +816,10 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
             if (currentVisibility[key] === false) return null;
 
             const points = configs
-              .filter(c => c.config[key] !== undefined && c.config[key] !== null)
+              .filter(c => typeof c.config[key] === 'number' && isFinite(c.config[key]))
               .map(c => ({
-                x: padding.left + timeToX(c.timestamp),
-                y: padding.top + valueToY(c.config[key]),
+                x: padding.left + timeToX(c.timestamp / 1000), // Convertir ms en secondes
+                y: padding.top + valueToY(c.config[key] as number),
               }));
 
             if (points.length === 0) return null;
