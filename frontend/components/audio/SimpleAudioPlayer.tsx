@@ -265,6 +265,9 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
       config: Record<string, number>;
     }>> = {} as any;
 
+    // Suivre les dernières configurations de chaque effet
+    const lastConfigs: Record<AudioEffectType, Record<string, number>> = {} as any;
+
     for (const event of timeline.events) {
       console.log('🔍 [SimpleAudioPlayer] Event:', {
         action: event.action,
@@ -273,14 +276,39 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
         params: event.params,
       });
 
-      // Collecter les configurations des événements 'activate' ET 'update'
+      // Collecter les configurations des événements 'activate' et 'update'
       if ((event.action === 'activate' || event.action === 'update') && event.params) {
         if (!configs[event.effectType]) {
           configs[event.effectType] = [];
         }
+
+        // Convertir params en config numérique
+        const numericConfig: Record<string, number> = {};
+        Object.keys(event.params).forEach(key => {
+          const value = (event.params as any)[key];
+          if (typeof value === 'number') {
+            numericConfig[key] = value;
+          }
+        });
+
         configs[event.effectType].push({
           timestamp: event.timestamp,
-          config: event.params as Record<string, number>,
+          config: numericConfig,
+        });
+
+        // Sauvegarder la dernière config connue
+        lastConfigs[event.effectType] = numericConfig;
+      }
+
+      // Pour 'deactivate', ajouter un point final avec les dernières valeurs connues
+      else if (event.action === 'deactivate' && lastConfigs[event.effectType]) {
+        if (!configs[event.effectType]) {
+          configs[event.effectType] = [];
+        }
+
+        configs[event.effectType].push({
+          timestamp: event.timestamp,
+          config: lastConfigs[event.effectType],
         });
       }
     }
