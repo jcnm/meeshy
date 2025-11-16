@@ -125,8 +125,13 @@ export interface RemoveMemberRequest {
 
 /**
  * Type of encryption used for a message
+ *
+ * - `none`: No encryption
+ * - `mls_1to1`: 1:1 conversation with MLS/TweetNaCl
+ * - `mls_group`: Group conversation with full MLS protocol
+ * - `hybrid_double`: Double encryption (E2E + server layer)
  */
-export type EncryptionType = 'none' | 'mls_1to1' | 'mls_group';
+export type EncryptionType = 'none' | 'mls_1to1' | 'mls_group' | 'hybrid_double';
 
 /**
  * Encrypted message data
@@ -490,20 +495,12 @@ export const MLS_GROUP_EPOCH_INCREMENT = 1;
 export type EncryptionMode = 'none' | 'hybrid' | 'e2e_only';
 
 /**
- * Encryption type for encrypted data
- *
- * - `mls_1_1`: 1:1 conversation with MLS/TweetNaCl
- * - `mls_group`: Group conversation with full MLS protocol
- * - `hybrid_double`: Double encryption (E2E + server layer)
- */
-export type EncryptionType = 'mls_1_1' | 'mls_group' | 'hybrid_double';
-
-/**
  * Extended encrypted data for hybrid encryption
  * Includes server layer nonce for double encryption
+ *
+ * Note: encryptionType will be 'hybrid_double' for hybrid encrypted messages
  */
 export interface HybridEncryptedData extends EncryptedData {
-  readonly encryptionType: 'hybrid_double';
   readonly serverLayerNonce: string; // Base64 encoded nonce for server layer decryption
 }
 
