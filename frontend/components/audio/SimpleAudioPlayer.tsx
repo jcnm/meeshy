@@ -470,16 +470,23 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                 <span>{(attachment.sampleRate / 1000).toFixed(1)}kHz</span>
               </div>
             )}
-            {/* Effets appliqués */}
-            {appliedEffects.map((effect) => (
+            {/* Effets appliqués - Logique: 1 effet = icône spécifique, plusieurs = 🎚️ */}
+            {appliedEffects.length === 1 && (
               <div
-                key={effect}
                 className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-purple-100 dark:bg-purple-900/40 rounded text-[9px] font-semibold text-purple-700 dark:text-purple-300"
-                title={`Effet: ${effect}`}
+                title={`Effet: ${appliedEffects[0]}`}
               >
-                <span className="text-[10px]">{effectIcons[effect]}</span>
+                <span className="text-[10px]">{effectIcons[appliedEffects[0]]}</span>
               </div>
-            ))}
+            )}
+            {appliedEffects.length > 1 && (
+              <div
+                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-purple-100 dark:bg-purple-900/40 rounded text-[9px] font-semibold text-purple-700 dark:text-purple-300"
+                title={`${appliedEffects.length} effets appliqués`}
+              >
+                <span className="text-[10px]">🎚️</span>
+              </div>
+            )}
           </div>
         )}
 

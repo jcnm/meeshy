@@ -416,6 +416,9 @@ const ConversationItem = memo(function ConversationItem({
                         {attachment.duration && (
                           <span className="text-xs">{Math.floor(attachment.duration / 60)}:{(attachment.duration % 60).toString().padStart(2, '0')}</span>
                         )}
+                        {attachment.bitrate && (
+                          <span className="text-xs">• {Math.round(attachment.bitrate / 1000)}kbps</span>
+                        )}
                         {attachment.sampleRate && (
                           <span className="text-xs">• {(attachment.sampleRate / 1000).toFixed(1)}kHz</span>
                         )}
