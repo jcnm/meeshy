@@ -46,6 +46,7 @@ export interface MessageComposerRef {
   clearAttachments?: () => void;
   getMentionedUserIds?: () => string[]; // Exposer les mentions
   clearMentionedUserIds?: () => void; // Nettoyer les mentions après envoi
+  resetTextareaSize?: () => void; // Réinitialiser la taille du textarea
 }
 
 /**
@@ -595,18 +596,38 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
     }
   }, [showAudioRecorder, isRecording, handleFilesSelected, getAudioFileExtension]);
 
+  // Fonction pour réinitialiser la taille du textarea - mémorisée
+  const resetTextareaSize = useCallback(() => {
+    if (textareaRef.current && textareaRef.current.style) {
+      try {
+        textareaRef.current.style.height = '80px'; // Hauteur minimale
+        textareaRef.current.style.overflowY = 'hidden';
+      } catch (error) {
+        console.warn('Erreur lors de la réinitialisation du textarea:', error);
+      }
+    }
+
+    // Sur mobile, faire le blur pour fermer le clavier et dézoom
+    if (isMobile) {
+      handleBlur();
+    }
+  }, [isMobile, handleBlur]);
+
   // Handler pour l'envoi de message
   // Note: Le bouton est désactivé pendant l'enregistrement, donc pas besoin de gérer ce cas
   const handleSendMessage = useCallback(() => {
     onSend();
-  }, [onSend]);
+    // Réinitialiser la taille du textarea après l'envoi
+    resetTextareaSize();
+  }, [onSend, resetTextareaSize]);
 
   useImperativeHandle(ref, () => ({
     focus: () => textareaRef.current?.focus(),
     blur: () => textareaRef.current?.blur(),
     clearAttachments, // Exposer la fonction pour clear les attachments
     getMentionedUserIds: () => mentionedUserIds, // Exposer les mentions
-    clearMentionedUserIds: () => setMentionedUserIds([]) // Nettoyer les mentions
+    clearMentionedUserIds: () => setMentionedUserIds([]), // Nettoyer les mentions
+    resetTextareaSize // Exposer la fonction de réinitialisation
   } as any));
 
   // Initialiser la hauteur du textarea au montage
