@@ -886,7 +886,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     >
       {/* Ligne principale: Colonne Play+Download + Zone centrale (Gauge/% + Barre + Timer) + Colonne actions (Effet) */}
       <div className="flex items-center gap-3">
-        {/* Colonne gauche: Play/Pause + Gauge + Effects */}
+        {/* Colonne gauche: Play/Pause + Gauge (vitesse uniquement) */}
         <div className="flex flex-col gap-1 items-center">
           {/* Bouton Play/Pause - Design moderne compact */}
           <Button
@@ -954,7 +954,77 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
               </div>
             </PopoverContent>
           </Popover>
+        </div>
 
+        {/* Zone centrale: Barre de progression + Timer */}
+        <div className="flex-1 min-w-0 flex flex-col gap-1">
+
+          {/* Barre de progression avec pourcentage intégré */}
+          <div className="relative w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-visible group cursor-pointer">
+            {/* Barre de progression remplie avec animation fluide */}
+            <div
+              className={`absolute top-0 left-0 h-full rounded-full ${
+                isPlaying
+                  ? 'bg-gradient-to-r from-blue-500 via-blue-600 to-blue-500 dark:from-blue-400 dark:via-blue-500 dark:to-blue-400'
+                  : 'bg-blue-600 dark:bg-blue-500'
+              }`}
+              style={{
+                width: `${progress}%`,
+                transition: 'none', // Pas de transition pour un rendu fluide à 60fps
+              }}
+            />
+
+            {/* Curseur de position - Visible au survol avec animation smooth */}
+            <div
+              className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white dark:bg-gray-100 rounded-full shadow-lg border-2 border-blue-600 dark:border-blue-400 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-200 pointer-events-none"
+              style={{
+                left: `calc(${progress}% - 8px)`,
+              }}
+            />
+
+            {/* Pourcentage centré dans la barre (horizontalement ET verticalement) */}
+            {duration > 0 && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <span className="text-[9px] font-semibold text-white dark:text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
+                  {progress.toFixed(0)}%
+                </span>
+              </div>
+            )}
+
+            {/* Input range invisible pour le contrôle */}
+            <input
+              type="range"
+              min="0"
+              max={duration || 100}
+              value={currentTime}
+              onChange={handleSeek}
+              className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer z-10"
+              style={{ touchAction: 'none' }}
+            />
+          </div>
+
+          {/* Ligne en dessous: Timer (taille réduite de 20%) */}
+          <div className="flex items-center justify-center">
+            <div className="text-[11px] font-mono text-gray-600 dark:text-gray-300">
+              {hasError ? (
+                <span className="font-semibold text-red-600 dark:text-red-400 text-[10px]">
+                  {errorMessage}
+                </span>
+              ) : duration > 0 ? (
+                <span className="font-bold text-blue-600 dark:text-blue-400 tracking-wider">
+                  {formatTime(Math.max(0, duration - currentTime))}
+                </span>
+              ) : (
+                <span className="font-semibold text-gray-400 dark:text-gray-500 text-[10px]">
+                  Chargement...
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Colonne actions droite: Effects + Download */}
+        <div className="flex flex-col gap-1 items-center">
           {/* Bouton Effects - COPIE du bouton télécharger avec fonctionnalité Effects */}
           {appliedEffects.length > 0 && (
             <DropdownMenu open={isEffectsDropdownOpen} onOpenChange={setIsEffectsDropdownOpen}>
@@ -1096,77 +1166,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-        </div>
 
-        {/* Zone centrale: Barre de progression + Timer */}
-        <div className="flex-1 min-w-0 flex flex-col gap-1">
-
-          {/* Barre de progression avec pourcentage intégré */}
-          <div className="relative w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-visible group cursor-pointer">
-            {/* Barre de progression remplie avec animation fluide */}
-            <div
-              className={`absolute top-0 left-0 h-full rounded-full ${
-                isPlaying
-                  ? 'bg-gradient-to-r from-blue-500 via-blue-600 to-blue-500 dark:from-blue-400 dark:via-blue-500 dark:to-blue-400'
-                  : 'bg-blue-600 dark:bg-blue-500'
-              }`}
-              style={{
-                width: `${progress}%`,
-                transition: 'none', // Pas de transition pour un rendu fluide à 60fps
-              }}
-            />
-
-            {/* Curseur de position - Visible au survol avec animation smooth */}
-            <div
-              className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white dark:bg-gray-100 rounded-full shadow-lg border-2 border-blue-600 dark:border-blue-400 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-200 pointer-events-none"
-              style={{
-                left: `calc(${progress}% - 8px)`,
-              }}
-            />
-
-            {/* Pourcentage centré dans la barre (horizontalement ET verticalement) */}
-            {duration > 0 && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <span className="text-[9px] font-semibold text-white dark:text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
-                  {progress.toFixed(0)}%
-                </span>
-              </div>
-            )}
-
-            {/* Input range invisible pour le contrôle */}
-            <input
-              type="range"
-              min="0"
-              max={duration || 100}
-              value={currentTime}
-              onChange={handleSeek}
-              className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer z-10"
-              style={{ touchAction: 'none' }}
-            />
-          </div>
-
-          {/* Ligne en dessous: Timer */}
-          <div className="flex items-center justify-center">
-            <div className="text-sm font-mono text-gray-600 dark:text-gray-300">
-              {hasError ? (
-                <span className="font-semibold text-red-600 dark:text-red-400 text-[10px]">
-                  {errorMessage}
-                </span>
-              ) : duration > 0 ? (
-                <span className="font-bold text-blue-600 dark:text-blue-400 tracking-wider">
-                  {formatTime(Math.max(0, duration - currentTime))}
-                </span>
-              ) : (
-                <span className="font-semibold text-gray-400 dark:text-gray-500 text-[10px]">
-                  Chargement...
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Colonne actions droite: Download uniquement */}
-        <div className="flex flex-col gap-1 items-center">
           {/* Bouton télécharger - configuration parfaite d'origine */}
           <a
             href={objectUrl || '#'}
