@@ -863,16 +863,16 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
 
         {/* Zone centrale: Gauge/% au-dessus + Barre de progression + Timer en dessous */}
         <div className="flex-1 min-w-0 flex flex-col gap-1">
-          {/* Ligne au-dessus: Gauge + Pourcentage */}
+          {/* Ligne au-dessus: Gauge */}
           <div className="flex items-center gap-2">
             {/* Contrôle de vitesse de lecture */}
             <Popover open={isSpeedPopoverOpen} onOpenChange={setIsSpeedPopoverOpen}>
               <PopoverTrigger asChild>
                 <button
-                  className="flex-shrink-0 inline-flex items-center justify-center w-4 h-4 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-sm transition-all"
+                  className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-sm transition-all"
                   title={`Vitesse: ${playbackRate}x`}
                 >
-                  <Gauge className="w-2 h-2 text-gray-700 dark:text-gray-300" />
+                  <Gauge className="w-2.5 h-2.5 text-gray-700 dark:text-gray-300" />
                 </button>
               </PopoverTrigger>
               <PopoverContent className="w-12 p-2" side="top" align="center">
@@ -902,16 +902,9 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                 </div>
               </PopoverContent>
             </Popover>
-
-            {/* Pourcentage */}
-            {duration > 0 && (
-              <span className="text-[10px] text-gray-400 dark:text-gray-500">
-                {progress.toFixed(0)}%
-              </span>
-            )}
           </div>
 
-          {/* Barre de progression */}
+          {/* Barre de progression avec pourcentage intégré */}
           <div className="relative w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-visible group cursor-pointer">
             {/* Barre de progression remplie avec animation fluide */}
             <div
@@ -933,6 +926,15 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                 left: `calc(${progress}% - 8px)`,
               }}
             />
+
+            {/* Pourcentage centré dans la barre */}
+            {duration > 0 && (
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+                <span className="text-[9px] font-semibold text-white dark:text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
+                  {progress.toFixed(0)}%
+                </span>
+              </div>
+            )}
 
             {/* Input range invisible pour le contrôle */}
             <input
@@ -973,10 +975,10 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
             <DropdownMenu open={isEffectsDropdownOpen} onOpenChange={setIsEffectsDropdownOpen}>
               <DropdownMenuTrigger asChild>
                 <button
-                  className="flex-shrink-0 inline-flex items-center justify-center w-4 h-4 bg-purple-500 dark:bg-purple-600 hover:bg-purple-600 dark:hover:bg-purple-700 rounded-full shadow-sm transition-all cursor-pointer"
+                  className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-sm transition-all cursor-pointer"
                   title={appliedEffects.length === 1 ? `Effet: ${appliedEffects[0]}` : `${appliedEffects.length} effets appliqués`}
                 >
-                  <span className="text-[9px]">
+                  <span className="text-[10px]">
                     {appliedEffects.length === 1 ? effectIcons[appliedEffects[0]] : '🎚️'}
                   </span>
                 </button>
@@ -1086,7 +1088,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
           <a
             href={objectUrl || '#'}
             download={attachment.originalName}
-            className="flex-shrink-0 inline-flex items-center justify-center w-4 h-4 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-sm transition-all"
+            className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-sm transition-all"
             title="Télécharger"
             onClick={(e) => {
               if (!objectUrl) {
@@ -1094,7 +1096,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
               }
             }}
           >
-            <Download className="w-2 h-2 text-gray-700 dark:text-gray-200" />
+            <Download className="w-2.5 h-2.5 text-gray-700 dark:text-gray-200" />
           </a>
         </div>
       </div>
