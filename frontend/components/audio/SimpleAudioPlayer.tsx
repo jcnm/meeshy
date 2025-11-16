@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { Play, Pause, Download, AlertTriangle, Gauge } from 'lucide-react';
+import { Play, Pause, Download, AlertTriangle, Gauge, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -65,6 +65,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
   const [playbackRate, setPlaybackRate] = useState(1.0); // Vitesse de lecture (0.1 à 5)
   const [isSpeedPopoverOpen, setIsSpeedPopoverOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const animationFrameRef = useRef<number | null>(null);
 
@@ -236,6 +237,14 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
       }
     };
   }, [attachmentId, attachmentFileUrl]);
+
+  // Détecter si on est sur mobile
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Fonction pour mettre à jour le temps avec requestAnimationFrame (fluide)
   const updateProgress = useCallback(() => {
@@ -548,44 +557,38 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
             </span>
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-20 p-3" side="top" align="center">
+        <PopoverContent
+          className={isMobile ? "w-12 p-2" : "w-20 p-2"}
+          side="top"
+          align="center"
+        >
           <div className="flex flex-col items-center gap-2">
-            {/* Titre */}
-            <div className="text-[10px] font-semibold text-gray-600 dark:text-gray-400 mb-1">
-              Vitesse
-            </div>
+            {/* Icône reset (remplace le titre) - visible seulement si pas à 1x */}
+            {playbackRate !== 1.0 && (
+              <button
+                onClick={() => setPlaybackRate(1.0)}
+                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                title="Réinitialiser à 1x"
+              >
+                <RotateCcw className="w-3 h-3 text-gray-600 dark:text-gray-400" />
+              </button>
+            )}
 
             {/* Slider vertical */}
-            <div className="relative h-48 w-8 flex items-center justify-center">
-              {/* Marqueurs des points d'accroche */}
-              <div className="absolute left-0 h-full flex flex-col justify-between py-2 pointer-events-none">
-                <div className="flex items-center gap-1">
-                  <div className="w-1 h-0.5 bg-gray-400 dark:bg-gray-500" />
+            <div className={`relative ${isMobile ? 'h-24 w-6' : 'h-24 w-12'} flex items-center ${isMobile ? 'justify-center' : 'justify-end'}`}>
+              {/* Marqueurs des points d'accroche - DESKTOP SEULEMENT */}
+              {!isMobile && (
+                <div className="absolute left-0 h-full flex flex-col justify-between py-1 pointer-events-none">
                   <span className="text-[7px] text-gray-500 dark:text-gray-400">5x</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-1.5 h-0.5 bg-purple-500" />
                   <span className="text-[7px] font-bold text-purple-600 dark:text-purple-400">3x</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-1.5 h-0.5 bg-purple-500" />
                   <span className="text-[7px] font-bold text-purple-600 dark:text-purple-400">2x</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-1.5 h-0.5 bg-purple-500" />
                   <span className="text-[7px] font-bold text-purple-600 dark:text-purple-400">1.5x</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-0.5 bg-blue-600 dark:bg-blue-500" />
                   <span className="text-[7px] font-bold text-blue-600 dark:text-blue-400">1x</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-1 h-0.5 bg-gray-400 dark:bg-gray-500" />
                   <span className="text-[7px] text-gray-500 dark:text-gray-400">0.1x</span>
                 </div>
-              </div>
+              )}
 
-              {/* Slider (input vertical) */}
+              {/* Slider (input vertical) - aligné à droite */}
               <input
                 type="range"
                 min="0.1"
@@ -593,7 +596,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                 step="0.1"
                 value={playbackRate}
                 onChange={handlePlaybackRateChange}
-                className="absolute h-full w-2 appearance-none bg-transparent cursor-pointer"
+                className="h-full w-2 appearance-none bg-transparent cursor-pointer"
                 style={{
                   writingMode: 'bt-lr', // Vertical
                   WebkitAppearance: 'slider-vertical',
@@ -602,21 +605,9 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
             </div>
 
             {/* Affichage de la vitesse actuelle */}
-            <div className="text-sm font-bold text-blue-600 dark:text-blue-400 mt-1">
+            <div className="text-[10px] font-bold text-blue-600 dark:text-blue-400">
               {playbackRate.toFixed(1)}x
             </div>
-
-            {/* Bouton reset à 1x */}
-            {playbackRate !== 1.0 && (
-              <Button
-                size="sm"
-                variant="outline"
-                className="text-[10px] h-6 px-2"
-                onClick={() => setPlaybackRate(1.0)}
-              >
-                Réinitialiser
-              </Button>
-            )}
           </div>
         </PopoverContent>
       </Popover>
