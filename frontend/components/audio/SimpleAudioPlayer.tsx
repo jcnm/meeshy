@@ -581,25 +581,25 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     >
       {/* Ligne principale: Play + Barre de progression + Colonne actions (Effet + Download) */}
       <div className="flex items-center gap-3">
-        {/* Bouton Play/Pause - Design moderne */}
+        {/* Bouton Play/Pause - Design moderne compact */}
         <Button
           onClick={togglePlay}
           disabled={isLoading || hasError}
           size="sm"
-          className={`flex-shrink-0 w-10 h-10 rounded-full ${
+          className={`flex-shrink-0 w-8 h-8 rounded-full ${
             hasError
               ? 'bg-red-500 hover:bg-red-600'
               : 'bg-blue-600 hover:bg-blue-700'
           } text-white shadow-lg hover:shadow-xl transition-all duration-200 p-0 flex items-center justify-center disabled:opacity-50`}
         >
           {isLoading ? (
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
           ) : hasError ? (
-            <AlertTriangle className="w-5 h-5" />
+            <AlertTriangle className="w-4 h-4" />
           ) : isPlaying ? (
-            <Pause className="w-5 h-5 fill-current" />
+            <Pause className="w-4 h-4 fill-current" />
           ) : (
-            <Play className="w-5 h-5 ml-0.5 fill-current" />
+            <Play className="w-4 h-4 ml-0.5 fill-current" />
           )}
         </Button>
 
@@ -647,10 +647,10 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
             <Popover open={isEffectsPopoverOpen} onOpenChange={setIsEffectsPopoverOpen}>
               <PopoverTrigger asChild>
                 <button
-                  className="flex-shrink-0 inline-flex items-center justify-center w-7 h-7 bg-purple-500 dark:bg-purple-600 hover:bg-purple-600 dark:hover:bg-purple-700 rounded-full shadow-md transition-all cursor-pointer"
+                  className="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 bg-purple-500 dark:bg-purple-600 hover:bg-purple-600 dark:hover:bg-purple-700 rounded-full shadow-md transition-all cursor-pointer"
                   title={appliedEffects.length === 1 ? `Effet: ${appliedEffects[0]}` : `${appliedEffects.length} effets appliqués`}
                 >
-                  <span className="text-[12px]">
+                  <span className="text-[11px]">
                     {appliedEffects.length === 1 ? effectIcons[appliedEffects[0]] : '🎚️'}
                   </span>
                 </button>
@@ -790,7 +790,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
           <a
             href={objectUrl || '#'}
             download={attachment.originalName}
-            className="flex-shrink-0 inline-flex items-center justify-center w-7 h-7 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-md transition-all"
+            className="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-md transition-all"
             title="Télécharger"
             onClick={(e) => {
               if (!objectUrl) {
@@ -798,7 +798,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
               }
             }}
           >
-            <Download className="w-3.5 h-3.5 text-gray-700 dark:text-gray-200" />
+            <Download className="w-3 h-3 text-gray-700 dark:text-gray-200" />
           </a>
         </div>
       </div>
