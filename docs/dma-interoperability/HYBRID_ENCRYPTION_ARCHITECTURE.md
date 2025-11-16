@@ -70,31 +70,145 @@
 - Traduction serveur instantanée
 - **Use case**: Conversations publiques, marketing, support
 
+## 🔧 Configuration à 2 Niveaux
+
+La configuration du chiffrement fonctionne à **2 niveaux distincts**:
+
+### 📋 Niveau 1: Préférences Utilisateur (Paramètres globaux)
+
+**Champs User**:
+- `defaultEncryptionMode`: Mode par défaut pour les **nouvelles conversations** créées
+- `allowServerSideTranslationAt`: Autorisation de déchiffrement serveur (null = refusé)
+
+**Rôle**:
+- Détermine le **comportement par défaut** quand l'utilisateur crée une conversation
+- Contrôle si l'utilisateur **peut participer** aux conversations en mode `hybrid`
+- Modifiable à tout moment dans les paramètres utilisateur
+
+**Exemples**:
+```typescript
+// Utilisateur A (privacy-conscious)
+{
+  defaultEncryptionMode: 'e2e_only',
+  allowServerSideTranslationAt: null // Refuse traduction serveur
+}
+
+// Utilisateur B (équilibre privacy/UX)
+{
+  defaultEncryptionMode: 'hybrid',
+  allowServerSideTranslationAt: '2025-01-16T10:30:00Z' // Accepte depuis cette date
+}
+
+// Utilisateur C (public/marketing)
+{
+  defaultEncryptionMode: 'none',
+  allowServerSideTranslationAt: '2025-01-16T10:30:00Z'
+}
+```
+
+### 💬 Niveau 2: Configuration Conversation (Immutable)
+
+**Champs Conversation**:
+- `encryptionMode`: Mode ACTUEL de cette conversation spécifique
+- `serverEncryptionKey`: Clé serveur (si mode = hybrid)
+
+**Rôle**:
+- Détermine **COMMENT cette conversation** fonctionne
+- Défini à la **création** et **NE PEUT PAS être changé** (sécurité!)
+- S'applique à **tous les participants** de la conversation
+
+**Règles de création**:
+1. Utilisateur crée conversation → UI pré-sélectionne `user.defaultEncryptionMode`
+2. Utilisateur peut override pour CETTE conversation
+3. Backend vérifie:
+   - Si mode = `hybrid` → TOUS les participants doivent avoir `allowServerSideTranslationAt !== null`
+   - Si au moins 1 participant refuse → Fallback automatique vers `e2e_only` ou erreur
+4. Conversation créée avec `encryptionMode` **immutable**
+
+**Exemples de conversations**:
+```typescript
+// Conversation #1: Équipe marketing (tous acceptent traduction serveur)
+{
+  encryptionMode: 'hybrid',
+  serverEncryptionKey: 'encrypted_key_abc123',
+  participants: [userA, userB, userC] // Tous ont allowServerSideTranslationAt !== null
+}
+
+// Conversation #2: Discussion juridique (au moins 1 refuse)
+{
+  encryptionMode: 'e2e_only', // Fallback car userD refuse traduction serveur
+  serverEncryptionKey: null,
+  participants: [userA, userB, userD] // userD.allowServerSideTranslationAt === null
+}
+
+// Conversation #3: Chat public
+{
+  encryptionMode: 'none',
+  serverEncryptionKey: null,
+  participants: [userA, userE, userF]
+}
+```
+
+### 🔄 Interaction des 2 Niveaux
+
+```
+[Création Conversation]
+        ↓
+1. UI pré-sélectionne: user.defaultEncryptionMode
+        ↓
+2. Utilisateur peut override
+        ↓
+3. Backend valide:
+   - Si hybrid → Vérifier tous participants allowServerSideTranslationAt !== null
+   - Sinon → Erreur ou fallback e2e_only
+        ↓
+4. Conversation créée avec encryptionMode
+        ↓
+5. IMMUTABLE! encryptionMode ne change plus jamais
+```
+
+**Cas d'usage**:
+- Utilisateur peut changer `defaultEncryptionMode` dans ses paramètres → N'affecte que les **futures** conversations
+- Utilisateur désactive `allowServerSideTranslationAt` → Les conversations `hybrid` existantes deviennent inutilisables pour lui (fallback `e2e_only`)
+- Créateur de conversation peut choisir mode différent de son default pour une conversation spécifique
+
 ## 🏗️ Implémentation
 
 ### 1. Base de Données (Prisma)
 
+La configuration du chiffrement fonctionne à **2 niveaux**:
+
+#### A. Niveau Utilisateur (Préférences globales)
+Détermine les **paramètres par défaut** pour les **nouvelles conversations** créées par cet utilisateur.
+
 ```prisma
-// Dans User
 model User {
   ...
-  // Préférence globale de l'utilisateur
-  // Date d'activation (null = désactivé, DateTime = activé et date d'activation)
+  // Autorisation traduction serveur (null = désactivé, DateTime = activé)
+  // Utilisé pour vérifier si l'utilisateur PEUT participer aux conversations hybrid
   allowServerSideTranslationAt DateTime? @default(now())
+
+  // Mode de chiffrement PAR DÉFAUT pour les nouvelles conversations créées
+  // Quand l'utilisateur crée une conversation, ce mode est utilisé
   defaultEncryptionMode EncryptionMode @default(hybrid)
   ...
 }
+```
 
-// Dans Conversation
+#### B. Niveau Conversation (Configuration actuelle)
+Détermine COMMENT cette conversation spécifique fonctionne. **Immutable après création!**
+
+```prisma
 model Conversation {
   ...
-  // Mode de chiffrement de la conversation (ne peut être changé après création)
+  // Mode de chiffrement ACTUEL de cette conversation
+  // ⚠️ NE PEUT PAS être changé après création (sécurité)
   encryptionMode EncryptionMode @default(none)
 
   // Clé serveur chiffrée (pour mode hybrid uniquement)
   serverEncryptionKey String? // Encrypted with master key
   serverKeyCreatedAt DateTime?
-  serverKeyExpiresAt DateTime?
+  serverKeyExpiresAt DateTime? // Rotation tous les 30j
   ...
 }
 
@@ -339,21 +453,31 @@ class ServerKeyManager {
 
 #### A. Création de Conversation
 
+Le mode de chiffrement est **pré-sélectionné** selon `user.defaultEncryptionMode`:
+
 ```typescript
 interface CreateConversationForm {
   name: string;
   participants: string[];
-  encryptionMode: 'none' | 'hybrid' | 'e2e_only';
+  encryptionMode: EncryptionMode; // Pré-rempli avec user.defaultEncryptionMode
 }
 
-// UI Component
-<Select label="Mode de chiffrement">
+// UI Component - Mode pré-sélectionné selon préférences utilisateur
+const [encryptionMode, setEncryptionMode] = useState<EncryptionMode>(
+  currentUser.defaultEncryptionMode // 'hybrid' par défaut
+);
+
+<Select
+  label="Mode de chiffrement"
+  value={encryptionMode}
+  onChange={setEncryptionMode}
+>
   <option value="none">
     🔓 Aucun chiffrement
     (Traduction instantanée, compatibilité maximale)
   </option>
 
-  <option value="hybrid" selected>
+  <option value="hybrid">
     🔐 Chiffrement hybride (Recommandé)
     (Privacy + Traduction serveur)
   </option>
@@ -363,6 +487,22 @@ interface CreateConversationForm {
     (Privacy maximale, traduction client uniquement)
   </option>
 </Select>
+
+{/* Avertissement si mode hybrid mais allowServerSideTranslationAt === null */}
+{encryptionMode === 'hybrid' && !currentUser.allowServerSideTranslationAt && (
+  <Alert type="warning">
+    ⚠️ Vous devez activer "Autoriser traduction serveur" dans vos paramètres
+    pour utiliser le mode hybride.
+  </Alert>
+)}
+```
+
+**Flux de création**:
+1. Utilisateur ouvre "Nouvelle conversation"
+2. UI pré-sélectionne `user.defaultEncryptionMode` (hybrid par défaut)
+3. Utilisateur peut changer le mode pour CETTE conversation spécifique
+4. Backend vérifie que tous les participants ont `allowServerSideTranslationAt !== null` si mode = hybrid
+5. Conversation créée avec `encryptionMode` choisi (**immutable après création!**)
 ```
 
 #### B. Préférences Utilisateur
