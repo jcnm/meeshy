@@ -477,7 +477,9 @@ export class AttachmentService {
     const tempMessageId = messageId || '000000000000000000000000'; // ObjectId temporaire valide (24 hex chars)
 
     // Préparer le champ metadata pour stocker audioEffectsTimeline et autres métadonnées supplémentaires
-    const metadataJson = metadata.audioEffectsTimeline ? { audioEffectsTimeline: metadata.audioEffectsTimeline } : undefined;
+    const metadataJson = metadata.audioEffectsTimeline
+      ? { audioEffectsTimeline: metadata.audioEffectsTimeline } as any
+      : undefined;
 
     // Créer l'enregistrement en base de données
     const attachment = await this.prisma.messageAttachment.create({
