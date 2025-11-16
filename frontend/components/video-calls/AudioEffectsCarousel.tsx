@@ -206,52 +206,83 @@ export function AudioEffectsCarousel({
             return (
               <Card
                 key={tile.id}
-                onClick={() => {
-                  if (tile.id === 'reset') {
-                    handleResetAll();
-                  } else {
-                    // Ouvrir la configuration de l'effet
-                    setSelectedEffect(isSelected ? null : tile.id);
-                  }
-                }}
                 className={cn(
                   'relative flex-shrink-0 w-32 h-32 p-3 cursor-pointer transition-all duration-300',
                   `bg-gradient-to-br ${tile.gradient}`,
                   'hover:scale-105 hover:shadow-xl',
                   isSelected && 'ring-2 ring-white scale-105',
-                  isActive && 'shadow-lg shadow-' + tile.color + '-500/50'
+                  isActive && 'ring-2 ring-green-400 shadow-lg shadow-' + tile.color + '-500/50'
                 )}
               >
-                <div className="flex flex-col items-center justify-between h-full text-white">
-                  {/* Icon */}
-                  <div className="text-3xl">{tile.icon}</div>
+                {/* Point vert pulsant en haut à droite si actif */}
+                {tile.id !== 'reset' && isActive && (
+                  <div className="absolute top-2 right-2 flex items-center justify-center">
+                    <div className="relative">
+                      {/* Cercle externe pulsant */}
+                      <div className="absolute inset-0 w-3 h-3 bg-green-400 rounded-full animate-ping opacity-75"></div>
+                      {/* Cercle interne fixe */}
+                      <div className="relative w-3 h-3 bg-green-400 rounded-full"></div>
+                    </div>
+                  </div>
+                )}
 
-                  {/* Title */}
-                  <div className="text-center flex-1 flex items-center">
-                    <p className="text-xs font-semibold leading-tight">{tile.title}</p>
+                {/* Badge ON/OFF en haut à gauche pour effet inactif */}
+                {tile.id !== 'reset' && !isActive && (
+                  <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-gray-700/80 rounded text-[8px] font-bold text-gray-300">
+                    OFF
+                  </div>
+                )}
+
+                {/* Clic sur toute la tuile: toggle ON/OFF (clic simple) ou config (double-clic) */}
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (tile.id === 'reset') {
+                      handleResetAll();
+                    } else {
+                      // Clic simple: toggle ON/OFF
+                      onToggleEffect(tile.id as AudioEffectType);
+                    }
+                  }}
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    if (tile.id !== 'reset') {
+                      // Double-clic: ouvrir config
+                      setSelectedEffect(isSelected ? null : tile.id);
+                    }
+                  }}
+                  className="flex flex-col items-center justify-center h-full text-white"
+                >
+                  {/* Icon - plus grand si actif */}
+                  <div className={cn(
+                    "transition-all duration-300",
+                    isActive ? "text-4xl" : "text-3xl"
+                  )}>
+                    {tile.icon}
                   </div>
 
-                  {/* Switch ON/OFF (pour activer/désactiver sans ouvrir) */}
+                  {/* Title */}
+                  <div className="text-center mt-2">
+                    <p className={cn(
+                      "text-xs font-semibold leading-tight transition-all",
+                      isActive && "text-white drop-shadow-lg"
+                    )}>
+                      {tile.title}
+                    </p>
+                  </div>
+
+                  {/* Mini indicateur texte */}
                   {tile.id !== 'reset' && (
-                    <div
-                      onClick={(e) => {
-                        e.stopPropagation(); // Ne pas ouvrir la config
-                      }}
-                      className="flex items-center gap-2"
-                    >
-                      <span className="text-[8px] uppercase font-bold">
-                        {isActive ? 'ON' : 'OFF'}
-                      </span>
-                      <Switch
-                        checked={isActive}
-                        onCheckedChange={() => onToggleEffect(tile.id as AudioEffectType)}
-                        className="scale-75 data-[state=checked]:bg-green-500"
-                      />
+                    <div className={cn(
+                      "mt-2 text-[10px] font-bold uppercase tracking-wide transition-all",
+                      isActive ? "text-green-300" : "text-gray-400"
+                    )}>
+                      {isActive ? "✓ Actif" : "Tap to enable"}
                     </div>
                   )}
 
                   {tile.id === 'reset' && (
-                    <RotateCcw className="w-4 h-4 opacity-70" />
+                    <RotateCcw className="w-4 h-4 opacity-70 mt-2" />
                   )}
                 </div>
               </Card>
