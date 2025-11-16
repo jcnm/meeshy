@@ -46,6 +46,15 @@ import { AUDIO_EFFECTS_TIMELINE_VERSION } from '@shared/types/audio-effects-time
 import { logger } from '@/utils/logger';
 
 /**
+ * État d'un effet au moment du démarrage de l'enregistrement
+ */
+export interface InitialEffectState {
+  effectType: AudioEffectType;
+  enabled: boolean;
+  params?: Partial<AudioEffectParamsUnion>;
+}
+
+/**
  * Options pour démarrer le tracking
  */
 export interface StartTrackingOptions {
@@ -53,6 +62,8 @@ export interface StartTrackingOptions {
   sampleRate: number;
   /** Nombre de canaux audio */
   channels: number;
+  /** Effets déjà actifs au moment du démarrage (optionnel) */
+  initialEffects?: InitialEffectState[];
 }
 
 /**
@@ -166,7 +177,39 @@ export function useAudioEffectsTimeline() {
     activeEffectsRef.current.clear();
     setIsTracking(true);
 
-    logger.info('[useAudioEffectsTimeline]', 'Tracking started', options);
+    // IMPORTANT: Enregistrer les effets initiaux à timestamp=0
+    // Cela capture les effets qui étaient actifs AVANT le début de l'enregistrement
+    if (options.initialEffects && options.initialEffects.length > 0) {
+      logger.info('[useAudioEffectsTimeline]', 'Recording initial effects at t=0', {
+        count: options.initialEffects.length,
+        effects: options.initialEffects.map(e => e.effectType)
+      });
+
+      for (const effect of options.initialEffects) {
+        if (effect.enabled) {
+          // Créer un événement d'activation à timestamp=0
+          const event: AudioEffectEvent = {
+            timestamp: 0,
+            effectType: effect.effectType,
+            action: 'activate',
+            params: effect.params || ZERO_PARAMS[effect.effectType],
+          };
+
+          eventsRef.current.push(event);
+          activeEffectsRef.current.add(effect.effectType);
+
+          logger.debug('[useAudioEffectsTimeline]', 'Initial effect recorded', {
+            effectType: effect.effectType,
+            params: event.params
+          });
+        }
+      }
+    }
+
+    logger.info('[useAudioEffectsTimeline]', 'Tracking started', {
+      ...options,
+      initialEffectsCount: options.initialEffects?.length || 0
+    });
   }, [isTracking]);
 
   /**

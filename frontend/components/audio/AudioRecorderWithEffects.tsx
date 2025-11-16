@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { Square, X, Mic, Loader2, Radio } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAudioEffects } from '@/hooks/use-audio-effects';
-import { useAudioEffectsTimeline } from '@/hooks/use-audio-effects-timeline';
+import { useAudioEffectsTimeline, type InitialEffectState } from '@/hooks/use-audio-effects-timeline';
 import { AudioEffectsCarousel } from '@/components/video-calls/AudioEffectsCarousel';
 import type { AudioEffectType } from '@shared/types/video-call';
 import type { AudioEffectsTimeline } from '@shared/types/audio-effects-timeline';
@@ -317,11 +317,25 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
 
       mediaRecorder.start();
 
-      // Démarrer le tracking de la timeline des effets audio
+      // IMPORTANT: Capturer l'état initial des effets AVANT de démarrer le tracking
+      // Cela permet d'enregistrer les effets déjà actifs au moment du clic sur le micro
+      const initialEffects: InitialEffectState[] = Object.entries(effectsState).map(([effectType, state]) => ({
+        effectType: effectType as AudioEffectType,
+        enabled: state.enabled,
+        params: state.enabled ? state.params : undefined,
+      }));
+
+      console.log('🎬 [AudioRecorder] Starting tracking with initial effects:', {
+        initialEffects: initialEffects.filter(e => e.enabled),
+        totalEffects: initialEffects.filter(e => e.enabled).length
+      });
+
+      // Démarrer le tracking de la timeline des effets audio avec l'état initial
       // Utiliser la ref pour éviter le problème de closure
       startTrackingRef.current?.({
         sampleRate: 48000, // Même sample rate que le stream
         channels: 2,
+        initialEffects, // Passer les effets déjà actifs
       });
 
       // requestData() manuel
