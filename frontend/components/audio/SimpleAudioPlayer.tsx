@@ -450,7 +450,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
 
   return (
     <div
-      className={`flex items-center gap-3 p-2 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg border ${
+      className={`relative flex items-center gap-3 p-2 pr-12 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg border ${
         hasError ? 'border-red-300 dark:border-red-700' : 'border-blue-200 dark:border-gray-700'
       } shadow-md hover:shadow-lg transition-all duration-200 w-full sm:max-w-2xl ${className}`}
     >
@@ -478,36 +478,6 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
 
       {/* Zone de progression et temps */}
       <div className="flex-1 min-w-0">
-        {/* Méta-données: SampleRate + Effets appliqués */}
-        {(attachment.sampleRate || appliedEffects.length > 0) && (
-          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-            {/* Sample Rate */}
-            {attachment.sampleRate && (
-              <div className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/40 rounded text-[9px] font-semibold text-blue-700 dark:text-blue-300">
-                <span className="text-[8px]">⚡</span>
-                <span>{(attachment.sampleRate / 1000).toFixed(1)}kHz</span>
-              </div>
-            )}
-            {/* Effets appliqués - Logique: 1 effet = icône spécifique, plusieurs = 🎚️ */}
-            {appliedEffects.length === 1 && (
-              <div
-                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-purple-100 dark:bg-purple-900/40 rounded text-[9px] font-semibold text-purple-700 dark:text-purple-300"
-                title={`Effet: ${appliedEffects[0]}`}
-              >
-                <span className="text-[10px]">{effectIcons[appliedEffects[0]]}</span>
-              </div>
-            )}
-            {appliedEffects.length > 1 && (
-              <div
-                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-purple-100 dark:bg-purple-900/40 rounded text-[9px] font-semibold text-purple-700 dark:text-purple-300"
-                title={`${appliedEffects.length} effets appliqués`}
-              >
-                <span className="text-[10px]">🎚️</span>
-              </div>
-            )}
-          </div>
-        )}
-
         {/* Barre de progression */}
         <div className="relative w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-visible mb-2 group cursor-pointer">
           {/* Barre de progression remplie avec animation fluide */}
@@ -544,20 +514,15 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
         </div>
 
         {/* Affichage du temps - TOUJOURS en mode décompteur avec millisecondes */}
-        <div className="flex justify-between items-center text-sm font-mono text-gray-600 dark:text-gray-300">
+        <div className="text-sm font-mono text-gray-600 dark:text-gray-300">
           {hasError ? (
             <span className="font-semibold text-red-600 dark:text-red-400 text-[10px]">
               {errorMessage}
             </span>
           ) : duration > 0 ? (
-            <>
-              <span className="font-bold text-blue-600 dark:text-blue-400 tracking-wider">
-                {formatTime(Math.max(0, duration - currentTime))}
-              </span>
-              <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-2">
-                {progress.toFixed(0)}%
-              </span>
-            </>
+            <span className="font-bold text-blue-600 dark:text-blue-400 tracking-wider">
+              {formatTime(Math.max(0, duration - currentTime))}
+            </span>
           ) : (
             <span className="font-semibold text-gray-400 dark:text-gray-500 text-[10px]">
               Chargement...
@@ -566,11 +531,32 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
         </div>
       </div>
 
-      {/* Bouton télécharger - Plus petit */}
+      {/* Badge des effets appliqués - Position absolue en haut à droite */}
+      {appliedEffects.length > 0 && (
+        <div className="absolute top-2 right-2 z-10">
+          {appliedEffects.length === 1 ? (
+            <div
+              className="inline-flex items-center justify-center w-7 h-7 bg-purple-500 dark:bg-purple-600 rounded-full shadow-lg"
+              title={`Effet: ${appliedEffects[0]}`}
+            >
+              <span className="text-[16px]">{effectIcons[appliedEffects[0]]}</span>
+            </div>
+          ) : (
+            <div
+              className="inline-flex items-center justify-center w-7 h-7 bg-purple-500 dark:bg-purple-600 rounded-full shadow-lg"
+              title={`${appliedEffects.length} effets appliqués`}
+            >
+              <span className="text-[16px]">🎚️</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Bouton télécharger - Position absolue en bas à droite */}
       <a
         href={objectUrl || '#'}
         download={attachment.originalName}
-        className="flex-shrink-0 p-1.5 hover:bg-white/50 dark:hover:bg-gray-700/50 rounded-full transition-all duration-200"
+        className="absolute bottom-2 right-2 z-10 p-1.5 hover:bg-white/80 dark:hover:bg-gray-700/80 bg-white/50 dark:bg-gray-700/50 rounded-full transition-all duration-200 shadow-md"
         title="Télécharger"
         onClick={(e) => {
           if (!objectUrl) {
@@ -578,7 +564,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
           }
         }}
       >
-        <Download className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+        <Download className="w-4 h-4 text-gray-700 dark:text-gray-200" />
       </a>
 
       {/* Audio element caché - src from object URL */}
