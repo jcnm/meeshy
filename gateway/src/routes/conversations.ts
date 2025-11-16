@@ -1120,11 +1120,18 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         }
 
         // Transformer les attachments pour extraire audioEffectsTimeline du champ metadata
-        const transformedAttachments = (message.attachments || []).map((att: any) => ({
-          ...att,
-          // Extraire audioEffectsTimeline du champ metadata JSON et l'exposer au niveau racine
-          audioEffectsTimeline: att.metadata?.audioEffectsTimeline || undefined
-        }));
+        const transformedAttachments = (message.attachments || []).map((att: any) => {
+          console.log(`🔍 [Conversations] Transforming attachment ${att.id}:`, {
+            hasMetadata: !!att.metadata,
+            metadata: att.metadata,
+            hasAudioEffectsTimeline: !!(att.metadata as any)?.audioEffectsTimeline
+          });
+          return {
+            ...att,
+            // Extraire audioEffectsTimeline du champ metadata JSON et l'exposer au niveau racine
+            audioEffectsTimeline: att.metadata?.audioEffectsTimeline || undefined
+          };
+        });
 
         return {
           ...message,
