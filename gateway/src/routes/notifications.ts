@@ -1,7 +1,6 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { logError } from '../utils/logger';
-import { transformAttachments } from '../utils/attachment-transformer';
 
 // Schémas de validation
 const createNotificationSchema = z.object({
@@ -118,24 +117,10 @@ export async function notificationRoutes(fastify: FastifyInstance) {
 
       fastify.log.info(`📥 [BACKEND] États des notifications retournées: lues=${readStats.read}, non lues=${readStats.unread}`);
 
-      // Transformer les notifications pour extraire audioEffectsTimeline des attachments
-      const transformedNotifications = notifications.map(notification => {
-        if (notification.message?.attachments) {
-          return {
-            ...notification,
-            message: {
-              ...notification.message,
-              attachments: transformAttachments(notification.message.attachments)
-            }
-          };
-        }
-        return notification;
-      });
-
       return reply.send({
         success: true,
         data: {
-          notifications: transformedNotifications,
+          notifications: notifications,
           pagination: {
             page: pageNum,
             limit: limitNum,

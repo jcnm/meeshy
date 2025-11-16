@@ -8,7 +8,6 @@ import { Server as HTTPServer } from 'http';
 import { PrismaClient } from '../../shared/prisma/client';
 import { TranslationService, MessageData } from '../services/TranslationService';
 import { MaintenanceService } from '../services/maintenance.service';
-import { transformAttachments } from '../utils/attachment-transformer';
 import { MessagingService } from '../services/MessagingService';
 import { CallEventsHandler } from './CallEventsHandler';
 import { CallService } from '../services/CallService';
@@ -1834,8 +1833,8 @@ export class MeeshySocketIOManager {
           createdAt: (message.sender as any).createdAt || new Date(),
           updatedAt: (message.sender as any).updatedAt || new Date()
         } : undefined,
-        // CORRECTION: Inclure les attachments dans le payload avec extraction de audioEffectsTimeline
-        attachments: transformAttachments((message as any).attachments),
+        // CORRECTION: Inclure les attachments dans le payload avec metadata brut
+        attachments: (message as any).attachments || [],
         // CORRECTION: Inclure l'objet replyTo complet ET replyToId
         replyToId: message.replyToId || undefined,
         replyTo: (message as any).replyTo ? {
@@ -1865,6 +1864,27 @@ export class MeeshySocketIOManager {
           conversationStats: updatedStats
         }
       };
+
+      // DEBUG: Log pour vérifier les attachments et metadata
+      if ((message as any).attachments && (message as any).attachments.length > 0) {
+        console.log('🔍 [WEBSOCKET] Broadcasting message avec attachments:', {
+          messageId: message.id,
+          attachmentCount: (message as any).attachments.length,
+          firstAttachment: {
+            id: (message as any).attachments[0].id,
+            hasMetadata: !!(message as any).attachments[0].metadata,
+            metadata: (message as any).attachments[0].metadata,
+            metadataType: typeof (message as any).attachments[0].metadata,
+            metadataKeys: (message as any).attachments[0].metadata ? Object.keys((message as any).attachments[0].metadata) : []
+          },
+          payloadAttachments: messagePayload.attachments,
+          payloadFirstAttachment: messagePayload.attachments && messagePayload.attachments[0] ? {
+            id: messagePayload.attachments[0].id,
+            hasMetadata: !!(messagePayload.attachments[0] as any).metadata,
+            metadataKeys: (messagePayload.attachments[0] as any).metadata ? Object.keys((messagePayload.attachments[0] as any).metadata) : []
+          } : null
+        });
+      }
 
       // Support pour anonymousSender si présent
       if (message.anonymousSenderId) {

@@ -3,7 +3,6 @@ import { TranslationService } from '../services/TranslationService';
 import { TrackingLinkService } from '../services/TrackingLinkService';
 import { AttachmentService } from '../services/AttachmentService';
 import { conversationStatsService } from '../services/ConversationStatsService';
-import { transformAttachments } from '../utils/attachment-transformer';
 import { UserRoleEnum, ErrorCode } from '../../shared/types';
 import { createError, sendErrorResponse } from '../../shared/utils/errors';
 import { ConversationSchemas, validateSchema } from '../../shared/utils/validation';
@@ -1107,6 +1106,22 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         userPreferredLanguage = resolveUserLanguage(user || { systemLanguage: 'en' });
       }
 
+      // DEBUG: Log pour vérifier les attachments et metadata
+      if (messages.length > 0 && messages[0].attachments && messages[0].attachments.length > 0) {
+        console.log('🔍 [CONVERSATIONS] Premier message avec attachments:', {
+          messageId: messages[0].id,
+          attachmentCount: messages[0].attachments.length,
+          firstAttachment: {
+            id: messages[0].attachments[0].id,
+            hasMetadata: !!messages[0].attachments[0].metadata,
+            metadata: messages[0].attachments[0].metadata,
+            metadataType: typeof messages[0].attachments[0].metadata,
+            metadataKeys: messages[0].attachments[0].metadata ? Object.keys(messages[0].attachments[0].metadata) : [],
+            fullAttachment: JSON.stringify(messages[0].attachments[0], null, 2)
+          }
+        });
+      }
+
       // Retourner les messages avec toutes leurs traductions
       // Le frontend se chargera d'afficher la bonne traduction
       const messagesWithAllTranslations = messages.map(message => {
@@ -1120,14 +1135,11 @@ export async function conversationRoutes(fastify: FastifyInstance) {
           };
         }
 
-        // Transformer les attachments pour extraire audioEffectsTimeline du champ metadata
-        const transformedAttachments = transformAttachments(message.attachments);
-
         return {
           ...message,
           originalLanguage: message.originalLanguage || 'fr', // Garantir une langue par défaut
           translations: message.translations, // Garder toutes les traductions
-          attachments: transformedAttachments, // Utiliser les attachments transformés
+          attachments: message.attachments, // Garder les attachments bruts avec metadata
           replyTo: adaptedReplyTo,
           userPreferredLanguage: userPreferredLanguage // Indiquer au frontend la langue préférée
         };
