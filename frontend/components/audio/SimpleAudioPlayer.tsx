@@ -8,6 +8,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
 import type { AudioEffectType } from '@/shared/types/video-call';
 import { apiService } from '@/services/api.service';
@@ -65,6 +66,8 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
   const [playbackRate, setPlaybackRate] = useState(1.0); // Vitesse de lecture (0.1 à 5)
   const [isSpeedPopoverOpen, setIsSpeedPopoverOpen] = useState(false);
+  const [isEffectsPopoverOpen, setIsEffectsPopoverOpen] = useState(false);
+  const [selectedEffectTab, setSelectedEffectTab] = useState<AudioEffectType | 'overview'>('overview');
   const audioRef = useRef<HTMLAudioElement>(null);
   const animationFrameRef = useRef<number | null>(null);
 
@@ -133,6 +136,71 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     'demon-voice': '😈',
     'back-sound': '🎶',
   };
+
+  // Noms affichables pour les effets
+  const effectNames: Record<AudioEffectType, string> = {
+    'voice-coder': 'Voice Coder',
+    'baby-voice': 'Baby Voice',
+    'demon-voice': 'Demon Voice',
+    'back-sound': 'Background Sound',
+  };
+
+  // Couleurs pour les effets
+  const effectColors: Record<AudioEffectType, string> = {
+    'voice-coder': '#8b5cf6', // purple
+    'baby-voice': '#ec4899', // pink
+    'demon-voice': '#ef4444', // red
+    'back-sound': '#3b82f6', // blue
+  };
+
+  // Extraire la timeline des effets pour la visualisation
+  const effectsTimeline = useMemo(() => {
+    const timeline = (attachment as any).audioEffectsTimeline || (attachment as any).metadata?.audioEffectsTimeline;
+
+    if (!timeline || !timeline.events || timeline.events.length === 0) {
+      return [];
+    }
+
+    // Créer des segments pour chaque effet montrant quand il était actif
+    const segments: Array<{
+      effectType: AudioEffectType;
+      startTime: number;
+      endTime: number;
+    }> = [];
+
+    // Map pour suivre les états actifs
+    const activeEffects = new Map<AudioEffectType, number>(); // effectType -> startTime
+
+    for (const event of timeline.events) {
+      if (event.action === 'activate') {
+        // Marquer le début d'activation
+        activeEffects.set(event.effectType, event.timestamp);
+      } else if (event.action === 'deactivate') {
+        // Marquer la fin d'activation
+        const startTime = activeEffects.get(event.effectType);
+        if (startTime !== undefined) {
+          segments.push({
+            effectType: event.effectType,
+            startTime,
+            endTime: event.timestamp,
+          });
+          activeEffects.delete(event.effectType);
+        }
+      }
+    }
+
+    // Pour les effets encore actifs à la fin, utiliser la durée totale
+    const totalDuration = duration || attachmentDuration || 0;
+    activeEffects.forEach((startTime, effectType) => {
+      segments.push({
+        effectType,
+        startTime,
+        endTime: totalDuration,
+      });
+    });
+
+    return segments;
+  }, [attachment, duration, attachmentDuration]);
 
   // Extraire les valeurs primitives pour éviter les re-renders
   const attachmentId = attachment.id;
@@ -511,21 +579,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
         hasError ? 'border-red-300 dark:border-red-700' : 'border-blue-200 dark:border-gray-700'
       } shadow-md hover:shadow-lg transition-all duration-200 w-full sm:max-w-2xl ${className}`}
     >
-      {/* Badge des effets appliqués - Au-dessus */}
-      {appliedEffects.length > 0 && (
-        <div className="flex justify-center">
-          <div
-            className="inline-flex items-center justify-center w-6 h-6 bg-purple-500 dark:bg-purple-600 rounded-full shadow-md cursor-default"
-            title={appliedEffects.length === 1 ? `Effet: ${appliedEffects[0]}` : `${appliedEffects.length} effets appliqués`}
-          >
-            <span className="text-[12px]">
-              {appliedEffects.length === 1 ? effectIcons[appliedEffects[0]] : '🎚️'}
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Ligne principale: Play + Barre de progression + Download */}
+      {/* Ligne principale: Play + Barre de progression + Colonne actions (Effet + Download) */}
       <div className="flex items-center gap-3">
         {/* Bouton Play/Pause - Design moderne */}
         <Button
@@ -586,20 +640,167 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
           </div>
         </div>
 
-        {/* Bouton télécharger - En face de la barre */}
-        <a
-          href={objectUrl || '#'}
-          download={attachment.originalName}
-          className="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-md transition-all"
-          title="Télécharger"
-          onClick={(e) => {
-            if (!objectUrl) {
-              e.preventDefault();
-            }
-          }}
-        >
-          <Download className="w-4 h-4 text-gray-700 dark:text-gray-200" />
-        </a>
+        {/* Colonne actions: Effet (au-dessus) + Download (en dessous) */}
+        <div className="flex flex-col gap-1 items-center">
+          {/* Badge des effets appliqués - Cliquable */}
+          {appliedEffects.length > 0 && (
+            <Popover open={isEffectsPopoverOpen} onOpenChange={setIsEffectsPopoverOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  className="flex-shrink-0 inline-flex items-center justify-center w-7 h-7 bg-purple-500 dark:bg-purple-600 hover:bg-purple-600 dark:hover:bg-purple-700 rounded-full shadow-md transition-all cursor-pointer"
+                  title={appliedEffects.length === 1 ? `Effet: ${appliedEffects[0]}` : `${appliedEffects.length} effets appliqués`}
+                >
+                  <span className="text-[12px]">
+                    {appliedEffects.length === 1 ? effectIcons[appliedEffects[0]] : '🎚️'}
+                  </span>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-96 p-4" side="top" align="end">
+                <Tabs value={selectedEffectTab} onValueChange={(value) => setSelectedEffectTab(value as AudioEffectType | 'overview')}>
+                  <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${appliedEffects.length + 1}, 1fr)` }}>
+                    <TabsTrigger value="overview" className="text-xs">Vue d'ensemble</TabsTrigger>
+                    {appliedEffects.map((effect) => (
+                      <TabsTrigger key={effect} value={effect} className="text-xs flex items-center gap-1">
+                        <span>{effectIcons[effect]}</span>
+                        <span className="hidden sm:inline">{effectNames[effect]}</span>
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+
+                  {/* Tab Vue d'ensemble - Timeline de tous les effets */}
+                  <TabsContent value="overview" className="mt-4 space-y-3">
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Timeline des effets</h3>
+
+                    {/* Graphique de timeline */}
+                    <div className="space-y-2">
+                      {appliedEffects.map((effect) => {
+                        const segments = effectsTimeline.filter(s => s.effectType === effect);
+                        const totalDuration = duration || attachmentDuration || 1;
+
+                        return (
+                          <div key={effect} className="space-y-1">
+                            <div className="flex items-center gap-2 text-xs">
+                              <span>{effectIcons[effect]}</span>
+                              <span className="font-medium text-gray-700 dark:text-gray-300">{effectNames[effect]}</span>
+                            </div>
+
+                            {/* Barre de timeline */}
+                            <div className="relative h-6 bg-gray-100 dark:bg-gray-800 rounded overflow-hidden">
+                              {segments.map((segment, idx) => {
+                                const startPercent = (segment.startTime / totalDuration) * 100;
+                                const widthPercent = ((segment.endTime - segment.startTime) / totalDuration) * 100;
+
+                                return (
+                                  <div
+                                    key={idx}
+                                    className="absolute h-full rounded"
+                                    style={{
+                                      left: `${startPercent}%`,
+                                      width: `${widthPercent}%`,
+                                      backgroundColor: effectColors[effect],
+                                      opacity: 0.8,
+                                    }}
+                                    title={`${segment.startTime.toFixed(2)}s - ${segment.endTime.toFixed(2)}s`}
+                                  />
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Légende du temps */}
+                    <div className="flex justify-between text-[10px] text-gray-500 dark:text-gray-400 mt-1">
+                      <span>0:00</span>
+                      <span>{formatTime(duration || attachmentDuration || 0)}</span>
+                    </div>
+                  </TabsContent>
+
+                  {/* Tabs individuels pour chaque effet */}
+                  {appliedEffects.map((effect) => {
+                    const segments = effectsTimeline.filter(s => s.effectType === effect);
+
+                    return (
+                      <TabsContent key={effect} value={effect} className="mt-4 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl">{effectIcons[effect]}</span>
+                          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{effectNames[effect]}</h3>
+                        </div>
+
+                        {/* Informations sur l'effet */}
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600 dark:text-gray-400">Périodes d'activation:</span>
+                            <span className="font-medium text-gray-900 dark:text-gray-100">{segments.length}</span>
+                          </div>
+
+                          <div className="flex justify-between">
+                            <span className="text-gray-600 dark:text-gray-400">Temps total:</span>
+                            <span className="font-medium text-gray-900 dark:text-gray-100">
+                              {formatTime(segments.reduce((acc, s) => acc + (s.endTime - s.startTime), 0))}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Timeline détaillée */}
+                        <div className="space-y-2">
+                          <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300">Timeline</h4>
+                          <div className="relative h-8 bg-gray-100 dark:bg-gray-800 rounded overflow-hidden">
+                            {segments.map((segment, idx) => {
+                              const totalDuration = duration || attachmentDuration || 1;
+                              const startPercent = (segment.startTime / totalDuration) * 100;
+                              const widthPercent = ((segment.endTime - segment.startTime) / totalDuration) * 100;
+
+                              return (
+                                <div
+                                  key={idx}
+                                  className="absolute h-full rounded"
+                                  style={{
+                                    left: `${startPercent}%`,
+                                    width: `${widthPercent}%`,
+                                    backgroundColor: effectColors[effect],
+                                    opacity: 0.8,
+                                  }}
+                                  title={`${segment.startTime.toFixed(2)}s - ${segment.endTime.toFixed(2)}s`}
+                                />
+                              );
+                            })}
+                          </div>
+
+                          {/* Liste des segments */}
+                          <div className="space-y-1 max-h-32 overflow-y-auto">
+                            {segments.map((segment, idx) => (
+                              <div key={idx} className="flex justify-between text-xs text-gray-600 dark:text-gray-400">
+                                <span>Période {idx + 1}:</span>
+                                <span>{formatTime(segment.startTime)} → {formatTime(segment.endTime)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </TabsContent>
+                    );
+                  })}
+                </Tabs>
+              </PopoverContent>
+            </Popover>
+          )}
+
+          {/* Bouton télécharger */}
+          <a
+            href={objectUrl || '#'}
+            download={attachment.originalName}
+            className="flex-shrink-0 inline-flex items-center justify-center w-7 h-7 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-md transition-all"
+            title="Télécharger"
+            onClick={(e) => {
+              if (!objectUrl) {
+                e.preventDefault();
+              }
+            }}
+          >
+            <Download className="w-3.5 h-3.5 text-gray-700 dark:text-gray-200" />
+          </a>
+        </div>
       </div>
 
       {/* Ligne secondaire: Gauge + Timer */}
