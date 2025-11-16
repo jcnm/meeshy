@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Play, Pause, Download, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
+import type { AudioEffectType } from '@/shared/types/video-call';
 import { apiService } from '@/services/api.service';
 
 interface SimpleAudioPlayerProps {
@@ -60,6 +61,29 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
   const audioRef = useRef<HTMLAudioElement>(null);
   const animationFrameRef = useRef<number | null>(null);
 
+  // Extraire les effets appliqués depuis la timeline
+  const appliedEffects = useMemo((): AudioEffectType[] => {
+    if (!attachment.audioEffectsTimeline || !attachment.audioEffectsTimeline.events.length) {
+      return [];
+    }
+
+    // Récupérer les effets uniques qui ont été activés au moins une fois
+    const effects = new Set<AudioEffectType>();
+    for (const event of attachment.audioEffectsTimeline.events) {
+      if (event.action === 'activate') {
+        effects.add(event.effectType);
+      }
+    }
+    return Array.from(effects);
+  }, [attachment.audioEffectsTimeline]);
+
+  // Icônes pour les effets
+  const effectIcons: Record<AudioEffectType, string> = {
+    'voice-coder': '🎵',
+    'baby-voice': '👶',
+    'demon-voice': '😈',
+    'back-sound': '🎶',
+  };
 
   // Extraire les valeurs primitives pour éviter les re-renders
   const attachmentId = attachment.id;
@@ -436,6 +460,29 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
 
       {/* Zone de progression et temps */}
       <div className="flex-1 min-w-0">
+        {/* Méta-données: SampleRate + Effets appliqués */}
+        {(attachment.sampleRate || appliedEffects.length > 0) && (
+          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+            {/* Sample Rate */}
+            {attachment.sampleRate && (
+              <div className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/40 rounded text-[9px] font-semibold text-blue-700 dark:text-blue-300">
+                <span className="text-[8px]">⚡</span>
+                <span>{(attachment.sampleRate / 1000).toFixed(1)}kHz</span>
+              </div>
+            )}
+            {/* Effets appliqués */}
+            {appliedEffects.map((effect) => (
+              <div
+                key={effect}
+                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-purple-100 dark:bg-purple-900/40 rounded text-[9px] font-semibold text-purple-700 dark:text-purple-300"
+                title={`Effet: ${effect}`}
+              >
+                <span className="text-[10px]">{effectIcons[effect]}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Barre de progression */}
         <div className="relative w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-visible mb-2 group cursor-pointer">
           {/* Barre de progression remplie avec animation fluide */}

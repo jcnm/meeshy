@@ -92,6 +92,11 @@ export interface Attachment {
   readonly uploadedBy: string;
   readonly isAnonymous: boolean;
   readonly createdAt: string;
+  /**
+   * Timeline des effets audio appliqués pendant l'enregistrement
+   * Uniquement pour les fichiers audio enregistrés avec des effets
+   */
+  readonly audioEffectsTimeline?: import('./audio-effects-timeline').AudioEffectsTimeline;
 }
 
 /**
@@ -149,6 +154,11 @@ export interface UploadedAttachmentResponse {
   readonly uploadedBy: string;
   readonly isAnonymous: boolean;
   readonly createdAt: string;
+  /**
+   * Timeline des effets audio appliqués pendant l'enregistrement
+   * Uniquement pour les fichiers audio enregistrés avec des effets
+   */
+  readonly audioEffectsTimeline?: import('./audio-effects-timeline').AudioEffectsTimeline;
 }
 
 /**

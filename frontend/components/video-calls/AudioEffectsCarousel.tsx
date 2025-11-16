@@ -233,21 +233,28 @@ export function AudioEffectsCarousel({
                   </div>
                 )}
 
-                {/* Clic sur toute la tuile: toggle ON/OFF (clic simple) ou config (double-clic) */}
+                {/* Switch ON/OFF en bas à droite - ne pas ouvrir la config */}
+                {tile.id !== 'reset' && (
+                  <div
+                    className="absolute bottom-2 right-2 z-10"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Switch
+                      checked={isActive}
+                      onCheckedChange={() => onToggleEffect(tile.id as AudioEffectType)}
+                      className="scale-75"
+                    />
+                  </div>
+                )}
+
+                {/* Clic sur toute la tuile: ouvrir la config */}
                 <div
                   onClick={(e) => {
                     e.stopPropagation();
                     if (tile.id === 'reset') {
                       handleResetAll();
                     } else {
-                      // Clic simple: toggle ON/OFF
-                      onToggleEffect(tile.id as AudioEffectType);
-                    }
-                  }}
-                  onDoubleClick={(e) => {
-                    e.stopPropagation();
-                    if (tile.id !== 'reset') {
-                      // Double-clic: ouvrir config
+                      // Clic: ouvrir/fermer config
                       setSelectedEffect(isSelected ? null : tile.id);
                     }
                   }}
