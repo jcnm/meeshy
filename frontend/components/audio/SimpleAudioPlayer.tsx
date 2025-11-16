@@ -911,16 +911,18 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
           </Button>
 
           {/* Bouton Gauge - Vitesse de lecture */}
-          <Popover open={isSpeedPopoverOpen} onOpenChange={setIsSpeedPopoverOpen}>
-            <PopoverTrigger asChild>
-              <button
-                className="flex-shrink-0 inline-flex items-center justify-center w-3.5 h-3.5 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-sm transition-all cursor-pointer"
+          <DropdownMenu open={isSpeedPopoverOpen} onOpenChange={setIsSpeedPopoverOpen}>
+            <DropdownMenuTrigger asChild>
+              <a
+                href="#"
+                className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-sm transition-all cursor-pointer"
                 title={`Vitesse: ${playbackRate}x`}
+                onClick={(e) => e.preventDefault()}
               >
-                <Gauge className="w-2 h-2 text-gray-700 dark:text-gray-200" />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-12 p-2" side="top" align="center">
+                <Gauge className="w-2.5 h-2.5 text-gray-700 dark:text-gray-200" />
+              </a>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-12 p-2" side="top" align="center">
               <div className="flex flex-col items-center gap-2">
                 {/* Slider vertical simplifié */}
                 <div className="relative h-24 flex items-center justify-center">
@@ -945,8 +947,8 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                   {playbackRate.toFixed(1)}x
                 </div>
               </div>
-            </PopoverContent>
-          </Popover>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Zone centrale: Barre de progression + Timer */}
