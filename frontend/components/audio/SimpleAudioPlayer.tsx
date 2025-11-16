@@ -998,8 +998,8 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
             />
           </div>
 
-          {/* Ligne en dessous: Timer (taille réduite de 20%) */}
-          <div className="flex items-center justify-center">
+          {/* Ligne en dessous: Timer + Effects */}
+          <div className="flex items-center justify-center gap-2">
             <div className="text-[11px] font-mono text-gray-600 dark:text-gray-300">
               {hasError ? (
                 <span className="font-semibold text-red-600 dark:text-red-400 text-[10px]">
@@ -1015,27 +1015,23 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                 </span>
               )}
             </div>
-          </div>
-        </div>
 
-        {/* Colonne actions droite: Effects uniquement */}
-        <div className="flex flex-col gap-1 items-center">
-          {/* Bouton Effects - <a> Couleur violette sans téléchargement */}
-          {appliedEffects.length > 0 && (
-            <DropdownMenu open={isEffectsDropdownOpen} onOpenChange={setIsEffectsDropdownOpen}>
-              <DropdownMenuTrigger asChild>
-                <a
-                  href="#"
-                  className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 bg-purple-100/70 dark:bg-purple-900/70 hover:bg-purple-100 dark:hover:bg-purple-900 rounded-full shadow-sm transition-all cursor-pointer border border-purple-300 dark:border-purple-700"
-                  title={appliedEffects.length === 1 ? `Effet: ${appliedEffects[0]}` : `${appliedEffects.length} effets appliqués`}
-                  onClick={(e) => e.preventDefault()}
-                >
-                  <span className="text-[10px]">
-                    {appliedEffects.length === 1 ? effectIcons[appliedEffects[0]] : '🎚️'}
-                  </span>
-                </a>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-96 p-4" side="top" align="end">
+            {/* Bouton Effects - <a> Couleur violette sans téléchargement */}
+            {appliedEffects.length > 0 && (
+              <DropdownMenu open={isEffectsDropdownOpen} onOpenChange={setIsEffectsDropdownOpen}>
+                <DropdownMenuTrigger asChild>
+                  <a
+                    href="#"
+                    className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 bg-purple-100/70 dark:bg-purple-900/70 hover:bg-purple-100 dark:hover:bg-purple-900 rounded-full shadow-sm transition-all cursor-pointer border border-purple-300 dark:border-purple-700"
+                    title={appliedEffects.length === 1 ? `Effet: ${appliedEffects[0]}` : `${appliedEffects.length} effets appliqués`}
+                    onClick={(e) => e.preventDefault()}
+                  >
+                    <span className="text-[10px]">
+                      {appliedEffects.length === 1 ? effectIcons[appliedEffects[0]] : '🎚️'}
+                    </span>
+                  </a>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-96 p-4" side="top" align="end">
                 <Tabs value={selectedEffectTab} onValueChange={(value) => setSelectedEffectTab(value as AudioEffectType | 'overview')}>
                   <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${appliedEffects.length + 1}, 1fr)` }}>
                     <TabsTrigger value="overview" className="text-xs">Vue d'ensemble</TabsTrigger>
@@ -1153,9 +1149,10 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                     );
                   })}
                 </Tabs>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
         </div>
       </div>
 
