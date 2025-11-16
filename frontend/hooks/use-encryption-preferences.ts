@@ -7,8 +7,39 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
+import type { EncryptionMode } from '@/shared/types/mls';
 
-export type EncryptionMode = 'none' | 'hybrid' | 'e2e_only';
+export type { EncryptionMode }; // Re-export pour compatibilité
+
+/**
+ * Helper pour fetch avec timeout
+ * @param url - URL to fetch
+ * @param options - Fetch options
+ * @param timeoutMs - Timeout en millisecondes (default: 10s)
+ */
+async function fetchWithTimeout(
+  url: string,
+  options?: RequestInit,
+  timeoutMs: number = 10000
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error(`Request timeout after ${timeoutMs}ms`);
+    }
+    throw error;
+  }
+}
 
 export interface EncryptionPreferences {
   userId: string;
@@ -40,7 +71,7 @@ export function useEncryptionPreferences() {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/api/users/me/encryption-preferences', {
+      const response = await fetchWithTimeout('/api/users/me/encryption-preferences', {
         credentials: 'include',
       });
 
@@ -77,7 +108,7 @@ export function useEncryptionPreferences() {
     defaultEncryptionMode?: EncryptionMode;
   }) => {
     try {
-      const response = await fetch('/api/users/me/encryption-preferences', {
+      const response = await fetchWithTimeout('/api/users/me/encryption-preferences', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -116,7 +147,7 @@ export function useEncryptionPreferences() {
     conversationId: string
   ): Promise<ConversationEncryptionStatus | null> => {
     try {
-      const response = await fetch(`/api/conversations/${conversationId}/encryption-status`, {
+      const response = await fetchWithTimeout(`/api/conversations/${conversationId}/encryption-status`, {
         credentials: 'include',
       });
 
@@ -140,10 +171,11 @@ export function useEncryptionPreferences() {
     }
   }, []);
 
-  // Charger les préférences au montage
+  // Charger les préférences au montage (une seule fois)
   useEffect(() => {
     fetchPreferences();
-  }, [fetchPreferences]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return {
     preferences,

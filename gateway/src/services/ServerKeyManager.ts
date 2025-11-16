@@ -179,12 +179,31 @@ export class ServerKeyManager {
   /**
    * Securely wipe a buffer from memory
    *
-   * Overwrites the buffer with zeros to prevent memory dumps from revealing sensitive data.
+   * Uses multi-pass overwrite to prevent memory dumps from revealing sensitive data:
+   * 1. Random data overwrite (crypto-secure)
+   * 2. Zero-fill
+   * 3. 0xFF fill
    *
    * @param buffer - Buffer to wipe
    */
   secureWipe(buffer: Buffer): void {
-    buffer.fill(0);
+    try {
+      // Pass 1: Overwrite with cryptographically secure random data
+      crypto.randomFillSync(buffer);
+
+      // Pass 2: Zero-fill
+      buffer.fill(0x00);
+
+      // Pass 3: Fill with 0xFF
+      buffer.fill(0xFF);
+
+      // Pass 4: Final zero-fill
+      buffer.fill(0x00);
+    } catch (error) {
+      // If secure wipe fails, at least zero it out
+      console.error('[ServerKeyManager] Secure wipe failed, falling back to zero-fill:', error);
+      buffer.fill(0);
+    }
   }
 
   /**
@@ -357,21 +376,28 @@ export class ServerKeyManager {
   private startCacheCleanup(): void {
     setInterval(() => {
       const now = new Date();
-      let cleanedCount = 0;
 
-      // Convert iterator to array to avoid downlevelIteration requirement
+      // First pass: collect expired conversation IDs
+      const toDelete: string[] = [];
       const entries = Array.from(this.keyCache.entries());
       for (const [conversationId, cached] of entries) {
         if (cached.expiresAt < now) {
-          // Securely wipe key before removing from cache
-          this.secureWipe(cached.key);
-          this.keyCache.delete(conversationId);
-          cleanedCount++;
+          toDelete.push(conversationId);
         }
       }
 
-      if (cleanedCount > 0) {
-        console.log(`[ServerKeyManager] 🧹 Cleaned ${cleanedCount} expired key(s) from cache`);
+      // Second pass: securely wipe and delete
+      for (const conversationId of toDelete) {
+        const cached = this.keyCache.get(conversationId);
+        if (cached) {
+          // Securely wipe key before removing from cache
+          this.secureWipe(cached.key);
+          this.keyCache.delete(conversationId);
+        }
+      }
+
+      if (toDelete.length > 0) {
+        console.log(`[ServerKeyManager] 🧹 Cleaned ${toDelete.length} expired key(s) from cache`);
       }
     }, 60 * 60 * 1000); // Every hour
   }

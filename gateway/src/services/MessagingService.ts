@@ -170,6 +170,14 @@ export class MessagingService {
     requestId: string,
     startTime: number
   ): Promise<MessageResponse> {
+    console.log(
+      `[MessagingService] 📝 handlePlaintextMessage - ` +
+      `conversationId=${conversationId}, ` +
+      `requestId=${requestId}, ` +
+      `isAnonymous=${authContext.isAnonymous}, ` +
+      `contentLength=${request.content?.length || 0}`
+    );
+
     // 1. Vérification des permissions
     const permissionResult = await this.checkPermissions(authContext, conversationId, request);
     if (!permissionResult.canSend) {
@@ -183,28 +191,11 @@ export class MessagingService {
     const originalLanguage = request.originalLanguage || await this.detectLanguage(request.content);
 
     // 3. Déterminer les IDs pour la sauvegarde selon le type d'authentification
-    let actualSenderId: string | undefined = undefined;
-    let actualAnonymousSenderId: string | undefined = undefined;
-
-    if (authContext.isAnonymous) {
-      const identifier = authContext.sessionToken || senderId;
-      const anonymousParticipant = await this.prisma.anonymousParticipant.findFirst({
-        where: {
-          sessionToken: identifier,
-          conversationId: conversationId,
-          isActive: true
-        },
-        select: { id: true }
-      });
-
-      if (anonymousParticipant) {
-        actualAnonymousSenderId = anonymousParticipant.id;
-      } else {
-        throw new Error('Participant anonyme non trouvé pour la sauvegarde');
-      }
-    } else {
-      actualSenderId = authContext.userId || senderId;
-    }
+    const { actualSenderId, actualAnonymousSenderId } = await this.resolveActualSenderIds(
+      authContext,
+      senderId,
+      conversationId
+    );
 
     // 4. Sauvegarde du message en plaintext
     const message = await this.saveMessage({
@@ -245,6 +236,14 @@ export class MessagingService {
     requestId: string,
     startTime: number
   ): Promise<MessageResponse> {
+    console.log(
+      `[MessagingService] 🔐 handleHybridMessage - ` +
+      `conversationId=${conversationId}, ` +
+      `requestId=${requestId}, ` +
+      `isAnonymous=${authContext.isAnonymous}, ` +
+      `hasEncryptedData=${!!request.encryptedData}`
+    );
+
     // 1. Vérification des permissions
     const permissionResult = await this.checkPermissions(authContext, conversationId, request);
     if (!permissionResult.canSend) {
@@ -254,11 +253,57 @@ export class MessagingService {
       );
     }
 
+    // 1.5. Validation mode hybrid: vérifier que les participants autorisent la traduction serveur
+    const conversationWithMembers = await this.prisma.conversation.findUnique({
+      where: { id: conversationId },
+      include: {
+        members: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                allowServerSideTranslationAt: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (conversationWithMembers) {
+      const membersWithoutTranslation = conversationWithMembers.members.filter(
+        (member) => !member.user?.allowServerSideTranslationAt
+      );
+
+      if (membersWithoutTranslation.length > 0) {
+        const usernames = membersWithoutTranslation
+          .map((m) => m.user?.username || 'unknown')
+          .join(', ');
+        console.warn(
+          `[MessagingService] ⚠️ Mode hybrid - ${membersWithoutTranslation.length} participant(s) ` +
+          `n'autorisent pas la traduction serveur: ${usernames}. ` +
+          `Le message sera envoyé mais ces utilisateurs ne recevront peut-être pas de traductions optimales.`
+        );
+      }
+    }
+
     // 2. Vérifier que le message contient des données chiffrées
+    // TEMPORAIRE: Fallback à plaintext si encryptedData non fourni (crypto client-side non implémenté)
     if (!request.encrypted || !request.encryptedData) {
-      return this.createErrorResponse(
-        'Mode hybrid nécessite des données chiffrées (encrypted=true, encryptedData requis)',
-        requestId
+      console.warn(
+        `[MessagingService] ⚠️ Mode hybrid sans encryptedData pour conversation ${conversationId} - ` +
+        `FALLBACK TEMPORAIRE à plaintext (en attente implémentation chiffrement client-side)`
+      );
+
+      // TODO: Supprimer ce fallback une fois le double chiffrement client-side implémenté
+      return await this.handlePlaintextMessage(
+        request,
+        senderId,
+        authContext,
+        conversationId,
+        requestId,
+        startTime
       );
     }
 
@@ -272,106 +317,99 @@ export class MessagingService {
       return this.createErrorResponse('Conversation non trouvée', requestId);
     }
 
-    const serverKey = await this.serverKeyManager.getConversationKey(
-      conversationId,
-      conversation.serverEncryptionKey
-    );
-
-    // 4. Déchiffrer le message avec la clé serveur (2ème couche)
-    let plaintext: string;
+    let serverKey: Buffer | null = null;
     try {
-      // Dans le mode hybrid, encryptedData contient le double chiffrement:
-      // - ciphertext: Message E2E chiffré + chiffré par serveur
-      // - nonce: Nonce pour la couche serveur (serverLayerNonce)
-      const hybridData = request.encryptedData as any as HybridEncryptedData;
-
-      const ciphertextBuffer = Buffer.from(hybridData.ciphertext, 'base64');
-      const nonceBuffer = Buffer.from(hybridData.serverLayerNonce, 'base64');
-
-      const decryptedBuffer = await this.serverKeyManager.decrypt(
-        ciphertextBuffer,
-        nonceBuffer,
-        serverKey
+      serverKey = await this.serverKeyManager.getConversationKey(
+        conversationId,
+        conversation.serverEncryptionKey
       );
 
-      plaintext = decryptedBuffer.toString('utf8');
+      // 4. Déchiffrer le message avec la clé serveur (2ème couche)
+      // ⚠️ SECURITY WARNING: JavaScript strings are immutable and cannot be securely wiped.
+      // The plaintext will remain in RAM until garbage collection. This creates a window
+      // of vulnerability where memory dumps could reveal the plaintext content.
+      // Risk mitigation: MAX_PLAINTEXT_LIFETIME_MS limits exposure to ~100ms.
+      // Future improvement: Work with Buffers only, avoid string conversion.
+      let plaintext: string;
+      try {
+        // Dans le mode hybrid, encryptedData contient le double chiffrement:
+        // - ciphertext: Message E2E chiffré + chiffré par serveur
+        // - nonce: Nonce pour la couche serveur (serverLayerNonce)
+        const hybridData = request.encryptedData as any as HybridEncryptedData;
 
-      // Secure wipe du buffer décrypté
-      this.serverKeyManager.secureWipe(decryptedBuffer);
+        const ciphertextBuffer = Buffer.from(hybridData.ciphertext, 'base64');
+        const nonceBuffer = Buffer.from(hybridData.serverLayerNonce, 'base64');
 
-      console.log(`[MessagingService] ✅ Message déchiffré en mode hybrid pour traduction`);
-    } catch (decryptError) {
-      console.error('[MessagingService] ❌ Erreur déchiffrement hybrid:', decryptError);
-      this.serverKeyManager.secureWipe(serverKey);
-      return this.createErrorResponse(
-        'Échec du déchiffrement du message en mode hybrid',
-        requestId
+        const decryptedBuffer = await this.serverKeyManager.decrypt(
+          ciphertextBuffer,
+          nonceBuffer,
+          serverKey
+        );
+
+        // Convert to string for translation (creates immutable plaintext in RAM)
+        plaintext = decryptedBuffer.toString('utf8');
+
+        // Secure wipe du buffer décrypté
+        this.serverKeyManager.secureWipe(decryptedBuffer);
+
+        console.log(`[MessagingService] ✅ Message déchiffré en mode hybrid pour traduction`);
+      } catch (decryptError) {
+        console.error('[MessagingService] ❌ Erreur déchiffrement hybrid:', decryptError);
+        return this.createErrorResponse(
+          'Échec du déchiffrement du message en mode hybrid',
+          requestId
+        );
+      }
+
+      // 5. Détection de langue sur le plaintext
+      const originalLanguage = request.originalLanguage || await this.detectLanguage(plaintext);
+
+      // 6. Déterminer les IDs pour la sauvegarde
+      const { actualSenderId, actualAnonymousSenderId } = await this.resolveActualSenderIds(
+        authContext,
+        senderId,
+        conversationId
       );
-    }
 
-    // 5. Détection de langue sur le plaintext
-    const originalLanguage = request.originalLanguage || await this.detectLanguage(plaintext);
-
-    // 6. Déterminer les IDs pour la sauvegarde
-    let actualSenderId: string | undefined = undefined;
-    let actualAnonymousSenderId: string | undefined = undefined;
-
-    if (authContext.isAnonymous) {
-      const identifier = authContext.sessionToken || senderId;
-      const anonymousParticipant = await this.prisma.anonymousParticipant.findFirst({
-        where: {
-          sessionToken: identifier,
-          conversationId: conversationId,
-          isActive: true
-        },
-        select: { id: true }
+      // 7. Sauvegarder le message avec le plaintext ET les données chiffrées
+      const message = await this.saveMessage({
+        ...request,
+        content: plaintext, // Plaintext pour traduction
+        originalLanguage,
+        conversationId,
+        senderId: actualSenderId,
+        anonymousSenderId: actualAnonymousSenderId,
+        mentionedUserIds: request.mentionedUserIds,
+        encrypted: true,
+        encryptedData: request.encryptedData // Stocker aussi les données chiffrées
       });
 
-      if (anonymousParticipant) {
-        actualAnonymousSenderId = anonymousParticipant.id;
-      } else {
-        throw new Error('Participant anonyme non trouvé pour la sauvegarde');
+      // 8. Secure wipe du plaintext de la mémoire
+      if (typeof plaintext === 'string') {
+        const plaintextBuffer = Buffer.from(plaintext, 'utf8');
+        this.serverKeyManager.secureWipe(plaintextBuffer);
       }
-    } else {
-      actualSenderId = authContext.userId || senderId;
+
+      // 9. Mise à jour de la conversation
+      await this.updateConversation(conversationId);
+
+      // 10. Marquer comme lu pour l'expéditeur
+      await this.markAsRead(message.id, actualSenderId || actualAnonymousSenderId || senderId);
+
+      // 11. Queue de traduction (async) - sur le plaintext
+      const translationStatus = await this.queueTranslation(message, originalLanguage);
+
+      // 12. Mise à jour des statistiques
+      const stats = await this.updateStats(conversationId, originalLanguage);
+
+      // 13. Génération de la réponse
+      return await this.createSuccessResponse(message, requestId, startTime, stats, translationStatus);
+    } finally {
+      // CRITICAL: Toujours wipe la clé serveur, même en cas d'erreur
+      if (serverKey) {
+        this.serverKeyManager.secureWipe(serverKey);
+      }
     }
-
-    // 7. Sauvegarder le message avec le plaintext ET les données chiffrées
-    const message = await this.saveMessage({
-      ...request,
-      content: plaintext, // Plaintext pour traduction
-      originalLanguage,
-      conversationId,
-      senderId: actualSenderId,
-      anonymousSenderId: actualAnonymousSenderId,
-      mentionedUserIds: request.mentionedUserIds,
-      encrypted: true,
-      encryptedData: request.encryptedData // Stocker aussi les données chiffrées
-    });
-
-    // 8. Secure wipe du plaintext de la mémoire
-    if (typeof plaintext === 'string') {
-      const plaintextBuffer = Buffer.from(plaintext, 'utf8');
-      this.serverKeyManager.secureWipe(plaintextBuffer);
-    }
-
-    // 9. Secure wipe de la clé serveur
-    this.serverKeyManager.secureWipe(serverKey);
-
-    // 10. Mise à jour de la conversation
-    await this.updateConversation(conversationId);
-
-    // 11. Marquer comme lu pour l'expéditeur
-    await this.markAsRead(message.id, actualSenderId || actualAnonymousSenderId || senderId);
-
-    // 12. Queue de traduction (async) - sur le plaintext
-    const translationStatus = await this.queueTranslation(message, originalLanguage);
-
-    // 13. Mise à jour des statistiques
-    const stats = await this.updateStats(conversationId, originalLanguage);
-
-    // 14. Génération de la réponse
-    return await this.createSuccessResponse(message, requestId, startTime, stats, translationStatus);
   }
 
   /**
@@ -386,6 +424,15 @@ export class MessagingService {
     requestId: string,
     startTime: number
   ): Promise<MessageResponse> {
+    console.log(
+      `[MessagingService] 🔒 handleE2EOnlyMessage - ` +
+      `conversationId=${conversationId}, ` +
+      `requestId=${requestId}, ` +
+      `isAnonymous=${authContext.isAnonymous}, ` +
+      `hasEncryptedData=${!!request.encryptedData}, ` +
+      `mentionsCount=${request.mentionedUserIds?.length || 0}`
+    );
+
     // 1. Vérification des permissions
     const permissionResult = await this.checkPermissions(authContext, conversationId, request);
     if (!permissionResult.canSend) {
@@ -403,29 +450,25 @@ export class MessagingService {
       );
     }
 
-    // 3. Déterminer les IDs pour la sauvegarde
-    let actualSenderId: string | undefined = undefined;
-    let actualAnonymousSenderId: string | undefined = undefined;
-
-    if (authContext.isAnonymous) {
-      const identifier = authContext.sessionToken || senderId;
-      const anonymousParticipant = await this.prisma.anonymousParticipant.findFirst({
-        where: {
-          sessionToken: identifier,
-          conversationId: conversationId,
-          isActive: true
-        },
-        select: { id: true }
-      });
-
-      if (anonymousParticipant) {
-        actualAnonymousSenderId = anonymousParticipant.id;
-      } else {
-        throw new Error('Participant anonyme non trouvé pour la sauvegarde');
-      }
-    } else {
-      actualSenderId = authContext.userId || senderId;
+    // 2.5. Warning pour mentions en mode e2e_only
+    // ⚠️ En mode e2e_only, le serveur ne peut pas déchiffrer le contenu, donc :
+    // - Les mentions (@user) ne seront pas extraites/parsées côté serveur
+    // - Les notifications de mention devront être gérées côté client après déchiffrement
+    // - Les métadonnées de mentions doivent être fournies explicitement dans request.mentionedUserIds
+    if (request.mentionedUserIds && request.mentionedUserIds.length > 0) {
+      console.warn(
+        `[MessagingService] ⚠️ Mode e2e_only - ${request.mentionedUserIds.length} mention(s) ` +
+        `fournie(s) explicitement. Les mentions doivent être gérées côté client car le serveur ` +
+        `ne peut pas déchiffrer le contenu.`
+      );
     }
+
+    // 3. Déterminer les IDs pour la sauvegarde
+    const { actualSenderId, actualAnonymousSenderId } = await this.resolveActualSenderIds(
+      authContext,
+      senderId,
+      conversationId
+    );
 
     // 4. Sauvegarder le message chiffré sans le déchiffrer
     // Note: originalLanguage n'est pas détectable en mode e2e_only
@@ -759,6 +802,46 @@ export class MessagingService {
     });
 
     return conversation ? conversation.id : null;
+  }
+
+  /**
+   * Résout les IDs réels de l'expéditeur selon le contexte d'authentification
+   * Gère les cas authentifiés et anonymes
+   *
+   * @param authContext - Contexte d'authentification
+   * @param senderId - ID de l'expéditeur (peut être session token pour anonyme)
+   * @param conversationId - ID de la conversation
+   * @returns Object avec actualSenderId et/ou actualAnonymousSenderId
+   */
+  private async resolveActualSenderIds(
+    authContext: AuthenticationContext,
+    senderId: string,
+    conversationId: string
+  ): Promise<{ actualSenderId?: string; actualAnonymousSenderId?: string }> {
+    let actualSenderId: string | undefined = undefined;
+    let actualAnonymousSenderId: string | undefined = undefined;
+
+    if (authContext.isAnonymous) {
+      const identifier = authContext.sessionToken || senderId;
+      const anonymousParticipant = await this.prisma.anonymousParticipant.findFirst({
+        where: {
+          sessionToken: identifier,
+          conversationId: conversationId,
+          isActive: true
+        },
+        select: { id: true }
+      });
+
+      if (anonymousParticipant) {
+        actualAnonymousSenderId = anonymousParticipant.id;
+      } else {
+        throw new Error('Participant anonyme non trouvé pour la sauvegarde');
+      }
+    } else {
+      actualSenderId = authContext.userId || senderId;
+    }
+
+    return { actualSenderId, actualAnonymousSenderId };
   }
 
   /**
