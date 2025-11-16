@@ -117,10 +117,28 @@ export async function notificationRoutes(fastify: FastifyInstance) {
 
       fastify.log.info(`📥 [BACKEND] États des notifications retournées: lues=${readStats.read}, non lues=${readStats.unread}`);
 
+      // Transformer les notifications pour extraire audioEffectsTimeline des attachments
+      const transformedNotifications = notifications.map(notification => {
+        if (notification.message?.attachments) {
+          return {
+            ...notification,
+            message: {
+              ...notification.message,
+              attachments: notification.message.attachments.map((att: any) => ({
+                ...att,
+                // Extraire audioEffectsTimeline du champ metadata JSON et l'exposer au niveau racine
+                audioEffectsTimeline: att.metadata?.audioEffectsTimeline || undefined
+              }))
+            }
+          };
+        }
+        return notification;
+      });
+
       return reply.send({
         success: true,
         data: {
-          notifications,
+          notifications: transformedNotifications,
           pagination: {
             page: pageNum,
             limit: limitNum,

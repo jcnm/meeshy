@@ -1833,8 +1833,12 @@ export class MeeshySocketIOManager {
           createdAt: (message.sender as any).createdAt || new Date(),
           updatedAt: (message.sender as any).updatedAt || new Date()
         } : undefined,
-        // CORRECTION: Inclure les attachments dans le payload
-        attachments: (message as any).attachments || [],
+        // CORRECTION: Inclure les attachments dans le payload avec extraction de audioEffectsTimeline
+        attachments: ((message as any).attachments || []).map((att: any) => ({
+          ...att,
+          // Extraire audioEffectsTimeline du champ metadata JSON et l'exposer au niveau racine
+          audioEffectsTimeline: att.metadata?.audioEffectsTimeline || undefined
+        })),
         // CORRECTION: Inclure l'objet replyTo complet ET replyToId
         replyToId: message.replyToId || undefined,
         replyTo: (message as any).replyTo ? {

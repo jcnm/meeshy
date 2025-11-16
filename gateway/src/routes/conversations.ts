@@ -1119,10 +1119,18 @@ export async function conversationRoutes(fastify: FastifyInstance) {
           };
         }
 
+        // Transformer les attachments pour extraire audioEffectsTimeline du champ metadata
+        const transformedAttachments = (message.attachments || []).map((att: any) => ({
+          ...att,
+          // Extraire audioEffectsTimeline du champ metadata JSON et l'exposer au niveau racine
+          audioEffectsTimeline: att.metadata?.audioEffectsTimeline || undefined
+        }));
+
         return {
           ...message,
           originalLanguage: message.originalLanguage || 'fr', // Garantir une langue par défaut
           translations: message.translations, // Garder toutes les traductions
+          attachments: transformedAttachments, // Utiliser les attachments transformés
           replyTo: adaptedReplyTo,
           userPreferredLanguage: userPreferredLanguage // Indiquer au frontend la langue préférée
         };

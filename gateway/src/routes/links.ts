@@ -1234,8 +1234,12 @@ export async function linksRoutes(fastify: FastifyInstance) {
           lastName: message.anonymousSender.lastName,
           language: message.anonymousSender.language
         } : null,
-        // Inclure les attachments
-        attachments: (message as any).attachments || [],
+        // Inclure les attachments avec extraction de audioEffectsTimeline
+        attachments: ((message as any).attachments || []).map((att: any) => ({
+          ...att,
+          // Extraire audioEffectsTimeline du champ metadata JSON et l'exposer au niveau racine
+          audioEffectsTimeline: att.metadata?.audioEffectsTimeline || undefined
+        })),
         // Inclure replyTo complet si présent
         replyTo: (message as any).replyTo ? {
           id: (message as any).replyTo.id,
