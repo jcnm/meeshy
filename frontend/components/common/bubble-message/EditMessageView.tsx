@@ -2,7 +2,7 @@
 
 import { memo, useState, useCallback, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { X, Save, AlertTriangle, Globe } from 'lucide-react';
+import { X, Save, AlertTriangle, Globe, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -41,6 +41,7 @@ export const EditMessageView = memo(function EditMessageView({
   const [content, setContent] = useState(message.originalContent || message.content);
   const [hasChanges, setHasChanges] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   // IMPORTANT: Priorité à message.conversationId (toujours un ObjectId valide du backend)
   // Fallback vers conversationId prop seulement si message.conversationId n'existe pas
@@ -62,6 +63,14 @@ export const EditMessageView = memo(function EditMessageView({
   const [mentionQuery, setMentionQuery] = useState('');
   const [mentionPosition, setMentionPosition] = useState<{ top?: number; bottom?: number; left: number }>({ left: 0 });
   const [mentionCursorStart, setMentionCursorStart] = useState(0);
+
+  // Détection mobile
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Focus sur le textarea au mount
   useEffect(() => {
@@ -198,6 +207,97 @@ export const EditMessageView = memo(function EditMessageView({
   const originalLanguageInfo = getLanguageInfo(message.originalLanguage || 'fr');
   const hasTranslations = message.translations && message.translations.length > 0;
 
+  // Version mobile épurée
+  if (isMobile) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.15 }}
+        className={cn(
+          "relative w-full rounded-xl border-2 overflow-hidden shadow-xl",
+          isOwnMessage
+            ? "bg-blue-50 dark:bg-blue-950 border-blue-300 dark:border-blue-700"
+            : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
+        )}
+        onKeyDown={handleKeyDown}
+      >
+        {/* Textarea épuré sans titre */}
+        <Textarea
+          ref={textareaRef}
+          value={content}
+          onChange={handleContentChange}
+          placeholder={t('enterMessageContent')}
+          className={cn(
+            "min-h-[120px] resize-none text-base border-0 focus-visible:ring-0 p-4",
+            isOwnMessage
+              ? "bg-blue-50 dark:bg-blue-950 text-gray-900 dark:text-gray-100"
+              : "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+          )}
+          disabled={isSaving}
+          style={{ fontSize: '16px' }} // Éviter le zoom iOS
+        />
+
+        {/* Erreur si présente */}
+        {saveError && (
+          <div className="px-4 pb-2">
+            <p className="text-xs text-red-600 dark:text-red-400">{saveError}</p>
+          </div>
+        )}
+
+        {/* Boutons simples en bas */}
+        <div className={cn(
+          "flex items-center justify-end gap-3 p-4 border-t",
+          isOwnMessage
+            ? "border-blue-200 dark:border-blue-800 bg-blue-100/50 dark:bg-blue-900/30"
+            : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"
+        )}>
+          {/* Bouton Annuler (X) */}
+          <Button
+            onClick={onCancel}
+            disabled={isSaving}
+            size="lg"
+            variant="ghost"
+            className="h-12 w-12 p-0 rounded-full"
+          >
+            <X className="h-6 w-6" />
+          </Button>
+
+          {/* Bouton Valider (Check) */}
+          <Button
+            onClick={handleSave}
+            disabled={!hasChanges || !content.trim() || isSaving}
+            size="lg"
+            className={cn(
+              "h-12 w-12 p-0 rounded-full",
+              isOwnMessage
+                ? "bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                : "bg-green-600 hover:bg-green-700"
+            )}
+          >
+            <Check className="h-6 w-6" />
+          </Button>
+        </div>
+
+        {/* Autocomplete des mentions */}
+        {showMentionAutocomplete && effectiveConversationId && (
+          <MentionAutocomplete
+            conversationId={effectiveConversationId}
+            query={mentionQuery}
+            onSelect={handleMentionSelect}
+            onClose={() => {
+              setShowMentionAutocomplete(false);
+              setMentionQuery('');
+            }}
+            position={mentionPosition}
+          />
+        )}
+      </motion.div>
+    );
+  }
+
+  // Version desktop complète
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95, y: -10 }}

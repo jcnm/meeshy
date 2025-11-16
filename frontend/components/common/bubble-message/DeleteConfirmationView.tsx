@@ -1,8 +1,8 @@
 'use client';
 
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { X, Trash2, AlertTriangle, FileText, Heart, Paperclip } from 'lucide-react';
+import { X, Trash2, AlertTriangle, FileText, Heart, Paperclip, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -28,6 +28,15 @@ export const DeleteConfirmationView = memo(function DeleteConfirmationView({
   deleteError
 }: DeleteConfirmationViewProps) {
   const { t } = useI18n('deleteMessage');
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Détection mobile
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleConfirm = useCallback(async () => {
     try {
@@ -53,10 +62,79 @@ export const DeleteConfirmationView = memo(function DeleteConfirmationView({
   const reactionCount = message.reactions?.length || 0;
 
   // Tronquer le contenu pour l'aperçu
-  const previewContent = message.content.length > 100 
+  const previewContent = message.content.length > 100
     ? `${message.content.substring(0, 100)}...`
     : message.content;
 
+  // Version mobile épurée (alerte simple)
+  if (isMobile) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        transition={{ duration: 0.15 }}
+        className="relative w-full max-w-sm mx-auto rounded-2xl border-2 border-red-400 dark:border-red-600 bg-red-50 dark:bg-red-950 overflow-hidden shadow-2xl"
+        onKeyDown={handleKeyDown}
+      >
+        {/* Icône alerte + message simple */}
+        <div className="p-6 text-center space-y-4">
+          <div className="flex justify-center">
+            <div className="p-4 rounded-full bg-red-200 dark:bg-red-900">
+              <AlertTriangle className="h-8 w-8 text-red-700 dark:text-red-400" />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="text-lg font-bold text-red-900 dark:text-red-200">
+              {t('deleteMessage')}?
+            </h3>
+            <p className="text-sm text-red-800 dark:text-red-300">
+              {t('irreversibleAction')}
+            </p>
+          </div>
+
+          {/* Preview minimal */}
+          <div className="p-3 bg-white/60 dark:bg-black/20 rounded-lg border border-red-300 dark:border-red-700">
+            <p className="text-xs text-gray-700 dark:text-gray-300 line-clamp-2">
+              "{previewContent}"
+            </p>
+          </div>
+
+          {/* Erreur si présente */}
+          {deleteError && (
+            <p className="text-xs text-red-700 dark:text-red-400">{deleteError}</p>
+          )}
+        </div>
+
+        {/* Boutons simples en bas */}
+        <div className="flex items-center justify-center gap-4 p-4 border-t border-red-300 dark:border-red-800 bg-red-100/50 dark:bg-red-900/30">
+          {/* Bouton Annuler (X) */}
+          <Button
+            onClick={onCancel}
+            disabled={isDeleting}
+            size="lg"
+            variant="ghost"
+            className="h-12 w-12 p-0 rounded-full"
+          >
+            <X className="h-6 w-6" />
+          </Button>
+
+          {/* Bouton Supprimer (Check) - rouge */}
+          <Button
+            onClick={handleConfirm}
+            disabled={isDeleting}
+            size="lg"
+            className="h-12 w-12 p-0 rounded-full bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800"
+          >
+            <Check className="h-6 w-6" />
+          </Button>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // Version desktop complète
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95, y: -10 }}

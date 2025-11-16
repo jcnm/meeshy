@@ -2,7 +2,7 @@
 
 import { memo, useState, useCallback, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { X, Flag, AlertTriangle } from 'lucide-react';
+import { X, Flag, AlertTriangle, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -45,6 +45,15 @@ export const ReportMessageView = memo(function ReportMessageView({
   const [reason, setReason] = useState('');
   const [canSubmit, setCanSubmit] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Détection mobile
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Focus sur le select au mount
   useEffect(() => {
@@ -86,6 +95,77 @@ export const ReportMessageView = memo(function ReportMessageView({
 
   const selectedReportInfo = reportTypes.find(type => type.value === reportType);
 
+  // Version mobile épurée
+  if (isMobile) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.15 }}
+        className="relative w-full rounded-xl border-2 border-red-300 dark:border-red-700 bg-white dark:bg-gray-800 overflow-hidden shadow-xl"
+        onKeyDown={handleKeyDown}
+      >
+        {/* Select épuré */}
+        <div className="p-4 space-y-3">
+          <Select value={reportType} onValueChange={setReportType} disabled={isSubmitting}>
+            <SelectTrigger className="w-full text-base" style={{ fontSize: '16px' }}>
+              <SelectValue placeholder={t('reportTypePlaceholder')} />
+            </SelectTrigger>
+            <SelectContent>
+              {reportTypes.map((type) => (
+                <SelectItem key={type.value} value={type.value}>
+                  {type.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Textarea épuré */}
+          <Textarea
+            ref={textareaRef}
+            value={reason}
+            onChange={handleReasonChange}
+            placeholder={t('reasonPlaceholder')}
+            className="min-h-[100px] resize-none text-base border-gray-300 dark:border-gray-600"
+            disabled={isSubmitting}
+            style={{ fontSize: '16px' }}
+          />
+
+          {/* Erreur si présente */}
+          {submitError && (
+            <p className="text-xs text-red-600 dark:text-red-400">{submitError}</p>
+          )}
+        </div>
+
+        {/* Boutons simples en bas */}
+        <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+          {/* Bouton Annuler (X) */}
+          <Button
+            onClick={onCancel}
+            disabled={isSubmitting}
+            size="lg"
+            variant="ghost"
+            className="h-12 w-12 p-0 rounded-full"
+          >
+            <X className="h-6 w-6" />
+          </Button>
+
+          {/* Bouton Signaler (Check) */}
+          <Button
+            onClick={handleSubmit}
+            disabled={!canSubmit || isSubmitting}
+            size="lg"
+            className="h-12 w-12 p-0 rounded-full bg-red-600 hover:bg-red-700"
+          >
+            <Check className="h-6 w-6" />
+          </Button>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // Version desktop complète
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95, y: -10 }}
