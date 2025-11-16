@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { Play, Pause, Download, AlertTriangle, Gauge } from 'lucide-react';
+import { Play, Pause, AlertTriangle, Gauge } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -1016,7 +1016,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
           </div>
         </div>
 
-        {/* Colonne actions droite: Effects + Download */}
+        {/* Colonne actions droite: Effects uniquement */}
         <div className="flex flex-col gap-1 items-center">
           {/* Bouton Effects - Style uniforme sans téléchargement */}
           {appliedEffects.length > 0 && (
@@ -1152,21 +1152,6 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-
-          {/* Bouton télécharger - configuration parfaite d'origine */}
-          <a
-            href={objectUrl || '#'}
-            download={attachment.originalName}
-            className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-sm transition-all"
-            title="Télécharger"
-            onClick={(e) => {
-              if (!objectUrl) {
-                e.preventDefault();
-              }
-            }}
-          >
-            <Download className="w-2.5 h-2.5 text-gray-700 dark:text-gray-200" />
-          </a>
         </div>
       </div>
 
