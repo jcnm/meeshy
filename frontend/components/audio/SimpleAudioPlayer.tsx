@@ -269,17 +269,18 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
       console.log('🔍 [SimpleAudioPlayer] Event:', {
         action: event.action,
         effectType: event.effectType,
-        hasConfig: !!event.config,
-        config: event.config,
+        hasParams: !!event.params,
+        params: event.params,
       });
 
-      if (event.action === 'activate' && event.config) {
+      // Collecter les configurations des événements 'activate' ET 'update'
+      if ((event.action === 'activate' || event.action === 'update') && event.params) {
         if (!configs[event.effectType]) {
           configs[event.effectType] = [];
         }
         configs[event.effectType].push({
           timestamp: event.timestamp,
-          config: event.config,
+          config: event.params as Record<string, number>,
         });
       }
     }
