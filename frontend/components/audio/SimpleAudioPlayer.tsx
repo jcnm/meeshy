@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { Play, Pause, AlertTriangle, Gauge } from 'lucide-react';
+import { Play, Pause, AlertTriangle, Gauge, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -880,7 +880,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
 
   return (
     <div
-      className={`relative flex flex-col gap-2 p-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg border ${
+      className={`relative flex flex-col gap-1.5 p-2 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg border ${
         hasError ? 'border-red-300 dark:border-red-700' : 'border-blue-200 dark:border-gray-700'
       } shadow-md hover:shadow-lg transition-all duration-200 w-full sm:max-w-2xl ${className}`}
     >
@@ -998,9 +998,9 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
             />
           </div>
 
-          {/* Ligne en dessous: Timer + Effects */}
+          {/* Ligne en dessous: Timer + Effects + Download */}
           <div className="flex items-center justify-center gap-2">
-            <div className="text-[11px] font-mono text-gray-600 dark:text-gray-300">
+            <div className="text-[12px] font-mono text-gray-600 dark:text-gray-300">
               {hasError ? (
                 <span className="font-semibold text-red-600 dark:text-red-400 text-[10px]">
                   {errorMessage}
@@ -1016,13 +1016,13 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
               )}
             </div>
 
-            {/* Bouton Effects - <a> Couleur violette sans téléchargement */}
+            {/* Bouton Effects - sans fond */}
             {appliedEffects.length > 0 && (
               <DropdownMenu open={isEffectsDropdownOpen} onOpenChange={setIsEffectsDropdownOpen}>
                 <DropdownMenuTrigger asChild>
                   <a
                     href="#"
-                    className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 bg-purple-100/70 dark:bg-purple-900/70 hover:bg-purple-100 dark:hover:bg-purple-900 rounded-full shadow-sm transition-all cursor-pointer border border-purple-300 dark:border-purple-700"
+                    className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all cursor-pointer"
                     title={appliedEffects.length === 1 ? `Effet: ${appliedEffects[0]}` : `${appliedEffects.length} effets appliqués`}
                     onClick={(e) => e.preventDefault()}
                   >
@@ -1152,6 +1152,16 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
+
+            {/* Bouton Download */}
+            <a
+              href={attachmentFileUrl}
+              download
+              className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all"
+              title="Télécharger l'audio"
+            >
+              <Download className="w-3 h-3 text-gray-700 dark:text-gray-200" />
+            </a>
           </div>
         </div>
       </div>
