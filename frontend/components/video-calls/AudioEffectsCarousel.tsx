@@ -226,10 +226,15 @@ export function AudioEffectsCarousel({
                   </div>
                 )}
 
-                {/* Badge ON/OFF en haut à gauche pour effet inactif */}
-                {tile.id !== 'reset' && !isActive && (
-                  <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-gray-700/80 rounded text-[8px] font-bold text-gray-300">
-                    OFF
+                {/* Badge ON/OFF en haut à gauche */}
+                {tile.id !== 'reset' && (
+                  <div className={cn(
+                    "absolute top-2 left-2 px-1.5 py-0.5 rounded text-[8px] font-bold",
+                    isActive
+                      ? "bg-green-500/90 text-white"
+                      : "bg-gray-700/80 text-gray-300"
+                  )}>
+                    {isActive ? 'ON' : 'OFF'}
                   </div>
                 )}
 
