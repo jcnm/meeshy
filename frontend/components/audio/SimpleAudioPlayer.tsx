@@ -65,7 +65,6 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
   const [playbackRate, setPlaybackRate] = useState(1.0); // Vitesse de lecture (0.1 à 5)
   const [isSpeedPopoverOpen, setIsSpeedPopoverOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const animationFrameRef = useRef<number | null>(null);
 
@@ -237,14 +236,6 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
       }
     };
   }, [attachmentId, attachmentFileUrl]);
-
-  // Détecter si on est sur mobile
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   // Fonction pour mettre à jour le temps avec requestAnimationFrame (fluide)
   const updateProgress = useCallback(() => {
@@ -542,6 +533,65 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
         )}
       </Button>
 
+      {/* Contrôle de vitesse de lecture - À gauche du minuteur */}
+      <Popover open={isSpeedPopoverOpen} onOpenChange={setIsSpeedPopoverOpen}>
+        <PopoverTrigger asChild>
+          <button
+            className="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-md transition-all"
+            title={`Vitesse: ${playbackRate}x`}
+          >
+            <Gauge className="w-3 h-3 text-gray-700 dark:text-gray-300" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-16 p-2" side="top" align="center">
+          <div className="flex flex-col items-center gap-2">
+            {/* Icône reset - visible seulement si pas à 1x */}
+            {playbackRate !== 1.0 && (
+              <button
+                onClick={() => setPlaybackRate(1.0)}
+                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                title="Réinitialiser à 1x"
+              >
+                <RotateCcw className="w-3 h-3 text-gray-600 dark:text-gray-400" />
+              </button>
+            )}
+
+            {/* Slider vertical - toujours même taille */}
+            <div className="relative h-20 w-10 flex items-center justify-end">
+              {/* Marqueurs des points d'accroche */}
+              <div className="absolute left-0 h-full flex flex-col justify-between py-1 pointer-events-none">
+                <span className="text-[7px] text-gray-500 dark:text-gray-400">5x</span>
+                <span className="text-[7px] font-bold text-purple-600 dark:text-purple-400">3x</span>
+                <span className="text-[7px] font-bold text-purple-600 dark:text-purple-400">2x</span>
+                <span className="text-[7px] font-bold text-purple-600 dark:text-purple-400">1.5x</span>
+                <span className="text-[7px] font-bold text-blue-600 dark:text-blue-400">1x</span>
+                <span className="text-[7px] text-gray-500 dark:text-gray-400">0.1x</span>
+              </div>
+
+              {/* Slider (input vertical) */}
+              <input
+                type="range"
+                min="0.1"
+                max="5"
+                step="0.1"
+                value={playbackRate}
+                onChange={handlePlaybackRateChange}
+                className="h-full w-2 appearance-none bg-transparent cursor-pointer"
+                style={{
+                  writingMode: 'bt-lr',
+                  WebkitAppearance: 'slider-vertical',
+                }}
+              />
+            </div>
+
+            {/* Affichage de la vitesse actuelle */}
+            <div className="text-[10px] font-bold text-blue-600 dark:text-blue-400">
+              {playbackRate.toFixed(1)}x
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+
       {/* Zone de progression et temps */}
       <div className="flex-1 min-w-0">
         {/* Barre de progression */}
@@ -602,100 +652,32 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
         </div>
       </div>
 
-      {/* Groupe de contrôles à droite - Petite taille (taille réactions) */}
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col gap-1 z-10">
-        {/* Badge des effets appliqués */}
-        {appliedEffects.length > 0 && (
-          <div
-            className="inline-flex items-center justify-center w-6 h-6 bg-purple-500 dark:bg-purple-600 rounded-full shadow-md cursor-default"
-            title={appliedEffects.length === 1 ? `Effet: ${appliedEffects[0]}` : `${appliedEffects.length} effets appliqués`}
-          >
-            <span className="text-[12px]">
-              {appliedEffects.length === 1 ? effectIcons[appliedEffects[0]] : '🎚️'}
-            </span>
-          </div>
-        )}
-
-        {/* Contrôle de vitesse de lecture - Taille réduite */}
-        <Popover open={isSpeedPopoverOpen} onOpenChange={setIsSpeedPopoverOpen}>
-          <PopoverTrigger asChild>
-            <button
-              className="inline-flex items-center justify-center w-6 h-6 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-md transition-all"
-              title={`Vitesse: ${playbackRate}x`}
-            >
-              <Gauge className="w-3 h-3 text-gray-700 dark:text-gray-300" />
-            </button>
-          </PopoverTrigger>
-          <PopoverContent
-            className={isMobile ? "w-12 p-2" : "w-20 p-2"}
-            side="left"
-            align="center"
-          >
-            <div className="flex flex-col items-center gap-2">
-              {/* Icône reset (remplace le titre) - visible seulement si pas à 1x */}
-              {playbackRate !== 1.0 && (
-                <button
-                  onClick={() => setPlaybackRate(1.0)}
-                  className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-                  title="Réinitialiser à 1x"
-                >
-                  <RotateCcw className="w-3 h-3 text-gray-600 dark:text-gray-400" />
-                </button>
-              )}
-
-              {/* Slider vertical */}
-              <div className={`relative ${isMobile ? 'h-24 w-6' : 'h-24 w-12'} flex items-center ${isMobile ? 'justify-center' : 'justify-end'}`}>
-                {/* Marqueurs des points d'accroche - DESKTOP SEULEMENT */}
-                {!isMobile && (
-                  <div className="absolute left-0 h-full flex flex-col justify-between py-1 pointer-events-none">
-                    <span className="text-[7px] text-gray-500 dark:text-gray-400">5x</span>
-                    <span className="text-[7px] font-bold text-purple-600 dark:text-purple-400">3x</span>
-                    <span className="text-[7px] font-bold text-purple-600 dark:text-purple-400">2x</span>
-                    <span className="text-[7px] font-bold text-purple-600 dark:text-purple-400">1.5x</span>
-                    <span className="text-[7px] font-bold text-blue-600 dark:text-blue-400">1x</span>
-                    <span className="text-[7px] text-gray-500 dark:text-gray-400">0.1x</span>
-                  </div>
-                )}
-
-                {/* Slider (input vertical) - aligné à droite */}
-                <input
-                  type="range"
-                  min="0.1"
-                  max="5"
-                  step="0.1"
-                  value={playbackRate}
-                  onChange={handlePlaybackRateChange}
-                  className="h-full w-2 appearance-none bg-transparent cursor-pointer"
-                  style={{
-                    writingMode: 'bt-lr', // Vertical
-                    WebkitAppearance: 'slider-vertical',
-                  }}
-                />
-              </div>
-
-              {/* Affichage de la vitesse actuelle */}
-              <div className="text-[10px] font-bold text-blue-600 dark:text-blue-400">
-                {playbackRate.toFixed(1)}x
-              </div>
-            </div>
-          </PopoverContent>
-        </Popover>
-
-        {/* Bouton télécharger - Taille réduite */}
-        <a
-          href={objectUrl || '#'}
-          download={attachment.originalName}
-          className="inline-flex items-center justify-center w-6 h-6 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-md transition-all"
-          title="Télécharger"
-          onClick={(e) => {
-            if (!objectUrl) {
-              e.preventDefault();
-            }
-          }}
+      {/* Badge des effets appliqués - En haut à droite */}
+      {appliedEffects.length > 0 && (
+        <div
+          className="absolute top-2 right-2 z-10 inline-flex items-center justify-center w-6 h-6 bg-purple-500 dark:bg-purple-600 rounded-full shadow-md cursor-default"
+          title={appliedEffects.length === 1 ? `Effet: ${appliedEffects[0]}` : `${appliedEffects.length} effets appliqués`}
         >
-          <Download className="w-3 h-3 text-gray-700 dark:text-gray-200" />
-        </a>
-      </div>
+          <span className="text-[12px]">
+            {appliedEffects.length === 1 ? effectIcons[appliedEffects[0]] : '🎚️'}
+          </span>
+        </div>
+      )}
+
+      {/* Bouton télécharger - En bas à droite */}
+      <a
+        href={objectUrl || '#'}
+        download={attachment.originalName}
+        className="absolute bottom-2 right-2 z-10 inline-flex items-center justify-center w-6 h-6 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-md transition-all"
+        title="Télécharger"
+        onClick={(e) => {
+          if (!objectUrl) {
+            e.preventDefault();
+          }
+        }}
+      >
+        <Download className="w-3 h-3 text-gray-700 dark:text-gray-200" />
+      </a>
 
       {/* Audio element caché - src from object URL */}
       <audio
