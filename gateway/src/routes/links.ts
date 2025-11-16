@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { logError } from '../utils/logger';
 import { UserRoleEnum } from '../../shared/types';
 import { TrackingLinkService } from '../services/TrackingLinkService';
+import { transformAttachments } from '../utils/attachment-transformer';
 import { 
   createUnifiedAuthMiddleware,
   UnifiedAuthRequest,
@@ -1235,11 +1236,7 @@ export async function linksRoutes(fastify: FastifyInstance) {
           language: message.anonymousSender.language
         } : null,
         // Inclure les attachments avec extraction de audioEffectsTimeline
-        attachments: ((message as any).attachments || []).map((att: any) => ({
-          ...att,
-          // Extraire audioEffectsTimeline du champ metadata JSON et l'exposer au niveau racine
-          audioEffectsTimeline: att.metadata?.audioEffectsTimeline || undefined
-        })),
+        attachments: transformAttachments((message as any).attachments),
         // Inclure replyTo complet si présent
         replyTo: (message as any).replyTo ? {
           id: (message as any).replyTo.id,

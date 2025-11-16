@@ -1,6 +1,7 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { logError } from '../utils/logger';
+import { transformAttachments } from '../utils/attachment-transformer';
 
 // Schémas de validation
 const createNotificationSchema = z.object({
@@ -124,11 +125,7 @@ export async function notificationRoutes(fastify: FastifyInstance) {
             ...notification,
             message: {
               ...notification.message,
-              attachments: notification.message.attachments.map((att: any) => ({
-                ...att,
-                // Extraire audioEffectsTimeline du champ metadata JSON et l'exposer au niveau racine
-                audioEffectsTimeline: att.metadata?.audioEffectsTimeline || undefined
-              }))
+              attachments: transformAttachments(notification.message.attachments)
             }
           };
         }

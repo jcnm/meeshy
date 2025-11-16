@@ -8,6 +8,7 @@ import { Server as HTTPServer } from 'http';
 import { PrismaClient } from '../../shared/prisma/client';
 import { TranslationService, MessageData } from '../services/TranslationService';
 import { MaintenanceService } from '../services/maintenance.service';
+import { transformAttachments } from '../utils/attachment-transformer';
 import { MessagingService } from '../services/MessagingService';
 import { CallEventsHandler } from './CallEventsHandler';
 import { CallService } from '../services/CallService';
@@ -1834,11 +1835,7 @@ export class MeeshySocketIOManager {
           updatedAt: (message.sender as any).updatedAt || new Date()
         } : undefined,
         // CORRECTION: Inclure les attachments dans le payload avec extraction de audioEffectsTimeline
-        attachments: ((message as any).attachments || []).map((att: any) => ({
-          ...att,
-          // Extraire audioEffectsTimeline du champ metadata JSON et l'exposer au niveau racine
-          audioEffectsTimeline: att.metadata?.audioEffectsTimeline || undefined
-        })),
+        attachments: transformAttachments((message as any).attachments),
         // CORRECTION: Inclure l'objet replyTo complet ET replyToId
         replyToId: message.replyToId || undefined,
         replyTo: (message as any).replyTo ? {
