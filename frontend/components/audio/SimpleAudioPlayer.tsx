@@ -922,10 +922,10 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                 <Gauge className="w-2.5 h-2.5 text-gray-700 dark:text-gray-200" />
               </a>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-12 p-2" side="top" align="center">
-              <div className="flex flex-col items-center gap-2">
+            <DropdownMenuContent className="w-6 p-1" side="top" align="center">
+              <div className="flex flex-col items-center gap-1">
                 {/* Slider vertical simplifié */}
-                <div className="relative h-24 flex items-center justify-center">
+                <div className="relative h-20 flex items-center justify-center w-full">
                   {/* Slider (input vertical) */}
                   <input
                     type="range"
@@ -934,16 +934,17 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                     step="0.1"
                     value={playbackRate}
                     onChange={handlePlaybackRateChange}
-                    className="h-full w-2 appearance-none bg-transparent cursor-pointer"
+                    className="h-full appearance-none bg-gray-200 dark:bg-gray-600 rounded-full cursor-pointer"
                     style={{
                       writingMode: 'bt-lr',
                       WebkitAppearance: 'slider-vertical',
+                      width: '4px',
                     }}
                   />
                 </div>
 
                 {/* Affichage de la vitesse actuelle */}
-                <div className="text-[10px] font-bold text-blue-600 dark:text-blue-400">
+                <div className="text-[8px] font-bold text-blue-600 dark:text-blue-400">
                   {playbackRate.toFixed(1)}x
                 </div>
               </div>
