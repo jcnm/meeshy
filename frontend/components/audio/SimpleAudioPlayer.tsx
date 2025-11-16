@@ -68,7 +68,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
   const audioRef = useRef<HTMLAudioElement>(null);
   const animationFrameRef = useRef<number | null>(null);
 
-  // Extraire les effets appliqués depuis la timeline
+  // Extraire les effets appliqués depuis la timeline - VERSION ROBUSTE
   const appliedEffects = useMemo((): AudioEffectType[] => {
     // audioEffectsTimeline peut être soit directement sur attachment (upload response)
     // soit dans attachment.metadata (messages récupérés depuis la DB)
@@ -81,6 +81,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
       hasMetadataTimeline: !!(attachment as any).metadata?.audioEffectsTimeline,
       timeline: timeline,
       timelineEvents: timeline?.events,
+      timelineMetadata: timeline?.metadata,
       attachmentKeys: Object.keys(attachment),
       fullAttachmentStringified: JSON.stringify(attachment, null, 2)
     });
@@ -90,16 +91,39 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
       return [];
     }
 
-    // Récupérer les effets uniques qui ont été activés au moins une fois
+    // STRATÉGIE ROBUSTE MULTI-SOURCES:
+    // 1. Priorité: metadata.finalActiveEffects (le plus fiable - effets actifs à la fin)
+    // 2. Fallback: Analyser tous les événements (activate + deactivate pour détecter les effets utilisés)
     const effects = new Set<AudioEffectType>();
+
+    // Source 1: metadata.finalActiveEffects (si disponible)
+    if (timeline.metadata?.finalActiveEffects && Array.isArray(timeline.metadata.finalActiveEffects)) {
+      console.log('✅ [SimpleAudioPlayer] Utilisation de metadata.finalActiveEffects:', timeline.metadata.finalActiveEffects);
+      timeline.metadata.finalActiveEffects.forEach(effect => effects.add(effect));
+    }
+
+    // Source 2: Parcourir tous les événements pour trouver les effets activés
+    // Un effet est considéré "utilisé" s'il a été activé au moins une fois
     for (const event of timeline.events) {
       if (event.action === 'activate') {
         effects.add(event.effectType);
       }
+      // IMPORTANT: Si un effet a été désactivé, c'est qu'il était actif avant
+      // Donc on l'ajoute aussi (au cas où l'événement 'activate' manque)
+      else if (event.action === 'deactivate') {
+        effects.add(event.effectType);
+      }
     }
 
-    console.log('✅ [SimpleAudioPlayer] Effets appliqués extraits:', Array.from(effects));
-    return Array.from(effects);
+    const effectsArray = Array.from(effects);
+    console.log('✅ [SimpleAudioPlayer] Effets appliqués extraits:', {
+      count: effectsArray.length,
+      effects: effectsArray,
+      fromMetadata: timeline.metadata?.finalActiveEffects?.length || 0,
+      fromEvents: effects.size
+    });
+
+    return effectsArray;
   }, [attachment]);
 
   // Icônes pour les effets
