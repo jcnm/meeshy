@@ -1,8 +1,13 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { Play, Pause, Download, AlertTriangle } from 'lucide-react';
+import { Play, Pause, Download, AlertTriangle, Gauge } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
 import type { AudioEffectType } from '@/shared/types/video-call';
 import { apiService } from '@/services/api.service';
@@ -58,6 +63,8 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
+  const [playbackRate, setPlaybackRate] = useState(1.0); // Vitesse de lecture (0.1 à 5)
+  const [isSpeedPopoverOpen, setIsSpeedPopoverOpen] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const animationFrameRef = useRef<number | null>(null);
 
@@ -416,6 +423,32 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     }
   }, [attachmentDuration, duration]);
 
+  // Appliquer la vitesse de lecture à l'élément audio
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.playbackRate = playbackRate;
+    }
+  }, [playbackRate]);
+
+  // Handler pour changer la vitesse de lecture avec points d'accroche
+  const handlePlaybackRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+
+    // Points d'accroche (snap points) - tolérance de 0.05
+    const snapPoints = [1.0, 1.5, 2.0, 3.0];
+    const snapTolerance = 0.05;
+
+    let finalValue = value;
+    for (const snapPoint of snapPoints) {
+      if (Math.abs(value - snapPoint) < snapTolerance) {
+        finalValue = snapPoint;
+        break;
+      }
+    }
+
+    setPlaybackRate(finalValue);
+  };
+
   // Handler pour changer la position dans l'audio
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     const time = parseFloat(e.target.value);
@@ -475,6 +508,94 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
           <Play className="w-5 h-5 ml-0.5 fill-current" />
         )}
       </Button>
+
+      {/* Contrôle de vitesse de lecture - Popover avec slider vertical */}
+      <Popover open={isSpeedPopoverOpen} onOpenChange={setIsSpeedPopoverOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="flex-shrink-0 w-10 h-10 rounded-full hover:bg-white/50 dark:hover:bg-gray-700/50 transition-all duration-200 p-0 flex flex-col items-center justify-center"
+            title={`Vitesse: ${playbackRate}x`}
+          >
+            <Gauge className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+            <span className="text-[8px] font-bold text-gray-700 dark:text-gray-300">
+              {playbackRate.toFixed(1)}x
+            </span>
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-20 p-3" side="top" align="center">
+          <div className="flex flex-col items-center gap-2">
+            {/* Titre */}
+            <div className="text-[10px] font-semibold text-gray-600 dark:text-gray-400 mb-1">
+              Vitesse
+            </div>
+
+            {/* Slider vertical */}
+            <div className="relative h-48 w-8 flex items-center justify-center">
+              {/* Marqueurs des points d'accroche */}
+              <div className="absolute left-0 h-full flex flex-col justify-between py-2 pointer-events-none">
+                <div className="flex items-center gap-1">
+                  <div className="w-1 h-0.5 bg-gray-400 dark:bg-gray-500" />
+                  <span className="text-[7px] text-gray-500 dark:text-gray-400">5x</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-1.5 h-0.5 bg-purple-500" />
+                  <span className="text-[7px] font-bold text-purple-600 dark:text-purple-400">3x</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-1.5 h-0.5 bg-purple-500" />
+                  <span className="text-[7px] font-bold text-purple-600 dark:text-purple-400">2x</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-1.5 h-0.5 bg-purple-500" />
+                  <span className="text-[7px] font-bold text-purple-600 dark:text-purple-400">1.5x</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-0.5 bg-blue-600 dark:bg-blue-500" />
+                  <span className="text-[7px] font-bold text-blue-600 dark:text-blue-400">1x</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-1 h-0.5 bg-gray-400 dark:bg-gray-500" />
+                  <span className="text-[7px] text-gray-500 dark:text-gray-400">0.1x</span>
+                </div>
+              </div>
+
+              {/* Slider (input vertical) */}
+              <input
+                type="range"
+                min="0.1"
+                max="5"
+                step="0.1"
+                value={playbackRate}
+                onChange={handlePlaybackRateChange}
+                className="absolute h-full w-2 appearance-none bg-transparent cursor-pointer"
+                style={{
+                  writingMode: 'bt-lr', // Vertical
+                  WebkitAppearance: 'slider-vertical',
+                }}
+              />
+            </div>
+
+            {/* Affichage de la vitesse actuelle */}
+            <div className="text-sm font-bold text-blue-600 dark:text-blue-400 mt-1">
+              {playbackRate.toFixed(1)}x
+            </div>
+
+            {/* Bouton reset à 1x */}
+            {playbackRate !== 1.0 && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-[10px] h-6 px-2"
+                onClick={() => setPlaybackRate(1.0)}
+              >
+                Réinitialiser
+              </Button>
+            )}
+          </div>
+        </PopoverContent>
+      </Popover>
 
       {/* Zone de progression et temps */}
       <div className="flex-1 min-w-0">
