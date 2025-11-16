@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { Play, Pause, AlertTriangle, Gauge, Download } from 'lucide-react';
+import { Play, Pause, AlertTriangle, Gauge, Download, Mic2, Baby, Skull, Music } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -141,12 +141,20 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     return effectsArray;
   }, [attachment]);
 
-  // Icônes pour les effets
-  const effectIcons: Record<AudioEffectType, string> = {
-    'voice-coder': '🎵',
-    'baby-voice': '👶',
-    'demon-voice': '😈',
-    'back-sound': '🎶',
+  // Composant pour les icônes d'effets
+  const EffectIcon: React.FC<{ effect: AudioEffectType; className?: string }> = ({ effect, className = 'w-4 h-4' }) => {
+    switch (effect) {
+      case 'voice-coder':
+        return <Mic2 className={className} />;
+      case 'baby-voice':
+        return <Baby className={className} />;
+      case 'demon-voice':
+        return <Skull className={className} />;
+      case 'back-sound':
+        return <Music className={className} />;
+      default:
+        return null;
+    }
   };
 
   // Noms affichables pour les effets
@@ -692,6 +700,238 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     };
   }
 
+  // Fonction pour générer le graphique fusionné de tous les effets
+  const renderMergedEffectsGraph = () => {
+    const totalDuration = duration || attachmentDuration || 1;
+    const width = 350;
+    const height = 200;
+    const padding = { top: 10, right: 10, bottom: 40, left: 40 };
+    const graphWidth = width - padding.left - padding.right;
+    const graphHeight = height - padding.top - padding.bottom;
+
+    // Collecter tous les points de toutes les courbes de tous les effets
+    const allCurves: Array<{
+      effectType: AudioEffectType;
+      key: string;
+      points: Array<{ timestamp: number; value: number }>;
+      color: string;
+    }> = [];
+
+    const curveColors = [
+      '#3b82f6', // blue
+      '#ef4444', // red
+      '#10b981', // green
+      '#f59e0b', // amber
+      '#8b5cf6', // purple
+      '#ec4899', // pink
+      '#06b6d4', // cyan
+      '#14b8a6', // teal
+    ];
+
+    let colorIndex = 0;
+
+    appliedEffects.forEach(effect => {
+      const configs = effectsConfigurations[effect] || [];
+      if (configs.length === 0) return;
+
+      const configKeys = Array.from(new Set(configs.flatMap(c =>
+        Object.keys(c.config).filter(key => typeof c.config[key] === 'number')
+      )));
+
+      configKeys.forEach(key => {
+        const points = configs
+          .filter(c => typeof c.config[key] === 'number' && isFinite(c.config[key]))
+          .map(c => ({
+            timestamp: c.timestamp / 1000,
+            value: c.config[key] as number,
+          }));
+
+        if (points.length > 0) {
+          allCurves.push({
+            effectType: effect,
+            key,
+            points,
+            color: curveColors[colorIndex % curveColors.length],
+          });
+          colorIndex++;
+        }
+      });
+    });
+
+    if (allCurves.length === 0) return null;
+
+    // Calculer min/max global
+    let minValue = Infinity;
+    let maxValue = -Infinity;
+
+    allCurves.forEach(curve => {
+      curve.points.forEach(p => {
+        minValue = Math.min(minValue, p.value);
+        maxValue = Math.max(maxValue, p.value);
+      });
+    });
+
+    // Ajouter une marge de 10%
+    if (isFinite(minValue) && isFinite(maxValue)) {
+      const range = maxValue - minValue;
+      const margin = range * 0.1;
+      minValue -= margin;
+      maxValue += margin;
+    } else {
+      minValue = 0;
+      maxValue = 1;
+    }
+
+    const timeToX = (time: number) => (time / totalDuration) * graphWidth;
+    const valueToY = (value: number) => graphHeight - ((value - minValue) / (maxValue - minValue)) * graphHeight;
+
+    return (
+      <div className="space-y-3">
+        {/* Graphique SVG */}
+        <svg width={width} height={height} className="border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900">
+          {/* Axes */}
+          <line
+            x1={padding.left}
+            y1={padding.top}
+            x2={padding.left}
+            y2={height - padding.bottom}
+            stroke="currentColor"
+            className="text-gray-400"
+            strokeWidth="1"
+          />
+          <line
+            x1={padding.left}
+            y1={height - padding.bottom}
+            x2={width - padding.right}
+            y2={height - padding.bottom}
+            stroke="currentColor"
+            className="text-gray-400"
+            strokeWidth="1"
+          />
+
+          {/* Grille horizontale */}
+          {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => {
+            const y = padding.top + graphHeight * ratio;
+            const value = maxValue - (maxValue - minValue) * ratio;
+            return (
+              <g key={i}>
+                <line
+                  x1={padding.left}
+                  y1={y}
+                  x2={width - padding.right}
+                  y2={y}
+                  stroke="currentColor"
+                  className="text-gray-200 dark:text-gray-700"
+                  strokeWidth="0.5"
+                  strokeDasharray="2,2"
+                />
+                <text
+                  x={padding.left - 5}
+                  y={y}
+                  textAnchor="end"
+                  alignmentBaseline="middle"
+                  className="text-[8px] fill-gray-500 dark:fill-gray-400"
+                >
+                  {value.toFixed(1)}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* Grille verticale (temps) */}
+          {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => {
+            const x = padding.left + graphWidth * ratio;
+            const time = totalDuration * ratio;
+            return (
+              <g key={i}>
+                <line
+                  x1={x}
+                  y1={padding.top}
+                  x2={x}
+                  y2={height - padding.bottom}
+                  stroke="currentColor"
+                  className="text-gray-200 dark:text-gray-700"
+                  strokeWidth="0.5"
+                  strokeDasharray="2,2"
+                />
+                <text
+                  x={x}
+                  y={height - padding.bottom + 15}
+                  textAnchor="middle"
+                  className="text-[8px] fill-gray-500 dark:fill-gray-400"
+                >
+                  {formatTime(time)}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* Toutes les courbes */}
+          {allCurves.map((curve, idx) => {
+            const pointsData = curve.points.map(p => ({
+              x: padding.left + timeToX(p.timestamp),
+              y: padding.top + valueToY(p.value),
+              timestamp: p.timestamp,
+              value: p.value,
+            }));
+
+            if (pointsData.length === 0) return null;
+
+            const pathData = pointsData.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+
+            return (
+              <g key={`${curve.effectType}-${curve.key}`}>
+                <path
+                  d={pathData}
+                  fill="none"
+                  stroke={curve.color}
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity="0.7"
+                />
+                {/* Points */}
+                {pointsData.map((p, i) => (
+                  <circle
+                    key={i}
+                    cx={p.x}
+                    cy={p.y}
+                    r="3"
+                    fill={curve.color}
+                    className="cursor-pointer transition-all"
+                    onClick={() => handleSeekToTime(p.timestamp)}
+                    onMouseEnter={(e) => e.currentTarget.setAttribute('r', '5')}
+                    onMouseLeave={(e) => e.currentTarget.setAttribute('r', '3')}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <title>{`${effectNames[curve.effectType]} - ${curve.key}: ${p.value.toFixed(2)} à ${formatTime(p.timestamp)}`}</title>
+                  </circle>
+                ))}
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* Légende interactive */}
+        <div className="flex flex-wrap gap-2 justify-center">
+          {allCurves.map((curve, idx) => (
+            <div
+              key={`${curve.effectType}-${curve.key}`}
+              className="px-2 py-1 text-xs rounded-full border bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 flex items-center gap-1"
+            >
+              <span
+                className="inline-block w-3 h-3 rounded-full"
+                style={{ backgroundColor: curve.color }}
+              />
+              <EffectIcon effect={curve.effectType} className="w-3 h-3" />
+              <span>{curve.key}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   // Fonction pour générer le graphique SVG d'un effet
   const renderEffectGraph = (effect: AudioEffectType) => {
     const configs = effectsConfigurations[effect] || [];
@@ -1085,9 +1325,11 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                     title={appliedEffects.length === 1 ? `Effet: ${appliedEffects[0]}` : `${appliedEffects.length} effets appliqués`}
                     onClick={(e) => e.preventDefault()}
                   >
-                    <span className="text-[10px]">
-                      {appliedEffects.length === 1 ? effectIcons[appliedEffects[0]] : '🎚️'}
-                    </span>
+                    {appliedEffects.length === 1 ? (
+                      <EffectIcon effect={appliedEffects[0]} className="w-3 h-3" />
+                    ) : (
+                      <Gauge className="w-3 h-3" />
+                    )}
                   </a>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-96 p-4" side="top" align="end">
@@ -1096,7 +1338,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                     <TabsTrigger value="overview" className="text-xs">Vue d'ensemble</TabsTrigger>
                     {appliedEffects.map((effect) => (
                       <TabsTrigger key={effect} value={effect} className="text-xs flex items-center gap-1">
-                        <span>{effectIcons[effect]}</span>
+                        <EffectIcon effect={effect} className="w-3.5 h-3.5" />
                         <span className="hidden sm:inline">{effectNames[effect]}</span>
                       </TabsTrigger>
                     ))}
@@ -1121,7 +1363,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                             return (
                               <div key={effect} className="space-y-1">
                                 <div className="flex items-center gap-2 text-xs">
-                                  <span>{effectIcons[effect]}</span>
+                                  <EffectIcon effect={effect} className="w-3.5 h-3.5" />
                                   <span className="font-medium text-gray-700 dark:text-gray-300">{effectNames[effect]}</span>
                                   <span className="text-gray-400">({segments.length} segment{segments.length > 1 ? 's' : ''})</span>
                                 </div>
@@ -1166,6 +1408,14 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                           <span>0:00</span>
                           <span>{formatTime(duration || attachmentDuration || 0)}</span>
                         </div>
+
+                        {/* Graphe fusionné de toutes les courbes */}
+                        {appliedEffects.some(effect => effectsConfigurations[effect]?.length > 0) && (
+                          <div className="mt-4 space-y-2">
+                            <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300">Évolution de tous les paramètres</h4>
+                            {renderMergedEffectsGraph()}
+                          </div>
+                        )}
                       </>
                     )}
                   </TabsContent>
@@ -1177,7 +1427,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                     return (
                       <TabsContent key={effect} value={effect} className="mt-4 space-y-3">
                         <div className="flex items-center gap-2">
-                          <span className="text-2xl">{effectIcons[effect]}</span>
+                          <EffectIcon effect={effect} className="w-5 h-5" />
                           <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{effectNames[effect]}</h3>
                         </div>
 
