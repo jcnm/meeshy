@@ -886,7 +886,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     >
       {/* Ligne principale: Colonne Play+Download + Zone centrale (Gauge/% + Barre + Timer) + Colonne actions (Effet) */}
       <div className="flex items-center gap-3">
-        {/* Colonne gauche: Play/Pause + Download */}
+        {/* Colonne gauche: Play/Pause + Download + Gauge */}
         <div className="flex flex-col gap-1 items-center">
           {/* Bouton Play/Pause - Design moderne compact */}
           <Button
@@ -910,7 +910,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
             )}
           </Button>
 
-          {/* Bouton télécharger - avec icône Gauge */}
+          {/* Bouton télécharger - avec icône Download */}
           <a
             href={objectUrl || '#'}
             download={attachment.originalName}
@@ -922,8 +922,16 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
               }
             }}
           >
-            <Gauge className="w-2.5 h-2.5 text-gray-700 dark:text-gray-200" />
+            <Download className="w-2.5 h-2.5 text-gray-700 dark:text-gray-200" />
           </a>
+
+          {/* Bouton Gauge - style uniforme */}
+          <button
+            className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-sm transition-all"
+            title="Gauge"
+          >
+            <Gauge className="w-2.5 h-2.5 text-gray-700 dark:text-gray-200" />
+          </button>
         </div>
 
         {/* Zone centrale: Gauge/% au-dessus + Barre de progression + Timer en dessous */}
