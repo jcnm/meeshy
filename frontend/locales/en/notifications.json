@@ -31,6 +31,7 @@
       "new_message": "New message",
       "missed_call": "Missed call",
       "mention": "You were mentioned",
+      "user_mentioned": "You were mentioned",
       "invitation": "Invitation received",
       "system": "System notification",
       "conversation": "Conversation",

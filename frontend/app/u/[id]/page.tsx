@@ -12,6 +12,7 @@ import {
   MessageSquare,
   Users,
   Activity,
+  UserPlus,
 } from 'lucide-react';
 import { usersService, conversationsService, type UserStats } from '@/services';
 import { type User } from '@/types';
@@ -122,7 +123,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
 
       // Créer le nom de la conversation avec les deux usernames
       const conversationName = `${getUserUsername(currentUser)} & ${getUserUsername(user)}`;
-      
+
       const response = await conversationsService.createConversation({
         type: 'direct',
         title: conversationName,
@@ -134,6 +135,38 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     } catch (error) {
       console.error('Error creating conversation:', error);
       toast.error('Impossible de créer la conversation');
+    }
+  };
+
+  const handleSendFriendRequest = async () => {
+    if (!user) return;
+
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        toast.error('Session expirée');
+        router.push('/login');
+        return;
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/friend-requests`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ receiverId: user.id })
+      });
+
+      if (response.ok) {
+        toast.success('Demande d\'ami envoyée');
+      } else {
+        const error = await response.json();
+        toast.error(error.error || 'Erreur lors de l\'envoi de la demande');
+      }
+    } catch (error) {
+      console.error('Error sending friend request:', error);
+      toast.error('Erreur lors de l\'envoi de la demande');
     }
   };
 
@@ -265,13 +298,23 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                     )}
 
                     {!isMyProfile && (
-                      <Button 
-                        onClick={handleStartConversation} 
-                        className="w-full sm:w-auto"
-                      >
-                        <MessageSquare className="h-4 w-4 mr-2" />
-                        {t('sendMessage')}
-                      </Button>
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <Button
+                          onClick={handleSendFriendRequest}
+                          className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
+                        >
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          {t('addFriend')}
+                        </Button>
+                        <Button
+                          onClick={handleStartConversation}
+                          variant="outline"
+                          className="w-full sm:w-auto"
+                        >
+                          <MessageSquare className="h-4 w-4 mr-2" />
+                          {t('sendMessage')}
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </div>

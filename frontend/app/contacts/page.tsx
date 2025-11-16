@@ -369,6 +369,31 @@ export default function ContactsPage() {
     return `${user.firstName} ${user.lastName}`.trim() || user.username;
   };
 
+  const formatLastSeen = (user: User): string => {
+    if (user.isOnline) return t('status.online');
+
+    if (!user.lastSeen && !user.lastActiveAt) {
+      return t('status.neverSeen');
+    }
+
+    const lastSeenDate = user.lastSeen || user.lastActiveAt;
+    if (!lastSeenDate) return t('status.neverSeen');
+
+    const date = new Date(lastSeenDate);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return t('status.justNow');
+    if (diffMins < 60) return t('status.minutesAgo', { count: diffMins });
+    if (diffHours < 24) return t('status.hoursAgo', { count: diffHours });
+    if (diffDays < 7) return t('status.daysAgo', { count: diffDays });
+
+    return t('status.lastSeenDate', { date: date.toLocaleDateString() });
+  };
+
   const filteredContacts = Array.isArray(contacts) ? contacts.filter(contact =>
     getUserDisplayName(contact).toLowerCase().includes(searchQuery.toLowerCase()) ||
     contact.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -581,6 +606,13 @@ export default function ContactsPage() {
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="end" className="w-56 z-[100]">
                                     <DropdownMenuItem
+                                      onClick={() => sendFriendRequest(contact.id)}
+                                      className="py-3"
+                                    >
+                                      <UserPlus className="h-4 w-4 mr-3" />
+                                      <span className="font-medium">{t('actions.add')}</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
                                       onClick={() => router.push(`/u/${contact.id}`)}
                                       className="py-3"
                                     >
@@ -611,12 +643,23 @@ export default function ContactsPage() {
                               @{contact.username}
                             </button>
 
-                            <div className="flex items-center space-x-2">
-                              <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${contact.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
+                            {/* Date de dernière connexion sous le pseudo */}
+                            <div className="flex items-center space-x-2 mb-3">
+                              <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${contact.isOnline ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
                               <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
-                                {contact.isOnline ? t('status.online') : t('status.offline')}
+                                {formatLastSeen(contact)}
                               </span>
                             </div>
+
+                            {/* Bouton Ajouter */}
+                            <Button
+                              size="sm"
+                              onClick={() => sendFriendRequest(contact.id)}
+                              className="flex items-center gap-2 h-9 px-4 bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg transition-all"
+                            >
+                              <UserPlus className="h-4 w-4" />
+                              <span className="text-sm">{t('actions.add')}</span>
+                            </Button>
                           </div>
                         </div>
                       </CardContent>

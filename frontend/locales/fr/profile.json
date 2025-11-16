@@ -9,6 +9,7 @@
     "groups": "Groupes",
     "memberSince": "Membre depuis",
     "sendMessage": "Envoyer un message",
+    "addFriend": "Ajouter",
     "userNotFound": "Utilisateur introuvable",
     "userNotFoundDescription": "Cet utilisateur n'existe pas ou n'est plus disponible",
     "loading": "Chargement du profil..."
