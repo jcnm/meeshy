@@ -390,9 +390,10 @@ const ConversationItem = memo(function ConversationItem({
                       'back-sound': '🎶',
                     };
                     const appliedEffects: string[] = [];
-                    if ((attachment as any).audioEffectsTimeline?.events) {
+                    const audioEffectsTimeline = (attachment as any).metadata?.audioEffectsTimeline;
+                    if (audioEffectsTimeline?.events) {
                       const effects = new Set<string>();
-                      for (const event of (attachment as any).audioEffectsTimeline.events) {
+                      for (const event of audioEffectsTimeline.events) {
                         if (event.action === 'activate') {
                           effects.add(event.effectType);
                         }

@@ -467,6 +467,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
                   videoCodec: true,
                   pageCount: true,
                   lineCount: true,
+                  metadata: true, // Contient audioEffectsTimeline
                   uploadedBy: true,
                   isAnonymous: true,
                   createdAt: true

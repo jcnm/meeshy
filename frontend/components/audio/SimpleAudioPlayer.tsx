@@ -63,19 +63,23 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
 
   // Extraire les effets appliqués depuis la timeline
   const appliedEffects = useMemo((): AudioEffectType[] => {
-    if (!attachment.audioEffectsTimeline || !attachment.audioEffectsTimeline.events.length) {
+    // audioEffectsTimeline peut être soit directement sur attachment (upload response)
+    // soit dans attachment.metadata (messages récupérés depuis la DB)
+    const timeline = (attachment as any).audioEffectsTimeline || (attachment as any).metadata?.audioEffectsTimeline;
+
+    if (!timeline || !timeline.events || timeline.events.length === 0) {
       return [];
     }
 
     // Récupérer les effets uniques qui ont été activés au moins une fois
     const effects = new Set<AudioEffectType>();
-    for (const event of attachment.audioEffectsTimeline.events) {
+    for (const event of timeline.events) {
       if (event.action === 'activate') {
         effects.add(event.effectType);
       }
     }
     return Array.from(effects);
-  }, [attachment.audioEffectsTimeline]);
+  }, [attachment]);
 
   // Icônes pour les effets
   const effectIcons: Record<AudioEffectType, string> = {
