@@ -12,3 +12,5 @@ export { ConversationLayout } from './ConversationLayout';
 export { ConversationMessages } from './ConversationMessages';
 export { ConversationList } from './ConversationList';
 export { ConversationHeader } from './ConversationHeader';
+export { EncryptionModeSelector } from './encryption-mode-selector';
+export { EncryptionIndicator } from './encryption-indicator';
