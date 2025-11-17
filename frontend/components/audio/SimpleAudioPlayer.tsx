@@ -226,7 +226,6 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
             endTime: event.timestamp,
           };
           segments.push(segment);
-          console.log('✅ [SimpleAudioPlayer] Segment créé:', segment);
           activeEffects.delete(event.effectType);
         }
       }
@@ -236,12 +235,6 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     // IMPORTANT: totalDuration est en secondes, mais startTime est en millisecondes
     const totalDuration = duration || attachmentDuration || 0;
     const totalDurationMs = totalDuration * 1000; // Convertir en millisecondes
-    console.log('⏱️ [SimpleAudioPlayer] Effets encore actifs:', {
-      count: activeEffects.size,
-      effects: Array.from(activeEffects.keys()),
-      totalDuration,
-      totalDurationMs,
-    });
 
     activeEffects.forEach((startTime, effectType) => {
       const segment = {
@@ -250,12 +243,6 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
         endTime: totalDurationMs, // Utiliser la durée en millisecondes
       };
       segments.push(segment);
-      console.log('✅ [SimpleAudioPlayer] Segment actif jusqu\'à la fin:', segment);
-    });
-
-    console.log('📊 [SimpleAudioPlayer] Segments extraits:', {
-      count: segments.length,
-      segments,
     });
 
     return segments;
@@ -264,13 +251,6 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
   // Extraire les configurations des effets pour les graphiques
   const effectsConfigurations = useMemo(() => {
     const timeline = (attachment as any).audioEffectsTimeline || (attachment as any).metadata?.audioEffectsTimeline;
-
-    console.log('🎨 [SimpleAudioPlayer] Extraction configurations:', {
-      hasTimeline: !!timeline,
-      hasEvents: !!timeline?.events,
-      eventsCount: timeline?.events?.length || 0,
-      events: timeline?.events,
-    });
 
     if (!timeline || !timeline.events || timeline.events.length === 0) {
       return {};
@@ -285,13 +265,6 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     const lastConfigs: Record<AudioEffectType, Record<string, number>> = {} as any;
 
     for (const event of timeline.events) {
-      console.log('🔍 [SimpleAudioPlayer] Event:', {
-        action: event.action,
-        effectType: event.effectType,
-        hasParams: !!event.params,
-        params: event.params,
-      });
-
       // Collecter les configurations des événements 'activate' et 'update'
       if ((event.action === 'activate' || event.action === 'update') && event.params) {
         if (!configs[event.effectType]) {
@@ -328,8 +301,6 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
         });
       }
     }
-
-    console.log('✅ [SimpleAudioPlayer] Configurations extraites:', configs);
 
     return configs;
   }, [attachment]);
