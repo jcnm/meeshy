@@ -528,13 +528,19 @@ function DashboardPageContent() {
                                           </>
                                         );
                                       } else if (mimeType.startsWith('video/')) {
-                                        // Convertir durée de millisecondes en secondes
-                                        const durationSec = attachment.duration ? Math.floor(attachment.duration / 1000) : 0;
+                                        // Formater durée vidéo avec millisecondes
+                                        const formatVideoDuration = (milliseconds: number): string => {
+                                          const totalSeconds = Math.floor(milliseconds / 1000);
+                                          const ms = Math.floor((milliseconds % 1000) / 10); // Centièmes
+                                          const mins = Math.floor(totalSeconds / 60);
+                                          const secs = totalSeconds % 60;
+                                          return `${mins}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
+                                        };
                                         return (
                                           <>
                                             <span className="inline-flex text-red-500">🎥</span>
                                             {attachment.duration && (
-                                              <span className="text-xs">{Math.floor(durationSec / 60)}:{(durationSec % 60).toString().padStart(2, '0')}</span>
+                                              <span className="text-xs">{formatVideoDuration(attachment.duration)}</span>
                                             )}
                                             {attachment.width && attachment.height && (
                                               <span className="text-xs">• {attachment.width}×{attachment.height}</span>
@@ -542,16 +548,48 @@ function DashboardPageContent() {
                                           </>
                                         );
                                       } else if (mimeType.startsWith('audio/')) {
-                                        // Formater la durée audio (convertir ms en secondes)
-                                        const formatAudioDuration = (milliseconds: number): string => {
-                                          const seconds = Math.floor(milliseconds / 1000);
-                                          const hours = Math.floor(seconds / 3600);
-                                          const mins = Math.floor((seconds % 3600) / 60);
-                                          const secs = Math.floor(seconds % 60);
-                                          if (hours > 0) {
-                                            return `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                                        // Extraire les effets appliqués depuis la timeline
+                                        const effectIcons: Record<string, string> = {
+                                          'voice-coder': '🎵',
+                                          'baby-voice': '👶',
+                                          'demon-voice': '😈',
+                                          'back-sound': '🎶',
+                                        };
+                                        const appliedEffects: string[] = [];
+                                        // audioEffectsTimeline est stocké dans metadata
+                                        const audioEffectsTimeline = (attachment as any).metadata?.audioEffectsTimeline;
+
+                                        if (audioEffectsTimeline?.events) {
+                                          const effects = new Set<string>();
+                                          for (const event of audioEffectsTimeline.events) {
+                                            if (event.action === 'activate') {
+                                              effects.add(event.effectType);
+                                            }
                                           }
-                                          return `${mins}:${secs.toString().padStart(2, '0')}`;
+                                          appliedEffects.push(...Array.from(effects));
+                                        }
+
+                                        // Déterminer l'icône d'effet à afficher
+                                        let effectDisplay = '';
+                                        if (appliedEffects.length === 1) {
+                                          // Un seul effet : afficher son icône
+                                          effectDisplay = effectIcons[appliedEffects[0]] || '🎚️';
+                                        } else if (appliedEffects.length > 1) {
+                                          // Plusieurs effets : afficher l'icône générique
+                                          effectDisplay = '🎚️';
+                                        }
+
+                                        // Formater la durée audio avec millisecondes
+                                        const formatAudioDuration = (milliseconds: number): string => {
+                                          const totalSeconds = Math.floor(milliseconds / 1000);
+                                          const ms = Math.floor((milliseconds % 1000) / 10); // Centièmes
+                                          const hours = Math.floor(totalSeconds / 3600);
+                                          const mins = Math.floor((totalSeconds % 3600) / 60);
+                                          const secs = Math.floor(totalSeconds % 60);
+                                          if (hours > 0) {
+                                            return `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
+                                          }
+                                          return `${mins}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
                                         };
 
                                         return (
@@ -559,6 +597,9 @@ function DashboardPageContent() {
                                             <span className="inline-flex text-purple-500">🎵</span>
                                             {attachment.duration && (
                                               <span className="text-xs ml-1">{formatAudioDuration(attachment.duration)}</span>
+                                            )}
+                                            {effectDisplay && (
+                                              <span className="text-xs ml-1">• {effectDisplay}</span>
                                             )}
                                           </>
                                         );
