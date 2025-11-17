@@ -2,7 +2,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { logError } from '../utils/logger';
 import bcrypt from 'bcryptjs';
-import { normalizeEmail, normalizeUsername, capitalizeName, normalizeDisplayName } from '../utils/normalize';
+import { normalizeEmail, normalizeUsername, capitalizeName, normalizeDisplayName, normalizePhoneNumber } from '../utils/normalize';
 
 // Regex pour détecter les émojis
 // Cette regex détecte la plupart des émojis Unicode
@@ -549,8 +549,10 @@ export async function userRoutes(fastify: FastifyInstance) {
       if (body.displayName !== undefined) updateData.displayName = normalizeDisplayName(body.displayName);
       if (body.email !== undefined) updateData.email = normalizeEmail(body.email);
       if (body.phoneNumber !== undefined) {
-        // Convertir les chaînes vides et null en null pour la base de données
-        updateData.phoneNumber = (body.phoneNumber === '' || body.phoneNumber === null) ? null : body.phoneNumber.trim();
+        // Convertir les chaînes vides et null en null, sinon normaliser au format E.164
+        updateData.phoneNumber = (body.phoneNumber === '' || body.phoneNumber === null)
+          ? null
+          : normalizePhoneNumber(body.phoneNumber);
       }
       if (body.bio !== undefined) updateData.bio = body.bio;
       
@@ -604,14 +606,14 @@ export async function userRoutes(fastify: FastifyInstance) {
 
       // Vérifier si le numéro de téléphone est unique (si modifié et non vide)
       if (body.phoneNumber && body.phoneNumber !== null && body.phoneNumber.trim() !== '') {
-        const cleanPhoneNumber = body.phoneNumber.trim();
+        const normalizedPhone = normalizePhoneNumber(body.phoneNumber);
         const existingUser = await fastify.prisma.user.findFirst({
-          where: { 
-            phoneNumber: cleanPhoneNumber,
+          where: {
+            phoneNumber: normalizedPhone,
             id: { not: userId }
           }
         });
-        
+
         if (existingUser) {
           return reply.status(400).send({
             success: false,

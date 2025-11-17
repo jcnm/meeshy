@@ -2,7 +2,7 @@ import { PrismaClient } from '../../shared/prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { SocketIOUser, UserRoleEnum } from '../../shared/types';
-import { normalizeEmail, normalizeUsername, capitalizeName, normalizeDisplayName } from '../utils/normalize';
+import { normalizeEmail, normalizeUsername, capitalizeName, normalizeDisplayName, normalizePhoneNumber } from '../utils/normalize';
 
 export interface LoginCredentials {
   username: string;
@@ -40,17 +40,24 @@ export class AuthService {
    */
   async authenticate(credentials: LoginCredentials): Promise<SocketIOUser | null> {
     try {
-      // Normaliser le username/email en minuscules pour la recherche
+      // Normaliser l'identifiant selon son type
       const normalizedIdentifier = credentials.username.trim().toLowerCase();
-      console.log('[AUTH_SERVICE] Recherche utilisateur avec identifiant:', normalizedIdentifier);
+      // Normaliser le téléphone au format E.164 si c'est un numéro
+      const normalizedPhone = normalizePhoneNumber(credentials.username);
 
-      // Rechercher l'utilisateur par username ou email (comparaison case-insensitive)
+      console.log('[AUTH_SERVICE] Recherche utilisateur avec identifiant:', normalizedIdentifier);
+      if (normalizedPhone && normalizedPhone !== credentials.username) {
+        console.log('[AUTH_SERVICE] Téléphone normalisé:', normalizedPhone);
+      }
+
+      // Rechercher l'utilisateur par username, email ou téléphone
+      // Pour le téléphone, on cherche avec le format normalisé E.164
       const user = await this.prisma.user.findFirst({
         where: {
           OR: [
             { username: { equals: normalizedIdentifier, mode: 'insensitive' } },
             { email: { equals: normalizedIdentifier, mode: 'insensitive' } },
-            { phoneNumber: credentials.username }
+            { phoneNumber: normalizedPhone }
           ],
           isActive: true
         }
@@ -105,9 +112,11 @@ export class AuthService {
       const normalizedFirstName = capitalizeName(data.firstName);
       const normalizedLastName = capitalizeName(data.lastName);
       const normalizedDisplayName = normalizeDisplayName(`${normalizedFirstName} ${normalizedLastName}`);
-      
-      // Nettoyer le phoneNumber (traiter les chaînes vides comme null)
-      const cleanPhoneNumber = data.phoneNumber && data.phoneNumber.trim() !== '' ? data.phoneNumber.trim() : null;
+
+      // Normaliser le phoneNumber au format E.164 (traiter les chaînes vides comme null)
+      const cleanPhoneNumber = data.phoneNumber && data.phoneNumber.trim() !== ''
+        ? normalizePhoneNumber(data.phoneNumber)
+        : null;
 
       // Vérifier si l'username, l'email ou le phoneNumber existe déjà (comparaison case-insensitive pour username et email)
       const existingUser = await this.prisma.user.findFirst({

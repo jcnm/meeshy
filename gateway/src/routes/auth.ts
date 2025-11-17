@@ -342,30 +342,40 @@ export async function authRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // Route pour vérifier la disponibilité d'un username ou email
+  // Route pour vérifier la disponibilité d'un username, email ou téléphone
   fastify.get('/check-availability', {
     schema: {
       querystring: {
         type: 'object',
         properties: {
           username: { type: 'string' },
-          email: { type: 'string' }
+          email: { type: 'string' },
+          phoneNumber: { type: 'string' }
         }
       }
     }
   }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const { username, email } = request.query as { username?: string; email?: string };
+      const { username, email, phoneNumber } = request.query as {
+        username?: string;
+        email?: string;
+        phoneNumber?: string;
+      };
 
-      if (!username && !email) {
+      if (!username && !email && !phoneNumber) {
         return reply.status(400).send({
           success: false,
-          error: 'Username ou email requis'
+          error: 'Username, email ou numéro de téléphone requis'
         });
       }
 
       const prisma = (fastify as any).prisma;
-      const result: { usernameAvailable?: boolean; emailAvailable?: boolean } = {};
+      const { normalizePhoneNumber } = await import('../utils/normalize');
+      const result: {
+        usernameAvailable?: boolean;
+        emailAvailable?: boolean;
+        phoneNumberAvailable?: boolean;
+      } = {};
 
       // Vérifier le username (comparaison case-insensitive)
       if (username) {
@@ -393,6 +403,17 @@ export async function authRoutes(fastify: FastifyInstance) {
           }
         });
         result.emailAvailable = !existingUser;
+      }
+
+      // Vérifier le numéro de téléphone (format E.164)
+      if (phoneNumber) {
+        const normalizedPhone = normalizePhoneNumber(phoneNumber);
+        const existingUser = await prisma.user.findFirst({
+          where: {
+            phoneNumber: normalizedPhone
+          }
+        });
+        result.phoneNumberAvailable = !existingUser;
       }
 
       return reply.send({

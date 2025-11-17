@@ -177,18 +177,19 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="login-form-username">Nom d'utilisateur ou Email</Label>
+        <Label htmlFor="login-form-username">Nom d'utilisateur, Email ou Téléphone</Label>
         <Input
           id="login-form-username"
           type="text"
-          placeholder="Entrez votre nom d'utilisateur ou email"
+          placeholder="Entrez votre nom d'utilisateur, email ou téléphone"
           value={formData.username}
           onChange={(e) => setFormData({ ...formData, username: e.target.value })}
           disabled={isLoading}
           required
         />
-        <p className="text-xs text-gray-500">
-          Vous pouvez vous connecter avec votre nom d'utilisateur ou votre email
+        <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+          <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 text-[10px] font-bold">i</span>
+          Pour vous connecter avec votre téléphone, incluez l'indicatif (ex: +33612345678, 0033612345678 ou 33612345678)
         </p>
       </div>
 

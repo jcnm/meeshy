@@ -10,6 +10,33 @@ export function normalizeEmail(email: string): string {
 }
 
 /**
+ * Normalise un numéro de téléphone au format E.164
+ * Exemples:
+ * - "33654321987" → "+33654321987"
+ * - "0033654321987" → "+33654321987"
+ * - "+33654321987" → "+33654321987"
+ * - "00 33 6 54 32 19 87" → "+33654321987"
+ */
+export function normalizePhoneNumber(phoneNumber: string): string {
+  if (!phoneNumber) return '';
+
+  // Supprimer tous les espaces, tirets, parenthèses, etc.
+  let cleaned = phoneNumber.replace(/[\s\-().]/g, '');
+
+  // Si commence par 00, remplacer par +
+  if (cleaned.startsWith('00')) {
+    cleaned = '+' + cleaned.substring(2);
+  }
+
+  // Si ne commence pas par +, l'ajouter
+  if (!cleaned.startsWith('+')) {
+    cleaned = '+' + cleaned;
+  }
+
+  return cleaned;
+}
+
+/**
  * Normalise un username
  * Préserve la capitalisation telle qu'entrée par l'utilisateur
  */
