@@ -1229,7 +1229,7 @@ export async function userRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // Répondre à une friend request (accepter/refuser)
+  // Répondre à une friend request (accepter/refuser/annuler)
   fastify.patch('/users/friend-requests/:id', {
     onRequest: [fastify.authenticate]
   }, async (request: FastifyRequest, reply: FastifyReply) => {
@@ -1244,7 +1244,7 @@ export async function userRoutes(fastify: FastifyInstance) {
 
       const userId = authContext.userId;
       const params = z.object({ id: z.string() }).parse(request.params);
-      const body = z.object({ action: z.enum(['accept', 'reject']) }).parse(request.body);
+      const body = z.object({ action: z.enum(['accept', 'reject', 'cancel']) }).parse(request.body);
       const { id } = params;
       const { action } = body;
 
@@ -1252,7 +1252,6 @@ export async function userRoutes(fastify: FastifyInstance) {
       const friendRequest = await fastify.prisma.friendRequest.findFirst({
         where: {
           id: id,
-          receiverId: userId, // Seul le destinataire peut répondre
           status: 'pending'
         }
       });
@@ -1264,40 +1263,69 @@ export async function userRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // Mettre à jour le statut
-      const updatedRequest = await fastify.prisma.friendRequest.update({
-        where: { id: id },
-        data: {
-          status: action === 'accept' ? 'accepted' : 'rejected'
-        },
-        include: {
-          sender: {
-            select: {
-              id: true,
-              username: true,
-              firstName: true,
-              lastName: true,
-              displayName: true,
-              avatar: true
-            }
+      // Vérifier les permissions selon l'action
+      if (action === 'cancel') {
+        // Seul l'expéditeur peut annuler sa demande
+        if (friendRequest.senderId !== userId) {
+          return reply.status(403).send({
+            success: false,
+            error: 'Only the sender can cancel a friend request'
+          });
+        }
+
+        // Supprimer la demande
+        await fastify.prisma.friendRequest.delete({
+          where: { id: id }
+        });
+
+        return reply.send({
+          success: true,
+          message: 'Friend request cancelled successfully'
+        });
+      } else {
+        // Seul le destinataire peut accepter/refuser
+        if (friendRequest.receiverId !== userId) {
+          return reply.status(403).send({
+            success: false,
+            error: 'Only the receiver can accept or reject a friend request'
+          });
+        }
+
+        // Mettre à jour le statut
+        const updatedRequest = await fastify.prisma.friendRequest.update({
+          where: { id: id },
+          data: {
+            status: action === 'accept' ? 'accepted' : 'rejected'
           },
-          receiver: {
-            select: {
-              id: true,
-              username: true,
-              firstName: true,
-              lastName: true,
-              displayName: true,
-              avatar: true
+          include: {
+            sender: {
+              select: {
+                id: true,
+                username: true,
+                firstName: true,
+                lastName: true,
+                displayName: true,
+                avatar: true
+              }
+            },
+            receiver: {
+              select: {
+                id: true,
+                username: true,
+                firstName: true,
+                lastName: true,
+                displayName: true,
+                avatar: true
+              }
             }
           }
-        }
-      });
+        });
 
-      return reply.send({
-        success: true,
-        data: updatedRequest
-      });
+        return reply.send({
+          success: true,
+          data: updatedRequest
+        });
+      }
     } catch (error) {
       console.error('Error updating friend request:', error);
       return reply.status(500).send({
