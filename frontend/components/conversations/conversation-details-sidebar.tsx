@@ -1152,13 +1152,6 @@ export function ConversationDetailsSidebar({
 
   return (
     <>
-      {/* Overlay pour fermer en cliquant en dehors */}
-      <div 
-        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[110] animate-in fade-in duration-200"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-      
       {/* Sidebar au niveau de la conversation - Positionnée à GAUCHE */}
       <div className="absolute inset-y-0 left-0 w-80 bg-card dark:bg-card border-r border-border z-[120] shadow-2xl animate-in slide-in-from-left duration-300">
         <div className="flex flex-col h-full">
