@@ -292,8 +292,12 @@ export function CreateLinkModalV2({
     // Debounce: attendre 500ms avant de lancer la vérification
     linkIdentifierCheckTimeout.current = setTimeout(async () => {
       try {
+        const token = authManager.getAuthToken();
         const response = await fetch(
-          buildApiUrl(API_ENDPOINTS.CONVERSATION.CHECK_LINK_IDENTIFIER(encodeURIComponent(linkIdentifier.trim())))
+          buildApiUrl(API_ENDPOINTS.CONVERSATION.CHECK_LINK_IDENTIFIER(encodeURIComponent(linkIdentifier.trim()))),
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
         );
 
         if (response.ok) {
