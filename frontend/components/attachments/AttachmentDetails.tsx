@@ -41,10 +41,11 @@ export function AttachmentDetails({
     lg: 'h-6 w-6'
   }[iconSize];
 
-  // Fonction pour formater la durée (secondes -> HH:MM:SS ou MM:SS)
-  const formatDuration = (seconds: number): string => {
-    if (!seconds || seconds <= 0) return '0:00';
+  // Fonction pour formater la durée (millisecondes -> HH:MM:SS ou MM:SS)
+  const formatDuration = (milliseconds: number): string => {
+    if (!milliseconds || milliseconds <= 0) return '0:00';
 
+    const seconds = Math.floor(milliseconds / 1000);
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = Math.floor(seconds % 60);

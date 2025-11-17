@@ -277,7 +277,7 @@ model MessageAttachment {
   thumbnailUrl    String?
   
   // Métadonnées spécifiques audio/vidéo
-  duration        Int?     // Durée en secondes
+  duration        Int?     // Durée en MILLISECONDES (précision complète)
   bitrate         Int?     // Débit en bps (bits per second)
   sampleRate      Int?     // Fréquence d'échantillonnage en Hz (ex: 44100, 48000)
   codec           String?  // Codec audio (ex: "opus", "aac", "vorbis", "mp3")
