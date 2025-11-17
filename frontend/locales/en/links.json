@@ -122,6 +122,7 @@
     "requirements": {
       "account": "Account Required",
       "accountDescription": "Visitors must sign in with a verified account. Automatically enables all permissions and requirements.",
+      "noAnonymous": "No Anonymous",
       "nickname": "Nickname",
       "nicknameDescription": "Require a nickname to join",
       "name": "Name required",
