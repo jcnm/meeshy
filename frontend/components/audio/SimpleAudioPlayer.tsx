@@ -74,6 +74,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
   const [isEffectsDropdownOpen, setIsEffectsDropdownOpen] = useState(false);
   const [selectedEffectTab, setSelectedEffectTab] = useState<AudioEffectType | 'overview'>('overview');
   const [visibleCurves, setVisibleCurves] = useState<Record<string, Record<string, boolean>>>({});
+  const [visibleOverviewCurves, setVisibleOverviewCurves] = useState<Record<string, boolean>>({});
   const audioRef = useRef<HTMLAudioElement>(null);
   const animationFrameRef = useRef<number | null>(null);
 
@@ -766,11 +767,14 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
 
     if (allCurves.length === 0) return null;
 
-    // Calculer min/max global
+    // Calculer min/max global seulement pour les courbes visibles
     let minValue = Infinity;
     let maxValue = -Infinity;
 
     allCurves.forEach(curve => {
+      const curveKey = `${curve.effectType}-${curve.key}`;
+      if (visibleOverviewCurves[curveKey] === false) return; // Ignorer les courbes invisibles
+
       curve.points.forEach(p => {
         minValue = Math.min(minValue, p.value);
         maxValue = Math.max(maxValue, p.value);
@@ -874,6 +878,10 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
 
           {/* Toutes les courbes */}
           {allCurves.map((curve, idx) => {
+            // Filtrer par visibilité
+            const curveKey = `${curve.effectType}-${curve.key}`;
+            if (visibleOverviewCurves[curveKey] === false) return null;
+
             const pointsData = curve.points.map(p => ({
               x: padding.left + timeToX(p.timestamp),
               y: padding.top + valueToY(p.value),
@@ -918,21 +926,39 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
           })}
         </svg>
 
-        {/* Légende interactive */}
+        {/* Légende interactive (toggleable) */}
         <div className="flex flex-wrap gap-2 justify-center">
-          {allCurves.map((curve, idx) => (
-            <div
-              key={`${curve.effectType}-${curve.key}`}
-              className="px-2 py-1 text-xs rounded-full border bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 flex items-center gap-1"
-            >
-              <span
-                className="inline-block w-3 h-3 rounded-full"
-                style={{ backgroundColor: curve.color }}
-              />
-              <EffectIcon effect={curve.effectType} className="w-3 h-3" />
-              <span>{curve.key}</span>
-            </div>
-          ))}
+          {allCurves.map((curve, idx) => {
+            const curveKey = `${curve.effectType}-${curve.key}`;
+            const isVisible = visibleOverviewCurves[curveKey] !== false;
+
+            return (
+              <button
+                key={curveKey}
+                onClick={() => {
+                  setVisibleOverviewCurves(prev => ({
+                    ...prev,
+                    [curveKey]: !isVisible,
+                  }));
+                }}
+                className={`px-2 py-1 text-xs rounded-full border transition-all ${
+                  isVisible
+                    ? 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600'
+                    : 'bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600 opacity-50'
+                }`}
+                style={{
+                  borderColor: isVisible ? curve.color : undefined,
+                }}
+              >
+                <span
+                  className="inline-block w-3 h-3 rounded-full mr-1"
+                  style={{ backgroundColor: curve.color }}
+                />
+                <EffectIcon effect={curve.effectType} className="w-3 h-3 inline" />
+                <span className="ml-1">{curve.key}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
     );
@@ -1297,9 +1323,9 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                 <DropdownMenuContent className="w-96 p-4 max-h-96 overflow-hidden" side="top" align="end">
                 <Tabs value={selectedEffectTab} onValueChange={(value) => setSelectedEffectTab(value as AudioEffectType | 'overview')}>
                   <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${appliedEffects.length + 1}, 1fr)` }}>
-                    <TabsTrigger value="overview" className="text-xs">Vue d'ensemble</TabsTrigger>
+                    <TabsTrigger value="overview" className="text-xs flex items-center justify-center h-[120%]">Vue d'ensemble</TabsTrigger>
                     {appliedEffects.map((effect) => (
-                      <TabsTrigger key={effect} value={effect} className="text-xs flex flex-col items-center gap-0.5 py-1">
+                      <TabsTrigger key={effect} value={effect} className="text-xs flex flex-col items-center gap-0.5 py-1 h-[120%]">
                         <EffectIcon effect={effect} className="w-4 h-4" />
                         <span className="text-[10px] leading-tight">{effectNames[effect]}</span>
                       </TabsTrigger>

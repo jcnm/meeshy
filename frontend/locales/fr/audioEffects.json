@@ -13,6 +13,23 @@
     "resetAll": "Tout Réinitialiser",
     "disableAll": "Désactiver tous les effets",
 
+    "recorder": {
+      "initializing": "Initialisation...",
+      "audioEffects": "Effets audio",
+      "maxDuration": "Max {{duration}}min",
+      "startRecording": "Démarrer l'enregistrement",
+      "stopRecording": "Arrêter l'enregistrement",
+      "errors": {
+        "httpsRequired": "L'enregistrement audio nécessite HTTPS.",
+        "browserNotSupported": "Votre navigateur ne supporte pas l'enregistrement audio.",
+        "effectsNotAvailable": "Effets audio non disponibles - utilisation du micro direct",
+        "microphoneAccessDenied": "Accès au microphone refusé.",
+        "noMicrophoneFound": "Aucun microphone détecté.",
+        "microphoneError": "Erreur microphone.",
+        "cannotAccessMicrophone": "Impossible d'accéder au microphone."
+      }
+    },
+
     "voiceCoder": {
       "title": "Perfect Voice",
       "description": "Correction automatique de la justesse de votre voix pour chanter juste",
