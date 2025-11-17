@@ -366,14 +366,14 @@ export function RegisterForm({
         <Input
           id={`${formPrefix}-phoneNumber`}
           type="tel"
-          placeholder="+33612345678"
+          placeholder={t('register.phonePlaceholder')}
           value={formData.phoneNumber}
           onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
           disabled={isLoading || disabled}
         />
         <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
           <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 text-[10px] font-bold">i</span>
-          Incluez l'indicatif pays (ex: +33, 0033 ou 33 pour la France)
+          {t('register.phoneCountryCodeHelp')}
         </p>
       </div>
 
