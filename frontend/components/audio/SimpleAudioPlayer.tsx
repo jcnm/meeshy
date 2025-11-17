@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { Play, Pause, AlertTriangle, Gauge, Download, Mic2, Baby, Skull, Music } from 'lucide-react';
+import { Play, Pause, AlertTriangle, Gauge, Download, Mic2, Baby, Skull, Music, Sliders } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -1250,54 +1250,10 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
           </DropdownMenu>
         </div>
 
-        {/* Zone centrale: Barre de progression + Timer */}
+        {/* Zone centrale: Timer + Barre de progression */}
         <div className="flex-1 min-w-0 flex flex-col gap-1">
 
-          {/* Barre de progression avec pourcentage intégré */}
-          <div className="relative w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-visible group cursor-pointer">
-            {/* Barre de progression remplie avec animation fluide */}
-            <div
-              className={`absolute top-0 left-0 h-full rounded-full ${
-                isPlaying
-                  ? 'bg-gradient-to-r from-blue-500 via-blue-600 to-blue-500 dark:from-blue-400 dark:via-blue-500 dark:to-blue-400'
-                  : 'bg-blue-600 dark:bg-blue-500'
-              }`}
-              style={{
-                width: `${progress}%`,
-                transition: 'none', // Pas de transition pour un rendu fluide à 60fps
-              }}
-            />
-
-            {/* Curseur de position - Visible au survol avec animation smooth */}
-            <div
-              className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white dark:bg-gray-100 rounded-full shadow-lg border-2 border-blue-600 dark:border-blue-400 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-200 pointer-events-none"
-              style={{
-                left: `calc(${progress}% - 8px)`,
-              }}
-            />
-
-            {/* Pourcentage centré dans la barre (horizontalement ET verticalement) */}
-            {duration > 0 && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <span className="text-[9px] font-semibold text-white dark:text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
-                  {progress.toFixed(0)}%
-                </span>
-              </div>
-            )}
-
-            {/* Input range invisible pour le contrôle */}
-            <input
-              type="range"
-              min="0"
-              max={duration || 100}
-              value={currentTime}
-              onChange={handleSeek}
-              className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer z-10"
-              style={{ touchAction: 'none' }}
-            />
-          </div>
-
-          {/* Ligne en dessous: Timer + Effects + Download */}
+          {/* Ligne en haut: Timer + Effects + Download */}
           <div className="flex items-center justify-center gap-2">
             <div className="text-[12px] font-mono text-gray-600 dark:text-gray-300">
               {hasError ? (
@@ -1328,7 +1284,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                     {appliedEffects.length === 1 ? (
                       <EffectIcon effect={appliedEffects[0]} className="w-3 h-3" />
                     ) : (
-                      <Gauge className="w-3 h-3" />
+                      <Sliders className="w-3 h-3" />
                     )}
                   </a>
                 </DropdownMenuTrigger>
@@ -1479,6 +1435,50 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
             >
               <Download className="w-3 h-3 text-gray-700 dark:text-gray-200" />
             </a>
+          </div>
+
+          {/* Barre de progression avec pourcentage intégré */}
+          <div className="relative w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-visible group cursor-pointer">
+            {/* Barre de progression remplie avec animation fluide */}
+            <div
+              className={`absolute top-0 left-0 h-full rounded-full ${
+                isPlaying
+                  ? 'bg-gradient-to-r from-blue-500 via-blue-600 to-blue-500 dark:from-blue-400 dark:via-blue-500 dark:to-blue-400'
+                  : 'bg-blue-600 dark:bg-blue-500'
+              }`}
+              style={{
+                width: `${progress}%`,
+                transition: 'none', // Pas de transition pour un rendu fluide à 60fps
+              }}
+            />
+
+            {/* Curseur de position - Visible au survol avec animation smooth */}
+            <div
+              className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white dark:bg-gray-100 rounded-full shadow-lg border-2 border-blue-600 dark:border-blue-400 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-200 pointer-events-none"
+              style={{
+                left: `calc(${progress}% - 8px)`,
+              }}
+            />
+
+            {/* Pourcentage centré dans la barre (horizontalement ET verticalement) */}
+            {duration > 0 && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <span className="text-[9px] font-semibold text-white dark:text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
+                  {progress.toFixed(0)}%
+                </span>
+              </div>
+            )}
+
+            {/* Input range invisible pour le contrôle */}
+            <input
+              type="range"
+              min="0"
+              max={duration || 100}
+              value={currentTime}
+              onChange={handleSeek}
+              className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer z-10"
+              style={{ touchAction: 'none' }}
+            />
           </div>
         </div>
       </div>
