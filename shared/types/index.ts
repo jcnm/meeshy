@@ -42,6 +42,9 @@ export * from './audio-effects-timeline';
 // Export des types unifiés Phase 8 - Push Notifications
 export * from './push-notification';
 
+// Export des types unifiés Phase 9 - MLS (Messaging Layer Security) / DMA
+export * from './mls';
+
 // Export des types communauté
 export * from './community';
 

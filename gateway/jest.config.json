@@ -7,14 +7,13 @@
     "<rootDir>/src/**/*.test.ts"
   ],
   "collectCoverageFrom": [
-    "src/**/__tests__/**/*.ts",
+    "src/services/**/*.ts",
+    "src/middleware/**/*.ts",
+    "src/utils/**/*.ts",
     "!src/**/*.d.ts",
-    "!src/main.ts",
-    "!src/server.ts",
-    "!src/routes/**/*",
-    "!src/middleware/**/*",
-    "!src/websocket/**/*",
-    "!src/grpc/**/*"
+    "!src/**/*.test.ts",
+    "!src/**/__tests__/**/*",
+    "!src/services/zmq-singleton.ts"
   ],
   "coverageDirectory": "coverage",
   "coverageReporters": [

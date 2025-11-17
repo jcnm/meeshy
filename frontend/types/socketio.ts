@@ -199,20 +199,45 @@ export interface ConversationComponentProps {
 // ===== TYPES POUR LES CONVERSATIONS =====
 export interface Conversation {
   id: string;
-  name?: string;
-  type: 'private' | 'group';
+  identifier: string;
+  type: 'direct' | 'group' | 'public' | 'global';
+  title?: string;
+  description?: string;
+  image?: string;
+  avatar?: string;
+  communityId?: string;
+  isActive: boolean;
   isArchived: boolean;
+  lastMessageAt: Date;
   createdAt: Date;
   updatedAt: Date;
   members: ConversationMember[];
+
+  // Champs calculés/joints (non-Prisma)
   lastMessage?: Message;
+  unreadCount?: number;
+
+  // MLS Encryption fields
+  encryptionMode?: 'none' | 'hybrid' | 'e2e_only';
+  serverEncryptionKey?: string;
+  serverKeyCreatedAt?: Date;
+  serverKeyExpiresAt?: Date;
 }
 
 export interface ConversationMember {
-  userId: string;
+  id: string;
   conversationId: string;
-  role: 'admin' | 'member';
+  userId: string;
+  role: 'admin' | 'moderator' | 'member';
+  canSendMessage: boolean;
+  canSendFiles: boolean;
+  canSendImages: boolean;
+  canSendVideos: boolean;
+  canSendAudios: boolean;
+  canSendLocations: boolean;
+  canSendLinks: boolean;
   joinedAt: Date;
   leftAt?: Date;
+  isActive: boolean;
   user: User;
 }

@@ -79,6 +79,17 @@ model User {
   callParticipations          CallParticipant[]        @relation("CallParticipants")
   conversationPrefs           UserConversationPreferences[]
   conversationCategories      UserConversationCategory[]
+
+  // MLS relations
+  mlsKeyPackages              MLSKeyPackage[]          @relation("UserMLSKeyPackages")
+  mlsCredential               MLSCredential?
+
+  // MLS Hybrid Encryption Preferences
+  /// Date d'activation autorisation traduction serveur (null = désactivé, DateTime = activé)
+  /// Permet au serveur de déchiffrer temporairement les messages pour traduction (mode hybrid uniquement)
+  allowServerSideTranslationAt  DateTime?              @default(now())
+  /// Mode de chiffrement par défaut pour les nouvelles conversations créées par cet utilisateur
+  defaultEncryptionMode         EncryptionMode         @default(hybrid)
 }
 
 /// Conversation entre utilisateurs (direct, group, public, global)
@@ -108,6 +119,19 @@ model Conversation {
   typingIndicators      TypingIndicator[]
   callSessions          CallSession[]
   userPreferences       UserConversationPreferences[]
+
+  // MLS relation
+  mlsGroupState         MLSGroupState?
+
+  // MLS Hybrid Encryption Settings
+  /// Mode de chiffrement E2E: none (pas de chiffrement), hybrid (E2E + traduction serveur), e2e_only (E2E pur sans traduction serveur)
+  encryptionMode        EncryptionMode           @default(none)
+  /// Clé serveur chiffrée (pour mode hybrid uniquement) - chiffrée avec master key
+  serverEncryptionKey   String?
+  /// Date de création de la clé serveur
+  serverKeyCreatedAt    DateTime?
+  /// Date d'expiration de la clé serveur (rotation tous les 30 jours)
+  serverKeyExpiresAt    DateTime?
 }
 
 /// Appartenance d'un utilisateur à une conversation
@@ -234,6 +258,9 @@ model Message {
   anonymousSender   AnonymousParticipant? @relation("AnonymousMessageSender", fields: [anonymousSenderId], references: [id])
   sender            User?                 @relation("MessageSender", fields: [senderId], references: [id])
   conversation      Conversation          @relation(fields: [conversationId], references: [id])
+
+  // MLS relation
+  encryptedData     EncryptedMessageData?
 }
 
 /// Traduction d'un message
@@ -935,4 +962,239 @@ model UserConversationCategory {
   @@index([userId])
   @@index([userId, order])
   @@map("user_conversation_categories")
+}
+
+// ============================================================================
+// MLS (Messaging Layer Security) - DMA Interoperability
+// ============================================================================
+// These models implement end-to-end encryption following the MLS protocol
+// (RFC 9420) for DMA (Digital Markets Act) compliance and interoperability
+// with gatekeepers like WhatsApp, Messenger, and iMessage.
+// ============================================================================
+
+/// MLS KeyPackages - Pré-clés pour établir des conversations chiffrées
+/// Chaque utilisateur doit maintenir un pool de KeyPackages disponibles
+model MLSKeyPackage {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String    @db.ObjectId
+
+  /// UUID unique du KeyPackage (pas l'ID MongoDB)
+  keyPackageId    String    @unique
+
+  /// Clé publique encodée en Base64
+  publicKey       String
+
+  /// Clé privée chiffrée avec la master key de l'utilisateur
+  /// Stockée chiffrée pour sécurité
+  privateKeyEnc   String
+
+  /// Suite cryptographique utilisée
+  /// Default: MLS_128_DHKEMX25519_AES128GCM_SHA256_Ed25519
+  cipherSuite     String    @default("MLS_128_DHKEMX25519_AES128GCM_SHA256_Ed25519")
+
+  /// Indique si ce KeyPackage a été utilisé pour initialiser une conversation
+  isUsed          Boolean   @default(false)
+
+  /// ID de la conversation pour laquelle ce KeyPackage a été utilisé
+  usedForConvId   String?   @db.ObjectId
+
+  /// Timestamp d'utilisation du KeyPackage
+  usedAt          DateTime?
+
+  /// Date d'expiration (typiquement 30 jours après création)
+  /// Les KeyPackages expirés doivent être régénérés
+  expiresAt       DateTime
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  /// Relation vers l'utilisateur
+  user            User      @relation("UserMLSKeyPackages", fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Indexes pour performance
+  @@index([userId, isUsed])
+  @@index([expiresAt])
+
+  @@map("mls_key_packages")
+}
+
+/// État des groupes MLS - Un groupe MLS par conversation chiffrée
+/// Contient l'état cryptographique de la conversation
+model MLSGroupState {
+  id                      String       @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId          String       @unique @db.ObjectId
+
+  /// Identifiant unique du groupe MLS
+  groupId                 String       @unique
+
+  /// Epoch (numéro de version) de l'état du groupe
+  /// Incrémenté à chaque modification du groupe (ajout/retrait membre, rotation clés)
+  epoch                   Int          @default(0)
+
+  /// Suite cryptographique utilisée par le groupe
+  cipherSuite             String
+
+  /// Hash de l'arbre de ratchet (pour vérification d'intégrité)
+  treeHash                String
+
+  /// Hash confirmé du transcript (historique des opérations MLS)
+  confirmedTranscriptHash String
+
+  /// Liste des membres avec leurs KeyPackages
+  /// Structure: [{ userId: string, keyPackageId: string }]
+  memberKeyPackages       Json
+
+  /// Commits MLS en attente de traitement
+  /// Structure: [{ commitData: string, timestamp: number }]
+  pendingCommits          Json         @default("[]")
+
+  /// Métadonnées supplémentaires du groupe
+  /// Peut contenir des infos comme le creator, permissions, etc.
+  metadata                Json?
+
+  createdAt               DateTime     @default(now())
+  updatedAt               DateTime     @updatedAt
+
+  /// Relation vers la conversation
+  conversation            Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@map("mls_group_states")
+}
+
+/// Credentials MLS des utilisateurs
+/// Identité cryptographique persistante de chaque utilisateur dans MLS
+model MLSCredential {
+  id                     String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId                 String   @unique @db.ObjectId
+
+  /// Type de credential (basic, x509, etc.)
+  credentialType         String   @default("basic")
+
+  /// Identité MLS de l'utilisateur (ex: user@meeshy.com ou username@meeshy)
+  identity               String   @unique
+
+  /// Clé publique de signature (pour signer les messages et commits MLS)
+  signaturePublicKey     String
+
+  /// Clé privée de signature chiffrée avec la master key de l'utilisateur
+  signaturePrivateKeyEnc String
+
+  /// Version du credential (pour rotation de clés)
+  version                Int      @default(1)
+
+  /// Date d'expiration du credential (optionnel)
+  expiresAt              DateTime?
+
+  /// Métadonnées additionnelles (certificats, attestations, etc.)
+  metadata               Json?
+
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  /// Relation vers l'utilisateur
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("mls_credentials")
+}
+
+/// Données de messages chiffrés
+/// Extension du modèle Message pour stocker le ciphertext et métadonnées crypto
+model EncryptedMessageData {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  messageId      String   @unique @db.ObjectId
+
+  /// Contenu du message chiffré (Base64)
+  ciphertext     String
+
+  /// Nonce/IV pour le déchiffrement (Base64)
+  nonce          String
+
+  /// Hash de la clé utilisée pour chiffrer (pour identifier la clé)
+  senderKeyHash  String
+
+  /// Type de chiffrement utilisé
+  /// - "mls_1to1": Chiffrement MLS pour conversation 1:1
+  /// - "mls_group": Chiffrement MLS pour groupe
+  /// - "none": Message non chiffré (rétrocompatibilité)
+  encryptionType String   @default("mls_1to1")
+
+  /// Epoch du groupe au moment du chiffrement
+  /// Permet de déchiffrer même si l'état du groupe a évolué
+  groupEpoch     Int?
+
+  /// Métadonnées crypto additionnelles (signatures, attestations, etc.)
+  cryptoMetadata Json?
+
+  createdAt      DateTime @default(now())
+
+  /// Relation vers le message
+  message        Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([encryptionType])
+
+  @@map("encrypted_message_data")
+}
+
+/// Événements d'audit MLS
+/// Pour traçabilité et débogage des opérations cryptographiques
+model MLSAuditEvent {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+
+  /// Type d'événement
+  /// - "key_package_generated": Génération de KeyPackage
+  /// - "key_package_used": Utilisation de KeyPackage
+  /// - "group_created": Création de groupe MLS
+  /// - "member_added": Ajout de membre au groupe
+  /// - "member_removed": Retrait de membre du groupe
+  /// - "epoch_updated": Mise à jour de l'epoch
+  /// - "encryption_failed": Échec de chiffrement
+  /// - "decryption_failed": Échec de déchiffrement
+  eventType      String
+
+  /// ID de l'utilisateur concerné
+  userId         String?  @db.ObjectId
+
+  /// ID de la conversation concernée
+  conversationId String?  @db.ObjectId
+
+  /// ID du groupe MLS concerné
+  groupId        String?
+
+  /// ID du KeyPackage concerné
+  keyPackageId   String?
+
+  /// Détails de l'événement (JSON)
+  /// Contient les informations spécifiques selon le type d'événement
+  details        Json
+
+  /// Niveau de sévérité (info, warning, error)
+  severity       String   @default("info")
+
+  /// Adresse IP de l'origine (pour sécurité)
+  ipAddress      String?
+
+  /// User agent du client
+  userAgent      String?
+
+  timestamp      DateTime @default(now())
+
+  /// Indexes pour requêtes
+  @@index([eventType])
+  @@index([userId])
+  @@index([conversationId])
+  @@index([groupId])
+  @@index([timestamp])
+  @@index([severity])
+
+  @@map("mls_audit_events")
+}
+
+/// Mode de chiffrement pour les conversations
+/// - none: Pas de chiffrement E2E (traduction serveur instantanée, compatibilité maximale)
+/// - hybrid: Chiffrement E2E + traduction serveur (recommandé - privacy + UX)
+/// - e2e_only: Chiffrement E2E pur (privacy maximale, pas de traduction serveur)
+enum EncryptionMode {
+  none       // Pas de chiffrement
+  hybrid     // E2E + serveur (recommandé)
+  e2e_only   // E2E pur
 }

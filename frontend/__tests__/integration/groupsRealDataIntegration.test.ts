@@ -3,14 +3,43 @@
  * Ces tests simulent des interactions réelles avec l'API et testent la logique métier
  */
 
-import { groupsService } from '@/services/groupsService';
-import { apiService } from '@/services/apiService';
-import { Group, GroupMember, User } from '@/types';
-import { UserRoleEnum } from '../../../shared/types';
+import { groupsService } from '../../services/groups.service';
+import { apiService } from '../../services/api.service';
+// Import types from socketio.ts
+import type { User } from '../../types/socketio';
+
+// Types pour les tests
+type GroupMember = {
+  id: string;
+  userId: string;
+  groupId: string;
+  role: 'admin' | 'moderator' | 'member';
+  joinedAt: Date;
+  user: User;
+};
+
+type Group = {
+  id: string;
+  name: string;
+  description: string;
+  isPrivate: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  members: GroupMember[];
+  conversations: any[];
+};
 
 // Mock de l'apiService
-jest.mock('@/services/apiService');
-const mockApiService = jest.mocked(apiService);
+jest.mock('../../services/api.service', () => ({
+  apiService: {
+    get: jest.fn(),
+    post: jest.fn(),
+    patch: jest.fn(),
+    delete: jest.fn(),
+  },
+}));
+
+const mockApiService = apiService as jest.Mocked<typeof apiService>;
 
 describe('Groups API Integration - Real Data Flow', () => {
   // Données de test réalistes
@@ -21,7 +50,7 @@ describe('Groups API Integration - Real Data Flow', () => {
     phoneNumber: '+33123456789',
     firstName: 'John',
     lastName: 'Doe',
-    role: UserRoleEnum.USER,
+    role: 'USER' as const,
     permissions: {
       canAccessAdmin: false,
       canManageUsers: false,
@@ -40,7 +69,10 @@ describe('Groups API Integration - Real Data Flow', () => {
     translateToRegionalLanguage: false,
     useCustomDestination: false,
     isOnline: true,
+    lastSeen: new Date('2024-01-15T14:30:00Z'),
+    isActive: true,
     createdAt: new Date('2024-01-01T10:00:00Z'),
+    updatedAt: new Date('2024-01-15T14:30:00Z'),
     lastActiveAt: new Date('2024-01-15T14:30:00Z')
   };
 
@@ -48,7 +80,7 @@ describe('Groups API Integration - Real Data Flow', () => {
     id: 'member-456',
     userId: 'user-123',
     groupId: 'group-789',
-    role: UserRoleEnum.ADMIN,
+    role: 'admin',
     joinedAt: new Date('2024-01-01T10:00:00Z'),
     user: mockUser
   };
@@ -88,7 +120,7 @@ describe('Groups API Integration - Real Data Flow', () => {
       expect(result.data.name).toBe('Équipe Développement Frontend');
       expect(result.data.members).toHaveLength(1);
       expect(result.data.members[0].user.username).toBe('john.doe');
-      expect(result.data.members[0].role).toBe(UserRoleEnum.ADMIN);
+      expect(result.data.members[0].role).toBe('admin');
       expect(result.status).toBe(200);
     });
 
@@ -101,7 +133,7 @@ describe('Groups API Integration - Real Data Flow', () => {
             id: 'member-457',
             userId: 'user-124',
             groupId: 'group-789',
-            role: 'MEMBER',
+            role: 'member',
             joinedAt: new Date('2024-01-05T09:00:00Z'),
             user: {
               ...mockUser,
@@ -118,7 +150,7 @@ describe('Groups API Integration - Real Data Flow', () => {
             id: 'member-458',
             userId: 'user-125',
             groupId: 'group-789',
-            role: 'MEMBER',
+            role: 'member',
             joinedAt: new Date('2024-01-10T11:30:00Z'),
             user: {
               ...mockUser,
@@ -135,12 +167,14 @@ describe('Groups API Integration - Real Data Flow', () => {
         conversations: [
           {
             id: 'conv-100',
+            identifier: 'group-789-general',
             type: 'group',
             isActive: true,
+            isArchived: false,
+            lastMessageAt: new Date('2024-01-15T13:45:00Z'),
             createdAt: new Date('2024-01-02T14:00:00Z'),
             updatedAt: new Date('2024-01-15T13:45:00Z'),
-            groupId: 'group-789',
-            participants: []
+            members: []
           }
         ]
       };
@@ -156,8 +190,8 @@ describe('Groups API Integration - Real Data Flow', () => {
       expect(result.data.conversations).toHaveLength(1);
       
       // Vérifier les rôles
-      const adminMembers = result.data.members.filter(m => m.role === UserRoleEnum.ADMIN);
-      const regularMembers = result.data.members.filter(m => m.role === UserRoleEnum.MEMBER);
+      const adminMembers = result.data.members.filter(m => m.role === 'admin');
+      const regularMembers = result.data.members.filter(m => m.role === 'member');
       expect(adminMembers).toHaveLength(1);
       expect(regularMembers).toHaveLength(2);
 
@@ -187,7 +221,7 @@ describe('Groups API Integration - Real Data Flow', () => {
           id: 'member-creator',
           userId: 'user-123',
           groupId: 'group-new-123',
-          role: UserRoleEnum.ADMIN,
+          role: 'admin',
           joinedAt: new Date('2024-01-15T15:00:00Z'),
           user: mockUser
         }],
@@ -207,7 +241,7 @@ describe('Groups API Integration - Real Data Flow', () => {
       expect(result.data.name).toBe('Nouveau Projet Mobile');
       expect(result.data.isPrivate).toBe(true);
       expect(result.data.members).toHaveLength(1);
-      expect(result.data.members[0].role).toBe(UserRoleEnum.ADMIN);
+      expect(result.data.members[0].role).toBe('admin');
       expect(result.status).toBe(201);
     });
   });
@@ -216,14 +250,14 @@ describe('Groups API Integration - Real Data Flow', () => {
     it('should invite member and update group state', async () => {
       const inviteData = {
         userId: 'user-new-456',
-        role: UserRoleEnum.MEMBER
+        role: 'MEMBER' as any // TODO: Update service to use lowercase roles
       };
 
       const newMember: GroupMember = {
         id: 'member-new-789',
         userId: 'user-new-456',
         groupId: 'group-789',
-        role: UserRoleEnum.MEMBER,
+        role: 'member',
         joinedAt: new Date('2024-01-15T16:00:00Z'),
         user: {
           id: 'user-new-456',
@@ -232,7 +266,7 @@ describe('Groups API Integration - Real Data Flow', () => {
           phoneNumber: '+33987654321',
           firstName: 'Alice',
           lastName: 'Martin',
-          role: UserRoleEnum.USER,
+          role: 'USER' as const,
           permissions: {
             canAccessAdmin: false,
             canManageUsers: false,
@@ -251,7 +285,10 @@ describe('Groups API Integration - Real Data Flow', () => {
           translateToRegionalLanguage: true,
           useCustomDestination: false,
           isOnline: true,
+          lastSeen: new Date('2024-01-15T16:00:00Z'),
+          isActive: true,
           createdAt: new Date('2024-01-15T15:30:00Z'),
+          updatedAt: new Date('2024-01-15T16:00:00Z'),
           lastActiveAt: new Date('2024-01-15T16:00:00Z')
         }
       };
@@ -266,7 +303,7 @@ describe('Groups API Integration - Real Data Flow', () => {
 
       expect(mockApiService.post).toHaveBeenCalledWith('/groups/group-789/members', inviteData);
       expect(result.data.userId).toBe('user-new-456');
-      expect(result.data.role).toBe('MEMBER');
+      expect(result.data.role).toBe('member');
       expect(result.data.user.username).toBe('alice.martin');
       expect(result.status).toBe(201);
     });
@@ -274,7 +311,7 @@ describe('Groups API Integration - Real Data Flow', () => {
     it('should update member role', async () => {
       const updatedMember: GroupMember = {
         ...mockGroupMember,
-        role: 'ADMIN'
+        role: 'admin'
       };
 
       mockApiService.patch.mockResolvedValue({
@@ -283,13 +320,13 @@ describe('Groups API Integration - Real Data Flow', () => {
         message: 'Rôle mis à jour avec succès'
       });
 
-      const result = await groupsService.updateMemberRole('group-789', 'member-456', 'ADMIN');
+      const result = await groupsService.updateMemberRole('group-789', 'member-456', 'ADMIN' as any); // TODO: Update service to use lowercase roles
 
       expect(mockApiService.patch).toHaveBeenCalledWith(
         '/groups/group-789/members/member-456',
-        { role: 'ADMIN' }
+        { role: 'admin' }
       );
-      expect(result.data.role).toBe('ADMIN');
+      expect(result.data.role).toBe('admin');
       expect(result.status).toBe(200);
     });
 
@@ -336,7 +373,10 @@ describe('Groups API Integration - Real Data Flow', () => {
           translateToRegionalLanguage: false,
           useCustomDestination: false,
           isOnline: true,
+          lastSeen: new Date('2024-01-15T14:00:00Z'),
+          isActive: true,
           createdAt: new Date('2024-01-01T08:00:00Z'),
+          updatedAt: new Date('2024-01-15T14:00:00Z'),
           lastActiveAt: new Date('2024-01-15T14:00:00Z')
         },
         {
@@ -365,7 +405,10 @@ describe('Groups API Integration - Real Data Flow', () => {
           translateToRegionalLanguage: false,
           useCustomDestination: false,
           isOnline: false,
+          lastSeen: new Date('2024-01-14T17:15:00Z'),
+          isActive: true,
           createdAt: new Date('2024-01-05T09:30:00Z'),
+          updatedAt: new Date('2024-01-14T17:15:00Z'),
           lastActiveAt: new Date('2024-01-14T17:15:00Z')
         }
       ];
@@ -470,7 +513,7 @@ describe('Groups API Integration - Real Data Flow', () => {
           id: 'member-invited',
           userId: 'user-invited-789',
           groupId: 'group-789',
-          role: 'MEMBER' as const,
+          role: 'member',
           joinedAt: new Date('2024-01-15T16:30:00Z'),
           user: {
             id: 'user-invited-789',
@@ -479,6 +522,18 @@ describe('Groups API Integration - Real Data Flow', () => {
             phoneNumber: '',
             firstName: 'Invited',
             lastName: 'User',
+            role: 'USER' as const,
+            permissions: {
+              canAccessAdmin: false,
+              canManageUsers: false,
+              canManageGroups: false,
+              canManageConversations: false,
+              canViewAnalytics: false,
+              canModerateContent: false,
+              canViewAuditLogs: false,
+              canManageNotifications: false,
+              canManageTranslations: false,
+            },
             systemLanguage: 'fr',
             regionalLanguage: 'fr',
             autoTranslateEnabled: true,
@@ -486,7 +541,10 @@ describe('Groups API Integration - Real Data Flow', () => {
             translateToRegionalLanguage: false,
             useCustomDestination: false,
             isOnline: true,
+            lastSeen: new Date('2024-01-15T16:30:00Z'),
+            isActive: true,
             createdAt: new Date('2024-01-15T16:30:00Z'),
+            updatedAt: new Date('2024-01-15T16:30:00Z'),
             lastActiveAt: new Date('2024-01-15T16:30:00Z')
           }
         }
@@ -505,7 +563,7 @@ describe('Groups API Integration - Real Data Flow', () => {
       });
       expect(joinResult.data.group.id).toBe('group-789');
       expect(joinResult.data.member.user.username).toBe('invited.user');
-      expect(joinResult.data.member.role).toBe('MEMBER');
+      expect(joinResult.data.member.role).toBe('member');
     });
   });
 

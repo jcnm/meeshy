@@ -67,6 +67,7 @@
     "grpc-tools": "^1.12.4",
     "jest": "^30.0.5",
     "mongodb": "^6.20.0",
+    "mongodb-memory-server": "^10.3.0",
     "prisma": "6.13.0",
     "reflect-metadata": "^0.2.2",
     "ts-jest": "^29.4.0",

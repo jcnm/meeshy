@@ -23,4 +23,7 @@ export { useFixRadixZIndex } from './use-fix-z-index';
 export { useAuth } from './use-auth';
 export { useAuthGuard } from './use-auth-guard';
 
+// Chiffrement et sécurité
+export { useEncryptionPreferences } from './use-encryption-preferences';
+
 // Hooks legacy supprimés - migration vers les nouveaux hooks unifiés terminée
