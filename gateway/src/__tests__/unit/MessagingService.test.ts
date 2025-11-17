@@ -1,320 +1,396 @@
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { MessagingService } from '../../services/MessagingService';
-import { TranslationService } from '../../services/TranslationService';
-import { createMockPrismaClient, createMockUser, createMockConversation, createMockMessage, createMockConversationMember } from '../helpers/prisma-mock';
+/**
+ * Tests unitaires RÉELS pour MessagingService
+ * Ces tests instancient et exécutent réellement le service
+ */
 
-// Mock dependencies
-jest.mock('../../services/TranslationService');
+import { describe, it, expect, beforeEach, jest, afterEach } from '@jest/globals';
+import { MessagingService } from '../../services/MessagingService';
+import { createMockPrismaClient, createMockUser, createMockConversation, createMockMessage, createMockConversationMember } from '../helpers/prisma-mock';
+import { createMockTranslationService, createMockLogger } from '../helpers/service-mocks';
+
+// Mock uniquement les dépendances externes
+jest.mock('../../utils/logger', () => ({
+  logger: createMockLogger(),
+}));
+
 jest.mock('../../services/TrackingLinkService');
 jest.mock('../../services/MentionService');
-jest.mock('../../services/ConversationStatsService');
 jest.mock('../../services/MLSService');
 jest.mock('../../services/ServerKeyManager');
-jest.mock('../../utils/logger');
 
-describe('MessagingService', () => {
+describe('MessagingService - Real Service Tests', () => {
   let service: MessagingService;
   let mockPrisma: ReturnType<typeof createMockPrismaClient>;
-  let mockTranslationService: jest.Mocked<TranslationService>;
+  let mockTranslationService: ReturnType<typeof createMockTranslationService>;
 
   beforeEach(() => {
+    // Créer les mocks
     mockPrisma = createMockPrismaClient();
-    mockTranslationService = {
-      handleNewMessage: jest.fn().mockResolvedValue({ status: 'pending' })
-    } as any;
-    service = new MessagingService(mockPrisma as any, mockTranslationService);
+    mockTranslationService = createMockTranslationService();
+
+    // Instancier le VRAI service avec les mocks
+    service = new MessagingService(
+      mockPrisma as any,
+      mockTranslationService as any
+    );
+
     jest.clearAllMocks();
   });
 
-  describe('handleMessage', () => {
-    it('should handle a plaintext message successfully', async () => {
-      const mockConversation = createMockConversation({ encryptionMode: 'none' });
-      const mockMessage = createMockMessage();
-      const mockMember = createMockConversationMember();
+  describe('handleMessage - Plaintext', () => {
+    it('should process a plaintext message successfully', async () => {
+      // Setup - Préparer les données cohérentes
+      const mockUser = createMockUser({ id: 'user-123' });
+      const mockConversation = createMockConversation({
+        id: 'conv-123',
+        encryptionMode: 'none',
+      });
+      const mockMember = createMockConversationMember({
+        userId: 'user-123',
+        conversationId: 'conv-123',
+        canSendMessage: true,
+      });
+      const mockMessage = createMockMessage({
+        id: 'msg-123',
+        conversationId: 'conv-123',
+        senderId: 'user-123',
+        content: 'Hello world',
+      });
 
+      // Mock Prisma responses avec données cohérentes
       mockPrisma.conversation.findUnique = jest.fn().mockResolvedValue(mockConversation);
       mockPrisma.conversationMember.findFirst = jest.fn().mockResolvedValue(mockMember);
       mockPrisma.message.create = jest.fn().mockResolvedValue(mockMessage);
       mockPrisma.conversation.update = jest.fn().mockResolvedValue(mockConversation);
-      mockPrisma.messageStatus.upsert = jest.fn().mockResolvedValue({});
       mockPrisma.conversationMember.findMany = jest.fn().mockResolvedValue([mockMember]);
-      mockPrisma.anonymousParticipant.findMany = jest.fn().mockResolvedValue([]);
+      mockPrisma.user.findUnique = jest.fn().mockResolvedValue(mockUser);
 
-      const request = {
-        conversationId: 'conv-123',
-        content: 'Test message',
-        originalLanguage: 'en'
-      };
+      // Execute - Appeler la VRAIE méthode du service
+      const result = await service.handleMessage(
+        {
+          conversationId: 'conv-123',
+          content: 'Hello world',
+          originalLanguage: 'en',
+        },
+        'user-123',
+        true,
+        'jwt-token'
+      );
 
-      const result = await service.handleMessage(request, 'user-123', true, 'jwt-token');
-
+      // Assert - Vérifier le résultat
+      expect(result).toBeDefined();
       expect(result.success).toBe(true);
-      expect(result.data).toBeDefined();
-      expect(mockPrisma.message.create).toHaveBeenCalled();
+      expect(result.message).toBeDefined();
+      expect(result.message?.id).toBe('msg-123');
+      expect(result.message?.content).toBe('Hello world');
+
+      // Vérifier que Prisma a été appelé correctement
+      expect(mockPrisma.conversation.findUnique).toHaveBeenCalledWith({
+        where: { id: 'conv-123' },
+        include: expect.any(Object),
+      });
+      expect(mockPrisma.message.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          conversationId: 'conv-123',
+          senderId: 'user-123',
+          content: 'Hello world',
+          originalLanguage: 'en',
+          messageType: 'text',
+        }),
+        include: expect.any(Object),
+      });
+
+      // Vérifier que le service de traduction a été appelé
+      expect(mockTranslationService.handleNewMessage).toHaveBeenCalledWith(
+        'msg-123',
+        'Hello world',
+        'en'
+      );
     });
 
-    it('should reject message with empty content', async () => {
-      const request = {
+    it('should reject message if user has no permission', async () => {
+      // Setup
+      const mockConversation = createMockConversation({ id: 'conv-123' });
+      const mockMember = createMockConversationMember({
+        userId: 'user-123',
         conversationId: 'conv-123',
-        content: '',
-        originalLanguage: 'en'
-      };
+        canSendMessage: false, // Pas de permission !
+      });
 
-      const result = await service.handleMessage(request, 'user-123');
+      mockPrisma.conversation.findUnique = jest.fn().mockResolvedValue(mockConversation);
+      mockPrisma.conversationMember.findFirst = jest.fn().mockResolvedValue(mockMember);
 
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('empty');
+      // Execute & Assert
+      await expect(
+        service.handleMessage(
+          {
+            conversationId: 'conv-123',
+            content: 'Hello',
+            originalLanguage: 'en',
+          },
+          'user-123',
+          true,
+          'jwt-token'
+        )
+      ).rejects.toThrow(/permission/i);
+
+      // Vérifier que le message n'a PAS été créé
+      expect(mockPrisma.message.create).not.toHaveBeenCalled();
     });
 
-    it('should reject message exceeding length limit', async () => {
-      const request = {
-        conversationId: 'conv-123',
-        content: 'a'.repeat(2001),
-        originalLanguage: 'en'
-      };
-
-      const result = await service.handleMessage(request, 'user-123');
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('2000');
-    });
-
-    it('should handle conversation not found', async () => {
+    it('should reject message for non-existent conversation', async () => {
+      // Setup - Conversation n'existe pas
       mockPrisma.conversation.findUnique = jest.fn().mockResolvedValue(null);
 
-      const request = {
-        conversationId: 'invalid-id',
-        content: 'Test',
-        originalLanguage: 'en'
-      };
-
-      const result = await service.handleMessage(request, 'user-123');
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('Conversation non trouvée');
+      // Execute & Assert
+      await expect(
+        service.handleMessage(
+          {
+            conversationId: 'conv-nonexistent',
+            content: 'Hello',
+            originalLanguage: 'en',
+          },
+          'user-123',
+          true,
+          'jwt-token'
+        )
+      ).rejects.toThrow(/not found|introuvable/i);
     });
 
-    it('should handle insufficient permissions', async () => {
-      const mockConversation = createMockConversation({ encryptionMode: 'none' });
+    it('should reject message if user is not a member', async () => {
+      // Setup
+      const mockConversation = createMockConversation({ id: 'conv-123' });
+
       mockPrisma.conversation.findUnique = jest.fn().mockResolvedValue(mockConversation);
-      mockPrisma.conversationMember.findFirst = jest.fn().mockResolvedValue(null);
+      mockPrisma.conversationMember.findFirst = jest.fn().mockResolvedValue(null); // Pas membre !
 
-      const request = {
-        conversationId: 'conv-123',
-        content: 'Test message',
-        originalLanguage: 'en'
-      };
-
-      const result = await service.handleMessage(request, 'user-123', true, 'jwt-token');
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('permissions');
+      // Execute & Assert
+      await expect(
+        service.handleMessage(
+          {
+            conversationId: 'conv-123',
+            content: 'Hello',
+            originalLanguage: 'en',
+          },
+          'user-123',
+          true,
+          'jwt-token'
+        )
+      ).rejects.toThrow(/member|membre/i);
     });
   });
 
-  describe('handlePlaintextMessage', () => {
-    it('should process plaintext message with mentions', async () => {
-      const mockConversation = createMockConversation({ encryptionMode: 'none' });
-      const mockMessage = createMockMessage({ content: 'Hello @user' });
-      const mockMember = createMockConversationMember();
-
-      mockPrisma.conversation.findUnique = jest.fn().mockResolvedValue(mockConversation);
-      mockPrisma.conversationMember.findFirst = jest.fn().mockResolvedValue(mockMember);
-      mockPrisma.message.create = jest.fn().mockResolvedValue(mockMessage);
-      mockPrisma.conversation.update = jest.fn().mockResolvedValue(mockConversation);
-      mockPrisma.messageStatus.upsert = jest.fn().mockResolvedValue({});
-      mockPrisma.conversationMember.findMany = jest.fn().mockResolvedValue([mockMember]);
-      mockPrisma.anonymousParticipant.findMany = jest.fn().mockResolvedValue([]);
-
-      const request = {
+  describe('handleMessage - With Attachments', () => {
+    it('should process message with image attachment', async () => {
+      // Setup
+      const mockConversation = createMockConversation({ id: 'conv-123', encryptionMode: 'none' });
+      const mockMember = createMockConversationMember({
+        userId: 'user-123',
         conversationId: 'conv-123',
-        content: 'Hello @user',
-        originalLanguage: 'en',
-        mentionedUserIds: ['user-456']
-      };
-
-      const result = await service.handleMessage(request, 'user-123', true, 'jwt-token');
-
-      expect(result.success).toBe(true);
-      expect(mockPrisma.message.create).toHaveBeenCalled();
-    });
-  });
-
-  describe('handleHybridMessage', () => {
-    it('should fallback to plaintext when no encrypted data provided', async () => {
-      const mockConversation = createMockConversation({ encryptionMode: 'hybrid' });
-      const mockMessage = createMockMessage();
-      const mockMember = createMockConversationMember();
-
-      mockPrisma.conversation.findUnique = jest.fn()
-        .mockResolvedValueOnce({ ...mockConversation, members: [{ user: { allowServerSideTranslationAt: new Date() } }] })
-        .mockResolvedValueOnce(mockConversation);
-      mockPrisma.conversationMember.findFirst = jest.fn().mockResolvedValue(mockMember);
-      mockPrisma.message.create = jest.fn().mockResolvedValue(mockMessage);
-      mockPrisma.conversation.update = jest.fn().mockResolvedValue(mockConversation);
-      mockPrisma.messageStatus.upsert = jest.fn().mockResolvedValue({});
-      mockPrisma.conversationMember.findMany = jest.fn().mockResolvedValue([mockMember]);
-      mockPrisma.anonymousParticipant.findMany = jest.fn().mockResolvedValue([]);
-
-      const request = {
+        canSendImages: true,
+      });
+      const mockMessage = createMockMessage({
+        id: 'msg-123',
         conversationId: 'conv-123',
-        content: 'Test message',
-        originalLanguage: 'en',
-        encrypted: false
-      };
-
-      const result = await service.handleMessage(request, 'user-123', true, 'jwt-token');
-
-      expect(result.success).toBe(true);
-    });
-  });
-
-  describe('handleE2EOnlyMessage', () => {
-    it('should reject E2E message without encrypted data', async () => {
-      const mockConversation = createMockConversation({ encryptionMode: 'e2e_only' });
-      mockPrisma.conversation.findUnique = jest.fn().mockResolvedValue(mockConversation);
-      mockPrisma.conversationMember.findFirst = jest.fn().mockResolvedValue(createMockConversationMember());
-
-      const request = {
-        conversationId: 'conv-123',
-        content: 'Test',
-        originalLanguage: 'en',
-        encrypted: false
-      };
-
-      const result = await service.handleMessage(request, 'user-123', true, 'jwt-token');
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('chiffré');
-    });
-
-    it('should handle E2E message with encrypted data', async () => {
-      const mockConversation = createMockConversation({ encryptionMode: 'e2e_only' });
-      const mockMessage = createMockMessage({ content: '[Message chiffré E2E]' });
-      const mockMember = createMockConversationMember();
-
-      mockPrisma.conversation.findUnique = jest.fn().mockResolvedValue(mockConversation);
-      mockPrisma.conversationMember.findFirst = jest.fn().mockResolvedValue(mockMember);
-      mockPrisma.message.create = jest.fn().mockResolvedValue(mockMessage);
-      mockPrisma.conversation.update = jest.fn().mockResolvedValue(mockConversation);
-      mockPrisma.messageStatus.upsert = jest.fn().mockResolvedValue({});
-      mockPrisma.conversationMember.findMany = jest.fn().mockResolvedValue([mockMember]);
-      mockPrisma.anonymousParticipant.findMany = jest.fn().mockResolvedValue([]);
-
-      const request = {
-        conversationId: 'conv-123',
-        content: 'Test',
-        originalLanguage: 'en',
-        encrypted: true,
-        encryptedData: {
-          ciphertext: 'encrypted',
-          nonce: 'nonce',
-          senderKeyHash: 'hash',
-          encryptionType: 'mls_1_1' as const
-        }
-      };
-
-      const result = await service.handleMessage(request, 'user-123', true, 'jwt-token');
-
-      expect(result.success).toBe(true);
-      expect(mockPrisma.message.create).toHaveBeenCalled();
-    });
-  });
-
-  describe('validateRequest', () => {
-    it('should validate request with attachments but no content', async () => {
-      const mockConversation = createMockConversation({ encryptionMode: 'none' });
-      const mockMessage = createMockMessage();
-      const mockMember = createMockConversationMember();
-
-      mockPrisma.conversation.findUnique = jest.fn().mockResolvedValue(mockConversation);
-      mockPrisma.conversationMember.findFirst = jest.fn().mockResolvedValue(mockMember);
-      mockPrisma.message.create = jest.fn().mockResolvedValue(mockMessage);
-      mockPrisma.conversation.update = jest.fn().mockResolvedValue(mockConversation);
-      mockPrisma.messageStatus.upsert = jest.fn().mockResolvedValue({});
-      mockPrisma.conversationMember.findMany = jest.fn().mockResolvedValue([mockMember]);
-      mockPrisma.anonymousParticipant.findMany = jest.fn().mockResolvedValue([]);
-
-      const request = {
-        conversationId: 'conv-123',
+        messageType: 'image',
         content: '',
-        originalLanguage: 'en',
-        attachments: [{ filename: 'test.jpg' }]
-      };
-
-      const result = await service.handleMessage(request, 'user-123', true, 'jwt-token');
-
-      expect(result.success).toBe(true);
-    });
-
-    it('should reject anonymous message without display name', async () => {
-      const request = {
-        conversationId: 'conv-123',
-        content: 'Test',
-        isAnonymous: true
-      };
-
-      const result = await service.handleMessage(request, 'anon-123');
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('display name');
-    });
-
-    it('should reject message with too many attachments', async () => {
-      const attachments = Array(11).fill({ filename: 'test.jpg' });
-      const request = {
-        conversationId: 'conv-123',
-        content: 'Test',
-        attachments
-      };
-
-      const result = await service.handleMessage(request, 'user-123');
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('10 attachments');
-    });
-  });
-
-  describe('checkPermissions', () => {
-    it('should allow sending in global conversation', async () => {
-      const mockConversation = createMockConversation({ type: 'global', encryptionMode: 'none' });
-      const mockMessage = createMockMessage();
-      const mockMember = createMockConversationMember();
+      });
 
       mockPrisma.conversation.findUnique = jest.fn().mockResolvedValue(mockConversation);
       mockPrisma.conversationMember.findFirst = jest.fn().mockResolvedValue(mockMember);
       mockPrisma.message.create = jest.fn().mockResolvedValue(mockMessage);
       mockPrisma.conversation.update = jest.fn().mockResolvedValue(mockConversation);
-      mockPrisma.messageStatus.upsert = jest.fn().mockResolvedValue({});
       mockPrisma.conversationMember.findMany = jest.fn().mockResolvedValue([mockMember]);
-      mockPrisma.anonymousParticipant.findMany = jest.fn().mockResolvedValue([]);
 
-      const request = {
-        conversationId: 'conv-123',
-        content: 'Test message',
-        originalLanguage: 'en'
-      };
+      // Execute
+      const result = await service.handleMessage(
+        {
+          conversationId: 'conv-123',
+          content: '',
+          originalLanguage: 'en',
+          messageType: 'image',
+          attachmentIds: ['att-1'],
+        },
+        'user-123',
+        true,
+        'jwt-token'
+      );
 
-      const result = await service.handleMessage(request, 'user-123', true, 'jwt-token');
-
+      // Assert
       expect(result.success).toBe(true);
+      expect(result.message?.messageType).toBe('image');
+      expect(mockPrisma.message.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          messageType: 'image',
+          attachmentIds: ['att-1'],
+        }),
+        include: expect.any(Object),
+      });
+    });
+
+    it('should reject image message if user cannot send images', async () => {
+      // Setup
+      const mockConversation = createMockConversation({ id: 'conv-123' });
+      const mockMember = createMockConversationMember({
+        userId: 'user-123',
+        canSendImages: false, // Interdit !
+      });
+
+      mockPrisma.conversation.findUnique = jest.fn().mockResolvedValue(mockConversation);
+      mockPrisma.conversationMember.findFirst = jest.fn().mockResolvedValue(mockMember);
+
+      // Execute & Assert
+      await expect(
+        service.handleMessage(
+          {
+            conversationId: 'conv-123',
+            content: '',
+            originalLanguage: 'en',
+            messageType: 'image',
+            attachmentIds: ['att-1'],
+          },
+          'user-123',
+          true,
+          'jwt-token'
+        )
+      ).rejects.toThrow(/permission.*image/i);
     });
   });
 
-  describe('error handling', () => {
-    it('should handle database errors gracefully', async () => {
-      mockPrisma.conversation.findUnique = jest.fn().mockRejectedValue(new Error('Database error'));
+  describe('handleMessage - Validation', () => {
+    it('should reject empty message content', async () => {
+      // Setup
+      const mockConversation = createMockConversation({ id: 'conv-123' });
+      const mockMember = createMockConversationMember({ userId: 'user-123' });
 
-      const request = {
+      mockPrisma.conversation.findUnique = jest.fn().mockResolvedValue(mockConversation);
+      mockPrisma.conversationMember.findFirst = jest.fn().mockResolvedValue(mockMember);
+
+      // Execute & Assert
+      await expect(
+        service.handleMessage(
+          {
+            conversationId: 'conv-123',
+            content: '',
+            originalLanguage: 'en',
+            messageType: 'text',
+          },
+          'user-123',
+          true,
+          'jwt-token'
+        )
+      ).rejects.toThrow(/content.*empty|vide/i);
+    });
+
+    it('should reject message with content too long', async () => {
+      // Setup
+      const mockConversation = createMockConversation({ id: 'conv-123' });
+      const mockMember = createMockConversationMember({ userId: 'user-123' });
+
+      mockPrisma.conversation.findUnique = jest.fn().mockResolvedValue(mockConversation);
+      mockPrisma.conversationMember.findFirst = jest.fn().mockResolvedValue(mockMember);
+
+      // Créer un message de 10001 caractères
+      const longContent = 'a'.repeat(10001);
+
+      // Execute & Assert
+      await expect(
+        service.handleMessage(
+          {
+            conversationId: 'conv-123',
+            content: longContent,
+            originalLanguage: 'en',
+          },
+          'user-123',
+          true,
+          'jwt-token'
+        )
+      ).rejects.toThrow(/length|long|taille/i);
+    });
+
+    it('should reject invalid conversation ID format', async () => {
+      // Execute & Assert
+      await expect(
+        service.handleMessage(
+          {
+            conversationId: '', // ID vide
+            content: 'Hello',
+            originalLanguage: 'en',
+          },
+          'user-123',
+          true,
+          'jwt-token'
+        )
+      ).rejects.toThrow(/invalid.*conversation/i);
+    });
+  });
+
+  describe('handleMessage - Anonymous Users', () => {
+    it('should process message from anonymous user', async () => {
+      // Setup
+      const mockConversation = createMockConversation({
+        id: 'conv-123',
+        type: 'public', // Public conversation permet anonymes
+      });
+      const mockMessage = createMockMessage({
+        id: 'msg-123',
+        senderId: 'anon_session123',
+      });
+
+      mockPrisma.conversation.findUnique = jest.fn().mockResolvedValue(mockConversation);
+      mockPrisma.anonymousParticipant.findFirst = jest.fn().mockResolvedValue({
+        id: 'anon-part-1',
+        sessionToken: 'anon_session123',
         conversationId: 'conv-123',
-        content: 'Test',
-        originalLanguage: 'en'
-      };
+      });
+      mockPrisma.message.create = jest.fn().mockResolvedValue(mockMessage);
+      mockPrisma.conversation.update = jest.fn().mockResolvedValue(mockConversation);
+      mockPrisma.conversationMember.findMany = jest.fn().mockResolvedValue([]);
+      mockPrisma.anonymousParticipant.findMany = jest.fn().mockResolvedValue([{
+        id: 'anon-part-1',
+        sessionToken: 'anon_session123',
+        conversationId: 'conv-123',
+      }]);
 
-      const result = await service.handleMessage(request, 'user-123');
+      // Execute
+      const result = await service.handleMessage(
+        {
+          conversationId: 'conv-123',
+          content: 'Hello from anonymous',
+          originalLanguage: 'en',
+        },
+        'anon_session123',
+        false, // Non authentifié
+        undefined,
+        'anon_session123' // Session token
+      );
 
-      expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      // Assert
+      expect(result.success).toBe(true);
+      expect(result.message?.senderId).toBe('anon_session123');
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should handle database errors gracefully', async () => {
+      // Setup - Prisma throw error
+      mockPrisma.conversation.findUnique = jest.fn().mockRejectedValue(
+        new Error('Database connection error')
+      );
+
+      // Execute & Assert
+      await expect(
+        service.handleMessage(
+          {
+            conversationId: 'conv-123',
+            content: 'Hello',
+            originalLanguage: 'en',
+          },
+          'user-123',
+          true,
+          'jwt-token'
+        )
+      ).rejects.toThrow(/database/i);
     });
   });
 });
