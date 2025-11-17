@@ -87,6 +87,26 @@ export class ReactionService {
       }
     }
 
+    // LIMITE: Maximum 3 réactions différentes par utilisateur par message
+    const MAX_REACTIONS_PER_USER = 3;
+
+    // Compter combien de réactions différentes l'utilisateur a déjà sur ce message
+    const userExistingReactions = await this.prisma.reaction.findMany({
+      where: {
+        messageId,
+        ...(userId ? { userId } : { anonymousUserId })
+      },
+      select: { emoji: true }
+    });
+
+    // Extraire les emojis uniques
+    const uniqueEmojis = new Set(userExistingReactions.map(r => r.emoji));
+
+    // Si l'utilisateur a déjà 3 réactions différentes ET qu'il essaie d'en ajouter une nouvelle
+    if (uniqueEmojis.size >= MAX_REACTIONS_PER_USER && !uniqueEmojis.has(sanitized)) {
+      throw new Error(`Maximum ${MAX_REACTIONS_PER_USER} different reactions per message reached`);
+    }
+
     // Vérifier si la réaction existe déjà
     const existingReaction = await this.prisma.reaction.findFirst({
       where: {

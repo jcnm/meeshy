@@ -175,13 +175,23 @@ export function useMessageReactions({
           CLIENT_EVENTS.REACTION_ADD,
           { messageId, emoji },
           (response: any) => {
-            
+
             if (response.success) {
               resolve(true);
             } else {
               // Revert optimistic update
               console.error('❌ [useMessageReactions] Server returned error:', response.error);
               setError(response.error || 'Failed to add reaction');
+
+              // Afficher l'erreur à l'utilisateur
+              // Si c'est l'erreur de limite de réactions, utiliser la traduction
+              if (response.error?.includes('Maximum') && response.error?.includes('different reactions')) {
+                toast.error(t('maxReactionsReached', { max: MAX_REACTIONS_PER_USER }));
+              } else {
+                // Afficher l'erreur brute pour les autres cas
+                toast.error(response.error || 'Failed to add reaction');
+              }
+
               refreshReactions();
               resolve(false);
             }
