@@ -495,26 +495,116 @@ function DashboardPageContent() {
                             const sender = conversation.lastMessage.anonymousSender || conversation.lastMessage.sender;
                             const isAnonymous = !!conversation.lastMessage.anonymousSender;
 
-                            if (sender) {
-                              const senderName = sender.displayName ||
-                                               sender.username ||
-                                               (sender.firstName && sender.lastName
-                                                 ? `${sender.firstName} ${sender.lastName}`.trim()
-                                                 : isAnonymous ? t('anonymous') || 'Anonyme' : 'Utilisateur');
+                            const senderPrefix = sender ? (
+                              <span className="font-medium">
+                                {sender.displayName ||
+                                 sender.username ||
+                                 (sender.firstName && sender.lastName
+                                   ? `${sender.firstName} ${sender.lastName}`.trim()
+                                   : isAnonymous ? t('anonymous') || 'Anonyme' : 'Utilisateur')}
+                                {isAnonymous && ' (anonyme)'}
+                                :{' '}
+                              </span>
+                            ) : null;
+
+                            // Si le message a un attachement et pas de contenu texte, afficher les détails de l'attachement
+                            if (conversation.lastMessage.attachments && conversation.lastMessage.attachments.length > 0 && !conversation.lastMessage.content) {
+                              const attachment = conversation.lastMessage.attachments[0];
+                              const mimeType = attachment.mimeType || '';
 
                               return (
                                 <>
-                                  <span className="font-medium">
-                                    {senderName}
-                                    {isAnonymous && ' (anonyme)'}
-                                    :{' '}
+                                  {senderPrefix}
+                                  <span className="inline-flex items-center gap-1.5">
+                                    {(() => {
+                                      // Déterminer le type et l'icône
+                                      if (mimeType.startsWith('image/')) {
+                                        return (
+                                          <>
+                                            <span className="inline-flex text-blue-500">📷</span>
+                                            {attachment.width && attachment.height && (
+                                              <span className="text-xs">{attachment.width}×{attachment.height}</span>
+                                            )}
+                                          </>
+                                        );
+                                      } else if (mimeType.startsWith('video/')) {
+                                        return (
+                                          <>
+                                            <span className="inline-flex text-red-500">🎥</span>
+                                            {attachment.duration && (
+                                              <span className="text-xs">{Math.floor(attachment.duration / 60)}:{(attachment.duration % 60).toString().padStart(2, '0')}</span>
+                                            )}
+                                            {attachment.width && attachment.height && (
+                                              <span className="text-xs">• {attachment.width}×{attachment.height}</span>
+                                            )}
+                                          </>
+                                        );
+                                      } else if (mimeType.startsWith('audio/')) {
+                                        // Formater la durée audio
+                                        const formatAudioDuration = (seconds: number): string => {
+                                          const hours = Math.floor(seconds / 3600);
+                                          const mins = Math.floor((seconds % 3600) / 60);
+                                          const secs = Math.floor(seconds % 60);
+                                          if (hours > 0) {
+                                            return `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                                          }
+                                          return `${mins}:${secs.toString().padStart(2, '0')}`;
+                                        };
+
+                                        return (
+                                          <>
+                                            <span className="inline-flex text-purple-500">🎵</span>
+                                            {attachment.duration && (
+                                              <span className="text-xs ml-1">{formatAudioDuration(attachment.duration)}</span>
+                                            )}
+                                          </>
+                                        );
+                                      } else if (mimeType === 'application/pdf') {
+                                        return (
+                                          <>
+                                            <span className="inline-flex text-orange-500">📄</span>
+                                            {attachment.pageCount && (
+                                              <span className="text-xs">{attachment.pageCount} page{attachment.pageCount > 1 ? 's' : ''}</span>
+                                            )}
+                                          </>
+                                        );
+                                      } else if (mimeType.includes('markdown') || (attachment.originalName && attachment.originalName.endsWith('.md'))) {
+                                        return (
+                                          <>
+                                            <span className="inline-flex text-blue-500">📝</span>
+                                            {attachment.lineCount && (
+                                              <span className="text-xs">{attachment.lineCount} ligne{attachment.lineCount > 1 ? 's' : ''}</span>
+                                            )}
+                                          </>
+                                        );
+                                      } else if (mimeType.includes('code') || mimeType.includes('javascript') || mimeType.includes('typescript') || mimeType.includes('python')) {
+                                        return (
+                                          <>
+                                            <span className="inline-flex text-green-500">💻</span>
+                                            {attachment.lineCount && (
+                                              <span className="text-xs">{attachment.lineCount} ligne{attachment.lineCount > 1 ? 's' : ''}</span>
+                                            )}
+                                          </>
+                                        );
+                                      } else {
+                                        return <span className="inline-flex text-gray-500">📎</span>;
+                                      }
+                                    })()}
+                                    {conversation.lastMessage.attachments.length > 1 && (
+                                      <span className="text-xs font-medium">+{conversation.lastMessage.attachments.length - 1}</span>
+                                    )}
                                   </span>
-                                  {conversation.lastMessage.content}
                                 </>
                               );
                             }
 
-                            return conversation.lastMessage.content;
+                            // Sinon afficher le contenu texte normal
+                            return (
+                              <>
+                                {senderPrefix}
+                                {conversation.lastMessage.content}
+                              </>
+                            );
                           })()}
                         </p>
                       )}
