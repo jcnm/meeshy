@@ -407,7 +407,7 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
           onClick={onRemove}
           className="absolute -top-0.5 -right-0.5 !w-5 !h-5 !min-w-[20px] !min-h-[20px] !max-w-[20px] !max-h-[20px] bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-md z-10 !p-0"
         >
-          <X className="!w-5 !h-5" />
+          <X className="!w-[11px] !h-[11px] sm:!w-[14px] sm:!h-[14px]" />
         </button>
       </div>
     );
@@ -428,7 +428,7 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
           onClick={onRemove}
           className="absolute -top-0.5 -right-0.5 !w-5 !h-5 !min-w-[20px] !min-h-[20px] !max-w-[20px] !max-h-[20px] bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-md z-10 !p-0"
         >
-          <X className="!w-5 !h-5" />
+          <X className="!w-[11px] !h-[11px] sm:!w-[14px] sm:!h-[14px]" />
         </button>
       </div>
     );
@@ -519,7 +519,7 @@ export const AudioRecorderCard = forwardRef<AudioRecorderCardRef, AudioRecorderC
           onClick={onRemove}
           className="absolute -top-0.5 -right-0.5 !w-5 !h-5 !min-w-[20px] !min-h-[20px] !max-w-[20px] !max-h-[20px] bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10 !p-0"
         >
-          <X className="!w-5 !h-5" />
+          <X className="!w-[11px] !h-[11px] sm:!w-[14px] sm:!h-[14px]" />
         </button>
       </div>
     );
