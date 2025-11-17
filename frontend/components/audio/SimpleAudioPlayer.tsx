@@ -1288,7 +1288,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                     )}
                   </a>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-96 p-4" side="top" align="end">
+                <DropdownMenuContent className="w-96 p-4 max-h-96" side="top" align="end">
                 <Tabs value={selectedEffectTab} onValueChange={(value) => setSelectedEffectTab(value as AudioEffectType | 'overview')}>
                   <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${appliedEffects.length + 1}, 1fr)` }}>
                     <TabsTrigger value="overview" className="text-xs">Vue d'ensemble</TabsTrigger>
@@ -1301,7 +1301,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                   </TabsList>
 
                   {/* Tab Vue d'ensemble - Timeline de tous les effets */}
-                  <TabsContent value="overview" className="mt-4 space-y-3">
+                  <TabsContent value="overview" className="mt-4 space-y-3 max-h-72 overflow-x-auto overflow-y-auto">
                     <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Timeline des effets</h3>
 
                     {effectsTimeline.length === 0 ? (
@@ -1381,7 +1381,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                     const segments = effectsTimeline.filter(s => s.effectType === effect);
 
                     return (
-                      <TabsContent key={effect} value={effect} className="mt-4 space-y-3">
+                      <TabsContent key={effect} value={effect} className="mt-4 space-y-3 max-h-72 overflow-x-auto overflow-y-auto">
                         <div className="flex items-center gap-2">
                           <EffectIcon effect={effect} className="w-5 h-5" />
                           <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{effectNames[effect]}</h3>
