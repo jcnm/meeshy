@@ -1151,6 +1151,33 @@ export class MeeshySocketIOManager {
               avatar: true,
               role: true
             }
+          },
+          attachments: {
+            select: {
+              id: true,
+              messageId: true,
+              fileName: true,
+              originalName: true,
+              mimeType: true,
+              fileSize: true,
+              fileUrl: true,
+              thumbnailUrl: true,
+              width: true,
+              height: true,
+              duration: true,
+              bitrate: true,
+              sampleRate: true,
+              codec: true,
+              channels: true,
+              fps: true,
+              videoCodec: true,
+              pageCount: true,
+              lineCount: true,
+              metadata: true, // IMPORTANT: Inclure audioEffectsTimeline
+              uploadedBy: true,
+              isAnonymous: true,
+              createdAt: true
+            }
           }
         }
       });
@@ -1199,6 +1226,7 @@ export class MeeshySocketIOManager {
               updatedAt: new Date()
             }
           : undefined,
+        attachments: (saved as any)?.attachments || [],
         meta: {
           conversationStats: updatedStats
         }
