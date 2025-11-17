@@ -20,6 +20,7 @@ import type {
   ReactionUpdateEvent
 } from '@shared/types/reaction';
 import { CLIENT_EVENTS, SERVER_EVENTS } from '@shared/types/socketio-events';
+import { useI18n } from '@/hooks/useI18n';
 
 export interface UseMessageReactionsOptions {
   messageId: string;
@@ -53,7 +54,10 @@ export function useMessageReactions({
   isAnonymous = false,
   enabled = true
 }: UseMessageReactionsOptions): UseMessageReactionsReturn {
-  
+
+  // Traductions
+  const { t } = useI18n('reactions');
+
   // État local
   const [reactions, setReactions] = useState<ReactionAggregation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -119,7 +123,7 @@ export function useMessageReactions({
     // LIMITE: Maximum 3 réactions différentes par utilisateur
     const MAX_REACTIONS_PER_USER = 3;
     if (userReactions.length >= MAX_REACTIONS_PER_USER) {
-      toast.error(`Vous ne pouvez ajouter que ${MAX_REACTIONS_PER_USER} réactions différentes par message`);
+      toast.error(t('maxReactionsReached', { max: MAX_REACTIONS_PER_USER }));
       return false;
     }
 

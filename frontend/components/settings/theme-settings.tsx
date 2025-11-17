@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { useTheme, useAppActions, useCurrentInterfaceLanguage, useLanguageActions } from '@/stores';
 import { useI18n } from '@/hooks/useI18n';
 import { useLanguage } from '@/hooks/compatibility-hooks';
+import { INTERFACE_LANGUAGES } from '@/types/frontend';
 
 interface ThemeConfig {
   accentColor: string;
@@ -29,11 +30,10 @@ export function ThemeSettings() {
   // Utiliser Zustand pour la langue
   const currentInterfaceLanguage = useCurrentInterfaceLanguage();
   const { setInterfaceLanguage } = useLanguageActions();
-  const { getSupportedLanguages } = useLanguage();
-  
+
   // Debug: afficher la langue actuelle
   useEffect(() => {
-  }, [currentInterfaceLanguage, getSupportedLanguages]);
+  }, [currentInterfaceLanguage]);
   
   const [config, setConfig] = useState<ThemeConfig>({
     accentColor: 'blue',
@@ -233,11 +233,11 @@ export function ThemeSettings() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {getSupportedLanguages().map((language) => (
+                    {INTERFACE_LANGUAGES.map((language) => (
                       <SelectItem key={language.code} value={language.code}>
                         <div className="flex items-center gap-2">
-                          <span>{language.nativeName}</span>
-                          <span className="text-muted-foreground text-xs">({language.name})</span>
+                          <span>{language.flag}</span>
+                          <span>{language.name}</span>
                         </div>
                       </SelectItem>
                     ))}
