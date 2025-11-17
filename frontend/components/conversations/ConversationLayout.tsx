@@ -772,10 +772,15 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     // Sélectionner la conversation d'abord
     if (effectiveSelectedId !== conversation.id) {
       handleSelectConversation(conversation);
-    }
 
-    // Ouvrir la sidebar de détails
-    setIsDetailsOpen(true);
+      // Ouvrir la sidebar de détails après un court délai pour laisser la conversation s'afficher
+      setTimeout(() => {
+        setIsDetailsOpen(true);
+      }, 100);
+    } else {
+      // La conversation est déjà sélectionnée, ouvrir la sidebar immédiatement
+      setIsDetailsOpen(true);
+    }
   }, [effectiveSelectedId, handleSelectConversation, instanceId]);
 
   // Start video call
