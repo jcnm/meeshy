@@ -81,19 +81,34 @@ export function AttachmentDetails({
           'back-sound': '🎶',
         };
         let effectDisplay = '';
-        if ((attachment as any).audioEffectsTimeline?.events) {
+        // Vérifier les deux sources possibles (upload response vs DB)
+        const audioEffectsTimeline = (attachment as any).audioEffectsTimeline || (attachment as any).metadata?.audioEffectsTimeline;
+
+        console.log('🔍 [AttachmentDetails] Checking audio effects:', {
+          attachmentId: attachment.id,
+          hasDirectTimeline: !!(attachment as any).audioEffectsTimeline,
+          hasMetadataTimeline: !!(attachment as any).metadata?.audioEffectsTimeline,
+          timeline: audioEffectsTimeline,
+          hasEvents: !!audioEffectsTimeline?.events,
+          eventsCount: audioEffectsTimeline?.events?.length || 0
+        });
+
+        if (audioEffectsTimeline?.events) {
           const effects = new Set<string>();
-          for (const event of (attachment as any).audioEffectsTimeline.events) {
+          for (const event of audioEffectsTimeline.events) {
             if (event.action === 'activate') {
               effects.add(event.effectType);
             }
           }
           const appliedEffects = Array.from(effects);
+          console.log('✅ [AttachmentDetails] Effects detected:', appliedEffects);
           if (appliedEffects.length === 1) {
             effectDisplay = effectIcons[appliedEffects[0]] || '🎚️';
           } else if (appliedEffects.length > 1) {
             effectDisplay = '🎚️';
           }
+        } else {
+          console.warn('⚠️ [AttachmentDetails] No effects timeline found for audio attachment');
         }
 
         return {
