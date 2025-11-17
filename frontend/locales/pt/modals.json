@@ -105,7 +105,7 @@
       "validityDuration": "Duração de validade",
       "usageLimit": "Limite de usos",
       "usageCount": "{count} uso(s)",
-      "expiresOn": "Expira em",
+      "expiresOn": "Expira em {date}",
       "unlimited": "Ilimitado",
       "linkDisabledAfter": "O link será automaticamente desativado após {count} usos",
       "guestsCanSendMessages": "Convidados podem enviar mensagens",

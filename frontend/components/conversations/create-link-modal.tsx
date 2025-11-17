@@ -1396,7 +1396,7 @@ export function CreateLinkModalV2({
                 <h5 className="font-medium text-sm text-muted-foreground mb-1">{t('summary.validityDuration')}</h5>
                 <p className="font-medium">{DURATION_OPTIONS.find(d => d.value === expirationDays) ? t(DURATION_OPTIONS.find(d => d.value === expirationDays)!.labelKey) : `${expirationDays} jours`}</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {t('summary.expiresOn')} {new Date(Date.now() + expirationDays * 24 * 60 * 60 * 1000).toLocaleDateString(locale)}
+                  {t('summary.expiresOn', { date: new Date(Date.now() + expirationDays * 24 * 60 * 60 * 1000).toLocaleDateString(locale) })}
                 </p>
               </div>
             </div>
