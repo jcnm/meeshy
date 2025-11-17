@@ -122,6 +122,7 @@
     "requirements": {
       "account": "Compte obligatoire",
       "accountDescription": "Les visiteurs doivent se connecter avec un compte vérifié. Active automatiquement toutes les permissions et exigences.",
+      "noAnonymous": "Pas d'anonyme",
       "nickname": "Pseudonyme",
       "nicknameDescription": "Exiger un pseudonyme pour rejoindre",
       "name": "Nom requis",
