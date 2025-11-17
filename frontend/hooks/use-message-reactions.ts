@@ -116,6 +116,13 @@ export function useMessageReactions({
       return true; // Retourner succès car la réaction existe déjà
     }
 
+    // LIMITE: Maximum 3 réactions différentes par utilisateur
+    const MAX_REACTIONS_PER_USER = 3;
+    if (userReactions.length >= MAX_REACTIONS_PER_USER) {
+      toast.error(`Vous ne pouvez ajouter que ${MAX_REACTIONS_PER_USER} réactions différentes par message`);
+      return false;
+    }
+
     try {
       // Optimistic update
       setReactions(prev => {
