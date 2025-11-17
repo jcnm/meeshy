@@ -158,7 +158,8 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
   };
 
   // Noms affichables pour les effets
-  const effectNames: Record<AudioEffectType, string> = {
+  const effectNames: Record<AudioEffectType | 'overview', string> = {
+    'overview': 'Vue d\'ensemble',
     'voice-coder': 'Voice Coder',
     'baby-voice': 'Baby Voice',
     'demon-voice': 'Demon Voice',
@@ -1401,17 +1402,19 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                   <TabsList className="grid w-full bg-gray-100 dark:bg-gray-800 p-1.5" style={{ gridTemplateColumns: `repeat(${appliedEffects.length + 1}, 1fr)` }}>
                     <TabsTrigger
                       value="overview"
-                      className={`text-xs flex items-center justify-center py-2 md:py-3 px-2 rounded-lg font-medium transition-all ${effectTabClasses['overview']}`}
+                      className={`flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-2 md:py-3 px-2 rounded-lg font-medium transition-all ${effectTabClasses['overview']}`}
                     >
                       <Sliders className="w-4 h-4" />
+                      <span className="text-xs md:text-sm">{effectNames['overview']}</span>
                     </TabsTrigger>
                     {appliedEffects.map((effect) => (
                       <TabsTrigger
                         key={effect}
                         value={effect}
-                        className={`text-xs flex items-center justify-center py-2 md:py-3 px-2 rounded-lg font-medium transition-all ${effectTabClasses[effect]}`}
+                        className={`flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-2 md:py-3 px-2 rounded-lg font-medium transition-all ${effectTabClasses[effect]}`}
                       >
                         <EffectIcon effect={effect} className="w-4 h-4" />
+                        <span className="text-xs md:text-sm">{effectNames[effect]}</span>
                       </TabsTrigger>
                     ))}
                   </TabsList>
