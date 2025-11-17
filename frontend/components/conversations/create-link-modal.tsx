@@ -247,6 +247,18 @@ export function CreateLinkModalV2({
   const [requireEmail, setRequireEmail] = useState(false);
   const [requireBirthday, setRequireBirthday] = useState(false);
 
+  // Quand requireAccount est activé, activer automatiquement toutes les permissions
+  useEffect(() => {
+    if (requireAccount) {
+      setAllowAnonymousMessages(true);
+      setAllowAnonymousFiles(true);
+      setAllowAnonymousImages(true);
+      setAllowViewHistory(true);
+      setRequireEmail(true);
+      setRequireBirthday(true);
+    }
+  }, [requireAccount]);
+
   // États des restrictions de sécurité
   const [allowedLanguages, setAllowedLanguages] = useState<string[]>([]);
 
