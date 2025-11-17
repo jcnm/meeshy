@@ -166,6 +166,30 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     'back-sound': 'Background Sound',
   };
 
+  // Traductions des noms de paramètres
+  const parameterNames: Record<string, string> = {
+    'pitch': 'Hauteur',
+    'harmonization': 'Harmonisation',
+    'strength': 'Intensité',
+    'retuneSpeed': 'Vitesse',
+    'scale': 'Gamme',
+    'key': 'Tonalité',
+    'naturalVibrato': 'Expression',
+    'formant': 'Timbre',
+    'breathiness': 'Souffle',
+    'distortion': 'Distorsion',
+    'reverb': 'Écho',
+    'soundFile': 'Fichier',
+    'volume': 'Volume',
+    'loopMode': 'Mode',
+    'loopValue': 'Valeur',
+  };
+
+  // Helper pour obtenir le nom traduit d'un paramètre
+  const getParameterName = (key: string): string => {
+    return parameterNames[key] || key;
+  };
+
   // Couleurs pour les effets
   const effectColors: Record<AudioEffectType, string> = {
     'voice-coder': '#8b5cf6', // purple
@@ -944,7 +968,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                     [curveKey]: !isVisible,
                   }));
                 }}
-                className={`px-2 py-1 text-xs rounded-full border transition-all ${
+                className={`px-2 py-0.5 md:py-1 text-xs rounded-full border transition-all ${
                   isVisible
                     ? 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600'
                     : 'bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600 opacity-50'
@@ -958,7 +982,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                   style={{ backgroundColor: curve.color }}
                 />
                 <EffectIcon effect={curve.effectType} className="w-3 h-3 inline" />
-                <span className="ml-1">{curve.key}</span>
+                <span className="ml-1">{getParameterName(curve.key)}</span>
               </button>
             );
           })}
@@ -1187,7 +1211,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                   },
                 }));
               }}
-              className={`px-2 py-1 text-xs rounded-full border transition-all ${
+              className={`px-2 py-0.5 md:py-1 text-xs rounded-full border transition-all ${
                 currentVisibility[key] !== false
                   ? 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600'
                   : 'bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600 opacity-50'
@@ -1200,7 +1224,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                 className="inline-block w-3 h-3 rounded-full mr-1"
                 style={{ backgroundColor: curveColors[idx % curveColors.length] }}
               />
-              {key}
+              {getParameterName(key)}
             </button>
           ))}
         </div>
