@@ -57,19 +57,7 @@ import { useUser } from '@/stores';
 import { generateLinkName } from '@/utils/link-name-generator';
 import { authManager } from '@/services/auth-manager.service';
 import { cn } from '@/lib/utils';
-
-// Langues supportées
-const SUPPORTED_LANGUAGES = [
-  { code: 'fr', name: 'Français', flag: '🇫🇷' },
-  { code: 'en', name: 'English', flag: '🇺🇸' },
-  { code: 'es', name: 'Español', flag: '🇪🇸' },
-  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-  { code: 'it', name: 'Italiano', flag: '🇮🇹' },
-  { code: 'pt', name: 'Português', flag: '🇵🇹' },
-  { code: 'zh', name: '中文', flag: '🇨🇳' },
-  { code: 'ja', name: '日本語', flag: '🇯🇵' },
-  { code: 'ar', name: 'العربية', flag: '🇸🇦' }
-];
+import { SUPPORTED_LANGUAGES } from '@/types';
 
 
 // Options prédéfinies pour les durées - seront traduites dans le composant
@@ -271,6 +259,9 @@ export function CreateLinkModalV2({
   const [isPermissionsOpen, setIsPermissionsOpen] = useState(false);
   const [isLanguagesOpen, setIsLanguagesOpen] = useState(false);
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
+
+  // État pour la recherche de langues
+  const [languageSearchQuery, setLanguageSearchQuery] = useState('');
 
   // L'identifiant est maintenant simple, pas besoin d'état d'édition
 
@@ -1169,24 +1160,47 @@ export function CreateLinkModalV2({
         </CardHeader>
         {isLanguagesOpen && (
         <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {SUPPORTED_LANGUAGES.map((lang) => (
-                <SelectableSquare
-                  key={lang.code}
-                    checked={allowedLanguages.includes(lang.code)}
-                  onChange={(checked) => {
-                    if (checked) {
-                        setAllowedLanguages([...allowedLanguages, lang.code]);
-                      } else {
-                        setAllowedLanguages(allowedLanguages.filter(l => l !== lang.code));
-                      }
-                    }}
-                  label={`${lang.flag} ${lang.name}`}
-                  description={t('createLinkModal.allowedLanguages.allowLanguage', { language: lang.name })}
-                  icon={<Globe className="w-4 h-4" />}
-                  />
-              ))}
+            {/* Champ de recherche */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder={t('createLinkModal.allowedLanguages.searchPlaceholder')}
+                value={languageSearchQuery}
+                onChange={(e) => setLanguageSearchQuery(e.target.value)}
+                className="pl-9"
+              />
             </div>
+
+            {/* Grille de langues filtrées */}
+            <ScrollArea className="h-[300px] pr-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {SUPPORTED_LANGUAGES
+                  .filter(lang =>
+                    languageSearchQuery === '' ||
+                    lang.name.toLowerCase().includes(languageSearchQuery.toLowerCase()) ||
+                    lang.code.toLowerCase().includes(languageSearchQuery.toLowerCase()) ||
+                    (lang.nativeName && lang.nativeName.toLowerCase().includes(languageSearchQuery.toLowerCase()))
+                  )
+                  .map((lang) => (
+                  <SelectableSquare
+                    key={lang.code}
+                      checked={allowedLanguages.includes(lang.code)}
+                    onChange={(checked) => {
+                      if (checked) {
+                          setAllowedLanguages([...allowedLanguages, lang.code]);
+                        } else {
+                          setAllowedLanguages(allowedLanguages.filter(l => l !== lang.code));
+                        }
+                      }}
+                    label={`${lang.flag} ${lang.name}`}
+                    description={t('createLinkModal.allowedLanguages.allowLanguage', { language: lang.name })}
+                    icon={<Globe className="w-4 h-4" />}
+                    />
+                ))}
+              </div>
+            </ScrollArea>
+
             <p className="text-xs text-muted-foreground italic">
               💡 {t('createLinkModal.allowedLanguages.allowAllLanguagesHint')}
             </p>

@@ -395,6 +395,7 @@
       "allowedLanguages": {
         "title": "Allowed languages",
         "description": "Select which languages can be used in this conversation",
+        "searchPlaceholder": "Search for a language...",
         "allowLanguage": "Allow {language}",
         "allowAllLanguages": "Allow all languages",
         "allowAllLanguagesHint": "Select no language to allow all languages"
