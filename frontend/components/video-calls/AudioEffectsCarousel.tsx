@@ -389,7 +389,7 @@ function VoiceCoderDetails({
           {/* Preset Selector */}
           {availablePresets && onLoadPreset && (
             <div>
-              <Label className="text-white text-sm mb-2 block">Configuration rapide</Label>
+              <Label className="text-white text-sm mb-2 block">{t('voiceCoder.quickConfig.label')}</Label>
               <Select
                 value={currentPreset || 'correction-subtile'}
                 onValueChange={(value: VoiceCoderPreset) => onLoadPreset(value)}
@@ -403,7 +403,7 @@ function VoiceCoderDetails({
                       {preset.name}
                     </SelectItem>
                   ))}
-                  <SelectItem value="custom">Personnalisé</SelectItem>
+                  <SelectItem value="custom">{t('presets.custom')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -413,7 +413,7 @@ function VoiceCoderDetails({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label className="text-white text-xs mb-1 block">
-                Rapidité: {effect.params.retuneSpeed}%
+                { t('voiceCoder.retuneSpeed.label') }: {effect.params.retuneSpeed}%
               </Label>
               <Slider
                 value={[effect.params.retuneSpeed]}
@@ -426,7 +426,7 @@ function VoiceCoderDetails({
 
             <div>
               <Label className="text-white text-xs mb-1 block">
-                Force: {effect.params.strength}%
+                {t('voiceCoder.strength.label')}: {effect.params.strength}%
               </Label>
               <Slider
                 value={[effect.params.strength]}
@@ -439,7 +439,7 @@ function VoiceCoderDetails({
 
             <div>
               <Label className="text-white text-xs mb-1 block">
-                Vibrato: {effect.params.naturalVibrato}%
+                {t('voiceCoder.naturalVibrato.label')}: {effect.params.naturalVibrato}%
               </Label>
               <Slider
                 value={[effect.params.naturalVibrato]}
@@ -452,7 +452,7 @@ function VoiceCoderDetails({
 
             <div>
               <Label className="text-white text-xs mb-1 block">
-                Pitch: {effect.params.pitch > 0 ? '+' : ''}{effect.params.pitch}
+                {t('voiceCoder.pitch.label')}: {effect.params.pitch > 0 ? '+' : ''}{effect.params.pitch}
               </Label>
               <Slider
                 value={[effect.params.pitch]}
@@ -467,7 +467,7 @@ function VoiceCoderDetails({
           {/* Scale and Key */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-white text-xs mb-1 block">Gamme</Label>
+              <Label className="text-white text-xs mb-1 block">{t('voiceCoder.scale.label')}</Label>
               <Select
                 value={effect.params.scale}
                 onValueChange={(value: 'chromatic' | 'major' | 'minor' | 'pentatonic') =>
@@ -478,16 +478,16 @@ function VoiceCoderDetails({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="chromatic">Chromatique</SelectItem>
-                  <SelectItem value="major">Majeur</SelectItem>
-                  <SelectItem value="minor">Mineur</SelectItem>
-                  <SelectItem value="pentatonic">Pentatonique</SelectItem>
+                  <SelectItem value="chromatic">{t('voiceCoder.scale.chromatic')}</SelectItem>
+                  <SelectItem value="major">{t('voiceCoder.scale.major')}</SelectItem>
+                  <SelectItem value="minor">{t('voiceCoder.scale.minor')}</SelectItem>
+                  <SelectItem value="pentatonic">{t('voiceCoder.scale.pentatonic')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label className="text-white text-xs mb-1 block">Tonalité</Label>
+              <Label className="text-white text-xs mb-1 block">{t('voiceCoder.key.label')}</Label>
               <Select
                 value={effect.params.key}
                 onValueChange={(value) => onUpdateParams({ key: value as any })}
@@ -553,10 +553,10 @@ function BackSoundDetails({
         <div className={cn('space-y-3', !effect.enabled && 'opacity-50 pointer-events-none')}>
           {/* Upload */}
           <div>
-            <Label className="text-white text-sm mb-2 block">Importer un fichier</Label>
+            <Label className="text-white text-sm mb-2 block">{t('backSound.uploadLabel')}</Label>
             <label className="flex items-center justify-center gap-2 w-full py-2 px-3 bg-gray-800 border border-gray-600 rounded-md text-white text-sm cursor-pointer hover:bg-gray-700">
               <Upload className="w-4 h-4" />
-              <span>Choisir un fichier audio</span>
+              <span>{t('backSound.uploadButton')}</span>
               <input
                 type="file"
                 accept="audio/mp3,audio/wav,audio/mpeg,audio/x-wav"
@@ -575,7 +575,7 @@ function BackSoundDetails({
           {/* Volume */}
           <div>
             <Label className="text-white text-xs mb-1 block">
-              Volume: {effect.params.volume}%
+              {t('backSound.volume.label')}: {effect.params.volume}%
             </Label>
             <Slider
               value={[effect.params.volume]}
@@ -588,7 +588,7 @@ function BackSoundDetails({
 
           {/* Loop Mode */}
           <div>
-            <Label className="text-white text-sm mb-2 block">Mode de lecture</Label>
+            <Label className="text-white text-sm mb-2 block">{t('backSound.loopMode.label')}</Label>
             <Select
               value={effect.params.loopMode}
               onValueChange={(value: 'N_TIMES' | 'N_MINUTES') => onUpdateParams({ loopMode: value })}
@@ -653,7 +653,7 @@ function BabyVoiceDetails({
         <div className={cn('space-y-3', !effect.enabled && 'opacity-50 pointer-events-none')}>
           <div>
             <Label className="text-white text-xs mb-1 block">
-              Pitch: +{effect.params.pitch}
+              {t('effects.baby-voice.params.pitch.label')}: +{effect.params.pitch}
             </Label>
             <Slider
               value={[effect.params.pitch]}
@@ -666,7 +666,7 @@ function BabyVoiceDetails({
 
           <div>
             <Label className="text-white text-xs mb-1 block">
-              Formant: {effect.params.formant.toFixed(2)}x
+              {t('effects.baby-voice.params.formant.label')}: {effect.params.formant.toFixed(2)}x
             </Label>
             <Slider
               value={[effect.params.formant * 100]}
@@ -679,7 +679,7 @@ function BabyVoiceDetails({
 
           <div>
             <Label className="text-white text-xs mb-1 block">
-              Breathiness: {effect.params.breathiness}%
+              {t('effects.baby-voice.params.breathiness.label')}: {effect.params.breathiness}%
             </Label>
             <Slider
               value={[effect.params.breathiness]}
@@ -726,7 +726,7 @@ function DemonVoiceDetails({
         <div className={cn('space-y-3', !effect.enabled && 'opacity-50 pointer-events-none')}>
           <div>
             <Label className="text-white text-xs mb-1 block">
-              Pitch: {effect.params.pitch}
+              {t('effects.demon-voice.params.pitch.label')}: {effect.params.pitch}
             </Label>
             <Slider
               value={[effect.params.pitch]}
@@ -739,7 +739,7 @@ function DemonVoiceDetails({
 
           <div>
             <Label className="text-white text-xs mb-1 block">
-              Distortion: {effect.params.distortion}%
+              {t('effects.demon-voice.params.distortion.label')}: {effect.params.distortion}%
             </Label>
             <Slider
               value={[effect.params.distortion]}
@@ -752,7 +752,7 @@ function DemonVoiceDetails({
 
           <div>
             <Label className="text-white text-xs mb-1 block">
-              Reverb: {effect.params.reverb}%
+              {t('effects.demon-voice.params.reverb.label')}: {effect.params.reverb}%
             </Label>
             <Slider
               value={[effect.params.reverb]}

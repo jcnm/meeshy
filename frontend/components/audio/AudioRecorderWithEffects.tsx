@@ -181,6 +181,9 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
       mediaRecorderRef.current.stop();
     }
 
+    // Reset de previousEffectsStateRef pour le prochain enregistrement
+    previousEffectsStateRef.current = null;
+
     setIsRecording(false);
 
     if (onRecordingStateChange) {
@@ -332,6 +335,10 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
         totalEffects: initialEffects.filter(e => e.enabled).length
       });
 
+      // IMPORTANT: Initialiser previousEffectsStateRef AVANT de démarrer le tracking
+      // Cela permet de détecter les changements dès la première activation
+      previousEffectsStateRef.current = effectsState;
+
       // Démarrer le tracking de la timeline des effets audio avec l'état initial
       // Utiliser la ref pour éviter le problème de closure
       startTrackingRef.current?.({
@@ -429,10 +436,9 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
     // Ne pas tracker si on n'est pas en train d'enregistrer
     if (!isRecording) return;
 
-    // Première initialisation - stocker l'état initial sans enregistrer d'événements
+    // Vérifier qu'on a un état précédent (normalement initialisé dans startRecording)
     if (!previousEffectsStateRef.current) {
-      previousEffectsStateRef.current = effectsState;
-      console.log('🎯 [AudioRecorder] Initial effects state:', effectsState);
+      console.warn('⚠️ [AudioRecorder] No previous state, skipping tracking');
       return;
     }
 
@@ -470,13 +476,6 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
     // Mettre à jour l'état précédent
     previousEffectsStateRef.current = effectsState;
   }, [effectsState, isRecording]); // Retirer les fonctions des dépendances car on utilise les refs maintenant
-
-  // Reset de l'état précédent quand l'enregistrement démarre
-  useEffect(() => {
-    if (isRecording) {
-      previousEffectsStateRef.current = null;
-    }
-  }, [isRecording]);
 
   // Cleanup
   useEffect(() => {
