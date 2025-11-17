@@ -1404,7 +1404,7 @@ export function CreateLinkModalV2({
             {/* Message de bienvenue sur toute la largeur */}
             <div className="p-3 bg-muted/30 rounded-lg">
               <h5 className="font-medium text-sm text-muted-foreground mb-1">{t('summary.welcomeMessage')}</h5>
-              <p className="font-medium">{description || t('summary.noCustomMessage')}</p>
+              <p className="font-medium whitespace-pre-wrap">{description || t('summary.noCustomMessage')}</p>
               <p className="text-xs text-muted-foreground mt-1">
                 {t('summary.welcomeMessageDescription')}
               </p>

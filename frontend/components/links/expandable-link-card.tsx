@@ -289,7 +289,7 @@ export function ExpandableLinkCard({
                     <h4 className="text-sm font-semibold mb-2 text-blue-900 dark:text-blue-100">
                       {t('details.invitationMessage')}
                     </h4>
-                    <p className="text-sm text-gray-700 dark:text-gray-300">{link.description}</p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{link.description}</p>
                   </div>
                 )}
 

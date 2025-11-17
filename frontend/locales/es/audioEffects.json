@@ -16,7 +16,7 @@
     "recorder": {
       "initializing": "Inicializando...",
       "audioEffects": "Efectos de audio",
-      "maxDuration": "Máx {{duration}}min",
+      "maxDuration": "Máx {duration}min",
       "startRecording": "Iniciar grabación",
       "stopRecording": "Detener grabación",
       "errors": {

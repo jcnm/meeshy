@@ -83,6 +83,7 @@
       "conversation": "Conversation",
       "conversationDescription": "Description",
       "permissionsGranted": "Permissions accordées",
+      "permissions": "Permissions",
       "allowedLanguages": "Langues autorisées",
       "selectedLanguages": "Langues sélectionnées",
       "messages": "Messages",

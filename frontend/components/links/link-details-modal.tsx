@@ -99,7 +99,7 @@ export function LinkDetailsModal({ link, isOpen, onClose }: LinkDetailsModalProp
             {link.description && (
               <div>
                 <p className="text-sm text-muted-foreground">{t('details.description')}</p>
-                <p className="font-medium text-sm">{link.description}</p>
+                <p className="font-medium text-sm whitespace-pre-wrap">{link.description}</p>
               </div>
             )}
 
