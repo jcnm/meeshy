@@ -229,18 +229,21 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     }
 
     // Pour les effets encore actifs à la fin, utiliser la durée totale
+    // IMPORTANT: totalDuration est en secondes, mais startTime est en millisecondes
     const totalDuration = duration || attachmentDuration || 0;
+    const totalDurationMs = totalDuration * 1000; // Convertir en millisecondes
     console.log('⏱️ [SimpleAudioPlayer] Effets encore actifs:', {
       count: activeEffects.size,
       effects: Array.from(activeEffects.keys()),
       totalDuration,
+      totalDurationMs,
     });
 
     activeEffects.forEach((startTime, effectType) => {
       const segment = {
         effectType,
         startTime,
-        endTime: totalDuration,
+        endTime: totalDurationMs, // Utiliser la durée en millisecondes
       };
       segments.push(segment);
       console.log('✅ [SimpleAudioPlayer] Segment actif jusqu\'à la fin:', segment);
@@ -1211,9 +1214,9 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
         hasError ? 'border-red-300 dark:border-red-700' : 'border-blue-200 dark:border-gray-700'
       } shadow-md hover:shadow-lg transition-all duration-200 w-full sm:max-w-2xl ${className}`}
     >
-      {/* Ligne principale: Colonne Play+Download + Zone centrale (Gauge/% + Barre + Timer) + Colonne actions (Effet) */}
+      {/* Ligne principale: Colonne Play + Zone centrale (Timer + Gauge + Effects + Barre) */}
       <div className="flex items-center gap-3">
-        {/* Colonne gauche: Play/Pause + Gauge (vitesse uniquement) */}
+        {/* Colonne gauche: Play/Pause uniquement */}
         <div className="flex flex-col gap-1 items-center">
           {/* Bouton Play/Pause - Design moderne compact */}
           <Button
@@ -1236,56 +1239,12 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
               <Play className="w-3 h-3 ml-0.5 fill-current" />
             )}
           </Button>
-
-          {/* Bouton Gauge - Vitesse de lecture */}
-          <DropdownMenu open={isSpeedPopoverOpen} onOpenChange={setIsSpeedPopoverOpen}>
-            <DropdownMenuTrigger asChild>
-              <a
-                href="#"
-                className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 bg-white/70 dark:bg-gray-700/70 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-sm transition-all cursor-pointer"
-                title={`Vitesse: ${playbackRate}x`}
-                onClick={(e) => e.preventDefault()}
-              >
-                <Gauge className="w-2.5 h-2.5 text-gray-700 dark:text-gray-200" />
-              </a>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="min-w-0 w-auto p-0.5" side="top" align="center">
-              <div className="flex flex-col items-center gap-0.5 px-1">
-                {/* Slider vertical simplifié */}
-                <div className="relative h-16 flex items-center justify-center">
-                  {/* Slider (input vertical) */}
-                  <input
-                    type="range"
-                    min="0.1"
-                    max="5"
-                    step="0.01"
-                    value={playbackRate}
-                    onChange={handlePlaybackRateChange}
-                    onInput={handlePlaybackRateChange}
-                    onTouchMove={handlePlaybackRateChange}
-                    className="h-full appearance-none bg-gray-200 dark:bg-gray-600 rounded-full cursor-pointer"
-                    style={{
-                      writingMode: 'bt-lr',
-                      WebkitAppearance: 'slider-vertical',
-                      width: '4px',
-                      touchAction: 'none',
-                    }}
-                  />
-                </div>
-
-                {/* Affichage de la vitesse actuelle */}
-                <div className="text-[8px] font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
-                  {playbackRate.toFixed(1)}x
-                </div>
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
 
         {/* Zone centrale: Timer + Barre de progression */}
         <div className="flex-1 min-w-0 flex flex-col gap-1">
 
-          {/* Ligne en haut: Timer + Effects + Download */}
+          {/* Ligne en haut: Timer + Gauge + Effects */}
           <div className="flex items-center justify-center gap-2">
             <div className="text-[12px] font-mono text-gray-600 dark:text-gray-300">
               {hasError ? (
@@ -1303,7 +1262,51 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
               )}
             </div>
 
-            {/* Bouton Effects - sans fond */}
+            {/* Bouton Gauge - Vitesse de lecture */}
+            <DropdownMenu open={isSpeedPopoverOpen} onOpenChange={setIsSpeedPopoverOpen}>
+              <DropdownMenuTrigger asChild>
+                <a
+                  href="#"
+                  className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all cursor-pointer"
+                  title={`Vitesse: ${playbackRate}x`}
+                  onClick={(e) => e.preventDefault()}
+                >
+                  <Gauge className="w-3 h-3 text-gray-700 dark:text-gray-200" />
+                </a>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="min-w-0 w-auto p-0.5" side="top" align="center">
+                <div className="flex flex-col items-center gap-0.5 px-1">
+                  {/* Slider vertical simplifié */}
+                  <div className="relative h-16 flex items-center justify-center">
+                    {/* Slider (input vertical) */}
+                    <input
+                      type="range"
+                      min="0.1"
+                      max="5"
+                      step="0.01"
+                      value={playbackRate}
+                      onChange={handlePlaybackRateChange}
+                      onInput={handlePlaybackRateChange}
+                      onTouchMove={handlePlaybackRateChange}
+                      className="h-full appearance-none bg-gray-200 dark:bg-gray-600 rounded-full cursor-pointer"
+                      style={{
+                        writingMode: 'bt-lr',
+                        WebkitAppearance: 'slider-vertical',
+                        width: '4px',
+                        touchAction: 'none',
+                      }}
+                    />
+                  </div>
+
+                  {/* Affichage de la vitesse actuelle */}
+                  <div className="text-[8px] font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                    {playbackRate.toFixed(1)}x
+                  </div>
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Bouton Effects */}
             {appliedEffects.length > 0 && (
               <DropdownMenu open={isEffectsDropdownOpen} onOpenChange={setIsEffectsDropdownOpen}>
                 <DropdownMenuTrigger asChild>
@@ -1323,11 +1326,12 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                 <DropdownMenuContent className="w-96 p-4 max-h-96 overflow-hidden" side="top" align="end">
                 <Tabs value={selectedEffectTab} onValueChange={(value) => setSelectedEffectTab(value as AudioEffectType | 'overview')}>
                   <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${appliedEffects.length + 1}, 1fr)` }}>
-                    <TabsTrigger value="overview" className="text-xs flex items-center justify-center h-[120%]">Vue d'ensemble</TabsTrigger>
+                    <TabsTrigger value="overview" className="text-xs flex items-center justify-center py-1">
+                      <Sliders className="w-4 h-4" />
+                    </TabsTrigger>
                     {appliedEffects.map((effect) => (
-                      <TabsTrigger key={effect} value={effect} className="text-xs flex flex-col items-center gap-0.5 py-1 h-[120%]">
+                      <TabsTrigger key={effect} value={effect} className="text-xs flex items-center justify-center py-1">
                         <EffectIcon effect={effect} className="w-4 h-4" />
-                        <span className="text-[10px] leading-tight">{effectNames[effect]}</span>
                       </TabsTrigger>
                     ))}
                   </TabsList>
