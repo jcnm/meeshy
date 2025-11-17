@@ -46,7 +46,8 @@
     "remove": "Remove",
     "resend": "Resend",
     "connection": "Connection",
-    "add": "Add"
+    "add": "Add",
+    "cancel": "Cancel"
   },
   "messages": {
     "noContacts": "No contacts",
@@ -75,6 +76,7 @@
     "friendRequestSent": "Friend request sent",
     "friendRequestAccepted": "Friend request accepted",
     "friendRequestRejected": "Friend request rejected",
+    "friendRequestCancelled": "Friend request cancelled",
     "conversationCreated": "Conversation created"
   },
   "errors": {

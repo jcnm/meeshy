@@ -364,6 +364,40 @@ export default function ContactsPage() {
     }
   };
 
+  const cancelFriendRequest = async (requestId: string) => {
+    try {
+      const token = authManager.getAuthToken();
+      if (!token) return;
+
+      const response = await fetch(buildApiUrl(`/users/friend-requests/${requestId}`), {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        toast.success(t('success.friendRequestCancelled'));
+        loadFriendRequests();
+      } else {
+        const error = await response.json();
+        toast.error(error.error || t('errors.updateError'));
+      }
+    } catch (error) {
+      console.error('Erreur annulation friend request:', error);
+      toast.error(t('errors.updateError'));
+    }
+  };
+
+  const getPendingRequestWithUser = (userId: string): FriendRequest | undefined => {
+    return friendRequests.find(
+      (req) =>
+        req.status === 'pending' &&
+        ((req.senderId === user?.id && req.receiverId === userId) ||
+          (req.senderId === userId && req.receiverId === user?.id))
+    );
+  };
+
   const getUserDisplayName = (user: User | { firstName: string; lastName: string; username: string; displayName?: string }): string => {
     if ('displayName' in user && user.displayName) return user.displayName;
     return `${user.firstName} ${user.lastName}`.trim() || user.username;
@@ -605,13 +639,29 @@ export default function ContactsPage() {
                                     </Button>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="end" className="w-56 z-[100]">
-                                    <DropdownMenuItem
-                                      onClick={() => sendFriendRequest(contact.id)}
-                                      className="py-3"
-                                    >
-                                      <UserPlus className="h-4 w-4 mr-3" />
-                                      <span className="font-medium">{t('actions.add')}</span>
-                                    </DropdownMenuItem>
+                                    {(() => {
+                                      const pendingRequest = getPendingRequestWithUser(contact.id);
+                                      if (pendingRequest) {
+                                        return (
+                                          <DropdownMenuItem
+                                            onClick={() => cancelFriendRequest(pendingRequest.id)}
+                                            className="py-3 text-orange-600"
+                                          >
+                                            <X className="h-4 w-4 mr-3" />
+                                            <span className="font-medium">{t('actions.cancel')}</span>
+                                          </DropdownMenuItem>
+                                        );
+                                      }
+                                      return (
+                                        <DropdownMenuItem
+                                          onClick={() => sendFriendRequest(contact.id)}
+                                          className="py-3"
+                                        >
+                                          <UserPlus className="h-4 w-4 mr-3" />
+                                          <span className="font-medium">{t('actions.add')}</span>
+                                        </DropdownMenuItem>
+                                      );
+                                    })()}
                                     <DropdownMenuItem
                                       onClick={() => router.push(`/u/${contact.id}`)}
                                       className="py-3"
@@ -651,15 +701,33 @@ export default function ContactsPage() {
                               </span>
                             </div>
 
-                            {/* Bouton Ajouter */}
-                            <Button
-                              size="sm"
-                              onClick={() => sendFriendRequest(contact.id)}
-                              className="flex items-center gap-2 h-9 px-4 bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg transition-all"
-                            >
-                              <UserPlus className="h-4 w-4" />
-                              <span className="text-sm">{t('actions.add')}</span>
-                            </Button>
+                            {/* Bouton Ajouter ou Annuler */}
+                            {(() => {
+                              const pendingRequest = getPendingRequestWithUser(contact.id);
+                              if (pendingRequest) {
+                                return (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => cancelFriendRequest(pendingRequest.id)}
+                                    className="flex items-center gap-2 h-9 px-4 border-2 border-orange-500 text-orange-600 hover:bg-orange-50 shadow-md hover:shadow-lg transition-all"
+                                  >
+                                    <X className="h-4 w-4" />
+                                    <span className="text-sm">{t('actions.cancel')}</span>
+                                  </Button>
+                                );
+                              }
+                              return (
+                                <Button
+                                  size="sm"
+                                  onClick={() => sendFriendRequest(contact.id)}
+                                  className="flex items-center gap-2 h-9 px-4 bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg transition-all"
+                                >
+                                  <UserPlus className="h-4 w-4" />
+                                  <span className="text-sm">{t('actions.add')}</span>
+                                </Button>
+                              );
+                            })()}
                           </div>
                         </div>
                       </CardContent>
