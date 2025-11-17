@@ -955,6 +955,8 @@ class MeeshySocketIOService {
             uploadedBy: String(att.uploadedBy || socketMessage.senderId || (socketMessage as any).anonymousSenderId || ''),
             isAnonymous: Boolean(att.isAnonymous),
             createdAt: String(att.createdAt || new Date().toISOString()),
+            // Metadata JSON (audioEffectsTimeline, etc.)
+            metadata: att.metadata || undefined,
           };
         })
       : [];
