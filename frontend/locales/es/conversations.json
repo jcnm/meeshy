@@ -82,7 +82,8 @@
       "all": "Todas",
       "archived": "Archivadas",
       "reacted": "Favoritas",
-      "pinned": "Fijadas"
+      "pinned": "Fijadas",
+      "uncategorized": "Sin categoría"
     },
     "replyToMessage": "Responder al mensaje",
     "replyingTo": "En respuesta a",

@@ -814,7 +814,7 @@ export function ConversationList({
       }
     });
 
-    // Ajouter le groupe "Uncategorized" si nécessaire
+    // Ajouter le groupe "Non catégorisées" si nécessaire
     if (uncategorized.length > 0) {
       groups.push({
         type: 'uncategorized',
@@ -972,7 +972,7 @@ export function ConversationList({
               return (
                 <div key={`group-${group.type}-${group.categoryId || groupIndex}`} className="mb-4">
                   {/* Header de section */}
-                  {(group.type === 'pinned' || group.type === 'category') && (
+                  {(group.type === 'pinned' || group.type === 'category' || (group.type === 'uncategorized' && categories.length > 0)) && (
                     <div
                       className="flex items-center gap-2 px-2 py-1.5 mb-1 cursor-pointer hover:bg-accent/50 rounded-md transition-colors"
                       onClick={() => toggleSection(sectionId)}
@@ -994,6 +994,16 @@ export function ConversationList({
                             {t('conversationsList.pinned') || 'Épinglées'}
                           </h4>
                         </>
+                      ) : group.type === 'uncategorized' ? (
+                        <>
+                          <Folder className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <h4 className={cn(
+                            "text-xs font-semibold text-muted-foreground uppercase tracking-wide",
+                            hasUnreadMessages && "font-bold text-foreground"
+                          )}>
+                            {t('conversationsList.uncategorized') || 'Non catégorisées'}
+                          </h4>
+                        </>
                       ) : (
                         <>
                           <Folder className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -1011,8 +1021,8 @@ export function ConversationList({
                     </div>
                   )}
 
-                  {/* Conversations du groupe - masquées si collapsed */}
-                  {!isCollapsed && (
+                  {/* Conversations du groupe - masquées si collapsed, sauf pour uncategorized sans catégories */}
+                  {(!isCollapsed || (group.type === 'uncategorized' && categories.length === 0)) && (
                     <div className="space-y-1">
                       {group.conversations.map((conversation) => {
                         const prefs = preferencesMap.get(conversation.id);
