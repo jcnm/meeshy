@@ -13,6 +13,23 @@
     "resetAll": "Redefinir Tudo",
     "disableAll": "Desativar todos os efeitos",
 
+    "recorder": {
+      "initializing": "Inicializando...",
+      "audioEffects": "Efeitos de áudio",
+      "maxDuration": "Max {{duration}}min",
+      "startRecording": "Iniciar gravação",
+      "stopRecording": "Parar gravação",
+      "errors": {
+        "httpsRequired": "A gravação de áudio requer HTTPS.",
+        "browserNotSupported": "Seu navegador não suporta gravação de áudio.",
+        "effectsNotAvailable": "Efeitos de áudio não disponíveis - usando microfone direto",
+        "microphoneAccessDenied": "Acesso ao microfone negado.",
+        "noMicrophoneFound": "Nenhum microfone encontrado.",
+        "microphoneError": "Erro no microfone.",
+        "cannotAccessMicrophone": "Não é possível acessar o microfone."
+      }
+    },
+
     "voiceCoder": {
       "title": "Perfect Voice",
       "description": "Correção automática da afinação da sua voz para cantar afinado",

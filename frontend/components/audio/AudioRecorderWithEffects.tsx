@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useCallback, forwardRef, useImperat
 import { createPortal } from 'react-dom';
 import { Square, X, Mic, Loader2, Radio, Sliders } from 'lucide-react';
 import { toast } from 'sonner';
+import { useI18n } from '@/hooks/useI18n';
 import { useAudioEffects } from '@/hooks/use-audio-effects';
 import { useAudioEffectsTimeline, type InitialEffectState } from '@/hooks/use-audio-effects-timeline';
 import { AudioEffectsCarousel } from '@/components/video-calls/AudioEffectsCarousel';
@@ -59,6 +60,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
   onRecordingStateChange,
   onStop
 }, ref) => {
+  const { t } = useI18n('audioEffects');
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [permissionError, setPermissionError] = useState<string | null>(null);
@@ -193,14 +195,14 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
 
     try {
       if (!window.isSecureContext) {
-        toast.error('Audio recording requires HTTPS.');
+        toast.error(t('recorder.errors.httpsRequired'));
         setPermissionError('HTTPS required');
         setIsInitializing(false);
         return;
       }
 
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        toast.error('Your browser does not support audio recording.');
+        toast.error(t('recorder.errors.browserNotSupported'));
         setPermissionError('Browser not supported');
         setIsInitializing(false);
         return;
@@ -258,7 +260,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
           processedAudioStreamExists: !!currentProcessedStream,
           audioTracksCount: currentProcessedStream?.getAudioTracks().length || 0
         });
-        toast.warning('Effets audio non disponibles - utilisation du micro direct');
+        toast.warning(t('recorder.errors.effectsNotAvailable'));
       }
 
       const mediaRecorder = new MediaRecorder(streamToRecord, {
@@ -362,16 +364,16 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
       if (error instanceof DOMException) {
         if (error.name === 'NotAllowedError') {
           setPermissionError('Microphone access denied');
-          toast.error('Accès au microphone refusé.');
+          toast.error(t('recorder.errors.microphoneAccessDenied'));
         } else if (error.name === 'NotFoundError') {
           setPermissionError('No microphone found');
-          toast.error('Aucun microphone détecté.');
+          toast.error(t('recorder.errors.noMicrophoneFound'));
         } else {
           setPermissionError('Microphone error');
-          toast.error('Erreur microphone.');
+          toast.error(t('recorder.errors.microphoneError'));
         }
       } else {
-        toast.error('Impossible d\'accéder au microphone.');
+        toast.error(t('recorder.errors.cannotAccessMicrophone'));
         setPermissionError('Recording error');
       }
     }
@@ -503,7 +505,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
         <div className="relative flex flex-col items-center justify-center w-full h-24 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border-2 border-blue-400 dark:border-blue-500 rounded-lg">
           <Loader2 className="w-6 h-6 text-blue-600 dark:text-blue-400 animate-spin" />
           <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-            Initialisation...
+            {t('recorder.initializing')}
           </div>
         </div>
         <button
@@ -592,7 +594,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
               ? 'bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg shadow-purple-500/50'
               : 'bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700'
           } hover:scale-105 active:scale-95`}
-          title="Effets audio"
+          title={t('recorder.audioEffects')}
         >
           <Sliders className="w-5 h-5 text-white" />
           {audioEffectsActive && (
@@ -630,7 +632,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
               startRecording();
             }}
             className="flex-shrink-0 w-10 h-10 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 rounded-full flex items-center justify-center transition-all shadow-lg active:scale-95"
-            title="Démarrer l'enregistrement"
+            title={t('recorder.startRecording')}
           >
             <Radio className="w-5 h-5 text-white" />
           </button>
@@ -642,7 +644,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
               stopRecording();
             }}
             className="flex-shrink-0 w-10 h-10 bg-red-500 hover:bg-red-600 active:bg-red-700 rounded-full flex items-center justify-center transition-all shadow-lg active:scale-95"
-            title="Arrêter l'enregistrement"
+            title={t('recorder.stopRecording')}
           >
             <Square className="w-4 h-4 fill-white stroke-white" />
           </button>
@@ -651,7 +653,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
 
       {/* Badge durée max */}
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 bg-gray-700 text-white text-[8px] px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm">
-        Max {Math.floor(effectiveDuration / 60)}min
+        {t('recorder.maxDuration', { duration: Math.floor(effectiveDuration / 60) })}
       </div>
 
       {/* Bouton supprimer */}

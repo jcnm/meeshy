@@ -13,6 +13,23 @@
     "resetAll": "Reset All",
     "disableAll": "Disable all effects",
 
+    "recorder": {
+      "initializing": "Initializing...",
+      "audioEffects": "Audio effects",
+      "maxDuration": "Max {{duration}}min",
+      "startRecording": "Start recording",
+      "stopRecording": "Stop recording",
+      "errors": {
+        "httpsRequired": "Audio recording requires HTTPS.",
+        "browserNotSupported": "Your browser does not support audio recording.",
+        "effectsNotAvailable": "Audio effects not available - using direct microphone",
+        "microphoneAccessDenied": "Microphone access denied.",
+        "noMicrophoneFound": "No microphone found.",
+        "microphoneError": "Microphone error.",
+        "cannotAccessMicrophone": "Cannot access microphone."
+      }
+    },
+
     "voiceCoder": {
       "title": "Perfect Voice",
       "description": "Automatic pitch correction for perfect singing",
