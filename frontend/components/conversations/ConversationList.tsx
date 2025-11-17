@@ -38,6 +38,7 @@ interface ConversationListProps {
   isMobile: boolean;
   showConversationList: boolean;
   onSelectConversation: (conversation: Conversation) => void;
+  onShowDetails?: (conversation: Conversation) => void;
   onCreateConversation: () => void;
   onLinkCreated: () => void;
   t: (key: string) => string;
@@ -579,6 +580,7 @@ export function ConversationList({
   isMobile,
   showConversationList,
   onSelectConversation,
+  onShowDetails,
   onCreateConversation,
   onLinkCreated,
   t,
@@ -1021,6 +1023,7 @@ export function ConversationList({
                             isSelected={selectedConversation?.id === conversation.id}
                             currentUser={currentUser}
                             onClick={() => onSelectConversation(conversation)}
+                            onShowDetails={onShowDetails}
                             t={t}
                             isPinned={prefs?.isPinned || false}
                             isMuted={prefs?.isMuted || false}
