@@ -1326,11 +1326,11 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                 <DropdownMenuContent className="w-96 p-4 max-h-96 overflow-hidden" side="top" align="end">
                 <Tabs value={selectedEffectTab} onValueChange={(value) => setSelectedEffectTab(value as AudioEffectType | 'overview')}>
                   <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${appliedEffects.length + 1}, 1fr)` }}>
-                    <TabsTrigger value="overview" className="text-xs flex items-center justify-center py-1">
+                    <TabsTrigger value="overview" className="text-xs flex items-center justify-center p-2">
                       <Sliders className="w-4 h-4" />
                     </TabsTrigger>
                     {appliedEffects.map((effect) => (
-                      <TabsTrigger key={effect} value={effect} className="text-xs flex items-center justify-center py-1">
+                      <TabsTrigger key={effect} value={effect} className="text-xs flex items-center justify-center p-2">
                         <EffectIcon effect={effect} className="w-4 h-4" />
                       </TabsTrigger>
                     ))}
@@ -1433,7 +1433,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                           <div className="flex justify-between">
                             <span className="text-gray-600 dark:text-gray-400">Temps total:</span>
                             <span className="font-medium text-gray-900 dark:text-gray-100">
-                              {formatTime(segments.reduce((acc, s) => acc + (s.endTime - s.startTime), 0))}
+                              {formatTime(segments.reduce((acc, s) => acc + (s.endTime - s.startTime), 0) / 1000)}
                             </span>
                           </div>
                         </div>
