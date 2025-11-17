@@ -137,7 +137,8 @@ export default function SettingsPage() {
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
       {/* Main content area */}
       <DashboardLayout title={t('title')} className="!bg-none !bg-transparent !h-auto">
-        <div className="relative z-10 max-w-7xl mx-auto space-y-8 pb-8 w-full py-8">
+        {/* Contenu principal scrollable avec largeur limitée */}
+        <div className="relative z-10 max-w-7xl mx-auto space-y-8 pb-8 w-full py-8 px-4 sm:px-6 lg:px-8">
 
           {/* Hero Section avec style moderne */}
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 p-8 md:p-12 text-white shadow-2xl">
@@ -173,8 +174,8 @@ export default function SettingsPage() {
         </div>
       </DashboardLayout>
 
-      {/* Footer */}
-      <div className="relative z-20 mt-auto">
+      {/* Footer - Prend toute la largeur de la page, après le contenu scrollable */}
+      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mt-16">
         <Footer />
       </div>
     </div>

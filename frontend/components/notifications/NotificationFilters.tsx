@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Bell, MessageSquare, PhoneMissed, Settings, Users, UserPlus } from '@/lib/icons';
 import type { LucideIcon } from 'lucide-react';
+import { useI18n } from '@/hooks/useI18n';
 
 export type NotificationType = 'all' | 'new_message' | 'missed_call' | 'system' | 'conversation' | 'friend_request';
 
@@ -21,13 +22,15 @@ interface NotificationFiltersProps {
 }
 
 export function NotificationFilters({ selectedType, onTypeChange, counts }: NotificationFiltersProps) {
-  const filters: { label: string; value: NotificationType; Icon: LucideIcon }[] = [
-    { label: 'Toutes', value: 'all', Icon: Bell },
-    { label: 'Messages', value: 'new_message', Icon: MessageSquare },
-    { label: 'Contacts', value: 'friend_request', Icon: UserPlus },
-    { label: 'Appels manqués', value: 'missed_call', Icon: PhoneMissed },
-    { label: 'Système', value: 'system', Icon: Settings },
-    { label: 'Conversations', value: 'conversation', Icon: Users },
+  const { t } = useI18n('notifications');
+
+  const filters: { key: NotificationType; Icon: LucideIcon }[] = [
+    { key: 'all', Icon: Bell },
+    { key: 'new_message', Icon: MessageSquare },
+    { key: 'friend_request', Icon: UserPlus },
+    { key: 'missed_call', Icon: PhoneMissed },
+    { key: 'system', Icon: Settings },
+    { key: 'conversation', Icon: Users },
   ];
 
   return (
@@ -36,17 +39,17 @@ export function NotificationFilters({ selectedType, onTypeChange, counts }: Noti
         const { Icon } = filter;
         return (
           <Button
-            key={filter.value}
-            variant={selectedType === filter.value ? 'default' : 'outline'}
+            key={filter.key}
+            variant={selectedType === filter.key ? 'default' : 'outline'}
             size="sm"
-            onClick={() => onTypeChange(filter.value)}
+            onClick={() => onTypeChange(filter.key)}
             className="flex items-center gap-2"
           >
             <Icon className="h-4 w-4" />
-            <span>{filter.label}</span>
-            {counts && counts[filter.value] > 0 && (
+            <span>{t(`filters.${filter.key}`)}</span>
+            {counts && counts[filter.key] > 0 && (
               <Badge variant="secondary" className="ml-1">
-                {counts[filter.value]}
+                {counts[filter.key]}
               </Badge>
             )}
           </Button>

@@ -428,9 +428,9 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
         {/* Empty space for sent messages (20% mobile = 2 cols / 40% desktop = 4 cols) */}
         {isOwnMessage && <div className="col-span-2 sm:col-span-4" />}
 
-        {/* Message content area (80% mobile = 8 cols / 60% desktop = 6 cols) */}
+        {/* Message content area (80% mobile = 8 cols / 60% desktop = 6 cols) with max-width 90vw */}
         <div className={cn(
-          "col-span-8 sm:col-span-6 flex gap-1 sm:gap-1.5",
+          "col-span-8 sm:col-span-6 flex gap-1 sm:gap-1.5 max-w-[90vw]",
           isOwnMessage ? "flex-row-reverse" : "flex-row"
         )}>
         {/* Avatar on side - cliquable pour voir en grand */}
@@ -513,7 +513,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                 // Si attachments seuls : dans le flux avec les réactions superposées
                 <>
                   <div className={cn(
-                    "relative mb-1 w-full max-w-full",
+                    "relative mb-1 w-full max-w-full overflow-hidden",
                     isOwnMessage ? "ml-auto" : "mr-auto"
                   )}>
                     <MessageAttachments
@@ -552,7 +552,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
               ) : (
                 // Si avec texte : pas de wrapper relative (les réactions sont sur la bulle)
                 <div className={cn(
-                  "mb-1 inline-flex max-w-full",
+                  "mb-1 inline-flex max-w-full overflow-hidden",
                   isOwnMessage ? "ml-auto" : "mr-auto"
                 )}>
                   <MessageAttachments
@@ -576,13 +576,13 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
             )}>
               <Card
                 className={cn(
-                  "relative transition-colors duration-200 border shadow-none overflow-visible py-0 w-full",
+                  "relative transition-colors duration-200 border shadow-none overflow-hidden py-0 w-full",
                   isOwnMessage
                     ? 'bg-gradient-to-br from-blue-400 to-blue-500 dark:from-gray-700 dark:to-gray-800 border-blue-400 dark:border-gray-600 text-white'
                     : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
                 )}
               >
-                <CardContent className="p-1 w-full break-words overflow-hidden">
+                <CardContent className="p-1 w-full break-words overflow-hidden overflow-wrap-anywhere">
 
                 {/* Message parent si c'est une réponse */}
               {message.replyTo && (

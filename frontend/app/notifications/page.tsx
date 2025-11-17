@@ -340,7 +340,7 @@ function NotificationsPageContent() {
                         className="flex items-center gap-2"
                       >
                         <X className="h-4 w-4" />
-                        <span className="hidden sm:inline">Annuler</span>
+                        <span className="hidden sm:inline">{t('actions.cancel')}</span>
                       </Button>
 
                       {selectedNotifications.size > 0 && (
@@ -352,7 +352,7 @@ function NotificationsPageContent() {
                             className="flex items-center gap-2"
                           >
                             <Check className="h-4 w-4" />
-                            <span className="hidden sm:inline">Marquer comme lu ({selectedNotifications.size})</span>
+                            <span className="hidden sm:inline">{t('actions.markAsReadCount').replace('{count}', selectedNotifications.size.toString())}</span>
                             <span className="sm:hidden">{selectedNotifications.size}</span>
                           </Button>
 
@@ -363,7 +363,7 @@ function NotificationsPageContent() {
                             className="flex items-center gap-2 text-destructive hover:text-destructive"
                           >
                             <Trash2 className="h-4 w-4" />
-                            <span className="hidden sm:inline">Supprimer ({selectedNotifications.size})</span>
+                            <span className="hidden sm:inline">{t('actions.deleteCount').replace('{count}', selectedNotifications.size.toString())}</span>
                           </Button>
                         </>
                       )}
@@ -377,10 +377,10 @@ function NotificationsPageContent() {
                         disabled={isInitialLoading}
                         className="h-9 px-3 rounded-md border border-input bg-background text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <option value="date-desc">Plus récentes</option>
-                        <option value="date-asc">Plus anciennes</option>
-                        <option value="unread-first">Non lues d'abord</option>
-                        <option value="type">Par type</option>
+                        <option value="date-desc">{t('sortOptions.newest')}</option>
+                        <option value="date-asc">{t('sortOptions.oldest')}</option>
+                        <option value="unread-first">{t('sortOptions.unreadFirst')}</option>
+                        <option value="type">{t('sortOptions.byType')}</option>
                       </select>
 
                       {/* Bouton de sélection */}
@@ -392,7 +392,7 @@ function NotificationsPageContent() {
                           className="flex items-center gap-2"
                         >
                           <CheckSquare className="h-4 w-4" />
-                          <span className="hidden sm:inline">Sélectionner</span>
+                          <span className="hidden sm:inline">{t('actions.select')}</span>
                         </Button>
                       )}
 
@@ -469,12 +469,14 @@ function NotificationsPageContent() {
                       )}
                       <span>
                         {selectedNotifications.size === filteredNotifications.length
-                          ? 'Tout désélectionner'
-                          : 'Tout sélectionner'}
+                          ? t('actions.deselectAll')
+                          : t('actions.selectAll')}
                       </span>
                     </Button>
                     <span className="text-sm text-muted-foreground">
-                      {selectedNotifications.size} / {filteredNotifications.length} sélectionné{selectedNotifications.size > 1 ? 's' : ''}
+                      {(selectedNotifications.size > 1 ? t('selection.countPlural') : t('selection.count'))
+                        .replace('{selected}', selectedNotifications.size.toString())
+                        .replace('{total}', filteredNotifications.length.toString())}
                     </span>
                   </div>
                 )}
@@ -655,14 +657,14 @@ function NotificationsPageContent() {
                                           });
 
                                           if (response.ok) {
-                                            toast.success(action.type === 'accept' ? 'Demande acceptée' : 'Demande refusée');
+                                            toast.success(action.type === 'accept' ? t('friendRequest.accepted') : t('friendRequest.rejected'));
                                             markAsRead(notification.id);
                                           } else {
-                                            toast.error('Erreur lors du traitement de la demande');
+                                            toast.error(t('friendRequest.error'));
                                           }
                                         } catch (error) {
                                           console.error('Error handling friend request action:', error);
-                                          toast.error('Erreur de connexion');
+                                          toast.error(t('friendRequest.connectionError'));
                                         }
                                       }}
                                       className="flex-1"
@@ -677,7 +679,7 @@ function NotificationsPageContent() {
                                 <p className="text-xs text-muted-foreground">
                                   {formatNotificationTime(notification.timestamp)}
                                   {notification.conversationType !== 'direct' && notification.conversationTitle && (
-                                    <span> dans {notification.conversationTitle}</span>
+                                    <span> {t('conversationContext').replace('{conversationTitle}', notification.conversationTitle)}</span>
                                   )}
                                 </p>
 
