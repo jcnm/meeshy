@@ -18,6 +18,7 @@ interface AudioMetadata {
   mimeType: string;
   bitrate?: number;
   sampleRate?: number;
+  channels?: number;
   audioEffectsTimeline?: AudioEffectsTimeline;
 }
 
@@ -80,6 +81,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
   const [rawStream, setRawStream] = useState<MediaStream | null>(null); // State pour trigger useAudioEffects
   const processedAudioStreamRef = useRef<MediaStream | null>(null); // Ref pour accéder à la dernière valeur
   const previousEffectsStateRef = useRef<typeof effectsState | null>(null); // Pour détecter les changements d'effets
+  const recordedDurationRef = useRef<number>(0); // Stocker la durée enregistrée pour éviter problème de closure
 
   // Refs pour stocker les fonctions du hook timeline (éviter problème de closure)
   const startTrackingRef = useRef<any>(null);
@@ -158,6 +160,12 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
       onStop();
     }
 
+    // IMPORTANT: Capturer la durée AVANT de réinitialiser startTimeRef
+    // Car mediaRecorder.onstop s'exécute de manière asynchrone
+    if (startTimeRef.current) {
+      recordedDurationRef.current = performance.now() - startTimeRef.current;
+    }
+
     if (requestDataIntervalRef.current) {
       clearInterval(requestDataIntervalRef.current);
       requestDataIntervalRef.current = null;
@@ -195,6 +203,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
   const startRecording = useCallback(async () => {
     setPermissionError(null);
     setIsInitializing(true);
+    recordedDurationRef.current = 0; // Reset la durée
 
     try {
       if (!window.isSecureContext) {
@@ -304,8 +313,8 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
                       mimeType.includes('ogg') ? 'OGG' : 'AUDIO';
         setAudioFormat(format);
 
-        // Calculer la durée réelle depuis startTimeRef (évite problème de closure avec recordingTime)
-        const actualDurationMs = startTimeRef.current ? performance.now() - startTimeRef.current : 0;
+        // Utiliser la durée capturée dans stopRecording (évite problème de closure et timing)
+        const actualDurationMs = recordedDurationRef.current;
         const durationInSeconds = actualDurationMs / 1000;
         const estimatedBitrate = durationInSeconds > 0
           ? Math.round((blob.size * 8) / durationInSeconds) // bits per second
@@ -313,13 +322,12 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
 
         console.log('⏱️ [AudioRecorderWithEffects] Duration calculation:', {
           recordingTimeState: recordingTime,
+          recordedDurationMs: recordedDurationRef.current,
           actualDurationMs,
           durationInSeconds,
           blobSize: blob.size,
           estimatedBitrate,
-          bitrateKbps: Math.round(estimatedBitrate / 1000),
-          startTimeRef: startTimeRef.current,
-          performanceNow: performance.now()
+          bitrateKbps: Math.round(estimatedBitrate / 1000)
         });
 
         const metadata: AudioMetadata = {
@@ -328,6 +336,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
           mimeType: mimeType,
           bitrate: estimatedBitrate,
           sampleRate: 48000, // Sample rate utilisé dans getUserMedia
+          channels: 2, // Stéréo (défini dans getUserMedia)
           ...(audioEffectsTimeline && { audioEffectsTimeline }),
         };
 
@@ -337,7 +346,8 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
           audioEffectsTimelineEvents: metadata.audioEffectsTimeline?.events?.length || 0,
           bitrate: estimatedBitrate,
           bitrateKbps: Math.round(estimatedBitrate / 1000),
-          sampleRate: 48000
+          sampleRate: 48000,
+          channels: 2
         });
 
         onRecordingComplete(blob, metadata.duration, metadata);
