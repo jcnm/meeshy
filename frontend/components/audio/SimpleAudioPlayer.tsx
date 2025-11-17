@@ -1044,23 +1044,44 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     });
 
     // Ajouter une marge de 10%
-    if (isFinite(minValue) && isFinite(maxValue)) {
+    if (isFinite(minValue) && isFinite(maxValue) && minValue !== maxValue) {
       const range = maxValue - minValue;
       const margin = range * 0.1;
       minValue -= margin;
       maxValue += margin;
+    } else if (minValue === maxValue && isFinite(minValue)) {
+      // Si toutes les valeurs sont identiques, créer une petite plage autour de la valeur
+      minValue = minValue - 0.5;
+      maxValue = maxValue + 0.5;
     } else {
+      // Valeurs par défaut si aucune donnée valide
       minValue = 0;
       maxValue = 1;
     }
 
-    // Fonction pour convertir les coordonnées en pixels
+    // S'assurer que la plage n'est jamais nulle (évite division par zéro)
+    if (maxValue - minValue === 0) {
+      maxValue = minValue + 1;
+    }
+
+    // Fonction pour convertir les coordonnées en pixels avec protection contre NaN
     const timeToX = (time: number) => {
+      if (!isFinite(time) || !isFinite(totalDuration) || totalDuration <= 0) {
+        return 0;
+      }
       const result = (time / totalDuration) * graphWidth;
       return isFinite(result) ? result : 0;
     };
+
     const valueToY = (value: number) => {
-      const result = graphHeight - ((value - minValue) / (maxValue - minValue)) * graphHeight;
+      if (!isFinite(value) || !isFinite(minValue) || !isFinite(maxValue)) {
+        return graphHeight / 2;
+      }
+      const range = maxValue - minValue;
+      if (range === 0) {
+        return graphHeight / 2;
+      }
+      const result = graphHeight - ((value - minValue) / range) * graphHeight;
       return isFinite(result) ? result : graphHeight / 2;
     };
 
@@ -1160,19 +1181,36 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
             if (currentVisibility[key] === false) return null;
 
             const pointsData = configs
-              .filter(c => typeof c.config[key] === 'number' && isFinite(c.config[key]))
-              .map(c => ({
-                x: padding.left + timeToX(c.timestamp / 1000), // Convertir ms en secondes
-                y: padding.top + valueToY(c.config[key] as number),
-                timestamp: c.timestamp / 1000, // Timestamp en secondes pour le seek
-                value: c.config[key] as number,
-              }))
-              .filter(p => isFinite(p.x) && isFinite(p.y)); // Filtrer les points invalides
+              .filter(c =>
+                typeof c.config[key] === 'number' &&
+                isFinite(c.config[key]) &&
+                typeof c.timestamp === 'number' &&
+                isFinite(c.timestamp) &&
+                c.timestamp >= 0
+              )
+              .map(c => {
+                const timeInSeconds = c.timestamp / 1000;
+                const x = padding.left + timeToX(timeInSeconds);
+                const y = padding.top + valueToY(c.config[key] as number);
+                return {
+                  x,
+                  y,
+                  timestamp: timeInSeconds,
+                  value: c.config[key] as number,
+                };
+              })
+              .filter(p => isFinite(p.x) && isFinite(p.y) && isFinite(p.timestamp)); // Filtrer les points invalides
 
             if (pointsData.length === 0) return null;
 
-            // Créer le path SVG
-            const pathData = pointsData.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+            // Créer le path SVG - vérifier que tous les points sont valides
+            const pathData = pointsData
+              .filter(p => isFinite(p.x) && isFinite(p.y))
+              .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`)
+              .join(' ');
+
+            // Ne pas rendre si le path est vide
+            if (!pathData || pathData.length === 0) return null;
 
             return (
               <g key={key}>
@@ -1184,23 +1222,25 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-                {/* Points */}
-                {pointsData.map((p, i) => (
-                  <circle
-                    key={i}
-                    cx={p.x}
-                    cy={p.y}
-                    r="4"
-                    fill={curveColors[idx % curveColors.length]}
-                    className="cursor-pointer transition-all"
-                    onClick={() => handleSeekToTime(p.timestamp)}
-                    onMouseEnter={(e) => e.currentTarget.setAttribute('r', '6')}
-                    onMouseLeave={(e) => e.currentTarget.setAttribute('r', '4')}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <title>{`${key}: ${p.value.toFixed(2)} à ${formatTime(p.timestamp)} - Cliquez pour aller à ce moment`}</title>
-                  </circle>
-                ))}
+                {/* Points - ne rendre que les points valides */}
+                {pointsData
+                  .filter(p => isFinite(p.x) && isFinite(p.y) && isFinite(p.value) && isFinite(p.timestamp))
+                  .map((p, i) => (
+                    <circle
+                      key={i}
+                      cx={p.x.toFixed(2)}
+                      cy={p.y.toFixed(2)}
+                      r="4"
+                      fill={curveColors[idx % curveColors.length]}
+                      className="cursor-pointer transition-all"
+                      onClick={() => handleSeekToTime(p.timestamp)}
+                      onMouseEnter={(e) => e.currentTarget.setAttribute('r', '6')}
+                      onMouseLeave={(e) => e.currentTarget.setAttribute('r', '4')}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <title>{`${key}: ${isFinite(p.value) ? p.value.toFixed(2) : 'N/A'} à ${formatTime(p.timestamp)} - Cliquez pour aller à ce moment`}</title>
+                    </circle>
+                  ))}
               </g>
             );
           })}
