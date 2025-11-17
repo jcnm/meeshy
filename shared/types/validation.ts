@@ -41,12 +41,12 @@ export const phoneNumberSchema = z.string()
 
 /**
  * Validation du username
+ * Le username est préservé tel qu'entré (avec sa capitalisation)
  */
 export const usernameSchema = z.string()
   .min(3, 'Le nom d\'utilisateur doit contenir au moins 3 caractères')
   .max(32, 'Le nom d\'utilisateur ne peut pas dépasser 32 caractères')
   .regex(/^[a-zA-Z0-9_-]+$/, 'Le nom d\'utilisateur ne peut contenir que des lettres, chiffres, tirets et underscores')
-  .toLowerCase()
   .trim();
 
 /**
@@ -60,11 +60,14 @@ export const nameSchema = z.string()
 
 /**
  * Validation du displayName
+ * Préserve la capitalisation, émojis et caractères spéciaux
+ * Enlève uniquement les espaces avant/après et les retours à la ligne/tabulations
  */
 export const displayNameSchema = z.string()
   .min(2, 'Le nom d\'affichage doit contenir au moins 2 caractères')
   .max(50, 'Le nom d\'affichage ne peut pas dépasser 50 caractères')
   .trim()
+  .transform(val => val.replace(/[\n\t]/g, ''))
   .optional();
 
 /**

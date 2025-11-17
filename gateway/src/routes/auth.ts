@@ -367,20 +367,30 @@ export async function authRoutes(fastify: FastifyInstance) {
       const prisma = (fastify as any).prisma;
       const result: { usernameAvailable?: boolean; emailAvailable?: boolean } = {};
 
-      // Vérifier le username
+      // Vérifier le username (comparaison case-insensitive)
       if (username) {
-        const normalizedUsername = username.trim().toLowerCase();
+        const normalizedUsername = username.trim();
         const existingUser = await prisma.user.findFirst({
-          where: { username: normalizedUsername }
+          where: {
+            username: {
+              equals: normalizedUsername,
+              mode: 'insensitive'
+            }
+          }
         });
         result.usernameAvailable = !existingUser;
       }
 
-      // Vérifier l'email
+      // Vérifier l'email (comparaison case-insensitive)
       if (email) {
         const normalizedEmail = email.trim().toLowerCase();
         const existingUser = await prisma.user.findFirst({
-          where: { email: normalizedEmail }
+          where: {
+            email: {
+              equals: normalizedEmail,
+              mode: 'insensitive'
+            }
+          }
         });
         result.emailAvailable = !existingUser;
       }

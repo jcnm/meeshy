@@ -44,12 +44,12 @@ export class AuthService {
       const normalizedIdentifier = credentials.username.trim().toLowerCase();
       console.log('[AUTH_SERVICE] Recherche utilisateur avec identifiant:', normalizedIdentifier);
 
-      // Rechercher l'utilisateur par username ou email (normalisés)
+      // Rechercher l'utilisateur par username ou email (comparaison case-insensitive)
       const user = await this.prisma.user.findFirst({
         where: {
           OR: [
-            { username: normalizedIdentifier },
-            { email: normalizedIdentifier },
+            { username: { equals: normalizedIdentifier, mode: 'insensitive' } },
+            { email: { equals: normalizedIdentifier, mode: 'insensitive' } },
             { phoneNumber: credentials.username }
           ],
           isActive: true
@@ -109,22 +109,22 @@ export class AuthService {
       // Nettoyer le phoneNumber (traiter les chaînes vides comme null)
       const cleanPhoneNumber = data.phoneNumber && data.phoneNumber.trim() !== '' ? data.phoneNumber.trim() : null;
 
-      // Vérifier si l'username, l'email ou le phoneNumber existe déjà (avec données normalisées)
+      // Vérifier si l'username, l'email ou le phoneNumber existe déjà (comparaison case-insensitive pour username et email)
       const existingUser = await this.prisma.user.findFirst({
         where: {
           OR: [
-            { username: normalizedUsername },
-            { email: normalizedEmail },
+            { username: { equals: normalizedUsername, mode: 'insensitive' } },
+            { email: { equals: normalizedEmail, mode: 'insensitive' } },
             ...(cleanPhoneNumber ? [{ phoneNumber: cleanPhoneNumber }] : [])
           ]
         }
       });
 
       if (existingUser) {
-        if (existingUser.username === normalizedUsername) {
+        if (existingUser.username.toLowerCase() === normalizedUsername.toLowerCase()) {
           throw new Error('Nom d\'utilisateur déjà utilisé');
         }
-        if (existingUser.email === normalizedEmail) {
+        if (existingUser.email.toLowerCase() === normalizedEmail.toLowerCase()) {
           throw new Error('Email déjà utilisé');
         }
         if (cleanPhoneNumber && existingUser.phoneNumber === cleanPhoneNumber) {

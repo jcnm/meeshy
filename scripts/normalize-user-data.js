@@ -1,10 +1,18 @@
 /**
- * Script de normalisation des données utilisateur
- * 
- * Normalise :
- * - email et username en minuscules
- * - firstName et lastName avec première lettre en majuscule
- * - displayName (pseudonyme) en minuscules
+ * Script de normalisation des données utilisateur - OBSOLÈTE
+ *
+ * ⚠️ ATTENTION: Ce script est obsolète et ne doit PLUS être utilisé!
+ *
+ * Ancienne approche (obsolète):
+ * - email et username en minuscules ❌
+ * - firstName et lastName avec première lettre en majuscule ✓
+ * - displayName (pseudonyme) en minuscules ❌
+ *
+ * Nouvelle approche (depuis 2025):
+ * - email en minuscules ✓ (standard email)
+ * - username préservé tel qu'entré par l'utilisateur (comparaisons en case-insensitive)
+ * - displayName préservé tel qu'entré (trim + suppression \n et \t uniquement)
+ * - firstName et lastName avec première lettre en majuscule ✓
  */
 
 // Fonction pour capitaliser (première lettre en majuscule, reste en minuscule)

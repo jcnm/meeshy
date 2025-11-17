@@ -10,10 +10,11 @@ export function normalizeEmail(email: string): string {
 }
 
 /**
- * Normalise un username en minuscules
+ * Normalise un username
+ * Préserve la capitalisation telle qu'entrée par l'utilisateur
  */
 export function normalizeUsername(username: string): string {
-  return username.trim().toLowerCase();
+  return username.trim();
 }
 
 /**
@@ -32,10 +33,12 @@ export function capitalizeName(name: string): string {
 }
 
 /**
- * Normalise un displayName en minuscules
+ * Normalise un displayName
+ * Préserve la capitalisation, émojis et caractères spéciaux
+ * Enlève uniquement les espaces avant/après et les retours à la ligne/tabulations
  */
 export function normalizeDisplayName(displayName: string): string {
-  return displayName.trim().toLowerCase();
+  return displayName.trim().replace(/[\n\t]/g, '');
 }
 
 /**

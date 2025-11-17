@@ -581,16 +581,19 @@ export async function userRoutes(fastify: FastifyInstance) {
         updateData.translateToRegionalLanguage = false;
       }
 
-      // Vérifier si l'email est unique (si modifié)
+      // Vérifier si l'email est unique (si modifié) - comparaison case-insensitive
       if (body.email) {
         const normalizedEmail = normalizeEmail(body.email);
         const existingUser = await fastify.prisma.user.findFirst({
-          where: { 
-            email: normalizedEmail,
+          where: {
+            email: {
+              equals: normalizedEmail,
+              mode: 'insensitive'
+            },
             id: { not: userId }
           }
         });
-        
+
         if (existingUser) {
           return reply.status(400).send({
             success: false,
