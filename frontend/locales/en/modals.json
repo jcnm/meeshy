@@ -91,6 +91,8 @@
       "history": "History",
       "emailRequired": "Email Required",
       "nicknameRequired": "Nickname Required",
+      "accountRequired": "Account Required",
+      "birthdayRequired": "Birthday Required",
       "allowed": "Allowed",
       "forbidden": "Forbidden",
       "hidden": "Hidden",
@@ -103,6 +105,7 @@
       "validityDuration": "Validity duration",
       "usageLimit": "Usage limit",
       "usageCount": "{count} use(s)",
+      "expiresOn": "Expires on",
       "unlimited": "Unlimited",
       "linkDisabledAfter": "Link will be automatically disabled after {count} uses",
       "guestsCanSendMessages": "Guests can send messages",
@@ -115,7 +118,11 @@
       "guestsCannotViewHistory": "Guests cannot view history",
       "guestsCanStayAnonymous": "Guests can stay anonymous",
       "guestsMustEnterNickname": "Guests must enter a nickname",
-      "guestsMustEnterEmail": "Guests must enter an email"
+      "guestsMustEnterEmail": "Guests must enter an email",
+      "guestsMustHaveAccount": "Guests must have an account",
+      "guestsCanJoinWithoutAccount": "Guests can join without an account",
+      "guestsMustProvideBirthday": "Guests must provide their birthday",
+      "guestsCanOmitBirthday": "Guests can omit their birthday"
     },
     "createConversationModal": {
       "title": "Create a new conversation",
@@ -550,6 +557,9 @@
         "label": "Link title",
         "placeholder": "Ex: Team invitation, Partner access...",
         "hint": "This title will appear in your share links list"
+      },
+      "linkIdentifier": {
+        "placeholder": "Link identifier..."
       },
       "welcomeMessage": {
         "label": "Welcome message",

@@ -91,6 +91,8 @@
       "history": "Historique",
       "emailRequired": "Email requis",
       "nicknameRequired": "Pseudonyme requis",
+      "accountRequired": "Compte requis",
+      "birthdayRequired": "Date de naissance requise",
       "allowed": "Autorisé",
       "forbidden": "Interdit",
       "hidden": "Masqué",
@@ -103,6 +105,7 @@
       "validityDuration": "Durée de validité",
       "usageLimit": "Limite d'utilisations",
       "usageCount": "{count} utilisation(s)",
+      "expiresOn": "Expire le",
       "unlimited": "Illimité",
       "linkDisabledAfter": "Le lien sera automatiquement désactivé après {count} utilisations",
       "guestsCanSendMessages": "Les invités peuvent envoyer des messages",
@@ -115,7 +118,11 @@
       "guestsCannotViewHistory": "Les invités ne peuvent pas voir l'historique",
       "guestsCanStayAnonymous": "Les invités peuvent rester anonymes",
       "guestsMustEnterNickname": "Les invités doivent entrer un pseudonyme",
-      "guestsMustEnterEmail": "Les invités doivent entrer un email"
+      "guestsMustEnterEmail": "Les invités doivent entrer un email",
+      "guestsMustHaveAccount": "Les invités doivent avoir un compte",
+      "guestsCanJoinWithoutAccount": "Les invités peuvent rejoindre sans compte",
+      "guestsMustProvideBirthday": "Les invités doivent fournir leur date de naissance",
+      "guestsCanOmitBirthday": "Les invités peuvent omettre leur date de naissance"
     },
     "createConversationModal": {
       "title": "Créer une nouvelle conversation",
@@ -550,6 +557,9 @@
         "label": "Titre du lien",
         "placeholder": "Ex: Invitation équipe, Accès partenaire...",
         "hint": "Ce titre apparaîtra dans la liste de vos liens de partage"
+      },
+      "linkIdentifier": {
+        "placeholder": "Identifiant du lien..."
       },
       "welcomeMessage": {
         "label": "Message de bienvenue",

@@ -91,6 +91,8 @@
       "history": "Historial",
       "emailRequired": "Email requerido",
       "nicknameRequired": "Seudónimo requerido",
+      "accountRequired": "Cuenta requerida",
+      "birthdayRequired": "Fecha de nacimiento requerida",
       "allowed": "Permitido",
       "forbidden": "Prohibido",
       "hidden": "Oculto",
@@ -103,6 +105,7 @@
       "validityDuration": "Duración de validez",
       "usageLimit": "Límite de usos",
       "usageCount": "{count} uso(s)",
+      "expiresOn": "Expira el",
       "unlimited": "Ilimitado",
       "linkDisabledAfter": "El enlace se desactivará automáticamente después de {count} usos",
       "guestsCanSendMessages": "Los invitados pueden enviar mensajes",
@@ -115,7 +118,11 @@
       "guestsCannotViewHistory": "Los invitados no pueden ver el historial",
       "guestsCanStayAnonymous": "Los invitados pueden permanecer anónimos",
       "guestsMustEnterNickname": "Los invitados deben ingresar un seudónimo",
-      "guestsMustEnterEmail": "Los invitados deben ingresar un email"
+      "guestsMustEnterEmail": "Los invitados deben ingresar un email",
+      "guestsMustHaveAccount": "Los invitados deben tener una cuenta",
+      "guestsCanJoinWithoutAccount": "Los invitados pueden unirse sin cuenta",
+      "guestsMustProvideBirthday": "Los invitados deben proporcionar su fecha de nacimiento",
+      "guestsCanOmitBirthday": "Los invitados pueden omitir su fecha de nacimiento"
     },
     "createConversationModal": {
       "title": "Crear una nueva conversación",
@@ -550,6 +557,9 @@
         "label": "Título del enlace",
         "placeholder": "Ej: Invitación de equipo, Acceso de socio...",
         "hint": "Este título aparecerá en la lista de sus enlaces para compartir"
+      },
+      "linkIdentifier": {
+        "placeholder": "Identificador del enlace..."
       },
       "welcomeMessage": {
         "label": "Mensaje de bienvenida",

@@ -187,7 +187,7 @@ export function CreateLinkModalV2({
   preGeneratedLink,
   preGeneratedToken
 }: CreateLinkModalV2Props) {
-  const { t } = useI18n('modals');
+  const { t, locale } = useI18n('modals');
   const { t: tCommon } = useI18n('common');
   const { user: currentUser } = useUser();
   
@@ -242,6 +242,7 @@ export function CreateLinkModalV2({
       setAllowAnonymousFiles(true);
       setAllowAnonymousImages(true);
       setAllowViewHistory(true);
+      setRequireNickname(true);
       setRequireEmail(true);
       setRequireBirthday(true);
     }
@@ -1270,7 +1271,7 @@ export function CreateLinkModalV2({
                     linkIdentifierCheckStatus === 'available' && "border-green-500 focus-visible:ring-green-500",
                     linkIdentifierCheckStatus === 'taken' && "border-red-500 focus-visible:ring-red-500"
                   )}
-                  placeholder="Identifiant du lien..."
+                  placeholder={t('linkIdentifier.placeholder')}
                 />
                 {/* Indicateur de statut */}
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -1366,43 +1367,47 @@ export function CreateLinkModalV2({
               <MessageSquare className="h-4 w-4 mr-2" />
               {t('summary.basicInfo')}
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-3 bg-muted/30 rounded-lg">
-                <h5 className="font-medium text-sm text-muted-foreground mb-1">{t('summary.conversation')}</h5>
+
+            {/* Nom de la conversation sur 2 colonnes */}
+            <div className="col-span-2 p-3 bg-muted/30 rounded-lg">
+              <h5 className="font-medium text-sm text-muted-foreground mb-1">{t('summary.conversation')}</h5>
               <p className="font-medium">
-                {createNewConversation 
+                {createNewConversation
                   ? `Nouvelle: ${newConversationData.title}`
                   : conversations.find(c => c.id === selectedConversationId)?.title || 'Non sélectionnée'
                 }
               </p>
-                {createNewConversation && newConversationData.description && (
-                  <p className="text-sm text-muted-foreground mt-1">{newConversationData.description}</p>
-                )}
+              {createNewConversation && newConversationData.description && (
+                <p className="text-sm text-muted-foreground mt-1">{newConversationData.description}</p>
+              )}
             </div>
-            
-              <div className="p-3 bg-muted/30 rounded-lg">
-                <h5 className="font-medium text-sm text-muted-foreground mb-1">{t('summary.validityDuration')}</h5>
-              <p className="font-medium">{DURATION_OPTIONS.find(d => d.value === expirationDays) ? t(DURATION_OPTIONS.find(d => d.value === expirationDays)!.labelKey) : `${expirationDays} jours`}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Expire le {new Date(Date.now() + expirationDays * 24 * 60 * 60 * 1000).toLocaleDateString()}
-                </p>
-            </div>
-            
+
+            {/* Limite d'utilisations et Durée de validité côte à côte */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="p-3 bg-muted/30 rounded-lg">
                 <h5 className="font-medium text-sm text-muted-foreground mb-1">{t('summary.usageLimit')}</h5>
-              <p className="font-medium">{maxUses ? t('summary.usageCount', { count: maxUses }) : t('summary.unlimited')}</p>
+                <p className="font-medium">{maxUses ? t('summary.usageCount', { count: maxUses }) : t('summary.unlimited')}</p>
                 {maxUses && (
                   <p className="text-xs text-muted-foreground mt-1">{t('summary.linkDisabledAfter', { count: maxUses })}</p>
                 )}
               </div>
-              
+
               <div className="p-3 bg-muted/30 rounded-lg">
-                <h5 className="font-medium text-sm text-muted-foreground mb-1">{t('summary.welcomeMessage')}</h5>
-                <p className="font-medium">{description || t('summary.noCustomMessage')}</p>
+                <h5 className="font-medium text-sm text-muted-foreground mb-1">{t('summary.validityDuration')}</h5>
+                <p className="font-medium">{DURATION_OPTIONS.find(d => d.value === expirationDays) ? t(DURATION_OPTIONS.find(d => d.value === expirationDays)!.labelKey) : `${expirationDays} jours`}</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {t('summary.welcomeMessageDescription')}
+                  {t('summary.expiresOn')} {new Date(Date.now() + expirationDays * 24 * 60 * 60 * 1000).toLocaleDateString(locale)}
                 </p>
               </div>
+            </div>
+
+            {/* Message de bienvenue sur toute la largeur */}
+            <div className="p-3 bg-muted/30 rounded-lg">
+              <h5 className="font-medium text-sm text-muted-foreground mb-1">{t('summary.welcomeMessage')}</h5>
+              <p className="font-medium">{description || t('summary.noCustomMessage')}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {t('summary.welcomeMessageDescription')}
+              </p>
             </div>
           </div>
 
@@ -1492,6 +1497,32 @@ export function CreateLinkModalV2({
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   {requireEmail ? t('summary.guestsMustEnterEmail') : t('summary.guestsCanStayAnonymous')}
+                </p>
+              </div>
+
+              <div className={`p-3 rounded-lg border-2 ${requireAccount ? 'border-blue-200 bg-blue-50' : 'border-gray-200 bg-gray-50'}`}>
+                <div className="flex items-center space-x-2">
+                  <UserPlus className={`h-4 w-4 ${requireAccount ? 'text-blue-600' : 'text-gray-600'}`} />
+                  <span className="font-medium text-sm">{t('summary.accountRequired')}</span>
+                  <Badge variant={requireAccount ? 'secondary' : 'outline'} className="text-xs">
+                    {requireAccount ? t('summary.yes') : t('summary.no')}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {requireAccount ? t('summary.guestsMustHaveAccount') : t('summary.guestsCanJoinWithoutAccount')}
+                </p>
+              </div>
+
+              <div className={`p-3 rounded-lg border-2 ${requireBirthday ? 'border-blue-200 bg-blue-50' : 'border-gray-200 bg-gray-50'}`}>
+                <div className="flex items-center space-x-2">
+                  <Calendar className={`h-4 w-4 ${requireBirthday ? 'text-blue-600' : 'text-gray-600'}`} />
+                  <span className="font-medium text-sm">{t('summary.birthdayRequired')}</span>
+                  <Badge variant={requireBirthday ? 'secondary' : 'outline'} className="text-xs">
+                    {requireBirthday ? t('summary.yes') : t('summary.no')}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {requireBirthday ? t('summary.guestsMustProvideBirthday') : t('summary.guestsCanOmitBirthday')}
                 </p>
               </div>
             </div>
