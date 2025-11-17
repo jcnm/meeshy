@@ -25,6 +25,14 @@
       "conversation": "Conversación",
       "translation": "Traducción"
     },
+    "filters": {
+      "all": "Todas",
+      "new_message": "Mensajes",
+      "friend_request": "Contactos",
+      "missed_call": "Llamadas perdidas",
+      "system": "Sistema",
+      "conversation": "Conversaciones"
+    },
     "unreadCount": {
       "empty": "No hay notificaciones no leídas",
       "single": "{count} notificación no leída de {total}",
@@ -53,8 +61,31 @@
       "markAsRead": "Marcar como leído",
       "markAsUnread": "Marcar como no leído",
       "delete": "Eliminar",
-      "viewConversation": "Ver la conversación"
+      "viewConversation": "Ver la conversación",
+      "cancel": "Cancelar",
+      "markAsReadCount": "Marcar como leído ({count})",
+      "deleteCount": "Eliminar ({count})",
+      "select": "Seleccionar",
+      "selectAll": "Seleccionar todo",
+      "deselectAll": "Deseleccionar todo"
     },
+    "sortOptions": {
+      "newest": "Más recientes",
+      "oldest": "Más antiguas",
+      "unreadFirst": "No leídas primero",
+      "byType": "Por tipo"
+    },
+    "selection": {
+      "count": "{selected} / {total} seleccionado",
+      "countPlural": "{selected} / {total} seleccionados"
+    },
+    "friendRequest": {
+      "accepted": "Solicitud aceptada",
+      "rejected": "Solicitud rechazada",
+      "error": "Error al procesar la solicitud",
+      "connectionError": "Error de conexión"
+    },
+    "conversationContext": "en {conversationTitle}",
     "settings": {
       "title": "Configuración de notificaciones",
       "emailNotifications": "Notificaciones por email",

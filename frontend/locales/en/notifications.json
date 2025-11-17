@@ -37,6 +37,14 @@
       "conversation": "Conversation",
       "translation": "Translation"
     },
+    "filters": {
+      "all": "All",
+      "new_message": "Messages",
+      "friend_request": "Contacts",
+      "missed_call": "Missed calls",
+      "system": "System",
+      "conversation": "Conversations"
+    },
     "attachments": {
       "audio": "Audio",
       "video": "Video",
@@ -53,8 +61,31 @@
       "markAsRead": "Mark as read",
       "markAsUnread": "Mark as unread",
       "delete": "Delete",
-      "viewConversation": "View conversation"
+      "viewConversation": "View conversation",
+      "cancel": "Cancel",
+      "markAsReadCount": "Mark as read ({count})",
+      "deleteCount": "Delete ({count})",
+      "select": "Select",
+      "selectAll": "Select all",
+      "deselectAll": "Deselect all"
     },
+    "sortOptions": {
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "unreadFirst": "Unread first",
+      "byType": "By type"
+    },
+    "selection": {
+      "count": "{selected} / {total} selected",
+      "countPlural": "{selected} / {total} selected"
+    },
+    "friendRequest": {
+      "accepted": "Request accepted",
+      "rejected": "Request rejected",
+      "error": "Error processing the request",
+      "connectionError": "Connection error"
+    },
+    "conversationContext": "in {conversationTitle}",
     "settings": {
       "title": "Notification Settings",
       "emailNotifications": "Email notifications",
