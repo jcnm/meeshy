@@ -18,7 +18,7 @@ import {
   Save,
   RotateCcw
 } from 'lucide-react';
-import { User as UserType, INTERFACE_LANGUAGES, LanguageCode } from '@/types';
+import { User as UserType, SUPPORTED_LANGUAGES, LanguageCode } from '@/types';
 import { FontSelector } from '@/components/settings/font-selector';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
@@ -238,15 +238,15 @@ export function SettingsLayout({ currentUser, initialTab = 'profile' }: Settings
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="systemLanguage" className="text-sm">Langue du système</Label>
-                      <Select 
-                        value={localSettings.systemLanguage} 
+                      <Select
+                        value={localSettings.systemLanguage}
                         onValueChange={(value) => updateSetting('systemLanguage', value)}
                       >
                         <SelectTrigger className="mt-1">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {INTERFACE_LANGUAGES.map((lang: LanguageCode) => (
+                          {SUPPORTED_LANGUAGES.map((lang: LanguageCode) => (
                             <SelectItem key={lang.code} value={lang.code}>
                               {lang.flag} {lang.name}
                             </SelectItem>
@@ -257,15 +257,15 @@ export function SettingsLayout({ currentUser, initialTab = 'profile' }: Settings
 
                     <div>
                       <Label htmlFor="regionalLanguage" className="text-sm">Langue régionale</Label>
-                      <Select 
-                        value={localSettings.regionalLanguage} 
+                      <Select
+                        value={localSettings.regionalLanguage}
                         onValueChange={(value) => updateSetting('regionalLanguage', value)}
                       >
                         <SelectTrigger className="mt-1">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {INTERFACE_LANGUAGES.map((lang: LanguageCode) => (
+                          {SUPPORTED_LANGUAGES.map((lang: LanguageCode) => (
                             <SelectItem key={lang.code} value={lang.code}>
                               {lang.flag} {lang.name}
                             </SelectItem>
