@@ -154,7 +154,10 @@
         "identifierPrefix": "@",
         "identifierPlaceholder": "team-discussion",
         "identifierInfo": "Used to mention this conversation with @identifier",
-        "identifierError": "The identifier must contain only letters, numbers, hyphens and underscores"
+        "identifierError": "The identifier must contain only letters, numbers, hyphens and underscores",
+        "identifierAvailable": "This identifier is available",
+        "identifierTaken": "This identifier is already taken",
+        "checkingIdentifier": "Checking availability..."
       },
       "conversationTypes": {
         "direct": "Direct",

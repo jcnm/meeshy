@@ -154,7 +154,10 @@
         "identifierPrefix": "@",
         "identifierPlaceholder": "discussion-equipe",
         "identifierInfo": "Utilisé pour mentionner cette conversation avec @identifiant",
-        "identifierError": "L'identifiant doit contenir uniquement des lettres, chiffres, traits d'union et underscores"
+        "identifierError": "L'identifiant doit contenir uniquement des lettres, chiffres, traits d'union et underscores",
+        "identifierAvailable": "Cet identifiant est disponible",
+        "identifierTaken": "Cet identifiant est déjà utilisé",
+        "checkingIdentifier": "Vérification de la disponibilité..."
       },
       "conversationTypes": {
         "direct": "Direct",
