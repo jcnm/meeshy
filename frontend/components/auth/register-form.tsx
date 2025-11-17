@@ -12,7 +12,7 @@ import { User } from '@/types';
 import { JoinConversationResponse } from '@/types/frontend';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { useI18n } from '@/hooks/useI18n';
-import { Check, X } from 'lucide-react';
+import { Check, X, Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface RegisterFormProps {
@@ -44,6 +44,7 @@ export function RegisterForm({
     regionalLanguage: 'en',
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // État pour la validation du username
   const [usernameCheckStatus, setUsernameCheckStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
@@ -379,15 +380,26 @@ export function RegisterForm({
 
       <div className="space-y-2">
         <Label htmlFor={`${formPrefix}-password`}>{t('register.passwordLabel')}</Label>
-        <Input
-          id={`${formPrefix}-password`}
-          type="password"
-          placeholder={t('register.passwordPlaceholder')}
-          value={formData.password}
-          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-          disabled={isLoading || disabled}
-          required
-        />
+        <div className="relative">
+          <Input
+            id={`${formPrefix}-password`}
+            type={showPassword ? 'text' : 'password'}
+            placeholder={t('register.passwordPlaceholder')}
+            value={formData.password}
+            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            disabled={isLoading || disabled}
+            required
+            className="pr-10"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            aria-label={showPassword ? t('register.hidePassword') : t('register.showPassword')}
+          >
+            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
