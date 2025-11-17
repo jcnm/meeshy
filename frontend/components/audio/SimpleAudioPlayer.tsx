@@ -1446,25 +1446,12 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
-
-            {/* Bouton Download */}
-            <a
-              href={objectUrl || '#'}
-              download={attachment.originalName}
-              className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all"
-              title="Télécharger l'audio"
-              onClick={(e) => {
-                if (!objectUrl) {
-                  e.preventDefault();
-                }
-              }}
-            >
-              <Download className="w-3 h-3 text-gray-700 dark:text-gray-200" />
-            </a>
           </div>
 
-          {/* Barre de progression avec pourcentage intégré */}
-          <div className="relative w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-visible group cursor-pointer">
+          {/* Barre de progression avec bouton Download à droite */}
+          <div className="flex items-center gap-2">
+            {/* Barre de progression avec pourcentage intégré - 20% plus haute */}
+            <div className="relative flex-1 h-[15px] bg-gray-200 dark:bg-gray-700 rounded-full overflow-visible group cursor-pointer">
             {/* Barre de progression remplie avec animation fluide */}
             <div
               className={`absolute top-0 left-0 h-full rounded-full ${
@@ -1505,6 +1492,22 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
               className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer z-10"
               style={{ touchAction: 'none' }}
             />
+          </div>
+
+            {/* Bouton Download à droite de la barre */}
+            <a
+              href={objectUrl || '#'}
+              download={attachment.originalName}
+              className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all"
+              title="Télécharger l'audio"
+              onClick={(e) => {
+                if (!objectUrl) {
+                  e.preventDefault();
+                }
+              }}
+            >
+              <Download className="w-3 h-3 text-gray-700 dark:text-gray-200" />
+            </a>
           </div>
         </div>
       </div>
