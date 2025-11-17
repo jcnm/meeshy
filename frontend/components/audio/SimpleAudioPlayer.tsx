@@ -1326,11 +1326,11 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                 <DropdownMenuContent className="w-96 p-4 max-h-96 overflow-hidden" side="top" align="end">
                 <Tabs value={selectedEffectTab} onValueChange={(value) => setSelectedEffectTab(value as AudioEffectType | 'overview')}>
                   <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${appliedEffects.length + 1}, 1fr)` }}>
-                    <TabsTrigger value="overview" className="text-xs flex items-center justify-center p-2">
+                    <TabsTrigger value="overview" className="text-xs flex items-center justify-center py-0.5 md:py-1">
                       <Sliders className="w-4 h-4" />
                     </TabsTrigger>
                     {appliedEffects.map((effect) => (
-                      <TabsTrigger key={effect} value={effect} className="text-xs flex items-center justify-center p-2">
+                      <TabsTrigger key={effect} value={effect} className="text-xs flex items-center justify-center py-0.5 md:py-1">
                         <EffectIcon effect={effect} className="w-4 h-4" />
                       </TabsTrigger>
                     ))}
