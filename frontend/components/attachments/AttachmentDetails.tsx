@@ -81,13 +81,13 @@ export function AttachmentDetails({
           'back-sound': '🎶',
         };
         let effectDisplay = '';
-        // Vérifier les deux sources possibles (upload response vs DB)
-        const audioEffectsTimeline = (attachment as any).audioEffectsTimeline || (attachment as any).metadata?.audioEffectsTimeline;
+        // audioEffectsTimeline est stocké dans metadata
+        const audioEffectsTimeline = (attachment as any).metadata?.audioEffectsTimeline;
 
         console.log('🔍 [AttachmentDetails] Checking audio effects:', {
           attachmentId: attachment.id,
-          hasDirectTimeline: !!(attachment as any).audioEffectsTimeline,
-          hasMetadataTimeline: !!(attachment as any).metadata?.audioEffectsTimeline,
+          hasMetadata: !!(attachment as any).metadata,
+          hasAudioEffectsTimeline: !!audioEffectsTimeline,
           timeline: audioEffectsTimeline,
           hasEvents: !!audioEffectsTimeline?.events,
           eventsCount: audioEffectsTimeline?.events?.length || 0

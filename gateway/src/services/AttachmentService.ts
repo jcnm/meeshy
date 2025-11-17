@@ -52,7 +52,11 @@ export interface UploadResult {
   sampleRate?: number;
   codec?: string;
   channels?: number;
-  audioEffectsTimeline?: any; // Timeline des effets audio appliqués
+  metadata?: any; // Métadonnées JSON (contient audioEffectsTimeline pour les audios)
+  fps?: number;
+  videoCodec?: string;
+  pageCount?: number;
+  lineCount?: number;
   uploadedBy: string;
   isAnonymous: boolean;
   createdAt: Date;
@@ -552,13 +556,11 @@ export class AttachmentService {
       metadataField: attachment.metadata
     });
 
-    // Extraire audioEffectsTimeline du champ metadata JSON
-    const audioEffectsTimeline = (attachment.metadata as any)?.audioEffectsTimeline || undefined;
-
-    console.log('📤 [AttachmentService] Extracted audioEffectsTimeline for response:', {
-      hasAudioEffectsTimeline: !!audioEffectsTimeline,
-      audioEffectsTimeline: audioEffectsTimeline,
-      eventsCount: audioEffectsTimeline?.events?.length || 0
+    console.log('📤 [AttachmentService] Preparing response with metadata:', {
+      hasMetadata: !!attachment.metadata,
+      metadata: attachment.metadata,
+      hasAudioEffectsTimeline: !!(attachment.metadata as any)?.audioEffectsTimeline,
+      audioEffectsTimelineEvents: (attachment.metadata as any)?.audioEffectsTimeline?.events?.length || 0
     });
 
     const result = {
@@ -577,7 +579,7 @@ export class AttachmentService {
       sampleRate: attachment.sampleRate || undefined,
       codec: attachment.codec || undefined,
       channels: attachment.channels || undefined,
-      audioEffectsTimeline: audioEffectsTimeline,
+      metadata: attachment.metadata || undefined, // ✅ Retourner metadata (contient audioEffectsTimeline)
       fps: attachment.fps || undefined,
       videoCodec: attachment.videoCodec || undefined,
       pageCount: attachment.pageCount || undefined,
@@ -589,8 +591,9 @@ export class AttachmentService {
 
     console.log('🎯 [AttachmentService] Returning result:', {
       attachmentId: result.id,
-      hasAudioEffectsTimeline: !!result.audioEffectsTimeline,
-      audioEffectsTimelineEvents: result.audioEffectsTimeline?.events?.length || 0
+      hasMetadata: !!result.metadata,
+      hasAudioEffectsTimelineInMetadata: !!(result.metadata as any)?.audioEffectsTimeline,
+      audioEffectsTimelineEvents: (result.metadata as any)?.audioEffectsTimeline?.events?.length || 0
     });
 
     return result;
