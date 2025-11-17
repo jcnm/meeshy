@@ -5,6 +5,7 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
+import { INTERFACE_LANGUAGES } from '@/types/frontend';
 
 interface UserLanguageConfig {
   systemLanguage: string;
@@ -37,9 +38,9 @@ type LanguageStore = LanguageState & LanguageActions;
 // Detect browser language
 const detectBrowserLanguage = (): string => {
   if (typeof window === 'undefined') return 'en';
-  
+
   const browserLang = navigator.language.split('-')[0];
-  const supportedLanguages = ['en', 'fr', 'pt', 'es']; // Langues avec traductions complètes
+  const supportedLanguages = INTERFACE_LANGUAGES.map(lang => lang.code);
 
   return supportedLanguages.includes(browserLang) ? browserLang : 'en';
 };
@@ -57,7 +58,7 @@ const DEFAULT_LANGUAGE_CONFIG: UserLanguageConfig = {
 const initialState: LanguageState = {
   currentInterfaceLanguage: 'fr', // Will be overridden by persisted state or browser detection
   currentMessageLanguage: 'fr', // Will be overridden by persisted state or browser detection
-  availableLanguages: ['en', 'fr', 'pt', 'es'], // Seules les langues avec traductions complètes
+  availableLanguages: INTERFACE_LANGUAGES.map(lang => lang.code), // Langues d'interface avec traductions complètes
   userLanguageConfig: DEFAULT_LANGUAGE_CONFIG,
 };
 

@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { User } from '@/types';
+import { User, INTERFACE_LANGUAGES } from '@/types';
 import { Globe } from 'lucide-react';
 import { LanguageSelector } from '@/components/translation/language-selector';
 
@@ -15,24 +15,9 @@ interface UserSettingsContentProps {
   children?: React.ReactNode;
 }
 
-const LANGUAGES = [
-  { code: 'fr', name: 'Français', flag: '🇫🇷' },
-  { code: 'en', name: 'English', flag: '🇺🇸' },
-  { code: 'es', name: 'Español', flag: '🇪🇸' },
-  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-  { code: 'it', name: 'Italiano', flag: '🇮🇹' },
-  { code: 'pt', name: 'Português', flag: '🇵🇹' },
-  { code: 'ru', name: 'Русский', flag: '🇷🇺' },
-  { code: 'ja', name: '日本語', flag: '🇯🇵' },
-  { code: 'ko', name: '한국어', flag: '🇰🇷' },
-  { code: 'zh', name: '中文', flag: '🇨🇳' },
-  { code: 'ar', name: 'العربية', flag: '🇸🇦' },
-  { code: 'hi', name: 'हिन्दी', flag: '🇮🇳' },
-];
-
 export function UserSettingsContent({ user, localSettings, onSettingUpdate, children }: UserSettingsContentProps) {
   const getLanguageDisplay = (code: string) => {
-    const lang = LANGUAGES.find(l => l.code === code);
+    const lang = INTERFACE_LANGUAGES.find(l => l.code === code);
     return lang ? `${lang.flag} ${lang.name}` : code;
   };
 

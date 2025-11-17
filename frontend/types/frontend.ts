@@ -45,11 +45,14 @@ export interface TranslationModel {
 
 // SUPPORTED_LANGUAGES is now imported from @shared/types to avoid conflicts
 
-// Langues d'interface supportées (avec traductions complètes)
+// Langues d'interface supportées (avec traductions complètes dans /frontend/locales/)
+// IMPORTANT: Cette liste doit correspondre exactement aux dossiers dans /frontend/locales/
+// Ne jamais ajouter de langue ici sans avoir les fichiers de traduction complets dans locales/
 export const INTERFACE_LANGUAGES: LanguageCode[] = [
   { code: 'en', name: 'English', flag: '🇺🇸', translateText: 'Translate to English' },
+  { code: 'es', name: 'Español', flag: '🇪🇸', translateText: 'Traducir al español' },
   { code: 'fr', name: 'Français', flag: '🇫🇷', translateText: 'Traduire en français' },
-  // TODO: Ajouter es, de, pt, it quand les traductions seront complètes
+  { code: 'pt', name: 'Português', flag: '🇵🇹', translateText: 'Traduzir para português' },
 ];
 
 export interface JoinConversationResponse {

@@ -18,7 +18,7 @@ import {
   Save,
   RotateCcw
 } from 'lucide-react';
-import { User as UserType, SUPPORTED_LANGUAGES, LanguageCode } from '@/types';
+import { User as UserType, INTERFACE_LANGUAGES, LanguageCode } from '@/types';
 import { FontSelector } from '@/components/settings/font-selector';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
@@ -246,7 +246,7 @@ export function SettingsLayout({ currentUser, initialTab = 'profile' }: Settings
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {SUPPORTED_LANGUAGES.map((lang: LanguageCode) => (
+                          {INTERFACE_LANGUAGES.map((lang: LanguageCode) => (
                             <SelectItem key={lang.code} value={lang.code}>
                               {lang.flag} {lang.name}
                             </SelectItem>
@@ -265,7 +265,7 @@ export function SettingsLayout({ currentUser, initialTab = 'profile' }: Settings
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {SUPPORTED_LANGUAGES.map((lang: LanguageCode) => (
+                          {INTERFACE_LANGUAGES.map((lang: LanguageCode) => (
                             <SelectItem key={lang.code} value={lang.code}>
                               {lang.flag} {lang.name}
                             </SelectItem>
