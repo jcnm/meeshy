@@ -114,7 +114,6 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
 
     // Source 1: metadata.finalActiveEffects (si disponible)
     if (timeline.metadata?.finalActiveEffects && Array.isArray(timeline.metadata.finalActiveEffects)) {
-      console.log('✅ [SimpleAudioPlayer] Utilisation de metadata.finalActiveEffects:', timeline.metadata.finalActiveEffects);
       timeline.metadata.finalActiveEffects.forEach(effect => effects.add(effect));
     }
 
@@ -1017,12 +1016,6 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
       Object.keys(c.config).filter(key => typeof c.config[key] === 'number')
     )));
 
-    console.log(`📈 [renderEffectGraph] Effect: ${effect}`, {
-      configs,
-      configKeys,
-      totalDuration,
-    });
-
     // Initialiser la visibilité des courbes si nécessaire
     if (!visibleCurves[effect]) {
       const initialVisibility: Record<string, boolean> = {};
@@ -1062,8 +1055,14 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     }
 
     // Fonction pour convertir les coordonnées en pixels
-    const timeToX = (time: number) => (time / totalDuration) * graphWidth;
-    const valueToY = (value: number) => graphHeight - ((value - minValue) / (maxValue - minValue)) * graphHeight;
+    const timeToX = (time: number) => {
+      const result = (time / totalDuration) * graphWidth;
+      return isFinite(result) ? result : 0;
+    };
+    const valueToY = (value: number) => {
+      const result = graphHeight - ((value - minValue) / (maxValue - minValue)) * graphHeight;
+      return isFinite(result) ? result : graphHeight / 2;
+    };
 
     // Couleurs pour les courbes
     const curveColors = [
@@ -1167,7 +1166,8 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                 y: padding.top + valueToY(c.config[key] as number),
                 timestamp: c.timestamp / 1000, // Timestamp en secondes pour le seek
                 value: c.config[key] as number,
-              }));
+              }))
+              .filter(p => isFinite(p.x) && isFinite(p.y)); // Filtrer les points invalides
 
             if (pointsData.length === 0) return null;
 
