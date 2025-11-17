@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { createPortal } from 'react-dom';
-import { Square, X, Mic, Loader2, Radio } from 'lucide-react';
+import { Square, X, Mic, Loader2, Radio, Sliders } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAudioEffects } from '@/hooks/use-audio-effects';
 import { useAudioEffectsTimeline, type InitialEffectState } from '@/hooks/use-audio-effects-timeline';
@@ -594,7 +594,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
           } hover:scale-105 active:scale-95`}
           title="Effets audio"
         >
-          <span className="text-xl">🎭</span>
+          <Sliders className="w-5 h-5 text-white" />
           {audioEffectsActive && (
             <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white" />
           )}

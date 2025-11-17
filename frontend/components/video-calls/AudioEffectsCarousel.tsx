@@ -19,7 +19,7 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { useI18n } from '@/hooks/useI18n';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { X, ChevronLeft, ChevronRight, RotateCcw, Upload, Settings } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, RotateCcw, Upload, Settings, Mic2, Baby, Skull, Music, Sliders } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type {
@@ -57,6 +57,24 @@ interface AudioEffectsCarouselProps {
 
 type EffectTileType = 'reset' | AudioEffectType;
 
+// Component for effect icons
+const EffectIcon: React.FC<{ effect: AudioEffectType | 'reset'; className?: string }> = ({ effect, className = 'w-4 h-4' }) => {
+  switch (effect) {
+    case 'voice-coder':
+      return <Mic2 className={className} />;
+    case 'baby-voice':
+      return <Baby className={className} />;
+    case 'demon-voice':
+      return <Skull className={className} />;
+    case 'back-sound':
+      return <Music className={className} />;
+    case 'reset':
+      return <RotateCcw className={className} />;
+    default:
+      return null;
+  }
+};
+
 export function AudioEffectsCarousel({
   effectsState,
   onToggleEffect,
@@ -85,42 +103,36 @@ export function AudioEffectsCarousel({
   // Effect tiles configuration
   const effectTiles: Array<{
     id: EffectTileType;
-    icon: string;
     title: string;
     color: string;
     gradient: string;
   }> = [
     {
       id: 'reset',
-      icon: '🔄',
       title: t('resetAll') || 'Reset All',
       color: 'gray',
       gradient: 'from-gray-700 to-gray-900',
     },
     {
       id: 'voice-coder',
-      icon: '🎵',
       title: t('voiceCoder.title') || 'Voice Coder',
       color: 'blue',
       gradient: 'from-blue-600 to-blue-800',
     },
     {
       id: 'back-sound',
-      icon: '🎶',
       title: t('backSound.title') || 'Background',
       color: 'green',
       gradient: 'from-green-600 to-green-800',
     },
     {
       id: 'baby-voice',
-      icon: '👶',
       title: t('babyVoice.title') || 'Baby Voice',
       color: 'pink',
       gradient: 'from-pink-600 to-pink-800',
     },
     {
       id: 'demon-voice',
-      icon: '😈',
       title: t('demonVoice.title') || 'Demon Voice',
       color: 'red',
       gradient: 'from-red-600 to-red-800',
@@ -253,10 +265,15 @@ export function AudioEffectsCarousel({
                 >
                   {/* Icon - plus grand si actif */}
                   <div className={cn(
-                    "transition-all duration-300",
-                    isActive ? "text-3xl sm:text-4xl" : "text-2xl sm:text-3xl"
+                    "transition-all duration-300"
                   )}>
-                    {tile.icon}
+                    <EffectIcon
+                      effect={tile.id}
+                      className={cn(
+                        "transition-all duration-300 text-white",
+                        isActive ? "w-10 h-10 sm:w-12 sm:h-12" : "w-8 h-8 sm:w-10 sm:h-10"
+                      )}
+                    />
                   </div>
 
                   {/* Title */}
@@ -268,10 +285,6 @@ export function AudioEffectsCarousel({
                       {tile.title}
                     </p>
                   </div>
-
-                  {tile.id === 'reset' && (
-                    <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 opacity-70 mt-1 sm:mt-2" />
-                  )}
                 </div>
               </Card>
             );

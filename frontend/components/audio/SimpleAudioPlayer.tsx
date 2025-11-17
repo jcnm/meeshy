@@ -1288,14 +1288,14 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                     )}
                   </a>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-96 p-4 max-h-96" side="top" align="end">
+                <DropdownMenuContent className="w-96 p-4 max-h-96 overflow-hidden" side="top" align="end">
                 <Tabs value={selectedEffectTab} onValueChange={(value) => setSelectedEffectTab(value as AudioEffectType | 'overview')}>
                   <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${appliedEffects.length + 1}, 1fr)` }}>
                     <TabsTrigger value="overview" className="text-xs">Vue d'ensemble</TabsTrigger>
                     {appliedEffects.map((effect) => (
-                      <TabsTrigger key={effect} value={effect} className="text-xs flex items-center gap-1">
-                        <EffectIcon effect={effect} className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">{effectNames[effect]}</span>
+                      <TabsTrigger key={effect} value={effect} className="text-xs flex flex-col items-center gap-0.5 py-1">
+                        <EffectIcon effect={effect} className="w-4 h-4" />
+                        <span className="text-[10px] leading-tight">{effectNames[effect]}</span>
                       </TabsTrigger>
                     ))}
                   </TabsList>
