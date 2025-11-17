@@ -21,7 +21,6 @@ import components from './components.json';
 import groups from './groups.json';
 import notifications from './notifications.json';
 import audioEffects from './audioEffects.json';
-import audioEffectsTimeline from './audio-effects.json';
 import landing from './landing.json';
 import about from './about.json';
 import partners from './partners.json';
@@ -61,7 +60,6 @@ export default {
   groups,
   notifications,
   audioEffects,
-  'audio-effects': audioEffectsTimeline,
   landing,
   about,
   partners,
@@ -102,7 +100,6 @@ export {
   groups,
   notifications,
   audioEffects,
-  audioEffectsTimeline,
   landing,
   about,
   partners,
