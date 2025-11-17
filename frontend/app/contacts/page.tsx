@@ -370,10 +370,12 @@ export default function ContactsPage() {
       if (!token) return;
 
       const response = await fetch(buildApiUrl(`/users/friend-requests/${requestId}`), {
-        method: 'DELETE',
+        method: 'PATCH',
         headers: {
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
-        }
+        },
+        body: JSON.stringify({ action: 'cancel' })
       });
 
       if (response.ok) {
