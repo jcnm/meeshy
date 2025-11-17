@@ -223,6 +223,30 @@ export function useAudioEffectsTimeline() {
 
     const duration = getCurrentTimestamp();
 
+    // IMPORTANT: Ajouter automatiquement des événements 'deactivate' pour tous les effets encore actifs
+    // Cela garantit que les graphiques affichent correctement les effets jusqu'à la fin
+    const stillActiveEffects = Array.from(activeEffectsRef.current);
+    if (stillActiveEffects.length > 0) {
+      logger.info('[useAudioEffectsTimeline]', 'Auto-closing active effects at end of recording', {
+        effects: stillActiveEffects,
+        timestamp: duration
+      });
+
+      for (const effectType of stillActiveEffects) {
+        const deactivateEvent: AudioEffectEvent = {
+          timestamp: duration,
+          effectType,
+          action: 'deactivate',
+        };
+        eventsRef.current.push(deactivateEvent);
+
+        logger.debug('[useAudioEffectsTimeline]', 'Auto-deactivated effect', {
+          effectType,
+          timestamp: duration
+        });
+      }
+    }
+
     const timeline: AudioEffectsTimeline = {
       version: AUDIO_EFFECTS_TIMELINE_VERSION,
       createdAt: new Date(startTimeRef.current).toISOString(),
@@ -233,7 +257,7 @@ export function useAudioEffectsTimeline() {
       metadata: {
         totalEffectsUsed: new Set(eventsRef.current.map(e => e.effectType)).size,
         totalParameterChanges: eventsRef.current.filter(e => e.action === 'update').length,
-        finalActiveEffects: Array.from(activeEffectsRef.current),
+        finalActiveEffects: [], // Plus aucun effet actif après auto-close
       },
     };
 
@@ -241,6 +265,7 @@ export function useAudioEffectsTimeline() {
       duration,
       totalEvents: eventsRef.current.length,
       totalEffects: timeline.metadata?.totalEffectsUsed,
+      autoClosedEffects: stillActiveEffects.length,
     });
 
     // Reset

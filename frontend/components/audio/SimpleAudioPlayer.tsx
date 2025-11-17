@@ -264,6 +264,9 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     // Suivre les dernières configurations de chaque effet
     const lastConfigs: Record<AudioEffectType, Record<string, number>> = {} as any;
 
+    // Suivre si un effet a été désactivé explicitement
+    const hasDeactivateEvent: Record<AudioEffectType, boolean> = {} as any;
+
     for (const event of timeline.events) {
       // Collecter les configurations des événements 'activate' et 'update'
       if ((event.action === 'activate' || event.action === 'update') && event.params) {
@@ -299,8 +302,28 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
           timestamp: event.timestamp,
           config: lastConfigs[event.effectType],
         });
+
+        hasDeactivateEvent[event.effectType] = true;
       }
     }
+
+    // IMPORTANT: Pour les effets sans deactivate explicite, ajouter un point final à la durée totale
+    // Cela garantit que les graphiques vont jusqu'au bout de l'enregistrement
+    const totalDuration = timeline.duration || 0;
+    Object.keys(lastConfigs).forEach((effectType) => {
+      const effect = effectType as AudioEffectType;
+      if (!hasDeactivateEvent[effect] && lastConfigs[effect] && totalDuration > 0) {
+        if (!configs[effect]) {
+          configs[effect] = [];
+        }
+
+        // Ajouter un point final à la durée totale avec la dernière config connue
+        configs[effect].push({
+          timestamp: totalDuration,
+          config: lastConfigs[effect],
+        });
+      }
+    });
 
     return configs;
   }, [attachment]);
