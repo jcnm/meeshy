@@ -414,17 +414,10 @@ const ConversationItem = memo(function ConversationItem({
                     return (
                       <>
                         <span className="inline-flex text-purple-500">🎵</span>
-                        {attachment.duration && (
-                          <span className="text-xs">{Math.floor(attachment.duration / 60)}:{(attachment.duration % 60).toString().padStart(2, '0')}</span>
-                        )}
-                        {attachment.bitrate && (
-                          <span className="text-xs">• {Math.round(attachment.bitrate / 1000)}kbps</span>
-                        )}
-                        {attachment.sampleRate && (
-                          <span className="text-xs">• {(attachment.sampleRate / 1000).toFixed(1)}kHz</span>
-                        )}
-                        {effectDisplay && (
-                          <span className="text-xs">• {effectDisplay}</span>
+                        {attachment.duration ? (
+                          <span className="text-xs ml-1">{Math.floor(attachment.duration / 60)}:{Math.floor(attachment.duration % 60).toString().padStart(2, '0')}</span>
+                        ) : (
+                          <span className="text-xs ml-1">Audio</span>
                         )}
                       </>
                     );
