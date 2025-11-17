@@ -609,8 +609,7 @@ export default function LinksPage() {
                   className={`h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm ${statusFilter === 'active' ? 'bg-green-600 hover:bg-green-700' : ''}`}
                 >
                   <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                  <span className="hidden sm:inline">{t('filters.active')}</span>
-                  <span className="sm:hidden">Actif</span>
+                  {t('filters.active')}
                 </Button>
                 <Button
                   size="sm"
@@ -619,8 +618,7 @@ export default function LinksPage() {
                   className={`h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm ${statusFilter === 'inactive' ? 'bg-gray-600 hover:bg-gray-700' : ''}`}
                 >
                   <XCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                  <span className="hidden sm:inline">{t('filters.inactive')}</span>
-                  <span className="sm:hidden">Inactif</span>
+                  {t('filters.inactive')}
                 </Button>
                 <Button
                   size="sm"
@@ -629,8 +627,7 @@ export default function LinksPage() {
                   className={`h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm ${statusFilter === 'expired' ? 'bg-red-600 hover:bg-red-700' : ''}`}
                 >
                   <Clock className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                  <span className="hidden sm:inline">{t('filters.expired') || 'Expired'}</span>
-                  <span className="sm:hidden">Expiré</span>
+                  {t('filters.expired')}
                 </Button>
               </div>
             </div>
