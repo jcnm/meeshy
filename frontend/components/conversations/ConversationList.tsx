@@ -396,15 +396,6 @@ const ConversationItem = memo(function ConversationItem({
                     // audioEffectsTimeline est stocké dans metadata
                     const audioEffectsTimeline = (attachment as any).metadata?.audioEffectsTimeline;
 
-                    console.log('🔍 [ConversationList] Checking audio effects:', {
-                      attachmentId: attachment.id,
-                      hasMetadata: !!(attachment as any).metadata,
-                      hasAudioEffectsTimeline: !!audioEffectsTimeline,
-                      timeline: audioEffectsTimeline,
-                      hasEvents: !!audioEffectsTimeline?.events,
-                      eventsCount: audioEffectsTimeline?.events?.length || 0
-                    });
-
                     if (audioEffectsTimeline?.events) {
                       const effects = new Set<string>();
                       for (const event of audioEffectsTimeline.events) {
@@ -413,9 +404,6 @@ const ConversationItem = memo(function ConversationItem({
                         }
                       }
                       appliedEffects.push(...Array.from(effects));
-                      console.log('✅ [ConversationList] Effects detected:', appliedEffects);
-                    } else {
-                      console.warn('⚠️ [ConversationList] No effects timeline found for audio attachment');
                     }
 
                     // Déterminer l'icône d'effet à afficher

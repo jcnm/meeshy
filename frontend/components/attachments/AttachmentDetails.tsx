@@ -84,15 +84,6 @@ export function AttachmentDetails({
         // audioEffectsTimeline est stocké dans metadata
         const audioEffectsTimeline = (attachment as any).metadata?.audioEffectsTimeline;
 
-        console.log('🔍 [AttachmentDetails] Checking audio effects:', {
-          attachmentId: attachment.id,
-          hasMetadata: !!(attachment as any).metadata,
-          hasAudioEffectsTimeline: !!audioEffectsTimeline,
-          timeline: audioEffectsTimeline,
-          hasEvents: !!audioEffectsTimeline?.events,
-          eventsCount: audioEffectsTimeline?.events?.length || 0
-        });
-
         if (audioEffectsTimeline?.events) {
           const effects = new Set<string>();
           for (const event of audioEffectsTimeline.events) {
@@ -101,14 +92,11 @@ export function AttachmentDetails({
             }
           }
           const appliedEffects = Array.from(effects);
-          console.log('✅ [AttachmentDetails] Effects detected:', appliedEffects);
           if (appliedEffects.length === 1) {
             effectDisplay = effectIcons[appliedEffects[0]] || '🎚️';
           } else if (appliedEffects.length > 1) {
             effectDisplay = '🎚️';
           }
-        } else {
-          console.warn('⚠️ [AttachmentDetails] No effects timeline found for audio attachment');
         }
 
         return {

@@ -90,19 +90,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     // audioEffectsTimeline est stocké dans metadata
     const timeline = (attachment as any).metadata?.audioEffectsTimeline;
 
-    console.log('🎭 [SimpleAudioPlayer] Extraction timeline des effets:', {
-      attachmentId: attachment.id,
-      hasMetadata: !!(attachment as any).metadata,
-      hasAudioEffectsTimeline: !!timeline,
-      timeline: timeline,
-      timelineEvents: timeline?.events,
-      timelineMetadata: timeline?.metadata,
-      attachmentKeys: Object.keys(attachment),
-      fullAttachmentStringified: JSON.stringify(attachment, null, 2)
-    });
-
     if (!timeline || !timeline.events || timeline.events.length === 0) {
-      console.log('⚠️ [SimpleAudioPlayer] Pas de timeline ou pas d\'événements');
       return [];
     }
 
@@ -210,17 +198,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
   const effectsTimeline = useMemo(() => {
     const timeline = (attachment as any).audioEffectsTimeline || (attachment as any).metadata?.audioEffectsTimeline;
 
-    console.log('📊 [SimpleAudioPlayer] Extraction timeline segments:', {
-      hasTimeline: !!timeline,
-      hasEvents: !!timeline?.events,
-      eventsCount: timeline?.events?.length || 0,
-      events: timeline?.events,
-      currentDuration: duration,
-      attachmentDuration: attachmentDuration,
-    });
-
     if (!timeline || !timeline.events || timeline.events.length === 0) {
-      console.log('⚠️ [SimpleAudioPlayer] Pas de timeline events pour les segments');
       return [];
     }
 
@@ -235,12 +213,6 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     const activeEffects = new Map<AudioEffectType, number>(); // effectType -> startTime
 
     for (const event of timeline.events) {
-      console.log('🔄 [SimpleAudioPlayer] Timeline event:', {
-        action: event.action,
-        effectType: event.effectType,
-        timestamp: event.timestamp,
-      });
-
       if (event.action === 'activate') {
         // Marquer le début d'activation
         activeEffects.set(event.effectType, event.timestamp);
