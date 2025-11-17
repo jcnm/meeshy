@@ -304,11 +304,23 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
                       mimeType.includes('ogg') ? 'OGG' : 'AUDIO';
         setAudioFormat(format);
 
-        // Calculer le bitrate estimé depuis la taille du blob
-        const durationInSeconds = recordingTime / 1000;
+        // Calculer la durée réelle depuis startTimeRef (évite problème de closure avec recordingTime)
+        const actualDurationMs = startTimeRef.current ? performance.now() - startTimeRef.current : 0;
+        const durationInSeconds = actualDurationMs / 1000;
         const estimatedBitrate = durationInSeconds > 0
           ? Math.round((blob.size * 8) / durationInSeconds) // bits per second
           : 0;
+
+        console.log('⏱️ [AudioRecorderWithEffects] Duration calculation:', {
+          recordingTimeState: recordingTime,
+          actualDurationMs,
+          durationInSeconds,
+          blobSize: blob.size,
+          estimatedBitrate,
+          bitrateKbps: Math.round(estimatedBitrate / 1000),
+          startTimeRef: startTimeRef.current,
+          performanceNow: performance.now()
+        });
 
         const metadata: AudioMetadata = {
           duration: durationInSeconds,
