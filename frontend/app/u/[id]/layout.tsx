@@ -21,9 +21,17 @@ export async function generateMetadata({ params }: UserProfileLayoutProps): Prom
 
   try {
     // Récupérer les informations du profil utilisateur
+    // Note: Use a timeout to prevent hanging during SSR
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+
     const response = await fetch(`${backendUrl}/api/users/profile/${id}`, {
-      next: { revalidate: 300 } // Cache 5 minutes
-    });
+      next: { revalidate: 300 }, // Cache 5 minutes
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }).finally(() => clearTimeout(timeoutId));
 
     if (response.ok) {
       const result = await response.json();
@@ -85,7 +93,11 @@ export async function generateMetadata({ params }: UserProfileLayoutProps): Prom
       }
     }
   } catch (error) {
-    console.error('Erreur génération métadonnées profil utilisateur:', error);
+    // Silently fail if backend is not accessible during SSR (common in dev)
+    // Only log in development mode
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[Metadata] Unable to fetch user profile, using fallback metadata:', error instanceof Error ? error.message : 'Unknown error');
+    }
   }
 
   // Fallback metadata si l'appel API échoue
