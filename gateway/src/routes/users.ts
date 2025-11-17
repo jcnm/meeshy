@@ -225,6 +225,32 @@ export async function userRoutes(fastify: FastifyInstance) {
                     username: true,
                     displayName: true
                   }
+                },
+                attachments: {
+                  select: {
+                    id: true,
+                    fileName: true,
+                    originalName: true,
+                    mimeType: true,
+                    fileSize: true,
+                    fileUrl: true,
+                    thumbnailUrl: true,
+                    width: true,
+                    height: true,
+                    duration: true,
+                    bitrate: true,
+                    sampleRate: true,
+                    codec: true,
+                    channels: true,
+                    fps: true,
+                    videoCodec: true,
+                    pageCount: true,
+                    lineCount: true,
+                    metadata: true, // Contient audioEffectsTimeline
+                    uploadedBy: true,
+                    isAnonymous: true,
+                    createdAt: true
+                  }
                 }
               }
             },
@@ -358,7 +384,8 @@ export async function userRoutes(fastify: FastifyInstance) {
           lastMessage: conv.messages && conv.messages.length > 0 ? {
             content: conv.messages[0].content,
             createdAt: conv.messages[0].createdAt,
-            sender: conv.messages[0].sender
+            sender: conv.messages[0].sender,
+            attachments: conv.messages[0].attachments || [] // Inclure les attachments avec metadata
           } : null,
           members: conv.members.map(member => member.user)
         };
