@@ -198,6 +198,15 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     'back-sound': '#3b82f6', // blue
   };
 
+  // Classes Tailwind pour les tabs d'effets (correspondant aux couleurs)
+  const effectTabClasses: Record<AudioEffectType | 'overview', string> = {
+    'overview': 'data-[state=active]:bg-gray-500 data-[state=active]:text-white',
+    'voice-coder': 'data-[state=active]:bg-purple-500 data-[state=active]:text-white',
+    'baby-voice': 'data-[state=active]:bg-pink-500 data-[state=active]:text-white',
+    'demon-voice': 'data-[state=active]:bg-red-500 data-[state=active]:text-white',
+    'back-sound': 'data-[state=active]:bg-blue-500 data-[state=active]:text-white',
+  };
+
   // Extraire la timeline des effets pour la visualisation
   const effectsTimeline = useMemo(() => {
     const timeline = (attachment as any).audioEffectsTimeline || (attachment as any).metadata?.audioEffectsTimeline;
@@ -1349,12 +1358,19 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-96 p-4 max-h-96 overflow-hidden" side="top" align="end">
                 <Tabs value={selectedEffectTab} onValueChange={(value) => setSelectedEffectTab(value as AudioEffectType | 'overview')}>
-                  <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${appliedEffects.length + 1}, 1fr)` }}>
-                    <TabsTrigger value="overview" className="text-xs flex items-center justify-center py-0.5 md:py-1">
+                  <TabsList className="grid w-full bg-gray-100 dark:bg-gray-800 p-1.5" style={{ gridTemplateColumns: `repeat(${appliedEffects.length + 1}, 1fr)` }}>
+                    <TabsTrigger
+                      value="overview"
+                      className={`text-xs flex items-center justify-center py-2 md:py-3 px-2 rounded-lg font-medium transition-all ${effectTabClasses['overview']}`}
+                    >
                       <Sliders className="w-4 h-4" />
                     </TabsTrigger>
                     {appliedEffects.map((effect) => (
-                      <TabsTrigger key={effect} value={effect} className="text-xs flex items-center justify-center py-0.5 md:py-1">
+                      <TabsTrigger
+                        key={effect}
+                        value={effect}
+                        className={`text-xs flex items-center justify-center py-2 md:py-3 px-2 rounded-lg font-medium transition-all ${effectTabClasses[effect]}`}
+                      >
                         <EffectIcon effect={effect} className="w-4 h-4" />
                       </TabsTrigger>
                     ))}
