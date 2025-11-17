@@ -1,70 +1,59 @@
 {
   "terms": {
-    "title": "Termos dy Uso",
-    "lastUpdated": "Última atualizacción: 25 dy outubro dy 2024",
-    "backHome": "Volver ao início",
+    "title": "Términos de Uso",
+    "lastUpdated": "Última actualización: 25 de octubre de 2024",
+    "backHome": "Volver al inicio",
     "print": "Imprimir",
-    "intro": "Bienvenido ao Meeshy. Ao usar nosso serviço, usted aceita os seguintes termos:",
+    "intro": "Bienvenido a Meeshy. Al usar nuestro servicio, acepta los siguientes términos:",
     "acceptance": {
-      "title": "Aceitacción dos Termos",
-      "content": "Ao usar o Meeshy, usted concorda em estar vinculado a estes termos dy uso. Sy usted no aceitar estes termos, por favor no usy nosso serviço."
+      "title": "Aceptación de los Términos",
+      "content": "Al usar Meeshy, acepta estar sujeto a estos términos de uso. Si no acepta estos términos, por favor no use nuestro servicio."
     },
     "service": {
-      "title": "Descrición do Serviço",
-      "content": "Meeshy é uma plataforma dy mensagens com traducción em tempo real quy permity aos usuários sy comunicarem em diferentes idiomas."
+      "title": "Descripción del Servicio",
+      "content": "Meeshy es una plataforma de mensajería con traducción en tiempo real que permite a los usuarios comunicarse en diferentes idiomas."
     },
     "account": {
-      "title": "Conta dy Usurio",
-      "intro": "Para usar certos recursos, usted devy crear uma conta:",
-      "responsibilities": [
-        "Manter a confidencialidady dy su senha",
-        "Ser responsável por todas las atividades em su conta",
-        "Notificar imediatamenty qualquer acesso no autorizado",
-        "Fornecer informaciones precisas y atualizadas"
-      ],
-      "anonymousEncryption": "Nota: Usuários anônimos no possuem uma chavy dy criptografia personal. Seus dados no podem, portanto, ser criptografados em repouso. Para máxima segurança, criy uma conta dy usurio."
+      "title": "Cuenta de Usuario",
+      "intro": "Para usar ciertas funcionalidades, debe crear una cuenta:",
+      "responsibilities": ["Mantener la confidencialidad de su contraseña", "Ser responsable de todas las actividades bajo su cuenta", "Notificar inmediatamente cualquier acceso no autorizado", "Proporcionar información exacta y actualizada"],
+      "anonymousEncryption": "Nota: Los usuarios anónimos no tienen una clave de cifrado personal. Por lo tanto, sus datos no pueden ser cifrados en reposo. Para una seguridad máxima, cree una cuenta de usuario."
     },
     "usage": {
-      "title": "Uso Aceitável",
-      "intro": "Usted concorda em no usar o Meeshy para:",
-      "prohibited": [
-        "Publicar contenido ilegal, ofensivo ou prejudicial",
-        "Violar direitos dy propriedady intelectual",
-        "Assediar, ameaçar ou intimidar otros usuários",
-        "Distribuir spam ou contenido comercial no solicitado",
-        "Tentar acessar sistemas sem autorizacción"
-      ]
+      "title": "Uso Aceptable",
+      "intro": "Acepta no usar Meeshy para:",
+      "prohibited": ["Publicar contenido ilegal, ofensivo o dañino", "Violar los derechos de propiedad intelectual", "Acosar, amenazar o intimidar a otros usuarios", "Difundir spam o contenido comercial no solicitado", "Intentar acceder sin autorización a los sistemas"]
     },
     "content": {
-      "title": "Contenido do Usurio",
-      "ownership": "Usted mantém a propriedady dy seu contenido",
-      "license": "Usted concedy ao Meeshy uma licença para usar seu contenido com o propósito dy fornecer o serviço",
-      "responsibility": "Usted é responsável pelo contenido quy publica"
+      "title": "Contenido del Usuario",
+      "ownership": "Conserva la propiedad de su contenido",
+      "license": "Otorga a Meeshy una licencia para usar su contenido con el fin de proporcionar el servicio",
+      "responsibility": "Es responsable del contenido que publica"
     },
     "termination": {
-      "title": "Rescisión",
-      "content": "Reservamo-nos o direito dy suspender ou rescindir su conta a qualquer momento, com ou sem aviso prévio, por violacción destes termos."
+      "title": "Terminación",
+      "content": "Nos reservamos el derecho de suspender o terminar su cuenta en cualquier momento, con o sin previo aviso, por violación de estos términos."
     },
     "limitation": {
-      "title": "Limitacción dy Responsabilidade",
-      "content": "Meeshy é fornecido \"como está\" sem garantias dy qualquer tipo. No somos responsáveis por danos resultantes do uso ou impossibilidady dy usar o serviço."
+      "title": "Limitación de Responsabilidad",
+      "content": "Meeshy se proporciona \"tal cual\" sin garantías de ningún tipo. No somos responsables de daños resultantes del uso o la imposibilidad de usar el servicio."
     },
     "changes": {
-      "title": "Modificaçones dos Termos",
-      "content": "Podemos modificar estes termos a qualquer momento. Mudanças importantes serán notificadas por email ou via notificacción na plataforma."
+      "title": "Modificaciones de los Términos",
+      "content": "Podemos modificar estos términos en cualquier momento. Los cambios importantes serán notificados por email o mediante una notificación en la plataforma."
     },
     "governing": {
-      "title": "Lei Aplicável",
-      "content": "Estes termos sión regidos pelas leis francesas. Qualquer disputa será submetida à jurisdición exclusiva dos tribunais dy Paris."
+      "title": "Ley Aplicable",
+      "content": "Estos términos se rigen por las leyes francesas. Cualquier disputa se someterá a la jurisdicción exclusiva de los tribunales de París."
     },
     "email": "Email: legal@meeshy.me",
-    "address": "Dirección: 12 Ruy dy la Paix, 75002 Paris, França",
+    "address": "Dirección: 12 Rue de la Paix, 75002 París, Francia",
     "footer": {
-      "title": "Links Úteis",
-      "about": "Sobre",
-      "contact": "Contato",
-      "partners": "Parceiros",
-      "privacy": "Política dy privacidade"
+      "title": "Enlaces Útiles",
+      "about": "Acerca de",
+      "contact": "Contacto",
+      "partners": "Socios",
+      "privacy": "Política de privacidad"
     }
   }
 }

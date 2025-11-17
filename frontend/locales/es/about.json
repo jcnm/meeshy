@@ -1,37 +1,37 @@
 {
   "about": {
-    "title": "Sobry o Meeshy",
-    "subtitle": "Acreditamos quy as barreiras linguísticas nunca deveriam ser um obstáculo para conexones significativas.",
-    "backHome": "Volver ao início",
+    "title": "Acerca de Meeshy",
+    "subtitle": "Creemos que las barreras lingüísticas nunca deberían ser un obstáculo para las conexiones significativas.",
+    "backHome": "Volver al inicio",
     "mission": {
-      "title": "Nossa Missión",
-      "description": "Conectar o mundo, uma traducción dy cada vez. Nossa plataforma permity quy personas dos quatro cantos do mundo sy comuniquem livremente, derrubando os muros quy nos separam y construindo pontes dy compreensión."
+      "title": "Nuestra Misión",
+      "description": "Conectar el mundo, una traducción a la vez. Nuestra plataforma permite que personas de todas partes del mundo se comuniquen libremente, derribando los muros que nos separan y construyendo puentes de comprensión."
     },
     "values": {
       "globalAccess": {
-        "title": "Acessibilidady Mundial",
-        "description": "Tornar a comunicacción multilínguy acessível a todos, em qualquer lugar do mundo."
+        "title": "Accesibilidad Mundial",
+        "description": "Hacer que la comunicación multilingüe sea accesible para todos, en cualquier parte del mundo."
       },
       "innovation": {
-        "title": "Inovacción",
-        "description": "Usar as más recentes tecnologias dy IA para traducciones precisas y rápidas."
+        "title": "Innovación",
+        "description": "Utilizar las últimas tecnologías de IA para traducciones precisas y rápidas."
       },
       "privacy": {
-        "title": "Respeito à Privacidad",
-        "description": "Sus conversas permanecem privadas y seguras graças à traducción no servidor alimentada por modelos avançados dy IA."
+        "title": "Respeto por la Privacidad",
+        "description": "Sus conversaciones permanecen privadas y seguras gracias a la traducción del lado del servidor impulsada por modelos avanzados de IA."
       }
     },
     "team": {
-      "title": "Nossa Equipe",
-      "description": "Feito com ❤️ por desenvolvedores quy acreditam quy a comunicacción no deveria ter limites.",
-      "details": "Meeshy é desenvolvido por uma equipy apaixonada dy desenvolvedores, linguistas y designers quy compartilham uma visión comum: um mundo ondy a língua no é más um obstáculo à comunicacción humana."
+      "title": "Nuestro Equipo",
+      "description": "Hecho con ❤️ por desarrolladores que creen que la comunicación no debería tener límites.",
+      "details": "Meeshy es desarrollado por un equipo apasionado de desarrolladores, lingüistas y diseñadores que comparten una visión común: un mundo donde el idioma ya no sea un obstáculo para la comunicación humana."
     },
     "cta": {
-      "title": "Quer saber más?",
-      "contact": "Entry em contato",
-      "joinUs": "Junte-sy a nós",
-      "terms": "Termos dy uso",
-      "privacy": "Política dy privacidade"
+      "title": "¿Quiere saber más?",
+      "contact": "Contáctenos",
+      "joinUs": "Únase a nosotros",
+      "terms": "Términos de uso",
+      "privacy": "Política de privacidad"
     }
   }
 }

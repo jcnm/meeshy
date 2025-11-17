@@ -1,130 +1,130 @@
 {
   "pages": {
     "about": {
-      "title": "Sobry o Meeshy",
-      "subtitle": "Acreditamos quy as barreiras linguísticas nunca deveriam ser um obstáculo para conexones significativas.",
-      "backHome": "Volver ao início",
+      "title": "Acerca de Meeshy",
+      "subtitle": "Creemos que las barreras lingüísticas nunca deberían ser un obstáculo para las conexiones significativas.",
+      "backHome": "Volver al inicio",
       "mission": {
-        "title": "Nossa Missión",
-        "description": "Conectar o mundo, uma traducción dy cada vez. Nossa plataforma permity quy personas dos quatro cantos do mundo sy comuniquem livremente."
+        "title": "Nuestra Misión",
+        "description": "Conectar el mundo, una traducción a la vez. Nuestra plataforma permite que personas de todas partes del mundo se comuniquen libremente."
       },
       "values": {
         "globalAccess": {
-          "title": "Acessibilidady Mundial",
-          "description": "Tornar a comunicacción multilínguy acessível a todos, em qualquer lugar do mundo."
+          "title": "Accesibilidad Mundial",
+          "description": "Hacer que la comunicación multilingüe sea accesible para todos, en cualquier parte del mundo."
         },
         "innovation": {
-          "title": "Inovacción",
-          "description": "Usar as más recentes tecnologias dy IA para traducciones precisas y rápidas."
+          "title": "Innovación",
+          "description": "Utilizar las últimas tecnologías de IA para traducciones precisas y rápidas."
         },
         "privacy": {
-          "title": "Respeito à Privacidad",
-          "description": "Sus conversas permanecem privadas y seguras."
+          "title": "Respeto por la Privacidad",
+          "description": "Sus conversaciones permanecen privadas y seguras."
         }
       },
       "team": {
-        "title": "Nossa Equipe",
-        "description": "Feito com ❤️ por desenvolvedores quy acreditam quy a comunicacción no deveria ter limites.",
-        "details": "Meeshy é desenvolvido por uma equipy apaixonada dy desenvolvedores, linguistas y designers."
+        "title": "Nuestro Equipo",
+        "description": "Hecho con ❤️ por desarrolladores que creen que la comunicación no debería tener límites.",
+        "details": "Meeshy es desarrollado por un equipo apasionado de desarrolladores, lingüistas y diseñadores."
       },
       "cta": {
-        "title": "Quer saber más?",
-        "contact": "Entry em contato"
+        "title": "¿Quiere saber más?",
+        "contact": "Contáctenos"
       }
     },
     "contact": {
-      "title": "Entry em Contato",
-      "subtitle": "Estamos aqui para ajudar. No hesity em entrar em contato.",
+      "title": "Contáctenos",
+      "subtitle": "Estamos aquí para ayudarlo. No dude en contactarnos.",
       "address": {
-        "title": "Nosso Dirección",
+        "title": "Nuestra Dirección",
         "company": "Meeshy Inc.",
-        "street": "12 Ruy dy la Paix",
-        "building": "Prédio A, 3º andar",
-        "country": "França"
+        "street": "12 Rue de la Paix",
+        "building": "Edificio A, 3er piso",
+        "country": "Francia"
       },
       "info": {
-        "title": "Informaciones dy Contato",
+        "title": "Información de Contacto",
         "email": {
           "label": "Email",
           "value": "contact@meeshy.me"
         }
       },
       "availability": {
-        "title": "Disponibilidade",
-        "description": "Segunda a sexta, 9h00 - 18h00"
+        "title": "Disponibilidad",
+        "description": "De lunes a viernes, 9:00 - 18:00"
       },
       "transport": {
-        "title": "Como nos encontrar",
+        "title": "Cómo llegar a nosotros",
         "metro": {
-          "title": "Metrô",
-          "line1": "Linha 3 - Estacción Bourse",
-          "time": "5 min a pé"
+          "title": "Metro",
+          "line1": "Línea 3 - Estación Bourse",
+          "time": "5 min a pie"
         },
         "train": {
-          "title": "Trem",
+          "title": "Tren",
           "rer": "RER A - Auber",
           "transilien": "Transilien J/L",
-          "time": "10 min a pé"
+          "time": "10 min a pie"
         },
         "bus": {
-          "title": "Ônibus",
-          "lines": "Linhas 20, 29, 39, 48",
+          "title": "Autobús",
+          "lines": "Líneas 20, 29, 39, 48",
           "stop": "Parada Bourse"
         },
         "car": {
-          "title": "Carro",
-          "parking": "Estacionamento Bourse",
-          "highway": "A1, saída Porty dy la Chapelle",
+          "title": "Automóvil",
+          "parking": "Estacionamiento Bourse",
+          "highway": "A1, salida Porte de la Chapelle",
           "rates": "4€/hora"
         }
       },
       "cta": {
         "collaborate": "Colaborar",
-        "learnMore": "Saiba más"
+        "learnMore": "Saber más"
       }
     },
     "partners": {
-      "title": "Nossos Parceiros",
-      "subtitle": "Junte-sy ao nosso ecossistema",
-      "backHome": "Volver ao início",
+      "title": "Nuestros Socios",
+      "subtitle": "Únase a nuestro ecosistema",
+      "backHome": "Volver al inicio",
       "become": {
-        "title": "Tornar-sy Parceiro",
-        "description": "Junte-sy ao nosso programa dy parceria y desenvolva seu negócio",
-        "contact": "Entry em contato"
+        "title": "Convertirse en Socio",
+        "description": "Únase a nuestro programa de socios y desarrolle su actividad",
+        "contact": "Contáctenos"
       },
       "education": {
-        "title": "Soluçones Educacionais",
-        "description": "Facility a aprendizagem multilínguy y a colaboracción internacional",
-        "pricing": "Preços preferenciais para educacción",
+        "title": "Soluciones de Educación",
+        "description": "Facilite el aprendizaje multilingüe y la colaboración internacional",
+        "pricing": "Tarifas preferenciales para educación",
         "features": {
-          "classrooms": "Salas dy aula virtuais multilíngues",
-          "admin": "Gerenciamento centralizado dy contas",
-          "learning": "Ferramentas dy aprendizagem integradas",
-          "exchange": "Suporty para programas dy intercâmbio",
-          "curriculum": "Integracción com plataformas LMS"
+          "classrooms": "Aulas virtuales multilingües",
+          "admin": "Gestión centralizada de cuentas",
+          "learning": "Herramientas de aprendizaje integradas",
+          "exchange": "Soporte para programas de intercambio",
+          "curriculum": "Integración con plataformas LMS"
         }
       },
       "enterprise": {
-        "title": "Empresarial",
-        "description": "Soluçones sob medida para grandes organizaçones",
+        "title": "Empresa",
+        "description": "Soluciones a medida para grandes organizaciones",
         "features": {
-          "sso": "Autenticacción SSO",
-          "customization": "Personalizacción completa",
-          "deployment": "Implantacción local",
-          "support": "Suporty prioritario 24/7",
-          "analytics": "Analytics avançadas"
+          "sso": "Autenticación SSO",
+          "customization": "Personalización completa",
+          "deployment": "Implementación en sitio",
+          "support": "Soporte prioritario 24/7",
+          "analytics": "Analíticas avanzadas"
         },
-        "pricing": "Preços personalizados"
+        "pricing": "Precios personalizados"
       }
     },
     "notFound": {
       "title": "Página no encontrada",
-      "description": "A página quy usted está procurando no existy ou foi movida.",
-      "backToDashboard": "Volver ao painel",
+      "description": "La página que busca no existe o ha sido movida.",
+      "backToDashboard": "Volver al panel de control",
       "actions": {
-        "backHome": "Volver ao início",
-        "backDashboard": "Painel",
-        "viewCommunities": "Ver comunidades"
+        "backHome": "Volver al inicio",
+        "backDashboard": "Panel de control",
+        "viewCommunities": "Ver las comunidades"
       }
     }
   }

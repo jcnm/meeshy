@@ -1,111 +1,81 @@
 {
   "privacy": {
-    "title": "Política dy Privacidad",
-    "lastUpdated": "Última atualizacción: 25 dy outubro dy 2024",
-    "backHome": "Volver ao início",
+    "title": "Política de Privacidad",
+    "lastUpdated": "Última actualización: 25 de octubre de 2024",
+    "backHome": "Volver al inicio",
     "print": "Imprimir",
     "introduction": {
-      "title": "Introdución",
-      "content": "No Meeshy, levamos su privacidady a sério. Esta política dy privacidady explica como coletamos, usamos y protegemos sus informaciones personais."
+      "title": "Introducción",
+      "content": "En Meeshy, tomamos su privacidad en serio. Esta política de privacidad explica cómo recopilamos, usamos y protegemos su información personal."
     },
     "dataCollection": {
-      "title": "Coleta dy Dados",
+      "title": "Recopilación de Datos",
       "personal": {
-        "title": "Informaciones Personais",
-        "items": [
-          "Nombry y sobrenome",
-          "Dirección dy email",
-          "Preferencias dy idioma",
-          "Foto dy perfil (opcional)"
-        ]
+        "title": "Información Personal",
+        "items": ["Nombre y apellido", "Dirección de email", "Preferencias de idioma", "Foto de perfil (opcional)"]
       },
       "technical": {
-        "title": "Informaciones Técnicas",
-        "items": [
-          "Dirección IP",
-          "Tipo dy navegador",
-          "Sistema operacional",
-          "Cookies y dados dy sesión"
-        ]
+        "title": "Información Técnica",
+        "items": ["Dirección IP", "Tipo de navegador", "Sistema operativo", "Cookies y datos de sesión"]
       },
       "translation": {
-        "title": "Dados dy Traducción",
-        "items": [
-          "Mensagens originais",
-          "Traducciones geradas",
-          "Preferencias linguísticas",
-          "Histórico dy conversa"
-        ]
+        "title": "Datos de Traducción",
+        "items": ["Mensajes originales", "Traducciones generadas", "Preferencias lingüísticas", "Historial de conversación"]
       }
     },
     "usage": {
-      "title": "Uso dy Dados",
-      "items": [
-        "Fornecer y melhorar nossos serviços dy traducción",
-        "Personalizar su experiencia",
-        "Analisar y melhorar o desempenho",
-        "Garantir a segurança da plataforma"
-      ]
+      "title": "Uso de los Datos",
+      "items": ["Proporcionar y mejorar nuestros servicios de traducción", "Personalizar su experiencia", "Analizar y mejorar el rendimiento", "Garantizar la seguridad de la plataforma"]
     },
     "protection": {
-      "title": "Proteción dy Dados",
+      "title": "Protección de Datos",
       "encryption": {
-        "title": "Criptografia",
-        "content": "Todas las comunicaçones sión criptografadas em trânsito y em repouso usando padrones da indústria."
+        "title": "Cifrado",
+        "content": "Todas las comunicaciones están cifradas en tránsito y en reposo utilizando estándares de la industria."
       },
       "anonymous": {
-        "title": "Usuários Anônimos y Criptografia",
-        "content": "Usuários anônimos no possuem uma chavy dy criptografia personal. Portanto, seus dados no podem ser criptografados em repouso. Sy usted deseja sy beneficiar dy proteción completa dy seus dados, por favor criy uma conta dy usurio."
+        "title": "Usuarios Anónimos y Cifrado",
+        "content": "Los usuarios anónimos no tienen una clave de cifrado personal. Por lo tanto, sus datos no pueden ser cifrados en reposo. Si desea beneficiarse de una protección completa de sus datos, por favor cree una cuenta de usuario."
       },
       "storage": {
-        "title": "Armazenamento",
-        "content": "Seus dados sión armazenados em servidores seguros com backups regulares."
+        "title": "Almacenamiento",
+        "content": "Sus datos se almacenan en servidores seguros con copias de seguridad regulares."
       },
       "local": {
-        "title": "Processamento Local",
-        "content": "As traducciones sión realizadas no servidor para garantir a confidencialidady y qualidade."
+        "title": "Procesamiento Local",
+        "content": "Las traducciones se realizan del lado del servidor para garantizar la confidencialidad y la calidad."
       }
     },
     "sharing": {
-      "title": "Compartilhamento dy Dados",
-      "intro": "Nunca vendemos seus dados personais. Compartilhamos apenas:",
-      "cases": [
-        "Com seu consentimento explícito",
-        "Para cumprir obrigaçones legais",
-        "Com provedores dy serviços confiáveis (hospedagem, analytics)"
-      ]
+      "title": "Compartir Datos",
+      "intro": "Nunca vendemos sus datos personales. Solo compartimos:",
+      "cases": ["Con su consentimiento explícito", "Para cumplir con obligaciones legales", "Con proveedores de servicios de confianza (alojamiento, analíticas)"]
     },
     "rights": {
-      "title": "Seus Direitos",
-      "intro": "Usted tem o direito de:",
-      "list": [
-        "Acessar seus dados personais",
-        "Corrigir informaciones incorretas",
-        "Eliminar su conta y seus dados",
-        "Exportar seus dados",
-        "Opor-sy ao processamento dy seus dados"
-      ],
-      "contact": "Para exercer esses direitos, entry em contato conosco em privacy@meeshy.me"
+      "title": "Sus Derechos",
+      "intro": "Tiene derecho a:",
+      "list": ["Acceder a sus datos personales", "Corregir información inexacta", "Eliminar su cuenta y sus datos", "Exportar sus datos", "Oponerse al procesamiento de sus datos"],
+      "contact": "Para ejercer estos derechos, contáctenos en privacy@meeshy.me"
     },
     "footer": {
-      "title": "Links Úteis",
-      "home": "Início",
-      "about": "Sobre",
-      "contact": "Contato",
-      "partners": "Parceiros"
+      "title": "Enlaces Útiles",
+      "home": "Inicio",
+      "about": "Acerca de",
+      "contact": "Contacto",
+      "partners": "Socios"
     },
     "contact": {
-      "title": "Entry em Contato",
+      "title": "Contáctenos",
       "email": "Email: privacy@meeshy.me",
-      "address": "Dirección: 12 Ruy dy la Paix, 75002 Paris, França"
+      "address": "Dirección: 12 Rue de la Paix, 75002 París, Francia"
     },
     "cookies": {
-      "title": "Cookies y Tecnologias Similares",
-      "content": "Usamos cookies para melhorar su experiencia, lembrar sus preferencias y analisar o uso do site."
+      "title": "Cookies y Tecnologías Similares",
+      "content": "Utilizamos cookies para mejorar su experiencia, recordar sus preferencias y analizar el uso del sitio."
     },
     "updates": {
-      "title": "Atualizaçones da Política",
-      "content": "Podemos actualizar esta política periodicamente. Informaremos sobry mudanças importantes por email ou via notificacción na plataforma."
+      "title": "Actualizaciones de la Política",
+      "content": "Podemos actualizar esta política de vez en cuando. Le informaremos de cambios importantes por email o mediante una notificación en la plataforma."
     }
   }
 }

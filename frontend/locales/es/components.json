@@ -1,28 +1,28 @@
 {
   "components": {
     "affiliate": {
-      "shareApp": "Compartilhar aplicativo",
-      "createToken": "Crear token",
-      "tokenName": "Nombry do token",
-      "tokenNamePlaceholder": "Ex: Campanha Facebook, Convity familiar...",
-      "selectToken": "Seleccionar token dy afiliado",
-      "shareMessage": "Mensajy dy compartilhamento",
-      "shareMessagePlaceholder": "Su mensajy dy convite...",
-      "affiliateLink": "Enlacy dy afiliado",
-      "copyLink": "Copiar link",
-      "copyMessage": "Copiar mensaje",
-      "share": "Compartilhar",
-      "statistics": "Estatísticas",
+      "shareApp": "Compartir la aplicación",
+      "createToken": "Crear un token",
+      "tokenName": "Nombre del token",
+      "tokenNamePlaceholder": "Ej: Campaña Facebook, Invitación familiar...",
+      "selectToken": "Seleccionar un token de afiliado",
+      "shareMessage": "Mensaje para compartir",
+      "shareMessagePlaceholder": "Su mensaje de invitación...",
+      "affiliateLink": "Enlace de afiliado",
+      "copyLink": "Copiar el enlace",
+      "copyMessage": "Copiar el mensaje",
+      "share": "Compartir",
+      "statistics": "Estadísticas",
       "uses": "usos",
-      "createdOn": "Criado em",
-      "expiresOn": "Expira em",
-      "validUntil": "Válido até",
+      "createdOn": "Creado el",
+      "expiresOn": "Expira el",
+      "validUntil": "Válido hasta el",
       "unlimited": "Ilimitado",
       "expired": "Expirado",
       "status": {
-        "active": "Ativo",
+        "active": "Activo",
         "expired": "Expirado",
-        "pending": "Pendente"
+        "pending": "Pendiente"
       },
       "actions": {
         "create": "Crear",
@@ -31,162 +31,162 @@
         "copy": "Copiar"
       },
       "messages": {
-        "tokenCreated": "Token criado exitosamente",
-        "tokenDeleted": "Token excluído exitosamente",
-        "linkCopied": "Enlacy copiado para área dy transferencia",
-        "messageCopied": "Mensajy copiada para área dy transferencia",
-        "enterTokenName": "Escriba um nomy para o token",
-        "defaultMessage": "Junte-sy a mim no Meeshy! Uma plataforma dy mensagens multilínguy ondy usted pody conversar com personas do mundo todo y aprender idiomas sy divertindo. Haga clic nesty link para sy cadastrar:",
-        "shareTitle": "Junte-sy a mim no Meeshy",
-        "modalTitle": "Compartilhar aplicativo",
-        "modalDescription": "Criy um link dy afiliado para convidar seus amigos a sy juntarem ao Meeshy"
+        "tokenCreated": "Token creado con éxito",
+        "tokenDeleted": "Token eliminado con éxito",
+        "linkCopied": "Enlace copiado al portapapeles",
+        "messageCopied": "Mensaje copiado al portapapeles",
+        "enterTokenName": "Por favor ingrese un nombre de token",
+        "defaultMessage": "¡Únete a mí en Meeshy! Una plataforma de mensajería multilingüe donde puedes chatear con personas de todo el mundo y aprender idiomas divirtiéndote. Haz clic en este enlace para registrarte:",
+        "shareTitle": "Únete a mí en Meeshy",
+        "modalTitle": "Compartir la aplicación",
+        "modalDescription": "Cree un enlace de afiliado para invitar a sus amigos a unirse a Meeshy"
       }
     },
     "header": {
-      "shareLinkCopied": "Enlacy dy compartilhamento copiado para área dy transferencia",
-      "clearSession": "Limpiar sesión",
-      "clearSessionConfirm": "Está seguro dy quy deseja limpiar su sesión?",
-      "clearSessionDescription": "Esta acción eliminará todos los dados da su sesión y usted será desconectado.",
-      "share": "Compartilhar",
-      "login": "Login",
-      "register": "Cadastro",
-      "signIn": "Entrar",
-      "signUp": "Cadastrar",
+      "shareLinkCopied": "Enlace para compartir copiado al portapapeles",
+      "clearSession": "Borrar la sesión",
+      "clearSessionConfirm": "¿Está seguro de que desea borrar su sesión?",
+      "clearSessionDescription": "Esta acción eliminará todos sus datos de sesión y cerrará su sesión.",
+      "share": "Compartir",
+      "login": "Inicio de sesión",
+      "register": "Registro",
+      "signIn": "Iniciar sesión",
+      "signUp": "Registrarse",
       "profile": "Perfil",
-      "settings": "Configuracción",
-      "logout": "Sair",
-      "anonymousSession": "Sesión anônima",
+      "settings": "Configuración",
+      "logout": "Cerrar sesión",
+      "anonymousSession": "Sesión anónima",
       "cancel": "Cancelar",
-      "clearSessionButton": "Limpiar sesión",
-      "loginTitle": "Login",
-      "loginDescription": "Faça login em su conta Meeshy",
-      "registerTitle": "Crear conta",
-      "registerDescription": "Junte-sy ao Meeshy y comunique-sy sem barreiras"
+      "clearSessionButton": "Borrar la sesión",
+      "loginTitle": "Inicio de sesión",
+      "loginDescription": "Conéctese a su cuenta Meeshy",
+      "registerTitle": "Crear una cuenta",
+      "registerDescription": "Únase a Meeshy y comuníquese sin barreras"
     },
     "language": {
       "title": "Idiomas",
-      "description": "Preferencias dy traducción",
-      "selectLanguage": "Seleccionar idioma",
-      "interfaceLanguage": "Idioma da interface",
-      "systemLanguage": "Idioma do sistema",
+      "description": "Preferencias de traducción",
+      "selectLanguage": "Seleccionar el idioma",
+      "interfaceLanguage": "Idioma de la interfaz",
+      "systemLanguage": "Idioma del sistema",
       "regionalLanguage": "Idioma regional",
       "customLanguage": "Idioma personalizado",
       "autoTranslate": "Traducción automática",
-      "translateToSystem": "Traduzir para idioma do sistema",
-      "translateToRegional": "Traduzir para idioma regional",
-      "useCustomDestination": "Usar destino personalizado"
+      "translateToSystem": "Traducir al idioma del sistema",
+      "translateToRegional": "Traducir al idioma regional",
+      "useCustomDestination": "Usar un destino personalizado"
     },
     "layout": {
       "header": {
-        "searchPlaceholder": "Buscar conversas, comunidades, contatos...",
+        "searchPlaceholder": "Buscar conversaciones, comunidades, contactos...",
         "notifications": "Notificaciones",
-        "unreadCount": "{count} no lidas",
-        "userMenu": "Menu do usurio"
+        "unreadCount": "{count} no leídas",
+        "userMenu": "Menú de usuario"
       },
       "navigation": {
-        "dashboard": "Painel",
-        "conversations": "Conversas",
+        "dashboard": "Panel de control",
+        "conversations": "Conversaciones",
         "communities": "Comunidades",
         "contacts": "Contactos",
-        "links": "Links",
+        "links": "Enlaces",
         "profile": "Perfil",
-        "settings": "Configuracción",
-        "admin": "Administracción",
-        "logout": "Sair"
+        "settings": "Configuración",
+        "admin": "Administración",
+        "logout": "Cerrar sesión"
       },
       "sidebar": {
-        "conversations": "Conversas",
+        "conversations": "Conversaciones",
         "communities": "Comunidades"
       }
     },
     "toasts": {
       "success": {
         "title": "Éxito",
-        "messageSent": "Mensajy enviada exitosamente",
-        "settingsSaved": "Configuracción salvas exitosamente",
-        "profileUpdated": "Perfil atualizado exitosamente",
-        "linkCreated": "Enlacy criado exitosamente",
-        "linkCopied": "Enlacy copiado para área dy transferencia",
-        "messageCopied": "Mensajy copiada para área dy transferencia",
-        "textCopied": "Texto copiado para área dy transferencia"
+        "messageSent": "Mensaje enviado con éxito",
+        "settingsSaved": "Configuración guardada con éxito",
+        "profileUpdated": "Perfil actualizado con éxito",
+        "linkCreated": "Enlace creado con éxito",
+        "linkCopied": "Enlace copiado al portapapeles",
+        "messageCopied": "Mensaje copiado al portapapeles",
+        "textCopied": "Texto copiado al portapapeles"
       },
       "error": {
         "title": "Error",
-        "generic": "Ocorreu um erro",
-        "network": "Error dy rede",
-        "unauthorized": "Acesso no autorizado",
-        "forbidden": "Acesso proibido",
+        "generic": "Se produjo un error",
+        "network": "Error de red",
+        "unauthorized": "Acceso no autorizado",
+        "forbidden": "Acceso prohibido",
         "notFound": "Recurso no encontrado",
-        "validationError": "Error dy validacción",
-        "messageSendFailed": "Falha ao enviar mensaje",
-        "settingsSaveFailed": "Falha ao guardar configuraciones",
-        "profileUpdateFailed": "Falha ao actualizar perfil"
+        "validationError": "Error de validación",
+        "messageSendFailed": "Error al enviar el mensaje",
+        "settingsSaveFailed": "Error al guardar la configuración",
+        "profileUpdateFailed": "Error al actualizar el perfil"
       },
       "warning": {
-        "title": "Aviso",
-        "sessionExpiring": "Su sesión está prestes a expirar",
-        "unsavedChanges": "Usted tem cambios no salvas"
+        "title": "Advertencia",
+        "sessionExpiring": "Su sesión está a punto de expirar",
+        "unsavedChanges": "Tiene cambios sin guardar"
       },
       "info": {
-        "title": "Informacción",
+        "title": "Información",
         "loading": "Cargando...",
-        "processing": "Processando...",
+        "processing": "Procesando...",
         "connecting": "Conectando...",
         "initializing": "Inicializando..."
       }
     },
     "bubbleStream": {
-      "title": "Fluxo dy mensagens",
-      "loading": "Cargando mensagens...",
-      "noMessages": "Ningúna mensaje",
-      "loadMore": "Carregar más mensagens",
+      "title": "Flujo de mensajes",
+      "loading": "Cargando mensajes...",
+      "noMessages": "No hay mensajes",
+      "loadMore": "Cargar más mensajes",
       "typing": "Escribiendo...",
       "online": "En línea",
-      "offline": "Fuera dy línea",
-      "lastSeen": "Visto pela última vez {time}",
+      "offline": "Fuera de línea",
+      "lastSeen": "Visto por última vez {time}",
       "messageActions": {
-        "copy": "Copiar mensaje",
-        "translate": "Traduzir",
+        "copy": "Copiar el mensaje",
+        "translate": "Traducir",
         "reply": "Responder",
         "edit": "Editar",
         "delete": "Eliminar"
       },
       "translation": {
-        "showOriginal": "Mostrar original",
-        "showTranslation": "Mostrar traducción",
-        "translating": "Traduzindo...",
-        "translationFailed": "Falha na traducción",
-        "improveTranslationQuality": "Melhorar qualidady da traducción"
+        "showOriginal": "Mostrar el original",
+        "showTranslation": "Mostrar la traducción",
+        "translating": "Traduciendo...",
+        "translationFailed": "Error en la traducción",
+        "improveTranslationQuality": "Mejorar la calidad de traducción"
       },
       "notifications": {
         "types": {
-          "message": "Nova mensaje",
-          "mention": "Usted foi mencionado",
-          "reaction": "Alguém reaccionó à su mensaje",
-          "system": "Notificacción do sistema",
-          "update": "Atualizacción disponível",
-          "translation": "Traducción disponível"
+          "message": "Nuevo mensaje",
+          "mention": "Ha sido mencionado",
+          "reaction": "Alguien reaccionó a su mensaje",
+          "system": "Notificación del sistema",
+          "update": "Actualización disponible",
+          "translation": "Traducción disponible"
         },
         "examples": {
           "message": {
-            "title": "Nova mensaje",
-            "message": "Usted tem uma nova mensajy dy {sender}"
+            "title": "Nuevo mensaje",
+            "message": "Tiene un nuevo mensaje de {sender}"
           },
           "mention": {
             "title": "Mención",
-            "message": "Usted foi mencionado em uma conversa"
+            "message": "Ha sido mencionado en una conversación"
           },
           "reaction": {
             "title": "Reacción",
-            "message": "Alguém reaccionó à su mensaje"
+            "message": "Alguien reaccionó a su mensaje"
           },
           "system": {
-            "title": "Atualizacción do sistema",
-            "message": "Uma nova versión está disponível"
+            "title": "Actualización del sistema",
+            "message": "Una nueva versión está disponible"
           },
           "translation": {
-            "title": "Traducción disponível",
-            "message": "🇺🇸 Hello world🇬🇧 Traducción disponível🌍 Mensajy multilíngue"
+            "title": "Traducción disponible",
+            "message": "🇺🇸 Hola mundo\n🇬🇧 Traducción disponible\n🌍 Mensaje multilingüe"
           }
         }
       }

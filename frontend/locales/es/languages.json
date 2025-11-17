@@ -1,18 +1,18 @@
 {
-  "selectLanguage": "Seleccionar idioma",
+  "selectLanguage": "Seleccionar el idioma",
   "close": "Cerrar",
-  "searchLanguage": "Buscar idioma...",
+  "searchLanguage": "Buscar un idioma...",
   "available": "Disponibles",
   "generate": "Generar",
   "original": "Original",
   "modelUsed": "Modelo utilizado",
-  "confidence": "Confiança",
-  "noLanguagesFound": "Ningún idioma encontrado",
-  "clickToTranslate": "Haga clic para traduzir",
-  "allLanguagesTranslated": "Todos los idiomas están traduzidos",
-  "showOriginal": "Mostrar texto original",
+  "confidence": "Confianza",
+  "noLanguagesFound": "No se encontró ningún idioma",
+  "clickToTranslate": "Haga clic para traducir",
+  "allLanguagesTranslated": "Todos los idiomas están traducidos",
+  "showOriginal": "Mostrar el texto original",
   "showInUserLanguage": "Mostrar en su idioma",
-  "translate": "Traduzir",
-  "selectModelToTranslate": "Selecciony um modelo para traduzir",
-  "translateWith": "Traduzir com"
+  "translate": "Traducir",
+  "selectModelToTranslate": "Seleccionar un modelo para traducir",
+  "translateWith": "Traducir con"
 }

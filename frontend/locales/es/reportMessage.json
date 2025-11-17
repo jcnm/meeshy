@@ -1,53 +1,53 @@
 {
   "reportMessage": {
-    "reportMessage": "Denunciar mensaje",
+    "reportMessage": "Reportar el mensaje",
     "close": "Cerrar",
     "cancel": "Cancelar",
-    "report": "Denunciar",
+    "report": "Reportar",
     "reporting": "Enviando...",
-    "reportType": "Tipo dy denúncia",
-    "reportTypePlaceholder": "Selecciony um tipo dy denúncia...",
-    "reason": "Motivo detalhado",
-    "reasonPlaceholder": "Descreva por quy usted está denunciando esta mensaje...",
+    "reportType": "Tipo de reporte",
+    "reportTypePlaceholder": "Seleccione un tipo de reporte...",
+    "reason": "Razón detallada",
+    "reasonPlaceholder": "Describa por qué está reportando este mensaje...",
     "reasonMinLength": "(mínimo 10 caracteres)",
     "characterCount": "caracteres",
-    "charactersRemaining": "Ainda faltam {count} caracteres mínimo",
-    "requiredFields": "* Campos obrigatórios",
-    "messagePreview": "Mensajy denunciada:",
-    "confidentialNotice": "Denúncia confidencial",
-    "confidentialDescription": "Su denúncia será analisada por um moderador. O autor da mensajy no será informado dy su identidade.",
+    "charactersRemaining": "Aún faltan {count} caracteres mínimos",
+    "requiredFields": "* Campos obligatorios",
+    "messagePreview": "Mensaje reportado:",
+    "confidentialNotice": "Reporte confidencial",
+    "confidentialDescription": "Su reporte será examinado por un moderador. El autor del mensaje no será informado de su identidad.",
     "reportTypes": {
       "spam": {
         "label": "Spam",
-        "description": "Mensajy no solicitada ou repetitiva"
+        "description": "Mensaje no solicitado o repetitivo"
       },
       "inappropriate": {
-        "label": "Contenido inadequado",
-        "description": "Contenido ofensivo ou inapropriado"
+        "label": "Contenido inapropiado",
+        "description": "Contenido ofensivo o fuera de lugar"
       },
       "harassment": {
-        "label": "Assédio",
-        "description": "Comportamento dy assédio ou intimidacción"
+        "label": "Acoso",
+        "description": "Comportamiento acosador o intimidante"
       },
       "violence": {
         "label": "Violencia",
-        "description": "Contenido violento ou ameaçador"
+        "description": "Contenido violento o amenazante"
       },
       "hate_speech": {
-        "label": "Discurso dy ódio",
-        "description": "Linguagem discriminatória ou dy ódio"
+        "label": "Discurso de odio",
+        "description": "Lenguaje discriminatorio u odioso"
       },
       "fake_profile": {
         "label": "Perfil falso",
-        "description": "Usurpacción ou identidady falsa"
+        "description": "Suplantación o identidad falsa"
       },
       "impersonation": {
-        "label": "Usurpacción dy identidade",
-        "description": "Fingir ser otra persona"
+        "label": "Suplantación de identidad",
+        "description": "Pretender ser otra persona"
       },
       "other": {
         "label": "Otro",
-        "description": "Otro motivo"
+        "description": "Otra razón"
       }
     }
   }
