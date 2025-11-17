@@ -7,6 +7,14 @@
     "settingsError": "Error loading settings",
     "settingsSaved": "Settings saved successfully",
     "settingsSaveError": "Error saving settings",
+    "errors": {
+      "loadProfile": "Error loading profile",
+      "loadSettings": "Error loading settings",
+      "updateSettings": "Error updating settings"
+    },
+    "success": {
+      "settingsUpdated": "Settings updated successfully"
+    },
     "tabs": {
       "profile": "Profile",
       "translation": "Translation",

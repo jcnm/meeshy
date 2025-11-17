@@ -40,7 +40,7 @@ export default function SettingsPage() {
           if (result.success && result.data && result.data.user) {
             setCurrentUser(result.data.user);
           } else {
-            throw new Error(result.error || 'Erreur lors du chargement du profil');
+            throw new Error(result.error || t('errors.loadProfile'));
           }
         } else if (response.status === 401) {
           authManager.clearAllSessions();
@@ -48,11 +48,11 @@ export default function SettingsPage() {
           return;
         } else {
           const errorData = await response.json();
-          throw new Error(errorData.error || 'Erreur lors du chargement du profil');
+          throw new Error(errorData.error || t('errors.loadProfile'));
         }
       } catch (error) {
         console.error('Erreur lors du chargement des paramètres:', error);
-        toast.error(error instanceof Error ? error.message : 'Erreur lors du chargement des paramètres');
+        toast.error(error instanceof Error ? error.message : t('errors.loadSettings'));
         router.push('/login');
       } finally {
         setIsLoading(false);
@@ -60,7 +60,7 @@ export default function SettingsPage() {
     };
 
     loadUserSettings();
-  }, [router]);
+  }, [router, t]);
 
   const handleUserUpdate = async (updatedUser: Partial<User>) => {
     try {
@@ -101,17 +101,17 @@ export default function SettingsPage() {
         const result = await response.json();
         if (result.success && result.data) {
           setCurrentUser({ ...currentUser, ...result.data });
-          toast.success('Paramètres mis à jour avec succès');
+          toast.success(t('success.settingsUpdated'));
         } else {
-          throw new Error(result.error || 'Erreur lors de la mise à jour');
+          throw new Error(result.error || t('errors.updateSettings'));
         }
       } else {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur lors de la mise à jour');
+        throw new Error(errorData.error || t('errors.updateSettings'));
       }
     } catch (error) {
       console.error('Erreur lors de la mise à jour:', error);
-      toast.error(error instanceof Error ? error.message : 'Erreur lors de la mise à jour');
+      toast.error(error instanceof Error ? error.message : t('errors.updateSettings'));
     }
   };
 

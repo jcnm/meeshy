@@ -7,6 +7,14 @@
     "settingsError": "Erreur lors du chargement des paramètres",
     "settingsSaved": "Paramètres enregistrés avec succès",
     "settingsSaveError": "Erreur lors de l'enregistrement des paramètres",
+    "errors": {
+      "loadProfile": "Erreur lors du chargement du profil",
+      "loadSettings": "Erreur lors du chargement des paramètres",
+      "updateSettings": "Erreur lors de la mise à jour"
+    },
+    "success": {
+      "settingsUpdated": "Paramètres mis à jour avec succès"
+    },
     "tabs": {
       "profile": "Profil",
       "translation": "Traduction",

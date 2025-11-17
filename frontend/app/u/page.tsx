@@ -25,8 +25,10 @@ import { getUserInitials } from '@/utils/user';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { authManager } from '@/services/auth-manager.service';
+import { useI18n } from '@/hooks/useI18n';
 
 function ProfilePageContent() {
+  const { t } = useI18n('profile');
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -49,7 +51,7 @@ function ProfilePageContent() {
       // Vérifier l'authentification
       const authToken = authManager.getAuthToken();
       if (!authToken) {
-        toast.error('Non authentifié');
+        toast.error(t('errors.notAuthenticated'));
         router.push('/login');
         return;
       }
@@ -60,11 +62,11 @@ function ProfilePageContent() {
       setUserOnlineStatus(response.data.isOnline);
     } catch (error) {
       console.error('Error loading profile:', error);
-      toast.error('Erreur lors du chargement du profil');
+      toast.error(t('errors.loadProfileError'));
     } finally {
       setIsLoading(false);
     }
-  }, [router]);
+  }, [router, t]);
 
   // Charger le profil au montage
   useEffect(() => {
@@ -88,20 +90,31 @@ function ProfilePageContent() {
   };
 
   const getLanguageName = (code: string) => {
-    const languages: Record<string, string> = {
-      'fr': 'Français',
-      'en': 'Anglais',
-      'es': 'Espagnol',
-      'de': 'Allemand',
-      'it': 'Italien',
-      'pt': 'Portugais',
+    const languages: Record<string, Record<string, string>> = {
+      'fr': {
+        'fr': 'Français',
+        'en': 'Anglais',
+        'es': 'Espagnol',
+        'de': 'Allemand',
+        'it': 'Italien',
+        'pt': 'Portugais',
+      },
+      'en': {
+        'fr': 'French',
+        'en': 'English',
+        'es': 'Spanish',
+        'de': 'German',
+        'it': 'Italian',
+        'pt': 'Portuguese',
+      }
     };
-    return languages[code] || code;
+    const currentLanguage = user?.systemLanguage || 'fr';
+    return languages[currentLanguage]?.[code] || code;
   };
 
   if (isLoading) {
     return (
-      <DashboardLayout title="Profil">
+      <DashboardLayout title={t('title')}>
         <div className="max-w-4xl mx-auto">
           <div className="animate-pulse">
             <div className="h-48 bg-gray-200 rounded-lg mb-6"></div>
@@ -121,7 +134,7 @@ function ProfilePageContent() {
   }
 
   return (
-    <DashboardLayout title="Profil">
+    <DashboardLayout title={t('title')}>
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header du profil */}
         <Card>
@@ -133,7 +146,7 @@ function ProfilePageContent() {
                   {getUserInitials(user)}
                 </AvatarFallback>
               </Avatar>
-              
+
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-4">
                   <div>
@@ -145,20 +158,20 @@ function ProfilePageContent() {
                       <p className="text-gray-500 mt-1">{user.displayName}</p>
                     )}
                   </div>
-                  
-                  <Button 
+
+                  <Button
                     onClick={() => router.push('/settings')}
                     className="flex items-center space-x-2"
                   >
                     <Edit className="h-4 w-4" />
-                    <span>Modifier</span>
+                    <span>{t('edit')}</span>
                   </Button>
                 </div>
 
                 <div className="flex items-center space-x-1 mb-4">
                   <div className={`w-3 h-3 rounded-full ${userOnlineStatus ? 'bg-green-500' : 'bg-gray-400'}`} />
                   <span className="text-sm text-gray-600">
-                    {userOnlineStatus ? 'En ligne' : 'Hors ligne'}
+                    {userOnlineStatus ? t('online') : t('offline')}
                   </span>
                 </div>
 
@@ -173,38 +186,38 @@ function ProfilePageContent() {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <UserIcon className="h-5 w-5" />
-                <span>Informations personnelles</span>
+                <span>{t('personalInfo')}</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center space-x-3">
                 <Mail className="h-4 w-4 text-gray-400" />
                 <div>
-                  <p className="text-sm font-medium">Email</p>
+                  <p className="text-sm font-medium">{t('email')}</p>
                   <p className="text-gray-600">{user.email}</p>
                 </div>
               </div>
-              
+
               {user.phoneNumber && (
                 <div className="flex items-center space-x-3">
                   <Phone className="h-4 w-4 text-gray-400" />
                   <div>
-                    <p className="text-sm font-medium">Téléphone</p>
+                    <p className="text-sm font-medium">{t('phone')}</p>
                     <p className="text-gray-600">{user.phoneNumber}</p>
                   </div>
                 </div>
               )}
-              
+
               <div className="flex items-center space-x-3">
                 <Calendar className="h-4 w-4 text-gray-400" />
                 <div>
-                  <p className="text-sm font-medium">Membre depuis</p>
+                  <p className="text-sm font-medium">{t('memberSince')}</p>
                   <p className="text-gray-600">
                     {user.createdAt ? formatDate(
-                      typeof user.createdAt === 'string' 
-                        ? user.createdAt 
+                      typeof user.createdAt === 'string'
+                        ? user.createdAt
                         : user.createdAt.toString()
-                    ) : 'Date non disponible'}
+                    ) : t('dateUnavailable')}
                   </p>
                 </div>
               </div>
@@ -216,38 +229,38 @@ function ProfilePageContent() {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Globe className="h-5 w-5" />
-                <span>Langues</span>
+                <span>{t('languages')}</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <p className="text-sm font-medium mb-2">Langue système</p>
+                <p className="text-sm font-medium mb-2">{t('systemLanguage')}</p>
                 <Badge variant="outline">
                   {getLanguageName(user.systemLanguage || 'fr')}
                 </Badge>
               </div>
-              
+
               <div>
-                <p className="text-sm font-medium mb-2">Langue régionale</p>
+                <p className="text-sm font-medium mb-2">{t('regionalLanguage')}</p>
                 <Badge variant="outline">
                   {getLanguageName(user.regionalLanguage || 'fr')}
                 </Badge>
               </div>
-              
+
               {user.customDestinationLanguage && (
                 <div>
-                  <p className="text-sm font-medium mb-2">Langue de destination personnalisée</p>
+                  <p className="text-sm font-medium mb-2">{t('customDestinationLanguage')}</p>
                   <Badge variant="outline">
                     {getLanguageName(user.customDestinationLanguage)}
                   </Badge>
                 </div>
               )}
-              
+
               <div className="pt-2">
                 <div className="flex items-center space-x-2 mb-2">
                   <div className={`w-2 h-2 rounded-full ${user.autoTranslateEnabled ? 'bg-green-500' : 'bg-gray-400'}`} />
                   <span className="text-sm">
-                    Traduction automatique {user.autoTranslateEnabled ? 'activée' : 'désactivée'}
+                    {user.autoTranslateEnabled ? t('autoTranslateEnabled') : t('autoTranslateDisabled')}
                   </span>
                 </div>
               </div>
@@ -260,36 +273,36 @@ function ProfilePageContent() {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Activity className="h-5 w-5" />
-              <span>Actions rapides</span>
+              <span>{t('quickActions')}</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => router.push('/conversations')}
                 className="flex items-center space-x-2"
               >
                 <MessageSquare className="h-4 w-4" />
-                <span>Mes conversations</span>
+                <span>{t('conversations')}</span>
               </Button>
-              
-              <Button 
-                variant="outline" 
+
+              <Button
+                variant="outline"
                 onClick={() => router.push('/groups')}
                 className="flex items-center space-x-2"
               >
                 <Users className="h-4 w-4" />
-                <span>Mes groupes</span>
+                <span>{t('groups')}</span>
               </Button>
-              
-              <Button 
-                variant="outline" 
+
+              <Button
+                variant="outline"
                 onClick={() => router.push('/settings')}
                 className="flex items-center space-x-2"
               >
                 <Edit className="h-4 w-4" />
-                <span>Modifier le profil</span>
+                <span>{t('editProfile')}</span>
               </Button>
             </div>
           </CardContent>
