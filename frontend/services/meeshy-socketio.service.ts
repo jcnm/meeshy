@@ -28,6 +28,7 @@ import { SERVER_EVENTS, CLIENT_EVENTS } from '@shared/types/socketio-events';
 // Import des traductions
 import enTranslations from '@/locales/en';
 import frTranslations from '@/locales/fr';
+import ptTranslations from '@/locales/pt';
 
 // Auth Manager
 import { authManager } from './auth-manager.service';
@@ -54,12 +55,15 @@ class MeeshySocketIOService {
   private t(key: string): string {
     try {
       // Utiliser la clé correcte: meeshy-i18n-language (définie dans i18n-utils.ts)
-      const userLang = typeof window !== 'undefined' 
+      const userLang = typeof window !== 'undefined'
         ? (localStorage.getItem('meeshy-i18n-language') || 'en')
         : 'en';
-      
+
       // Les imports contiennent TOUS les namespaces: { common, auth, websocket, ... }
-      const allTranslations = userLang === 'fr' ? frTranslations : enTranslations;
+      const allTranslations =
+        userLang === 'fr' ? frTranslations :
+        userLang === 'pt' ? ptTranslations :
+        enTranslations;
       
       // La clé est au format "namespace.path.to.value" (ex: "websocket.connected")
       const keys = key.split('.');
