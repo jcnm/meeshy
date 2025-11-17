@@ -68,6 +68,11 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
             const metadataValue = await part.value;
             try {
               const metadata = JSON.parse(metadataValue as string);
+              console.log(`📋 [AttachmentRoutes] Metadata received for file ${index}:`, {
+                hasDuration: !!metadata.duration,
+                duration: metadata.duration,
+                fullMetadata: metadata
+              });
               metadataMap.set(index, metadata);
             } catch (error) {
               console.warn('[AttachmentRoutes] ⚠️ Impossible de parser les métadonnées:', error);

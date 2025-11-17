@@ -418,6 +418,12 @@ export class AttachmentService {
 
     // Si c'est un fichier audio, extraire les métadonnées audio complètes
     if (attachmentType === 'audio') {
+      console.log('🎵 [AttachmentService] Processing audio file:', {
+        hasProvidedMetadata: !!providedMetadata,
+        providedDuration: providedMetadata?.duration,
+        providedMetadata: providedMetadata
+      });
+
       // Utiliser les métadonnées fournies par le frontend si disponibles (Web Audio API)
       // Sinon, extraire avec music-metadata (peut échouer sur WebM mal encodé)
       if (providedMetadata && providedMetadata.duration !== undefined) {
@@ -426,6 +432,13 @@ export class AttachmentService {
         metadata.sampleRate = providedMetadata.sampleRate || 0;
         metadata.codec = providedMetadata.codec || 'unknown';
         metadata.channels = providedMetadata.channels || 1;
+
+        console.log('✅ [AttachmentService] Using provided audio metadata:', {
+          duration: metadata.duration,
+          bitrate: metadata.bitrate,
+          sampleRate: metadata.sampleRate,
+          codec: metadata.codec
+        });
 
         // Si audioEffectsTimeline est fourni, le stocker dans les métadonnées
         if (providedMetadata.audioEffectsTimeline) {
@@ -499,7 +512,9 @@ export class AttachmentService {
     console.log('💾 [AttachmentService] Preparing to save to database:', {
       hasMetadataJson: !!metadataJson,
       metadataJson: metadataJson,
-      hasAudioEffectsTimeline: !!metadata.audioEffectsTimeline
+      hasAudioEffectsTimeline: !!metadata.audioEffectsTimeline,
+      duration: metadata.duration,
+      attachmentType: attachmentType
     });
 
     // Créer l'enregistrement en base de données

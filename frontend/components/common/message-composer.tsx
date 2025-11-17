@@ -357,7 +357,8 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       fileCount: uniqueFiles.length,
       hasMetadata: !!additionalMetadata,
       metadata: additionalMetadata,
-      metadataIsArray: Array.isArray(additionalMetadata)
+      metadataIsArray: Array.isArray(additionalMetadata),
+      metadataDetails: additionalMetadata ? JSON.stringify(additionalMetadata) : 'none'
     });
 
     try {
