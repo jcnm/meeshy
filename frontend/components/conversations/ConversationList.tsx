@@ -411,11 +411,22 @@ const ConversationItem = memo(function ConversationItem({
                       effectDisplay = '🎚️';
                     }
 
+                    // Formater la durée: MM:SS si < 1h, sinon HH:MM:SS
+                    const formatAudioDuration = (seconds: number): string => {
+                      const hours = Math.floor(seconds / 3600);
+                      const mins = Math.floor((seconds % 3600) / 60);
+                      const secs = Math.floor(seconds % 60);
+                      if (hours > 0) {
+                        return `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                      }
+                      return `${mins}:${secs.toString().padStart(2, '0')}`;
+                    };
+
                     return (
                       <>
                         <span className="inline-flex text-purple-500">🎵</span>
                         {attachment.duration && (
-                          <span className="text-xs ml-1">{Math.floor(attachment.duration / 60)}:{Math.floor(attachment.duration % 60).toString().padStart(2, '0')}</span>
+                          <span className="text-xs ml-1">{formatAudioDuration(attachment.duration)}</span>
                         )}
                         {effectDisplay && (
                           <span className="text-xs ml-1">• {effectDisplay}</span>

@@ -677,13 +677,19 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     }
   }, [duration]);
 
-  // Formater le temps avec millisecondes (MM:SS.ms pour le décompteur)
+  // Formater le temps avec millisecondes (MM:SS.ms ou HH:MM:SS.ms selon la durée)
   const formatTime = (seconds: number): string => {
     if (!isFinite(seconds) || isNaN(seconds) || seconds < 0) return '0:00.00';
     const totalMs = Math.floor(seconds * 1000);
-    const mins = Math.floor(totalMs / 60000);
+    const hours = Math.floor(totalMs / 3600000);
+    const mins = Math.floor((totalMs % 3600000) / 60000);
     const secs = Math.floor((totalMs % 60000) / 1000);
     const ms = Math.floor((totalMs % 1000) / 10); // Deux chiffres pour les centièmes
+
+    // Si >= 1h : HH:MM:SS.ms, sinon MM:SS.ms
+    if (hours > 0) {
+      return `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
+    }
     return `${mins}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
   };
 
@@ -1576,8 +1582,14 @@ export const CompactAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
 
   const formatDuration = (seconds: number): string => {
     if (!seconds || !isFinite(seconds)) return '0:00';
-    const mins = Math.floor(seconds / 60);
+    const hours = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
     const secs = Math.floor(seconds % 60);
+
+    // Si >= 1h : HH:MM:SS, sinon MM:SS
+    if (hours > 0) {
+      return `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
