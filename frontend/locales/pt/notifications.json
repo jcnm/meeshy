@@ -1,0 +1,66 @@
+{
+  "notifications": {
+    "pageTitle": "Notificações",
+    "markAllRead": "Marcar todas como lidas",
+    "unread": "Não lidas",
+    "totalNotifications": "notificações no total",
+    "preferences": "Preferências",
+    "quickActions": "Ações rápidas",
+    "service": "Serviço",
+    "systemStatus": "Status do sistema",
+    "search": "Pesquisar nas notificações...",
+    "noResults": "Nenhuma notificação encontrada",
+    "empty": {
+      "title": "Nenhuma notificação",
+      "description": "Você não tem novas notificações no momento"
+    },
+    "types": {
+      "message": "Mensagem",
+      "new_message": "Nova mensagem",
+      "missed_call": "Chamada perdida",
+      "mention": "Menção",
+      "user_mentioned": "Você foi mencionado",
+      "invitation": "Convite",
+      "system": "Sistema",
+      "conversation": "Conversa",
+      "translation": "Tradução"
+    },
+    "unreadCount": {
+      "empty": "Nenhuma notificação não lida",
+      "single": "{count} notificação não lida de {total}",
+      "plural": "{count} notificações não lidas de {total}",
+      "allRead": "{total} notificação{plural} (todas lidas)"
+    },
+    "timeAgo": {
+      "now": "Agora mesmo",
+      "minute": "há {count} minuto",
+      "hour": "há {count} hora",
+      "day": "há {count} dia"
+    },
+    "attachments": {
+      "audio": "Áudio",
+      "video": "Vídeo",
+      "document": "Documento",
+      "image": "Imagem",
+      "code": "Código",
+      "text": "Texto",
+      "duration": "{duration}",
+      "pages": "{count} páginas",
+      "lines": "{count} linhas",
+      "dimensions": "{width}x{height}"
+    },
+    "actions": {
+      "markAsRead": "Marcar como lida",
+      "markAsUnread": "Marcar como não lida",
+      "delete": "Excluir",
+      "viewConversation": "Ver conversa"
+    },
+    "settings": {
+      "title": "Configurações de notificação",
+      "emailNotifications": "Notificações por e-mail",
+      "pushNotifications": "Notificações push",
+      "desktopNotifications": "Notificações de desktop",
+      "soundEnabled": "Som ativado"
+    }
+  }
+}
