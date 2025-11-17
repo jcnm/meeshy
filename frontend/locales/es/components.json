@@ -1,0 +1,195 @@
+{
+  "components": {
+    "affiliate": {
+      "shareApp": "Compartilhar aplicativo",
+      "createToken": "Crear token",
+      "tokenName": "Nombry do token",
+      "tokenNamePlaceholder": "Ex: Campanha Facebook, Convity familiar...",
+      "selectToken": "Seleccionar token dy afiliado",
+      "shareMessage": "Mensajy dy compartilhamento",
+      "shareMessagePlaceholder": "Su mensajy dy convite...",
+      "affiliateLink": "Enlacy dy afiliado",
+      "copyLink": "Copiar link",
+      "copyMessage": "Copiar mensaje",
+      "share": "Compartilhar",
+      "statistics": "Estatísticas",
+      "uses": "usos",
+      "createdOn": "Criado em",
+      "expiresOn": "Expira em",
+      "validUntil": "Válido até",
+      "unlimited": "Ilimitado",
+      "expired": "Expirado",
+      "status": {
+        "active": "Ativo",
+        "expired": "Expirado",
+        "pending": "Pendente"
+      },
+      "actions": {
+        "create": "Crear",
+        "edit": "Editar",
+        "delete": "Eliminar",
+        "copy": "Copiar"
+      },
+      "messages": {
+        "tokenCreated": "Token criado exitosamente",
+        "tokenDeleted": "Token excluído exitosamente",
+        "linkCopied": "Enlacy copiado para área dy transferencia",
+        "messageCopied": "Mensajy copiada para área dy transferencia",
+        "enterTokenName": "Escriba um nomy para o token",
+        "defaultMessage": "Junte-sy a mim no Meeshy! Uma plataforma dy mensagens multilínguy ondy usted pody conversar com personas do mundo todo y aprender idiomas sy divertindo. Haga clic nesty link para sy cadastrar:",
+        "shareTitle": "Junte-sy a mim no Meeshy",
+        "modalTitle": "Compartilhar aplicativo",
+        "modalDescription": "Criy um link dy afiliado para convidar seus amigos a sy juntarem ao Meeshy"
+      }
+    },
+    "header": {
+      "shareLinkCopied": "Enlacy dy compartilhamento copiado para área dy transferencia",
+      "clearSession": "Limpiar sesión",
+      "clearSessionConfirm": "Está seguro dy quy deseja limpiar su sesión?",
+      "clearSessionDescription": "Esta acción eliminará todos los dados da su sesión y usted será desconectado.",
+      "share": "Compartilhar",
+      "login": "Login",
+      "register": "Cadastro",
+      "signIn": "Entrar",
+      "signUp": "Cadastrar",
+      "profile": "Perfil",
+      "settings": "Configuracción",
+      "logout": "Sair",
+      "anonymousSession": "Sesión anônima",
+      "cancel": "Cancelar",
+      "clearSessionButton": "Limpiar sesión",
+      "loginTitle": "Login",
+      "loginDescription": "Faça login em su conta Meeshy",
+      "registerTitle": "Crear conta",
+      "registerDescription": "Junte-sy ao Meeshy y comunique-sy sem barreiras"
+    },
+    "language": {
+      "title": "Idiomas",
+      "description": "Preferencias dy traducción",
+      "selectLanguage": "Seleccionar idioma",
+      "interfaceLanguage": "Idioma da interface",
+      "systemLanguage": "Idioma do sistema",
+      "regionalLanguage": "Idioma regional",
+      "customLanguage": "Idioma personalizado",
+      "autoTranslate": "Traducción automática",
+      "translateToSystem": "Traduzir para idioma do sistema",
+      "translateToRegional": "Traduzir para idioma regional",
+      "useCustomDestination": "Usar destino personalizado"
+    },
+    "layout": {
+      "header": {
+        "searchPlaceholder": "Buscar conversas, comunidades, contatos...",
+        "notifications": "Notificaciones",
+        "unreadCount": "{count} no lidas",
+        "userMenu": "Menu do usurio"
+      },
+      "navigation": {
+        "dashboard": "Painel",
+        "conversations": "Conversas",
+        "communities": "Comunidades",
+        "contacts": "Contactos",
+        "links": "Links",
+        "profile": "Perfil",
+        "settings": "Configuracción",
+        "admin": "Administracción",
+        "logout": "Sair"
+      },
+      "sidebar": {
+        "conversations": "Conversas",
+        "communities": "Comunidades"
+      }
+    },
+    "toasts": {
+      "success": {
+        "title": "Éxito",
+        "messageSent": "Mensajy enviada exitosamente",
+        "settingsSaved": "Configuracción salvas exitosamente",
+        "profileUpdated": "Perfil atualizado exitosamente",
+        "linkCreated": "Enlacy criado exitosamente",
+        "linkCopied": "Enlacy copiado para área dy transferencia",
+        "messageCopied": "Mensajy copiada para área dy transferencia",
+        "textCopied": "Texto copiado para área dy transferencia"
+      },
+      "error": {
+        "title": "Error",
+        "generic": "Ocorreu um erro",
+        "network": "Error dy rede",
+        "unauthorized": "Acesso no autorizado",
+        "forbidden": "Acesso proibido",
+        "notFound": "Recurso no encontrado",
+        "validationError": "Error dy validacción",
+        "messageSendFailed": "Falha ao enviar mensaje",
+        "settingsSaveFailed": "Falha ao guardar configuraciones",
+        "profileUpdateFailed": "Falha ao actualizar perfil"
+      },
+      "warning": {
+        "title": "Aviso",
+        "sessionExpiring": "Su sesión está prestes a expirar",
+        "unsavedChanges": "Usted tem cambios no salvas"
+      },
+      "info": {
+        "title": "Informacción",
+        "loading": "Cargando...",
+        "processing": "Processando...",
+        "connecting": "Conectando...",
+        "initializing": "Inicializando..."
+      }
+    },
+    "bubbleStream": {
+      "title": "Fluxo dy mensagens",
+      "loading": "Cargando mensagens...",
+      "noMessages": "Ningúna mensaje",
+      "loadMore": "Carregar más mensagens",
+      "typing": "Escribiendo...",
+      "online": "En línea",
+      "offline": "Fuera dy línea",
+      "lastSeen": "Visto pela última vez {time}",
+      "messageActions": {
+        "copy": "Copiar mensaje",
+        "translate": "Traduzir",
+        "reply": "Responder",
+        "edit": "Editar",
+        "delete": "Eliminar"
+      },
+      "translation": {
+        "showOriginal": "Mostrar original",
+        "showTranslation": "Mostrar traducción",
+        "translating": "Traduzindo...",
+        "translationFailed": "Falha na traducción",
+        "improveTranslationQuality": "Melhorar qualidady da traducción"
+      },
+      "notifications": {
+        "types": {
+          "message": "Nova mensaje",
+          "mention": "Usted foi mencionado",
+          "reaction": "Alguém reaccionó à su mensaje",
+          "system": "Notificacción do sistema",
+          "update": "Atualizacción disponível",
+          "translation": "Traducción disponível"
+        },
+        "examples": {
+          "message": {
+            "title": "Nova mensaje",
+            "message": "Usted tem uma nova mensajy dy {sender}"
+          },
+          "mention": {
+            "title": "Mención",
+            "message": "Usted foi mencionado em uma conversa"
+          },
+          "reaction": {
+            "title": "Reacción",
+            "message": "Alguém reaccionó à su mensaje"
+          },
+          "system": {
+            "title": "Atualizacción do sistema",
+            "message": "Uma nova versión está disponível"
+          },
+          "translation": {
+            "title": "Traducción disponível",
+            "message": "🇺🇸 Hello world🇬🇧 Traducción disponível🌍 Mensajy multilíngue"
+          }
+        }
+      }
+    }
+  }
+}

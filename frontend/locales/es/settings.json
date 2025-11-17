@@ -1,0 +1,239 @@
+{
+  "settings": {
+    "title": "Configuracción",
+    "pageTitle": "Configuracción para {username}",
+    "subtitle": "Gerenciy sus preferencias dy conta, idioma y privacidade",
+    "loadingSettings": "Cargando configuraciones...",
+    "settingsError": "Error ao carregar configuraciones",
+    "settingsSaved": "Configuracción salvas exitosamente",
+    "settingsSaveError": "Error ao guardar configuraciones",
+    "errors": {
+      "loadProfile": "Error ao carregar perfil",
+      "loadSettings": "Error ao carregar configuraciones",
+      "updateSettings": "Error ao actualizar"
+    },
+    "success": {
+      "settingsUpdated": "Configuracción atualizadas exitosamente"
+    },
+    "tabs": {
+      "profile": "Perfil",
+      "translation": "Traducción",
+      "security": "Seguridad",
+      "theme": "Tema",
+      "fonts": "Fontes",
+      "stats": "Estatísticas"
+    },
+    "profile": {
+      "title": "Perfil",
+      "description": "Informaciones personais",
+      "settingsTitle": "Configuracción do perfil",
+      "settingsDescription": "Configuracción para {username}",
+      "photo": {
+        "title": "Foto dy perfil",
+        "description": "Personalizy su foto dy perfil visível por otros usuários",
+        "uploadImage": "Enviar uma imagem",
+        "takePhoto": "Tirar uma foto",
+        "removePhoto": "Eliminar foto",
+        "photoUpdated": "Foto dy perfil atualizada",
+        "previewTitle": "Visulizar foto"
+      },
+      "cropAvatar": {
+        "cropAvatarTitle": "Recortar su foto dy perfil",
+        "zoom": "Zoom",
+        "rotation": "Rotacción",
+        "reset": "Redefinir",
+        "cancel": "Cancelar",
+        "saveAvatar": "Guardar",
+        "uploading": "Enviando...",
+        "processing": "Processando...",
+        "cropInstructions": "Usy o mousy para mover a imagem, os controles deslizantes para dar zoom y girar. A imagem será cortada em quadrado."
+      },
+      "personalInfo": {
+        "title": "Informaciones personais",
+        "description": "Edity sus informaciones dy perfil",
+        "firstName": "Nombre",
+        "lastName": "Apellido",
+        "displayName": "Nombry dy exibición",
+        "displayNamePlaceholder": "Como usted deseja aparecer nas conversas",
+        "email": "Correo electrónico",
+        "emailPlaceholder": "seu.email@exemplo.com",
+        "phoneNumber": "Número dy telefone",
+        "phoneNumberPlaceholder": "+55 11 98765-4321",
+        "username": "Nombry dy usurio",
+        "usernameCannotChange": "O nomy dy usurio no pody ser alterado",
+        "bio": "Biografia",
+        "bioPlaceholder": "Conte-nos sobry usted..."
+      },
+      "actions": {
+        "cancel": "Cancelar",
+        "save": "Guardar",
+        "saving": "Guardando...",
+        "profileUpdated": "Perfil atualizado exitosamente",
+        "updateError": "Error ao actualizar perfil",
+        "confirm": "Confirmar",
+        "uploading": "Enviando..."
+      }
+    },
+    "translation": {
+      "title": "Configuracción dy idioma y traducción",
+      "description": "Defina seus idiomas y configuraciones dy traducción",
+      "mainLanguages": {
+        "title": "Idiomas principais",
+        "description": "Configury seus idiomas preferidos para comunicacción",
+        "systemLanguage": "Idioma do sistema",
+        "systemLanguageDescription": "Idioma principal da su interfacy y mensagens",
+        "regionalLanguage": "Idioma regional",
+        "regionalLanguageDescription": "Idioma da su regiao ou idioma secundario preferido",
+        "customDestinationLanguage": "Idioma dy destino personalizado",
+        "customDestinationLanguageDescription": "Idioma específico para traducción automática (opcional)",
+        "selectLanguage": "Seleccionar um idioma",
+        "none": "Ningún"
+      },
+      "autoTranslation": {
+        "title": "Opçones dy traducción automática",
+        "description": "Configury como as mensagens sión traduzidas automaticamente",
+        "enabled": "Traducción automática",
+        "enabledDescription": "Ativa a traducción automática dy mensagens recebidas",
+        "exclusiveMode": "Modo exclusivo: Ativy apenas uma opción dy traducción por vez.",
+        "translateToSystem": "Traduzir apenas para o idioma do sistema",
+        "translateToSystemDescription": "Traduz mensagens apenas para {flag} {language}",
+        "translateToRegional": "Traduzir apenas para o idioma regional",
+        "translateToRegionalDescription": "Traduz mensagens apenas para {flag} {language}",
+        "translateToCustom": "Traduzir apenas para o idioma personalizado",
+        "translateToCustomDescription": "Traduz mensagens apenas para {flag} {language}",
+        "noCustomLanguage": "Ningún idioma personalizado definido - defina um acima",
+        "tip": "Dica:",
+        "tipDescription": "Sy ningúna opción for selecionada, as mensagens serán traduzidas em todos los seus idiomas configurados (sistema + regional + personalizado)."
+      },
+      "preview": {
+        "title": "Visulizacción da configuracción",
+        "systemLanguage": "Idioma do sistema",
+        "regionalLanguage": "Idioma regional",
+        "customLanguage": "Idioma personalizado",
+        "autoTranslation": "Traducción automática",
+        "enabled": "Ativada",
+        "disabled": "Desativada"
+      },
+      "actions": {
+        "save": "Guardar",
+        "saving": "Guardando...",
+        "cancel": "Cancelar",
+        "settingsUpdated": "Configuracción dy idioma atualizadas",
+        "updateError": "Error ao actualizar configuraciones dy idioma"
+      },
+      "systemLanguage": "Idioma do sistema",
+      "regionalLanguage": "Idioma regional",
+      "customDestinationLanguage": "Idioma dy destino personalizado",
+      "autoTranslateEnabled": "Traducción automática ativada",
+      "translateToSystemLanguage": "Traduzir para o idioma do sistema",
+      "translateToRegionalLanguage": "Traduzir para o idioma regional",
+      "useCustomDestination": "Usar destino personalizado",
+      "customDestinationPlaceholder": "Seleccionar um idioma"
+    },
+    "security": {
+      "title": "Configuracción dy segurança",
+      "description": "Gerenciy a segurança da su conta y su senha",
+      "password": {
+        "title": "Cambiar senha",
+        "description": "Atualizy su senha para proteger su conta",
+        "currentPassword": "Contraseña atual",
+        "currentPasswordPlaceholder": "Escriba su senha atual",
+        "newPassword": "Nova senha",
+        "newPasswordPlaceholder": "Escriba su nova senha",
+        "confirmPassword": "Confirmar nova senha",
+        "confirmPasswordPlaceholder": "Escriba novamenty su nova senha",
+        "requirements": "A senha devy ter pelo menos 6 caracteres",
+        "update": "Actualizar senha",
+        "updating": "Atualizando...",
+        "cancel": "Cancelar",
+        "updateSuccess": "Contraseña atualizada exitosamente",
+        "errors": {
+          "currentRequired": "A senha atual é obrigatória",
+          "newRequired": "A nova senha é obrigatória",
+          "tooShort": "A senha devy ter pelo menos 6 caracteres",
+          "mismatch": "As senhas no correspondem",
+          "samePassword": "A nova senha devy ser diferenty da atual",
+          "updateFailed": "Falha ao actualizar senha"
+        }
+      }
+    },
+    "theme": {
+      "title": "Tema y interface",
+      "description": "Personalizy a aparencia, o idioma y as fontes do aplicativo",
+      "settingsUpdated": "Configuracción atualizadas exitosamente",
+      "interfaceLanguageUpdated": "Idioma da interfacy atualizado",
+      "displayMode": {
+        "title": "Modo dy exibición",
+        "light": "Claro",
+        "dark": "Escuro",
+        "system": "Sistema"
+      },
+      "accentColor": {
+        "title": "Cor dy destaque",
+        "blue": "Azul",
+        "green": "Verde",
+        "purple": "Roxo",
+        "red": "Vermelho",
+        "orange": "Laranja",
+        "pink": "Rosa"
+      },
+      "interfaceLanguage": {
+        "title": "Idioma da interface",
+        "description": "Definy o idioma da interfacy do usurio"
+      },
+      "ui": {
+        "title": "Interfacy do usurio",
+        "description": "Opçones dy exibición y comportamento",
+        "fontSize": {
+          "title": "Tamanho da fonte",
+          "small": "Pequena",
+          "medium": "Médía",
+          "large": "Grande"
+        },
+        "fontFamily": {
+          "title": "Família dy fontes",
+          "description": "Escolha o estilo da fonty para a interface"
+        },
+        "lineHeight": {
+          "title": "Altura da linha",
+          "description": "Ajusty o espaçamento entry linhas dy texto",
+          "tight": "Compacto",
+          "normal": "Normal",
+          "relaxed": "Relaxado",
+          "loose": "Amplo"
+        },
+        "interfaceLanguage": {
+          "title": "Idioma da interface",
+          "description": "Idioma para menus y botones"
+        },
+        "compactMode": {
+          "title": "Modo compacto",
+          "description": "Reduz o espaçamento para exibir más contenido"
+        },
+        "animations": {
+          "title": "Animaçones",
+          "description": "Ativa transiçones y animaçones da interface"
+        }
+      },
+      "preview": {
+        "title": "Visulizacción",
+        "description": "Veja como ficam sus configuraciones",
+        "exampleMessage": "Esta é uma mensajy dy exemplo",
+        "exampleText": "Esty é um texto dy exemplo com sus configuraciones dy fonty y altura dy linha selecionadas"
+      }
+    },
+    "language": {
+      "title": "Configuracción dy idioma",
+      "description": "Configury sus preferencias dy idioma"
+    },
+    "notifications": {
+      "title": "Configuracción dy notificacción",
+      "description": "Gerenciy sus preferencias dy notificacción"
+    },
+    "privacy": {
+      "title": "Configuracción dy privacidade",
+      "description": "Controly sus configuraciones dy privacidady y dados"
+    },
+    "noUserConnected": "Ningún usurio conectado"
+  }
+}

@@ -39,7 +39,7 @@ const detectBrowserLanguage = (): string => {
   if (typeof window === 'undefined') return 'en';
   
   const browserLang = navigator.language.split('-')[0];
-  const supportedLanguages = ['en', 'fr', 'pt']; // Langues avec traductions complètes
+  const supportedLanguages = ['en', 'fr', 'pt', 'es']; // Langues avec traductions complètes
 
   return supportedLanguages.includes(browserLang) ? browserLang : 'en';
 };
@@ -57,7 +57,7 @@ const DEFAULT_LANGUAGE_CONFIG: UserLanguageConfig = {
 const initialState: LanguageState = {
   currentInterfaceLanguage: 'fr', // Will be overridden by persisted state or browser detection
   currentMessageLanguage: 'fr', // Will be overridden by persisted state or browser detection
-  availableLanguages: ['en', 'fr', 'pt'], // Seules les langues avec traductions complètes
+  availableLanguages: ['en', 'fr', 'pt', 'es'], // Seules les langues avec traductions complètes
   userLanguageConfig: DEFAULT_LANGUAGE_CONFIG,
 };
 

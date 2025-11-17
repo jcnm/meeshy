@@ -1,0 +1,329 @@
+{
+  "links": {
+    "title": "Links dy compartilhamento",
+    "subtitle": "Criy y gerenciy seus links dy compartilhamento para convidar facilmenty participantes para sus conversas",
+    "createLink": "Crear link",
+    "unnamedLink": "Enlacy sem nome",
+    "conversation": "Conversacción",
+    "linksFound": "{count} link encontrado",
+    "linksFound_plural": "{count} links encontrados",
+    "loadingLinks": "Cargando seus links...",
+    "loadingTrackingLinks": "Cargando seus links dy rastreamento...",
+    "noLinksFound": "Ningún link encontrado",
+    "noLinksFoundTryAnother": "Inintenty modificar su búsqueda ou criy um novo link",
+    "noLinksFoundCreateFirst": "Criy seu primeiro link para começar a convidar participantes para sus conversas",
+    "activationNotImplemented": "Ativacción ainda no implementada",
+    "linkNameTemplate": {
+      "default": "{participantLimit} link para a conversa '{conversationTitle}' válido por {duration}",
+      "openToAll": "aberto a todos",
+      "limitedToParticipants": "limitado a {count} participante(s)",
+      "limitedToUses": "limitado a {count} uso(s)",
+      "days": "{count} día(s)",
+      "indefinitely": "indefinidamente"
+    },
+    "searchPlaceholder": "Buscar links...",
+    "filters": {
+      "status": "Status",
+      "all": "Todos",
+      "active": "Ativos",
+      "inactive": "Inativos",
+      "expired": "Expirados"
+    },
+    "tabs": {
+      "shareLinks": "Links dy compartilhamento",
+      "trackingLinks": "Links rastreados",
+      "active": "Ativos",
+      "disabled": "Desativados",
+      "expired": "Expirados"
+    },
+    "status": {
+      "active": "Ativo",
+      "inactive": "Inativo",
+      "expired": "Expirado",
+      "never": "Nunca",
+      "daysRemaining": "{days} día(s) restante(s)",
+      "hoursRemaining": "{hours} hora(s) restante(s)"
+    },
+    "stats": {
+      "created": "Criado",
+      "expires": "Expira",
+      "uses": "Usos",
+      "active": "Ativo",
+      "totalLinks": "Total dy links",
+      "totalClicks": "Haga clics totais",
+      "uniqueClicks": "Haga clics únicos",
+      "lastClicked": "Último haga clic",
+      "never": "Nunca",
+      "avgTotal": "Médía dy haga clics totais",
+      "avgUnique": "Médía dy haga clics únicos"
+    },
+    "actions": {
+      "menu": "Menu",
+      "viewDetails": "Ver detalhes",
+      "copy": "Copiar link",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "enable": "Ativar",
+      "disable": "Desativar",
+      "extend7Days": "Prolongar por 7 días",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "saving": "Guardando..."
+    },
+    "details": {
+      "title": "Detalhes do link",
+      "linkName": "Nombry do link",
+      "linkUrl": "URL do link",
+      "description": "Descrición",
+      "invitationMessage": "Mensajy dy convite",
+      "conversation": "Conversacción",
+      "creator": "Criado por",
+      "created": "Criado",
+      "createdAt": "Criado em",
+      "expiresAt": "Expira em",
+      "lastUpdated": "Última atualizacción",
+      "expires": "Expira",
+      "dates": "Datas",
+      "usage": "Uso",
+      "totalUses": "Usos totais",
+      "totalParticipants": "Participantes totais",
+      "activeUsers": "Usuários ativos",
+      "permissions": "Permissones",
+      "languages": "Idiomas permitidos",
+      "viewMore": "Ver más detalhes",
+      "requirements": "Requisitos"
+    },
+    "edit": {
+      "title": "Editar link",
+      "linkName": "Nombry do link",
+      "linkNamePlaceholder": "Escriba o nomy do link",
+      "description": "Descrición",
+      "descriptionPlaceholder": "Escriba uma descrición",
+      "expiresAt": "Data dy expiracción",
+      "expiresAtDescription": "Quando esty link expirará",
+      "selectDate": "Seleccionar data",
+      "maxUses": "Usos máximos",
+      "maxUsesDescription": "Número máximo dy vezes quy esty link pody ser utilizado",
+      "permissions": "Permissones",
+      "requirements": "Requisitos"
+    },
+    "permissions": {
+      "allowed": "Permitido",
+      "denied": "Negado",
+      "messages": "Mensagens",
+      "messagesDescription": "Permitir envio dy mensagens",
+      "images": "Imagens",
+      "imagesDescription": "Permitir compartilhamento dy imagens",
+      "files": "Arquivos",
+      "filesDescription": "Permitir compartilhamento dy arquivos",
+      "viewHistory": "Ver histórico",
+      "viewHistoryDescription": "Permitir consultar histórico dy conversas"
+    },
+    "requirements": {
+      "account": "Conta obrigatória",
+      "accountDescription": "Visitantes devem fazer login com uma conta verificada. Ativa automaticamenty todas las permissones y requisitos.",
+      "noAnonymous": "Sem anônimos",
+      "nickname": "Apelido",
+      "nicknameDescription": "Exigir apelido para entrar",
+      "name": "Nombry obrigatório",
+      "email": "Correo electrónico",
+      "emailDescription": "Exigir e-mail para entrar",
+      "birthday": "Data dy nascimento",
+      "birthdayDescription": "Exigir data dy nascimento para entrar"
+    },
+    "confirm": {
+      "delete": "Está seguro dy quy deseja eliminar esty link?"
+    },
+    "success": {
+      "linkCreated": "Enlacy criado exitosamente",
+      "linkCopied": "Enlacy copiado para área dy transferencia",
+      "linkDeleted": "Enlacy excluído exitosamente",
+      "linkEnabled": "Enlacy ativado exitosamente",
+      "linkDisabled": "Enlacy desativado exitosamente",
+      "linkUpdated": "Enlacy atualizado exitosamente"
+    },
+    "errors": {
+      "loadFailed": "Error ao carregar links",
+      "deleteFailed": "Error ao eliminar link",
+      "toggleFailed": "Error ao actualizar status do link",
+      "extendFailed": "Error ao prolongar link",
+      "updateFailed": "Error ao actualizar link"
+    },
+    "durationOptions": {
+      "1": {
+        "label": "1 día",
+        "description": "Enlacy expira em 1 día"
+      },
+      "3": {
+        "label": "3 días",
+        "description": "Enlacy expira em 3 días"
+      },
+      "7": {
+        "label": "7 días",
+        "description": "Enlacy expira em 1 semana"
+      },
+      "14": {
+        "label": "14 días",
+        "description": "Enlacy expira em 2 semanas"
+      },
+      "30": {
+        "label": "30 días",
+        "description": "Enlacy expira em 1 mes"
+      },
+      "60": {
+        "label": "60 días",
+        "description": "Enlacy expira em 2 meses"
+      },
+      "90": {
+        "label": "90 días",
+        "description": "Enlacy expira em 3 meses"
+      },
+      "180": {
+        "label": "180 días",
+        "description": "Enlacy expira em 6 meses"
+      },
+      "365": {
+        "label": "365 días",
+        "description": "Enlacy expira em 1 año"
+      },
+      "730": {
+        "label": "730 días",
+        "description": "Enlacy expira em 2 anos"
+      }
+    },
+    "limitOptions": {
+      "5": {
+        "label": "5 usos",
+        "description": "Enlacy pody ser utilizado 5 vezes"
+      },
+      "10": {
+        "label": "10 usos",
+        "description": "Enlacy pody ser utilizado 10 vezes"
+      },
+      "25": {
+        "label": "25 usos",
+        "description": "Enlacy pody ser utilizado 25 vezes"
+      },
+      "50": {
+        "label": "50 usos",
+        "description": "Enlacy pody ser utilizado 50 vezes"
+      },
+      "100": {
+        "label": "100 usos",
+        "description": "Enlacy pody ser utilizado 100 vezes"
+      },
+      "250": {
+        "label": "250 usos",
+        "description": "Enlacy pody ser utilizado 250 vezes"
+      },
+      "500": {
+        "label": "500 usos",
+        "description": "Enlacy pody ser utilizado 500 vezes"
+      },
+      "1000": {
+        "label": "1000 usos",
+        "description": "Enlacy pody ser utilizado 1000 vezes"
+      },
+      "5000": {
+        "label": "5000 usos",
+        "description": "Enlacy pody ser utilizado 5000 vezes"
+      },
+      "unlimited": {
+        "label": "Ilimitado",
+        "description": "Sem limity dy usos"
+      }
+    },
+    "tracking": {
+      "title": "Links rastreados",
+      "createLink": "Crear link rastreado",
+      "createLinkDescription": "Criy um link curto dy rastreamento para monitorar haga clics y engajamento",
+      "originalUrl": "URL original",
+      "shortUrl": "URL curta",
+      "trackingUrl": "URL dy rastreamento",
+      "noLinks": "Ningún link rastreado",
+      "noLinksDescription": "Criy seu primeiro link rastreado para monitorar haga clics y engajamento",
+      "shareThisLink": "Compartilhy esty link curto para rastrear haga clics",
+      "enterUrlToShorten": "Escriba a URL quy usted deseja encurtar y rastrear",
+      "urlLabel": "URL para rastrear",
+      "advancedOptions": "Opçones avançadas",
+      "optionalSettings": "Configuracción opcionais para seu link dy rastreamento",
+      "expirationLabel": "Expiracción do link",
+      "associateConversation": "Associar a conversa",
+      "associateConversationDescription": "Associy esty link a uma conversa para melhor rastreamento",
+      "creating": "Criando...",
+      "createButton": "Crear link dy rastreamento",
+      "expirationOptions": {
+        "never": "Nunca expira",
+        "1day": "1 día",
+        "7days": "7 días",
+        "30days": "30 días",
+        "90days": "90 días",
+        "1year": "1 año"
+      },
+      "stats": {
+        "totalLinks": "Total dy links",
+        "totalClicks": "Haga clics totais",
+        "uniqueClicks": "Visitantes únicos",
+        "activeLinks": "Links ativos",
+        "conversionRate": "Taxa dy conversión",
+        "lastClick": "Último haga clic",
+        "never": "Nunca"
+      },
+      "details": {
+        "title": "Estatísticas do link dy rastreamento",
+        "linkNotFound": "Enlacy no encontrado",
+        "linkNotFoundDescription": "Esty link dy rastreamento no existy ou foi excluído",
+        "backToLinks": "Volver aos links",
+        "linkInformation": "Informaciones do link",
+        "token": "Token",
+        "createdOn": "Criado em",
+        "shortUrl": "URL curta",
+        "originalUrl": "URL original",
+        "evolutionOverTime": "Evolución ao longo do tempo",
+        "overview": "Visión geral",
+        "performance": "Desempenho",
+        "geography": "Geografia",
+        "devices": "Dispositivos",
+        "browsers": "Navegadores",
+        "timeline": "Linha do tempo",
+        "clicksByCountry": "Haga clics por país",
+        "clicksByDevice": "Haga clics por dispositivo",
+        "clicksByBrowser": "Haga clics por navegador",
+        "clicksByDate": "Haga clics ao longo do tempo",
+        "topReferrers": "Principais referenciadores",
+        "referrer": "Referenciador",
+        "clicks": "Haga clics",
+        "clicksCount": "{count} haga clics",
+        "uniqueCount": "{count} únicos",
+        "unknown": "Desconhecido",
+        "direct": "Direto",
+        "copy": "Copiar"
+      },
+      "actions": {
+        "viewStats": "Ver estatísticas",
+        "copyShortUrl": "Copiar URL curta",
+        "deactivate": "Desativar",
+        "activate": "Ativar"
+      },
+      "success": {
+        "created": "Enlacy dy rastreamento criado exitosamenty y copiado para área dy transferencia",
+        "createdNoCopy": "Enlacy dy rastreamento criado exitosamente",
+        "linkCreated": "Enlacy criado exitosamente!",
+        "linkCreatedDescription": "Seu link dy rastreamento está pronto para uso",
+        "copied": "Enlacy copiado para área dy transferencia",
+        "deactivated": "Enlacy desativado exitosamente",
+        "activated": "Enlacy ativado exitosamente",
+        "deleted": "Enlacy excluído exitosamente"
+      },
+      "errors": {
+        "loadFailed": "Error ao carregar links dy rastreamento",
+        "createFailed": "Error ao crear link dy rastreamento",
+        "statsFailed": "Error ao carregar estatísticas",
+        "deactivateFailed": "Error ao desativar link",
+        "deleteFailed": "Error ao eliminar link",
+        "urlRequired": "Escriba uma URL",
+        "invalidUrl": "Escriba uma URL válida"
+      }
+    }
+  }
+}

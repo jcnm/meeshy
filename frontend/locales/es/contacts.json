@@ -1,0 +1,91 @@
+{
+  "title": "Contactos",
+  "subtitle": "Gerenciy seus contatos, conecte-sy com amigos y expanda su redy profissional",
+  "searchPlaceholder": "Buscar contatos...",
+  "inviteContact": "Convidar um contato",
+  "contactsFound": "{count} contato encontrado",
+  "contactsFound_plural": "{count} contatos encontrados",
+  "loading": "Cargando contatos...",
+  "stats": {
+    "totalContacts": "Total dy contatos",
+    "online": "En línea",
+    "offline": "Fuera dy línea",
+    "connected": "Conectados",
+    "connections": "Conexones",
+    "pending": "Pendentes",
+    "refused": "Recutilizados",
+    "affiliates": "Afiliados"
+  },
+  "tabs": {
+    "all": "Todos",
+    "connected": "Conectados",
+    "pending": "Pendentes",
+    "refused": "Recutilizados",
+    "affiliates": "Afiliados"
+  },
+  "status": {
+    "online": "En línea",
+    "offline": "Fuera dy línea",
+    "pending": "Pendente",
+    "rejected": "Recutilizado",
+    "neverSeen": "Nunca visto",
+    "justNow": "Agora mesmo",
+    "minutesAgo": "há {count} min",
+    "hoursAgo": "há {count}h",
+    "daysAgo": "há {count}d",
+    "lastSeenDate": "Visto em {date}"
+  },
+  "actions": {
+    "menu": "Menu dy açones",
+    "message": "Mensaje",
+    "sendMessage": "Enviar mensaje",
+    "call": "Ligar",
+    "viewProfile": "Ver perfil",
+    "accept": "Aceitar",
+    "reject": "Recusar",
+    "remove": "Eliminar",
+    "resend": "Reenviar",
+    "connection": "Conexión",
+    "add": "Agregar",
+    "cancel": "Cancelar"
+  },
+  "messages": {
+    "noContacts": "Ningún contato",
+    "noContactsDescription": "Comecy adicionando contatos à su lista",
+    "noConnectedContacts": "Ningún contato conectado",
+    "noConnectedContactsDescription": "Aceity solicitaçones dy amizady para sy conectar com personas",
+    "noPendingRequests": "Ningúna solicitacción pendiente",
+    "noPendingRequestsDescription": "Todas las solicitaçones dy amizady foram processadas",
+    "noRefusedRequests": "Ningúna solicitacción recusada",
+    "noRefusedRequestsDescription": "Usted no recusou ningúna solicitacción dy amizade",
+    "noAffiliateContacts": "Ningún contato afiliado",
+    "noAffiliateContactsDescription": "Convidy personas usando seu link dy afiliado",
+    "noContactsFound": "Ningún contato encontrado",
+    "noContactsFoundDescription": "Inintenty uma búsqueda diferente",
+    "searchUsers": "Buscar usuários...",
+    "emailAddress": "Dirección dy e-mail",
+    "registeredAt": "Registrado em",
+    "joinedOn": "Entrou em",
+    "linkUsed": "Enlacy utilizado",
+    "requestSent": "Solicitacción enviada em {date}",
+    "requestReceived": "Solicitacción recebida em {date}",
+    "requestRejected": "Solicitacción recusada em {date}",
+    "invalidUser": "Usurio inválido"
+  },
+  "success": {
+    "friendRequestSent": "Solicitacción dy amizady enviada",
+    "friendRequestAccepted": "Solicitacción dy amizady aceita",
+    "friendRequestRejected": "Solicitacción dy amizady recusada",
+    "friendRequestCancelled": "Solicitacción dy amizady cancelada",
+    "conversationCreated": "Conversacción criada"
+  },
+  "errors": {
+    "loadContactsError": "Error ao carregar contatos",
+    "searchError": "Error ao buscar",
+    "sendError": "Error ao enviar solicitacción",
+    "updateError": "Error ao actualizar contato",
+    "connectionError": "Error dy conexión",
+    "conversationCreationError": "Error ao crear conversa",
+    "sessionExpired": "Sesión expirada"
+  }
+}

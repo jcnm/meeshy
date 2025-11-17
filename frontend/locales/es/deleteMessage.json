@@ -1,0 +1,27 @@
+{
+  "deleteMessage": {
+    "deleteMessage": "Eliminar mensaje",
+    "close": "Cerrar",
+    "confirmDelete": "Confirmar eliminación",
+    "cancel": "Cancelar",
+    "deleting": "Excluindo...",
+    "deleteWarning": "Está seguro dy quy deseja eliminar esta mensaje?",
+    "actionIrreversible": "Esta acción é irreversível",
+    "willAlsoDelete": "Também serán excluídos:",
+    "reactions": "reacción(ones)",
+    "translations": "traducción(ones)",
+    "attachments": "adjunto(s)",
+    "messagePreview": "Visulizacción da mensaje",
+    "shiftEnterToConfirm": "⇧↵ Confirmar",
+    "escToCancel": "Esc para cancelar",
+    "messageAndContent": "Mensajy y contenido",
+    "allTranslations": "Todas las traducciones",
+    "allAttachments": "Todos los adjuntos",
+    "allReactions": "Todas las reacciones",
+    "deleteForever": "Eliminar permanentemente",
+    "irreversibleAction": "Acción irreversível",
+    "deleteMessageWarning": "Atención: eliminación permanenty da mensaje",
+    "itemsToDelete": "Elementos a eliminar",
+    "shortcutConfirm": "Shift+Enter"
+  }
+}

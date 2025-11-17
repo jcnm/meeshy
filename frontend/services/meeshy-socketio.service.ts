@@ -29,6 +29,7 @@ import { SERVER_EVENTS, CLIENT_EVENTS } from '@shared/types/socketio-events';
 import enTranslations from '@/locales/en';
 import frTranslations from '@/locales/fr';
 import ptTranslations from '@/locales/pt';
+import esTranslations from '@/locales/es';
 
 // Auth Manager
 import { authManager } from './auth-manager.service';
@@ -63,6 +64,7 @@ class MeeshySocketIOService {
       const allTranslations =
         userLang === 'fr' ? frTranslations :
         userLang === 'pt' ? ptTranslations :
+        userLang === 'es' ? esTranslations :
         enTranslations;
       
       // La clé est au format "namespace.path.to.value" (ex: "websocket.connected")

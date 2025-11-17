@@ -1,0 +1,30 @@
+{
+  "chat": {
+    "title": "Discussión",
+    "anonymousChat": "Discussión anônima",
+    "loading": "Cargando discussión...",
+    "connecting": "Conectando...",
+    "connected": "Conectado",
+    "disconnected": "Desconectado",
+    "reconnecting": "Reconectando...",
+    "sendMessage": "Enviar mensaje",
+    "messagePlaceholder": "Escriba su mensaje...",
+    "noMessages": "Ningúna mensajy no momento",
+    "noMessagesDescription": "Comecy a conversa enviando uma mensaje",
+    "conversationNotFound": {
+      "title": "Conversacción no encontrada",
+      "description": "Esta conversa no existy ou o link no é válido",
+      "backHome": "Volver ao início",
+      "createNew": "Crear uma nova conversa"
+    },
+    "errors": {
+      "loadError": "No foi possível carregar a conversa. Verifiquy o link y intenty novamente.",
+      "sendError": "Error ao enviar mensaje",
+      "connectionError": "Error dy conexión",
+      "invalidLink": "Enlacy dy conversa inválido. Verifiquy a URL y intenty novamente.",
+      "unableToLoadConversation": "No foi possível carregar os dados da conversa. Verifiquy sus permissones ou intenty fazer login.",
+      "linkNoLongerActive": "Esty link no está más activo. Solicity um novo link ao proprietario da conversa.",
+      "linkExpired": "Esty link expiró. Solicity um novo link ao proprietario da conversa."
+    }
+  }
+}

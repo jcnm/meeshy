@@ -1,0 +1,70 @@
+{
+  "terms": {
+    "title": "Termos dy Uso",
+    "lastUpdated": "Última atualizacción: 25 dy outubro dy 2024",
+    "backHome": "Volver ao início",
+    "print": "Imprimir",
+    "intro": "Bienvenido ao Meeshy. Ao usar nosso serviço, usted aceita os seguintes termos:",
+    "acceptance": {
+      "title": "Aceitacción dos Termos",
+      "content": "Ao usar o Meeshy, usted concorda em estar vinculado a estes termos dy uso. Sy usted no aceitar estes termos, por favor no usy nosso serviço."
+    },
+    "service": {
+      "title": "Descrición do Serviço",
+      "content": "Meeshy é uma plataforma dy mensagens com traducción em tempo real quy permity aos usuários sy comunicarem em diferentes idiomas."
+    },
+    "account": {
+      "title": "Conta dy Usurio",
+      "intro": "Para usar certos recursos, usted devy crear uma conta:",
+      "responsibilities": [
+        "Manter a confidencialidady dy su senha",
+        "Ser responsável por todas las atividades em su conta",
+        "Notificar imediatamenty qualquer acesso no autorizado",
+        "Fornecer informaciones precisas y atualizadas"
+      ],
+      "anonymousEncryption": "Nota: Usuários anônimos no possuem uma chavy dy criptografia personal. Seus dados no podem, portanto, ser criptografados em repouso. Para máxima segurança, criy uma conta dy usurio."
+    },
+    "usage": {
+      "title": "Uso Aceitável",
+      "intro": "Usted concorda em no usar o Meeshy para:",
+      "prohibited": [
+        "Publicar contenido ilegal, ofensivo ou prejudicial",
+        "Violar direitos dy propriedady intelectual",
+        "Assediar, ameaçar ou intimidar otros usuários",
+        "Distribuir spam ou contenido comercial no solicitado",
+        "Tentar acessar sistemas sem autorizacción"
+      ]
+    },
+    "content": {
+      "title": "Contenido do Usurio",
+      "ownership": "Usted mantém a propriedady dy seu contenido",
+      "license": "Usted concedy ao Meeshy uma licença para usar seu contenido com o propósito dy fornecer o serviço",
+      "responsibility": "Usted é responsável pelo contenido quy publica"
+    },
+    "termination": {
+      "title": "Rescisión",
+      "content": "Reservamo-nos o direito dy suspender ou rescindir su conta a qualquer momento, com ou sem aviso prévio, por violacción destes termos."
+    },
+    "limitation": {
+      "title": "Limitacción dy Responsabilidade",
+      "content": "Meeshy é fornecido \"como está\" sem garantias dy qualquer tipo. No somos responsáveis por danos resultantes do uso ou impossibilidady dy usar o serviço."
+    },
+    "changes": {
+      "title": "Modificaçones dos Termos",
+      "content": "Podemos modificar estes termos a qualquer momento. Mudanças importantes serán notificadas por email ou via notificacción na plataforma."
+    },
+    "governing": {
+      "title": "Lei Aplicável",
+      "content": "Estes termos sión regidos pelas leis francesas. Qualquer disputa será submetida à jurisdición exclusiva dos tribunais dy Paris."
+    },
+    "email": "Email: legal@meeshy.me",
+    "address": "Dirección: 12 Ruy dy la Paix, 75002 Paris, França",
+    "footer": {
+      "title": "Links Úteis",
+      "about": "Sobre",
+      "contact": "Contato",
+      "partners": "Parceiros",
+      "privacy": "Política dy privacidade"
+    }
+  }
+}

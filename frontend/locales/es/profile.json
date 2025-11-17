@@ -1,0 +1,45 @@
+{
+  "profile": {
+    "title": "Perfil",
+    "userProfile": "Perfil do usurio",
+    "userStats": "Estatísticas",
+    "messagesSent": "Mensagens enviadas",
+    "messagesReceived": "Mensagens recebidas",
+    "conversations": "Minhas conversas",
+    "groups": "Meus grupos",
+    "memberSince": "Membro desde",
+    "sendMessage": "Enviar mensaje",
+    "addFriend": "Agregar",
+    "userNotFound": "Usurio no encontrado",
+    "userNotFoundDescription": "Esty usurio no existy ou no está más disponível",
+    "loading": "Cargando perfil...",
+    "online": "En línea",
+    "offline": "Fuera dy línea",
+    "edit": "Editar",
+    "editProfile": "Editar perfil",
+    "personalInfo": "Informaciones personais",
+    "languages": "Idiomas",
+    "quickActions": "Açones rápidas",
+    "systemLanguage": "Idioma do sistema",
+    "regionalLanguage": "Idioma regional",
+    "customDestinationLanguage": "Idioma dy destino personalizado",
+    "autoTranslateEnabled": "Traducción automática ativada",
+    "autoTranslateDisabled": "Traducción automática desativada",
+    "dateUnavailable": "Data no disponível",
+    "phone": "Teléfono",
+    "email": "Correo electrónico",
+    "errors": {
+      "cannotMessageYourself": "Usted no pody crear uma conversa com usted mesmo",
+      "invalidUser": "No foi possível crear a conversa: usurio inválido",
+      "conversationCreationFailed": "No foi possível crear a conversa",
+      "sessionExpired": "Sesión expirada",
+      "sendFriendRequestFailed": "Error ao enviar solicitacción",
+      "notAuthenticated": "No autenticado",
+      "loadProfileError": "Error ao carregar perfil"
+    },
+    "success": {
+      "conversationCreated": "Conversacción criada",
+      "friendRequestSent": "Solicitacción dy amizady enviada"
+    }
+  }
+}

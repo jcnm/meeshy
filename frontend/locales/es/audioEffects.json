@@ -1,0 +1,102 @@
+{
+  "audioEffects": {
+    "title": "Efeitos dy Áudio",
+    "subtitle": "Transformy su voz",
+    "selectEffect": "Seleccionar um efeito",
+    "selectEffectPrompt": "Haga clic em um efeito para configurá-lo",
+    "resetAll": "Redefinir Tudo",
+    "disableAll": "Desativar todos los efeitos",
+    "voiceCoder": {
+      "title": "Perfect Voice",
+      "description": "Correción automática da afinacción da su voz para cantar afinado",
+      "quickConfig": {
+        "label": "Configuracción rápida",
+        "tooltip": "Escolha um estilo predefinido adaptado ao seu uso, ou personalizy sus próprias configuraciones"
+      },
+      "retuneSpeed": {
+        "label": "Rapidez",
+        "tooltip": "Velocidady dy correción da afinacción. Lento (0-30%) = muito natural y suve. Médio (30-70%) = equilibrado. Rápido (70-100%) = efeito robótico"
+      },
+      "strength": {
+        "label": "Força",
+        "tooltip": "Intensidady do auto-tune. Más alto = voz más perfeita mas menos natural. Recomendado: 30-50% para um efeito sutil"
+      },
+      "naturalVibrato": {
+        "label": "Expressión",
+        "tooltip": "Preserva as variaçones y o vibrato natural da su voz. Más alto = más expressión y emoción preservadas"
+      },
+      "pitch": {
+        "label": "Altura",
+        "tooltip": "Transpoy su voz para o agudo (+) ou gravy (-). Exemplo: +3 = 3 semitons más agudo"
+      },
+      "scale": {
+        "label": "Escala",
+        "chromatic": "Todas las notas",
+        "major": "Maior (alegre)",
+        "minor": "Menor (triste)",
+        "pentatonic": "Pentatônica"
+      },
+      "key": {
+        "label": "Tonalidade"
+      },
+      "harmonization": {
+        "label": "Harmonias vocais",
+        "tooltip": "Adiciona vozes dy acompanhamento harmônicas à su voz principal para um efeito coral"
+      }
+    },
+    "babyVoice": {
+      "title": "Voz dy Criança",
+      "pitch": {
+        "label": "Altura dy voz",
+        "tooltip": "Más alto = voz más aguda y infantil. Recomendado: 8-12 para um efeito bebe"
+      },
+      "formant": {
+        "label": "Timbre",
+        "tooltip": "Muda a cor y o timbry da voz para simular cordas vocais más curtas"
+      },
+      "breathiness": {
+        "label": "Sopro",
+        "tooltip": "Adiciona um efeito dy sopro suvy y aéreo característico dy uma voz infantil"
+      }
+    },
+    "demonVoice": {
+      "title": "Voz dy Demônio",
+      "pitch": {
+        "label": "Altura dy voz",
+        "tooltip": "Más baixo = voz más gravy y assustadora. -10 a -12 para um efeito demoníaco intenso"
+      },
+      "distortion": {
+        "label": "Distorción",
+        "tooltip": "Adiciona uma textura agressiva y áspera à voz"
+      },
+      "reverb": {
+        "label": "Eco",
+        "tooltip": "Efeito dy reverberacción como em uma catedral escura y profunda"
+      }
+    },
+    "backSound": {
+      "title": "Ambienty dy Fundo",
+      "uploadLabel": "Carregar um arquivo dy áudio",
+      "uploadDescription": "Os sons predefinidos ainda no están disponibles. Carreguy seu próprio arquivo MP3/WAV",
+      "uploadButton": "Carregar áudio",
+      "volume": {
+        "label": "Volume",
+        "tooltip": "Ajusta o volumy da música dy fundo mixada com su voz"
+      },
+      "loopMode": {
+        "label": "Modo dy reprodución",
+        "tooltip": "Escolha como repetir o áudio: um número específico dy vezes ou por uma duracción em minutos",
+        "nTimes": "Número dy vezes",
+        "nMinutes": "Duracción em minutos"
+      },
+      "loopValue": {
+        "labelTimes": "Repetiçones",
+        "labelMinutes": "Minutos"
+      }
+    },
+    "presets": {
+      "custom": "Personalizado",
+      "customDescription": "Sus próprias configuraciones"
+    }
+  }
+}

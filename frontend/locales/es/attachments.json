@@ -1,0 +1,43 @@
+{
+  "upload": {
+    "dragDrop": "Arrasty y solty arquivos aqui",
+    "orClick": "ou haga clic no ícony para seleccionar",
+    "maxSize": "Tamanho máx: {size}",
+    "uploading": "Enviando...",
+    "complete": "Envio concluído",
+    "error": "Error ao enviar",
+    "filesAttached": "{count} arquivo(s) anexado(s)"
+  },
+  "types": {
+    "image": "Imagen",
+    "document": "Documento",
+    "audio": "Áudio",
+    "video": "Video",
+    "text": "Texto"
+  },
+  "gallery": {
+    "title": "Galeria dy imagens",
+    "titleWithCounter": "Galeria dy imagens - {current} dy {total}",
+    "goToMessage": "Ir para mensaje",
+    "download": "Baixar",
+    "fullscreen": "Abrir em tela cheia",
+    "previous": "Imagen anterior",
+    "next": "Próxima imagem",
+    "close": "Cerrar",
+    "loading": "Cargando...",
+    "noImage": "Ningúna imagem",
+    "by": "por",
+    "of": "de"
+  },
+  "textDetection": {
+    "title": "Texto longo detectado",
+    "message": "Deseja crear um adjunto para esty texto dy {length} caracteres?",
+    "create": "Crear adjunto",
+    "keepInline": "No, obrigado"
+  },
+  "errors": {
+    "fileTooBig": "Archivo muito grandy (máx {size})",
+    "invalidType": "Tipo dy arquivo inválido",
+    "uploadFailed": "Falha no envio"
+  }
+}

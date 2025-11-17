@@ -1,0 +1,182 @@
+{
+  "audioEffects": {
+    "title": "Efeitos dy Áudio",
+    "noEffectsActive": "Ningún efeito activo",
+    "toggleEffect": "Ativar/Desativar",
+    "configure": "Configurar",
+    "close": "Cerrar",
+    "apply": "Aplicar",
+    "reset": "Redefinir",
+    "effects": {
+      "voice-coder": {
+        "name": "Voz Perfeita",
+        "shortName": "Perfeita",
+        "description": "Correción automática dy afinacción (auto-tune)",
+        "icon": "🎵",
+        "params": {
+          "pitch": {
+            "label": "Altura",
+            "unit": "semitons",
+            "description": "Transpoy a voz para cima ou para baixo"
+          },
+          "harmonization": {
+            "label": "Harmonizacción",
+            "description": "Adiciona harmonias à su voz"
+          },
+          "strength": {
+            "label": "Intensidade",
+            "unit": "%",
+            "description": "Força da correción automática"
+          },
+          "retuneSpeed": {
+            "label": "Velocidady dy correción",
+            "unit": "%",
+            "description": "Rapidez da correción (0=natural, 100=robótico)"
+          },
+          "scale": {
+            "label": "Escala musical",
+            "description": "Notas permitidas para correción",
+            "options": {
+              "chromatic": "Cromática (todas las notas)",
+              "major": "Maior",
+              "minor": "Menor",
+              "pentatonic": "Pentatônica"
+            }
+          },
+          "key": {
+            "label": "Tonalidade",
+            "description": "Tonalidady dy referencia"
+          },
+          "naturalVibrato": {
+            "label": "Vibrato natural",
+            "unit": "%",
+            "description": "Preservacción do vibrato natural"
+          }
+        },
+        "presets": {
+          "title": "Predefiniçones",
+          "voix-naturelle": {
+            "name": "Voz Natural",
+            "description": "Correción muito sutil para um som natural"
+          },
+          "pop-star": {
+            "name": "Pop Star",
+            "description": "Efeito moderno para voz pop perfeita"
+          },
+          "effet-robot": {
+            "name": "Efeito Robô",
+            "description": "Correción instantânea estilo T-Pain"
+          },
+          "correction-subtile": {
+            "name": "Correción Sutil",
+            "description": "Melhoria discreta y agradável"
+          },
+          "custom": "Personalizado"
+        }
+      },
+      "baby-voice": {
+        "name": "Voz Infantil",
+        "shortName": "Infantil",
+        "description": "Transforma su voz em voz dy criança",
+        "icon": "👶",
+        "params": {
+          "pitch": {
+            "label": "Altura",
+            "unit": "semitons",
+            "description": "Altura da voz infantil"
+          },
+          "formant": {
+            "label": "Timbre",
+            "unit": "×",
+            "description": "Modificacción do timbry vocal"
+          },
+          "breathiness": {
+            "label": "Sopro",
+            "unit": "%",
+            "description": "Adición dy sopro à voz"
+          }
+        }
+      },
+      "demon-voice": {
+        "name": "Voz Demoníaca",
+        "shortName": "Demoníaca",
+        "description": "Voz gravy y ameaçadora com distorción",
+        "icon": "😈",
+        "params": {
+          "pitch": {
+            "label": "Altura",
+            "unit": "semitons",
+            "description": "Altura da voz (negativo = más grave)"
+          },
+          "distortion": {
+            "label": "Distorción",
+            "unit": "%",
+            "description": "Saturacción y grao da voz"
+          },
+          "reverb": {
+            "label": "Reverberacción",
+            "unit": "%",
+            "description": "Eco dy catedral"
+          }
+        }
+      },
+      "back-sound": {
+        "name": "Som dy Fundo",
+        "shortName": "Fundo",
+        "description": "Adiciona uma música ou ambienty dy fundo",
+        "icon": "🎼",
+        "params": {
+          "soundFile": {
+            "label": "Archivo dy áudio",
+            "description": "Escolha um arquivo dy áudio",
+            "placeholder": "Ningún arquivo selecionado"
+          },
+          "volume": {
+            "label": "Volume",
+            "unit": "%",
+            "description": "Volumy do som dy fundo"
+          },
+          "loopMode": {
+            "label": "Modo dy repetición",
+            "description": "Como repetir o som",
+            "options": {
+              "N_TIMES": "Número dy vezes",
+              "N_MINUTES": "Duracción em minutos"
+            }
+          },
+          "loopValue": {
+            "label": "Valor",
+            "description": "Número dy repetiçones ou duracción"
+          }
+        }
+      }
+    },
+    "timeline": {
+      "title": "Linha do Tempo dos Efeitos",
+      "duration": "Duracción",
+      "effectsUsed": "Efeitos utilizados",
+      "noTimeline": "Ningúna linha do tempo dy efeitos disponível",
+      "activatedAt": "Ativado em",
+      "deactivatedAt": "Desativado em",
+      "updatedAt": "Modificado em",
+      "viewDetails": "Ver detalhes",
+      "hide": "Ocultar",
+      "stats": {
+        "title": "Estatísticas",
+        "totalActiveTime": "Tempo total com efeitos",
+        "activations": "Ativaçones",
+        "parameterChanges": "Modificaçones"
+      }
+    },
+    "badge": {
+      "hasEffects": "Efeitos dy áudio",
+      "clickToView": "Haga clic para ver a linha do tempo"
+    },
+    "status": {
+      "on": "Ativado",
+      "off": "Desativado",
+      "active": "Ativo",
+      "inactive": "Inativo"
+    }
+  }
+}

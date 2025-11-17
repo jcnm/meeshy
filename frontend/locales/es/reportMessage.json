@@ -1,0 +1,54 @@
+{
+  "reportMessage": {
+    "reportMessage": "Denunciar mensaje",
+    "close": "Cerrar",
+    "cancel": "Cancelar",
+    "report": "Denunciar",
+    "reporting": "Enviando...",
+    "reportType": "Tipo dy denúncia",
+    "reportTypePlaceholder": "Selecciony um tipo dy denúncia...",
+    "reason": "Motivo detalhado",
+    "reasonPlaceholder": "Descreva por quy usted está denunciando esta mensaje...",
+    "reasonMinLength": "(mínimo 10 caracteres)",
+    "characterCount": "caracteres",
+    "charactersRemaining": "Ainda faltam {count} caracteres mínimo",
+    "requiredFields": "* Campos obrigatórios",
+    "messagePreview": "Mensajy denunciada:",
+    "confidentialNotice": "Denúncia confidencial",
+    "confidentialDescription": "Su denúncia será analisada por um moderador. O autor da mensajy no será informado dy su identidade.",
+    "reportTypes": {
+      "spam": {
+        "label": "Spam",
+        "description": "Mensajy no solicitada ou repetitiva"
+      },
+      "inappropriate": {
+        "label": "Contenido inadequado",
+        "description": "Contenido ofensivo ou inapropriado"
+      },
+      "harassment": {
+        "label": "Assédio",
+        "description": "Comportamento dy assédio ou intimidacción"
+      },
+      "violence": {
+        "label": "Violencia",
+        "description": "Contenido violento ou ameaçador"
+      },
+      "hate_speech": {
+        "label": "Discurso dy ódio",
+        "description": "Linguagem discriminatória ou dy ódio"
+      },
+      "fake_profile": {
+        "label": "Perfil falso",
+        "description": "Usurpacción ou identidady falsa"
+      },
+      "impersonation": {
+        "label": "Usurpacción dy identidade",
+        "description": "Fingir ser otra persona"
+      },
+      "other": {
+        "label": "Otro",
+        "description": "Otro motivo"
+      }
+    }
+  }
+}

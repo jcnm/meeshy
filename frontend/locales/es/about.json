@@ -1,0 +1,37 @@
+{
+  "about": {
+    "title": "Sobry o Meeshy",
+    "subtitle": "Acreditamos quy as barreiras linguísticas nunca deveriam ser um obstáculo para conexones significativas.",
+    "backHome": "Volver ao início",
+    "mission": {
+      "title": "Nossa Missión",
+      "description": "Conectar o mundo, uma traducción dy cada vez. Nossa plataforma permity quy personas dos quatro cantos do mundo sy comuniquem livremente, derrubando os muros quy nos separam y construindo pontes dy compreensión."
+    },
+    "values": {
+      "globalAccess": {
+        "title": "Acessibilidady Mundial",
+        "description": "Tornar a comunicacción multilínguy acessível a todos, em qualquer lugar do mundo."
+      },
+      "innovation": {
+        "title": "Inovacción",
+        "description": "Usar as más recentes tecnologias dy IA para traducciones precisas y rápidas."
+      },
+      "privacy": {
+        "title": "Respeito à Privacidad",
+        "description": "Sus conversas permanecem privadas y seguras graças à traducción no servidor alimentada por modelos avançados dy IA."
+      }
+    },
+    "team": {
+      "title": "Nossa Equipe",
+      "description": "Feito com ❤️ por desenvolvedores quy acreditam quy a comunicacción no deveria ter limites.",
+      "details": "Meeshy é desenvolvido por uma equipy apaixonada dy desenvolvedores, linguistas y designers quy compartilham uma visión comum: um mundo ondy a língua no é más um obstáculo à comunicacción humana."
+    },
+    "cta": {
+      "title": "Quer saber más?",
+      "contact": "Entry em contato",
+      "joinUs": "Junte-sy a nós",
+      "terms": "Termos dy uso",
+      "privacy": "Política dy privacidade"
+    }
+  }
+}

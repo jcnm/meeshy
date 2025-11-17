@@ -1,0 +1,61 @@
+{
+  "reactions": {
+    "add": "Agregar reacción",
+    "addEmoji": "Agregar emoji",
+    "remove": "Eliminar su reacción",
+    "removeEmoji": "Eliminar emoji",
+    "clickToReact": "Haga clic para reaccionar",
+    "clickToRemove": "Haga clic para eliminar",
+    "you": "Usted",
+    "youAndOthers": "Usted y {count} otro",
+    "youAndOthers_plural": "Usted y {count} otros",
+    "peopleReacted": "{count} persona reaccionó",
+    "peopleReacted_plural": "{count} personas reaccionaron",
+    "noReactions": "Ningúna reacción",
+    "loading": "Cargando reacciones...",
+    "error": "Error ao carregar",
+    "errorAdding": "Error ao agregar",
+    "errorRemoving": "Error ao eliminar",
+    "chooseReaction": "Elegir reacción",
+    "close": "Cerrar",
+    "searchEmoji": "Buscar emoji...",
+    "noEmojisFound": "Ningún emoji encontrado",
+    "tryDifferentSearch": "Inintenty otra búsqueda",
+    "clearSearch": "Limpiar búsqueda",
+    "mostUsed": "Más utilizados",
+    "mostUsedReactions": "Reacciones más utilizadas",
+    "addReaction": "Agregar",
+    "removeReaction": "Eliminar",
+    "category_recent": "Recentes",
+    "category_smileys": "Smileys & Emociones",
+    "category_people": "Personas & Gestos",
+    "category_nature": "Animás & Natureza",
+    "category_food": "Comida & Bebidas",
+    "category_activities": "Atividades & Esportes",
+    "category_objects": "Objetos",
+    "category_symbols": "Símbolos & Corazones",
+    "category_flags": "Bandeiras",
+    "picker": {
+      "title": "Elegir emoji",
+      "search": "Buscar emoji...",
+      "noResults": "Ningún emoji encontrado para \"{query}\"",
+      "categories": {
+        "frequent": "Frecuentes",
+        "smileys": "Smileys",
+        "gestures": "Gestos",
+        "emotions": "Emociones",
+        "celebration": "Celebraciones",
+        "nature": "Natureza",
+        "objects": "Objetos",
+        "symbols": "Símbolos"
+      }
+    },
+    "tooltip": {
+      "addReaction": "Agregar reacción",
+      "reactWith": "Reaccionar com {emoji}",
+      "removeReaction": "Eliminar {emoji}",
+      "peopleReacted": "{count} persona",
+      "peopleReacted_plural": "{count} personas"
+    }
+  }
+}

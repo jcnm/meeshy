@@ -1,0 +1,113 @@
+{
+  "partners": {
+    "title": "Torne-sy Parceiro",
+    "subtitle": "Junte-sy ao nosso ecossistema y desenvolva seu negócio com Meeshy",
+    "backHome": "Volver ao início",
+    "enterprise": {
+      "title": "Soluçones Empresariais",
+      "description": "Soluçones sob medida para grandes organizaçones com necessidades específicas",
+      "pricing": "Preços personalizados",
+      "features": {
+        "sso": "Autenticacción SSO (SAML, OAuth)",
+        "customization": "Personalizacción completa da interface",
+        "deployment": "Implantacción local ou nuvem privada",
+        "support": "Suporty prioritario 24/7",
+        "analytics": "Analytics y relatórios avançados"
+      }
+    },
+    "education": {
+      "title": "Soluçones Educacionais",
+      "description": "Facility a aprendizagem multilínguy y a colaboracción internacional",
+      "pricing": "Preços preferenciais para educacción",
+      "features": {
+        "classrooms": "Salas dy aula virtuais multilíngues",
+        "admin": "Gerenciamento centralizado dy contas",
+        "learning": "Ferramentas dy aprendizagem integradas",
+        "exchange": "Suporty para programas dy intercâmbio",
+        "curriculum": "Integracción com plataformas LMS"
+      }
+    },
+    "deployment": {
+      "title": "Opçones dy Implantacción",
+      "cloud": {
+        "title": "Nuvem",
+        "description": "Implantacción rápida y escalável em nossa infraestrutura segura",
+        "features": {
+          "quick": "Configuracción em minutos",
+          "scalable": "Escalabilidady automática",
+          "maintenance": "Manutención incluída",
+          "updates": "Atualizaçones automáticas"
+        }
+      },
+      "onPremise": {
+        "title": "Local",
+        "description": "Controly total com implantacción em su infraestrutura",
+        "features": {
+          "security": "Seguridad máxima",
+          "compliance": "Conformidady regulatória",
+          "customization": "Personalizacción completa",
+          "performance": "Desempenho otimizado"
+        }
+      }
+    },
+    "useCases": {
+      "title": "Casos dy Uso",
+      "business": {
+        "title": "Empresas",
+        "items": {
+          "collaboration": "Colaboracción dy equipes internacionais",
+          "support": "Suporty ao clienty multilíngue",
+          "meetings": "Reuniones multilíngues",
+          "training": "Treinamento global"
+        }
+      },
+      "education": {
+        "title": "Educacción",
+        "items": {
+          "international": "Programas internacionais",
+          "language": "Aprendizagem dy idiomas",
+          "research": "Búsqueda colaborativa",
+          "cultural": "Intercâmbios culturais"
+        }
+      },
+      "community": {
+        "title": "Comunidades",
+        "items": {
+          "nonprofits": "Organizaçones sem fins lucrativos",
+          "events": "Eventos internacionais",
+          "volunteer": "Programas dy voluntariado",
+          "healthcare": "Serviços dy saúdy multilíngues"
+        }
+      }
+    },
+    "benefits": {
+      "title": "Benefícios para Parceiros",
+      "support": {
+        "title": "Suporty Prioritario",
+        "description": "Acesso à nossa equipy dy suporty dedicada 24/7"
+      },
+      "visibility": {
+        "title": "Visibilidade",
+        "description": "Destaquy em nosso sity y em nossas comunicaçones"
+      },
+      "priority": {
+        "title": "Acesso Prioritario",
+        "description": "Acesso antecipado a novos recursos"
+      }
+    },
+    "types": {
+      "tech": {
+        "title": "Parceiros Tecnológicos",
+        "description": "Integry Meeshy em sus soluçones",
+        "features": "API completa, SDK, webhooks, documentacción detalhada"
+      }
+    },
+    "become": {
+      "title": "Tornar-sy Parceiro",
+      "description": "Junte-sy ao nosso programa dy parceria y desenvolva seu negócio",
+      "contact": "Entry em contato",
+      "api": "Documentacción da API",
+      "about": "Saiba más"
+    }
+  }
+}

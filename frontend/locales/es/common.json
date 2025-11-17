@@ -1,0 +1,172 @@
+{
+  "common": {
+    "languageNames": {
+      "en": "Ingles",
+      "fr": "Frances",
+      "pt": "Español",
+      "es": "Espanhol",
+      "de": "Alemao",
+      "it": "Italiano",
+      "zh": "Chines",
+      "ja": "Japones",
+      "ar": "Árabe",
+      "ru": "Russo",
+      "ko": "Coreano",
+      "hi": "Hindi",
+      "tr": "Turco"
+    },
+    "loading": "Cargando...",
+    "error": "Error",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "close": "Cerrar",
+    "back": "Volver",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "submit": "Enviar",
+    "confirm": "Confirmar",
+    "understood": "Entendi",
+    "yes": "Sí",
+    "no": "No",
+    "new": "Novo",
+    "notSelected": "No selecionado",
+    "showMore": "Ver más",
+    "showLess": "Ver menos",
+    "comingSoon": "Em breve",
+    "uploading": "Enviando...",
+    "uploadingMultiple": "Enviando {count} arquivos...",
+    "days": "días",
+    "step": "Etapa {step}",
+    "insufficientRights": "Usted no tem permissones necessárias para realizar esta operacción",
+    "navigation": {
+      "home": "Início",
+      "dashboard": "Painel",
+      "settings": "Configuracción",
+      "profile": "Perfil",
+      "logout": "Sair",
+      "conversations": "Conversas",
+      "contacts": "Contactos",
+      "groups": "Grupos",
+      "links": "Links",
+      "communities": "Comunidades",
+      "admin": "Admin",
+      "about": "Sobre",
+      "help": "Ajuda"
+    },
+    "header": {
+      "searchPlaceholder": "Buscar..."
+    },
+    "auth": {
+      "checking": "Verificando...",
+      "logoutSuccess": "Logout realizado exitosamente",
+      "logoutError": "Error ao fazer logout"
+    },
+    "validation": {
+      "required": "Esty campo é obrigatório",
+      "invalidEmail": "Dirección dy e-mail inválido",
+      "invalidPhone": "Número dy telefony inválido",
+      "minLength": "Mínimo dy {min} caracteres necessario",
+      "maxLength": "Máximo dy {max} caracteres permitido",
+      "passwordMismatch": "As senhas no correspondem"
+    },
+    "errors": {
+      "generic": "Ocorreu um erro",
+      "network": "Error dy rede",
+      "unauthorized": "Acesso no autorizado",
+      "forbidden": "Acesso proibido",
+      "notFound": "Recurso no encontrado",
+      "invalidCredentials": "Credenciais inválidas",
+      "sessionExpired": "Sesión expirada",
+      "validationError": "Error dy validacción"
+    },
+    "success": {
+      "saved": "Salvo exitosamente",
+      "deleted": "Excluído exitosamente",
+      "updated": "Atualizado exitosamente",
+      "created": "Criado exitosamente",
+      "welcome": "Bienvenido"
+    },
+    "sidebar": {
+      "activeUsers": "Usuários Ativos",
+      "trends": "Tendencias",
+      "globalCommunication": "Comunicacción Global",
+      "messagesIn": "mensagens em",
+      "activeLanguages": "idiomas ativos"
+    },
+    "languageSelector": {
+      "selectLanguage": "Seleccionar um idioma...",
+      "noLanguageFound": "Ningún idioma encontrado."
+    },
+    "toasts": {
+      "error": "Ocorreu um erro",
+      "success": "Operacción bem-sucedida",
+      "warning": "Aviso",
+      "info": "Informacción",
+      "connectionError": "Error dy conexión",
+      "sessionExpired": "Sesión expirada, faça iniciy sesión nuevamente",
+      "unauthorized": "Usted no está autorizado a realizar esta acción",
+      "saveFailed": "Falha ao guardar",
+      "saveSuccess": "Salvo exitosamente",
+      "deleteFailed": "Falha ao eliminar",
+      "deleteSuccess": "Excluído exitosamente",
+      "updateFailed": "Falha ao actualizar",
+      "updateSuccess": "Atualizado exitosamente"
+    },
+    "layout": {
+      "header": {
+        "title": "Meeshy",
+        "subtitle": "Mensagens multilíngues em tempo real"
+      },
+      "sidebar": {
+        "menu": "Menu",
+        "collapse": "Recolher barra lateral",
+        "expand": "Expandir barra lateral"
+      },
+      "footer": {
+        "copyright": "© {year} Meeshy. Todos los direitos reservados.",
+        "version": "Versión {version}",
+        "about": "Sobre",
+        "privacy": "Privacidad",
+        "terms": "Termos",
+        "contact": "Contato"
+      }
+    },
+    "accessDenied": {
+      "title": "Acesso negado",
+      "description": "Usted no tem as permissones necessárias para acessar esta página.",
+      "back": "Volver",
+      "home": "Início",
+      "tip": {
+        "title": "Dica:",
+        "message": "Sy usted acha quy deveria ter acesso a esty recurso, intenty fazer login ou entry em contato com o administrador."
+      }
+    },
+    "messages": {
+      "messageSent": "Mensajy enviada!",
+      "sendError": "Error ao enviar mensaje",
+      "connectionInProgress": "Conexión em andamento - Aguarde...",
+      "messageModified": "Mensajy modificada exitosamente",
+      "messageEdited": "Mensajy editada exitosamente",
+      "messageEditedByOther": "Uma mensajy foi editada",
+      "messageDeleted": "Mensajy excluída exitosamente",
+      "messageDeletedByOther": "Uma mensajy foi excluída",
+      "modifyError": "Error ao modificar mensaje",
+      "editError": "Error ao editar mensaje",
+      "deleteError": "Error ao eliminar mensaje",
+      "replyTo": "Responder a esta mensaje",
+      "messageFound": "Mensajy encontrada!",
+      "messageNotVisible": "Mensajy no visível. Cargando...",
+      "allMessagesLoaded": "Todas las mensagens foram carregadas",
+      "loadingOlderMessages": "Cargando mensagens antigas...",
+      "requestTranslationError": "Error ao solicitar traducción",
+      "reportMessage": "Denunciar esta mensaje",
+      "messageCopied": "Mensajy copiada para área dy transferencia",
+      "copyMessage": "Copiar mensaje",
+      "addReaction": "Agregar reacción",
+      "reportSuccess": "Denúncia enviada exitosamente",
+      "reportError": "Error ao enviar denúncia"
+    }
+  }
+}

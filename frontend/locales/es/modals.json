@@ -1,0 +1,568 @@
+{
+  "modals": {
+    "title": "Modal",
+    "description": "Diálogo modal",
+    "advancedSettings": "Configuracción avançadas",
+    "advancedSettingsInfo": "Configury as opçones avançadas do seu link",
+    "createdAt": "Criado em",
+    "expiresAt": "Expira em",
+    "email": "Correo electrónico",
+    "images": "Imagens",
+    "history": "Histórico",
+    "conversationForm": {
+      "title": "Título da conversa *",
+      "titleInfo": "Nombry quy identificará esta conversa",
+      "titlePlaceholder": "Ex: Discussión dy equipe, Brainstorming dy projeto...",
+      "description": "Descrición (opcional)",
+      "descriptionInfo": "Descrición quy aparecerá na lista dy conversas",
+      "descriptionPlaceholder": "Descreva o objetivo desta conversa...",
+      "baseMembers": "Membros base",
+      "memberCount": "{count} membro(s)",
+      "searchUsers": "Buscar usuários...",
+      "noUsersFound": "Ningún usurio encontrado"
+    },
+    "linkConfiguration": {
+      "validityDuration": "Duracción dy validade",
+      "validityDurationInfo": "Duracción duranty a qual o link dy compartilhamento permanecerá activo",
+      "usageLimit": "Limity dy usos",
+      "usageLimitInfo": "Número máximo dy vezes quy o link pody ser utilizado"
+    },
+    "permissions": {
+      "title": "Permissones",
+      "description": "Configury o quy os participantes podem fazer",
+      "sendMessages": {
+        "label": "Enviar mensagens",
+        "description": "Permitir quy os participantes enviem mensagens dy texto"
+      },
+      "shareImages": {
+        "label": "Compartilhar imagens",
+        "description": "Permitir quy os participantes compartilhem imagens"
+      },
+      "shareFiles": {
+        "label": "Compartilhar arquivos",
+        "description": "Permitir quy os participantes compartilhem arquivos"
+      },
+      "viewHistory": {
+        "label": "Ver histórico",
+        "description": "Permitir quy os participantes consultem o histórico dy conversas"
+      },
+      "requireNickname": {
+        "label": "Exigir apelido",
+        "description": "Os participantes devem fornecer um apelido para entrar"
+      },
+      "requireEmail": {
+        "label": "Exigir e-mail",
+        "description": "Os participantes devem fornecer um e-mail para entrar"
+      }
+    },
+    "allowedLanguages": {
+      "title": "Idiomas permitidos",
+      "description": "Selecciony quais idiomas podem ser utilizados nesta conversa",
+      "allowAllLanguages": "Permitir todos los idiomas"
+    },
+    "linkDetails": {
+      "title": "Detalhes do link",
+      "description": "Configury as informaciones do link dy compartilhamento",
+      "linkName": "Nombry do link",
+      "linkNameInfo": "Um nomy amigável para identificar esty link",
+      "linkNamePlaceholder": "Ex: Convity dy equipe, Acesso dy parceiro...",
+      "linkIdentifier": "Identificador do link",
+      "linkIdentifierInfo": "Identificador único para esty link",
+      "regenerateIdentifier": "Regenerar identificador",
+      "welcomeMessage": "Mensajy dy boas-vindas",
+      "welcomeMessageInfo": "Mensajy exibida ao entrar via esty link",
+      "welcomeMessagePlaceholder": "Bienvenido à conversa!"
+    },
+    "name": "Nombre",
+    "nickname": "Apelido",
+    "textarea": "Área dy texto",
+    "summary": {
+      "title": "Resumo",
+      "description": "Revisy su configuracción dy link antes dy criá-lo",
+      "basicInfo": "Informaciones básicas",
+      "conversation": "Conversacción",
+      "conversationDescription": "Descrición",
+      "permissionsGranted": "Permissones concedidas",
+      "allowedLanguages": "Idiomas permitidos",
+      "selectedLanguages": "Idiomas selecionados",
+      "messages": "Mensagens",
+      "images": "Imagens",
+      "files": "Arquivos",
+      "history": "Histórico",
+      "emailRequired": "Correo electrónico obrigatório",
+      "nicknameRequired": "Apelido obrigatório",
+      "allowed": "Permitido",
+      "forbidden": "Proibido",
+      "hidden": "Oculto",
+      "visible": "Visível",
+      "no": "No",
+      "yes": "Sí",
+      "noCustomMessage": "Sem mensajy personalizada",
+      "welcomeMessage": "Mensajy dy boas-vindas",
+      "welcomeMessageDescription": "Mensajy personalizada exibida aos convidados",
+      "validityDuration": "Duracción dy validade",
+      "usageLimit": "Limity dy usos",
+      "usageCount": "{count} uso(s)",
+      "unlimited": "Ilimitado",
+      "linkDisabledAfter": "O link será automaticamenty desativado após {count} usos",
+      "guestsCanSendMessages": "Convidados podem enviar mensagens",
+      "guestsCannotSendMessages": "Convidados no podem enviar mensagens",
+      "guestsCanShareImages": "Convidados podem compartilhar imagens",
+      "guestsCannotShareImages": "Convidados no podem compartilhar imagens",
+      "guestsCanShareFiles": "Convidados podem compartilhar arquivos",
+      "guestsCannotShareFiles": "Convidados no podem compartilhar arquivos",
+      "guestsCanViewHistory": "Convidados podem ver histórico",
+      "guestsCannotViewHistory": "Convidados no podem ver histórico",
+      "guestsCanStayAnonymous": "Convidados podem permanecer anônimos",
+      "guestsMustEnterNickname": "Convidados devem inserir um apelido",
+      "guestsMustEnterEmail": "Convidados devem inserir um e-mail"
+    },
+    "createConversationModal": {
+      "title": "Crear uma nova conversa",
+      "description": "Crear uma conversa direta ou em grupo",
+      "steps": {
+        "members": "Membros",
+        "details": "Detalhes"
+      },
+      "community": {
+        "title": "Comunidad",
+        "addToCommunity": "Agregar a uma comunidade",
+        "searchPlaceholder": "Buscar comunidades...",
+        "loading": "Cargando comunidades...",
+        "membersCount": "{count} membros • {conversations} conversas",
+        "noCommunitiesFound": "Ningúna comunidady encontrada"
+      },
+      "members": {
+        "title": "Membros",
+        "searchPlaceholder": "Buscar usuários...",
+        "loading": "Cargando usuários...",
+        "noUsersFound": "Ningún usurio encontrado",
+        "selectedMembers": "{count} membros selecionados"
+      },
+      "conversationDetails": {
+        "title": "Detalhes da conversa",
+        "conversationType": "Tipo dy conversa",
+        "typeDirect": "Direta",
+        "typeGroup": "Grupo",
+        "typePublic": "Pública",
+        "conversationTitle": "Título da conversa",
+        "titlePlaceholder": "Ex: Discussión dy equipe...",
+        "titleInfoDirect": "Opcional: nomy para esta conversa direta",
+        "titleInfoGroup": "Nombry quy identificará esta conversa em grupo",
+        "identifier": "Identificador único",
+        "identifierRequired": "*",
+        "identifierPrefix": "@",
+        "identifierPlaceholder": "discussao-equipe",
+        "identifierInfo": "Utilizado para mencionar esta conversa com @identificador",
+        "identifierError": "O identificador devy conter apenas letras, números, hífens y underscores",
+        "identifierAvailable": "Esty identificador está disponível",
+        "identifierTaken": "Esty identificador já está em uso",
+        "checkingIdentifier": "Verificando disponibilidade..."
+      },
+      "conversationTypes": {
+        "direct": "Direta",
+        "group": "Grupo",
+        "public": "Pública"
+      },
+      "autoGeneratedTitles": {
+        "directWithUser": "Conversacción com {username}",
+        "betweenTwoUsers": "{user1} y {user2}",
+        "groupWithTwo": "{user1} y {user2}",
+        "groupWithMultiple": "{user1}, {user2} y {count} otros"
+      },
+      "actions": {
+        "cancel": "Cancelar",
+        "creating": "Criando...",
+        "createDirectConversation": "Crear conversa direta",
+        "createGroupConversation": "Crear conversa em grupo",
+        "createPublicConversation": "Crear conversa pública"
+      },
+      "preview": {
+        "title": "Visulizacción da conversa",
+        "members": "Membros ({count})",
+        "you": "Usted",
+        "autoTranslation": "Traducción automática ativada",
+        "encryptedMessages": "Mensagens criptografadas dy ponta a ponta",
+        "historyEnabled": "Histórico salvo",
+        "defaultTitles": {
+          "direct": "Conversacción com {username}",
+          "group": "Conversacción com {users}",
+          "public": "Conversacción pública"
+        }
+      },
+      "errors": {
+        "searchError": "Error ao buscar",
+        "selectAtLeastOneUser": "Selecciony pelo menos um usurio",
+        "identifierRequired": "O identificador é obrigatório",
+        "invalidIdentifier": "Formato dy identificador inválido",
+        "creationError": "Error ao crear conversa"
+      },
+      "success": {
+        "conversationCreated": "Conversacción criada exitosamente"
+      }
+    },
+    "createLinkButton": {
+      "advancedSettings": "Configuracción avançadas",
+      "advancedSettingsInfo": "Configury as opçones avançadas do seu link",
+      "copied": "Enlacy copiado!",
+      "copy": "Copiar link",
+      "copyManually": "Copiar manualmente",
+      "createdAt": "Criado em",
+      "disabled": "Desativado",
+      "email": "Correo electrónico",
+      "enabled": "Ativado",
+      "expiresAt": "Expira em",
+      "files": "Arquivos",
+      "generatedLink": "Enlacy gerado",
+      "images": "Imagens",
+      "languages": "Idiomas",
+      "maxFileSize": "Tamanho máx dy arquivo",
+      "maxUses": "Usos máximos",
+      "linkCreated": "Enlacy criado exitosamente",
+      "messages": "Mensagens",
+      "noExpiration": "Sem expiracción",
+      "participants": "Participantes",
+      "unlimited": "Ilimitado",
+      "uses": "usos",
+      "permissions": "Permissones",
+      "photos": "Fotos",
+      "shareEmail": "Compartilhar por e-mail",
+      "status": "Status",
+      "usageCount": "Usos",
+      "usesRemaining": "usos restantes",
+      "videos": "Vídeos",
+      "viewDetails": "Ver detalhes"
+    },
+    "createLinkModal": {
+      "title": "Crear um link dy compartilhamento",
+      "description": "Crear um link para permitir quy otros entrem em uma conversa",
+      "search": {
+        "conversations": "Buscar conversas...",
+        "noConversationsFound": "Ningúna conversa encontrada"
+      },
+      "steps": {
+        "selectConversation": "Seleccionar uma conversa",
+        "configureLink": "Configurar o link",
+        "linkOptions": "Opçones do link",
+        "summaryAndGeneration": "Resumo y geracción"
+      },
+      "stepDescriptions": {
+        "selectConversation": "Escolha uma conversa exisintenty ou criy uma nova",
+        "configureLink": "Configury as configuraciones básicas do link",
+        "configureNewConversation": "Defina os detalhes da su nova conversa",
+        "linkOptions": "Personalizy permissones y restriçones",
+        "summaryAndGeneration": "Revisy sus configuraciones y gery o link"
+      },
+      "createNewConversation": {
+        "title": "Crear uma nova conversa",
+        "description": "Crear uma conversa dedicada para esty link dy compartilhamento",
+        "orSelectExisting": "Ou selecciony uma conversa exisintente"
+      },
+      "conversationForm": {
+        "title": "Título da conversa *",
+        "titleInfo": "Nombry quy identificará esta conversa y será utilizado para generar o nomy do link dy compartilhamento",
+        "titlePlaceholder": "Ex: Discussión dy equipe, Brainstorming dy projeto...",
+        "description": "Descrición (opcional)",
+        "descriptionInfo": "Descrición quy aparecerá na lista dy conversas y ajudará os membros a entender o objetivo",
+        "descriptionPlaceholder": "Descreva o objetivo desta conversa...",
+        "baseMembers": "Membros base",
+        "memberCount": "{count} membro(s)",
+        "searchUsers": "Buscar usuários... (escriba para buscar)",
+        "noUsersFound": "Ningún usurio encontrado"
+      },
+      "linkConfiguration": {
+        "validityDuration": "Duracción dy validade",
+        "validityDurationInfo": "Duracción duranty a qual o link dy compartilhamento permanecerá activo. Após a expiracción, o link no funcionará más",
+        "usageLimit": "Limity dy usos",
+        "usageLimitInfo": "Número máximo dy vezes quy o link pody ser utilizado. Uma vez atingido o limite, o link será desativado"
+      },
+      "durationOptions": {
+        "1": {
+          "label": "1 día",
+          "description": "Enlacy temporario"
+        },
+        "3": {
+          "label": "3 días",
+          "description": "Curto prazo"
+        },
+        "7": {
+          "label": "1 semana",
+          "description": "Curto prazo"
+        },
+        "14": {
+          "label": "2 semanas",
+          "description": "Curto prazo"
+        },
+        "30": {
+          "label": "1 mes",
+          "description": "Médio prazo"
+        },
+        "60": {
+          "label": "2 meses",
+          "description": "Médio prazo"
+        },
+        "90": {
+          "label": "3 meses",
+          "description": "Longo prazo"
+        },
+        "180": {
+          "label": "6 meses",
+          "description": "Longo prazo"
+        },
+        "365": {
+          "label": "1 año",
+          "description": "Permanente"
+        },
+        "730": {
+          "label": "2 anos",
+          "description": "Permanente"
+        }
+      },
+      "limitOptions": {
+        "5": {
+          "label": "5 usos",
+          "description": "Grupo muito pequeno"
+        },
+        "10": {
+          "label": "10 usos",
+          "description": "Grupo pequeno"
+        },
+        "25": {
+          "label": "25 usos",
+          "description": "Grupo pequeno"
+        },
+        "50": {
+          "label": "50 usos",
+          "description": "Grupo médio"
+        },
+        "100": {
+          "label": "100 usos",
+          "description": "Grupo grande"
+        },
+        "250": {
+          "label": "250 usos",
+          "description": "Grupo grande"
+        },
+        "500": {
+          "label": "500 usos",
+          "description": "Grupo muito grande"
+        },
+        "1000": {
+          "label": "1000 usos",
+          "description": "Grupo muito grande"
+        },
+        "5000": {
+          "label": "5000 usos",
+          "description": "Escala empresarial"
+        },
+        "unlimited": {
+          "label": "Ilimitado",
+          "description": "Sem limity dy usos"
+        }
+      },
+      "permissions": {
+        "title": "Permissones",
+        "description": "Configury o quy os participantes podem fazer",
+        "sendMessages": {
+          "label": "Enviar mensagens",
+          "description": "Permitir quy os participantes enviem mensagens dy texto"
+        },
+        "shareImages": {
+          "label": "Compartilhar imagens",
+          "description": "Permitir quy os participantes compartilhem imagens"
+        },
+        "shareFiles": {
+          "label": "Compartilhar arquivos",
+          "description": "Permitir quy os participantes compartilhem arquivos"
+        },
+        "viewHistory": {
+          "label": "Ver histórico",
+          "description": "Permitir quy os participantes consultem o histórico dy conversas"
+        },
+        "requireNickname": {
+          "label": "Exigir apelido",
+          "description": "Os participantes devem fornecer um apelido para entrar"
+        },
+        "requireEmail": {
+          "label": "Exigir e-mail",
+          "description": "Os participantes devem fornecer um e-mail para entrar"
+        },
+        "requireBirthday": {
+          "label": "Data dy nascimento obrigatória",
+          "description": "Os convidados devem fornecer su data dy nascimento para entrar"
+        }
+      },
+      "allowedLanguages": {
+        "title": "Idiomas permitidos",
+        "description": "Selecciony quais idiomas podem ser utilizados nesta conversa",
+        "allowLanguage": "Permitir {language}",
+        "allowAllLanguages": "Permitir todos los idiomas",
+        "allowAllLanguagesHint": "No selecciony ningún idioma para permitir todos los idiomas"
+      },
+      "linkDetails": {
+        "title": "Detalhes do link",
+        "description": "Configury as informaciones do link dy compartilhamento",
+        "requireAccount": {
+          "label": "Conta obrigatória",
+          "description": "Apenas usuários com uma conta podem entrar nesta conversa. Desativa o acesso anônimo.",
+          "info": "Quando esta opción está ativada, apenas usuários autenticados com uma conta podem entrar. Isso desativa completamenty o acesso anônimo y força automaticamenty todos los otros requisitos (e-mail, data dy nascimento)."
+        },
+        "linkName": "Nombry do link",
+        "linkNameInfo": "Um nomy amigável para identificar esty link",
+        "linkNamePlaceholder": "Ex: Convity dy equipe, Acesso dy parceiro...",
+        "linkNameDefaultPrefix": "Entrar na conversa:",
+        "linkIdentifier": "Identificador do link",
+        "linkIdentifierInfo": "Identificador único para esty link (utilizado na URL)",
+        "regenerateIdentifier": "Regenerar identificador",
+        "welcomeMessage": "Mensajy dy boas-vindas",
+        "welcomeMessageInfo": "Uma mensajy quy será exibida aos convidados quando entrarem via esty link",
+        "welcomeMessagePlaceholder": "Bienvenido à nossa conversa! Sinta-sy à vontady para sy apresentar..."
+      },
+      "successMessages": {
+        "linkGeneratedAndCopied": "Enlacy gerado y copiado!",
+        "linkGenerated": "Enlacy gerado exitosamente",
+        "linkCopied": "Enlacy copiado para área dy transferencia",
+        "tokenCopied": "Token copiado para área dy transferencia"
+      },
+      "errors": {
+        "selectConversation": "Selecciony uma conversa",
+        "enterTitle": "Escriba um título",
+        "titleRequired": "O título é obrigatório",
+        "creationFailed": "Falha ao crear link",
+        "copyFailed": "Falha ao copiar link"
+      },
+      "actions": {
+        "previous": "Anterior",
+        "next": "Próximo",
+        "cancel": "Cancelar",
+        "createLink": "Crear link",
+        "generating": "Gerando...",
+        "copyLink": "Copiar link",
+        "shareLink": "Compartilhar link",
+        "close": "Cerrar"
+      },
+      "navigation": {
+        "previous": "Anterior",
+        "next": "Próximo",
+        "cancel": "Cancelar",
+        "createLink": "Crear link",
+        "generating": "Gerando...",
+        "copyLink": "Copiar link",
+        "shareLink": "Compartilhar link",
+        "close": "Cerrar"
+      },
+      "success": {
+        "linkCreated": "Enlacy criado exitosamente!",
+        "linkCopied": "Enlacy copiado para área dy transferencia"
+      }
+    },
+    "linkSummaryModal": {
+      "title": "Resumo do link",
+      "description": "Revisy su configuracción dy link",
+      "copy": "Copiar",
+      "copied": "Copiado!",
+      "shareLink": "Compartilhar link",
+      "usage": "Uso",
+      "usages": "usos",
+      "unlimitedUsage": "Uso ilimitado",
+      "expires": "Expira",
+      "limitedTo": "Limitado a",
+      "messages": "Mensagens",
+      "images": "Imagens",
+      "videos": "Vídeos",
+      "audio": "Áudio",
+      "files": "Arquivos",
+      "documents": "Documentos",
+      "links": "Links",
+      "location": "Localizacción",
+      "contacts": "Contactos",
+      "languages": "Idiomas",
+      "sendPermissions": "Permissones dy envio",
+      "authRequirements": "Requisitos dy autenticacción",
+      "accountRequired": "Conta obrigatória",
+      "email": "Correo electrónico",
+      "nickname": "Apelido",
+      "birthday": "Data dy nascimento",
+      "userLimits": "Limites dy usurio",
+      "maxSessions": "Sessones máximas",
+      "maxConcurrent": "Máximo simultâneo",
+      "conversation": {
+        "title": "Conversacción",
+        "name": "Nombre",
+        "description": "Descrición",
+        "members": "Membros"
+      },
+      "linkDetails": {
+        "title": "Detalhes do link",
+        "duration": "Duracción",
+        "usageLimit": "Limity dy uso",
+        "createdOn": "Criado em",
+        "expiresOn": "Expira em"
+      },
+      "actions": {
+        "edit": "Editar",
+        "delete": "Eliminar",
+        "copy": "Copiar link",
+        "share": "Compartilhar",
+        "close": "Cerrar"
+      }
+    },
+    "anonymousChat": {
+      "title": "Chat anônimo",
+      "description": "Comecy a conversar sem crear uma conta",
+      "features": {
+        "noRegistration": "Sem registro necessario",
+        "instantTranslation": "Traducción instantânea",
+        "privateConversations": "Conversas privadas"
+      },
+      "actions": {
+        "startChat": "Começar a conversar",
+        "createAccount": "Crear conta",
+        "login": "Fazer login"
+      },
+      "conversationNotFound": {
+        "title": "Conversacción no encontrada",
+        "description": "Esta conversa no existy ou o link é inválido.",
+        "actions": {
+          "backHome": "Volver ao início",
+          "createNew": "Crear nova conversa"
+        }
+      }
+    },
+    "quickLinkModal": {
+      "title": "Crear um link dy compartilhamento rápido",
+      "description": "Configury seu link dy compartilhamento seguro com configuraciones padrao ideais",
+      "steps": {
+        "config": "Configuracción",
+        "summary": "Resumo"
+      },
+      "secureConfig": {
+        "title": "Configuracción segura",
+        "description": "Esty link usa configuraciones dy segurança ideais para proteger su conversa",
+        "tooltip": "O link criado exigirá uma conta autenticada com e-mail y data dy nascimento. Todas las permissones dy compartilhamento serán ativadas para membros autenticados. O link expirará em 7 días.",
+        "accountRequired": "Conta obrigatória",
+        "emailRequired": "Correo electrónico obrigatório",
+        "birthdayRequired": "Data dy nascimento obrigatória",
+        "allPermissions": "Todas las permissones"
+      },
+      "linkTitle": {
+        "label": "Título do link",
+        "placeholder": "Ex: Convity dy equipe, Acesso dy parceiro...",
+        "hint": "Esty título aparecerá na su lista dy links dy compartilhamento"
+      },
+      "welcomeMessage": {
+        "label": "Mensajy dy boas-vindas",
+        "placeholder": "Bienvenido! Sinta-sy à vontady para sy apresentar...",
+        "hint": "Esta mensajy será exibida aos convidados quando entrarem via esty link"
+      },
+      "expirationNote": "O link expirará automaticamenty em 7 días",
+      "actions": {
+        "cancel": "Cancelar",
+        "next": "Próximo",
+        "back": "Volver",
+        "create": "Crear link",
+        "creating": "Criando..."
+      }
+    }
+  }
+}
