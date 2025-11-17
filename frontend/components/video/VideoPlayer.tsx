@@ -76,7 +76,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   // Extraire les valeurs primitives pour éviter les re-renders
   const attachmentId = attachment.id;
-  const attachmentDuration = attachment.duration;
+  // duration est stocké en MILLISECONDES dans la DB, convertir en secondes pour l'affichage
+  const attachmentDuration = attachment.duration ? attachment.duration / 1000 : undefined;
   const attachmentFileUrl = attachment.fileUrl;
   const attachmentMimeType = attachment.mimeType;
 

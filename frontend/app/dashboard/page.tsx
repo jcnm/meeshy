@@ -528,11 +528,13 @@ function DashboardPageContent() {
                                           </>
                                         );
                                       } else if (mimeType.startsWith('video/')) {
+                                        // Convertir durée de millisecondes en secondes
+                                        const durationSec = attachment.duration ? Math.floor(attachment.duration / 1000) : 0;
                                         return (
                                           <>
                                             <span className="inline-flex text-red-500">🎥</span>
                                             {attachment.duration && (
-                                              <span className="text-xs">{Math.floor(attachment.duration / 60)}:{(attachment.duration % 60).toString().padStart(2, '0')}</span>
+                                              <span className="text-xs">{Math.floor(durationSec / 60)}:{(durationSec % 60).toString().padStart(2, '0')}</span>
                                             )}
                                             {attachment.width && attachment.height && (
                                               <span className="text-xs">• {attachment.width}×{attachment.height}</span>
@@ -540,8 +542,9 @@ function DashboardPageContent() {
                                           </>
                                         );
                                       } else if (mimeType.startsWith('audio/')) {
-                                        // Formater la durée audio
-                                        const formatAudioDuration = (seconds: number): string => {
+                                        // Formater la durée audio (convertir ms en secondes)
+                                        const formatAudioDuration = (milliseconds: number): string => {
+                                          const seconds = Math.floor(milliseconds / 1000);
                                           const hours = Math.floor(seconds / 3600);
                                           const mins = Math.floor((seconds % 3600) / 60);
                                           const secs = Math.floor(seconds % 60);

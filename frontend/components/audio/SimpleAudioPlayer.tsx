@@ -80,7 +80,8 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
 
   // Extraire les valeurs primitives pour éviter les re-renders
   const attachmentId = attachment.id;
-  const attachmentDuration = attachment.duration;
+  // duration est stocké en MILLISECONDES dans la DB, convertir en secondes pour l'affichage
+  const attachmentDuration = attachment.duration ? attachment.duration / 1000 : undefined;
   const attachmentMimeType = attachment.mimeType;
   const attachmentFileUrl = attachment.fileUrl;
 
@@ -1728,7 +1729,7 @@ export const CompactAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
 
       {/* Durée */}
       <span className="text-sm font-mono text-blue-700 dark:text-blue-300">
-        {formatDuration(attachment.duration || 0)}
+        {formatDuration(attachmentDuration || 0)}
       </span>
 
       {/* Audio element caché */}

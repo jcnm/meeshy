@@ -314,12 +314,11 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
         setAudioFormat(format);
 
         // APPROCHE HYBRIDE: Utiliser le timer ET extraire la durée du blob pour vérification
-        // Timer: Rapide et fiable pour l'instant
+        // IMPORTANT: Tout est calculé en MILLISECONDES pour préserver la précision
         const timerDurationMs = recordedDurationRef.current;
-        const timerDurationSec = timerDurationMs / 1000;
 
         // Blob extraction: Plus précis mais peut échouer sur certains navigateurs
-        let blobDurationSec = 0;
+        let blobDurationMs = 0;
         let durationSource = 'timer';
 
         try {
@@ -331,7 +330,8 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
           await Promise.race([
             new Promise<void>((resolve) => {
               tempAudio.addEventListener('loadedmetadata', () => {
-                blobDurationSec = tempAudio.duration;
+                // Convertir secondes du blob en millisecondes (arrondi pour éviter 0.999999...)
+                blobDurationMs = Math.round(tempAudio.duration * 1000);
                 resolve();
               }, { once: true });
               tempAudio.load();
@@ -344,17 +344,17 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
           // Nettoyer l'URL temporaire
           URL.revokeObjectURL(tempAudioUrl);
 
-          // Comparer les deux sources: utiliser blob si valide et proche du timer (< 1s de différence)
-          if (blobDurationSec > 0 && isFinite(blobDurationSec)) {
-            const difference = Math.abs(blobDurationSec - timerDurationSec);
-            if (difference < 1) {
+          // Comparer les deux sources: utiliser blob si valide et proche du timer (< 1000ms de différence)
+          if (blobDurationMs > 0 && isFinite(blobDurationMs)) {
+            const differenceMs = Math.abs(blobDurationMs - timerDurationMs);
+            if (differenceMs < 1000) {
               durationSource = 'blob (verified)';
             } else {
               durationSource = 'timer (blob mismatch)';
               console.warn('⚠️ [AudioRecorder] Blob duration differs from timer:', {
-                timerSec: timerDurationSec,
-                blobSec: blobDurationSec,
-                differenceSec: difference
+                timerMs: timerDurationMs,
+                blobMs: blobDurationMs,
+                differenceMs
               });
             }
           }
@@ -363,11 +363,13 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
           durationSource = 'timer (blob extraction failed)';
         }
 
-        // Utiliser la meilleure source disponible
-        const finalDurationSec = (blobDurationSec > 0 && isFinite(blobDurationSec) && Math.abs(blobDurationSec - timerDurationSec) < 1)
-          ? blobDurationSec
-          : timerDurationSec;
+        // Utiliser la meilleure source disponible (EN MILLISECONDES)
+        const finalDurationMs = (blobDurationMs > 0 && isFinite(blobDurationMs) && Math.abs(blobDurationMs - timerDurationMs) < 1000)
+          ? blobDurationMs
+          : timerDurationMs;
 
+        // Calculer bitrate (nécessite conversion en secondes)
+        const finalDurationSec = finalDurationMs / 1000;
         const estimatedBitrate = finalDurationSec > 0
           ? Math.round((blob.size * 8) / finalDurationSec) // bits per second
           : 0;
@@ -375,8 +377,8 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
         console.log('⏱️ [AudioRecorderWithEffects] Duration calculation:', {
           recordingTimeState: recordingTime,
           timerDurationMs,
-          timerDurationSec,
-          blobDurationSec,
+          blobDurationMs,
+          finalDurationMs,
           finalDurationSec,
           durationSource,
           blobSize: blob.size,
@@ -385,7 +387,7 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
         });
 
         const metadata: AudioMetadata = {
-          duration: finalDurationSec,
+          duration: finalDurationMs, // ✅ STOCKÉ EN MILLISECONDES
           codec: format,
           mimeType: mimeType,
           bitrate: estimatedBitrate,
