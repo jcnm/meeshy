@@ -368,13 +368,19 @@ const ConversationItem = memo(function ConversationItem({
                       </>
                     );
                   } else if (mimeType.startsWith('video/')) {
-                    // Convertir durée de millisecondes en secondes
-                    const durationSec = attachment.duration ? Math.floor(attachment.duration / 1000) : 0;
+                    // Formater durée avec millisecondes
+                    const formatVideoDuration = (milliseconds: number): string => {
+                      const totalSeconds = Math.floor(milliseconds / 1000);
+                      const ms = Math.floor((milliseconds % 1000) / 10); // Centièmes
+                      const mins = Math.floor(totalSeconds / 60);
+                      const secs = totalSeconds % 60;
+                      return `${mins}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
+                    };
                     return (
                       <>
                         <span className="inline-flex text-red-500">🎥</span>
                         {attachment.duration && (
-                          <span className="text-xs">{Math.floor(durationSec / 60)}:{(durationSec % 60).toString().padStart(2, '0')}</span>
+                          <span className="text-xs">{formatVideoDuration(attachment.duration)}</span>
                         )}
                         {attachment.width && attachment.height && (
                           <span className="text-xs">• {attachment.width}×{attachment.height}</span>
@@ -416,16 +422,17 @@ const ConversationItem = memo(function ConversationItem({
                       effectDisplay = '🎚️';
                     }
 
-                    // Formater la durée: MM:SS si < 1h, sinon HH:MM:SS (convertir ms en secondes)
+                    // Formater la durée avec millisecondes: MM:SS.ms si < 1h, sinon HH:MM:SS.ms
                     const formatAudioDuration = (milliseconds: number): string => {
-                      const seconds = Math.floor(milliseconds / 1000);
-                      const hours = Math.floor(seconds / 3600);
-                      const mins = Math.floor((seconds % 3600) / 60);
-                      const secs = Math.floor(seconds % 60);
+                      const totalSeconds = Math.floor(milliseconds / 1000);
+                      const ms = Math.floor((milliseconds % 1000) / 10); // Centièmes
+                      const hours = Math.floor(totalSeconds / 3600);
+                      const mins = Math.floor((totalSeconds % 3600) / 60);
+                      const secs = Math.floor(totalSeconds % 60);
                       if (hours > 0) {
-                        return `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                        return `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
                       }
-                      return `${mins}:${secs.toString().padStart(2, '0')}`;
+                      return `${mins}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
                     };
 
                     return (

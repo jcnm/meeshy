@@ -276,10 +276,10 @@ export function AudioEffectsCarousel({
                     />
                   </div>
 
-                  {/* Title */}
-                  <div className="text-center mt-1 sm:mt-2">
+                  {/* Title - Caché sur mobile, visible sur desktop */}
+                  <div className="hidden sm:block text-center mt-2">
                     <p className={cn(
-                      "text-[10px] sm:text-xs font-semibold leading-tight transition-all",
+                      "text-xs font-semibold leading-tight transition-all",
                       isActive && "text-white drop-shadow-lg"
                     )}>
                       {tile.title}

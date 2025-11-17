@@ -94,11 +94,25 @@ const AudioFilePreview = React.memo(function AudioFilePreview({
     }
   };
 
+  // Handler pour permettre de cliquer sur la barre de progression pour changer la position
+  const handleProgressBarClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    if (audioRef.current && audioDuration > 0) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const percentage = clickX / rect.width;
+      const newTime = percentage * audioDuration;
+      audioRef.current.currentTime = newTime;
+      setCurrentTime(newTime);
+    }
+  };
+
   const formatTime = (seconds: number): string => {
-    if (!isFinite(seconds) || isNaN(seconds)) return '0:00';
+    if (!isFinite(seconds) || isNaN(seconds)) return '0:00.00';
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    const ms = Math.floor((seconds % 1) * 100); // Centièmes de seconde
+    return `${mins}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
   };
 
   if (!audioUrl) return null;
@@ -132,10 +146,13 @@ const AudioFilePreview = React.memo(function AudioFilePreview({
           </div>
         </div>
 
-        {/* Barre de progression */}
-        <div className="relative w-full h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+        {/* Barre de progression - Interactive */}
+        <div
+          className="relative w-full h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden cursor-pointer hover:h-1.5 transition-all"
+          onClick={handleProgressBarClick}
+        >
           <div
-            className="absolute top-0 left-0 h-full bg-green-600 dark:bg-green-500 rounded-full transition-all duration-100"
+            className="absolute top-0 left-0 h-full bg-green-600 dark:bg-green-500 rounded-full transition-all duration-100 pointer-events-none"
             style={{
               width: `${audioDuration > 0 ? (currentTime / audioDuration) * 100 : 0}%`
             }}
