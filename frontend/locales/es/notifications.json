@@ -1,0 +1,66 @@
+{
+  "notifications": {
+    "pageTitle": "Notificaciones",
+    "markAllRead": "Marcar todo como leído",
+    "unread": "No leídas",
+    "totalNotifications": "notificaciones en total",
+    "preferences": "Preferencias",
+    "quickActions": "Acciones rápidas",
+    "service": "Servicio",
+    "systemStatus": "Estado del sistema",
+    "search": "Buscar en las notificaciones...",
+    "noResults": "No se encontraron notificaciones",
+    "empty": {
+      "title": "No hay notificaciones",
+      "description": "No tiene nuevas notificaciones por el momento"
+    },
+    "types": {
+      "message": "Mensaje",
+      "new_message": "Nuevo mensaje",
+      "missed_call": "Llamada perdida",
+      "mention": "Mención",
+      "user_mentioned": "Ha sido mencionado",
+      "invitation": "Invitación",
+      "system": "Sistema",
+      "conversation": "Conversación",
+      "translation": "Traducción"
+    },
+    "unreadCount": {
+      "empty": "No hay notificaciones no leídas",
+      "single": "{count} notificación no leída de {total}",
+      "plural": "{count} notificaciones no leídas de {total}",
+      "allRead": "{total} notificación{plural} (todas leídas)"
+    },
+    "timeAgo": {
+      "now": "Ahora mismo",
+      "minute": "hace {count} minuto",
+      "hour": "hace {count} hora",
+      "day": "hace {count} día"
+    },
+    "attachments": {
+      "audio": "Audio",
+      "video": "Video",
+      "document": "Documento",
+      "image": "Imagen",
+      "code": "Código",
+      "text": "Texto",
+      "duration": "{duration}",
+      "pages": "{count} páginas",
+      "lines": "{count} líneas",
+      "dimensions": "{width}x{height}"
+    },
+    "actions": {
+      "markAsRead": "Marcar como leído",
+      "markAsUnread": "Marcar como no leído",
+      "delete": "Eliminar",
+      "viewConversation": "Ver la conversación"
+    },
+    "settings": {
+      "title": "Configuración de notificaciones",
+      "emailNotifications": "Notificaciones por email",
+      "pushNotifications": "Notificaciones push",
+      "desktopNotifications": "Notificaciones de escritorio",
+      "soundEnabled": "Sonido activado"
+    }
+  }
+}
