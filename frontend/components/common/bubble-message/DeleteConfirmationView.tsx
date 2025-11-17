@@ -62,9 +62,15 @@ export const DeleteConfirmationView = memo(function DeleteConfirmationView({
   const reactionCount = message.reactions?.length || 0;
 
   // Tronquer le contenu pour l'aperçu
-  const previewContent = message.content.length > 100
-    ? `${message.content.substring(0, 100)}...`
-    : message.content;
+  // Si le message est vide mais a des attachments, afficher les noms des fichiers
+  const hasContent = message.content && message.content.trim().length > 0;
+  const previewContent = hasContent
+    ? (message.content.length > 100
+        ? `${message.content.substring(0, 100)}...`
+        : message.content)
+    : (attachmentCount > 0
+        ? message.attachments!.map(att => att.originalName).join(', ')
+        : t('emptyMessage') || '(Message vide)');
 
   // Version mobile épurée (alerte simple)
   if (isMobile) {
