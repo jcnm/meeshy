@@ -234,6 +234,11 @@
       "title": "Configurações de privacidade",
       "description": "Controle suas configurações de privacidade e dados"
     },
+    "languageSelector": {
+      "placeholder": "Selecionar um idioma...",
+      "searchPlaceholder": "Pesquisar um idioma...",
+      "noLanguageFound": "Nenhum idioma encontrado."
+    },
     "noUserConnected": "Nenhum usuário conectado"
   }
 }

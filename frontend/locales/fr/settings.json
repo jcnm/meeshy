@@ -234,6 +234,11 @@
       "title": "Paramètres de confidentialité",
       "description": "Contrôlez vos paramètres de confidentialité et de données"
     },
+    "languageSelector": {
+      "placeholder": "Sélectionner une langue...",
+      "searchPlaceholder": "Rechercher une langue...",
+      "noLanguageFound": "Aucune langue trouvée."
+    },
     "noUserConnected": "Aucun utilisateur connecté"
   }
 }

@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { User as UserType, SUPPORTED_LANGUAGES, LanguageCode } from '@/types';
 import { FontSelector } from '@/components/settings/font-selector';
+import { LanguageSelector } from '@/components/settings/language-selector';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { useI18n } from '@/hooks/useI18n';
@@ -238,40 +239,24 @@ export function SettingsLayout({ currentUser, initialTab = 'profile' }: Settings
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="systemLanguage" className="text-sm">Langue du système</Label>
-                      <Select
+                      <LanguageSelector
                         value={localSettings.systemLanguage}
                         onValueChange={(value) => updateSetting('systemLanguage', value)}
-                      >
-                        <SelectTrigger className="mt-1">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {SUPPORTED_LANGUAGES.map((lang: LanguageCode) => (
-                            <SelectItem key={lang.code} value={lang.code}>
-                              {lang.flag} {lang.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        languages={SUPPORTED_LANGUAGES}
+                        placeholder="Choisir la langue du système"
+                        className="mt-1"
+                      />
                     </div>
 
                     <div>
                       <Label htmlFor="regionalLanguage" className="text-sm">Langue régionale</Label>
-                      <Select
+                      <LanguageSelector
                         value={localSettings.regionalLanguage}
                         onValueChange={(value) => updateSetting('regionalLanguage', value)}
-                      >
-                        <SelectTrigger className="mt-1">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {SUPPORTED_LANGUAGES.map((lang: LanguageCode) => (
-                            <SelectItem key={lang.code} value={lang.code}>
-                              {lang.flag} {lang.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        languages={SUPPORTED_LANGUAGES}
+                        placeholder="Choisir la langue régionale"
+                        className="mt-1"
+                      />
                     </div>
                   </div>
                 </div>
@@ -334,21 +319,13 @@ export function SettingsLayout({ currentUser, initialTab = 'profile' }: Settings
                 {localSettings.useCustomDestination && (
                   <div>
                     <Label htmlFor="customDestinationLanguage" className="text-sm">Langue de destination personnalisée</Label>
-                    <Select 
-                      value={localSettings.customDestinationLanguage || ''} 
+                    <LanguageSelector
+                      value={localSettings.customDestinationLanguage || ''}
                       onValueChange={(value) => updateSetting('customDestinationLanguage', value)}
-                    >
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Choisir une langue" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {SUPPORTED_LANGUAGES.map((lang: LanguageCode) => (
-                          <SelectItem key={lang.code} value={lang.code}>
-                            {lang.flag} {lang.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      languages={SUPPORTED_LANGUAGES}
+                      placeholder="Choisir une langue de destination"
+                      className="mt-1"
+                    />
                   </div>
                 )}
               </div>

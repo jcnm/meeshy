@@ -234,6 +234,11 @@
       "title": "Privacy Settings",
       "description": "Control your privacy and data settings"
     },
+    "languageSelector": {
+      "placeholder": "Select a language...",
+      "searchPlaceholder": "Search for a language...",
+      "noLanguageFound": "No language found."
+    },
     "noUserConnected": "No user connected"
   }
 }
