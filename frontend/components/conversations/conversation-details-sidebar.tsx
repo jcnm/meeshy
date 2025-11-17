@@ -864,6 +864,7 @@ interface ConversationDetailsSidebarProps {
   messages: Message[];
   isOpen: boolean;
   onClose: () => void;
+  onConversationUpdated?: (updatedConversation: Partial<Conversation>) => void;
 }
 
 
@@ -872,7 +873,8 @@ export function ConversationDetailsSidebar({
   currentUser,
   messages,
   isOpen,
-  onClose
+  onClose,
+  onConversationUpdated
 }: ConversationDetailsSidebarProps) {
   const { t } = useI18n('conversations');
   
@@ -1016,10 +1018,12 @@ export function ConversationDetailsSidebar({
         return;
       }
       
-      await conversationsService.updateConversation(conversation.id, {
-        title: conversationName.trim()
-      });
-      
+      const updatedData = { title: conversationName.trim() };
+      await conversationsService.updateConversation(conversation.id, updatedData);
+
+      // Mettre à jour la conversation localement
+      onConversationUpdated?.(updatedData);
+
       setIsEditingName(false);
       toast.success(t('conversationDetails.nameUpdated'));
     } catch (error) {
@@ -1058,10 +1062,12 @@ export function ConversationDetailsSidebar({
         return;
       }
       
-      await conversationsService.updateConversation(conversation.id, {
-        description: conversationDescription.trim()
-      });
-      
+      const updatedData = { description: conversationDescription.trim() };
+      await conversationsService.updateConversation(conversation.id, updatedData);
+
+      // Mettre à jour la conversation localement
+      onConversationUpdated?.(updatedData);
+
       setIsEditingDescription(false);
       toast.success(t('conversationDetails.descriptionUpdated') || 'Description mise à jour avec succès');
     } catch (error) {
@@ -1127,16 +1133,14 @@ export function ConversationDetailsSidebar({
         const imageUrl = uploadResult.attachments[0].url;
 
         // Mettre à jour la conversation avec la nouvelle image
-        await conversationsService.updateConversation(conversation.id, {
-          image: imageUrl,
-          avatar: imageUrl
-        });
+        const updatedData = { image: imageUrl, avatar: imageUrl };
+        await conversationsService.updateConversation(conversation.id, updatedData);
+
+        // Mettre à jour la conversation localement
+        onConversationUpdated?.(updatedData);
 
         toast.success(t('conversationDetails.imageUpdated') || 'Image de la conversation mise à jour');
         setIsImageUploadDialogOpen(false);
-
-        // Recharger la page pour afficher la nouvelle image
-        window.location.reload();
       } else {
         throw new Error('Upload failed');
       }

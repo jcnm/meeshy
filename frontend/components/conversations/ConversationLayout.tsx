@@ -1503,6 +1503,18 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     };
   }, [selectedConversation?.id, setConversations]);
 
+  // Callback pour mettre à jour la conversation après modification des détails
+  const handleConversationUpdated = useCallback((updatedData: Partial<Conversation>) => {
+    if (!selectedConversation) return;
+
+    // Mettre à jour la conversation dans la liste
+    setConversations(prev => prev.map(conv =>
+      conv.id === selectedConversation.id
+        ? { ...conv, ...updatedData }
+        : conv
+    ));
+  }, [selectedConversation, setConversations]);
+
   // Loader d'authentification
   if (isAuthChecking) {
     return (
@@ -1624,6 +1636,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               messages={messages}
               isOpen={isDetailsOpen}
               onClose={() => setIsDetailsOpen(false)}
+              onConversationUpdated={handleConversationUpdated}
             />
           )}
         </div>
@@ -1825,6 +1838,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
             messages={messages}
             isOpen={isDetailsOpen}
             onClose={() => setIsDetailsOpen(false)}
+            onConversationUpdated={handleConversationUpdated}
           />
         )}
       </div>
