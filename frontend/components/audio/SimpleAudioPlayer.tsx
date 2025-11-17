@@ -85,17 +85,15 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
   const attachmentMimeType = attachment.mimeType;
   const attachmentFileUrl = attachment.fileUrl;
 
-  // Extraire les effets appliqués depuis la timeline - VERSION ROBUSTE
+  // Extraire les effets appliqués depuis la timeline
   const appliedEffects = useMemo((): AudioEffectType[] => {
-    // audioEffectsTimeline peut être soit directement sur attachment (upload response)
-    // soit dans attachment.metadata (messages récupérés depuis la DB)
-    const timeline = (attachment as any).audioEffectsTimeline || (attachment as any).metadata?.audioEffectsTimeline;
+    // audioEffectsTimeline est stocké dans metadata
+    const timeline = (attachment as any).metadata?.audioEffectsTimeline;
 
     console.log('🎭 [SimpleAudioPlayer] Extraction timeline des effets:', {
       attachmentId: attachment.id,
-      hasAudioEffectsTimeline: !!(attachment as any).audioEffectsTimeline,
       hasMetadata: !!(attachment as any).metadata,
-      hasMetadataTimeline: !!(attachment as any).metadata?.audioEffectsTimeline,
+      hasAudioEffectsTimeline: !!timeline,
       timeline: timeline,
       timelineEvents: timeline?.events,
       timelineMetadata: timeline?.metadata,
