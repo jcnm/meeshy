@@ -313,25 +313,79 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
                       mimeType.includes('ogg') ? 'OGG' : 'AUDIO';
         setAudioFormat(format);
 
-        // Utiliser la durée capturée dans stopRecording (évite problème de closure et timing)
-        const actualDurationMs = recordedDurationRef.current;
-        const durationInSeconds = actualDurationMs / 1000;
-        const estimatedBitrate = durationInSeconds > 0
-          ? Math.round((blob.size * 8) / durationInSeconds) // bits per second
+        // APPROCHE HYBRIDE: Utiliser le timer ET extraire la durée du blob pour vérification
+        // Timer: Rapide et fiable pour l'instant
+        const timerDurationMs = recordedDurationRef.current;
+        const timerDurationSec = timerDurationMs / 1000;
+
+        // Blob extraction: Plus précis mais peut échouer sur certains navigateurs
+        let blobDurationSec = 0;
+        let durationSource = 'timer';
+
+        try {
+          // Créer un audio temporaire pour extraire la durée
+          const tempAudioUrl = URL.createObjectURL(blob);
+          const tempAudio = new Audio(tempAudioUrl);
+
+          // Attendre le chargement des métadonnées avec timeout de 2 secondes
+          await Promise.race([
+            new Promise<void>((resolve) => {
+              tempAudio.addEventListener('loadedmetadata', () => {
+                blobDurationSec = tempAudio.duration;
+                resolve();
+              }, { once: true });
+              tempAudio.load();
+            }),
+            new Promise<void>((_, reject) =>
+              setTimeout(() => reject(new Error('Timeout')), 2000)
+            )
+          ]);
+
+          // Nettoyer l'URL temporaire
+          URL.revokeObjectURL(tempAudioUrl);
+
+          // Comparer les deux sources: utiliser blob si valide et proche du timer (< 1s de différence)
+          if (blobDurationSec > 0 && isFinite(blobDurationSec)) {
+            const difference = Math.abs(blobDurationSec - timerDurationSec);
+            if (difference < 1) {
+              durationSource = 'blob (verified)';
+            } else {
+              durationSource = 'timer (blob mismatch)';
+              console.warn('⚠️ [AudioRecorder] Blob duration differs from timer:', {
+                timerSec: timerDurationSec,
+                blobSec: blobDurationSec,
+                differenceSec: difference
+              });
+            }
+          }
+        } catch (error) {
+          console.warn('⚠️ [AudioRecorder] Failed to extract duration from blob, using timer:', error);
+          durationSource = 'timer (blob extraction failed)';
+        }
+
+        // Utiliser la meilleure source disponible
+        const finalDurationSec = (blobDurationSec > 0 && isFinite(blobDurationSec) && Math.abs(blobDurationSec - timerDurationSec) < 1)
+          ? blobDurationSec
+          : timerDurationSec;
+
+        const estimatedBitrate = finalDurationSec > 0
+          ? Math.round((blob.size * 8) / finalDurationSec) // bits per second
           : 0;
 
         console.log('⏱️ [AudioRecorderWithEffects] Duration calculation:', {
           recordingTimeState: recordingTime,
-          recordedDurationMs: recordedDurationRef.current,
-          actualDurationMs,
-          durationInSeconds,
+          timerDurationMs,
+          timerDurationSec,
+          blobDurationSec,
+          finalDurationSec,
+          durationSource,
           blobSize: blob.size,
           estimatedBitrate,
           bitrateKbps: Math.round(estimatedBitrate / 1000)
         });
 
         const metadata: AudioMetadata = {
-          duration: durationInSeconds,
+          duration: finalDurationSec,
           codec: format,
           mimeType: mimeType,
           bitrate: estimatedBitrate,
