@@ -40,7 +40,10 @@
     "validate": "npm run typecheck && echo '✅ Types validation réussie - Alignement avec schema.prisma vérifié'",
     "prebuild": "npm run clean",
     "prisma:studio": "prisma studio --schema=./schema.prisma",
-    "prisma:format": "prisma format --schema=./schema.prisma"
+    "prisma:format": "prisma format --schema=./schema.prisma",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "keywords": [
     "meeshy",
@@ -57,7 +60,11 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.11.30",
+    "jest": "^30.0.5",
     "prisma": "^6.19.0",
+    "ts-jest": "^29.4.0",
     "typescript": "^5.8.3"
   },
   "engines": {
