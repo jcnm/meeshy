@@ -299,17 +299,28 @@ export const AudioRecorderWithEffects = forwardRef<AudioRecorderWithEffectsRef, 
                       mimeType.includes('ogg') ? 'OGG' : 'AUDIO';
         setAudioFormat(format);
 
+        // Calculer le bitrate estimé depuis la taille du blob
+        const durationInSeconds = recordingTime / 1000;
+        const estimatedBitrate = durationInSeconds > 0
+          ? Math.round((blob.size * 8) / durationInSeconds) // bits per second
+          : 0;
+
         const metadata: AudioMetadata = {
-          duration: recordingTime / 1000,
+          duration: durationInSeconds,
           codec: format,
           mimeType: mimeType,
+          bitrate: estimatedBitrate,
+          sampleRate: 48000, // Sample rate utilisé dans getUserMedia
           ...(audioEffectsTimeline && { audioEffectsTimeline }),
         };
 
         console.log('📦 [AudioRecorder] Metadata prepared for upload:', {
           metadata,
           hasAudioEffectsTimeline: !!metadata.audioEffectsTimeline,
-          audioEffectsTimelineEvents: metadata.audioEffectsTimeline?.events?.length || 0
+          audioEffectsTimelineEvents: metadata.audioEffectsTimeline?.events?.length || 0,
+          bitrate: estimatedBitrate,
+          bitrateKbps: Math.round(estimatedBitrate / 1000),
+          sampleRate: 48000
         });
 
         onRecordingComplete(blob, metadata.duration, metadata);
