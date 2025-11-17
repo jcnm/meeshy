@@ -289,6 +289,8 @@ export class ConversationsService {
           pageCount: att.pageCount ? Number(att.pageCount) : undefined,
           // Métadonnées code/texte
           lineCount: att.lineCount ? Number(att.lineCount) : undefined,
+          // Metadata JSON (audioEffectsTimeline, etc.) - CRITIQUE pour effets audio
+          metadata: att.metadata || undefined,
           // Général
           uploadedBy: String(att.uploadedBy || msg.senderId || msg.anonymousSenderId || ''),
           isAnonymous: Boolean(att.isAnonymous),
