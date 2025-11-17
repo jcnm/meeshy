@@ -174,7 +174,7 @@ export function ConversationParticipantsDrawer({
       >
         <Users className="h-5 w-5" />
         {participants.length > 0 && (
-          <div className="absolute -top-1 -right-1 h-5 w-5 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center font-medium">
+          <div className={`absolute -top-1 -right-1 h-5 w-5 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-medium ${participants.length > 99 ? 'text-[9px]' : 'text-xs'}`}>
             {participants.length > 99 ? '99+' : participants.length}
           </div>
         )}

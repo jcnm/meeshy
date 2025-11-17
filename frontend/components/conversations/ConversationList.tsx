@@ -490,7 +490,7 @@ const ConversationItem = memo(function ConversationItem({
       {conversation.unreadCount !== undefined && conversation.unreadCount > 0 && (
         <Badge
           variant="destructive"
-          className="ml-2 flex-shrink-0 h-5 min-w-[20px] px-1.5"
+          className={`ml-2 flex-shrink-0 h-5 min-w-[20px] px-1.5 ${conversation.unreadCount > 99 ? 'text-[9px]' : ''}`}
         >
           {conversation.unreadCount > 99 ? '99+' : conversation.unreadCount}
         </Badge>
