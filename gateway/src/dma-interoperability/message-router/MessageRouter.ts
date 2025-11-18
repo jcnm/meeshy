@@ -33,6 +33,7 @@
 import { XMPPClient, XMPPStanza } from '../xmpp/XMPPClient';
 import { SignalProtocolEngine, EncryptedMessage } from '../signal-protocol/SignalProtocolEngine';
 import { NoiseProtocol } from '../noise-protocol/NoiseProtocol';
+import { MessageQueue } from './MessageQueue';
 import { PrismaClient } from '../../../shared/prisma/client';
 import { ProtocolMessage } from '../../adapters/ProtocolAdapter';
 import * as crypto from 'crypto';
@@ -62,6 +63,7 @@ export class MessageRouter {
   private xmppClient: XMPPClient;
   private signalEngine: SignalProtocolEngine;
   private noiseProtocol: NoiseProtocol;
+  private messageQueue: MessageQueue;
   private prisma: PrismaClient;
 
   // Session management
@@ -70,7 +72,9 @@ export class MessageRouter {
 
   // Message tracking
   private messageStatus: Map<string, MessageStatus> = new Map();
-  private messageQueue: ProtocolMessage[] = [];
+
+  // Legacy in-memory queue (for backward compatibility)
+  private legacyMessageQueue: ProtocolMessage[] = [];
 
   // Statistics
   private stats = {
@@ -79,32 +83,79 @@ export class MessageRouter {
     messagesDecrypted: 0,
     deliveryReceipts: 0,
     routingErrors: 0,
-    sessionsActive: 0
+    sessionsActive: 0,
+    queuedMessages: 0
   };
 
   constructor(xmppClient: XMPPClient, signalEngine: SignalProtocolEngine, prisma: PrismaClient) {
     this.xmppClient = xmppClient;
     this.signalEngine = signalEngine;
     this.noiseProtocol = new NoiseProtocol();
+    this.messageQueue = new MessageQueue(prisma);
     this.prisma = prisma;
 
     // Register XMPP message handler
     this.xmppClient.onMessage(this.handleIncomingXMPPMessage.bind(this));
 
-    console.log('✅ Message Router initialized');
+    console.log('✅ Message Router initialized with Message Queue');
   }
 
   /**
-   * Route outgoing message from app → WhatsApp
+   * Initialize the message router and its components
+   */
+  async initialize(): Promise<void> {
+    try {
+      await this.messageQueue.initialize();
+      console.log('✅ Message Router and Queue initialized');
+    } catch (error) {
+      console.error('❌ Failed to initialize Message Router:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Start processing queued messages
+   */
+  async startQueueProcessing(intervalMs: number = 5000): Promise<void> {
+    console.log(`⏰ Starting queue processing every ${intervalMs}ms`);
+
+    const processInterval = setInterval(async () => {
+      try {
+        await this.messageQueue.processQueue();
+      } catch (error) {
+        console.error('Error processing queue:', error);
+      }
+    }, intervalMs);
+
+    // Store interval ID for cleanup
+    (this as any).queueProcessInterval = processInterval;
+  }
+
+  /**
+   * Stop processing queued messages
+   */
+  async stopQueueProcessing(): Promise<void> {
+    const intervalId = (this as any).queueProcessInterval;
+    if (intervalId) {
+      clearInterval(intervalId);
+      console.log('✅ Queue processing stopped');
+    }
+  }
+
+  /**
+   * Route outgoing message from app → WhatsApp (via Message Queue)
    *
    * Steps:
    * 1. Validate message format
-   * 2. Get or create session with recipient
-   * 3. Encrypt with Signal Protocol
-   * 4. Create XMPP stanza
-   * 5. Apply Noise Protocol transport encryption
-   * 6. Send via XMPP
-   * 7. Track message status
+   * 2. Enqueue message for reliable delivery
+   * 3. Return immediately (async processing)
+   * 4. Queue will handle encryption, routing, and retries
+   *
+   * Benefits:
+   * - Messages persist even if service restarts
+   * - Automatic retry with exponential backoff
+   * - Rate limiting and backpressure
+   * - Message deduplication
    */
   async routeOutgoing(message: ProtocolMessage): Promise<{
     success: boolean;
@@ -113,27 +164,80 @@ export class MessageRouter {
     error?: string;
     errorCode?: string;
   }> {
-    console.log(`📤 Routing outgoing message: ${message.id || 'new'}`);
+    console.log(`📤 Queuing outgoing message: ${message.id || 'new'}`);
 
     try {
       // Step 1: Validate message
-      if (!message.recipientId || !message.content) {
-        throw new Error('Missing recipientId or content');
+      if (!message.recipientId || !message.text) {
+        throw new Error('Missing recipientId or text content');
       }
 
-      const messageId = message.id || this.generateMessageId();
+      const messageId = message.protocolMessageId || this.generateMessageId();
 
-      // Step 2: Get or create session
-      const sessionId = await this.getOrCreateSession(message.senderId || 'meeshy', message.recipientId);
+      // Step 2: Enqueue message with priority
+      // Priority: 10 = high, 5 = normal, 1 = low
+      const priority = (message.metadata?.priority as number) || 5;
 
-      // Step 3: Encrypt with Signal Protocol
+      const queuedMessageId = await this.messageQueue.enqueueMessage(
+        { ...message, protocolMessageId: messageId } as ProtocolMessage,
+        priority,
+        {
+          sessionId: await this.getOrCreateSession(message.senderId || 'meeshy', message.recipientId),
+          routedAt: new Date().toISOString()
+        }
+      );
+
+      // Step 3: Track message status
+      this.messageStatus.set(messageId, {
+        status: 'pending',
+        updatedAt: new Date(),
+        metadata: { queuedMessageId, enqueuedAt: new Date() }
+      });
+
+      this.stats.queuedMessages++;
+      console.log(`✅ Message queued successfully: ${messageId} (will be sent asynchronously)`);
+
+      return {
+        success: true,
+        messageId,
+        externalMessageId: queuedMessageId
+      };
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`❌ Failed to queue message: ${msg}`);
+      this.stats.routingErrors++;
+
+      return {
+        success: false,
+        error: msg,
+        errorCode: 'ROUTING_ERROR'
+      };
+    }
+  }
+
+  /**
+   * Send queued message directly via XMPP (called by message queue processor)
+   * This is the actual message transmission logic
+   */
+  async sendQueuedMessage(message: ProtocolMessage): Promise<boolean> {
+    try {
+      const messageId = message.protocolMessageId || this.generateMessageId();
+      console.log(`📤 Sending queued message: ${messageId}`);
+
+      // Get or create session
+      const sessionId = await this.getOrCreateSession(
+        message.senderId || 'meeshy',
+        message.recipientId
+      );
+
+      // Encrypt with Signal Protocol
       const encryptedContent = await this.signalEngine.encryptMessage(
-        message.content,
+        message.text || message.metadata?.content || '',
         message.recipientId
       );
       this.stats.messagesEncrypted++;
 
-      // Step 4: Create XMPP stanza with encrypted content
+      // Create XMPP stanza with encrypted content
       const xmppStanza: XMPPStanza = {
         type: 'message',
         from: this.xmppClient.getStatus().jid || 'meeshy@meeshy.dma.example.com',
@@ -147,7 +251,7 @@ export class MessageRouter {
         }
       };
 
-      // Step 5: Apply Noise Protocol transport encryption
+      // Apply Noise Protocol transport encryption
       const noiseSession = this.sessions.get(sessionId)?.noiseSessionId;
       if (noiseSession && this.noiseProtocol.isSessionReady(noiseSession)) {
         const transportEncrypted = this.noiseProtocol.encryptMessage(
@@ -157,33 +261,23 @@ export class MessageRouter {
         xmppStanza.body = transportEncrypted.toString('base64');
       }
 
-      // Step 6: Send via XMPP
+      // Send via XMPP
       await this.xmppClient.sendStanza(xmppStanza);
       this.stats.messagesRouted++;
 
-      // Step 7: Track message status
+      // Update message status
       this.messageStatus.set(messageId, {
         status: 'sent',
         updatedAt: new Date()
       });
 
-      console.log(`✅ Message routed successfully: ${messageId}`);
-
-      return {
-        success: true,
-        messageId,
-        externalMessageId: messageId
-      };
+      console.log(`✅ Queued message sent successfully: ${messageId}`);
+      return true;
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Unknown error';
-      console.error(`❌ Failed to route message: ${msg}`);
+      console.error(`❌ Failed to send queued message: ${msg}`);
       this.stats.routingErrors++;
-
-      return {
-        success: false,
-        error: msg,
-        errorCode: 'ROUTING_ERROR'
-      };
+      throw error;
     }
   }
 

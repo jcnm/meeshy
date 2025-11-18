@@ -103,6 +103,17 @@ export interface WhatsAppWebhookPayload {
   }>;
 }
 
+/**
+ * Retry configuration for exponential backoff
+ */
+interface RetryConfig {
+  maxRetries: number;
+  initialDelayMs: number;
+  maxDelayMs: number;
+  backoffMultiplier: number;
+  jitterFactor: number;
+}
+
 export class WhatsAppDMAAdapter implements IProtocolAdapter {
   readonly protocol = 'whatsapp-dma';
 
@@ -111,6 +122,15 @@ export class WhatsAppDMAAdapter implements IProtocolAdapter {
   private baseUrl = 'https://graph.instagram.com';
   private apiVersion = 'v18.0';
   private messageStatusCache = new Map<string, any>();
+
+  // Retry configuration with exponential backoff
+  private retryConfig: RetryConfig = {
+    maxRetries: 5,
+    initialDelayMs: 100, // Start with 100ms
+    maxDelayMs: 32000, // Cap at 32 seconds
+    backoffMultiplier: 2, // Double delay each retry
+    jitterFactor: 0.1 // 10% jitter to prevent thundering herd
+  };
 
   async configure(config: ProtocolAdapterConfig): Promise<void> {
     if (!config.phoneNumberId || !config.businessAccountId || !config.apiKey) {
@@ -140,8 +160,30 @@ export class WhatsAppDMAAdapter implements IProtocolAdapter {
     }
 
     try {
-      const whatsappMessage = this.convertToWhatsAppMessage(message);
-      const endpoint = `${this.baseUrl}/${this.apiVersion}/${this.config!.phoneNumberId}/messages`;
+      return await this.sendMessageWithRetry(message, 0);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return {
+        success: false,
+        error: errorMessage,
+        errorCode: 'NETWORK_ERROR'
+      };
+    }
+  }
+
+  /**
+   * Send message with exponential backoff retry logic
+   * Retries on transient errors (network issues, rate limits, temporary failures)
+   */
+  private async sendMessageWithRetry(
+    message: ProtocolMessage,
+    attemptNumber: number
+  ): Promise<ProtocolAdapterOutcome> {
+    const whatsappMessage = this.convertToWhatsAppMessage(message);
+    const endpoint = `${this.baseUrl}/${this.apiVersion}/${this.config!.phoneNumberId}/messages`;
+
+    try {
+      console.log(`📤 WhatsApp send attempt ${attemptNumber + 1}/${this.retryConfig.maxRetries + 1}`);
 
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -160,41 +202,123 @@ export class WhatsAppDMAAdapter implements IProtocolAdapter {
 
       const data: any = await response.json();
 
-      if (!response.ok) {
+      // Success case
+      if (response.ok) {
+        // Cache message status
+        if (data.messages?.[0]?.id) {
+          this.messageStatusCache.set(data.messages[0].id, {
+            status: 'sent',
+            timestamp: new Date(),
+            externalMessageId: data.messages[0].id
+          });
+        }
+
+        console.log(`✅ Message sent successfully on attempt ${attemptNumber + 1}`);
         return {
-          success: false,
-          error: data.error?.message || 'Failed to send message',
-          errorCode: data.error?.code?.toString() || 'SEND_FAILED',
-          metadata: data.error
+          success: true,
+          messageId: message.protocolMessageId,
+          externalMessageId: data.messages?.[0]?.id,
+          metadata: {
+            contacts: data.contacts,
+            messaging_product: 'whatsapp',
+            retryAttempts: attemptNumber
+          }
         };
       }
 
-      // Cache message status
-      if (data.messages?.[0]?.id) {
-        this.messageStatusCache.set(data.messages[0].id, {
-          status: 'sent',
-          timestamp: new Date(),
-          externalMessageId: data.messages[0].id
-        });
+      // Check if error is retryable
+      const errorCode = data.error?.code;
+      const isRetryable = this.isRetryableError(response.status, errorCode);
+
+      if (isRetryable && attemptNumber < this.retryConfig.maxRetries) {
+        const delayMs = this.calculateExponentialBackoff(attemptNumber);
+        console.warn(
+          `⚠️  Retryable error (${response.status}/${errorCode}), ` +
+          `waiting ${delayMs}ms before retry...`
+        );
+
+        await this.sleep(delayMs);
+        return this.sendMessageWithRetry(message, attemptNumber + 1);
       }
 
+      // Non-retryable or max retries exceeded
+      console.error(`❌ Send failed: ${data.error?.message || 'Unknown error'}`);
       return {
-        success: true,
-        messageId: message.protocolMessageId,
-        externalMessageId: data.messages?.[0]?.id,
+        success: false,
+        error: data.error?.message || 'Failed to send message',
+        errorCode: data.error?.code?.toString() || 'SEND_FAILED',
         metadata: {
-          contacts: data.contacts,
-          messaging_product: 'whatsapp'
+          ...data.error,
+          retryAttempts: attemptNumber,
+          isRetryable
         }
       };
     } catch (error) {
+      // Network error - potentially retryable
+      if (attemptNumber < this.retryConfig.maxRetries) {
+        const delayMs = this.calculateExponentialBackoff(attemptNumber);
+        console.warn(
+          `⚠️  Network error (${error instanceof Error ? error.message : 'unknown'}), ` +
+          `waiting ${delayMs}ms before retry...`
+        );
+
+        await this.sleep(delayMs);
+        return this.sendMessageWithRetry(message, attemptNumber + 1);
+      }
+
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      return {
-        success: false,
-        error: errorMessage,
-        errorCode: 'NETWORK_ERROR'
-      };
+      console.error(`❌ Send failed after ${attemptNumber + 1} attempts: ${errorMessage}`);
+      throw error;
     }
+  }
+
+  /**
+   * Calculate exponential backoff delay with jitter
+   * Formula: min(maxDelay, initialDelay * (multiplier ^ attempt) * (1 ± jitter))
+   */
+  private calculateExponentialBackoff(attemptNumber: number): number {
+    const exponentialDelay = this.retryConfig.initialDelayMs *
+      Math.pow(this.retryConfig.backoffMultiplier, attemptNumber);
+
+    const cappedDelay = Math.min(exponentialDelay, this.retryConfig.maxDelayMs);
+
+    // Add random jitter (±10%) to prevent thundering herd
+    const jitterAmount = cappedDelay * this.retryConfig.jitterFactor;
+    const jitter = (Math.random() - 0.5) * 2 * jitterAmount;
+
+    return Math.floor(cappedDelay + jitter);
+  }
+
+  /**
+   * Determine if error is retryable (transient)
+   * Retryable: 429 (rate limit), 500-599 (server errors), network timeouts
+   * Non-retryable: 401 (auth), 403 (forbidden), 400 (bad request)
+   */
+  private isRetryableError(statusCode: number, errorCode?: number): boolean {
+    // HTTP status codes that are retryable
+    if (statusCode === 429 || statusCode >= 500) {
+      return true;
+    }
+
+    // WhatsApp API error codes that are retryable
+    const retryableErrorCodes = [
+      80003, // Rate limiting
+      80005, // Not available
+      80007, // Not allowed
+    ];
+
+    if (errorCode && retryableErrorCodes.includes(errorCode)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Sleep helper for delays
+   */
+  private sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   async sendBulkMessages(messages: ProtocolMessage[]): Promise<ProtocolAdapterOutcome[]> {
