@@ -20,6 +20,13 @@ __pycache__/
 models
 .models
 
+# Test coverage reports
+coverage.xml
+coverage_html/
+.coverage
+.pytest_cache/
+htmlcov/
+
 # Development services
 src/services/database_service_simple.py
 src/services/database_service_postgresql.py
