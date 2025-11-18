@@ -7,6 +7,7 @@
 
 import { IProtocolAdapter, ProtocolAdapterConfig } from '../adapters/ProtocolAdapter';
 import { WhatsAppDMAAdapter } from '../adapters/WhatsAppDMAAdapter';
+import { iMessageAdapter } from '../adapters/iMessageAdapter';
 
 type ProtocolType = 'whatsapp-dma' | 'imessage' | 'signal' | 'telegram' | string;
 
@@ -23,6 +24,7 @@ export class ProtocolAdapterManager {
    */
   private registerDefaultAdapters(): void {
     this.adapters.set('whatsapp-dma', new WhatsAppDMAAdapter());
+    this.adapters.set('imessage', new iMessageAdapter());
   }
 
   /**
