@@ -313,7 +313,7 @@ export class AdapterFactory {
 
   private static async createCustomSignalAdapter(): Promise<ISignalProtocolAdapter> {
     const { SignalProtocolAdapter } = await import(
-      '../dma-interoperability/signal-protocol/adapters/SignalProtocolAdapter'
+      '../signal-protocol/adapters/SignalProtocolAdapter'
     );
     return new SignalProtocolAdapter();
   }
@@ -327,7 +327,7 @@ export class AdapterFactory {
   }
 
   private static async createCustomXMPPAdapter(): Promise<IXMPPAdapter> {
-    const { XMPPAdapter } = await import('../dma-interoperability/xmpp/adapters/XMPPAdapter');
+    const { XMPPAdapter } = await import('../xmpp/adapters/XMPPAdapter');
     return new XMPPAdapter();
   }
 
@@ -341,7 +341,7 @@ export class AdapterFactory {
 
   private static async createCustomPushAdapter(): Promise<IPushNotificationAdapter> {
     const { PushNotificationAdapter } = await import(
-      '../dma-interoperability/push-notification/adapters/PushNotificationAdapter'
+      '../push-notification/adapters/PushNotificationAdapter'
     );
     return new PushNotificationAdapter();
   }
@@ -356,7 +356,7 @@ export class AdapterFactory {
 
   private static async createCustomNoiseAdapter(): Promise<INoiseAdapter> {
     const { NoiseAdapter } = await import(
-      '../dma-interoperability/noise-protocol/adapters/NoiseAdapter'
+      '../noise-protocol/adapters/NoiseAdapter'
     );
     return new NoiseAdapter();
   }
