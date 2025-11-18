@@ -1198,3 +1198,171 @@ enum EncryptionMode {
   hybrid     // E2E + serveur (recommandé)
   e2e_only   // E2E pur
 }
+
+// ============================================================================
+// Signal Protocol - End-to-End Encryption
+// ============================================================================
+// These models implement persistent storage for Signal Protocol encryption
+// used for WhatsApp DMA integration, iMessage bridge, and other E2E messaging
+// ============================================================================
+
+/// Signal Protocol Session Storage
+/// Stores encrypted session state for each conversation
+model SignalSession {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  /// Composite key: "userId.deviceId"
+  address     String   @unique
+  /// User ID this session belongs to
+  userId      String   @db.ObjectId
+  /// Remote user ID
+  remoteUserId String  @db.ObjectId
+  /// Device ID (default: 1)
+  deviceId    Int      @default(1)
+  /// Serialized session record (encrypted)
+  record      Bytes
+  /// Session creation timestamp
+  createdAt   DateTime @default(now())
+  /// Last update timestamp
+  updatedAt   DateTime @updatedAt
+
+  @@index([address])
+  @@index([userId])
+  @@index([remoteUserId])
+  @@map("signal_sessions")
+}
+
+/// Signal Protocol Identity Key Storage
+/// Stores identity keys for remote users
+model SignalIdentity {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  /// Remote user address (userId)
+  address     String   @unique
+  /// Our user ID (owner of this identity store)
+  ourUserId   String   @db.ObjectId
+  /// Remote user's identity key (public)
+  identityKey Bytes
+  /// When this identity was first seen
+  createdAt   DateTime @default(now())
+  /// Last verification timestamp
+  verifiedAt  DateTime?
+
+  @@index([address])
+  @@index([ourUserId])
+  @@map("signal_identities")
+}
+
+/// Signal Protocol Pre-Key Storage
+/// One-time pre-keys for establishing new sessions
+model SignalPreKey {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  /// User who owns this pre-key
+  userId    String   @db.ObjectId
+  /// Pre-key ID (numeric identifier)
+  keyId     Int
+  /// Serialized pre-key record (encrypted)
+  record    Bytes
+  /// Whether this pre-key has been used
+  isUsed    Boolean  @default(false)
+  /// When it was used (if applicable)
+  usedAt    DateTime?
+  /// Creation timestamp
+  createdAt DateTime @default(now())
+
+  @@unique([userId, keyId])
+  @@index([userId])
+  @@index([userId, isUsed])
+  @@map("signal_pre_keys")
+}
+
+/// Signal Protocol Signed Pre-Key Storage
+/// Signed pre-keys with longer lifetime
+model SignalSignedPreKey {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  /// User who owns this signed pre-key
+  userId    String   @db.ObjectId
+  /// Signed pre-key ID
+  keyId     Int
+  /// Serialized signed pre-key record (encrypted)
+  record    Bytes
+  /// Creation timestamp (also in the record)
+  createdAt DateTime @default(now())
+  /// Expiration timestamp (rotate every 30 days)
+  expiresAt DateTime
+
+  @@unique([userId, keyId])
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("signal_signed_pre_keys")
+}
+
+/// Signal Protocol Kyber Pre-Key Storage
+/// Post-quantum Kyber pre-keys for quantum-resistant encryption
+model SignalKyberPreKey {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  /// User who owns this Kyber pre-key
+  userId    String   @db.ObjectId
+  /// Kyber pre-key ID
+  keyId     Int
+  /// Serialized Kyber pre-key record (encrypted)
+  record    Bytes
+  /// Whether this key has been used
+  used      Boolean  @default(false)
+  /// When it was used (if applicable)
+  usedAt    DateTime?
+  /// Associated signed pre-key ID (when used)
+  signedPreKeyId Int?
+  /// Creation timestamp
+  createdAt DateTime @default(now())
+  /// Expiration timestamp
+  expiresAt DateTime
+
+  @@unique([userId, keyId])
+  @@index([userId])
+  @@index([userId, used])
+  @@index([expiresAt])
+  @@map("signal_kyber_pre_keys")
+}
+
+/// Signal Protocol Identity Key Pair
+/// Stores the user's own identity key pair (one per user)
+model SignalIdentityKeyPair {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  /// User ID who owns this identity
+  userId          String   @unique @db.ObjectId
+  /// Registration ID (random number for session uniqueness)
+  registrationId  Int
+  /// Encrypted private key (encrypted with user's master key)
+  privateKeyEnc   Bytes
+  /// Public key (stored unencrypted)
+  publicKey       Bytes
+  /// Creation timestamp
+  createdAt       DateTime @default(now())
+  /// Last rotation timestamp
+  rotatedAt       DateTime?
+
+  @@index([userId])
+  @@map("signal_identity_key_pairs")
+}
+
+/// Signal Protocol Key Rotation Schedule
+/// Tracks when keys should be rotated for security
+model SignalKeyRotation {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  /// User ID
+  userId            String   @db.ObjectId
+  /// Type of key to rotate
+  keyType           String   // "signed_pre_key", "kyber_pre_key", "pre_keys"
+  /// Last rotation timestamp
+  lastRotatedAt     DateTime
+  /// Next scheduled rotation
+  nextRotationAt    DateTime
+  /// Rotation interval in days
+  intervalDays      Int      @default(30)
+  /// Auto-rotate enabled
+  autoRotate        Boolean  @default(true)
+
+  @@unique([userId, keyType])
+  @@index([userId])
+  @@index([nextRotationAt])
+  @@map("signal_key_rotations")
+}
