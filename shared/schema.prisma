@@ -18,6 +18,8 @@ model User {
   bio                         String                   @default("")
   email                       String                   @unique
   phoneNumber                 String?
+  whatsAppPhoneNumber         String?                  @unique
+  whatsAppId                  String?                  @unique
   password                    String
   displayName                 String?
   avatar                      String?
@@ -97,9 +99,10 @@ model Conversation {
   isActive              Boolean                  @default(true)
   isArchived            Boolean                  @default(false)
   lastMessageAt         DateTime                 @default(now())
+  metadata              Json?
   createdAt             DateTime                 @default(now())
   updatedAt             DateTime                 @updatedAt
-  
+
   anonymousParticipants AnonymousParticipant[]
   members               ConversationMember[]
   preferences           ConversationPreference[]
@@ -220,9 +223,10 @@ model Message {
   deletedAt         DateTime?
   replyToId         String?               @db.ObjectId
   validatedMentions String[]              @default([]) // Usernames des mentions validées (pour performance)
+  metadata          Json?
   createdAt         DateTime              @default(now())
   updatedAt         DateTime              @updatedAt
-  
+
   status            MessageStatus[]       @relation("MessageStatusMessage")
   statusResponses   MessageStatus[]       @relation("MessageStatusResponse")
   translations      MessageTranslation[]

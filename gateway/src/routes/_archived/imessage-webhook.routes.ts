@@ -8,7 +8,7 @@
  * - Connection status
  */
 
-import { Router, Request, Response } from 'express';
+import { FastifyRequest, FastifyReply } from 'fastify';
 import { PrismaClient } from '../../shared/prisma/client';
 import { MessagingService } from '../services/MessagingService';
 import { iMessageWebhookService } from '../services/iMessageWebhookService';

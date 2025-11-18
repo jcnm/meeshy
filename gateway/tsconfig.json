@@ -59,5 +59,7 @@
   "exclude": [
     "node_modules",
     "dist",
+    "src/routes/_archived/**/*",
+    "src/services/_archived/**/*"
   ]
 }

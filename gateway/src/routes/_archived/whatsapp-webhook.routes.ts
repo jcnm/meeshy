@@ -6,7 +6,7 @@
  * - Message/status updates (POST)
  */
 
-import { Router, Request, Response } from 'express';
+import { FastifyRequest, FastifyReply } from 'fastify';
 import { PrismaClient } from '../../shared/prisma/client';
 import { MessagingService } from '../services/MessagingService';
 import { WhatsAppWebhookService } from '../services/WhatsAppWebhookService';

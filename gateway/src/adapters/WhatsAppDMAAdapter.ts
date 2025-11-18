@@ -235,6 +235,7 @@ export class WhatsAppDMAAdapter implements IProtocolAdapter {
       senderId: message.from,
       senderPhoneNumber: message.from,
       senderName: contact?.profile?.name || `User ${message.from}`,
+      recipientId: metadata?.display_phone_number || 'unknown',
       recipientPhoneNumber: metadata?.display_phone_number,
       text: message.text?.body || '',
       media,

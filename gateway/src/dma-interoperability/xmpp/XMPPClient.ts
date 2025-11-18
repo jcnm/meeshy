@@ -61,7 +61,7 @@ export class XMPPClient {
     messagesReceived: 0,
     messagesSent: 0,
     reconnections: 0,
-    lastConnected?: Date;
+    lastConnected?: Date
   };
 
   constructor(config: DMAConfig) {

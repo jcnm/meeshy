@@ -2633,20 +2633,13 @@ export async function adminRoutes(fastify: FastifyInstance) {
             rankings = await fastify.prisma.trackingLink.findMany({
               select: {
                 id: true,
-                shortCode: true,
+                token: true,
+                shortUrl: true,
                 originalUrl: true,
-                title: true,
+                name: true,
                 totalClicks: true,
                 uniqueClicks: true,
-                createdAt: true,
-                createdBy: {
-                  select: {
-                    id: true,
-                    username: true,
-                    displayName: true,
-                    avatar: true
-                  }
-                }
+                createdAt: true
               },
               where: startDate ? {
                 createdAt: { gte: startDate }
@@ -2668,20 +2661,13 @@ export async function adminRoutes(fastify: FastifyInstance) {
             rankings = await fastify.prisma.trackingLink.findMany({
               select: {
                 id: true,
-                shortCode: true,
+                token: true,
+                shortUrl: true,
                 originalUrl: true,
-                title: true,
+                name: true,
                 totalClicks: true,
                 uniqueClicks: true,
-                createdAt: true,
-                createdBy: {
-                  select: {
-                    id: true,
-                    username: true,
-                    displayName: true,
-                    avatar: true
-                  }
-                }
+                createdAt: true
               },
               where: startDate ? {
                 createdAt: { gte: startDate }
@@ -2717,14 +2703,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
                     type: true
                   }
                 },
-                createdBy: {
-                  select: {
-                    id: true,
-                    username: true,
-                    displayName: true,
-                    avatar: true
-                  }
-                }
+                createdBy: true
               },
               where: {
                 isActive: true,
@@ -2761,14 +2740,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
                     type: true
                   }
                 },
-                createdBy: {
-                  select: {
-                    id: true,
-                    username: true,
-                    displayName: true,
-                    avatar: true
-                  }
-                }
+                createdBy: true
               },
               where: {
                 isActive: true,
