@@ -22,7 +22,8 @@ import {
   X,
   Sun,
   Moon,
-  Laptop
+  Laptop,
+  Trophy
 } from 'lucide-react';
 import { PermissionsService } from '@/services/permissions.service';
 import { toast } from 'sonner';
@@ -100,6 +101,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage }) => {
       icon: BarChart3,
       label: 'Analyses',
       href: '/admin/analytics',
+      permission: 'canViewAnalytics',
+    },
+    {
+      icon: Trophy,
+      label: 'Classements',
+      href: '/admin/ranking',
       permission: 'canViewAnalytics',
     },
     {
@@ -280,6 +287,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage }) => {
                     {currentPage === '/admin/moderation' && 'Modération'}
                     {currentPage === '/admin/audit' && 'Logs d\'audit'}
                     {currentPage === '/admin/analytics' && 'Analyses'}
+                    {currentPage === '/admin/ranking' && 'Classements'}
                     {currentPage === '/admin/settings' && 'Paramètres système'}
                   </h2>
                   <p className="text-xs sm:text-sm text-gray-500 mt-1 hidden sm:block">

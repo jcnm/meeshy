@@ -1329,4 +1329,460 @@ export async function adminRoutes(fastify: FastifyInstance) {
       });
     }
   });
+
+  // Classement/Ranking des utilisateurs et conversations
+  fastify.get('/ranking', {
+    onRequest: [fastify.authenticate, requireAdmin]
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const authContext = (request as any).authContext;
+      const user = authContext.registeredUser;
+      const permissions = permissionsService.getUserPermissions(user.role);
+
+      if (!permissions.canViewAnalytics) {
+        return reply.status(403).send({
+          success: false,
+          message: 'Permission insuffisante pour voir les classements'
+        });
+      }
+
+      const {
+        entityType = 'users',  // 'users' | 'conversations'
+        criterion = 'messages_sent',  // critère de classement
+        period = '7d',  // '24h' | '7d' | '30d' | '90d' | 'all'
+        limit = 50
+      } = request.query as any;
+
+      // Calculer la période
+      const now = new Date();
+      let startDate: Date | undefined = new Date();
+
+      if (period !== 'all') {
+        switch (period) {
+          case '24h':
+            startDate.setHours(startDate.getHours() - 24);
+            break;
+          case '7d':
+            startDate.setDate(startDate.getDate() - 7);
+            break;
+          case '30d':
+            startDate.setDate(startDate.getDate() - 30);
+            break;
+          case '90d':
+            startDate.setDate(startDate.getDate() - 90);
+            break;
+          default:
+            startDate.setDate(startDate.getDate() - 7);
+        }
+      } else {
+        startDate = undefined; // Pas de filtre de date pour 'all'
+      }
+
+      let rankings: any[] = [];
+
+      // Classement des utilisateurs
+      if (entityType === 'users') {
+        switch (criterion) {
+          case 'messages_sent':
+            rankings = await fastify.prisma.user.findMany({
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true,
+                _count: {
+                  select: {
+                    sentMessages: {
+                      where: startDate ? {
+                        createdAt: { gte: startDate },
+                        isDeleted: false
+                      } : { isDeleted: false }
+                    }
+                  }
+                }
+              },
+              where: {
+                deletedAt: null,
+                isActive: true
+              },
+              orderBy: {
+                sentMessages: {
+                  _count: 'desc'
+                }
+              },
+              take: parseInt(limit)
+            });
+            rankings = rankings.map(u => ({
+              ...u,
+              count: u._count.sentMessages,
+              _count: undefined
+            }));
+            break;
+
+          case 'reactions_given':
+            rankings = await fastify.prisma.user.findMany({
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true,
+                _count: {
+                  select: {
+                    reactions: {
+                      where: startDate ? {
+                        createdAt: { gte: startDate }
+                      } : {}
+                    }
+                  }
+                }
+              },
+              where: {
+                deletedAt: null,
+                isActive: true
+              },
+              orderBy: {
+                reactions: {
+                  _count: 'desc'
+                }
+              },
+              take: parseInt(limit)
+            });
+            rankings = rankings.map(u => ({
+              ...u,
+              count: u._count.reactions,
+              _count: undefined
+            }));
+            break;
+
+          case 'mentions_received':
+            rankings = await fastify.prisma.user.findMany({
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true,
+                _count: {
+                  select: {
+                    mentions: {
+                      where: startDate ? {
+                        mentionedAt: { gte: startDate }
+                      } : {}
+                    }
+                  }
+                }
+              },
+              where: {
+                deletedAt: null,
+                isActive: true
+              },
+              orderBy: {
+                mentions: {
+                  _count: 'desc'
+                }
+              },
+              take: parseInt(limit)
+            });
+            rankings = rankings.map(u => ({
+              ...u,
+              count: u._count.mentions,
+              _count: undefined
+            }));
+            break;
+
+          case 'conversations_joined':
+            rankings = await fastify.prisma.user.findMany({
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true,
+                _count: {
+                  select: {
+                    conversations: {
+                      where: startDate ? {
+                        joinedAt: { gte: startDate },
+                        isActive: true
+                      } : { isActive: true }
+                    }
+                  }
+                }
+              },
+              where: {
+                deletedAt: null,
+                isActive: true
+              },
+              orderBy: {
+                conversations: {
+                  _count: 'desc'
+                }
+              },
+              take: parseInt(limit)
+            });
+            rankings = rankings.map(u => ({
+              ...u,
+              count: u._count.conversations,
+              _count: undefined
+            }));
+            break;
+
+          case 'communities_created':
+            rankings = await fastify.prisma.user.findMany({
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true,
+                _count: {
+                  select: {
+                    createdCommunities: {
+                      where: startDate ? {
+                        createdAt: { gte: startDate }
+                      } : {}
+                    }
+                  }
+                }
+              },
+              where: {
+                deletedAt: null,
+                isActive: true
+              },
+              orderBy: {
+                createdCommunities: {
+                  _count: 'desc'
+                }
+              },
+              take: parseInt(limit)
+            });
+            rankings = rankings.map(u => ({
+              ...u,
+              count: u._count.createdCommunities,
+              _count: undefined
+            }));
+            break;
+
+          case 'share_links_created':
+            rankings = await fastify.prisma.user.findMany({
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true,
+                _count: {
+                  select: {
+                    createdShareLinks: {
+                      where: startDate ? {
+                        createdAt: { gte: startDate }
+                      } : {}
+                    }
+                  }
+                }
+              },
+              where: {
+                deletedAt: null,
+                isActive: true
+              },
+              orderBy: {
+                createdShareLinks: {
+                  _count: 'desc'
+                }
+              },
+              take: parseInt(limit)
+            });
+            rankings = rankings.map(u => ({
+              ...u,
+              count: u._count.createdShareLinks,
+              _count: undefined
+            }));
+            break;
+
+          default:
+            return reply.status(400).send({
+              success: false,
+              message: 'Critère de classement invalide pour les utilisateurs'
+            });
+        }
+      }
+      // Classement des conversations
+      else if (entityType === 'conversations') {
+        switch (criterion) {
+          case 'message_count':
+            rankings = await fastify.prisma.conversation.findMany({
+              select: {
+                id: true,
+                identifier: true,
+                title: true,
+                type: true,
+                avatar: true,
+                image: true,
+                _count: {
+                  select: {
+                    messages: {
+                      where: startDate ? {
+                        createdAt: { gte: startDate },
+                        isDeleted: false
+                      } : { isDeleted: false }
+                    }
+                  }
+                }
+              },
+              where: {
+                isActive: true,
+                type: { not: 'global' }  // Exclure les conversations globales
+              },
+              orderBy: {
+                messages: {
+                  _count: 'desc'
+                }
+              },
+              take: parseInt(limit)
+            });
+            rankings = rankings.map(c => ({
+              ...c,
+              count: c._count.messages,
+              _count: undefined
+            }));
+            break;
+
+          case 'member_count':
+            rankings = await fastify.prisma.conversation.findMany({
+              select: {
+                id: true,
+                identifier: true,
+                title: true,
+                type: true,
+                avatar: true,
+                image: true,
+                _count: {
+                  select: {
+                    members: {
+                      where: {
+                        isActive: true
+                      }
+                    }
+                  }
+                }
+              },
+              where: {
+                isActive: true,
+                type: { not: 'global' }
+              },
+              orderBy: {
+                members: {
+                  _count: 'desc'
+                }
+              },
+              take: parseInt(limit)
+            });
+            rankings = rankings.map(c => ({
+              ...c,
+              count: c._count.members,
+              _count: undefined
+            }));
+            break;
+
+          case 'reaction_count':
+            // Pour les réactions, on doit compter via les messages de la conversation
+            const conversationsWithReactions = await fastify.prisma.conversation.findMany({
+              select: {
+                id: true,
+                identifier: true,
+                title: true,
+                type: true,
+                avatar: true,
+                image: true,
+                messages: {
+                  select: {
+                    _count: {
+                      select: {
+                        reactions: {
+                          where: startDate ? {
+                            createdAt: { gte: startDate }
+                          } : {}
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              where: {
+                isActive: true,
+                type: { not: 'global' }
+              }
+            });
+
+            rankings = conversationsWithReactions
+              .map(c => ({
+                id: c.id,
+                identifier: c.identifier,
+                title: c.title,
+                type: c.type,
+                avatar: c.avatar,
+                image: c.image,
+                count: c.messages.reduce((sum, m) => sum + m._count.reactions, 0)
+              }))
+              .sort((a, b) => b.count - a.count)
+              .slice(0, parseInt(limit));
+            break;
+
+          case 'recent_activity':
+            rankings = await fastify.prisma.conversation.findMany({
+              select: {
+                id: true,
+                identifier: true,
+                title: true,
+                type: true,
+                avatar: true,
+                image: true,
+                lastMessageAt: true
+              },
+              where: {
+                isActive: true,
+                type: { not: 'global' },
+                ...(startDate ? { lastMessageAt: { gte: startDate } } : {})
+              },
+              orderBy: {
+                lastMessageAt: 'desc'
+              },
+              take: parseInt(limit)
+            });
+            rankings = rankings.map(c => ({
+              ...c,
+              lastActivity: c.lastMessageAt
+            }));
+            break;
+
+          default:
+            return reply.status(400).send({
+              success: false,
+              message: 'Critère de classement invalide pour les conversations'
+            });
+        }
+      } else {
+        return reply.status(400).send({
+          success: false,
+          message: 'Type d\'entité invalide. Utilisez "users" ou "conversations"'
+        });
+      }
+
+      return reply.send({
+        success: true,
+        data: {
+          entityType,
+          criterion,
+          period,
+          startDate: startDate?.toISOString(),
+          endDate: now.toISOString(),
+          rankings,
+          total: rankings.length
+        }
+      });
+
+    } catch (error) {
+      logError(fastify.log, 'Get ranking error:', error);
+      return reply.status(500).send({
+        success: false,
+        message: 'Erreur interne du serveur'
+      });
+    }
+  });
 }
