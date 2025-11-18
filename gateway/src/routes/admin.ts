@@ -1347,9 +1347,9 @@ export async function adminRoutes(fastify: FastifyInstance) {
       }
 
       const {
-        entityType = 'users',  // 'users' | 'conversations'
+        entityType = 'users',  // 'users' | 'conversations' | 'messages'
         criterion = 'messages_sent',  // critère de classement
-        period = '7d',  // '24h' | '7d' | '30d' | '90d' | 'all'
+        period = '7d',  // '1d' | '7d' | '30d' | '60d' | '90d' | '180d' | '365d' | 'all'
         limit = 50
       } = request.query as any;
 
@@ -1359,6 +1359,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
 
       if (period !== 'all') {
         switch (period) {
+          case '1d':
           case '24h':
             startDate.setHours(startDate.getHours() - 24);
             break;
@@ -1368,8 +1369,17 @@ export async function adminRoutes(fastify: FastifyInstance) {
           case '30d':
             startDate.setDate(startDate.getDate() - 30);
             break;
+          case '60d':
+            startDate.setDate(startDate.getDate() - 60);
+            break;
           case '90d':
             startDate.setDate(startDate.getDate() - 90);
+            break;
+          case '180d':
+            startDate.setDate(startDate.getDate() - 180);
+            break;
+          case '365d':
+            startDate.setDate(startDate.getDate() - 365);
             break;
           default:
             startDate.setDate(startDate.getDate() - 7);
@@ -1595,6 +1605,93 @@ export async function adminRoutes(fastify: FastifyInstance) {
             }));
             break;
 
+          case 'reactions_received':
+            // Compter les réactions reçues sur les messages de l'utilisateur
+            const usersWithReactionsReceived = await fastify.prisma.user.findMany({
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true,
+                sentMessages: {
+                  select: {
+                    _count: {
+                      select: {
+                        reactions: {
+                          where: startDate ? {
+                            createdAt: { gte: startDate }
+                          } : {}
+                        }
+                      }
+                    }
+                  },
+                  where: {
+                    isDeleted: false
+                  }
+                }
+              },
+              where: {
+                deletedAt: null,
+                isActive: true
+              }
+            });
+
+            rankings = usersWithReactionsReceived
+              .map(u => ({
+                id: u.id,
+                username: u.username,
+                displayName: u.displayName,
+                avatar: u.avatar,
+                count: u.sentMessages.reduce((sum, msg) => sum + msg._count.reactions, 0)
+              }))
+              .sort((a, b) => b.count - a.count)
+              .slice(0, parseInt(limit));
+            break;
+
+          case 'replies_received':
+            // Compter les réponses reçues aux messages de l'utilisateur
+            const usersWithRepliesReceived = await fastify.prisma.user.findMany({
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true,
+                sentMessages: {
+                  select: {
+                    _count: {
+                      select: {
+                        replies: {
+                          where: startDate ? {
+                            createdAt: { gte: startDate },
+                            isDeleted: false
+                          } : { isDeleted: false }
+                        }
+                      }
+                    }
+                  },
+                  where: {
+                    isDeleted: false
+                  }
+                }
+              },
+              where: {
+                deletedAt: null,
+                isActive: true
+              }
+            });
+
+            rankings = usersWithRepliesReceived
+              .map(u => ({
+                id: u.id,
+                username: u.username,
+                displayName: u.displayName,
+                avatar: u.avatar,
+                count: u.sentMessages.reduce((sum, msg) => sum + msg._count.replies, 0)
+              }))
+              .sort((a, b) => b.count - a.count)
+              .slice(0, parseInt(limit));
+            break;
+
           default:
             return reply.status(400).send({
               success: false,
@@ -1757,10 +1854,198 @@ export async function adminRoutes(fastify: FastifyInstance) {
               message: 'Critère de classement invalide pour les conversations'
             });
         }
+      }
+      // Classement des messages
+      else if (entityType === 'messages') {
+        switch (criterion) {
+          case 'most_reactions':
+            // Messages avec le plus de réactions
+            rankings = await fastify.prisma.message.findMany({
+              select: {
+                id: true,
+                content: true,
+                createdAt: true,
+                messageType: true,
+                conversationId: true,
+                senderId: true,
+                sender: {
+                  select: {
+                    id: true,
+                    username: true,
+                    displayName: true,
+                    avatar: true
+                  }
+                },
+                conversation: {
+                  select: {
+                    id: true,
+                    identifier: true,
+                    title: true,
+                    type: true
+                  }
+                },
+                _count: {
+                  select: {
+                    reactions: {
+                      where: startDate ? {
+                        createdAt: { gte: startDate }
+                      } : {}
+                    }
+                  }
+                }
+              },
+              where: {
+                isDeleted: false,
+                ...(startDate ? { createdAt: { gte: startDate } } : {}),
+                conversation: {
+                  type: { not: 'global' }
+                }
+              },
+              orderBy: {
+                reactions: {
+                  _count: 'desc'
+                }
+              },
+              take: parseInt(limit)
+            });
+            rankings = rankings.map(m => ({
+              ...m,
+              count: m._count.reactions,
+              _count: undefined,
+              // Tronquer le contenu pour l'affichage
+              contentPreview: m.content.length > 100 ? m.content.substring(0, 100) + '...' : m.content
+            }));
+            break;
+
+          case 'most_replies':
+            // Messages les plus répondus
+            rankings = await fastify.prisma.message.findMany({
+              select: {
+                id: true,
+                content: true,
+                createdAt: true,
+                messageType: true,
+                conversationId: true,
+                senderId: true,
+                sender: {
+                  select: {
+                    id: true,
+                    username: true,
+                    displayName: true,
+                    avatar: true
+                  }
+                },
+                conversation: {
+                  select: {
+                    id: true,
+                    identifier: true,
+                    title: true,
+                    type: true
+                  }
+                },
+                _count: {
+                  select: {
+                    replies: {
+                      where: startDate ? {
+                        createdAt: { gte: startDate },
+                        isDeleted: false
+                      } : { isDeleted: false }
+                    }
+                  }
+                }
+              },
+              where: {
+                isDeleted: false,
+                ...(startDate ? { createdAt: { gte: startDate } } : {}),
+                conversation: {
+                  type: { not: 'global' }
+                }
+              },
+              orderBy: {
+                replies: {
+                  _count: 'desc'
+                }
+              },
+              take: parseInt(limit)
+            });
+            rankings = rankings.map(m => ({
+              ...m,
+              count: m._count.replies,
+              _count: undefined,
+              // Tronquer le contenu pour l'affichage
+              contentPreview: m.content.length > 100 ? m.content.substring(0, 100) + '...' : m.content
+            }));
+            break;
+
+          case 'most_mentions':
+            // Messages avec le plus de mentions
+            rankings = await fastify.prisma.message.findMany({
+              select: {
+                id: true,
+                content: true,
+                createdAt: true,
+                messageType: true,
+                conversationId: true,
+                senderId: true,
+                sender: {
+                  select: {
+                    id: true,
+                    username: true,
+                    displayName: true,
+                    avatar: true
+                  }
+                },
+                conversation: {
+                  select: {
+                    id: true,
+                    identifier: true,
+                    title: true,
+                    type: true
+                  }
+                },
+                _count: {
+                  select: {
+                    mentions: {
+                      where: startDate ? {
+                        mentionedAt: { gte: startDate }
+                      } : {}
+                    }
+                  }
+                }
+              },
+              where: {
+                isDeleted: false,
+                ...(startDate ? { createdAt: { gte: startDate } } : {}),
+                conversation: {
+                  type: { not: 'global' }
+                }
+              },
+              orderBy: {
+                mentions: {
+                  _count: 'desc'
+                }
+              },
+              take: parseInt(limit)
+            });
+            rankings = rankings.map(m => ({
+              ...m,
+              count: m._count.mentions,
+              _count: undefined,
+              // Tronquer le contenu pour l'affichage
+              contentPreview: m.content.length > 100 ? m.content.substring(0, 100) + '...' : m.content
+            }));
+            break;
+
+          default:
+            return reply.status(400).send({
+              success: false,
+              message: 'Critère de classement invalide pour les messages'
+            });
+        }
       } else {
         return reply.status(400).send({
           success: false,
-          message: 'Type d\'entité invalide. Utilisez "users" ou "conversations"'
+          message: 'Type d\'entité invalide. Utilisez "users", "conversations" ou "messages"'
         });
       }
 

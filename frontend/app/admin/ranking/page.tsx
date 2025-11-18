@@ -24,7 +24,9 @@ import {
   UserPlus,
   Building2,
   Activity,
-  Clock
+  Clock,
+  Reply,
+  FileText
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
@@ -40,11 +42,30 @@ interface RankingItem {
   count?: number;
   lastActivity?: string;
   rank?: number;
+  // For messages
+  content?: string;
+  contentPreview?: string;
+  createdAt?: string;
+  messageType?: string;
+  sender?: {
+    id: string;
+    username: string;
+    displayName: string;
+    avatar?: string;
+  };
+  conversation?: {
+    id: string;
+    identifier: string;
+    title?: string;
+    type: string;
+  };
 }
 
 const USER_CRITERIA = [
   { value: 'messages_sent', label: 'Messages envoyés', icon: MessageSquare },
   { value: 'reactions_given', label: 'Réactions données', icon: Smile },
+  { value: 'reactions_received', label: 'Réactions reçues', icon: TrendingUp },
+  { value: 'replies_received', label: 'Réponses reçues', icon: Reply },
   { value: 'mentions_received', label: 'Mentions reçues', icon: AtSign },
   { value: 'conversations_joined', label: 'Conversations rejointes', icon: UserPlus },
   { value: 'communities_created', label: 'Communautés créées', icon: Building2 },
@@ -58,23 +79,32 @@ const CONVERSATION_CRITERIA = [
   { value: 'recent_activity', label: 'Activité récente', icon: Activity }
 ];
 
+const MESSAGE_CRITERIA = [
+  { value: 'most_reactions', label: 'Plus de réactions', icon: Smile },
+  { value: 'most_replies', label: 'Plus répondu', icon: Reply },
+  { value: 'most_mentions', label: 'Plus de mentions', icon: AtSign }
+];
+
 const PERIODS = [
-  { value: '24h', label: '24 heures' },
-  { value: '7d', label: '7 jours' },
-  { value: '30d', label: '30 jours' },
-  { value: '90d', label: '90 jours' },
+  { value: '1d', label: 'Jour (24h)' },
+  { value: '7d', label: 'Semaine (7j)' },
+  { value: '30d', label: 'Mois (30j)' },
+  { value: '60d', label: '2 mois (60j)' },
+  { value: '90d', label: 'Trimestre (90j)' },
+  { value: '180d', label: 'Semestre (180j)' },
+  { value: '365d', label: 'Année (365j)' },
   { value: 'all', label: 'Tous les temps' }
 ];
 
 const MEDAL_COLORS = [
   'text-yellow-500', // 1st place - Gold
   'text-gray-400',   // 2nd place - Silver
-  'text-amber-600'   // 3rd place - Bronze
+  'text-amber-700'   // 3rd place - Bronze
 ];
 
 export default function AdminRankingPage() {
   const router = useRouter();
-  const [entityType, setEntityType] = useState<'users' | 'conversations'>('users');
+  const [entityType, setEntityType] = useState<'users' | 'conversations' | 'messages'>('users');
   const [criterion, setCriterion] = useState('messages_sent');
   const [period, setPeriod] = useState('7d');
   const [limit, setLimit] = useState(50);
@@ -86,8 +116,10 @@ export default function AdminRankingPage() {
   useEffect(() => {
     if (entityType === 'users') {
       setCriterion('messages_sent');
-    } else {
+    } else if (entityType === 'conversations') {
       setCriterion('message_count');
+    } else if (entityType === 'messages') {
+      setCriterion('most_reactions');
     }
   }, [entityType]);
 
@@ -134,7 +166,9 @@ export default function AdminRankingPage() {
   };
 
   const getCriteriaList = () => {
-    return entityType === 'users' ? USER_CRITERIA : CONVERSATION_CRITERIA;
+    if (entityType === 'users') return USER_CRITERIA;
+    if (entityType === 'conversations') return CONVERSATION_CRITERIA;
+    return MESSAGE_CRITERIA;
   };
 
   const getCurrentCriterion = () => {
@@ -178,6 +212,17 @@ export default function AdminRankingPage() {
     }
   };
 
+  const getMessageTypeIcon = (type: string | undefined) => {
+    switch (type) {
+      case 'text': return '📝';
+      case 'image': return '🖼️';
+      case 'video': return '🎥';
+      case 'audio': return '🎵';
+      case 'file': return '📎';
+      default: return '📝';
+    }
+  };
+
   const getRankBadge = (rank: number) => {
     if (rank === 1) {
       return <Medal className={`h-6 w-6 ${MEDAL_COLORS[0]}`} />;
@@ -192,8 +237,8 @@ export default function AdminRankingPage() {
   return (
     <AdminLayout currentPage="/admin/ranking">
       <div className="space-y-6">
-        {/* Header with gradient */}
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg p-6 text-white shadow-lg">
+        {/* Header with GOLDEN gradient */}
+        <div className="bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600 rounded-lg p-6 text-white shadow-xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Button
@@ -207,10 +252,10 @@ export default function AdminRankingPage() {
               <div>
                 <h1 className="text-2xl font-bold flex items-center space-x-2">
                   <Trophy className="h-7 w-7" />
-                  <span>Classements</span>
+                  <span>Classements 🏆</span>
                 </h1>
-                <p className="text-purple-100 mt-1">
-                  Classez les utilisateurs et conversations selon différents critères
+                <p className="text-yellow-100 mt-1">
+                  Classez les utilisateurs, conversations et messages selon différents critères
                 </p>
               </div>
             </div>
@@ -218,22 +263,22 @@ export default function AdminRankingPage() {
         </div>
 
         {/* Filters */}
-        <Card>
-          <CardHeader>
+        <Card className="border-yellow-200 dark:border-yellow-800">
+          <CardHeader className="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20">
             <CardTitle className="flex items-center space-x-2">
-              <Star className="h-5 w-5 text-purple-600" />
+              <Star className="h-5 w-5 text-yellow-600" />
               <span>Filtres de classement</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {/* Entity Type */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Type d'entité
                 </label>
-                <Select value={entityType} onValueChange={(value: 'users' | 'conversations') => setEntityType(value)}>
-                  <SelectTrigger>
+                <Select value={entityType} onValueChange={(value: 'users' | 'conversations' | 'messages') => setEntityType(value)}>
+                  <SelectTrigger className="border-yellow-300 focus:ring-yellow-500">
                     <SelectValue placeholder="Sélectionnez le type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -249,6 +294,12 @@ export default function AdminRankingPage() {
                         <span>Conversations</span>
                       </div>
                     </SelectItem>
+                    <SelectItem value="messages">
+                      <div className="flex items-center space-x-2">
+                        <FileText className="h-4 w-4" />
+                        <span>Messages</span>
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -259,7 +310,7 @@ export default function AdminRankingPage() {
                   Critère
                 </label>
                 <Select value={criterion} onValueChange={setCriterion}>
-                  <SelectTrigger>
+                  <SelectTrigger className="border-yellow-300 focus:ring-yellow-500">
                     <SelectValue placeholder="Sélectionnez le critère" />
                   </SelectTrigger>
                   <SelectContent>
@@ -284,7 +335,7 @@ export default function AdminRankingPage() {
                   Période
                 </label>
                 <Select value={period} onValueChange={setPeriod}>
-                  <SelectTrigger>
+                  <SelectTrigger className="border-yellow-300 focus:ring-yellow-500">
                     <SelectValue placeholder="Sélectionnez la période" />
                   </SelectTrigger>
                   <SelectContent>
@@ -306,7 +357,7 @@ export default function AdminRankingPage() {
                   Nombre de résultats
                 </label>
                 <Select value={limit.toString()} onValueChange={(value) => setLimit(parseInt(value))}>
-                  <SelectTrigger>
+                  <SelectTrigger className="border-yellow-300 focus:ring-yellow-500">
                     <SelectValue placeholder="Nombre de résultats" />
                   </SelectTrigger>
                   <SelectContent>
@@ -322,16 +373,18 @@ export default function AdminRankingPage() {
         </Card>
 
         {/* Rankings */}
-        <Card>
-          <CardHeader>
+        <Card className="border-yellow-200 dark:border-yellow-800">
+          <CardHeader className="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20">
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Award className="h-5 w-5 text-purple-600" />
+                <Award className="h-5 w-5 text-yellow-600" />
                 <span>
-                  {entityType === 'users' ? 'Classement des utilisateurs' : 'Classement des conversations'}
+                  {entityType === 'users' && 'Classement des utilisateurs'}
+                  {entityType === 'conversations' && 'Classement des conversations'}
+                  {entityType === 'messages' && 'Classement des messages'}
                 </span>
               </div>
-              <Badge variant="outline" className="text-purple-600">
+              <Badge variant="outline" className="text-yellow-600 border-yellow-600">
                 {rankings.length} résultats
               </Badge>
             </CardTitle>
@@ -339,12 +392,12 @@ export default function AdminRankingPage() {
           <CardContent>
             {loading ? (
               <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-600"></div>
               </div>
             ) : error ? (
               <div className="text-center py-12">
                 <p className="text-red-600 dark:text-red-400">{error}</p>
-                <Button onClick={fetchRankings} className="mt-4">
+                <Button onClick={fetchRankings} className="mt-4 bg-yellow-600 hover:bg-yellow-700">
                   Réessayer
                 </Button>
               </div>
@@ -359,8 +412,8 @@ export default function AdminRankingPage() {
                     key={item.id}
                     className={`flex items-center justify-between p-4 rounded-lg transition-all hover:shadow-md ${
                       item.rank && item.rank <= 3
-                        ? 'bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/10 dark:to-orange-900/10 border border-yellow-200 dark:border-yellow-900/30'
-                        : 'bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800'
+                        ? 'bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/10 dark:to-amber-900/10 border-2 border-yellow-300 dark:border-yellow-700'
+                        : 'bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700'
                     }`}
                   >
                     {/* Rank and Avatar/Icon */}
@@ -371,9 +424,9 @@ export default function AdminRankingPage() {
 
                       {entityType === 'users' ? (
                         <>
-                          <Avatar className="h-12 w-12">
+                          <Avatar className="h-12 w-12 ring-2 ring-yellow-400">
                             <AvatarImage src={item.avatar} alt={item.displayName || item.username} />
-                            <AvatarFallback>
+                            <AvatarFallback className="bg-gradient-to-br from-yellow-400 to-amber-500 text-white">
                               {(item.displayName || item.username || 'U').charAt(0).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
@@ -386,9 +439,9 @@ export default function AdminRankingPage() {
                             </p>
                           </div>
                         </>
-                      ) : (
+                      ) : entityType === 'conversations' ? (
                         <>
-                          <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-2xl">
+                          <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center text-2xl ring-2 ring-yellow-400">
                             {item.image || item.avatar ? (
                               <img
                                 src={item.image || item.avatar}
@@ -404,13 +457,42 @@ export default function AdminRankingPage() {
                               {item.title || item.identifier}
                             </p>
                             <div className="flex items-center space-x-2">
-                              <Badge variant="outline" className="text-xs">
+                              <Badge variant="outline" className="text-xs border-yellow-400 text-yellow-700">
                                 {getTypeLabel(item.type)}
                               </Badge>
                               <span className="text-sm text-gray-500 dark:text-gray-400">
                                 {item.identifier}
                               </span>
                             </div>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center text-2xl ring-2 ring-yellow-400">
+                            {getMessageTypeIcon(item.messageType)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <Avatar className="h-6 w-6">
+                                <AvatarImage src={item.sender?.avatar} alt={item.sender?.displayName || item.sender?.username} />
+                                <AvatarFallback className="text-xs">
+                                  {(item.sender?.displayName || item.sender?.username || 'U').charAt(0).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {item.sender?.displayName || item.sender?.username}
+                              </span>
+                              <span className="text-xs text-gray-400">•</span>
+                              <span className="text-xs text-gray-500">
+                                {item.conversation?.title || item.conversation?.identifier}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                              {item.contentPreview || item.content}
+                            </p>
+                            <p className="text-xs text-gray-400 mt-1">
+                              {formatDate(item.createdAt)}
+                            </p>
                           </div>
                         </>
                       )}
@@ -429,9 +511,9 @@ export default function AdminRankingPage() {
                         <div className="text-right">
                           <div className="flex items-center space-x-2">
                             {getCurrentCriterion() && React.createElement(getCurrentCriterion()!.icon, {
-                              className: 'h-5 w-5 text-purple-600'
+                              className: 'h-5 w-5 text-yellow-600'
                             })}
-                            <span className="text-2xl font-bold text-purple-600">
+                            <span className="text-2xl font-bold text-yellow-600">
                               {formatCount(item.count)}
                             </span>
                           </div>
@@ -448,16 +530,16 @@ export default function AdminRankingPage() {
           </CardContent>
         </Card>
 
-        {/* Top 3 Podium (if applicable) */}
-        {!loading && rankings.length >= 3 && criterion !== 'recent_activity' && (
-          <Card>
-            <CardHeader>
+        {/* Top 3 Podium (if applicable and not messages) */}
+        {!loading && rankings.length >= 3 && criterion !== 'recent_activity' && entityType !== 'messages' && (
+          <Card className="border-yellow-200 dark:border-yellow-800">
+            <CardHeader className="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20">
               <CardTitle className="flex items-center space-x-2">
-                <Trophy className="h-5 w-5 text-yellow-500" />
-                <span>Podium</span>
+                <Trophy className="h-5 w-5 text-yellow-600" />
+                <span>Podium des champions</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-8">
               <div className="grid grid-cols-3 gap-4">
                 {/* 2nd Place */}
                 {rankings[1] && (
@@ -466,12 +548,12 @@ export default function AdminRankingPage() {
                       {entityType === 'users' ? (
                         <Avatar className="h-20 w-20 ring-4 ring-gray-300 dark:ring-gray-600">
                           <AvatarImage src={rankings[1].avatar} alt={rankings[1].displayName || rankings[1].username} />
-                          <AvatarFallback className="text-2xl">
+                          <AvatarFallback className="text-2xl bg-gradient-to-br from-gray-300 to-gray-400 text-white">
                             {(rankings[1].displayName || rankings[1].username || 'U').charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                       ) : (
-                        <div className="h-20 w-20 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-3xl ring-4 ring-gray-300 dark:ring-gray-600">
+                        <div className="h-20 w-20 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center text-3xl ring-4 ring-gray-300 dark:ring-gray-600">
                           {getTypeIcon(rankings[1].type)}
                         </div>
                       )}
@@ -497,12 +579,12 @@ export default function AdminRankingPage() {
                       {entityType === 'users' ? (
                         <Avatar className="h-24 w-24 ring-4 ring-yellow-400 dark:ring-yellow-500">
                           <AvatarImage src={rankings[0].avatar} alt={rankings[0].displayName || rankings[0].username} />
-                          <AvatarFallback className="text-3xl">
+                          <AvatarFallback className="text-3xl bg-gradient-to-br from-yellow-400 to-amber-500 text-white">
                             {(rankings[0].displayName || rankings[0].username || 'U').charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                       ) : (
-                        <div className="h-24 w-24 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-4xl ring-4 ring-yellow-400 dark:ring-yellow-500">
+                        <div className="h-24 w-24 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center text-4xl ring-4 ring-yellow-400 dark:ring-yellow-500">
                           {getTypeIcon(rankings[0].type)}
                         </div>
                       )}
@@ -518,6 +600,7 @@ export default function AdminRankingPage() {
                     <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-500 mt-1">
                       {formatCount(rankings[0].count)}
                     </p>
+                    <Trophy className="h-6 w-6 text-yellow-600 mx-auto mt-2" />
                   </div>
                 )}
 
@@ -528,12 +611,12 @@ export default function AdminRankingPage() {
                       {entityType === 'users' ? (
                         <Avatar className="h-16 w-16 ring-4 ring-amber-600 dark:ring-amber-700">
                           <AvatarImage src={rankings[2].avatar} alt={rankings[2].displayName || rankings[2].username} />
-                          <AvatarFallback className="text-xl">
+                          <AvatarFallback className="text-xl bg-gradient-to-br from-amber-600 to-amber-700 text-white">
                             {(rankings[2].displayName || rankings[2].username || 'U').charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                       ) : (
-                        <div className="h-16 w-16 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-2xl ring-4 ring-amber-600 dark:ring-amber-700">
+                        <div className="h-16 w-16 rounded-full bg-gradient-to-br from-amber-600 to-amber-700 flex items-center justify-center text-2xl ring-4 ring-amber-600 dark:ring-amber-700">
                           {getTypeIcon(rankings[2].type)}
                         </div>
                       )}
