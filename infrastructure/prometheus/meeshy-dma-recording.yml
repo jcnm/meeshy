@@ -1,0 +1,211 @@
+# Prometheus Recording Rules for Meeshy Signal DMA
+# Pre-computed metrics for faster dashboard queries and alerts
+
+groups:
+  - name: meeshy-dma-recording
+    interval: 30s
+    rules:
+      # ===== API Performance Metrics =====
+
+      # API request rate by method and status
+      - record: 'dma:http_requests:rate1m'
+        expr: |
+          sum by (method, status) (
+            rate(http_requests_total[1m])
+          )
+
+      # API latency percentiles
+      - record: 'dma:http_request_duration:p50'
+        expr: |
+          histogram_quantile(0.50,
+            sum by (le) (
+              rate(http_request_duration_seconds_bucket[5m])
+            )
+          )
+
+      - record: 'dma:http_request_duration:p99'
+        expr: |
+          histogram_quantile(0.99,
+            sum by (le) (
+              rate(http_request_duration_seconds_bucket[5m])
+            )
+          )
+
+      - record: 'dma:http_request_duration:p999'
+        expr: |
+          histogram_quantile(0.999,
+            sum by (le) (
+              rate(http_request_duration_seconds_bucket[5m])
+            )
+          )
+
+      # Error rate calculation
+      - record: 'dma:error_rate:1m'
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[1m]))
+            /
+            sum(rate(http_requests_total[1m]))
+          ) * 100
+
+      # ===== Message Processing Metrics =====
+
+      # Message encryption rate
+      - record: 'dma:messages_encrypted:rate1m'
+        expr: |
+          sum(rate(messages_encrypted_total[1m])) by (protocol)
+
+      # Message delivery rate
+      - record: 'dma:message_delivery_rate'
+        expr: |
+          (
+            sum(rate(messages_delivered_total[5m]))
+            /
+            sum(rate(messages_sent_total[5m]))
+          ) * 100
+
+      # Encryption latency percentiles
+      - record: 'dma:encryption_latency:p99'
+        expr: |
+          histogram_quantile(0.99,
+            sum by (le) (
+              rate(encryption_latency_seconds_bucket[5m])
+            )
+          )
+
+      # Offline message queue metrics
+      - record: 'dma:offline_queue:current_size'
+        expr: |
+          meeshy_offline_messages_queue_size
+
+      - record: 'dma:offline_queue:growth_rate'
+        expr: |
+          rate(meeshy_offline_messages_queue_size[5m])
+
+      # ===== Session & Connection Metrics =====
+
+      # XMPP active connections
+      - record: 'dma:xmpp_connections:active'
+        expr: |
+          xmpp_connections_active
+
+      # Session establishment rate
+      - record: 'dma:sessions:established:rate1m'
+        expr: |
+          sum(rate(sessions_established_total[1m])) by (type)
+
+      # Session setup latency
+      - record: 'dma:session_setup:p99'
+        expr: |
+          histogram_quantile(0.99,
+            sum by (le) (
+              rate(session_setup_duration_seconds_bucket[5m])
+            )
+          )
+
+      # ===== Database Metrics =====
+
+      # Database connection pool utilization
+      - record: 'dma:db_connection_pool:utilization'
+        expr: |
+          (meeshy_db_connections_active / meeshy_db_connections_max) * 100
+
+      # Database query latency
+      - record: 'dma:db_query_latency:p99'
+        expr: |
+          histogram_quantile(0.99,
+            sum by (le, operation) (
+              rate(db_query_duration_seconds_bucket[5m])
+            )
+          )
+
+      # MongoDB document operations rate
+      - record: 'dma:mongodb:ops:rate1m'
+        expr: |
+          sum by (type) (
+            rate(mongodb_opcounters_total[1m])
+          )
+
+      # ===== System Metrics =====
+
+      # CPU usage percentage
+      - record: 'dma:cpu_usage:percentage'
+        expr: |
+          (
+            100 - (
+              avg by (instance) (
+                irate(node_cpu_seconds_total{mode="idle"}[5m])
+              ) * 100
+            )
+          )
+
+      # Memory usage percentage
+      - record: 'dma:memory_usage:percentage'
+        expr: |
+          (
+            (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100
+          )
+
+      # Disk usage percentage
+      - record: 'dma:disk_usage:percentage'
+        expr: |
+          (
+            (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes)) * 100
+          ) and node_filesystem_readonly == 0
+
+      # Network interface traffic
+      - record: 'dma:network_io:bytes_in:rate1m'
+        expr: |
+          sum by (device) (
+            rate(node_network_receive_bytes_total[1m])
+          )
+
+      - record: 'dma:network_io:bytes_out:rate1m'
+        expr: |
+          sum by (device) (
+            rate(node_network_transmit_bytes_total[1m])
+          )
+
+      # ===== Derived Business Metrics =====
+
+      # Messages processed per second (overall)
+      - record: 'dma:throughput:messages_per_sec'
+        expr: |
+          (
+            sum(rate(messages_sent_total[1m]))
+            +
+            sum(rate(messages_received_total[1m]))
+          ) / 2
+
+      # Average message latency (all messages)
+      - record: 'dma:average_message_latency'
+        expr: |
+          (
+            histogram_quantile(0.50, rate(http_request_duration_seconds_bucket[5m]))
+            +
+            histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))
+          ) / 2
+
+      # Availability percentage (uptime-based)
+      - record: 'dma:service_availability:percentage'
+        expr: |
+          (
+            sum(rate(http_requests_total{status!="500"}[5m]))
+            /
+            sum(rate(http_requests_total[5m]))
+          ) * 100
+
+      # Cost metrics (if tracking)
+      - record: 'dma:database_size:mb'
+        expr: |
+          (mongodb_storage_totalSize_bytes / 1024 / 1024)
+
+      - record: 'dma:indexed_documents:count'
+        expr: |
+          mongodb_dmaEnrollments_count
+          +
+          mongodb_dmaOfflineMessages_count
+          +
+          mongodb_dmaSessions_count
+          +
+          mongodb_dmaMessageStatuses_count

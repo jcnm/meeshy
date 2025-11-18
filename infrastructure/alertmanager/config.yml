@@ -1,0 +1,207 @@
+# Alertmanager configuration for Meeshy Signal DMA Phase 3
+# Routes alerts to Slack, Email, and PagerDuty based on severity
+
+global:
+  resolve_timeout: 5m
+  # SMTP configuration for email notifications
+  smtp_from: 'alertmanager@meeshy.local'
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_auth_username: 'alerts@meeshy.io'
+  smtp_auth_password: '${SMTP_PASSWORD}'
+  slack_api_url: '${SLACK_WEBHOOK_URL}'
+  pagerduty_url: 'https://events.pagerduty.com/v2/enqueue'
+
+# Template definitions for alert notifications
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Root route definition
+route:
+  # Default receiver
+  receiver: 'default'
+
+  # Wait time before sending grouping alerts
+  group_wait: 30s
+
+  # Retry interval for existing alert groups
+  group_interval: 5m
+
+  # How long before alert is resolved
+  repeat_interval: 24h
+
+  # Route configurations for different alert types
+  routes:
+    # Critical alerts - page on-call immediately
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      group_wait: 10s
+      group_interval: 5m
+      repeat_interval: 1h
+      continue: true
+
+    # Warning alerts - notify Slack
+    - match:
+        severity: warning
+      receiver: 'warning-alerts'
+      group_wait: 1m
+      group_interval: 5m
+      repeat_interval: 4h
+      continue: true
+
+    # Info alerts - log to monitoring channel
+    - match:
+        severity: info
+      receiver: 'info-alerts'
+      group_wait: 5m
+      group_interval: 10m
+      repeat_interval: 12h
+      continue: false
+
+    # Service down - critical priority
+    - match_re:
+        alertname: 'ServiceDown|MongoDBDown|HighErrorRate'
+      receiver: 'critical-alerts'
+      group_wait: 10s
+      group_interval: 2m
+      repeat_interval: 30m
+      continue: true
+
+    # Performance degradation - warning
+    - match_re:
+        alertname: 'HighLatency|HighCPU|HighMemory'
+      receiver: 'warning-alerts'
+      group_wait: 2m
+      group_interval: 5m
+      repeat_interval: 6h
+      continue: false
+
+    # Database issues - critical
+    - match_re:
+        alertname: 'DBConnectionPool|DiskSpace'
+      receiver: 'critical-alerts'
+      group_wait: 1m
+      group_interval: 3m
+      repeat_interval: 30m
+      continue: true
+
+# Receiver definitions
+receivers:
+  # Default receiver (no action)
+  - name: 'default'
+
+  # Critical alerts receiver
+  - name: 'critical-alerts'
+    slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#incidents'
+        title: '{{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        send_resolved: true
+        color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+        actions:
+          - type: button
+            text: 'View in Grafana'
+            url: 'http://grafana:3000/d/meeshy-dma-phase3'
+          - type: button
+            text: 'View Runbook'
+            url: '{{ .Alerts.Firing | first | .Annotations.runbook_url }}'
+        fields:
+          - title: 'Severity'
+            value: '{{ .GroupLabels.severity }}'
+            short: true
+          - title: 'Team'
+            value: '{{ .GroupLabels.team }}'
+            short: true
+          - title: 'Alert'
+            value: '{{ .GroupLabels.alertname }}'
+            short: false
+          - title: 'Description'
+            value: '{{ range .Alerts }}{{ .Annotations.description }}\n{{ end }}'
+            short: false
+
+    pagerduty_configs:
+      - service_key: '${PAGERDUTY_SERVICE_KEY}'
+        description: '{{ .GroupLabels.alertname }}: {{ .Alerts.Firing | first | .Annotations.summary }}'
+        details:
+          firing: '{{ template "pagerduty.default.instances" .Alerts.Firing }}'
+          resolved: '{{ template "pagerduty.default.instances" .Alerts.Resolved }}'
+        client: 'Prometheus'
+        client_url: 'http://prometheus:9090'
+
+    email_configs:
+      - to: 'oncall@meeshy.io'
+        from: 'alertmanager@meeshy.local'
+        smarthost: 'smtp.gmail.com:587'
+        auth_username: 'alerts@meeshy.io'
+        auth_password: '${SMTP_PASSWORD}'
+        headers:
+          Subject: 'CRITICAL: {{ .GroupLabels.alertname }}'
+        html: |
+          <h3>{{ .GroupLabels.alertname }}</h3>
+          <p>{{ range .Alerts.Firing }}
+            <strong>{{ .Annotations.summary }}</strong><br>
+            {{ .Annotations.description }}<br><br>
+          {{ end }}</p>
+          <p><a href="http://grafana:3000/d/meeshy-dma-phase3">View Dashboard</a></p>
+
+  # Warning alerts receiver
+  - name: 'warning-alerts'
+    slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#alerts-warnings'
+        title: '{{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        send_resolved: true
+        color: 'warning'
+        actions:
+          - type: button
+            text: 'View in Grafana'
+            url: 'http://grafana:3000/d/meeshy-dma-phase3'
+        fields:
+          - title: 'Severity'
+            value: 'warning'
+            short: true
+          - title: 'Alert'
+            value: '{{ .GroupLabels.alertname }}'
+            short: false
+
+  # Info alerts receiver
+  - name: 'info-alerts'
+    slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#monitoring'
+        title: 'ℹ️ {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        send_resolved: false
+        color: '#0099CC'
+
+# Inhibition rules (suppress certain alerts if others are firing)
+inhibit_rules:
+  # Suppress warning alerts if critical alert is firing
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'dev', 'instance']
+
+  # Suppress info alerts if warning or critical is firing
+  - source_match:
+      severity: 'warning'
+    target_match:
+      severity: 'info'
+    equal: ['alertname', 'dev', 'instance']
+
+  # Suppress latency warnings if service is down
+  - source_match:
+      alertname: 'ServiceDown'
+    target_match_re:
+      alertname: 'HighLatency|HighErrorRate'
+    equal: ['instance']
+
+  # Suppress memory/CPU alerts if disk is critically low
+  - source_match:
+      alertname: 'DiskSpaceCritical'
+    target_match_re:
+      alertname: 'HighMemory|HighCPU'
+    equal: ['instance']

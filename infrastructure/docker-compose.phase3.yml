@@ -1,0 +1,233 @@
+version: '3.8'
+
+services:
+  # MongoDB for DMA database
+  mongodb:
+    image: mongo:7.0-alpine
+    container_name: meeshy-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: meeshy
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD:-secure_password_change_me}
+      MONGO_INITDB_DATABASE: meeshy-dma
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongodb/init.js:/docker-entrypoint-initdb.d/init.js
+    networks:
+      - meeshy-phase3
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Prometheus for metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: meeshy-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/meeshy-dma-alerts.yml:/etc/prometheus/rules/meeshy-dma-alerts.yml:ro
+      - ./prometheus/meeshy-dma-recording.yml:/etc/prometheus/rules/meeshy-dma-recording.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - meeshy-phase3
+    depends_on:
+      - mongodb
+    healthcheck:
+      test: curl -f http://localhost:9090/-/healthy || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Grafana for visualization and alerting
+  grafana:
+    image: grafana/grafana:latest
+    container_name: meeshy-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin123}
+      GF_INSTALL_PLUGINS: 'grafana-piechart-panel'
+      GF_SERVER_ROOT_URL: 'http://localhost:3001'
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - meeshy-phase3
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: curl -f http://localhost:3000/api/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Alertmanager for alert routing and deduplication
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: meeshy-alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager/config.yml:/etc/alertmanager/config.yml:ro
+      - alertmanager_data:/alertmanager
+    networks:
+      - meeshy-phase3
+    healthcheck:
+      test: wget --quiet --tries=1 --spider http://localhost:9093 || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Node Exporter for system metrics
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: meeshy-node-exporter
+    command:
+      - '--path.rootfs=/'
+      - '--path.procfs=/proc'
+      - '--path.sysfs=/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/proc:ro
+      - /sys:/sys:ro
+      - /:/rootfs:ro
+    networks:
+      - meeshy-phase3
+    healthcheck:
+      test: wget --quiet --tries=1 --spider http://localhost:9100 || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # MongoDB Exporter for database metrics
+  mongodb-exporter:
+    image: percona/mongodb_exporter:latest
+    container_name: meeshy-mongodb-exporter
+    command:
+      - '--mongodb.uri=mongodb://meeshy:${MONGODB_PASSWORD:-secure_password_change_me}@mongodb:27017/?authSource=admin'
+      - '--web.listen-address=:9216'
+    ports:
+      - "9216:9216"
+    networks:
+      - meeshy-phase3
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    healthcheck:
+      test: wget --quiet --tries=1 --spider http://localhost:9216 || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Redis for caching (optional, used by DMA)
+  redis:
+    image: redis:7-alpine
+    container_name: meeshy-redis
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - meeshy-phase3
+    healthcheck:
+      test: redis-cli ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Meeshy DMA Gateway (when ready)
+  # meeshy-gateway:
+  #   build:
+  #     context: ../..
+  #     dockerfile: Dockerfile
+  #   container_name: meeshy-gateway
+  #   environment:
+  #     DATABASE_URL: mongodb://meeshy:secure_password@mongodb:27017/meeshy-dma?authSource=admin
+  #     REDIS_URL: redis://redis:6379
+  #     NODE_ENV: production
+  #     PORT: 3000
+  #   ports:
+  #     - "3000:3000"
+  #   networks:
+  #     - meeshy-phase3
+  #   depends_on:
+  #     mongodb:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   healthcheck:
+  #     test: curl -f http://localhost:3000/health || exit 1
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+networks:
+  meeshy-phase3:
+    driver: bridge
+    name: meeshy-phase3
+
+volumes:
+  mongodb_data:
+    name: meeshy-mongodb-data
+  prometheus_data:
+    name: meeshy-prometheus-data
+  grafana_data:
+    name: meeshy-grafana-data
+  alertmanager_data:
+    name: meeshy-alertmanager-data
+  redis_data:
+    name: meeshy-redis-data

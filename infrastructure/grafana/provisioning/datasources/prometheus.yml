@@ -1,0 +1,46 @@
+# Grafana datasource provisioning for Prometheus
+# Automatically configures Prometheus as data source on startup
+
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    uid: meeshy-prometheus
+    access: proxy
+    orgId: 1
+    url: http://prometheus:9090
+    password: ""
+    user: ""
+    database: ""
+    basicAuth: false
+    isDefault: true
+    jsonData:
+      timeInterval: 30s
+      graphiteVersion: "1.1"
+      tlsAuth: false
+      tlsAuthWithCACert: false
+      tlsSkipVerify: false
+    secureJsonData:
+      tlsCACert: ""
+      tlsClientCert: ""
+      tlsClientKey: ""
+    version: 1
+    editable: true
+
+  - name: Prometheus-Raw
+    type: prometheus
+    uid: meeshy-prometheus-raw
+    access: proxy
+    orgId: 1
+    url: http://prometheus:9090
+    password: ""
+    user: ""
+    database: ""
+    basicAuth: false
+    isDefault: false
+    jsonData:
+      timeInterval: 5s
+      graphiteVersion: "1.1"
+    version: 1
+    editable: true

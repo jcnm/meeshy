@@ -1,0 +1,17 @@
+# Grafana dashboards provisioning configuration
+# Automatically loads dashboards from /var/lib/grafana/dashboards
+
+apiVersion: 1
+
+providers:
+  # Load DMA dashboards from filesystem
+  - name: 'Meeshy DMA Dashboards'
+    orgId: 1
+    folder: 'Signal DMA'
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards
+    updateIntervalSeconds: 10
+    allowUiUpdates: true

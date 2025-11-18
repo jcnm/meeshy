@@ -1,0 +1,230 @@
+# Prometheus Alert Rules for Meeshy Signal DMA Phase 3
+# Severity levels: critical, warning, info
+
+groups:
+  - name: meeshy-dma-alerts
+    interval: 30s
+    rules:
+      # ===== CRITICAL ALERTS (Page on-call immediately) =====
+
+      # Alert: Service Down
+      - alert: ServiceDown
+        expr: up{job="meeshy-dma-app"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Meeshy DMA service is down"
+          description: "Service has been unreachable for 1 minute"
+          runbook_url: "http://runbooks.local/service-down"
+          dashboard_url: "http://grafana:3000/d/meeshy-dma-overview"
+
+      # Alert: High Error Rate (5%+ of requests failing)
+      - alert: HighErrorRate
+        expr: |
+          (sum(rate(http_requests_total{job="meeshy-dma-app",status=~"5.."}[5m]))
+          /
+          sum(rate(http_requests_total{job="meeshy-dma-app"}[5m]))) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "High error rate detected ({{ $value | humanizePercentage }})"
+          description: "Error rate exceeded 5% threshold for 5 minutes"
+          runbook_url: "http://runbooks.local/high-error-rate"
+
+      # Alert: Database Connection Pool Exhausted
+      - alert: DBConnectionPoolExhausted
+        expr: |
+          (meeshy_db_connections_active / meeshy_db_connections_max) > 0.9
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Database connection pool near exhaustion"
+          description: "Active connections: {{ $value | humanizePercentage }} of max"
+          runbook_url: "http://runbooks.local/db-connection-pool"
+
+      # Alert: MongoDB Down
+      - alert: MongoDBDown
+        expr: up{job="mongodb"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: database
+        annotations:
+          summary: "MongoDB instance is down"
+          description: "MongoDB has been unreachable for 1 minute"
+          runbook_url: "http://runbooks.local/mongodb-down"
+
+      # Alert: Disk Space Critical
+      - alert: DiskSpaceCritical
+        expr: |
+          (node_filesystem_avail_bytes{fstype=~"ext4|xfs"} / node_filesystem_size_bytes) < 0.05
+        for: 5m
+        labels:
+          severity: critical
+          team: infrastructure
+        annotations:
+          summary: "Critical disk space on {{ $labels.device }}"
+          description: "Only {{ $value | humanizePercentage }} disk space remaining"
+          runbook_url: "http://runbooks.local/disk-space-critical"
+
+      # Alert: Offline Message Queue Buildup (100k+ messages)
+      - alert: OfflineQueueCritical
+        expr: meeshy_offline_messages_queue_size > 100000
+        for: 10m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Offline message queue critical buildup"
+          description: "Queue has {{ $value | humanize }} messages (target: < 10k)"
+          runbook_url: "http://runbooks.local/offline-queue-critical"
+
+      # ===== WARNING ALERTS (Alert to Slack) =====
+
+      # Alert: High API Latency (P99 > 500ms)
+      - alert: HighLatency
+        expr: |
+          histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{job="meeshy-dma-app"}[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High API latency detected ({{ $value | humanizeDuration }})"
+          description: "P99 latency exceeded 500ms threshold"
+          runbook_url: "http://runbooks.local/high-latency"
+
+      # Alert: Memory Leak Detected
+      - alert: MemoryLeak
+        expr: |
+          rate(process_resident_memory_bytes{job="meeshy-dma-app"}[1h]) > 5000000
+        for: 30m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Potential memory leak detected"
+          description: "Memory growing at {{ $value }} bytes/sec"
+          runbook_url: "http://runbooks.local/memory-leak"
+
+      # Alert: XMPP Connection Spike
+      - alert: XMPPConnectionSpike
+        expr: |
+          rate(xmpp_connections_total{job="meeshy-dma-app"}[5m]) > 20
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Unusual XMPP connection spike"
+          description: "{{ $value | humanize }} new connections/sec"
+          runbook_url: "http://runbooks.local/xmpp-spike"
+
+      # Alert: Offline Queue Buildup (10k+ messages)
+      - alert: OfflineQueueHighLevel
+        expr: meeshy_offline_messages_queue_size > 10000
+        for: 15m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Offline message queue is building up"
+          description: "Queue has {{ $value | humanize }} messages"
+          runbook_url: "http://runbooks.local/offline-queue-buildup"
+
+      # Alert: Low Disk Space
+      - alert: DiskSpaceLow
+        expr: |
+          (node_filesystem_avail_bytes{fstype=~"ext4|xfs"} / node_filesystem_size_bytes) < 0.2
+        for: 10m
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "Low disk space on {{ $labels.device }}"
+          description: "{{ $value | humanizePercentage }} available"
+          runbook_url: "http://runbooks.local/disk-space-low"
+
+      # Alert: High CPU Usage
+      - alert: HighCPUUsage
+        expr: |
+          (100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 80
+        for: 10m
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage {{ $value | humanize }}%"
+          runbook_url: "http://runbooks.local/high-cpu"
+
+      # Alert: High Memory Usage
+      - alert: HighMemoryUsage
+        expr: |
+          (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 0.85
+        for: 10m
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage {{ $value | humanizePercentage }}"
+          runbook_url: "http://runbooks.local/high-memory"
+
+      # Alert: Redis Connection Issues
+      - alert: RedisConnectionIssues
+        expr: redis_connected_clients < 5
+        for: 5m
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "Redis connection issues detected"
+          description: "Only {{ $value }} clients connected to Redis"
+          runbook_url: "http://runbooks.local/redis-connections"
+
+      # ===== INFO ALERTS (Log to Slack #monitoring) =====
+
+      # Alert: Message Encryption Latency
+      - alert: EncryptionLatencyHigh
+        expr: |
+          histogram_quantile(0.99, rate(encryption_latency_seconds_bucket[5m])) > 0.1
+        for: 10m
+        labels:
+          severity: info
+          team: backend
+        annotations:
+          summary: "Message encryption latency is higher than expected"
+          description: "Encryption P99 {{ $value | humanizeDuration }} (target: < 50ms)"
+
+      # Alert: Message Delivery Rate Low
+      - alert: DeliveryRateLow
+        expr: |
+          (sum(rate(messages_delivered_total[5m]))
+          /
+          sum(rate(messages_sent_total[5m]))) < 0.99
+        for: 15m
+        labels:
+          severity: info
+          team: backend
+        annotations:
+          summary: "Message delivery rate below 99%"
+          description: "Current delivery rate: {{ $value | humanizePercentage }}"
+
+      # Alert: Session Establishment Latency
+      - alert: SessionSetupLatencyHigh
+        expr: |
+          histogram_quantile(0.99, rate(session_setup_duration_seconds_bucket[5m])) > 0.15
+        for: 10m
+        labels:
+          severity: info
+          team: backend
+        annotations:
+          summary: "Session establishment taking longer than expected"
+          description: "Session setup P99 {{ $value | humanizeDuration }} (target: < 150ms)"

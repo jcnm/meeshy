@@ -1,0 +1,124 @@
+# Prometheus Configuration for Phase 3 Monitoring
+# Production monitoring for Meeshy Signal DMA
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'meeshy-dma'
+    environment: 'production'
+    region: 'us-east-1'
+  # Keep metrics for 30 days
+  retention: '720h'
+
+# Alertmanager configuration for incident escalation
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['localhost:9093']
+      scheme: 'http'
+      timeout: '10s'
+
+# Load rules from files
+rule_files:
+  - '/etc/prometheus/rules/meeshy-dma-alerts.yml'
+  - '/etc/prometheus/rules/meeshy-dma-recording.yml'
+
+# Scrape configurations for all targets
+scrape_configs:
+  # Application metrics (DMA Gateway)
+  - job_name: 'meeshy-dma-app'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['localhost:3000']
+        labels:
+          service: 'dma-gateway'
+          tier: 'application'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - source_labels: [__scheme__]
+        target_label: scheme
+    # Drop high-cardinality metrics to save storage
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'node_cpu_seconds_total|node_memory_.*'
+        action: 'drop'
+
+  # MongoDB metrics (native Prometheus exporter)
+  - job_name: 'mongodb'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    static_configs:
+      - targets: ['localhost:9216']
+        labels:
+          service: 'mongodb'
+          tier: 'database'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+
+  # Node exporter (system metrics: CPU, memory, disk, network)
+  - job_name: 'node-exporter'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    static_configs:
+      - targets: ['localhost:9100']
+        labels:
+          service: 'node'
+          tier: 'infrastructure'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+
+  # Redis exporter (caching metrics)
+  - job_name: 'redis'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    static_configs:
+      - targets: ['localhost:9379']
+        labels:
+          service: 'redis'
+          tier: 'cache'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+
+  # k6 load testing metrics (during testing periods)
+  - job_name: 'k6-load-test'
+    scrape_interval: 5s
+    scrape_timeout: 5s
+    static_configs:
+      - targets: ['localhost:6565']
+        labels:
+          service: 'k6-test'
+          tier: 'testing'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+    # Only scrape during load tests (manual enable)
+    # params:
+    #   collect[]: ['k6_*']
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+          tier: 'monitoring'
+
+# Remote storage configuration (optional: send to remote Prometheus)
+# remote_write:
+#   - url: "http://remote-prometheus:9009/api/v1/write"
+#     queue_config:
+#       capacity: 10000
+#       max_shards: 200
+#       min_shards: 1
+#       max_samples_per_send: 5000
+#       batch_send_wait: 5s
+#       min_backoff: 30ms
+#       max_backoff: 10s
