@@ -2169,7 +2169,10 @@ export async function adminRoutes(fastify: FastifyInstance) {
                 createdTrackingLinks: {
                   select: {
                     totalClicks: true
-                  }
+                  },
+                  where: startDate ? {
+                    createdAt: { gte: startDate }
+                  } : {}
                 }
               },
               where: {
@@ -2633,13 +2636,13 @@ export async function adminRoutes(fastify: FastifyInstance) {
             rankings = await fastify.prisma.trackingLink.findMany({
               select: {
                 id: true,
-                shortCode: true,
+                token: true,
                 originalUrl: true,
-                title: true,
+                name: true,
                 totalClicks: true,
                 uniqueClicks: true,
                 createdAt: true,
-                createdBy: {
+                creator: {
                   select: {
                     id: true,
                     username: true,
@@ -2658,8 +2661,12 @@ export async function adminRoutes(fastify: FastifyInstance) {
             });
             rankings = rankings.map(l => ({
               ...l,
+              shortCode: l.token,
+              title: l.name,
               count: l.totalClicks,
-              creator: l.createdBy
+              creator: l.creator,
+              token: undefined,
+              name: undefined
             }));
             break;
 
@@ -2668,13 +2675,13 @@ export async function adminRoutes(fastify: FastifyInstance) {
             rankings = await fastify.prisma.trackingLink.findMany({
               select: {
                 id: true,
-                shortCode: true,
+                token: true,
                 originalUrl: true,
-                title: true,
+                name: true,
                 totalClicks: true,
                 uniqueClicks: true,
                 createdAt: true,
-                createdBy: {
+                creator: {
                   select: {
                     id: true,
                     username: true,
@@ -2693,8 +2700,12 @@ export async function adminRoutes(fastify: FastifyInstance) {
             });
             rankings = rankings.map(l => ({
               ...l,
+              shortCode: l.token,
+              title: l.name,
               count: l.uniqueClicks,
-              creator: l.createdBy
+              creator: l.creator,
+              token: undefined,
+              name: undefined
             }));
             break;
 
@@ -2717,7 +2728,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
                     type: true
                   }
                 },
-                createdBy: {
+                creator: {
                   select: {
                     id: true,
                     username: true,
@@ -2738,7 +2749,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
             rankings = rankings.map(l => ({
               ...l,
               count: l.currentUses,
-              creator: l.createdBy
+              creator: l.creator
             }));
             break;
 
@@ -2761,7 +2772,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
                     type: true
                   }
                 },
-                createdBy: {
+                creator: {
                   select: {
                     id: true,
                     username: true,
@@ -2782,7 +2793,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
             rankings = rankings.map(l => ({
               ...l,
               count: l.currentUniqueSessions,
-              creator: l.createdBy
+              creator: l.creator
             }));
             break;
 
