@@ -14,6 +14,7 @@
 
 import { PrismaClient } from '../../../shared/prisma/client';
 import { SignalKeyManager } from './SignalKeyManager';
+import { X3DHKeyAgreement } from './X3DHKeyAgreement';
 
 /**
  * Encrypted message from Signal Protocol
@@ -45,6 +46,7 @@ interface SignalSession {
 export class SignalProtocolEngine {
   private prisma: PrismaClient;
   private keyManager?: SignalKeyManager;
+  private x3dh?: X3DHKeyAgreement;
   private sessions: Map<string, SignalSession> = new Map();
   private stats = {
     sessionsActive: 0,
@@ -61,10 +63,10 @@ export class SignalProtocolEngine {
    * Initialize Signal Protocol engine
    *
    * Week 1-2 (COMPLETED): Initialize key manager
-   * TODO (Phase 2, Week 3-8):
-   * 1. Implement X3DH key agreement
-   * 2. Implement Double Ratchet algorithm
-   * 3. Setup session restoration from database
+   * Week 3-4 (COMPLETED): Initialize X3DH key agreement
+   * TODO (Phase 2, Week 5-8):
+   * 1. Implement Double Ratchet algorithm
+   * 2. Setup session restoration from database
    */
   async initialize(): Promise<void> {
     console.log('🚀 Initializing Signal Protocol Engine');
@@ -73,6 +75,10 @@ export class SignalProtocolEngine {
       // Initialize key manager (Week 1-2)
       this.keyManager = new SignalKeyManager(this.prisma);
       await this.keyManager.initialize();
+
+      // Initialize X3DH key agreement (Week 3-4)
+      this.x3dh = new X3DHKeyAgreement(this.keyManager, this.prisma);
+      console.log('✓ X3DH Key Agreement initialized');
 
       // TODO: Restore sessions from database
       // const sessions = await this.prisma.signalSession.findMany();
@@ -233,10 +239,12 @@ export class SignalProtocolEngine {
     messagesEncrypted: number;
     messagesDecrypted: number;
     keyManagerStats?: ReturnType<SignalKeyManager['getStatistics']>;
+    x3dhStats?: ReturnType<X3DHKeyAgreement['getStatistics']>;
   } {
     return {
       ...this.stats,
-      keyManagerStats: this.keyManager?.getStatistics()
+      keyManagerStats: this.keyManager?.getStatistics(),
+      x3dhStats: this.x3dh?.getStatistics()
     };
   }
 
@@ -245,5 +253,12 @@ export class SignalProtocolEngine {
    */
   getKeyManager(): SignalKeyManager | undefined {
     return this.keyManager;
+  }
+
+  /**
+   * Get the X3DH key agreement instance
+   */
+  getX3DH(): X3DHKeyAgreement | undefined {
+    return this.x3dh;
   }
 }
