@@ -26,9 +26,16 @@ import {
   Activity,
   Clock,
   Reply,
-  FileText
+  FileText,
+  Shield,
+  UserCheck,
+  Phone,
+  Paperclip,
+  Send,
+  BarChart2
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 
 interface RankingItem {
   id: string;
@@ -67,15 +74,25 @@ const USER_CRITERIA = [
   { value: 'reactions_received', label: 'Réactions reçues', icon: TrendingUp },
   { value: 'replies_received', label: 'Réponses reçues', icon: Reply },
   { value: 'mentions_received', label: 'Mentions reçues', icon: AtSign },
+  { value: 'mentions_sent', label: 'Mentions envoyées', icon: Send },
   { value: 'conversations_joined', label: 'Conversations rejointes', icon: UserPlus },
   { value: 'communities_created', label: 'Communautés créées', icon: Building2 },
-  { value: 'share_links_created', label: 'Liens de partage créés', icon: LinkIcon }
+  { value: 'share_links_created', label: 'Liens de partage créés', icon: LinkIcon },
+  { value: 'files_shared', label: 'Fichiers partagés', icon: Paperclip },
+  { value: 'reports_sent', label: 'Signalements envoyés', icon: Shield },
+  { value: 'reports_received', label: 'Signalements reçus', icon: Shield },
+  { value: 'friend_requests_sent', label: 'Demandes d\'amitié envoyées', icon: UserCheck },
+  { value: 'friend_requests_received', label: 'Demandes d\'amitié reçues', icon: UserCheck },
+  { value: 'calls_initiated', label: 'Appels initiés', icon: Phone },
+  { value: 'call_participations', label: 'Participations appels', icon: Phone }
 ];
 
 const CONVERSATION_CRITERIA = [
   { value: 'message_count', label: 'Nombre de messages', icon: MessageSquare },
   { value: 'member_count', label: 'Nombre de membres', icon: Users },
   { value: 'reaction_count', label: 'Nombre de réactions', icon: Smile },
+  { value: 'files_shared', label: 'Fichiers partagés', icon: Paperclip },
+  { value: 'call_count', label: 'Nombre d\'appels', icon: Phone },
   { value: 'recent_activity', label: 'Activité récente', icon: Activity }
 ];
 
@@ -371,6 +388,70 @@ export default function AdminRankingPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Visual Chart - Top 10 */}
+        {!loading && rankings.length > 0 && criterion !== 'recent_activity' && (
+          <Card className="border-yellow-200 dark:border-yellow-800">
+            <CardHeader className="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20">
+              <CardTitle className="flex items-center space-x-2">
+                <BarChart2 className="h-5 w-5 text-yellow-600" />
+                <span>Visualisation - Top {Math.min(10, rankings.length)}</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <ResponsiveContainer width="100%" height={400}>
+                <BarChart
+                  data={rankings.slice(0, 10).map((item, index) => ({
+                    name: entityType === 'users'
+                      ? (item.displayName || item.username || 'Unknown')
+                      : entityType === 'conversations'
+                      ? (item.title || item.identifier || 'Unknown')
+                      : `Message #${index + 1}`,
+                    value: item.count || 0,
+                    rank: index + 1
+                  }))}
+                  layout="vertical"
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#fef3c7" />
+                  <XAxis type="number" stroke="#d97706" />
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    width={150}
+                    stroke="#d97706"
+                    tick={{ fontSize: 12 }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#fffbeb',
+                      border: '2px solid #fbbf24',
+                      borderRadius: '8px',
+                      color: '#92400e'
+                    }}
+                    formatter={(value: any) => [formatCount(value), getCurrentCriterion()?.label]}
+                  />
+                  <Bar dataKey="value" radius={[0, 8, 8, 0]}>
+                    {rankings.slice(0, 10).map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={
+                          index === 0
+                            ? '#fbbf24' // Gold for 1st
+                            : index === 1
+                            ? '#d1d5db' // Silver for 2nd
+                            : index === 2
+                            ? '#d97706' // Bronze for 3rd
+                            : '#fcd34d' // Light gold for others
+                        }
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Rankings */}
         <Card className="border-yellow-200 dark:border-yellow-800">

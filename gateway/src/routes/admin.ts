@@ -1692,6 +1692,320 @@ export async function adminRoutes(fastify: FastifyInstance) {
               .slice(0, parseInt(limit));
             break;
 
+          case 'mentions_sent':
+            // Compter les mentions envoyées (dans les messages de l'utilisateur)
+            const usersWithMentionsSent = await fastify.prisma.user.findMany({
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true,
+                sentMessages: {
+                  select: {
+                    _count: {
+                      select: {
+                        mentions: {
+                          where: startDate ? {
+                            mentionedAt: { gte: startDate }
+                          } : {}
+                        }
+                      }
+                    }
+                  },
+                  where: {
+                    isDeleted: false
+                  }
+                }
+              },
+              where: {
+                deletedAt: null,
+                isActive: true
+              }
+            });
+
+            rankings = usersWithMentionsSent
+              .map(u => ({
+                id: u.id,
+                username: u.username,
+                displayName: u.displayName,
+                avatar: u.avatar,
+                count: u.sentMessages.reduce((sum, msg) => sum + msg._count.mentions, 0)
+              }))
+              .sort((a, b) => b.count - a.count)
+              .slice(0, parseInt(limit));
+            break;
+
+          case 'reports_sent':
+            // Compter les signalements envoyés par les utilisateurs
+            const usersWithReportsSent = await fastify.prisma.user.findMany({
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true
+              },
+              where: {
+                deletedAt: null,
+                isActive: true
+              }
+            });
+
+            // Pour chaque utilisateur, compter les reports créés
+            const reportsSentCount = await Promise.all(
+              usersWithReportsSent.map(async (u) => {
+                const reportCount = await fastify.prisma.report.count({
+                  where: {
+                    reporterId: u.id,
+                    ...(startDate ? { createdAt: { gte: startDate } } : {})
+                  }
+                });
+                return {
+                  id: u.id,
+                  username: u.username,
+                  displayName: u.displayName,
+                  avatar: u.avatar,
+                  count: reportCount
+                };
+              })
+            );
+
+            rankings = reportsSentCount
+              .sort((a, b) => b.count - a.count)
+              .slice(0, parseInt(limit));
+            break;
+
+          case 'reports_received':
+            // Compter les signalements reçus (sur les messages de l'utilisateur)
+            const usersWithReportsReceived = await fastify.prisma.user.findMany({
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true,
+                sentMessages: {
+                  select: {
+                    id: true
+                  },
+                  where: {
+                    isDeleted: false
+                  }
+                }
+              },
+              where: {
+                deletedAt: null,
+                isActive: true
+              }
+            });
+
+            // Pour chaque utilisateur, compter les reports sur leurs messages
+            const reportsCount = await Promise.all(
+              usersWithReportsReceived.map(async (u) => {
+                const messageIds = u.sentMessages.map(m => m.id);
+                const reportCount = await fastify.prisma.report.count({
+                  where: {
+                    reportedType: 'message',
+                    reportedEntityId: { in: messageIds },
+                    ...(startDate ? { createdAt: { gte: startDate } } : {})
+                  }
+                });
+                return {
+                  id: u.id,
+                  username: u.username,
+                  displayName: u.displayName,
+                  avatar: u.avatar,
+                  count: reportCount
+                };
+              })
+            );
+
+            rankings = reportsCount
+              .sort((a, b) => b.count - a.count)
+              .slice(0, parseInt(limit));
+            break;
+
+          case 'friend_requests_sent':
+            rankings = await fastify.prisma.user.findMany({
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true,
+                _count: {
+                  select: {
+                    sentFriendRequests: {
+                      where: startDate ? {
+                        createdAt: { gte: startDate }
+                      } : {}
+                    }
+                  }
+                }
+              },
+              where: {
+                deletedAt: null,
+                isActive: true
+              },
+              orderBy: {
+                sentFriendRequests: {
+                  _count: 'desc'
+                }
+              },
+              take: parseInt(limit)
+            });
+            rankings = rankings.map(u => ({
+              ...u,
+              count: u._count.sentFriendRequests,
+              _count: undefined
+            }));
+            break;
+
+          case 'friend_requests_received':
+            rankings = await fastify.prisma.user.findMany({
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true,
+                _count: {
+                  select: {
+                    receivedFriendRequests: {
+                      where: startDate ? {
+                        createdAt: { gte: startDate }
+                      } : {}
+                    }
+                  }
+                }
+              },
+              where: {
+                deletedAt: null,
+                isActive: true
+              },
+              orderBy: {
+                receivedFriendRequests: {
+                  _count: 'desc'
+                }
+              },
+              take: parseInt(limit)
+            });
+            rankings = rankings.map(u => ({
+              ...u,
+              count: u._count.receivedFriendRequests,
+              _count: undefined
+            }));
+            break;
+
+          case 'calls_initiated':
+            rankings = await fastify.prisma.user.findMany({
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true,
+                _count: {
+                  select: {
+                    initiatedCalls: {
+                      where: startDate ? {
+                        startedAt: { gte: startDate }
+                      } : {}
+                    }
+                  }
+                }
+              },
+              where: {
+                deletedAt: null,
+                isActive: true
+              },
+              orderBy: {
+                initiatedCalls: {
+                  _count: 'desc'
+                }
+              },
+              take: parseInt(limit)
+            });
+            rankings = rankings.map(u => ({
+              ...u,
+              count: u._count.initiatedCalls,
+              _count: undefined
+            }));
+            break;
+
+          case 'call_participations':
+            rankings = await fastify.prisma.user.findMany({
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true,
+                _count: {
+                  select: {
+                    callParticipations: {
+                      where: startDate ? {
+                        joinedAt: { gte: startDate }
+                      } : {}
+                    }
+                  }
+                }
+              },
+              where: {
+                deletedAt: null,
+                isActive: true
+              },
+              orderBy: {
+                callParticipations: {
+                  _count: 'desc'
+                }
+              },
+              take: parseInt(limit)
+            });
+            rankings = rankings.map(u => ({
+              ...u,
+              count: u._count.callParticipations,
+              _count: undefined
+            }));
+            break;
+
+          case 'files_shared':
+            // Compter les fichiers partagés (attachments dans les messages de l'utilisateur)
+            const usersWithFilesShared = await fastify.prisma.user.findMany({
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true,
+                sentMessages: {
+                  select: {
+                    _count: {
+                      select: {
+                        attachments: {
+                          where: startDate ? {
+                            createdAt: { gte: startDate }
+                          } : {}
+                        }
+                      }
+                    }
+                  },
+                  where: {
+                    isDeleted: false
+                  }
+                }
+              },
+              where: {
+                deletedAt: null,
+                isActive: true
+              }
+            });
+
+            rankings = usersWithFilesShared
+              .map(u => ({
+                id: u.id,
+                username: u.username,
+                displayName: u.displayName,
+                avatar: u.avatar,
+                count: u.sentMessages.reduce((sum, msg) => sum + msg._count.attachments, 0)
+              }))
+              .sort((a, b) => b.count - a.count)
+              .slice(0, parseInt(limit));
+            break;
+
           default:
             return reply.status(400).send({
               success: false,
@@ -1845,6 +2159,90 @@ export async function adminRoutes(fastify: FastifyInstance) {
             rankings = rankings.map(c => ({
               ...c,
               lastActivity: c.lastMessageAt
+            }));
+            break;
+
+          case 'files_shared':
+            // Conversations avec le plus de fichiers partagés
+            const conversationsWithFiles = await fastify.prisma.conversation.findMany({
+              select: {
+                id: true,
+                identifier: true,
+                title: true,
+                type: true,
+                avatar: true,
+                image: true,
+                messages: {
+                  select: {
+                    _count: {
+                      select: {
+                        attachments: {
+                          where: startDate ? {
+                            createdAt: { gte: startDate }
+                          } : {}
+                        }
+                      }
+                    }
+                  },
+                  where: {
+                    isDeleted: false
+                  }
+                }
+              },
+              where: {
+                isActive: true,
+                type: { not: 'global' }
+              }
+            });
+
+            rankings = conversationsWithFiles
+              .map(c => ({
+                id: c.id,
+                identifier: c.identifier,
+                title: c.title,
+                type: c.type,
+                avatar: c.avatar,
+                image: c.image,
+                count: c.messages.reduce((sum, m) => sum + m._count.attachments, 0)
+              }))
+              .sort((a, b) => b.count - a.count)
+              .slice(0, parseInt(limit));
+            break;
+
+          case 'call_count':
+            rankings = await fastify.prisma.conversation.findMany({
+              select: {
+                id: true,
+                identifier: true,
+                title: true,
+                type: true,
+                avatar: true,
+                image: true,
+                _count: {
+                  select: {
+                    callSessions: {
+                      where: startDate ? {
+                        startedAt: { gte: startDate }
+                      } : {}
+                    }
+                  }
+                }
+              },
+              where: {
+                isActive: true,
+                type: { not: 'global' }
+              },
+              orderBy: {
+                callSessions: {
+                  _count: 'desc'
+                }
+              },
+              take: parseInt(limit)
+            });
+            rankings = rankings.map(c => ({
+              ...c,
+              count: c._count.callSessions,
+              _count: undefined
             }));
             break;
 
