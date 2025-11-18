@@ -17,6 +17,7 @@ import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import type { TrackingLink } from '@shared/types/tracking-link';
 import { buildApiUrl } from '@/lib/config';
 import { toast } from 'sonner';
+import { useI18n } from '@/hooks/useI18n';
 
 interface EditTrackingLinkModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export function EditTrackingLinkModal({
   link,
   onSuccess,
 }: EditTrackingLinkModalProps) {
+  const { t } = useI18n('links');
   const [originalUrl, setOriginalUrl] = useState('');
   const [newToken, setNewToken] = useState('');
   const [expiresAt, setExpiresAt] = useState('');
@@ -95,23 +97,23 @@ export function EditTrackingLinkModal({
 
     // Validation
     if (!originalUrl || !originalUrl.trim()) {
-      toast.error('L\'URL de redirection est requise');
+      toast.error(t('tracking.edit.errors.urlRequired'));
       return;
     }
 
     if (!/^https?:\/\/.+/.test(originalUrl)) {
-      toast.error('L\'URL doit commencer par http:// ou https://');
+      toast.error(t('tracking.edit.errors.invalidUrl'));
       return;
     }
 
     if (newToken && newToken !== link.token) {
       if (!/^[a-zA-Z0-9]{6}$/.test(newToken)) {
-        toast.error('Le token doit contenir exactement 6 caractères alphanumériques');
+        toast.error(t('tracking.edit.errors.invalidToken'));
         return;
       }
 
       if (tokenAvailability === 'unavailable') {
-        toast.error('Ce token existe déjà');
+        toast.error(t('tracking.edit.tokenTaken'));
         return;
       }
     }
@@ -146,15 +148,15 @@ export function EditTrackingLinkModal({
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Erreur lors de la mise à jour');
+        throw new Error(error.error || t('tracking.edit.errors.updateFailed'));
       }
 
-      toast.success('Lien de tracking mis à jour avec succès');
+      toast.success(t('tracking.edit.success.updated'));
       onSuccess();
       onClose();
     } catch (error) {
       console.error('Error updating tracking link:', error);
-      toast.error(error instanceof Error ? error.message : 'Erreur lors de la mise à jour du lien');
+      toast.error(error instanceof Error ? error.message : t('tracking.edit.errors.updateFailed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -172,9 +174,9 @@ export function EditTrackingLinkModal({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Éditer le lien de tracking</DialogTitle>
+          <DialogTitle>{t('tracking.edit.title')}</DialogTitle>
           <DialogDescription>
-            Modifiez l'URL de redirection, le token ou les paramètres du lien.
+            {t('tracking.edit.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -183,7 +185,7 @@ export function EditTrackingLinkModal({
             {/* Original URL */}
             <div className="space-y-2">
               <Label htmlFor="originalUrl">
-                URL de redirection <span className="text-red-500">*</span>
+                {t('tracking.edit.originalUrl')} <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="originalUrl"
@@ -195,13 +197,13 @@ export function EditTrackingLinkModal({
                 disabled={isSubmitting}
               />
               <p className="text-xs text-muted-foreground">
-                L'URL vers laquelle les visiteurs seront redirigés
+                {t('tracking.edit.originalUrlDescription')}
               </p>
             </div>
 
             {/* Token */}
             <div className="space-y-2">
-              <Label htmlFor="token">Token du lien court</Label>
+              <Label htmlFor="token">{t('tracking.edit.token')}</Label>
               <div className="relative">
                 <Input
                   id="token"
@@ -223,19 +225,19 @@ export function EditTrackingLinkModal({
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                6 caractères alphanumériques. Laissez inchangé pour conserver le token actuel.
+                {t('tracking.edit.tokenDescription')}
               </p>
               {tokenAvailability === 'unavailable' && (
-                <p className="text-xs text-red-500">Ce token existe déjà</p>
+                <p className="text-xs text-red-500">{t('tracking.edit.tokenTaken')}</p>
               )}
               {tokenAvailability === 'available' && newToken !== link.token && (
-                <p className="text-xs text-green-500">Ce token est disponible</p>
+                <p className="text-xs text-green-500">{t('tracking.edit.tokenAvailable')}</p>
               )}
             </div>
 
             {/* Expires At */}
             <div className="space-y-2">
-              <Label htmlFor="expiresAt">Date d'expiration (optionnel)</Label>
+              <Label htmlFor="expiresAt">{t('tracking.edit.expiresAt')}</Label>
               <Input
                 id="expiresAt"
                 type="datetime-local"
@@ -244,7 +246,7 @@ export function EditTrackingLinkModal({
                 disabled={isSubmitting}
               />
               <p className="text-xs text-muted-foreground">
-                Laissez vide pour un lien sans expiration
+                {t('tracking.edit.expiresAtDescription')}
               </p>
             </div>
 
@@ -257,7 +259,7 @@ export function EditTrackingLinkModal({
                 disabled={isSubmitting}
               />
               <Label htmlFor="isActive" className="cursor-pointer">
-                Lien actif
+                {t('tracking.edit.isActive')}
               </Label>
             </div>
           </div>
@@ -269,14 +271,14 @@ export function EditTrackingLinkModal({
               onClick={handleClose}
               disabled={isSubmitting}
             >
-              Annuler
+              {t('tracking.edit.cancel')}
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting || tokenAvailability === 'unavailable' || isCheckingToken}
             >
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Enregistrer
+              {isSubmitting ? t('tracking.edit.saving') : t('tracking.edit.save')}
             </Button>
           </DialogFooter>
         </form>

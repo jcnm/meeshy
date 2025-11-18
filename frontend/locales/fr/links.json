@@ -261,6 +261,7 @@
         "1year": "1 an"
       },
       "stats": {
+        "stats": "Stats",
         "totalLinks": "Liens totaux",
         "totalClicks": "Clics totaux",
         "uniqueClicks": "Visiteurs uniques",
@@ -303,7 +304,33 @@
         "viewStats": "Voir les statistiques",
         "copyShortUrl": "Copier l'URL courte",
         "deactivate": "Désactiver",
-        "activate": "Activer"
+        "activate": "Activer",
+        "edit": "Modifier"
+      },
+      "edit": {
+        "title": "Éditer le lien de suivi",
+        "description": "Modifiez l'URL de redirection, le token ou les paramètres du lien",
+        "originalUrl": "URL de redirection",
+        "originalUrlDescription": "L'URL vers laquelle les visiteurs seront redirigés",
+        "token": "Token du lien court",
+        "tokenDescription": "6 caractères alphanumériques. Laissez inchangé pour conserver le token actuel.",
+        "tokenTaken": "Ce token existe déjà",
+        "tokenAvailable": "Ce token est disponible",
+        "expiresAt": "Date d'expiration (optionnel)",
+        "expiresAtDescription": "Laissez vide pour un lien sans expiration",
+        "isActive": "Lien actif",
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "saving": "Enregistrement...",
+        "errors": {
+          "urlRequired": "L'URL de redirection est requise",
+          "invalidUrl": "L'URL doit commencer par http:// ou https://",
+          "invalidToken": "Le token doit contenir exactement 6 caractères alphanumériques",
+          "updateFailed": "Erreur lors de la mise à jour"
+        },
+        "success": {
+          "updated": "Lien de suivi mis à jour avec succès"
+        }
       },
       "success": {
         "created": "Lien de suivi créé avec succès et copié dans le presse-papiers",
