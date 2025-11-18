@@ -40,6 +40,7 @@
       "active": "Active",
       "inactive": "Inactive",
       "expired": "Expired",
+      "expires": "Expires",
       "never": "Never",
       "daysRemaining": "{days} day(s) remaining",
       "hoursRemaining": "{hours} hour(s) remaining"
@@ -59,6 +60,7 @@
     },
     "actions": {
       "menu": "Menu",
+      "view": "View",
       "viewDetails": "View details",
       "copy": "Copy link",
       "edit": "Edit",
