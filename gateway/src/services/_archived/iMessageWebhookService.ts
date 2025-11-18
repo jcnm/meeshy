@@ -1,28 +1,70 @@
 /**
- * iMessage Webhook Service
+ * iMessage Webhook Service (Fastify Compatible)
  *
- * Handles incoming webhooks from iMessage
- * Routes messages to the messaging system and updates message status
+ * Handles incoming webhooks from Apple's iMessage Business API
+ * Routes messages, delivery receipts, and typing indicators to the messaging system
+ *
+ * Status: ARCHIVED - Requires iMessageDMAAdapter restoration for full functionality
  */
 
 import { PrismaClient } from '../../shared/prisma/client';
 import { MessagingService } from './MessagingService';
-import { iMessageAdapter, iMessageWebhookPayload } from '../adapters/iMessageAdapter';
-import type { MessageRequest } from '../../shared/types';
 
+/**
+ * iMessage webhook event types
+ */
+export enum iMessageEventType {
+  MESSAGE = 'message',
+  DELIVERY_RECEIPT = 'delivery',
+  READ_RECEIPT = 'read',
+  TYPING_INDICATOR = 'typing',
+  CONNECTION_STATUS = 'connection'
+}
+
+/**
+ * iMessage webhook payload structure
+ */
+export interface iMessageWebhookPayload {
+  event_id: string;
+  timestamp: string;
+  event: string;
+  from: string;
+  conversation_id: string;
+  data: {
+    message_id?: string;
+    content?: string;
+    attachments?: Array<{
+      type: string;
+      url: string;
+      name?: string;
+    }>;
+    status?: string;
+    is_typing?: boolean;
+    connection_state?: string;
+    [key: string]: any;
+  };
+}
+
+/**
+ * iMessage Webhook Service - Handles incoming webhook events
+ *
+ * Responsibilities:
+ * - Verify webhook authenticity with Apple
+ * - Parse incoming messages, receipts, and status updates
+ * - Route to messaging service for processing
+ * - Log and handle errors
+ */
 export class iMessageWebhookService {
-  private iMessageAdapter: iMessageAdapter;
-
   constructor(
     private readonly prisma: PrismaClient,
     private readonly messagingService: MessagingService
-  ) {
-    this.iMessageAdapter = new iMessageAdapter();
-  }
+  ) {}
 
   /**
-   * Handle incoming webhook events from iMessage
-   * Process messages, status updates, typing indicators, etc.
+   * Handle incoming webhook events from Apple's iMessage API
+   * Process messages, delivery receipts, typing indicators, etc.
+   *
+   * Returns: { processed: number of events processed, errors: array of error messages }
    */
   async handleWebhook(
     payload: Record<string, any>,
@@ -32,53 +74,67 @@ export class iMessageWebhookService {
     let processed = 0;
 
     try {
-      const iMessagePayload = payload as iMessageWebhookPayload;
+      const webhookEvent = payload as iMessageWebhookPayload;
 
-      // Route by event type
-      switch (iMessagePayload.event) {
-        case 'message':
+      // Verify signature if provided
+      if (signature) {
+        this.verifyWebhookSignature(payload, signature);
+      }
+
+      // Route to appropriate handler based on event type
+      switch (webhookEvent.event) {
+        case iMessageEventType.MESSAGE:
           try {
-            await this.handleIncomingMessage(iMessagePayload);
+            await this.handleIncomingMessage(webhookEvent);
             processed++;
           } catch (error) {
             const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-            errors.push(`Failed to process message: ${errorMsg}`);
+            errors.push(`Failed to process message ${webhookEvent.event_id}: ${errorMsg}`);
           }
           break;
 
-        case 'delivery':
-        case 'read':
+        case iMessageEventType.DELIVERY_RECEIPT:
           try {
-            await this.handleStatusUpdate(iMessagePayload);
+            await this.handleDeliveryReceipt(webhookEvent);
             processed++;
           } catch (error) {
             const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-            errors.push(`Failed to process status update: ${errorMsg}`);
+            errors.push(`Failed to process delivery receipt ${webhookEvent.event_id}: ${errorMsg}`);
           }
           break;
 
-        case 'typing':
+        case iMessageEventType.READ_RECEIPT:
           try {
-            await this.handleTypingIndicator(iMessagePayload);
+            await this.handleReadReceipt(webhookEvent);
             processed++;
           } catch (error) {
             const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-            errors.push(`Failed to process typing indicator: ${errorMsg}`);
+            errors.push(`Failed to process read receipt ${webhookEvent.event_id}: ${errorMsg}`);
           }
           break;
 
-        case 'connection':
+        case iMessageEventType.TYPING_INDICATOR:
           try {
-            await this.handleConnectionEvent(iMessagePayload);
+            await this.handleTypingIndicator(webhookEvent);
             processed++;
           } catch (error) {
             const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-            errors.push(`Failed to process connection event: ${errorMsg}`);
+            errors.push(`Failed to process typing indicator ${webhookEvent.event_id}: ${errorMsg}`);
+          }
+          break;
+
+        case iMessageEventType.CONNECTION_STATUS:
+          try {
+            await this.handleConnectionStatus(webhookEvent);
+            processed++;
+          } catch (error) {
+            const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+            errors.push(`Failed to process connection status ${webhookEvent.event_id}: ${errorMsg}`);
           }
           break;
 
         default:
-          errors.push(`Unknown event type: ${iMessagePayload.event}`);
+          errors.push(`Unknown event type: ${webhookEvent.event}`);
       }
 
       return { processed, errors };
@@ -89,226 +145,86 @@ export class iMessageWebhookService {
   }
 
   /**
-   * Process an incoming iMessage
+   * Verify webhook signature from Apple
+   * PLACEHOLDER: Requires Apple's signature verification implementation
    */
-  private async handleIncomingMessage(payload: iMessageWebhookPayload): Promise<void> {
-    // Convert iMessage to Meeshy message format
-    const protocolMessage = await this.iMessageAdapter.processIncomingWebhook(payload);
-
-    if (!protocolMessage) {
-      return;
-    }
-
-    // Get or create the sender user
-    const sender = await this.prisma.user.upsert({
-      where: { email: this.generateEmailFromAppleId(protocolMessage.senderId) },
-      update: {
-        displayName: protocolMessage.senderName,
-        phoneNumber: protocolMessage.senderPhoneNumber
-      },
-      create: {
-        username: this.generateUsernameFromAppleId(protocolMessage.senderId),
-        email: this.generateEmailFromAppleId(protocolMessage.senderId),
-        firstName: protocolMessage.senderName?.split(' ')[0] || 'iMessage',
-        lastName: protocolMessage.senderName?.split(' ')[1] || 'User',
-        displayName: protocolMessage.senderName,
-        phoneNumber: protocolMessage.senderPhoneNumber,
-        password: Buffer.from(Math.random().toString()).toString('base64'), // Temporary password
-        role: 'USER'
-      }
-    });
-
-    // Create a Meeshy message request
-    const messageRequest: MessageRequest = {
-      text: protocolMessage.text,
-      conversationId: await this.getOrCreateConversation(sender.id, protocolMessage),
-      recipientId: undefined,
-      attachments: protocolMessage.media?.map(m => ({
-        type: m.type,
-        url: m.url,
-        name: m.fileName || `${m.type}_${Date.now()}`,
-        mimeType: m.mimeType
-      })),
-      metadata: {
-        protocol: 'imessage',
-        protocolMessageId: protocolMessage.protocolMessageId,
-        senderId: protocolMessage.senderId,
-        timestamp: protocolMessage.timestamp.toISOString(),
-        ...protocolMessage.metadata
-      }
-    };
-
-    // Route through the messaging service
-    await this.messagingService.handleMessage(
-      messageRequest,
-      sender.id,
-      true,
-      sender.id
-    );
-
-    // Store the protocol message mapping
-    await this.storeProtocolMessageMapping(
-      protocolMessage.protocolMessageId,
-      sender.id,
-      'imessage'
-    );
+  private verifyWebhookSignature(payload: Record<string, any>, signature: string): void {
+    // TODO: Implement Apple signature verification
+    // Apple provides HMAC-SHA256 signatures for webhook verification
+    console.log(`[iMessage] Verifying webhook signature...`);
   }
 
   /**
-   * Process a message status update from iMessage
+   * Handle incoming message from iMessage
+   * PLACEHOLDER: Requires iMessageDMAAdapter for full implementation
    */
-  private async handleStatusUpdate(payload: iMessageWebhookPayload): Promise<void> {
-    if (!payload.messageId || !payload.status) {
-      return;
-    }
-
-    const statusUpdate = await this.iMessageAdapter.processStatusUpdate(payload);
-
-    if (!statusUpdate) {
-      return;
-    }
-
-    // Update message status in database
-    await this.prisma.message.updateMany({
-      where: {
-        metadata: {
-          path: '$.protocolMessageId',
-          equals: statusUpdate.messageId
-        }
-      },
-      data: {
-        status: statusUpdate.status as any,
-        updatedAt: statusUpdate.timestamp
-      }
-    });
-  }
-
-  /**
-   * Process typing indicator
-   */
-  private async handleTypingIndicator(payload: iMessageWebhookPayload): Promise<void> {
-    const conversationId = payload.conversationId;
-    const senderId = payload.sender.appleId || payload.sender.phoneNumber || 'unknown';
-
-    // Store typing indicator (could broadcast via Socket.IO)
-    // Implementation depends on your real-time system
-    console.log(`User ${senderId} is typing in conversation ${conversationId}`);
-  }
-
-  /**
-   * Process connection event (user came online/offline)
-   */
-  private async handleConnectionEvent(payload: iMessageWebhookPayload): Promise<void> {
-    const senderId = payload.sender.appleId || payload.sender.phoneNumber || 'unknown';
-    const isOnline = payload.metadata?.online === true;
-
-    // Update user status
-    const user = await this.prisma.user.findFirst({
-      where: {
-        email: this.generateEmailFromAppleId(senderId)
-      }
-    });
-
-    if (user) {
-      await this.prisma.user.update({
-        where: { id: user.id },
-        data: {
-          isOnline,
-          lastActiveAt: new Date()
-        }
-      });
-    }
-  }
-
-  /**
-   * Get or create a conversation for an iMessage user
-   */
-  private async getOrCreateConversation(
-    userId: string,
-    message: any
-  ): Promise<string> {
-    const conversationKey = `imessage:${message.metadata.appleId || message.metadata.phoneNumber}`;
-
-    let conversation = await this.prisma.conversation.findFirst({
-      where: {
-        members: {
-          some: { id: userId }
-        },
-        metadata: {
-          path: '$.protocolConversationKey',
-          equals: conversationKey
-        }
-      }
-    });
-
-    if (!conversation) {
-      conversation = await this.prisma.conversation.create({
-        data: {
-          identifier: `imsg_${Date.now()}`,
-          title: `iMessage - ${message.senderName || message.senderId}`,
-          description: `Direct message conversation with ${message.senderName}`,
-          type: 'direct',
-          members: {
-            connect: [{ id: userId }]
-          },
-          isActive: true,
-          isArchived: false,
-          metadata: {
-            protocol: 'imessage',
-            protocolConversationKey: conversationKey,
-            protocolSenderId: message.senderId,
-            senderAppleId: message.metadata.appleId,
-            senderPhoneNumber: message.metadata.phoneNumber,
-            senderName: message.senderName,
-            createdVia: 'imessage'
-          }
-        },
-        include: {
-          members: true
-        }
-      });
-    }
-
-    return conversation.id;
-  }
-
-  /**
-   * Store the mapping between protocol message ID and internal message ID
-   */
-  private async storeProtocolMessageMapping(
-    protocolMessageId: string,
-    userId: string,
-    protocol: string
+  private async handleIncomingMessage(
+    event: iMessageWebhookPayload
   ): Promise<void> {
-    await this.prisma.message.updateMany({
-      where: {
-        authorId: userId,
-        metadata: {
-          path: '$.protocolMessageId',
-          equals: protocolMessageId
-        }
-      },
-      data: {
-        metadata: {
-          protocol,
-          protocolMessageId,
-          mappedAt: new Date().toISOString()
-        }
-      }
-    });
+    console.log(`[iMessage] Incoming message from ${event.from}: ${event.data.message_id}`);
+
+    // TODO: Restore iMessageDMAAdapter
+    // const protocolMessage = iMessageAdapter.parseIncomingMessage(event);
+    // const messageRequest = this.convertToMessageRequest(protocolMessage);
+    // await this.messagingService.processMessage(messageRequest);
   }
 
   /**
-   * Generate email from Apple ID
+   * Handle delivery receipt from iMessage
+   * PLACEHOLDER: Requires implementation
    */
-  private generateEmailFromAppleId(appleId: string): string {
-    return `imessage+${appleId.replace(/[^a-zA-Z0-9]/g, '_')}@meeshy.local`;
+  private async handleDeliveryReceipt(
+    event: iMessageWebhookPayload
+  ): Promise<void> {
+    console.log(`[iMessage] Delivery receipt for ${event.data.message_id}: ${event.data.status}`);
+
+    // TODO: Update message delivery status
+    // Map iMessage status to Meeshy message status
+    // Update database with delivery confirmation
   }
 
   /**
-   * Generate username from Apple ID
+   * Handle read receipt from iMessage
+   * PLACEHOLDER: Requires implementation
    */
-  private generateUsernameFromAppleId(appleId: string): string {
-    return `imessage_${appleId.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20)}`;
+  private async handleReadReceipt(
+    event: iMessageWebhookPayload
+  ): Promise<void> {
+    console.log(`[iMessage] Read receipt for ${event.data.message_id}`);
+
+    // TODO: Update message read status
+    // Mark message as read in database
+    // Notify sender of read status
+  }
+
+  /**
+   * Handle typing indicator from iMessage
+   * PLACEHOLDER: Requires implementation
+   */
+  private async handleTypingIndicator(
+    event: iMessageWebhookPayload
+  ): Promise<void> {
+    const isTyping = event.data.is_typing;
+    console.log(`[iMessage] Typing indicator from ${event.from}: ${isTyping ? 'typing' : 'stopped'}`);
+
+    // TODO: Update typing indicators
+    // Broadcast typing status to other conversation members
+    // Update TypingIndicator records in database
+  }
+
+  /**
+   * Handle connection status changes from iMessage
+   * PLACEHOLDER: Requires implementation
+   */
+  private async handleConnectionStatus(
+    event: iMessageWebhookPayload
+  ): Promise<void> {
+    const state = event.data.connection_state;
+    console.log(`[iMessage] Connection status: ${state}`);
+
+    // TODO: Handle connection state changes
+    // Log connection status
+    // Update user online/offline status if needed
+    // Handle reconnection logic
   }
 }

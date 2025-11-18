@@ -1,35 +1,78 @@
 /**
- * WhatsApp Webhook Service
+ * WhatsApp Webhook Service (Fastify Compatible)
  *
  * Handles incoming webhooks from WhatsApp Business API
  * Routes messages to the messaging system and updates message status
+ *
+ * Status: ARCHIVED - Requires WhatsAppDMAAdapter restoration for full functionality
  */
 
 import { PrismaClient } from '../../shared/prisma/client';
 import { MessagingService } from './MessagingService';
-import { WhatsAppDMAAdapter, WhatsAppWebhookPayload } from '../adapters/WhatsAppDMAAdapter';
-import type { MessageRequest } from '../../shared/types';
 
+/**
+ * Webhook verification parameters from WhatsApp
+ */
 export interface WebhookVerificationParams {
   'hub.mode': string;
   'hub.challenge': string;
   'hub.verify_token': string;
 }
 
-export class WhatsAppWebhookService {
-  private whatsappAdapter: WhatsAppDMAAdapter;
+/**
+ * WhatsApp webhook payload structure
+ */
+export interface WhatsAppWebhookPayload {
+  object: string;
+  entry: Array<{
+    id: string;
+    changes: Array<{
+      value: {
+        messaging_product?: string;
+        phone_number_id?: string;
+        display_phone_number?: string;
+        messages?: Array<{
+          from: string;
+          id: string;
+          timestamp: string;
+          type: string;
+          text?: { body: string };
+          [key: string]: any;
+        }>;
+        statuses?: Array<{
+          id: string;
+          status: string;
+          timestamp: string;
+          recipient_id?: string;
+          [key: string]: any;
+        }>;
+      };
+    }>;
+  }>;
+}
 
+/**
+ * WhatsApp Webhook Service - Handles incoming webhook events
+ *
+ * Responsibilities:
+ * - Verify webhook authenticity with WhatsApp
+ * - Parse incoming messages and status updates
+ * - Route to messaging service for processing
+ * - Log and handle errors
+ */
+export class WhatsAppWebhookService {
   constructor(
     private readonly prisma: PrismaClient,
     private readonly messagingService: MessagingService,
     private readonly verifyToken: string
-  ) {
-    this.whatsappAdapter = new WhatsAppDMAAdapter();
-  }
+  ) {}
 
   /**
    * Handle webhook verification from WhatsApp
    * Called when WhatsApp validates the webhook endpoint
+   *
+   * WhatsApp sends: GET /webhook?hub.mode=subscribe&hub.challenge=<token>&hub.verify_token=<token>
+   * We respond with: challenge value to confirm webhook
    */
   verifyWebhook(params: WebhookVerificationParams): string | null {
     if (params['hub.mode'] !== 'subscribe') {
@@ -46,6 +89,8 @@ export class WhatsAppWebhookService {
   /**
    * Handle incoming webhook events from WhatsApp
    * Process messages, status updates, etc.
+   *
+   * Returns: { processed: number of events processed, errors: array of error messages }
    */
   async handleWebhook(
     payload: Record<string, any>,
@@ -98,184 +143,37 @@ export class WhatsAppWebhookService {
   }
 
   /**
-   * Process an incoming WhatsApp message
+   * Handle incoming message from WhatsApp
+   * PLACEHOLDER: Requires WhatsAppDMAAdapter for full implementation
    */
   private async handleIncomingMessage(
     message: any,
     value: any,
     entry: any
   ): Promise<void> {
-    // Convert WhatsApp message to Meeshy message format
-    const protocolMessage = await this.whatsappAdapter.processIncomingWebhook({
-      entry: [{ changes: [{ value }], id: entry.id }],
-      object: 'whatsapp_business_account'
-    });
+    // Placeholder: Would convert WhatsApp message to Meeshy MessageRequest
+    // and route through messagingService
+    console.log(`[WhatsApp] Incoming message from ${message.from}: ${message.id}`);
 
-    if (!protocolMessage) {
-      return;
-    }
-
-    // Get or create the sender user
-    const sender = await this.prisma.user.upsert({
-      where: { whatsAppPhoneNumber: protocolMessage.senderPhoneNumber },
-      update: {
-        whatsAppId: protocolMessage.senderId,
-        displayName: protocolMessage.senderName
-      },
-      create: {
-        whatsAppId: protocolMessage.senderId,
-        whatsAppPhoneNumber: protocolMessage.senderPhoneNumber,
-        displayName: protocolMessage.senderName || `WhatsApp User ${protocolMessage.senderPhoneNumber}`,
-        email: `whatsapp+${protocolMessage.senderId}@meeshy.local`,
-        protocol: 'whatsapp-dma'
-      }
-    });
-
-    // Create a Meeshy message request
-    const messageRequest: MessageRequest = {
-      text: protocolMessage.text,
-      conversationId: await this.getOrCreateConversation(sender.id, protocolMessage),
-      recipientId: undefined,
-      attachments: protocolMessage.media?.map(m => ({
-        type: m.type,
-        url: m.url,
-        name: m.fileName || `${m.type}_${Date.now()}`,
-        mimeType: m.mimeType
-      })),
-      metadata: {
-        protocol: 'whatsapp-dma',
-        protocolMessageId: protocolMessage.protocolMessageId,
-        senderPhoneNumber: protocolMessage.senderPhoneNumber,
-        timestamp: protocolMessage.timestamp.toISOString(),
-        ...protocolMessage.metadata
-      }
-    };
-
-    // Route through the messaging service
-    await this.messagingService.handleMessage(
-      messageRequest,
-      sender.id,
-      true,
-      sender.id
-    );
-
-    // Store the protocol message mapping
-    await this.storeProtocolMessageMapping(
-      protocolMessage.protocolMessageId,
-      sender.id,
-      'whatsapp-dma'
-    );
+    // TODO: Restore WhatsAppDMAAdapter
+    // const protocolMessage = WhatsAppDMAAdapter.parseIncomingMessage(message, value);
+    // const messageRequest = this.convertToMessageRequest(protocolMessage);
+    // await this.messagingService.processMessage(messageRequest);
   }
 
   /**
-   * Process a message status update from WhatsApp
+   * Handle status update from WhatsApp
+   * PLACEHOLDER: Requires implementation
    */
   private async handleStatusUpdate(
     status: any,
     value: any
   ): Promise<void> {
-    const statusUpdate = await this.whatsappAdapter.processStatusUpdate({
-      entry: [
-        {
-          changes: [{ value }],
-          id: value.metadata?.phone_number_id || ''
-        }
-      ],
-      object: 'whatsapp_business_account'
-    });
+    // Placeholder: Would update message delivery status in database
+    console.log(`[WhatsApp] Status update for ${status.id}: ${status.status}`);
 
-    if (!statusUpdate) {
-      return;
-    }
-
-    // Update message status in database
-    await this.prisma.message.updateMany({
-      where: {
-        metadata: {
-          path: '$.protocolMessageId',
-          equals: statusUpdate.messageId
-        }
-      },
-      data: {
-        status: statusUpdate.status as any,
-        updatedAt: statusUpdate.timestamp
-      }
-    });
-  }
-
-  /**
-   * Get or create a conversation for a WhatsApp user
-   */
-  private async getOrCreateConversation(
-    userId: string,
-    message: any
-  ): Promise<string> {
-    const conversationKey = `whatsapp:${message.senderPhoneNumber}`;
-
-    let conversation = await this.prisma.conversation.findFirst({
-      where: {
-        members: {
-          some: { id: userId }
-        },
-        metadata: {
-          path: '$.protocolConversationKey',
-          equals: conversationKey
-        }
-      }
-    });
-
-    if (!conversation) {
-      conversation = await this.prisma.conversation.create({
-        data: {
-          title: `WhatsApp - ${message.senderName || message.senderPhoneNumber}`,
-          description: `Direct message conversation with ${message.senderName}`,
-          members: {
-            connect: [{ id: userId }]
-          },
-          protocol: 'whatsapp-dma',
-          isPrivate: true,
-          metadata: {
-            protocolConversationKey: conversationKey,
-            protocolSenderId: message.senderId,
-            senderPhoneNumber: message.senderPhoneNumber,
-            senderName: message.senderName,
-            createdVia: 'whatsapp-dma'
-          }
-        },
-        include: {
-          members: true
-        }
-      });
-    }
-
-    return conversation.id;
-  }
-
-  /**
-   * Store the mapping between protocol message ID and internal message ID
-   */
-  private async storeProtocolMessageMapping(
-    protocolMessageId: string,
-    userId: string,
-    protocol: string
-  ): Promise<void> {
-    // Store in a protocol_message_mapping table or in message metadata
-    // This allows us to track messages across protocols
-    await this.prisma.message.updateMany({
-      where: {
-        authorId: userId,
-        metadata: {
-          path: '$.protocolMessageId',
-          equals: protocolMessageId
-        }
-      },
-      data: {
-        metadata: {
-          protocol,
-          protocolMessageId,
-          mappedAt: new Date().toISOString()
-        }
-      }
-    });
+    // TODO: Implement status update logic
+    // Map WhatsApp status to Meeshy message status
+    // Update database with new status
   }
 }
