@@ -32,7 +32,12 @@ import {
   Phone,
   Paperclip,
   Send,
-  BarChart2
+  BarChart2,
+  MousePointerClick,
+  Eye,
+  Share2,
+  Target,
+  Users2
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
@@ -66,6 +71,21 @@ interface RankingItem {
     title?: string;
     type: string;
   };
+  // For links
+  shortCode?: string;
+  originalUrl?: string;
+  totalClicks?: number;
+  uniqueClicks?: number;
+  currentUses?: number;
+  maxUses?: number;
+  currentUniqueSessions?: number;
+  expiresAt?: string;
+  creator?: {
+    id: string;
+    username: string;
+    displayName: string;
+    avatar?: string;
+  };
 }
 
 const USER_CRITERIA = [
@@ -84,7 +104,12 @@ const USER_CRITERIA = [
   { value: 'friend_requests_sent', label: 'Demandes d\'amitié envoyées', icon: UserCheck },
   { value: 'friend_requests_received', label: 'Demandes d\'amitié reçues', icon: UserCheck },
   { value: 'calls_initiated', label: 'Appels initiés', icon: Phone },
-  { value: 'call_participations', label: 'Participations appels', icon: Phone }
+  { value: 'call_participations', label: 'Participations appels', icon: Phone },
+  { value: 'most_referrals_via_affiliate', label: 'Parrainages (affiliation)', icon: Target },
+  { value: 'most_referrals_via_sharelinks', label: 'Parrainages (liens partagés)', icon: Share2 },
+  { value: 'most_contacts', label: 'Nombre de contacts', icon: Users2 },
+  { value: 'most_tracking_links_created', label: 'Liens trackés créés', icon: LinkIcon },
+  { value: 'most_tracking_link_clicks', label: 'Clics sur liens trackés', icon: MousePointerClick }
 ];
 
 const CONVERSATION_CRITERIA = [
@@ -100,6 +125,13 @@ const MESSAGE_CRITERIA = [
   { value: 'most_reactions', label: 'Plus de réactions', icon: Smile },
   { value: 'most_replies', label: 'Plus répondu', icon: Reply },
   { value: 'most_mentions', label: 'Plus de mentions', icon: AtSign }
+];
+
+const LINK_CRITERIA = [
+  { value: 'tracking_links_most_visited', label: 'Liens trackés (visites totales)', icon: MousePointerClick },
+  { value: 'tracking_links_most_unique', label: 'Liens trackés (visiteurs uniques)', icon: Eye },
+  { value: 'share_links_most_used', label: 'Liens de partage (utilisations)', icon: Share2 },
+  { value: 'share_links_most_unique_sessions', label: 'Liens de partage (sessions uniques)', icon: Users }
 ];
 
 const PERIODS = [
@@ -121,7 +153,7 @@ const MEDAL_COLORS = [
 
 export default function AdminRankingPage() {
   const router = useRouter();
-  const [entityType, setEntityType] = useState<'users' | 'conversations' | 'messages'>('users');
+  const [entityType, setEntityType] = useState<'users' | 'conversations' | 'messages' | 'links'>('users');
   const [criterion, setCriterion] = useState('messages_sent');
   const [period, setPeriod] = useState('7d');
   const [limit, setLimit] = useState(50);
@@ -137,6 +169,8 @@ export default function AdminRankingPage() {
       setCriterion('message_count');
     } else if (entityType === 'messages') {
       setCriterion('most_reactions');
+    } else if (entityType === 'links') {
+      setCriterion('tracking_links_most_visited');
     }
   }, [entityType]);
 
@@ -185,7 +219,8 @@ export default function AdminRankingPage() {
   const getCriteriaList = () => {
     if (entityType === 'users') return USER_CRITERIA;
     if (entityType === 'conversations') return CONVERSATION_CRITERIA;
-    return MESSAGE_CRITERIA;
+    if (entityType === 'messages') return MESSAGE_CRITERIA;
+    return LINK_CRITERIA;
   };
 
   const getCurrentCriterion = () => {
@@ -272,7 +307,7 @@ export default function AdminRankingPage() {
                   <span>Classements 🏆</span>
                 </h1>
                 <p className="text-yellow-100 mt-1">
-                  Classez les utilisateurs, conversations et messages selon différents critères
+                  Classez les utilisateurs, conversations, messages et liens selon différents critères
                 </p>
               </div>
             </div>
@@ -294,7 +329,7 @@ export default function AdminRankingPage() {
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Type d'entité
                 </label>
-                <Select value={entityType} onValueChange={(value: 'users' | 'conversations' | 'messages') => setEntityType(value)}>
+                <Select value={entityType} onValueChange={(value: 'users' | 'conversations' | 'messages' | 'links') => setEntityType(value)}>
                   <SelectTrigger className="border-yellow-300 focus:ring-yellow-500">
                     <SelectValue placeholder="Sélectionnez le type" />
                   </SelectTrigger>
@@ -315,6 +350,12 @@ export default function AdminRankingPage() {
                       <div className="flex items-center space-x-2">
                         <FileText className="h-4 w-4" />
                         <span>Messages</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="links">
+                      <div className="flex items-center space-x-2">
+                        <LinkIcon className="h-4 w-4" />
+                        <span>Liens</span>
                       </div>
                     </SelectItem>
                   </SelectContent>
@@ -406,6 +447,8 @@ export default function AdminRankingPage() {
                       ? (item.displayName || item.username || 'Unknown')
                       : entityType === 'conversations'
                       ? (item.title || item.identifier || 'Unknown')
+                      : entityType === 'links'
+                      ? (item.title || item.shortCode || item.identifier || 'Unknown')
                       : `Message #${index + 1}`,
                     value: item.count || 0,
                     rank: index + 1
@@ -463,6 +506,7 @@ export default function AdminRankingPage() {
                   {entityType === 'users' && 'Classement des utilisateurs'}
                   {entityType === 'conversations' && 'Classement des conversations'}
                   {entityType === 'messages' && 'Classement des messages'}
+                  {entityType === 'links' && 'Classement des liens'}
                 </span>
               </div>
               <Badge variant="outline" className="text-yellow-600 border-yellow-600">
@@ -547,6 +591,56 @@ export default function AdminRankingPage() {
                             </div>
                           </div>
                         </>
+                      ) : entityType === 'links' ? (
+                        <>
+                          <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center text-2xl ring-2 ring-yellow-400">
+                            🔗
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <Avatar className="h-6 w-6">
+                                <AvatarImage src={item.creator?.avatar} alt={item.creator?.displayName || item.creator?.username} />
+                                <AvatarFallback className="text-xs">
+                                  {(item.creator?.displayName || item.creator?.username || 'U').charAt(0).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {item.creator?.displayName || item.creator?.username}
+                              </span>
+                              <span className="text-xs text-gray-400">•</span>
+                              <Badge variant="outline" className="text-xs">
+                                {item.shortCode ? '🔍 Tracké' : '📤 Partage'}
+                              </Badge>
+                            </div>
+                            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                              {item.title || item.shortCode || item.identifier}
+                            </p>
+                            {item.originalUrl && (
+                              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                {item.originalUrl}
+                              </p>
+                            )}
+                            {item.conversation && (
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                Conversation: {item.conversation.title || item.conversation.identifier}
+                              </p>
+                            )}
+                            <div className="flex items-center space-x-3 mt-1 text-xs text-gray-500">
+                              {item.totalClicks !== undefined && (
+                                <span>👁️ {formatCount(item.totalClicks)} visites</span>
+                              )}
+                              {item.uniqueClicks !== undefined && (
+                                <span>👤 {formatCount(item.uniqueClicks)} uniques</span>
+                              )}
+                              {item.currentUses !== undefined && (
+                                <span>✅ {formatCount(item.currentUses)} utilisations</span>
+                              )}
+                              {item.maxUses !== undefined && item.maxUses > 0 && (
+                                <span>/ {formatCount(item.maxUses)} max</span>
+                              )}
+                            </div>
+                          </div>
+                        </>
                       ) : (
                         <>
                           <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center text-2xl ring-2 ring-yellow-400">
@@ -611,8 +705,8 @@ export default function AdminRankingPage() {
           </CardContent>
         </Card>
 
-        {/* Top 3 Podium (if applicable and not messages) */}
-        {!loading && rankings.length >= 3 && criterion !== 'recent_activity' && entityType !== 'messages' && (
+        {/* Top 3 Podium (if applicable and not messages/links) */}
+        {!loading && rankings.length >= 3 && criterion !== 'recent_activity' && entityType !== 'messages' && entityType !== 'links' && (
           <Card className="border-yellow-200 dark:border-yellow-800">
             <CardHeader className="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20">
               <CardTitle className="flex items-center space-x-2">
