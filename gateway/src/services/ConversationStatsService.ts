@@ -6,7 +6,6 @@ export interface OnlineUserInfo {
   firstName: string;
   lastName: string;
   avatar?: string;
-  email?: string;
   systemLanguage?: string;
   displayName?: string;
 }
@@ -256,7 +255,6 @@ export class ConversationStatsService {
         firstName: true,
         lastName: true,
         avatar: true,
-        email: true,
         systemLanguage: true,
         displayName: true
       }
@@ -267,7 +265,6 @@ export class ConversationStatsService {
       firstName: u.firstName,
       lastName: u.lastName,
       avatar: u.avatar || undefined,
-      email: u.email || undefined,
       systemLanguage: u.systemLanguage || 'fr',
       displayName: u.displayName || undefined
     }));

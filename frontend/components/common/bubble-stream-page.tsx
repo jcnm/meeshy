@@ -878,7 +878,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
             firstName: user?.firstName,
             lastName: user?.lastName,
             avatar: user?.avatar,
-            email: user?.email,
             systemLanguage: user?.systemLanguage,
             displayName: user?.displayName
           });
@@ -889,7 +888,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           username: u.username,
           firstName: u.firstName,
           lastName: u.lastName,
-          email: u.email || '',
           avatar: u.avatar || '',
           role: 'USER' as const,
           permissions: {
