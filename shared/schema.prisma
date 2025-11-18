@@ -948,10 +948,10 @@ model DMAEnrollment {
   userId                String    @db.ObjectId
 
   /// Internal Meeshy ID assigned by WhatsApp
-  whatsappInternalId    String    @unique
+  whatsappInternalId    String
 
   /// WhatsApp login format (1-{internalId}@interop)
-  whatsappLogin         String    @unique
+  whatsappLogin         String
 
   /// Chat authentication public key (32 bytes, base64)
   authKeyPublic         String
@@ -973,7 +973,7 @@ model DMAEnrollment {
   registrationId        Int
 
   /// Enrollment token from WhatsApp
-  enrollmentToken       String?   @unique
+  enrollmentToken       String?
 
   /// JWT token for API authentication
   jwtToken              String?
@@ -998,10 +998,12 @@ model DMAEnrollment {
   updatedAt             DateTime  @updatedAt
 
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  offlineMessages       DMAOfflineMessage[]
+  sessions              DMASession[]
+  messageStatuses       DMAMessageStatus[]
 
   @@unique([userId, whatsappInternalId])
   @@index([userId])
-  @@index([whatsappInternalId])
   @@index([status])
   @@index([createdAt])
   @@map("dma_enrollments")
@@ -1013,10 +1015,10 @@ model DMAOfflineMessage {
   enrollmentId          String    @db.ObjectId
 
   /// Message ID from push notification
-  messageId             String    @unique
+  messageId             String
 
   /// Delivery ID for tracking
-  deliveryId            String    @unique
+  deliveryId            String
 
   /// WhatsApp sender JID
   senderJID             String
@@ -1051,8 +1053,9 @@ model DMAOfflineMessage {
 
   enrollment            DMAEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
 
+  @@unique([messageId])
+  @@unique([deliveryId])
   @@index([enrollmentId])
-  @@index([messageId])
   @@index([delivered])
   @@index([expiresAt])
   @@index([storedAt])
@@ -1118,7 +1121,7 @@ model DMAMessageStatus {
   enrollmentId          String    @db.ObjectId
 
   /// Message ID from Signal Protocol or Noise
-  messageId             String    @unique
+  messageId             String
 
   /// Status: pending, sent, delivered, read, failed
   status                String    @default("pending")
@@ -1153,6 +1156,7 @@ model DMAMessageStatus {
 
   enrollment            DMAEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
 
+  @@unique([messageId])
   @@index([enrollmentId])
   @@index([status])
   @@index([createdAt])
