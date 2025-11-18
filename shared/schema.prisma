@@ -79,6 +79,7 @@ model User {
   callParticipations          CallParticipant[]        @relation("CallParticipants")
   conversationPrefs           UserConversationPreferences[]
   conversationCategories      UserConversationCategory[]
+  dmaEnrollments              DMAEnrollment[]
 }
 
 /// Conversation entre utilisateurs (direct, group, public, global)
@@ -935,4 +936,226 @@ model UserConversationCategory {
   @@index([userId])
   @@index([userId, order])
   @@map("user_conversation_categories")
+}
+
+// ============================================================================
+// DMA INTEROPERABILITY MODELS (Phase 2)
+// ============================================================================
+
+/// WhatsApp DMA user enrollment record
+model DMAEnrollment {
+  id                    String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId                String    @db.ObjectId
+
+  /// Internal Meeshy ID assigned by WhatsApp
+  whatsappInternalId    String    @unique
+
+  /// WhatsApp login format (1-{internalId}@interop)
+  whatsappLogin         String    @unique
+
+  /// Chat authentication public key (32 bytes, base64)
+  authKeyPublic         String
+
+  /// Encrypted Signal Protocol key material
+  signalIdentityKeyPublic String
+  signalIdentityKeyPrivateEncrypted String
+
+  /// Pre-key bundle
+  preKeyId              Int
+  preKeyValuePublic     String
+
+  /// Signed pre-key
+  signedPreKeyId        Int
+  signedPreKeyValue     String
+  signedPreKeySignature String
+
+  /// Registration ID (4 bytes)
+  registrationId        Int
+
+  /// Enrollment token from WhatsApp
+  enrollmentToken       String?   @unique
+
+  /// JWT token for API authentication
+  jwtToken              String?
+  jwtTokenExpiresAt     DateTime?
+
+  /// Enrollment status: active, pending, revoked, expired
+  status                String    @default("active")
+
+  /// Revocation details
+  revokedAt             DateTime?
+  revokedReason         String?
+
+  /// Key rotation tracking
+  lastKeyRotation       DateTime  @default(now())
+  nextKeyRotation       DateTime?
+
+  /// Compliance tracking
+  gdprConsentAt         DateTime?
+  dataProcessingConsent Boolean   @default(false)
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, whatsappInternalId])
+  @@index([userId])
+  @@index([whatsappInternalId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("dma_enrollments")
+}
+
+/// WhatsApp DMA offline message storage (30-day retention)
+model DMAOfflineMessage {
+  id                    String    @id @default(auto()) @map("_id") @db.ObjectId
+  enrollmentId          String    @db.ObjectId
+
+  /// Message ID from push notification
+  messageId             String    @unique
+
+  /// Delivery ID for tracking
+  deliveryId            String    @unique
+
+  /// WhatsApp sender JID
+  senderJID             String
+
+  /// Encrypted message content (base64)
+  encryptedContent      String
+
+  /// Message type: signal_v3, noise_transport, etc.
+  contentType           String    @default("signal_v3")
+
+  /// Message storage timestamp
+  storedAt              DateTime  @default(now())
+
+  /// Expiration timestamp (30 days from storage)
+  expiresAt             DateTime
+
+  /// Delivery tracking
+  delivered             Boolean   @default(false)
+  deliveredAt           DateTime?
+
+  /// Retry tracking
+  deliveryAttempts      Int       @default(0)
+  lastDeliveryAttempt   DateTime?
+  nextDeliveryAttempt   DateTime?
+
+  /// Client reconnection tracking
+  clientNotified        Boolean   @default(false)
+  notifiedAt            DateTime?
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  enrollment            DMAEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@index([enrollmentId])
+  @@index([messageId])
+  @@index([delivered])
+  @@index([expiresAt])
+  @@index([storedAt])
+  @@map("dma_offline_messages")
+}
+
+/// DMA cryptographic session tracking
+model DMASession {
+  id                    String    @id @default(auto()) @map("_id") @db.ObjectId
+  enrollmentId          String    @db.ObjectId
+
+  /// Remote party (recipient WhatsApp JID or internal ID)
+  remotePartyId         String
+
+  /// Session type: signal_protocol, noise_transport
+  sessionType           String    @default("signal_protocol")
+
+  /// Session state: initialized, established, ratcheted, expired
+  sessionState          String    @default("initialized")
+
+  /// Encrypted session state (for persistence)
+  sessionStateEncrypted  String?
+
+  /// Message counter for nonce tracking
+  messageCountSend      Int       @default(0)
+  messageCountReceive   Int       @default(0)
+
+  /// Ratchet state
+  rootKeyEncrypted      String?
+  chainKeySendEncrypted String?
+  chainKeyReceiveEncrypted String?
+
+  /// DHR (Diffie-Hellman Ratchet) tracking
+  dhrEpoch              Int       @default(0)
+  dhrLastRatchet        DateTime  @default(now())
+
+  /// Out-of-order message handling
+  skippedKeysCount      Int       @default(0)
+
+  /// Session creation and expiry
+  createdAt             DateTime  @default(now())
+  expiresAt             DateTime?
+
+  /// Metrics
+  messagesExchanged     Int       @default(0)
+  bytesEncrypted        BigInt    @default(0)
+  bytesDecrypted        BigInt    @default(0)
+
+  updatedAt             DateTime  @updatedAt
+
+  enrollment            DMAEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@unique([enrollmentId, remotePartyId, sessionType])
+  @@index([enrollmentId])
+  @@index([sessionState])
+  @@index([createdAt])
+  @@map("dma_sessions")
+}
+
+/// DMA message delivery status tracking
+model DMAMessageStatus {
+  id                    String    @id @default(auto()) @map("_id") @db.ObjectId
+  enrollmentId          String    @db.ObjectId
+
+  /// Message ID from Signal Protocol or Noise
+  messageId             String    @unique
+
+  /// Status: pending, sent, delivered, read, failed
+  status                String    @default("pending")
+
+  /// Delivery milestone timestamps
+  createdAt             DateTime  @default(now())
+  sentAt                DateTime?
+  deliveredAt           DateTime?
+  readAt                DateTime?
+  failedAt              DateTime?
+
+  /// Failure details
+  failureReason         String?
+  failureCode           String?
+  lastError             String?
+
+  /// Retry tracking
+  deliveryAttempts      Int       @default(0)
+  maxRetries            Int       @default(3)
+  nextRetryAt           DateTime?
+
+  /// Message metadata
+  recipientJID          String
+  messageSize           Int       @default(0)
+  priority              String    @default("normal") // low, normal, high
+
+  /// Encryption metadata
+  encryptionVersion     Int       @default(3) // Signal Protocol version
+  keyDerivationMethod   String?   // hkdf-sha256, scram-sha256, etc.
+
+  updatedAt             DateTime  @updatedAt
+
+  enrollment            DMAEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@index([enrollmentId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([deliveredAt])
+  @@map("dma_message_statuses")
 }
