@@ -959,12 +959,19 @@ export function ConversationDetailsSidebar({
         
         setActiveLanguageStats(userStats);
         
-        // Calculer les utilisateurs actifs
+        // Calculer les utilisateurs actifs - toujours inclure l'utilisateur actuel
         const activeParticipants = conversation.participants
-          .filter(p => p.user?.isOnline)
+          .filter(p => p.user && (p.user.isOnline || p.userId === currentUser.id))
           .map(p => p.user)
           .filter(Boolean) as User[];
-        setActiveUsers(activeParticipants);
+
+        // Vérifier si l'utilisateur actuel est déjà dans la liste, sinon l'ajouter au début
+        const hasCurrentUser = activeParticipants.find(u => u.id === currentUser.id);
+        const finalActiveUsers = hasCurrentUser
+          ? activeParticipants
+          : [currentUser, ...activeParticipants];
+
+        setActiveUsers(finalActiveUsers);
       }
     };
 
