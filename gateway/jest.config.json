@@ -25,6 +25,12 @@
   "transform": {
     "^.+\\.ts$": "ts-jest"
   },
+  "transformIgnorePatterns": [
+    "node_modules/(?!(@signalapp/libsignal-client)/)"
+  ],
+  "moduleNameMapper": {
+    "^@signalapp/libsignal-client$": "<rootDir>/src/encryption-adapters/__mocks__/@signalapp-libsignal-client.ts"
+  },
   "moduleFileExtensions": ["ts", "js", "json"],
   "collectCoverage": true,
   "coverageThreshold": {

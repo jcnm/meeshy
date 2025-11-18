@@ -32,6 +32,7 @@
     "@grpc/proto-loader": "^0.7.15",
     "@meeshy/shared": "workspace:*",
     "@prisma/client": "6.13.0",
+    "@signalapp/libsignal-client": "^0.86.4",
     "@types/fluent-ffmpeg": "^2.1.28",
     "axios": "^1.11.0",
     "bcrypt": "^6.0.0",
