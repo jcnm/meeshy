@@ -76,7 +76,14 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
       } shadow-md hover:shadow-lg transition-all duration-200 w-full sm:max-w-2xl min-w-0 overflow-hidden ${className}`}
     >
       {/* PDF embed - responsive height */}
-      <div className="relative w-full bg-white dark:bg-gray-900 rounded-lg overflow-auto h-[210px] sm:h-[280px] md:h-[350px]" style={{ touchAction: 'manipulation' }}>
+      <div
+        className="relative w-full bg-white dark:bg-gray-900 rounded-lg overflow-hidden h-[210px] sm:h-[280px] md:h-[350px]"
+        style={{
+          touchAction: 'manipulation',
+          WebkitUserSelect: 'none' as any,
+          userSelect: 'none'
+        }}
+      >
         {!hasError ? (
           <iframe
             src={`${attachmentFileUrl}#toolbar=1&navpanes=1&scrollbars=1&view=FitH&zoom=page-fit`}
@@ -84,10 +91,15 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
             title={attachment.originalName}
             style={{
               minHeight: '100%',
-              touchAction: 'manipulation',
-              overflowY: 'auto',
-              WebkitOverflowScrolling: 'touch'
+              minWidth: '100%',
+              touchAction: 'auto',
+              WebkitTouchCallout: 'none' as any,
+              WebkitUserSelect: 'none' as any,
+              userSelect: 'none',
+              overscrollBehavior: 'contain'
             } as React.CSSProperties}
+            allow="fullscreen"
+            sandbox="allow-same-origin allow-scripts allow-popups allow-presentation"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
