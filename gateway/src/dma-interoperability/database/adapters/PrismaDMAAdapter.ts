@@ -24,9 +24,9 @@ export class PrismaDMAAdapter implements IDMADatabaseAdapter {
     whatsappInternalId: string;
     whatsappLogin: string;
     keyMaterial: Record<string, any>;
-  }): Promise<any> {
+  }): Promise<Record<string, any>> {
     try {
-      const enrollment = await (this.prisma as any).dMAEnrollment.create({
+      const enrollment = await this.prisma.dMAEnrollment.create({
         data: {
           userId: data.userId,
           whatsappInternalId: data.whatsappInternalId,
@@ -54,7 +54,7 @@ export class PrismaDMAAdapter implements IDMADatabaseAdapter {
 
   async getEnrollment(enrollmentId: string): Promise<any> {
     try {
-      const enrollment = await (this.prisma as any).dMAEnrollment.findUnique({
+      const enrollment = await this.prisma.dMAEnrollment.findUnique({
         where: { id: enrollmentId }
       });
 
@@ -67,7 +67,7 @@ export class PrismaDMAAdapter implements IDMADatabaseAdapter {
 
   async updateEnrollmentStatus(enrollmentId: string, status: string): Promise<void> {
     try {
-      await (this.prisma as any).dMAEnrollment.update({
+      await this.prisma.dMAEnrollment.update({
         where: { id: enrollmentId },
         data: {
           status,
@@ -96,7 +96,7 @@ export class PrismaDMAAdapter implements IDMADatabaseAdapter {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 30); // 30-day retention
 
-      const offlineMessage = await (this.prisma as any).dMAOfflineMessage.create({
+      const offlineMessage = await this.prisma.dMAOfflineMessage.create({
         data: {
           enrollmentId: data.enrollmentId,
           messageId: data.messageId,
@@ -119,7 +119,7 @@ export class PrismaDMAAdapter implements IDMADatabaseAdapter {
 
   async getQueuedMessages(enrollmentId: string): Promise<any[]> {
     try {
-      const messages = await (this.prisma as any).dMAOfflineMessage.findMany({
+      const messages = await this.prisma.dMAOfflineMessage.findMany({
         where: {
           enrollmentId,
           delivered: false,
@@ -142,7 +142,7 @@ export class PrismaDMAAdapter implements IDMADatabaseAdapter {
 
   async markMessageDelivered(messageId: string): Promise<void> {
     try {
-      await (this.prisma as any).dMAOfflineMessage.update({
+      await this.prisma.dMAOfflineMessage.update({
         where: { messageId },
         data: {
           delivered: true,
@@ -168,7 +168,7 @@ export class PrismaDMAAdapter implements IDMADatabaseAdapter {
     sessionState: string;
   }): Promise<any> {
     try {
-      const session = await (this.prisma as any).dMASession.create({
+      const session = await this.prisma.dMASession.create({
         data: {
           enrollmentId: data.enrollmentId,
           remotePartyId: data.remotePartyId,
@@ -188,7 +188,7 @@ export class PrismaDMAAdapter implements IDMADatabaseAdapter {
 
   async updateSessionState(sessionId: string, newState: string): Promise<void> {
     try {
-      await (this.prisma as any).dMASession.update({
+      await this.prisma.dMASession.update({
         where: { id: sessionId },
         data: {
           sessionState: newState,
@@ -214,7 +214,7 @@ export class PrismaDMAAdapter implements IDMADatabaseAdapter {
     recipientJID: string;
   }): Promise<void> {
     try {
-      await (this.prisma as any).dMAMessageStatus.create({
+      await this.prisma.dMAMessageStatus.create({
         data: {
           enrollmentId: data.enrollmentId,
           messageId: data.messageId,
@@ -233,7 +233,7 @@ export class PrismaDMAAdapter implements IDMADatabaseAdapter {
 
   async updateMessageStatus(messageId: string, newStatus: string): Promise<void> {
     try {
-      await (this.prisma as any).dMAMessageStatus.update({
+      await this.prisma.dMAMessageStatus.update({
         where: { messageId },
         data: {
           status: newStatus,
@@ -260,7 +260,7 @@ export class PrismaDMAAdapter implements IDMADatabaseAdapter {
    */
   async cleanupExpiredMessages(): Promise<number> {
     try {
-      const result = await (this.prisma as any).dMAOfflineMessage.deleteMany({
+      const result = await this.prisma.dMAOfflineMessage.deleteMany({
         where: {
           expiresAt: {
             lt: new Date()
@@ -281,7 +281,7 @@ export class PrismaDMAAdapter implements IDMADatabaseAdapter {
    */
   async getEnrollmentByWhatsAppId(whatsappInternalId: string): Promise<any> {
     try {
-      const enrollment = await (this.prisma as any).dMAEnrollment.findUnique({
+      const enrollment = await this.prisma.dMAEnrollment.findUnique({
         where: { whatsappInternalId }
       });
 
@@ -297,7 +297,7 @@ export class PrismaDMAAdapter implements IDMADatabaseAdapter {
    */
   async getUserEnrollments(userId: string): Promise<any[]> {
     try {
-      const enrollments = await (this.prisma as any).dMAEnrollment.findMany({
+      const enrollments = await this.prisma.dMAEnrollment.findMany({
         where: { userId }
       });
 

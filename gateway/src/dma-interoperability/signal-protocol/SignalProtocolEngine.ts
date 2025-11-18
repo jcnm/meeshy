@@ -126,18 +126,19 @@ export class SignalProtocolEngine {
         throw new Error('Double Ratchet not initialized');
       }
 
-      // Step 1: Get or create ratchet session
+      // Step 1: Get or create ratchet session with X3DH key agreement
       let ratchetSession = this.ratchetSessions.get(recipientId);
       if (!ratchetSession) {
-        console.log(`  ℹ️  Creating new session with ${recipientId}`);
-        // In real implementation, would perform X3DH first
+        console.log(`  ℹ️  Initiating X3DH session with ${recipientId}`);
+        // Perform X3DH key agreement and initialize Double Ratchet
+        const session = await this.initiateNewSession(recipientId);
         ratchetSession = this.doubleRatchet.initializeSession(
-          crypto.randomBytes(32), // Would come from X3DH
-          crypto.randomBytes(32),
-          crypto.randomBytes(32)
+          session.rootKey,
+          session.chainKeySend,
+          session.chainKeyReceive
         );
         this.ratchetSessions.set(recipientId, ratchetSession);
-        this.stats.sessionsActive++;
+        console.log(`  ✓ X3DH key agreement completed with ${recipientId}`);
       }
 
       // Step 2: Get message key from Double Ratchet
@@ -201,18 +202,20 @@ export class SignalProtocolEngine {
         throw new Error('Double Ratchet not initialized');
       }
 
-      // Step 1: Get or create ratchet session with sender
+      // Step 1: Get or create ratchet session with sender (using X3DH derived keys)
       let ratchetSession = this.ratchetSessions.get(senderId);
       if (!ratchetSession) {
-        console.log(`  ℹ️  Creating new session with ${senderId}`);
-        // In real implementation, would extract keys from ephemeralPublicKey
+        console.log(`  ℹ️  Initiating X3DH session with ${senderId}`);
+        // Perform X3DH key agreement and initialize Double Ratchet
+        // In this context, we're the responder, so we use the ephemeralPublicKey from sender
+        const session = await this.responderKeyAgreement(senderId, encryptedMessage.ephemeralPublicKey);
         ratchetSession = this.doubleRatchet.initializeSession(
-          crypto.randomBytes(32), // Would come from ephemeralPublicKey
-          crypto.randomBytes(32),
-          crypto.randomBytes(32)
+          session.rootKey,
+          session.chainKeyReceive,
+          session.chainKeySend
         );
         this.ratchetSessions.set(senderId, ratchetSession);
-        this.stats.sessionsActive++;
+        console.log(`  ✓ X3DH key agreement completed with ${senderId}`);
       }
 
       // Step 2: Get message key (handles out-of-order via skipped keys)
@@ -256,35 +259,189 @@ export class SignalProtocolEngine {
   }
 
   /**
-   * Initiate new X3DH session with recipient
+   * Initiate new X3DH session with recipient (INITIATOR SIDE)
    *
-   * TODO (Phase 2, Week 3-4):
-   * 1. Get recipient's pre-keys
-   * 2. Perform X3DH
-   * 3. Derive shared secret
-   * 4. Initialize Double Ratchet
+   * Phase 2, Week 3-4: Initiator-side X3DH key agreement
+   *
+   * Steps:
+   * 1. Generate ephemeral key pair
+   * 2. Get recipient's pre-key bundle from key manager
+   * 3. Perform X3DH key agreement
+   * 4. Derive root key and chain keys via HKDF
+   * 5. Store session in database
+   * 6. Return session for Double Ratchet initialization
    */
   private async initiateNewSession(recipientId: string): Promise<SignalSession> {
-    console.log(`Initiating X3DH session with: ${recipientId}`);
+    console.log(`🔐 Initiating X3DH session (INITIATOR) with: ${recipientId}`);
 
-    // TODO: Implement X3DH
-    // 1. Get recipient pre-keys
-    // 2. DH operations
-    // 3. HKDF derivation
-    // 4. Initialize ratchet
+    if (!this.x3dh || !this.keyManager) {
+      throw new Error('X3DH or KeyManager not initialized');
+    }
 
-    const session: SignalSession = {
-      recipientId,
-      rootKey: Buffer.alloc(32), // TODO: Derive from X3DH
-      chainKeySend: Buffer.alloc(32), // TODO
-      chainKeyReceive: Buffer.alloc(32), // TODO
-      dhRatchetKey: Buffer.alloc(65), // TODO
-      messageNumber: 0,
-      previousChainLength: 0
-    };
+    try {
+      // Step 1: Get our identity key pair
+      const identityKeyPair = await this.keyManager.getIdentityKeyPair();
+      console.log(`  ✓ Using identity key pair`);
 
-    this.stats.sessionsActive++;
-    return session;
+      // Step 2: Get recipient's pre-key bundle from database
+      const preKeyBundle = await this.prisma.preKey.findMany({
+        where: {
+          signalEnrollment: { whatsappInternalId: recipientId },
+          isUsed: false
+        },
+        take: 1
+      });
+
+      if (preKeyBundle.length === 0) {
+        throw new Error(`No pre-keys available for recipient: ${recipientId}`);
+      }
+
+      const preKey = preKeyBundle[0];
+      console.log(`  ✓ Retrieved pre-key (ID: ${preKey.id})`);
+
+      // Step 3: Perform X3DH key agreement (INITIATOR SIDE)
+      const x3dhResult = await this.x3dh.initiatorKeyAgreement(
+        {
+          identityKey: Buffer.from(preKey.signalEnrollment.identityKey, 'base64'),
+          signedPreKey: Buffer.from(preKey.signalEnrollment.signedPreKey, 'base64'),
+          signedPreKeySignature: Buffer.from(preKey.signalEnrollment.signedPreKeySignature, 'base64'),
+          onetimePreKey: preKey.keyData ? Buffer.from(preKey.keyData, 'base64') : undefined
+        },
+        identityKeyPair.privateKey
+      );
+
+      console.log(`  ✓ X3DH key agreement completed`);
+
+      // Step 4: Create session
+      const session: SignalSession = {
+        recipientId,
+        rootKey: x3dhResult.rootKey,
+        chainKeySend: x3dhResult.chainKeySend,
+        chainKeyReceive: x3dhResult.chainKeyReceive,
+        dhRatchetKey: x3dhResult.ephemeralKeyPair.publicKey,
+        messageNumber: 0,
+        previousChainLength: 0
+      };
+
+      // Step 5: Store session in database for persistence
+      try {
+        await this.prisma.dMASession.upsert({
+          where: { remotePartyId: recipientId },
+          update: {
+            rootKey: session.rootKey.toString('base64'),
+            chainKeySend: session.chainKeySend.toString('base64'),
+            chainKeyReceive: session.chainKeyReceive.toString('base64'),
+            sessionState: 'established'
+          },
+          create: {
+            remotePartyId: recipientId,
+            rootKey: session.rootKey.toString('base64'),
+            chainKeySend: session.chainKeySend.toString('base64'),
+            chainKeyReceive: session.chainKeyReceive.toString('base64'),
+            sessionType: 'signal_protocol_x3dh',
+            sessionState: 'established'
+          }
+        });
+        console.log(`  ✓ Session persisted to database`);
+      } catch (dbError) {
+        console.warn(`  ⚠️  Failed to persist session to database:`, dbError);
+        // Continue anyway, session is in memory
+      }
+
+      // Step 6: Mark one-time pre-key as used
+      if (preKey.id) {
+        try {
+          await this.prisma.preKey.update({
+            where: { id: preKey.id },
+            data: { isUsed: true }
+          });
+          console.log(`  ✓ Marked one-time pre-key as used`);
+        } catch (pkError) {
+          console.warn(`  ⚠️  Failed to mark pre-key as used:`, pkError);
+        }
+      }
+
+      this.stats.sessionsActive++;
+      console.log(`✅ X3DH session established with ${recipientId}`);
+
+      return session;
+    } catch (error) {
+      console.error(`❌ Failed to initiate X3DH session:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Responder-side X3DH key agreement
+   *
+   * Phase 2, Week 3-4: Responder-side X3DH key agreement
+   *
+   * Steps:
+   * 1. Get ephemeral public key from sender (in encrypted message)
+   * 2. Get sender's identity key from database
+   * 3. Perform X3DH key agreement (RESPONDER SIDE)
+   * 4. Derive root key and chain keys via HKDF
+   * 5. Return session for Double Ratchet initialization
+   *
+   * Note: Responder side uses the ephemeral public key sent by initiator
+   */
+  private async responderKeyAgreement(senderId: string, ephemeralPublicKey: Buffer): Promise<SignalSession> {
+    console.log(`🔐 Performing X3DH key agreement (RESPONDER) with: ${senderId}`);
+
+    if (!this.x3dh || !this.keyManager) {
+      throw new Error('X3DH or KeyManager not initialized');
+    }
+
+    try {
+      // Step 1: Get sender's identity key from enrollment
+      const enrollment = await this.prisma.dMAEnrollment.findUnique({
+        where: { whatsappInternalId: senderId }
+      });
+
+      if (!enrollment) {
+        throw new Error(`No enrollment found for sender: ${senderId}`);
+      }
+
+      const senderIdentityKey = Buffer.from(enrollment.identityKey, 'base64');
+      console.log(`  ✓ Retrieved sender's identity key`);
+
+      // Step 2: Get our keys
+      const identityKeyPair = await this.keyManager.getIdentityKeyPair();
+      const signedPreKeyPair = await this.keyManager.getSignedPreKeyPair();
+
+      console.log(`  ✓ Using our identity and signed pre-key`);
+
+      // Step 3: Perform X3DH key agreement (RESPONDER SIDE)
+      const x3dhResult = await this.x3dh.responderKeyAgreement(
+        {
+          senderEphemeralPublicKey: ephemeralPublicKey,
+          senderIdentityKey: senderIdentityKey
+        },
+        identityKeyPair.privateKey,
+        signedPreKeyPair.privateKey
+      );
+
+      console.log(`  ✓ X3DH key agreement completed (responder side)`);
+
+      // Step 4: Create session (note: chainKeySend and chainKeyReceive are swapped for responder)
+      const session: SignalSession = {
+        recipientId: senderId,
+        rootKey: x3dhResult.rootKey,
+        chainKeySend: x3dhResult.chainKeyReceive,
+        chainKeyReceive: x3dhResult.chainKeySend,
+        dhRatchetKey: signedPreKeyPair.publicKey,
+        messageNumber: 0,
+        previousChainLength: 0
+      };
+
+      this.stats.sessionsActive++;
+      console.log(`✅ X3DH key agreement completed (responder) with ${senderId}`);
+
+      return session;
+    } catch (error) {
+      console.error(`❌ Failed to perform responder key agreement:`, error);
+      throw error;
+    }
   }
 
   /**
