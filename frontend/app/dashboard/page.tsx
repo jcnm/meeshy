@@ -550,7 +550,7 @@ function DashboardPageContent() {
                                       } else if (mimeType.startsWith('audio/')) {
                                         // Extraire les effets appliqués depuis la timeline
                                         const effectIcons: Record<string, string> = {
-                                          'voice-coder': '🎵',
+                                          'voice-coder': '🎤',
                                           'baby-voice': '👶',
                                           'demon-voice': '😈',
                                           'back-sound': '🎶',

@@ -375,7 +375,7 @@ function VoiceCoderDetails({
         <div className="flex items-center justify-between">
           <div>
             <h4 className="text-white font-bold text-base flex items-center gap-2">
-              <span className="text-2xl">🎵</span>
+              <span className="text-2xl">🎤</span>
               {t('voiceCoder.title')}
             </h4>
             <p className="text-gray-400 text-xs mt-1">

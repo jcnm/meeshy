@@ -1306,7 +1306,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
               <DropdownMenuTrigger asChild>
                 <a
                   href="#"
-                  className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all cursor-pointer"
+                  className="relative z-10 flex-shrink-0 inline-flex items-center justify-center w-5 h-5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all cursor-pointer"
                   title={`Vitesse: ${playbackRate}x`}
                   onClick={(e) => e.preventDefault()}
                 >
@@ -1351,7 +1351,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
                 <DropdownMenuTrigger asChild>
                   <a
                     href="#"
-                    className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all cursor-pointer"
+                    className="relative z-10 flex-shrink-0 inline-flex items-center justify-center w-5 h-5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all cursor-pointer"
                     title={appliedEffects.length === 1 ? `Effet: ${appliedEffects[0]}` : `${appliedEffects.length} effets appliqués`}
                     onClick={(e) => e.preventDefault()}
                   >
@@ -1547,7 +1547,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
             <a
               href={objectUrl || '#'}
               download={attachment.originalName}
-              className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all"
+              className="relative z-10 flex-shrink-0 inline-flex items-center justify-center w-5 h-5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all"
               title="Télécharger l'audio"
               onClick={(e) => {
                 if (!objectUrl) {
