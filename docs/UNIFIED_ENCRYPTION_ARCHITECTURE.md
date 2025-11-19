@@ -1,82 +1,115 @@
-# Unified Encryption Architecture for Meeshy Platform
+# Unified Encryption Architecture for Meeshy Platform (REVISED)
 
 **Date:** November 19, 2025
 **Status:** PROPOSED - Ready for Implementation
 **Approach:** Real DMA (EU Digital Markets Act) with Signal Protocol
+**Architecture:** Conversation-level encryption with DateTime tracking
 
 ---
 
 ## Executive Summary
 
 This document proposes a **unified encryption architecture** where:
-- ✅ **SAME `Message` collection** handles both encrypted and unencrypted messages
-- ✅ **Encryption is OPTIONAL** - users/conversations can toggle it on/off
-- ✅ **Real DMA compliance** - for EU interoperability, not WhatsApp Business API
+- ✅ **Encryption is per-CONVERSATION** (not per-message)
+- ✅ **DateTime fields track when encryption was enabled** (immutable, can't be disabled)
+- ✅ **System messages are NEVER encrypted** (no need for encryption flags)
+- ✅ **Same `Message` collection** handles both encrypted and plaintext
+- ✅ **Real DMA compliance** - for EU interoperability
 - ✅ **Backward compatible** - existing plaintext messages remain functional
-- ✅ **Signal Protocol** - industry-standard E2EE (used by WhatsApp, Signal, etc.)
 
 ---
 
-## Architecture Overview
+## Core Architecture Principles
 
+### 1️⃣ Encryption is Conversation-Level
+
+```typescript
+// Encryption controlled at conversation level ONLY
+conversation.encryptionEnabledAt: DateTime | null
+
+// null = plaintext conversation
+// non-null = encrypted conversation (since that timestamp)
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Message Collection                        │
-│  (Unified - handles BOTH encrypted & plaintext)             │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  Plaintext Message:                                         │
-│  ├─ isEncrypted: false                                     │
-│  ├─ content: "Hello world"                                 │
-│  ├─ encryptedContent: null                                 │
-│  └─ translations: [...] ✓                                  │
-│                                                             │
-│  Encrypted Message:                                         │
-│  ├─ isEncrypted: true                                      │
-│  ├─ content: "[Encrypted]"  (display placeholder)          │
-│  ├─ encryptedContent: "base64_encrypted_payload"           │
-│  ├─ encryptionProtocol: "signal_v3"                        │
-│  ├─ encryptionMetadata: { keyId, ratchetState, ... }      │
-│  └─ translations: null  (can't translate encrypted)        │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+
+**Benefits:**
+- ✅ Simpler logic (check one field, not per-message)
+- ✅ Clear user expectation ("This conversation is encrypted")
+- ✅ Immutable (once enabled, can't be disabled - can't set back to null)
+- ✅ Audit trail (know exactly when encryption was enabled)
+
+### 2️⃣ System Messages Are Never Encrypted
+
+```typescript
+// Derive encryption status from message type
+if (message.messageType === "system") {
+  // ALWAYS plaintext (no exceptions)
+  // Examples: "User joined", "Settings changed", "Encryption enabled"
+} else {
+  // Check conversation setting
+  if (conversation.encryptionEnabledAt !== null) {
+    // Message is encrypted
+  } else {
+    // Message is plaintext
+  }
+}
 ```
+
+**Benefits:**
+- ✅ No encryption flag needed on messages
+- ✅ System messages are metadata (server already knows)
+- ✅ Clear exception rule
+
+### 3️⃣ Immutable Encryption
+
+```typescript
+// Can enable encryption (null → timestamp)
+conversation.encryptionEnabledAt = null → new Date()  ✅
+
+// Cannot disable encryption (timestamp → null)
+conversation.encryptionEnabledAt = <timestamp> → null  ❌ IMPOSSIBLE
+```
+
+**Benefits:**
+- ✅ No "disable encryption" attack vector
+- ✅ Users trust encryption stays enabled
+- ✅ Database constraint prevents disabling
 
 ---
 
-## Schema Changes
+## Schema Design
 
-### 1. Message Model - Add Optional Encryption Fields
+### Message Model (SIMPLIFIED - No Encryption Fields)
 
 ```prisma
+/// Message dans une conversation
 model Message {
   id                String                @id @default(auto()) @map("_id") @db.ObjectId
   conversationId    String                @db.ObjectId
   senderId          String?               @db.ObjectId
   anonymousSenderId String?               @db.ObjectId
 
-  // EXISTING FIELDS
+  // Content fields
   content           String                // Plaintext OR "[Encrypted]" placeholder
+
+  // Message metadata
   originalLanguage  String                @default("fr")
-  messageType       String                @default("text")
+  messageType       String                @default("text")  // "text", "image", "file", "audio", "video", "system"
   isEdited          Boolean               @default(false)
   editedAt          DateTime?
   isDeleted         Boolean               @default(false)
   deletedAt         DateTime?
   replyToId         String?               @db.ObjectId
   validatedMentions String[]              @default([])
+
+  // 🆕 Encrypted content (only present if conversation.encryptionEnabledAt != null)
+  encryptedContent  String?               // Base64 encrypted payload (null for plaintext messages)
+  encryptionMetadata Json?                // { protocol, keyId, iv, authTag, messageNumber, ... }
+
   metadata          Json?
-
-  // 🆕 NEW ENCRYPTION FIELDS (OPTIONAL)
-  isEncrypted       Boolean               @default(false)
-  encryptedContent  String?               // Base64 encrypted payload (when isEncrypted=true)
-  encryptionProtocol String?              // "signal_v3", "noise_transport", etc.
-  encryptionMetadata Json?                // { keyId, preKeyId, ratchetState, iv, authTag }
-
   createdAt         DateTime              @default(now())
   updatedAt         DateTime              @updatedAt
 
-  // Relations (unchanged)
+  // Relations
   status            MessageStatus[]       @relation("MessageStatusMessage")
   translations      MessageTranslation[]
   attachments       MessageAttachment[]
@@ -89,14 +122,21 @@ model Message {
   sender            User?                 @relation("MessageSender", fields: [senderId], references: [id])
   conversation      Conversation          @relation(fields: [conversationId], references: [id])
 
-  @@index([isEncrypted])
-  @@index([encryptionProtocol])
+  @@index([conversationId, createdAt])
+  @@index([messageType])
 }
 ```
 
-### 2. Conversation Model - Add Encryption Settings
+**Key Points:**
+- ❌ **No `isEncrypted` field** - derive from conversation + messageType
+- ✅ **`encryptedContent`** - stores encrypted payload (null for plaintext)
+- ✅ **`encryptionMetadata`** - stores encryption details (protocol, keys, etc.)
+- ✅ **`messageType`** - "system" messages are NEVER encrypted
+
+### Conversation Model (DateTime-based Encryption)
 
 ```prisma
+/// Conversation entre utilisateurs (direct, group, public, global)
 model Conversation {
   id                    String                   @id @default(auto()) @map("_id") @db.ObjectId
   identifier            String                   @unique
@@ -110,16 +150,16 @@ model Conversation {
   isArchived            Boolean                  @default(false)
   lastMessageAt         DateTime                 @default(now())
 
-  // 🆕 NEW ENCRYPTION SETTINGS
-  encryptionEnabled     Boolean                  @default(false)    // E2EE enabled for this conversation
-  encryptionProtocol    String?                  @default("signal_v3") // Default protocol to use
-  encryptionMandatory   Boolean                  @default(false)    // Reject plaintext messages if true
+  // 🆕 ENCRYPTION CONTROL (DateTime-based, immutable)
+  encryptionEnabledAt   DateTime?                // null = plaintext, non-null = encrypted since this date
+  encryptionProtocol    String?                  @default("signal_v3")  // "signal_v3", "mls_v1", etc.
+  encryptionEnabledBy   String?                  @db.ObjectId  // User who enabled encryption (audit)
 
   metadata              Json?
   createdAt             DateTime                 @default(now())
   updatedAt             DateTime                 @updatedAt
 
-  // Relations (unchanged)
+  // Relations
   anonymousParticipants AnonymousParticipant[]
   members               ConversationMember[]
   preferences           ConversationPreference[]
@@ -130,12 +170,20 @@ model Conversation {
   typingIndicators      TypingIndicator[]
   callSessions          CallSession[]
   userPreferences       UserConversationPreferences[]
+  encryptionEnabledByUser User?                  @relation("ConversationEncryptionEnabler", fields: [encryptionEnabledBy], references: [id], onDelete: SetNull)
 
-  @@index([encryptionEnabled])
+  @@index([encryptionEnabledAt])
+  @@index([createdAt])
 }
 ```
 
-### 3. User Model - Add Encryption Preferences
+**Key Points:**
+- ✅ **`encryptionEnabledAt: DateTime?`** - null = plaintext, non-null = encrypted
+- ✅ **Immutable** - once set, cannot be changed back to null (enforce in application logic)
+- ✅ **`encryptionEnabledBy`** - tracks who enabled encryption (accountability)
+- ✅ **`encryptionProtocol`** - which protocol to use (Signal, MLS, etc.)
+
+### User Model (Encryption Keys & Preferences)
 
 ```prisma
 model User {
@@ -143,518 +191,696 @@ model User {
   username                    String                   @unique
   // ... existing fields ...
 
-  // 🆕 NEW ENCRYPTION PREFERENCES
-  encryptionPreference        String                   @default("optional")  // "disabled", "optional", "preferred", "mandatory"
-  signalIdentityKeyPublic     String?                  // User's Signal Protocol public identity key
-  signalIdentityKeyPrivate    String?                  // Encrypted private identity key
-  signalRegistrationId        Int?                     // Signal Protocol registration ID
-  signalPreKeyBundleId        Int?                     @default(0)           // Current pre-key bundle ID
+  // 🆕 Signal Protocol Keys (generated when user opts into encryption)
+  signalIdentityKeyPublic     String?                  // Public identity key (shareable)
+  signalIdentityKeyPrivate    String?                  // Private identity key (encrypted with user password)
+  signalRegistrationId        Int?                     // Registration ID (4-byte unique ID)
+  signalPreKeyBundleVersion   Int?                     @default(0)  // Current pre-key bundle version
   lastKeyRotation             DateTime?                // Last time keys were rotated
+
+  // 🆕 User Encryption Preference
+  encryptionPreference        String                   @default("optional")  // "disabled", "optional", "always"
 
   // ... existing fields ...
   createdAt                   DateTime                 @default(now())
   updatedAt                   DateTime                 @updatedAt
 
   // ... existing relations ...
+  enabledEncryptionFor        Conversation[]           @relation("ConversationEncryptionEnabler")
 }
 ```
+
+**Key Points:**
+- ✅ **Signal Protocol keys** - stored per user (generated on demand)
+- ✅ **`encryptionPreference`** - user's default preference for new conversations
+- ✅ **Keys are optional** - only generated when user enables encryption
 
 ---
 
-## Encryption Flow Comparison
+## Encryption Logic
 
-### Flow 1: Plaintext Message (Current - Default)
+### How to Determine if a Message is Encrypted
 
 ```typescript
-// Client sends message
-{
-  conversationId: "conv123",
-  content: "Hello world",
-  isEncrypted: false
-}
-
-// Server stores directly
-await prisma.message.create({
-  data: {
-    conversationId: "conv123",
-    senderId: userId,
-    content: "Hello world",
-    isEncrypted: false,
-    encryptedContent: null,
-    originalLanguage: "en"
+function isMessageEncrypted(message: Message, conversation: Conversation): boolean {
+  // Rule 1: System messages are NEVER encrypted
+  if (message.messageType === "system") {
+    return false;
   }
-});
 
-// Server creates translations
-await translationService.translateMessage(message, ["fr", "es"]);
-
-// Recipients receive plaintext
-socket.emit("new_message", {
-  id: "msg123",
-  content: "Hello world",
-  isEncrypted: false,
-  translations: {
-    fr: "Bonjour le monde",
-    es: "Hola mundo"
+  // Rule 2: Check if conversation has encryption enabled
+  if (conversation.encryptionEnabledAt === null) {
+    // Conversation is plaintext
+    return false;
   }
-});
-```
 
-### Flow 2: Encrypted Message (NEW - Opt-in)
-
-```typescript
-// Client encrypts locally (Signal Protocol)
-const encryptedPayload = await signalProtocol.encrypt({
-  recipientId: "user456",
-  plaintext: "Hello world",
-  sessionState: currentSession
-});
-
-// Client sends encrypted
-{
-  conversationId: "conv123",
-  content: "[Encrypted]",  // Placeholder for display
-  isEncrypted: true,
-  encryptedContent: "base64_encrypted_payload_here",
-  encryptionProtocol: "signal_v3",
-  encryptionMetadata: {
-    preKeyId: 123,
-    signedPreKeyId: 456,
-    keyId: 789,
-    messageNumber: 1,
-    iv: "...",
-    authTag: "..."
+  // Rule 3: Check if message was sent AFTER encryption was enabled
+  if (message.createdAt < conversation.encryptionEnabledAt) {
+    // Message was sent before encryption was enabled (historical plaintext)
+    return false;
   }
-}
 
-// Server stores as-is (can't decrypt)
-await prisma.message.create({
-  data: {
-    conversationId: "conv123",
-    senderId: userId,
-    content: "[Encrypted]",
-    isEncrypted: true,
-    encryptedContent: encryptedPayload.ciphertext,
-    encryptionProtocol: "signal_v3",
-    encryptionMetadata: encryptedPayload.metadata
-  }
-});
-
-// NO translations (server can't decrypt)
-
-// Recipients receive encrypted
-socket.emit("new_message", {
-  id: "msg123",
-  content: "[Encrypted]",
-  isEncrypted: true,
-  encryptedContent: "base64_encrypted_payload_here",
-  encryptionProtocol: "signal_v3",
-  encryptionMetadata: { ... }
-});
-
-// Client decrypts locally
-const plaintext = await signalProtocol.decrypt({
-  encryptedContent: message.encryptedContent,
-  metadata: message.encryptionMetadata,
-  sessionState: currentSession
-});
-// Display: "Hello world"
-```
-
----
-
-## Encryption Control Levels
-
-### Level 1: User Preference
-
-```typescript
-// User account settings
-{
-  encryptionPreference: "disabled"   // Never encrypt my messages
-  encryptionPreference: "optional"   // Let me choose per conversation (DEFAULT)
-  encryptionPreference: "preferred"  // Encrypt when possible, fallback to plaintext
-  encryptionPreference: "mandatory"  // Only send encrypted, fail if not possible
+  // Message is encrypted
+  return true;
 }
 ```
 
-### Level 2: Conversation Setting
+**Benefits:**
+- ✅ No field needed on Message
+- ✅ Clear derivation logic
+- ✅ Handles transition period (messages before/after encryption)
 
-```typescript
-// Conversation settings (controlled by admin/creator)
-{
-  encryptionEnabled: false,       // Plaintext only (DEFAULT for existing convos)
-  encryptionMandatory: false
-}
-
-{
-  encryptionEnabled: true,        // Encryption available
-  encryptionMandatory: false,     // But plaintext still allowed
-  encryptionProtocol: "signal_v3"
-}
-
-{
-  encryptionEnabled: true,        // Encryption required
-  encryptionMandatory: true,      // Reject plaintext messages
-  encryptionProtocol: "signal_v3"
-}
-```
-
-### Level 3: Message-Level Encryption
-
-```typescript
-// Each message independently tracks encryption
-{
-  id: "msg123",
-  isEncrypted: false,  // This specific message is plaintext
-  content: "Hello"
-}
-
-{
-  id: "msg124",
-  isEncrypted: true,   // This specific message is encrypted
-  encryptedContent: "..."
-}
-```
-
----
-
-## Implementation Logic
-
-### Message Send Logic
+### Message Send Flow
 
 ```typescript
 async function sendMessage(
   conversationId: string,
   content: string,
-  options: { encrypt?: boolean }
+  messageType: string = "text"
 ): Promise<Message> {
-  // 1. Get conversation encryption settings
+  // 1. Get conversation
   const conversation = await prisma.conversation.findUnique({
     where: { id: conversationId },
-    select: { encryptionEnabled, encryptionMandatory, encryptionProtocol }
+    select: { encryptionEnabledAt, encryptionProtocol }
   });
 
-  // 2. Get user encryption preference
-  const user = await prisma.user.findUnique({
-    where: { id: currentUserId },
-    select: { encryptionPreference }
-  });
+  // 2. Determine if encryption is required
+  const encryptionRequired = conversation.encryptionEnabledAt !== null;
+  const isSystemMessage = messageType === "system";
 
-  // 3. Determine if encryption should be used
-  let shouldEncrypt = false;
-
-  if (conversation.encryptionMandatory) {
-    // Conversation requires encryption
-    shouldEncrypt = true;
-  } else if (user.encryptionPreference === "mandatory") {
-    // User requires encryption
-    shouldEncrypt = true;
-  } else if (options.encrypt === true) {
-    // User explicitly requested encryption for this message
-    shouldEncrypt = true;
-  } else if (user.encryptionPreference === "preferred" && conversation.encryptionEnabled) {
-    // User prefers encryption and conversation supports it
-    shouldEncrypt = true;
-  }
-
-  // 4. Validate encryption is possible
-  if (shouldEncrypt) {
-    if (!conversation.encryptionEnabled) {
-      throw new Error("Encryption not enabled for this conversation");
-    }
-    // Check recipient has public keys, session exists, etc.
-  }
-
-  // 5. Create message
-  if (shouldEncrypt) {
-    // Encrypt on client-side BEFORE sending to server
-    const encryptedPayload = await encryptMessageClientSide(content);
-
+  // 3. Handle system messages (always plaintext)
+  if (isSystemMessage) {
     return await prisma.message.create({
       data: {
         conversationId,
         senderId: currentUserId,
-        content: "[Encrypted]",
-        isEncrypted: true,
-        encryptedContent: encryptedPayload.ciphertext,
-        encryptionProtocol: conversation.encryptionProtocol,
-        encryptionMetadata: encryptedPayload.metadata
-      }
-    });
-  } else {
-    // Plaintext message
-    return await prisma.message.create({
-      data: {
-        conversationId,
-        senderId: currentUserId,
-        content: content,
-        isEncrypted: false,
+        content: content,  // Plaintext system message
+        messageType: "system",
         encryptedContent: null,
-        originalLanguage: detectLanguage(content)
+        encryptionMetadata: null
       }
     });
   }
+
+  // 4. Handle encrypted conversation
+  if (encryptionRequired) {
+    try {
+      // Encrypt on CLIENT SIDE (before sending to server)
+      const encryptedPayload = await encryptMessageClientSide(
+        content,
+        conversationId,
+        conversation.encryptionProtocol
+      );
+
+      return await prisma.message.create({
+        data: {
+          conversationId,
+          senderId: currentUserId,
+          content: "[Encrypted]",  // Placeholder for UI
+          messageType: messageType,
+          encryptedContent: encryptedPayload.ciphertext,
+          encryptionMetadata: {
+            protocol: conversation.encryptionProtocol,
+            keyId: encryptedPayload.keyId,
+            messageNumber: encryptedPayload.messageNumber,
+            iv: encryptedPayload.iv,
+            authTag: encryptedPayload.authTag
+          }
+        }
+      });
+    } catch (error) {
+      // Encryption failed → FAIL the message send
+      throw new Error(`Cannot send message: encryption failed (${error.message})`);
+    }
+  }
+
+  // 5. Handle plaintext conversation
+  return await prisma.message.create({
+    data: {
+      conversationId,
+      senderId: currentUserId,
+      content: content,  // Plaintext content
+      messageType: messageType,
+      encryptedContent: null,
+      encryptionMetadata: null,
+      originalLanguage: await detectLanguage(content)
+    }
+  });
+}
+```
+
+### Enable Encryption for Conversation
+
+```typescript
+async function enableEncryption(
+  conversationId: string,
+  userId: string
+): Promise<Conversation> {
+  // 1. Get current conversation
+  const conversation = await prisma.conversation.findUnique({
+    where: { id: conversationId },
+    select: { encryptionEnabledAt }
+  });
+
+  // 2. Check if already encrypted
+  if (conversation.encryptionEnabledAt !== null) {
+    throw new Error("Encryption already enabled for this conversation");
+  }
+
+  // 3. Verify user has encryption keys
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { signalIdentityKeyPublic }
+  });
+
+  if (!user.signalIdentityKeyPublic) {
+    throw new Error("User must generate encryption keys first");
+  }
+
+  // 4. Enable encryption (IMMUTABLE - can never be disabled)
+  const now = new Date();
+  const updatedConversation = await prisma.conversation.update({
+    where: { id: conversationId },
+    data: {
+      encryptionEnabledAt: now,
+      encryptionProtocol: "signal_v3",
+      encryptionEnabledBy: userId
+    }
+  });
+
+  // 5. Create system message to notify participants
+  await prisma.message.create({
+    data: {
+      conversationId,
+      senderId: userId,
+      content: "Encryption enabled. All future messages will be end-to-end encrypted.",
+      messageType: "system",  // ← Always plaintext
+      encryptedContent: null,
+      encryptionMetadata: null
+    }
+  });
+
+  // 6. Notify all participants via WebSocket
+  await notifyConversationMembers(conversationId, {
+    type: "encryption_enabled",
+    enabledAt: now,
+    enabledBy: userId
+  });
+
+  return updatedConversation;
+}
+```
+
+**Key Points:**
+- ✅ **Check if already enabled** - prevent duplicate operations
+- ✅ **Verify user has keys** - ensure user is ready for encryption
+- ✅ **Set timestamp** - marks when encryption became active
+- ✅ **System message** - notify all participants (plaintext)
+- ✅ **WebSocket notification** - real-time update for UI
+
+---
+
+## Message Type Handling
+
+### System Messages (Always Plaintext)
+
+```typescript
+messageType: "system"
+```
+
+**Examples:**
+- "Alice joined the conversation"
+- "Bob left the conversation"
+- "Encryption enabled"
+- "Conversation created"
+- "Settings changed"
+
+**Properties:**
+- ✅ **Always plaintext** - even in encrypted conversations
+- ✅ **Generated by server** - not user content
+- ✅ **Metadata** - server already knows this information
+- ✅ **No privacy concern** - not user's private content
+
+### User Messages (Follow Conversation Setting)
+
+```typescript
+messageType: "text" | "image" | "file" | "audio" | "video"
+```
+
+**Encryption Logic:**
+```typescript
+if (conversation.encryptionEnabledAt !== null && message.createdAt >= conversation.encryptionEnabledAt) {
+  // Message is encrypted
+  message.encryptedContent = "base64_encrypted_payload"
+  message.content = "[Encrypted]"  // Placeholder
+} else {
+  // Message is plaintext
+  message.content = "Actual message content"
+  message.encryptedContent = null
 }
 ```
 
 ---
 
-## Feature Compatibility Matrix
+## Transition Period Handling
 
-| Feature | Plaintext Messages | Encrypted Messages |
-|---------|-------------------|-------------------|
-| **Storage** | ✅ MongoDB `Message` collection | ✅ MongoDB `Message` collection (same) |
-| **Translations** | ✅ Server-side auto-translate | ❌ Not possible (content encrypted) |
-| **Search** | ✅ Full-text search on content | ❌ Content encrypted (metadata only) |
-| **Mentions** | ✅ Parse @username from content | ⚠️ Client-side only (before encryption) |
-| **Link Previews** | ✅ Server extracts URLs | ❌ Client-side only (before encryption) |
-| **Reactions** | ✅ Full support | ✅ Full support (on message ID) |
-| **Replies** | ✅ Full support | ✅ Full support (on message ID) |
-| **Attachments** | ✅ Server processes | ⚠️ Encrypted separately (file E2EE) |
-| **Edit/Delete** | ✅ Server enforces | ✅ Server enforces (metadata only) |
-| **DMA Interoperability** | ⚠️ Plaintext to external | ✅ E2EE to external platforms |
+### Scenario: Enabling Encryption Mid-Conversation
 
----
-
-## Real DMA (EU Digital Markets Act) vs WhatsApp Business API
-
-### What is REAL DMA?
-
-**Real DMA** refers to the EU's **Digital Markets Act** regulation requiring large messaging platforms ("gatekeepers") to provide **interoperability** with third-party messaging services.
-
-**Key Requirements:**
-- ✅ **End-to-End Encryption** - Must maintain E2EE across platforms
-- ✅ **Open Protocol** - Signal Protocol is the de facto standard
-- ✅ **User Choice** - Users decide which platforms to connect
-- ✅ **Feature Parity** - Text, media, groups, reactions must work
-- ✅ **No Degradation** - Security/privacy must not be compromised
-
-**Meeshy's Approach:**
 ```
-Meeshy User (Signal Protocol E2EE)
-    ↕ Encrypted messaging
-WhatsApp User (via DMA gateway)
-    ↕ Encrypted messaging
-Signal User (via DMA gateway)
-    ↕ Encrypted messaging
-Telegram User (via DMA gateway)
+Timeline:
+t0: Conversation created (plaintext)
+t1: Alice sends "Hello" (plaintext)
+t2: Bob sends "Hi" (plaintext)
+t3: Alice enables encryption
+t4: Alice sends "Secret message" (ENCRYPTED)
+t5: Bob sends "Got it" (ENCRYPTED)
 ```
 
-### WhatsApp Business API (NOT what we're doing)
+**Database State:**
 
-**WhatsApp Business API** is Meta's commercial API for businesses to send notifications/messages.
-
-**Key Differences:**
-- ❌ **NOT DMA** - Commercial service, not regulatory compliance
-- ❌ **Limited Features** - Template messages, notifications only
-- ❌ **Business Focus** - Customer support, marketing, not personal chat
-- ❌ **Server-Side** - Messages go through Meta's servers
-- ❌ **No True E2EE** - Business can see message content
-
-**We are NOT implementing this!**
-
----
-
-## Benefits of Unified Architecture
-
-### ✅ Single Collection for All Messages
-
-**Benefit:** Simplifies queries, migrations, and backups
 ```typescript
-// Get all messages (encrypted + plaintext)
-const messages = await prisma.message.findMany({
-  where: { conversationId }
-});
+// Conversation
+{
+  id: "conv123",
+  createdAt: t0,
+  encryptionEnabledAt: t3,  // ← Encryption enabled at t3
+  encryptionProtocol: "signal_v3"
+}
 
-// Get only plaintext messages (for search)
-const searchableMessages = await prisma.message.findMany({
-  where: { conversationId, isEncrypted: false }
-});
-
-// Get only encrypted messages (for key rotation)
-const encryptedMessages = await prisma.message.findMany({
-  where: { conversationId, isEncrypted: true }
-});
+// Messages
+[
+  {
+    id: "msg1",
+    createdAt: t1,
+    content: "Hello",
+    encryptedContent: null,
+    messageType: "text"
+    // isEncrypted? → t1 < t3 → FALSE (plaintext)
+  },
+  {
+    id: "msg2",
+    createdAt: t2,
+    content: "Hi",
+    encryptedContent: null,
+    messageType: "text"
+    // isEncrypted? → t2 < t3 → FALSE (plaintext)
+  },
+  {
+    id: "msg_system",
+    createdAt: t3,
+    content: "Encryption enabled. All future messages will be encrypted.",
+    messageType: "system",
+    encryptedContent: null
+    // isEncrypted? → messageType === "system" → FALSE (always plaintext)
+  },
+  {
+    id: "msg3",
+    createdAt: t4,
+    content: "[Encrypted]",
+    encryptedContent: "base64_payload_1",
+    messageType: "text"
+    // isEncrypted? → t4 >= t3 → TRUE (encrypted)
+  },
+  {
+    id: "msg4",
+    createdAt: t5,
+    content: "[Encrypted]",
+    encryptedContent: "base64_payload_2",
+    messageType: "text"
+    // isEncrypted? → t5 >= t3 → TRUE (encrypted)
+  }
+]
 ```
 
-### ✅ Gradual Migration
+**Query Logic:**
 
-**Benefit:** No breaking changes, opt-in encryption
-- Existing conversations continue as plaintext
-- New conversations can enable encryption
-- Users migrate at their own pace
-- Mixed messages in same conversation (transition period)
+```typescript
+// Get all messages with encryption status
+const messages = await prisma.message.findMany({
+  where: { conversationId: "conv123" },
+  include: { conversation: { select: { encryptionEnabledAt: true } } }
+});
 
-### ✅ Flexible Encryption Policies
-
-**Benefit:** Different security requirements per conversation
-- **Public communities:** Plaintext (searchable, translatable)
-- **Private groups:** Optional encryption (user choice)
-- **DMA interop:** Mandatory encryption (regulatory compliance)
-- **Direct messages:** User preference
-
-### ✅ Future-Proof
-
-**Benefit:** Easy to add new encryption protocols
-```prisma
-encryptionProtocol: String?  // "signal_v3", "mls_v1", "noise_transport", "custom"
+const messagesWithEncryptionStatus = messages.map(msg => ({
+  ...msg,
+  isEncrypted:
+    msg.messageType !== "system" &&
+    msg.conversation.encryptionEnabledAt !== null &&
+    msg.createdAt >= msg.conversation.encryptionEnabledAt
+}));
 ```
 
 ---
 
-## Migration Plan
+## Database Queries
 
-### Phase 1: Schema Update (Week 1)
+### Find All Encrypted Conversations
 
-```bash
-# Add new fields to Message model
-npx prisma db push
-
-# Fields added:
-# - isEncrypted (Boolean, default: false)
-# - encryptedContent (String?, nullable)
-# - encryptionProtocol (String?, nullable)
-# - encryptionMetadata (Json?, nullable)
+```typescript
+const encryptedConversations = await prisma.conversation.findMany({
+  where: {
+    encryptionEnabledAt: { not: null }
+  }
+});
 ```
 
-**Impact:** Zero - All existing messages have `isEncrypted: false`
+### Find All Plaintext Messages in Encrypted Conversation
 
-### Phase 2: Encryption Infrastructure (Week 2-4)
+```typescript
+// Get historical plaintext messages (sent before encryption was enabled)
+const plaintextMessages = await prisma.message.findMany({
+  where: {
+    conversationId: conversationId,
+    createdAt: { lt: conversation.encryptionEnabledAt }
+  }
+});
+```
 
-1. **Signal Protocol Library Integration**
-   - Install libsignal-client (Rust-based, official)
-   - Key generation & management service
-   - Session establishment (X3DH handshake)
+### Find All Encrypted Messages
 
-2. **User Key Management**
-   - Generate identity keys on account creation
-   - Pre-key bundle generation & rotation
-   - Secure storage (encrypted with user password)
+```typescript
+// Messages in encrypted conversations, sent after encryption was enabled
+const encryptedMessages = await prisma.message.findMany({
+  where: {
+    conversation: {
+      encryptionEnabledAt: { not: null }
+    },
+    createdAt: { gte: conversation.encryptionEnabledAt },
+    messageType: { not: "system" }
+  }
+});
+```
 
-3. **Client-Side Encryption**
-   - Frontend: Encrypt before sending to server
-   - Frontend: Decrypt after receiving from server
-   - Server: Store encrypted payload as-is (zero-knowledge)
+### Search Messages (Plaintext Only)
 
-### Phase 3: Conversation Encryption Toggle (Week 5)
+```typescript
+// Can only search plaintext messages
+const searchResults = await prisma.message.findMany({
+  where: {
+    OR: [
+      // Messages in plaintext conversations
+      {
+        conversation: { encryptionEnabledAt: null },
+        content: { contains: searchTerm, mode: "insensitive" }
+      },
+      // Messages sent before encryption was enabled
+      {
+        conversation: { encryptionEnabledAt: { not: null } },
+        createdAt: { lt: conversation.encryptionEnabledAt },
+        content: { contains: searchTerm, mode: "insensitive" }
+      },
+      // System messages (always plaintext)
+      {
+        messageType: "system",
+        content: { contains: searchTerm, mode: "insensitive" }
+      }
+    ]
+  }
+});
+```
 
-1. **UI for Conversation Settings**
-   ```tsx
-   <ConversationSettings>
-     <EncryptionToggle
-       enabled={conversation.encryptionEnabled}
-       onChange={handleToggleEncryption}
-     />
-   </ConversationSettings>
-   ```
+---
 
-2. **API Endpoints**
-   ```typescript
-   PATCH /api/conversations/:id/encryption
-   {
-     "encryptionEnabled": true,
-     "encryptionMandatory": false
-   }
-   ```
+## Frontend Implementation
 
-### Phase 4: User Encryption Preferences (Week 6)
+### Check if Message is Encrypted
 
-1. **UI for User Settings**
-   ```tsx
-   <UserSettings>
-     <EncryptionPreference
-       value={user.encryptionPreference}
-       options={["disabled", "optional", "preferred", "mandatory"]}
-     />
-   </UserSettings>
-   ```
+```typescript
+// Frontend helper function
+function isMessageEncrypted(message: Message, conversation: Conversation): boolean {
+  // System messages are never encrypted
+  if (message.messageType === "system") {
+    return false;
+  }
 
-2. **Key Generation on Demand**
-   - Generate keys when user enables encryption
-   - Upload public keys to server
-   - Store private keys locally (encrypted)
+  // Check conversation encryption
+  if (!conversation.encryptionEnabledAt) {
+    return false;
+  }
 
-### Phase 5: DMA Interoperability (Week 7-10)
+  // Check if message was sent after encryption was enabled
+  const messageTime = new Date(message.createdAt);
+  const encryptionTime = new Date(conversation.encryptionEnabledAt);
 
-1. **External Platform Adapters**
-   - WhatsApp DMA adapter (E2EE required)
-   - Signal adapter (native E2EE)
-   - Telegram adapter (optional E2EE)
+  return messageTime >= encryptionTime;
+}
+```
 
-2. **Cross-Platform Key Exchange**
-   - X3DH handshake with external users
-   - Pre-key bundle distribution
-   - Session management across platforms
+### Display Message Content
+
+```tsx
+function MessageContent({ message, conversation }: Props) {
+  const encrypted = isMessageEncrypted(message, conversation);
+
+  if (encrypted) {
+    // Decrypt client-side
+    const [decrypted, setDecrypted] = useState<string | null>(null);
+
+    useEffect(() => {
+      decryptMessage(message.encryptedContent, message.encryptionMetadata)
+        .then(plaintext => setDecrypted(plaintext))
+        .catch(err => setDecrypted("[Decryption failed]"));
+    }, [message]);
+
+    return (
+      <div className="message encrypted">
+        <LockIcon />
+        {decrypted || "Decrypting..."}
+      </div>
+    );
+  }
+
+  // Plaintext message
+  return (
+    <div className="message plaintext">
+      {message.content}
+    </div>
+  );
+}
+```
+
+### Enable Encryption Button
+
+```tsx
+function ConversationSettings({ conversation }: Props) {
+  const canEnableEncryption = conversation.encryptionEnabledAt === null;
+
+  async function handleEnableEncryption() {
+    // Show confirmation dialog
+    const confirmed = await confirm({
+      title: "Enable End-to-End Encryption?",
+      message:
+        "All future messages will be encrypted. " +
+        "This action cannot be undone. " +
+        "System messages will remain unencrypted.",
+      confirmText: "Enable Encryption",
+      cancelText: "Cancel"
+    });
+
+    if (!confirmed) return;
+
+    // Enable encryption
+    await fetch(`/api/conversations/${conversation.id}/encryption`, {
+      method: "POST"
+    });
+
+    // Reload conversation
+    router.refresh();
+  }
+
+  if (!canEnableEncryption) {
+    return (
+      <div className="encryption-status">
+        <LockIcon className="text-green-500" />
+        <span>Encrypted since {formatDate(conversation.encryptionEnabledAt)}</span>
+      </div>
+    );
+  }
+
+  return (
+    <Button onClick={handleEnableEncryption}>
+      <LockIcon />
+      Enable Encryption
+    </Button>
+  );
+}
+```
 
 ---
 
 ## Security Considerations
 
-### ✅ End-to-End Encryption (E2EE)
+### ✅ Immutable Encryption
 
-**Guarantee:** Server NEVER sees plaintext of encrypted messages
+**Protection:** Once enabled, encryption cannot be disabled
+
 ```typescript
-// Client side
-const ciphertext = signalProtocol.encrypt(plaintext, recipientPublicKey);
-sendToServer({ encryptedContent: ciphertext });
-
-// Server side
-saveToDatabase({ encryptedContent: ciphertext }); // ← Encrypted blob, can't read
-
-// Recipient client side
-const plaintext = signalProtocol.decrypt(ciphertext, myPrivateKey);
-```
-
-### ✅ Perfect Forward Secrecy (PFS)
-
-**Guarantee:** Compromised keys don't decrypt past messages
-- Double Ratchet algorithm rotates keys per message
-- Each message encrypted with unique key
-- Old keys deleted immediately after use
-
-### ✅ Deniability
-
-**Guarantee:** No cryptographic proof of message authorship
-- MAC-based authentication (not signatures)
-- Anyone with session key could have sent message
-- Provides plausible deniability
-
-### ⚠️ Metadata Leakage
-
-**Risk:** Server can still see metadata (not encrypted)
-```typescript
-// What server CAN see
-{
-  senderId: "user123",           // Who sent
-  conversationId: "conv456",     // To which conversation
-  timestamp: "2025-11-19T12:00", // When
-  messageType: "text",           // Type (text/image/etc)
-  isEncrypted: true              // If encrypted
+// Application-level enforcement
+async function disableEncryption(conversationId: string) {
+  throw new Error("Encryption cannot be disabled once enabled");
 }
 
-// What server CANNOT see
-{
-  content: ???,                  // Message content (encrypted)
-  mentions: ???,                 // Who was mentioned (encrypted)
-  links: ???                     // URLs in message (encrypted)
+// Database constraint (MongoDB)
+// Set encryptionEnabledAt to be immutable after first set
+db.conversations.updateMany(
+  { encryptionEnabledAt: { $ne: null } },
+  { $unset: { encryptionEnabledAt: 1 } }
+)
+// This will fail if you have proper validation
+```
+
+### ✅ Audit Trail
+
+**Tracking:** Know when encryption was enabled and by whom
+
+```typescript
+conversation: {
+  encryptionEnabledAt: "2025-11-19T14:30:00Z",  // When
+  encryptionEnabledBy: "user123"                 // Who
 }
 ```
 
-**Mitigation:** Future work - metadata resistance (MLS protocol)
+### ✅ Client-Side Encryption
 
-### ✅ Key Rotation
+**Zero-Knowledge:** Server never sees plaintext of encrypted messages
 
-**Security:** Regular key rotation minimizes compromise impact
 ```typescript
-// User model
+// Client encrypts BEFORE sending to server
+const ciphertext = await signalProtocol.encrypt(plaintext);
+await sendToServer({ encryptedContent: ciphertext });
+
+// Server stores encrypted blob (can't read it)
+await prisma.message.create({ encryptedContent: ciphertext });
+
+// Other clients decrypt AFTER receiving from server
+const plaintext = await signalProtocol.decrypt(ciphertext);
+```
+
+### ✅ System Messages Never Encrypted
+
+**Rationale:** Server generates system messages, so encryption provides no benefit
+
+```typescript
+// System message: server already knows the content
 {
-  lastKeyRotation: "2025-11-19",
-  signalPreKeyBundleId: 42  // ← Increments on rotation
+  messageType: "system",
+  content: "Alice joined the conversation",
+  encryptedContent: null  // ← Always null
+}
+```
+
+### ⚠️ Transition Period
+
+**Risk:** Historical plaintext messages remain readable
+
+```typescript
+// Messages sent BEFORE encryption was enabled
+{
+  createdAt: t1,
+  content: "This is plaintext",  // ← Still readable
+  encryptedContent: null
 }
 
-// Rotation policy
-if (daysSinceRotation > 30) {
-  await rotatePreKeys(userId);
+// Messages sent AFTER encryption was enabled
+{
+  createdAt: t3,
+  content: "[Encrypted]",
+  encryptedContent: "base64..."  // ← Protected
+}
+```
+
+**Mitigation:**
+- ✅ Show warning: "Previous messages were sent unencrypted"
+- ✅ UI badge: "Encrypted since [date]"
+- ⚠️ Option to delete old messages (user choice)
+
+---
+
+## API Endpoints
+
+### Enable Encryption
+
+```typescript
+POST /api/conversations/:id/encryption
+
+Request:
+{
+  // No body needed (encryption protocol is default "signal_v3")
+}
+
+Response:
+{
+  "success": true,
+  "conversation": {
+    "id": "conv123",
+    "encryptionEnabledAt": "2025-11-19T14:30:00Z",
+    "encryptionProtocol": "signal_v3",
+    "encryptionEnabledBy": "user123"
+  },
+  "message": "Encryption enabled successfully"
+}
+
+Errors:
+400 - Encryption already enabled
+403 - User doesn't have permission
+400 - User doesn't have encryption keys
+```
+
+### Get Conversation with Encryption Status
+
+```typescript
+GET /api/conversations/:id
+
+Response:
+{
+  "id": "conv123",
+  "title": "Private Chat",
+  "encryptionEnabledAt": "2025-11-19T14:30:00Z",  // null if plaintext
+  "encryptionProtocol": "signal_v3",
+  "encryptionEnabledBy": "user123",
+  // ... other fields
+}
+```
+
+### Get Messages with Encryption Metadata
+
+```typescript
+GET /api/conversations/:id/messages
+
+Response:
+{
+  "messages": [
+    {
+      "id": "msg1",
+      "content": "Hello",
+      "messageType": "text",
+      "createdAt": "2025-11-19T14:00:00Z",
+      "encryptedContent": null,
+      "encryptionMetadata": null
+      // Client derives: isEncrypted = false (createdAt < encryptionEnabledAt)
+    },
+    {
+      "id": "msg2",
+      "content": "[Encrypted]",
+      "messageType": "text",
+      "createdAt": "2025-11-19T14:35:00Z",
+      "encryptedContent": "base64_encrypted_payload",
+      "encryptionMetadata": { "protocol": "signal_v3", ... }
+      // Client derives: isEncrypted = true (createdAt >= encryptionEnabledAt)
+    },
+    {
+      "id": "msg3",
+      "content": "Encryption enabled",
+      "messageType": "system",
+      "createdAt": "2025-11-19T14:30:00Z",
+      "encryptedContent": null,
+      "encryptionMetadata": null
+      // Client derives: isEncrypted = false (messageType === "system")
+    }
+  ],
+  "conversation": {
+    "encryptionEnabledAt": "2025-11-19T14:30:00Z"
+  }
 }
 ```
 
@@ -664,59 +890,175 @@ if (daysSinceRotation > 30) {
 
 ### Storage Impact
 
-**Before (Plaintext Only):**
+**Plaintext Conversation:**
 ```json
+// Message: ~100 bytes
 {
-  "content": "Hello world",  // 11 bytes
-  "isEncrypted": false
+  "content": "Hello world",
+  "messageType": "text",
+  "createdAt": "...",
+  "encryptedContent": null,
+  "encryptionMetadata": null
 }
 ```
 
-**After (Encrypted):**
+**Encrypted Conversation:**
 ```json
+// Message: ~300 bytes (3x increase)
 {
-  "content": "[Encrypted]",          // 11 bytes (placeholder)
-  "isEncrypted": true,
-  "encryptedContent": "base64...",   // ~150 bytes (for "Hello world")
-  "encryptionMetadata": { ... }      // ~100 bytes
+  "content": "[Encrypted]",
+  "messageType": "text",
+  "createdAt": "...",
+  "encryptedContent": "base64_encrypted_payload_150_bytes",
+  "encryptionMetadata": { "protocol": "signal_v3", "keyId": 123, ... }
 }
 ```
 
-**Impact:** ~250 bytes per encrypted message vs ~50 bytes plaintext
-- 5x storage increase for encrypted messages
-- Acceptable tradeoff for E2EE security
-- Compression can reduce by ~30%
+**Impact:**
+- ✅ Plaintext: ~100 bytes/message
+- ⚠️ Encrypted: ~300 bytes/message (3x)
+- ✅ Acceptable tradeoff for E2EE security
 
 ### Query Performance
 
-**Plaintext Message Search:**
+**Find encrypted conversations:**
 ```typescript
-// Full-text search works
-db.messages.find({ $text: { $search: "hello" } });
+// Indexed query
+db.conversations.find({ encryptionEnabledAt: { $ne: null } })
+// Uses index on encryptionEnabledAt
 ```
 
-**Encrypted Message Search:**
+**Determine message encryption:**
 ```typescript
-// Can only search metadata
-db.messages.find({
-  isEncrypted: true,
-  senderId: "user123",
-  createdAt: { $gte: yesterday }
-});
+// No additional query needed
+// Derive from: conversation.encryptionEnabledAt + message.createdAt + message.messageType
 ```
 
-**Impact:** Search limited to metadata for encrypted messages
-**Mitigation:** Client-side search after decryption (slower but private)
+**Search messages:**
+```typescript
+// Can only search plaintext messages
+// Filter: encryptionEnabledAt === null OR createdAt < encryptionEnabledAt OR messageType === "system"
+```
 
-### Network Performance
+---
 
-**Plaintext:** ~50 bytes per message
-**Encrypted:** ~250 bytes per message (5x increase)
+## Migration Plan
 
-**Mitigation:**
-- Compression (gzip over WebSocket)
-- Batch message fetching
-- Lazy decryption (decrypt on-demand)
+### Phase 1: Schema Update (Week 1)
+
+**Add fields to Conversation:**
+```prisma
+encryptionEnabledAt   DateTime?  // null = plaintext
+encryptionProtocol    String?    @default("signal_v3")
+encryptionEnabledBy   String?    @db.ObjectId
+```
+
+**Add fields to Message:**
+```prisma
+encryptedContent      String?    // Base64 encrypted payload
+encryptionMetadata    Json?      // Encryption details
+```
+
+**Add fields to User:**
+```prisma
+signalIdentityKeyPublic   String?
+signalIdentityKeyPrivate  String?
+signalRegistrationId      Int?
+encryptionPreference      String  @default("optional")
+```
+
+**Migration Command:**
+```bash
+npx prisma db push
+```
+
+**Impact:** ✅ Zero - All fields are nullable, no breaking changes
+
+### Phase 2: Signal Protocol Integration (Week 2-4)
+
+```bash
+# Install Signal Protocol library
+npm install @signalapp/libsignal-client
+
+# Create encryption service
+# - Key generation
+# - Session establishment (X3DH)
+# - Message encryption/decryption (Double Ratchet)
+```
+
+### Phase 3: Backend API (Week 5)
+
+**Endpoints:**
+- `POST /api/conversations/:id/encryption` - Enable encryption
+- `GET /api/users/me/keys` - Get user's public keys
+- `POST /api/users/me/keys` - Generate/rotate keys
+
+### Phase 4: Frontend Integration (Week 6-7)
+
+**Features:**
+- Encryption toggle in conversation settings
+- Key generation on first use
+- Client-side encryption/decryption
+- UI indicators (lock icon, "Encrypted since" badge)
+
+### Phase 5: Testing & Rollout (Week 8-10)
+
+**Testing:**
+- Unit tests (encryption logic)
+- Integration tests (full E2EE flow)
+- Security audit (external review)
+- Performance testing (overhead measurement)
+
+**Rollout:**
+- Private beta (internal team)
+- Public beta (early adopters)
+- General availability (all users)
+
+---
+
+## Comparison: Old vs New Architecture
+
+| Aspect | Old Proposal (Boolean) | NEW Proposal (DateTime) |
+|--------|----------------------|------------------------|
+| **Conversation Encryption** | `encryptionEnabled: Boolean` | `encryptionEnabledAt: DateTime?` |
+| **Message Encryption** | `isEncrypted: Boolean` on Message | Derived from conversation + timestamp |
+| **Immutability** | Can toggle on/off | Once enabled, permanent (can't set to null) |
+| **Audit Trail** | No timestamp | Exact time encryption was enabled |
+| **System Messages** | Need explicit flag | Implicit (messageType === "system") |
+| **Transition Period** | Ambiguous | Clear (compare timestamps) |
+| **Complexity** | More fields | Fewer fields |
+| **Query Logic** | Check boolean flag | Compare timestamps |
+
+---
+
+## Real DMA (EU Digital Markets Act) Compliance
+
+### What is REAL DMA?
+
+**Real DMA** = EU's Digital Markets Act requiring messaging interoperability
+
+**Requirements:**
+- ✅ End-to-End Encryption (Signal Protocol)
+- ✅ Cross-platform messaging (Meeshy ↔ WhatsApp/Signal/Telegram)
+- ✅ No degradation of security/privacy
+- ✅ User controls their data
+
+**Meeshy's Compliance:**
+```
+Meeshy User (E2EE)
+    ↕ Signal Protocol
+WhatsApp User (via DMA gateway)
+    ↕ Signal Protocol
+Signal User (via DMA gateway)
+    ↕ Signal Protocol
+Telegram User (via DMA gateway)
+```
+
+**Key Points:**
+- ✅ **NOT WhatsApp Business API** (commercial service)
+- ✅ **Real interoperability** (personal messaging across platforms)
+- ✅ **Maintained E2EE** (no man-in-the-middle)
+- ✅ **User choice** (opt-in encryption per conversation)
 
 ---
 
@@ -725,26 +1067,42 @@ db.messages.find({
 ### Unit Tests
 
 ```typescript
-describe("Message Encryption", () => {
-  it("should store plaintext message when encryption disabled", async () => {
-    const message = await sendMessage("conv123", "Hello", { encrypt: false });
-    expect(message.isEncrypted).toBe(false);
-    expect(message.content).toBe("Hello");
-    expect(message.encryptedContent).toBeNull();
+describe("Conversation Encryption", () => {
+  it("should enable encryption with timestamp", async () => {
+    const before = new Date();
+    const conversation = await enableEncryption("conv123", "user123");
+    const after = new Date();
+
+    expect(conversation.encryptionEnabledAt).toBeTruthy();
+    expect(conversation.encryptionEnabledAt.getTime()).toBeGreaterThanOrEqual(before.getTime());
+    expect(conversation.encryptionEnabledAt.getTime()).toBeLessThanOrEqual(after.getTime());
+    expect(conversation.encryptionProtocol).toBe("signal_v3");
+    expect(conversation.encryptionEnabledBy).toBe("user123");
   });
 
-  it("should store encrypted message when encryption enabled", async () => {
-    const message = await sendMessage("conv123", "Hello", { encrypt: true });
-    expect(message.isEncrypted).toBe(true);
-    expect(message.content).toBe("[Encrypted]");
-    expect(message.encryptedContent).toBeTruthy();
-  });
+  it("should prevent disabling encryption", async () => {
+    await enableEncryption("conv123", "user123");
 
-  it("should enforce mandatory encryption policy", async () => {
-    await setConversationEncryption("conv123", { mandatory: true });
     await expect(
-      sendMessage("conv123", "Hello", { encrypt: false })
-    ).rejects.toThrow("Encryption required");
+      prisma.conversation.update({
+        where: { id: "conv123" },
+        data: { encryptionEnabledAt: null }
+      })
+    ).rejects.toThrow("Cannot disable encryption");
+  });
+
+  it("should derive message encryption from conversation + timestamp", () => {
+    const conversation = {
+      encryptionEnabledAt: new Date("2025-11-19T14:30:00Z")
+    };
+
+    const msg1 = { createdAt: new Date("2025-11-19T14:00:00Z"), messageType: "text" };
+    const msg2 = { createdAt: new Date("2025-11-19T14:35:00Z"), messageType: "text" };
+    const msg3 = { createdAt: new Date("2025-11-19T14:35:00Z"), messageType: "system" };
+
+    expect(isMessageEncrypted(msg1, conversation)).toBe(false);  // Before encryption
+    expect(isMessageEncrypted(msg2, conversation)).toBe(true);   // After encryption
+    expect(isMessageEncrypted(msg3, conversation)).toBe(false);  // System message
   });
 });
 ```
@@ -752,17 +1110,29 @@ describe("Message Encryption", () => {
 ### Integration Tests
 
 ```typescript
-describe("E2EE Flow", () => {
-  it("should encrypt, send, receive, and decrypt message", async () => {
-    // Alice encrypts and sends
-    const plaintext = "Hello Bob";
-    const encrypted = await alice.encryptMessage(plaintext, bob.publicKey);
-    await alice.sendMessage("conv123", encrypted);
+describe("E2EE Message Flow", () => {
+  it("should send plaintext in unencrypted conversation", async () => {
+    const message = await sendMessage("conv123", "Hello");
 
-    // Bob receives and decrypts
-    const message = await bob.receiveMessage("conv123");
-    const decrypted = await bob.decryptMessage(message);
-    expect(decrypted).toBe("Hello Bob");
+    expect(message.content).toBe("Hello");
+    expect(message.encryptedContent).toBeNull();
+  });
+
+  it("should send encrypted in encrypted conversation", async () => {
+    await enableEncryption("conv123", "user123");
+    const message = await sendMessage("conv123", "Secret");
+
+    expect(message.content).toBe("[Encrypted]");
+    expect(message.encryptedContent).toBeTruthy();
+  });
+
+  it("should send system messages as plaintext even in encrypted conversation", async () => {
+    await enableEncryption("conv123", "user123");
+    const message = await sendMessage("conv123", "User joined", "system");
+
+    expect(message.content).toBe("User joined");
+    expect(message.encryptedContent).toBeNull();
+    expect(message.messageType).toBe("system");
   });
 });
 ```
@@ -771,68 +1141,91 @@ describe("E2EE Flow", () => {
 
 ## Rollout Plan
 
-### Phase 1: Private Beta (Weeks 1-2)
+### Week 1-2: Schema & Infrastructure
+- ✅ Deploy schema changes
+- ✅ Signal Protocol library integration
+- ✅ Backend encryption service
 
-- ✅ Schema deployed to production
-- ✅ Encryption disabled by default (feature flag)
-- ✅ Internal testing with dev accounts
-- 🎯 **Goal:** Verify no regressions for plaintext messages
+### Week 3-4: API Implementation
+- ✅ Enable encryption endpoint
+- ✅ Key management endpoints
+- ✅ WebSocket notifications
 
-### Phase 2: Opt-in Beta (Weeks 3-6)
+### Week 5-6: Frontend Integration
+- ✅ Conversation settings UI
+- ✅ Client-side encryption
+- ✅ Decryption on message receive
 
-- ✅ Encryption available to early adopters
-- ✅ UI toggle in conversation settings
-- ✅ Public documentation released
-- ✅ Monitor performance metrics
-- 🎯 **Goal:** 100 users testing encrypted conversations
+### Week 7-8: Testing
+- ✅ Unit tests (100% coverage)
+- ✅ Integration tests (E2EE flow)
+- ✅ Security audit (external)
 
-### Phase 3: General Availability (Weeks 7-10)
-
-- ✅ Encryption available to all users
-- ✅ Default: Optional (user chooses)
-- ✅ Marketing push: "Now with E2EE!"
-- 🎯 **Goal:** 10% of conversations using encryption
-
-### Phase 4: DMA Compliance (Weeks 11-16)
-
-- ✅ External platform adapters deployed
-- ✅ Mandatory encryption for DMA interop
-- ✅ EU regulatory compliance achieved
-- 🎯 **Goal:** Interoperability with WhatsApp/Signal
+### Week 9-10: Rollout
+- ✅ Private beta (internal team)
+- ✅ Public beta (early adopters)
+- ✅ General availability (all users)
 
 ---
 
-## Conclusion
+## Summary
 
-### ✅ YES - Single Message Collection Works!
+### ✅ Key Improvements
 
-**Benefits:**
-- Unified data model (simpler queries, migrations, backups)
-- Backward compatible (existing messages stay plaintext)
-- Forward compatible (easy to add new encryption protocols)
-- Flexible policies (per-user, per-conversation, per-message)
-- Real DMA compliance (E2EE interoperability)
+1. **DateTime-based encryption** - Immutable, trackable, auditable
+2. **Conversation-level only** - Simpler logic, clear expectations
+3. **No message-level flag** - Derive from conversation + timestamp
+4. **System messages exception** - Implicit (messageType check)
+5. **Cleaner schema** - Fewer fields, clearer intent
 
-**Tradeoffs:**
-- Encrypted messages can't be searched/translated server-side
-- 5x storage increase for encrypted messages
-- Requires client-side encryption logic
+### 🎯 Architecture Benefits
 
-**Recommendation:** **PROCEED with unified architecture**
+| Benefit | Description |
+|---------|-------------|
+| **Simplicity** | One field (`encryptionEnabledAt`) controls everything |
+| **Immutability** | Once enabled, can't be disabled (security) |
+| **Auditability** | Know exactly when encryption was enabled |
+| **Backward Compatible** | Existing messages stay plaintext |
+| **Performance** | No additional queries (derive from timestamps) |
 
-This approach gives you:
-1. **Meeshy-to-Meeshy** with optional encryption (user choice)
-2. **DMA interoperability** with mandatory encryption (regulatory compliance)
-3. **Gradual migration** (no breaking changes)
-4. **Future-proof** (easy to extend)
+### 📊 Migration Impact
+
+- ✅ **Zero breaking changes** - All new fields are nullable
+- ✅ **No data migration** - Existing data works as-is
+- ✅ **Gradual rollout** - Users opt-in at their pace
+- ✅ **Performance** - Minimal overhead (timestamp comparison)
 
 ---
 
-**Next Steps:**
-1. Review & approve this architecture
-2. Implement schema changes (1 day)
-3. Integrate Signal Protocol library (1 week)
-4. Build encryption toggle UI (1 week)
-5. Private beta testing (2 weeks)
+## Next Steps
 
-**Ready to proceed?**
+**If approved:**
+
+1. **Update schema** (1 day)
+   ```bash
+   npx prisma db push
+   ```
+
+2. **Implement encryption service** (1 week)
+   ```typescript
+   class ConversationEncryptionService {
+     async enableEncryption(conversationId, userId)
+     async isConversationEncrypted(conversationId)
+     async getEncryptionStatus(conversationId)
+   }
+   ```
+
+3. **Update MessagingService** (2 days)
+   ```typescript
+   // Check conversation encryption before sending
+   if (conversation.encryptionEnabledAt && messageType !== "system") {
+     // Encrypt message
+   }
+   ```
+
+4. **Frontend UI** (1 week)
+   ```tsx
+   <EncryptionToggle conversation={conversation} />
+   ```
+
+**Ready to implement?** 🚀
