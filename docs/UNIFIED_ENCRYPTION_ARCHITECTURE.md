@@ -152,8 +152,15 @@ model Conversation {
 
   // 🆕 ENCRYPTION CONTROL (DateTime-based, immutable)
   encryptionEnabledAt   DateTime?                // null = plaintext, non-null = encrypted since this date
-  encryptionProtocol    String?                  @default("signal_v3")  // "signal_v3", "mls_v1", etc.
+  encryptionMode        String?                  // "e2ee" | "server" (null if no encryption)
+  encryptionProtocol    String?                  @default("signal_v3")  // Protocol depends on mode
   encryptionEnabledBy   String?                  @db.ObjectId  // User who enabled encryption (audit)
+
+  // 🆕 SERVER-MODE ENCRYPTION (for translation support)
+  serverEncryptionKeyId String?                  // Server key ID (null for e2ee mode)
+
+  // 🆕 AUTO-TRANSLATION (only works in server mode or plaintext)
+  autoTranslateEnabled  Boolean                  @default(false)  // Server-side translation enabled
 
   metadata              Json?
   createdAt             DateTime                 @default(now())
@@ -179,9 +186,12 @@ model Conversation {
 
 **Key Points:**
 - ✅ **`encryptionEnabledAt: DateTime?`** - null = plaintext, non-null = encrypted
+- ✅ **`encryptionMode: String?`** - "e2ee" (true E2EE) or "server" (server can decrypt for translation)
 - ✅ **Immutable** - once set, cannot be changed back to null (enforce in application logic)
 - ✅ **`encryptionEnabledBy`** - tracks who enabled encryption (accountability)
-- ✅ **`encryptionProtocol`** - which protocol to use (Signal, MLS, etc.)
+- ✅ **`encryptionProtocol`** - which protocol to use (depends on mode)
+- ✅ **`serverEncryptionKeyId`** - server's key for "server" mode (null for "e2ee")
+- ✅ **`autoTranslateEnabled`** - server-side translation (only works in "server" mode)
 
 ### User Model (Encryption Keys & Preferences)
 
@@ -214,6 +224,209 @@ model User {
 - ✅ **Signal Protocol keys** - stored per user (generated on demand)
 - ✅ **`encryptionPreference`** - user's default preference for new conversations
 - ✅ **Keys are optional** - only generated when user enables encryption
+
+---
+
+## 🔐 Encryption Modes: E2EE vs Server-Encrypted
+
+### Critical Issue: E2EE vs Auto-Translation Compatibility
+
+**The Fundamental Conflict:**
+```
+Pure E2EE:         User A → [Encrypt] → Server (can't read) → User B
+Translation:       User A → Server (reads plaintext) → [Translate] → User B
+```
+
+**These are INCOMPATIBLE!** Server cannot translate messages it cannot read.
+
+### Solution: Two Encryption Modes
+
+#### Mode 1: E2EE (End-to-End Encryption) - Maximum Privacy
+
+```prisma
+{
+  encryptionEnabledAt: "2025-11-19T14:30:00Z",
+  encryptionMode: "e2ee",              // ← Server CANNOT decrypt
+  encryptionProtocol: "signal_v3",
+  serverEncryptionKeyId: null,         // ← No server key
+  autoTranslateEnabled: false          // ← Translation DISABLED
+}
+```
+
+**Characteristics:**
+- ✅ **True end-to-end encryption** - Server never sees plaintext
+- ✅ **Zero-knowledge server** - Server stores encrypted blobs only
+- ✅ **Perfect Forward Secrecy** - Signal Protocol with Double Ratchet
+- ✅ **DMA compliant** - Real E2EE for cross-platform messaging
+- ❌ **NO server-side translation** - Server can't see content
+- ⚠️ **Client-side translation only** - Slow, limited languages
+
+**Use cases:**
+- Maximum privacy conversations
+- Sensitive/confidential discussions
+- DMA interoperability (WhatsApp, Signal, Telegram)
+- Users who prioritize privacy over features
+
+#### Mode 2: Server-Encrypted - Privacy + Translation
+
+```prisma
+{
+  encryptionEnabledAt: "2025-11-19T14:30:00Z",
+  encryptionMode: "server",            // ← Server CAN decrypt
+  encryptionProtocol: "aes-256-gcm",
+  serverEncryptionKeyId: "key_abc123", // ← Server's key
+  autoTranslateEnabled: true           // ← Translation ENABLED
+}
+```
+
+**Characteristics:**
+- ⚠️ **NOT true E2EE** - Server can read messages
+- ✅ **Server-side translation** - Fast, all languages supported
+- ✅ **Encrypted at rest** - Database stores encrypted blobs
+- ✅ **Encrypted in transit** - TLS + additional encryption layer
+- ✅ **Moderation possible** - Server can scan for abuse
+- ❌ **Server has access** - Admin/subpoena can access content
+
+**Use cases:**
+- International conversations (translation needed)
+- Multilingual group chats
+- Users who want both privacy and features
+- Default for most conversations
+
+### Encryption Mode Comparison
+
+| Feature | Plaintext | Server-Encrypted | E2EE |
+|---------|-----------|-----------------|------|
+| **Server can read** | ✅ YES | ✅ YES | ❌ NO |
+| **Server-side translation** | ✅ YES | ✅ YES | ❌ NO |
+| **Encrypted at rest** | ❌ NO | ✅ YES | ✅ YES |
+| **True E2EE** | ❌ NO | ❌ NO | ✅ YES |
+| **DMA compliant** | ❌ NO | ❌ NO | ✅ YES |
+| **Search** | ✅ YES | ⚠️ Limited | ❌ NO |
+| **Performance** | Fastest | Fast | Slower |
+
+### Translation Compatibility
+
+```typescript
+// Rule: Auto-translation only works when server can read content
+function canAutoTranslate(conversation: Conversation): boolean {
+  if (conversation.encryptionEnabledAt === null) {
+    // Plaintext conversation
+    return true;  // ✅ Server can read
+  }
+
+  if (conversation.encryptionMode === "server") {
+    // Server-encrypted mode
+    return true;  // ✅ Server can decrypt, read, translate
+  }
+
+  if (conversation.encryptionMode === "e2ee") {
+    // End-to-end encrypted mode
+    return false;  // ❌ Server cannot decrypt
+  }
+
+  return false;
+}
+```
+
+### Server-Mode Translation Flow
+
+```typescript
+// Server-side (MessagingService)
+async function handleServerEncryptedMessage(encryptedContent: string, conversationId: string) {
+  const conversation = await prisma.conversation.findUnique({
+    where: { id: conversationId },
+    include: { members: true }
+  });
+
+  // 1. Decrypt with server's key
+  const serverKey = await getServerKey(conversation.serverEncryptionKeyId);
+  const plaintext = await aes256gcm.decrypt(encryptedContent, serverKey.privateKey);
+
+  // 2. Detect language
+  const originalLanguage = await detectLanguage(plaintext);
+
+  // 3. Get target languages (from member preferences)
+  const targetLanguages = conversation.members
+    .map(m => m.preferredLanguage)
+    .filter(lang => lang !== originalLanguage);
+
+  // 4. Translate to all target languages
+  const translations = {};
+  for (const targetLang of targetLanguages) {
+    const translated = await translationService.translate(plaintext, originalLanguage, targetLang);
+    // Encrypt translation with server key
+    translations[targetLang] = await aes256gcm.encrypt(translated, serverKey.publicKey);
+  }
+
+  // 5. Re-encrypt original with server key
+  const encryptedOriginal = await aes256gcm.encrypt(plaintext, serverKey.publicKey);
+
+  // 6. Store encrypted message + encrypted translations
+  await prisma.message.create({
+    data: {
+      conversationId,
+      content: "[Encrypted]",
+      encryptedContent: encryptedOriginal,
+      originalLanguage,
+      translations: translations,  // Encrypted translations
+      encryptionMetadata: {
+        mode: "server",
+        keyId: serverKey.id,
+        iv: "...",
+        authTag: "..."
+      }
+    }
+  });
+
+  // 7. Emit to recipients (they decrypt client-side)
+  socket.to(conversationId).emit("new_message", {
+    content: "[Encrypted]",
+    encryptedContent: encryptedOriginal,
+    translations: translations,  // Each client decrypts their translation
+    encryptionMetadata: { ... }
+  });
+}
+```
+
+### Key Management
+
+**E2EE Mode (User Keys Only):**
+```typescript
+// Keys stored in User model
+user: {
+  signalIdentityKeyPublic: "pub_alice",
+  signalIdentityKeyPrivate: "encrypted_priv_alice",  // Encrypted with user password
+  signalRegistrationId: 12345
+}
+
+// Conversation has NO server key
+conversation: {
+  encryptionMode: "e2ee",
+  serverEncryptionKeyId: null  // ← Server cannot decrypt
+}
+```
+
+**Server Mode (Server Key):**
+```typescript
+// Keys stored in vault/secrets manager (NOT in database)
+serverKeys: {
+  "key_abc123": {
+    algorithm: "aes-256-gcm",
+    publicKey: "...",
+    privateKey: "...",  // ← Server can decrypt
+    createdAt: "2025-11-19",
+    rotationSchedule: "90 days"
+  }
+}
+
+// Conversation references server key
+conversation: {
+  encryptionMode: "server",
+  serverEncryptionKeyId: "key_abc123",  // ← Points to server's key
+  autoTranslateEnabled: true
+}
+```
 
 ---
 
