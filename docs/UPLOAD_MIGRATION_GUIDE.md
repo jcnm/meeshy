@@ -12,14 +12,14 @@ Ce guide décrit la migration sécurisée des fichiers uploadés vers le nouveau
 ```
 Volume: frontend_uploads → /app/public
 Nginx:  frontend_uploads → /usr/share/nginx/html
-URLs:   https://static.meeshy.me/i/2024/10/avatar.jpg
+URLs:   https://static.meeshy.me/i/2025/10/avatar.jpg
 ```
 
 **Après:**
 ```
 Volume: frontend_uploads → /app/public/u
 Nginx:  frontend_uploads → /usr/share/nginx/html/u
-URLs:   https://static.meeshy.me/u/i/2024/10/avatar.jpg
+URLs:   https://static.meeshy.me/u/i/2025/10/avatar.jpg
 ```
 
 ### Fichiers modifiés

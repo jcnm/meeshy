@@ -47,7 +47,7 @@ Système complet de tracking des effets audio appliqués pendant un enregistreme
 ```typescript
 {
   "version": "1.0",
-  "createdAt": "2024-01-15T10:30:00.000Z",
+  "createdAt": "2025-01-15T10:30:00.000Z",
   "duration": 45000,  // 45 secondes en ms
   "sampleRate": 48000,
   "channels": 1,

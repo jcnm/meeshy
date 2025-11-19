@@ -396,7 +396,7 @@ First-mover sur DMA, positionnement européen fort.
 
 ### Pourquoi maintenant ?
 
-Le DMA impose l'interopérabilité d'ici **Mars 2024**. Les gatekeepers doivent ouvrir leurs APIs. C'est le moment idéal pour se positionner.
+Le DMA impose l'interopérabilité d'ici **Mars 2025**. Les gatekeepers doivent ouvrir leurs APIs. C'est le moment idéal pour se positionner.
 
 ### Pourquoi ne pas attendre que les APIs DMA soient prêtes ?
 
