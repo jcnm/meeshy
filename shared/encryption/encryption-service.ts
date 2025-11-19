@@ -23,6 +23,9 @@ import {
   prepareForStorage,
   reconstructPayload,
 } from './encryption-utils';
+import type { SignalProtocolService } from './signal/signal-protocol-service';
+import type { PreKeyBundle, SignalEncryptedMessage } from './signal/signal-types';
+import { ProtocolAddress } from '@signalapp/libsignal-client';
 
 /**
  * Key Storage Interface
@@ -110,6 +113,7 @@ export interface KeyStorageAdapter {
 export interface EncryptionServiceConfig {
   cryptoAdapter: CryptoAdapter;
   keyStorage: KeyStorageAdapter;
+  signalProtocolService?: SignalProtocolService;
 }
 
 /**
@@ -123,10 +127,13 @@ export class SharedEncryptionService {
   private isInitialized = false;
   private cryptoAdapter: CryptoAdapter;
   private keyStorage: KeyStorageAdapter;
+  private signalService?: SignalProtocolService;
+  private deviceId: number = 1;
 
   constructor(config: EncryptionServiceConfig) {
     this.cryptoAdapter = config.cryptoAdapter;
     this.keyStorage = config.keyStorage;
+    this.signalService = config.signalProtocolService;
   }
 
   /**
@@ -154,11 +161,30 @@ export class SharedEncryptionService {
   /**
    * Generate Signal Protocol keys for current user
    */
-  async generateUserKeys(): Promise<SignalKeyBundle> {
+  async generateUserKeys(): Promise<SignalKeyBundle | PreKeyBundle> {
     if (!this.currentUserId) {
       throw new Error('Encryption service not initialized');
     }
 
+    // If Signal Protocol service is available, use it
+    if (this.signalService) {
+      const bundle = await this.signalService.generatePreKeyBundle();
+
+      // Store the bundle for later retrieval
+      await this.keyStorage.storeUserKeys({
+        userId: this.currentUserId,
+        publicKey: Buffer.from(bundle.identityKey).toString('base64'),
+        privateKey: '', // Private key is stored in Signal stores
+        registrationId: bundle.registrationId,
+        identityKey: Buffer.from(bundle.identityKey).toString('base64'),
+        preKeyBundleVersion: bundle.signedPreKeyId,
+        createdAt: Date.now(),
+      });
+
+      return bundle;
+    }
+
+    // Fallback to simplified ECDH implementation
     const { publicKey, privateKey } = await generateSignalKeyPair(
       this.cryptoAdapter
     );
@@ -213,12 +239,46 @@ export class SharedEncryptionService {
   async encryptMessage(
     plaintext: string,
     conversationId: string,
-    mode: EncryptionMode
+    mode: EncryptionMode,
+    recipientUserId?: string
   ): Promise<EncryptedPayload> {
     if (!this.currentUserId) {
       throw new Error('Encryption service not initialized');
     }
 
+    // E2EE mode with Signal Protocol
+    if (mode === 'e2ee' && this.signalService && recipientUserId) {
+      const recipientAddress = ProtocolAddress.new(recipientUserId, this.deviceId);
+
+      // Check if session exists, if not establish it
+      const hasSession = await this.signalService.hasSession(recipientAddress);
+      if (!hasSession) {
+        throw new Error(
+          `No Signal Protocol session with ${recipientUserId}. Establish session first.`
+        );
+      }
+
+      // Encrypt using Signal Protocol (Double Ratchet)
+      const signalMessage = await this.signalService.encryptMessage(
+        recipientAddress,
+        plaintext
+      );
+
+      return {
+        ciphertext: Buffer.from(signalMessage.body).toString('base64'),
+        metadata: {
+          mode: 'e2ee',
+          protocol: 'signal_v3',
+          keyId: recipientUserId,
+          iv: '',
+          authTag: '',
+          messageType: signalMessage.type,
+          registrationId: signalMessage.registrationId,
+        },
+      };
+    }
+
+    // Server-encrypted mode (AES-256-GCM)
     // Get or create conversation key
     let conversationKey = await this.keyStorage.getConversationKey(
       conversationId
@@ -253,9 +313,6 @@ export class SharedEncryptionService {
 
     // Set correct mode
     encrypted.metadata.mode = mode;
-    if (mode === 'e2ee') {
-      encrypted.metadata.protocol = 'signal_v3';
-    }
 
     return encrypted;
   }
@@ -263,7 +320,10 @@ export class SharedEncryptionService {
   /**
    * Decrypt message
    */
-  async decryptMessage(payload: EncryptedPayload): Promise<string> {
+  async decryptMessage(
+    payload: EncryptedPayload,
+    senderUserId?: string
+  ): Promise<string> {
     if (!this.currentUserId) {
       throw new Error('Encryption service not initialized');
     }
@@ -272,11 +332,28 @@ export class SharedEncryptionService {
 
     // Check if this is an E2EE message
     if (metadata.mode === 'e2ee') {
-      // E2EE messages should be decrypted on the client only
-      // Server should never see the plaintext
-      throw new Error('Cannot decrypt E2EE messages on server');
+      // E2EE messages can only be decrypted with Signal Protocol
+      if (!this.signalService) {
+        throw new Error('Signal Protocol not available for E2EE decryption');
+      }
+
+      if (!senderUserId) {
+        throw new Error('Sender user ID required for E2EE decryption');
+      }
+
+      const senderAddress = ProtocolAddress.new(senderUserId, this.deviceId);
+
+      const signalMessage: SignalEncryptedMessage = {
+        type: metadata.messageType || 2,
+        registrationId: metadata.registrationId || 0,
+        body: Buffer.from(payload.ciphertext, 'base64'),
+        deviceId: this.deviceId,
+      };
+
+      return await this.signalService.decryptMessage(senderAddress, signalMessage);
     }
 
+    // Server-encrypted mode decryption
     // Get decryption key
     const keyData = await this.keyStorage.getKey(metadata.keyId);
     if (!keyData) {
@@ -291,16 +368,34 @@ export class SharedEncryptionService {
 
   /**
    * Establish E2EE session with another user
-   * Performs ECDH key agreement
+   * Uses X3DH key agreement with Signal Protocol
    */
   async establishE2EESession(
     conversationId: string,
-    recipientUserId: string
+    recipientUserId: string,
+    recipientPreKeyBundle?: PreKeyBundle
   ): Promise<string> {
     if (!this.currentUserId) {
       throw new Error('Encryption service not initialized');
     }
 
+    // Use Signal Protocol for session establishment
+    if (this.signalService && recipientPreKeyBundle) {
+      const recipientAddress = ProtocolAddress.new(recipientUserId, this.deviceId);
+
+      // Process pre-key bundle to establish session (X3DH)
+      await this.signalService.processPreKeyBundle(recipientAddress, recipientPreKeyBundle);
+
+      // Store conversation mapping
+      await this.keyStorage.storeConversationKey(conversationId, recipientUserId, 'e2ee');
+
+      console.log(
+        `[EncryptionService] Established Signal Protocol session with ${recipientUserId}`
+      );
+      return recipientUserId;
+    }
+
+    // Fallback to simplified ECDH key agreement
     // Get own private key
     const ownKeys = await this.keyStorage.getUserKeys(this.currentUserId);
     if (!ownKeys) {

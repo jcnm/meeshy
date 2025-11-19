@@ -19,8 +19,10 @@ export interface EncryptionMetadata {
   keyId: string;
   iv: string;
   authTag: string;
-  messageNumber?: number;  // For Signal Protocol ratcheting
-  preKeyId?: number;       // For Signal Protocol key agreement
+  messageNumber?: number;      // For Signal Protocol ratcheting
+  preKeyId?: number;           // For Signal Protocol key agreement
+  messageType?: number;        // Signal Protocol message type (PreKey=3, Message=2)
+  registrationId?: number;     // Signal Protocol registration ID
 }
 
 /**
