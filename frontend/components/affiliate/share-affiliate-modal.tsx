@@ -262,21 +262,21 @@ export function ShareAffiliateModal({ isOpen, onClose, userLanguage }: ShareAffi
         return (
           <div className="space-y-4">
             <div className="text-center">
-              <h3 className="text-lg font-semibold mb-2">{t('selectToken')}</h3>
-              <p className="text-gray-600 text-sm">{t('modalDescription')}</p>
+              <h3 className="text-lg font-semibold mb-2 dark:text-gray-100">{t('selectToken')}</h3>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">{t('modalDescription')}</p>
             </div>
 
             {tokens.length > 0 && (
               <div className="space-y-3">
-                <Label className="text-sm font-medium">{t('existingTokens')}</Label>
+                <Label className="text-sm font-medium dark:text-gray-200">{t('existingTokens')}</Label>
                 <div className="space-y-3 max-h-48 overflow-y-auto">
                   {tokens.map((token) => {
                     const status = getTokenStatus(token);
                     return (
-                      <Card 
-                        key={token.id} 
-                        className={`transition-colors cursor-pointer ${
-                          selectedToken?.id === token.id ? 'ring-2 ring-blue-500 bg-blue-50' : 'hover:bg-gray-50'
+                      <Card
+                        key={token.id}
+                        className={`transition-colors cursor-pointer dark:bg-gray-800 dark:border-gray-700 ${
+                          selectedToken?.id === token.id ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-700'
                         }`}
                         onClick={() => {
                           setSelectedToken(token);
@@ -288,8 +288,8 @@ export function ShareAffiliateModal({ isOpen, onClose, userLanguage }: ShareAffi
                             <div className="flex items-center space-x-3 flex-1 min-w-0">
                               <div className={`w-3 h-3 rounded-full ${status.color} flex-shrink-0`} />
                               <div className="min-w-0 flex-1">
-                                <p className="font-medium truncate">{token.name}</p>
-                                <p className="text-xs text-gray-500 truncate">
+                                <p className="font-medium truncate dark:text-gray-100">{token.name}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                                   {token._count?.affiliations || 0} {t('uses')} • {formatDate(token.createdAt)}
                                 </p>
                               </div>
@@ -306,7 +306,7 @@ export function ShareAffiliateModal({ isOpen, onClose, userLanguage }: ShareAffi
                                   setSelectedToken(token);
                                   shareViaNative();
                                 }}
-                                className="flex items-center space-x-1"
+                                className="flex items-center space-x-1 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600 dark:text-gray-200"
                               >
                                 <Share2 className="h-3 w-3" />
                                 <span className="text-xs hidden sm:inline">{t('share')}</span>
@@ -328,23 +328,23 @@ export function ShareAffiliateModal({ isOpen, onClose, userLanguage }: ShareAffi
         return (
           <div className="space-y-4">
             <div className="text-center">
-              <h3 className="text-lg font-semibold mb-2">Créer un nouveau lien</h3>
-              <p className="text-gray-600 text-sm">Choisissez un nom pour votre lien de partage</p>
+              <h3 className="text-lg font-semibold mb-2 dark:text-gray-100">Créer un nouveau lien</h3>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">Choisissez un nom pour votre lien de partage</p>
             </div>
 
             {/* Suggestions de noms */}
             <div className="space-y-3">
-              <Label className="text-sm font-medium">Suggestions :</Label>
+              <Label className="text-sm font-medium dark:text-gray-200">Suggestions :</Label>
               <div className="grid grid-cols-3 gap-2">
                 {tokenNameSuggestions.map((suggestion, index) => (
                   <div
                     key={index}
-                    className={`p-2 rounded-lg border cursor-pointer transition-all hover:bg-primary/5 hover:border-primary/50 ${
-                      newTokenName === suggestion ? 'bg-primary/10 border-primary ring-2 ring-primary/20' : 'bg-white'
+                    className={`p-2 rounded-lg border cursor-pointer transition-all hover:bg-primary/5 hover:border-primary/50 dark:border-gray-700 ${
+                      newTokenName === suggestion ? 'bg-primary/10 border-primary ring-2 ring-primary/20 dark:bg-primary/20' : 'bg-white dark:bg-gray-800'
                     }`}
                     onClick={() => setNewTokenName(suggestion)}
                   >
-                    <div className="font-medium text-xs text-center truncate">{suggestion}</div>
+                    <div className="font-medium text-xs text-center truncate dark:text-gray-200">{suggestion}</div>
                   </div>
                 ))}
               </div>
@@ -352,13 +352,13 @@ export function ShareAffiliateModal({ isOpen, onClose, userLanguage }: ShareAffi
 
             {/* Champ nom personnalisé */}
             <div className="space-y-2">
-              <Label htmlFor="tokenName">Ou saisissez un nom personnalisé :</Label>
+              <Label htmlFor="tokenName" className="dark:text-gray-200">Ou saisissez un nom personnalisé :</Label>
               <Input
                 id="tokenName"
                 value={newTokenName}
                 onChange={(e) => setNewTokenName(e.target.value)}
                 placeholder="Ex: Mon lien spécial..."
-                className="mt-1"
+                className="mt-1 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 dark:placeholder-gray-500"
               />
             </div>
 
@@ -381,29 +381,29 @@ export function ShareAffiliateModal({ isOpen, onClose, userLanguage }: ShareAffi
         return (
           <div className="space-y-4">
             <div className="text-center">
-              <h3 className="text-lg font-semibold mb-2">{t('share')}</h3>
-              <p className="text-gray-600 text-sm">{t('modalDescription')}</p>
+              <h3 className="text-lg font-semibold mb-2 dark:text-gray-100">{t('share')}</h3>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">{t('modalDescription')}</p>
             </div>
 
             {selectedToken && (
               <>
                 <div className="space-y-3">
-                  <Label htmlFor="shareMessage">{t('shareMessage')}</Label>
+                  <Label htmlFor="shareMessage" className="dark:text-gray-200">{t('shareMessage')}</Label>
                   <Textarea
                     id="shareMessage"
                     value={shareMessage}
                     onChange={(e) => setShareMessage(e.target.value)}
                     placeholder={t('shareMessagePlaceholder')}
                     rows={3}
-                    className="resize-none"
+                    className="resize-none dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 dark:placeholder-gray-500"
                   />
                 </div>
 
-                <Card>
+                <Card className="dark:bg-gray-800 dark:border-gray-700">
                   <CardContent className="p-4">
                     <div className="space-y-3">
-                      <div className="p-3 bg-gray-50 rounded-lg">
-                        <div className="text-sm font-mono break-all text-gray-700 overflow-hidden">
+                      <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                        <div className="text-sm font-mono break-all text-gray-700 dark:text-gray-300 overflow-hidden">
                           {selectedToken.affiliateLink}
                         </div>
                       </div>
@@ -412,15 +412,15 @@ export function ShareAffiliateModal({ isOpen, onClose, userLanguage }: ShareAffi
                         <Button
                           onClick={() => copyToClipboard(`${shareMessage}\n\n${selectedToken.affiliateLink}`)}
                           variant="outline"
-                          className="flex-1 flex items-center space-x-2"
+                          className="flex-1 flex items-center space-x-2 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600 dark:text-gray-200"
                         >
                           <Copy className="h-4 w-4" />
                           <span>Copier</span>
                         </Button>
-                        
+
                         <Button
                           onClick={shareViaNative}
-                          className="flex-1 flex items-center space-x-2"
+                          className="flex-1 flex items-center space-x-2 dark:bg-blue-700 dark:hover:bg-blue-800"
                         >
                           <Share2 className="h-4 w-4" />
                           <span>Partager</span>
@@ -442,10 +442,10 @@ export function ShareAffiliateModal({ isOpen, onClose, userLanguage }: ShareAffi
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md w-[95vw] max-h-[90vh] overflow-hidden flex flex-col sm:max-w-md sm:w-[90vw] sm:max-h-[85vh]">
+      <DialogContent className="max-w-md w-[95vw] max-h-[90vh] overflow-hidden flex flex-col sm:max-w-md sm:w-[90vw] sm:max-h-[85vh] dark:bg-gray-900 dark:border-gray-800">
         <DialogHeader>
-          <DialogTitle className="flex items-center space-x-2">
-            <Share2 className="h-5 w-5 text-blue-600" />
+          <DialogTitle className="flex items-center space-x-2 dark:text-gray-100">
+            <Share2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             <span>{t('modalTitle')}</span>
           </DialogTitle>
         </DialogHeader>
@@ -455,13 +455,13 @@ export function ShareAffiliateModal({ isOpen, onClose, userLanguage }: ShareAffi
         </div>
 
         {/* Boutons fixes en bas */}
-        <div className="flex-shrink-0 border-t p-4 bg-white">
+        <div className="flex-shrink-0 border-t dark:border-gray-800 p-4 bg-white dark:bg-gray-900">
           {currentStep === 'create' ? (
             /* Bouton Précédent pour l'étape de création */
             <Button
               onClick={() => setCurrentStep('select')}
               variant="outline"
-              className="w-full"
+              className="w-full dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 dark:text-gray-200"
             >
               {tCommon('previous')}
             </Button>
@@ -469,7 +469,7 @@ export function ShareAffiliateModal({ isOpen, onClose, userLanguage }: ShareAffi
             /* Bouton Nouveau pour les autres étapes */
             <Button
               onClick={() => setCurrentStep('create')}
-              className="w-full flex items-center space-x-2"
+              className="w-full flex items-center space-x-2 dark:bg-blue-700 dark:hover:bg-blue-800"
             >
               <Plus className="h-4 w-4" />
               <span>{t('newToken')}</span>
