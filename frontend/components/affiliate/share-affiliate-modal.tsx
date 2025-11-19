@@ -362,17 +362,6 @@ export function ShareAffiliateModal({ isOpen, onClose, userLanguage }: ShareAffi
               />
             </div>
 
-            {/* Bouton créer et partager */}
-            <div className="pt-4">
-              <Button
-                onClick={createAndShareToken}
-                disabled={isCreating || !newTokenName.trim()}
-                className="w-full flex items-center space-x-2"
-              >
-                <Share2 className="h-4 w-4" />
-                <span>{isCreating ? 'Création...' : 'Créer et partager'}</span>
-              </Button>
-            </div>
 
           </div>
         );
@@ -457,14 +446,24 @@ export function ShareAffiliateModal({ isOpen, onClose, userLanguage }: ShareAffi
         {/* Boutons fixes en bas */}
         <div className="flex-shrink-0 border-t dark:border-gray-800 p-4 bg-white dark:bg-gray-900">
           {currentStep === 'create' ? (
-            /* Bouton Précédent pour l'étape de création */
-            <Button
-              onClick={() => setCurrentStep('select')}
-              variant="outline"
-              className="w-full dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 dark:text-gray-200"
-            >
-              {tCommon('previous')}
-            </Button>
+            /* Deux boutons sur la même ligne pour l'étape de création */
+            <div className="flex justify-between items-center space-x-3">
+              <Button
+                onClick={() => setCurrentStep('select')}
+                variant="outline"
+                className="dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 dark:text-gray-200"
+              >
+                {tCommon('previous')}
+              </Button>
+              <Button
+                onClick={createAndShareToken}
+                disabled={isCreating || !newTokenName.trim()}
+                className="flex items-center space-x-2 dark:bg-blue-700 dark:hover:bg-blue-800"
+              >
+                <Share2 className="h-4 w-4" />
+                <span>{isCreating ? 'Création...' : 'Créer et partager'}</span>
+              </Button>
+            </div>
           ) : (
             /* Bouton Nouveau pour les autres étapes */
             <Button

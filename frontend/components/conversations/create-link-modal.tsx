@@ -1117,9 +1117,9 @@ export function CreateLinkModalV2({
 
             {/* Exigences d'authentification */}
             <div className="space-y-3">
-              <h4 className="text-sm font-medium flex items-center">
+              <h4 className="text-sm font-medium flex items-center dark:text-gray-200">
                 <Shield className="h-4 w-4 mr-2" />
-                {t('createLinkModal.permissions.authRequirements.title')}
+                {t('createLinkModal.permissions.title')}
               </h4>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
