@@ -167,7 +167,7 @@ export function AudioEffectsPanel({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="voice-coder">🎵 {t('voiceCoder.title')}</SelectItem>
+            <SelectItem value="voice-coder">🎤 {t('voiceCoder.title')}</SelectItem>
             <SelectItem value="back-sound">🎶 {t('backSound.title')}</SelectItem>
             <SelectItem value="baby-voice">👶 {t('babyVoice.title')}</SelectItem>
             <SelectItem value="demon-voice">😈 {t('demonVoice.title')}</SelectItem>
@@ -185,7 +185,7 @@ export function AudioEffectsPanel({
         )}>
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-1">
-              <span className="text-sm">🎵</span>
+              <span className="text-sm">🎤</span>
               <Label className="text-white font-medium text-[11px]">{t('voiceCoder.title')}</Label>
               {/* Tooltip Info - visible sur mobile */}
               <Popover>

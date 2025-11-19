@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { SocketIOUser, UserRoleEnum } from '../../shared/types';
 import { normalizeEmail, normalizeUsername, capitalizeName, normalizeDisplayName, normalizePhoneNumber } from '../utils/normalize';
+import { emailSchema } from '../../shared/types/validation';
 
 export interface LoginCredentials {
   username: string;
@@ -106,6 +107,14 @@ export class AuthService {
    */
   async register(data: RegisterData): Promise<SocketIOUser | null> {
     try {
+      // Valider l'email avec Zod AVANT toute opération
+      try {
+        emailSchema.parse(data.email);
+      } catch (zodError: any) {
+        const errorMessage = zodError.issues?.[0]?.message || 'Format d\'email invalide';
+        throw new Error(`Email invalide: ${errorMessage}`);
+      }
+
       // Normaliser les données utilisateur
       const normalizedEmail = normalizeEmail(data.email);
       const normalizedUsername = normalizeUsername(data.username);

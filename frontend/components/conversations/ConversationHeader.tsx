@@ -445,17 +445,32 @@ export function ConversationHeader({
     }
   }, [conversation.id, isArchived, t]);
 
-  // Fonction pour copier le lien de la conversation
+  // Fonction pour partager le lien de la conversation
   const handleShareConversation = useCallback(async () => {
     const url = `${window.location.origin}/conversations/${conversation.id}`;
+    const shareText = t('conversationHeader.shareMessage');
+    const fullMessage = `${shareText}\n\n${url}`;
+
     try {
-      await navigator.clipboard.writeText(url);
-      toast.success(t('conversationHeader.linkCopied') || 'Lien copié !');
-    } catch (error) {
-      console.error('Erreur lors de la copie du lien:', error);
+      // Vérifier si l'API Web Share est disponible
+      if (navigator.share) {
+        await navigator.share({
+          text: fullMessage,
+        });
+      } else {
+        // Fallback: copier dans le presse-papiers si Web Share n'est pas disponible
+        await navigator.clipboard.writeText(fullMessage);
+        toast.success(t('conversationHeader.linkCopied') || 'Lien copié !');
+      }
+    } catch (error: any) {
+      // L'utilisateur a annulé le partage (pas une vraie erreur)
+      if (error.name === 'AbortError') {
+        return;
+      }
+      console.error('Erreur lors du partage:', error);
       toast.error(t('conversationHeader.linkCopyError') || 'Erreur lors de la copie du lien');
     }
-  }, [conversation.id, t]);
+  }, [conversation.id, conversation.title, t]);
 
   return (
     <>

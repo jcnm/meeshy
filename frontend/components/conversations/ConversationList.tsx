@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo, memo, useEffect, useRef } from 'react';
-import { MessageSquare, Link2, Users, Globe, Search, Loader2, Pin, ChevronDown, ChevronRight, MoreVertical, Info, Archive, Bell, BellOff, Heart, Smile } from 'lucide-react';
+import { MessageSquare, Link2, Users, Globe, Search, Loader2, Pin, ChevronDown, ChevronRight, MoreVertical, Info, Archive, Bell, BellOff, Heart, Smile, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -160,6 +160,33 @@ const ConversationItem = memo(function ConversationItem({
     e.stopPropagation();
     onShowDetails?.(conversation);
   }, [conversation, onShowDetails]);
+
+  const handleShareConversation = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const url = `${window.location.origin}/conversations/${conversation.id}`;
+    const shareText = t('conversationHeader.shareMessage');
+    const fullMessage = `${shareText}\n\n${url}`;
+
+    try {
+      // Vérifier si l'API Web Share est disponible
+      if (navigator.share) {
+        await navigator.share({
+          text: fullMessage,
+        });
+      } else {
+        // Fallback: copier dans le presse-papiers si Web Share n'est pas disponible
+        await navigator.clipboard.writeText(fullMessage);
+        toast.success(t('conversationHeader.linkCopied'));
+      }
+    } catch (error: any) {
+      // L'utilisateur a annulé le partage (pas une vraie erreur)
+      if (error.name === 'AbortError') {
+        return;
+      }
+      console.error('Error sharing:', error);
+      toast.error(t('conversationHeader.linkCopyError'));
+    }
+  }, [conversation.id, conversation.title, t]);
 
   // Helper pour obtenir l'autre participant dans une conversation directe
   const getOtherParticipantUser = useCallback(() => {
@@ -331,11 +358,6 @@ const ConversationItem = memo(function ConversationItem({
             )}
             <h3 className="font-semibold text-sm truncate">
               {getConversationNameOnly()}
-              {getConversationCreatedDate() && (
-                <span className="text-[0.5em] font-normal ml-1 text-muted-foreground">
-                  ({getConversationCreatedDate()})
-                </span>
-              )}
             </h3>
           </div>
           {conversation.lastMessage && (
@@ -393,7 +415,7 @@ const ConversationItem = memo(function ConversationItem({
                   } else if (mimeType.startsWith('audio/')) {
                     // Extraire les effets appliqués depuis la timeline
                     const effectIcons: Record<string, string> = {
-                      'voice-coder': '🎵',
+                      'voice-coder': '🎤',
                       'baby-voice': '👶',
                       'demon-voice': '😈',
                       'back-sound': '🎶',
@@ -502,7 +524,7 @@ const ConversationItem = memo(function ConversationItem({
       {conversation.unreadCount !== undefined && conversation.unreadCount > 0 && (
         <Badge
           variant="destructive"
-          className={`ml-2 flex-shrink-0 h-5 min-w-[20px] px-1.5 ${conversation.unreadCount > 99 ? 'text-[9px]' : ''}`}
+          className="ml-2 flex-shrink-0 h-5 min-w-[20px] px-1.5"
         >
           {conversation.unreadCount > 99 ? '99+' : conversation.unreadCount}
         </Badge>
@@ -548,6 +570,13 @@ const ConversationItem = memo(function ConversationItem({
           <DropdownMenuItem onClick={handleToggleArchive}>
             <Archive className="mr-2 h-4 w-4" />
             <span>{localIsArchived ? 'Désarchiver' : 'Archiver'}</span>
+          </DropdownMenuItem>
+
+          <DropdownMenuSeparator />
+
+          <DropdownMenuItem onClick={handleShareConversation}>
+            <Share2 className="mr-2 h-4 w-4" />
+            <span>{t('conversationHeader.share')}</span>
           </DropdownMenuItem>
 
           <DropdownMenuSeparator />

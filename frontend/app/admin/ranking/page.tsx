@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { adminService } from '@/services/admin.service';
 import {
   ArrowLeft,
   Trophy,
@@ -135,13 +136,12 @@ const LINK_CRITERIA = [
 ];
 
 const PERIODS = [
-  { value: '1d', label: 'Jour (24h)' },
-  { value: '7d', label: 'Semaine (7j)' },
-  { value: '30d', label: 'Mois (30j)' },
-  { value: '60d', label: '2 mois (60j)' },
-  { value: '90d', label: 'Trimestre (90j)' },
-  { value: '180d', label: 'Semestre (180j)' },
-  { value: '365d', label: 'Année (365j)' },
+  { value: '1d', label: 'Dernier jour (24h)' },
+  { value: '7d', label: 'Dernière semaine (7j)' },
+  { value: '30d', label: 'Dernier mois (30j)' },
+  { value: '90d', label: 'Dernier trimestre (90j)' },
+  { value: '180d', label: 'Dernier semestre (180j)' },
+  { value: '365d', label: 'Dernière année (365j)' },
   { value: 'all', label: 'Tous les temps' }
 ];
 
@@ -160,9 +160,11 @@ export default function AdminRankingPage() {
   const [rankings, setRankings] = useState<RankingItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [criteriaSearch, setCriteriaSearch] = useState('');
 
   // Update criterion when entity type changes
   useEffect(() => {
+    setCriteriaSearch(''); // Réinitialiser le filtre de recherche
     if (entityType === 'users') {
       setCriterion('messages_sent');
     } else if (entityType === 'conversations') {
@@ -177,50 +179,73 @@ export default function AdminRankingPage() {
   // Fetch rankings
   useEffect(() => {
     fetchRankings();
-  }, [entityType, criterion, period, limit]);
+  }, [criterion, period, limit]);
 
   const fetchRankings = async () => {
     setLoading(true);
     setError(null);
+
     try {
-      const response = await fetch(
-        `/api/admin/ranking?entityType=${entityType}&criterion=${criterion}&period=${period}&limit=${limit}`,
-        {
-          headers: {
-            'Content-Type': 'application/json'
-          }
+      console.log('[Ranking] Fetching with params:', { entityType, criterion, period, limit });
+      const response = await adminService.getRankings(entityType, criterion, period, limit);
+      console.log('[Ranking] Response received:', response);
+
+      // Le backend retourne { status: 200, data: { success: true, data: { rankings: [] } } }
+      // Double niveau de "data"
+      if (response.status === 200 && response.data?.success && response.data.data) {
+        const rankings = response.data.data.rankings;
+
+        if (Array.isArray(rankings)) {
+          // Add rank to each item
+          const rankedData = rankings.map((item: any, index: number) => ({
+            id: item.id,
+            name: item.displayName || item.username || item.title || item.name || 'Sans nom',
+            avatar: item.avatar || item.image,
+            value: item.count || 0,
+            rank: index + 1,
+            metadata: item
+          }));
+          console.log('[Ranking] Processed rankings:', rankedData.length, 'items');
+          setRankings(rankedData);
+        } else {
+          const errorMsg = 'Format de réponse invalide: rankings n\'est pas un tableau';
+          console.error('[Ranking] Invalid format:', response.data);
+          setError(errorMsg);
         }
-      );
-
-      if (!response.ok) {
-        throw new Error('Erreur lors du chargement des classements');
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Add rank to each item
-        const rankedData = data.data.rankings.map((item: RankingItem, index: number) => ({
-          ...item,
-          rank: index + 1
-        }));
-        setRankings(rankedData);
       } else {
-        setError(data.message || 'Erreur lors du chargement des classements');
+        const errorMsg = response.message || 'Erreur lors du chargement des classements';
+        console.error('[Ranking] Response error:', errorMsg, response);
+        setError(errorMsg);
       }
-    } catch (err) {
-      setError('Erreur lors du chargement des classements');
-      console.error(err);
+    } catch (err: any) {
+      let errorMessage = err.message || 'Erreur lors du chargement des classements';
+
+      // Message plus clair pour les erreurs de connexion
+      if (errorMessage.includes('Failed to fetch') || errorMessage.includes('Network')) {
+        errorMessage = 'Impossible de se connecter au serveur backend. Vérifiez que le gateway est démarré.';
+      }
+
+      console.error('[Ranking] Fetch error:', errorMessage, err);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   const getCriteriaList = () => {
-    if (entityType === 'users') return USER_CRITERIA;
-    if (entityType === 'conversations') return CONVERSATION_CRITERIA;
-    if (entityType === 'messages') return MESSAGE_CRITERIA;
-    return LINK_CRITERIA;
+    let criteria;
+    if (entityType === 'users') criteria = USER_CRITERIA;
+    else if (entityType === 'conversations') criteria = CONVERSATION_CRITERIA;
+    else if (entityType === 'messages') criteria = MESSAGE_CRITERIA;
+    else criteria = LINK_CRITERIA;
+
+    // Filtrer par recherche
+    if (criteriaSearch) {
+      return criteria.filter(c =>
+        c.label.toLowerCase().includes(criteriaSearch.toLowerCase())
+      );
+    }
+    return criteria;
   };
 
   const getCurrentCriterion = () => {
@@ -323,108 +348,134 @@ export default function AdminRankingPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {/* Entity Type */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Type d'entité
-                </label>
-                <Select value={entityType} onValueChange={(value: 'users' | 'conversations' | 'messages' | 'links') => setEntityType(value)}>
-                  <SelectTrigger className="border-yellow-300 focus:ring-yellow-500">
-                    <SelectValue placeholder="Sélectionnez le type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="users">
-                      <div className="flex items-center space-x-2">
-                        <Users className="h-4 w-4" />
-                        <span>Utilisateurs</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="conversations">
-                      <div className="flex items-center space-x-2">
-                        <MessageSquare className="h-4 w-4" />
-                        <span>Conversations</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="messages">
-                      <div className="flex items-center space-x-2">
-                        <FileText className="h-4 w-4" />
-                        <span>Messages</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="links">
-                      <div className="flex items-center space-x-2">
-                        <LinkIcon className="h-4 w-4" />
-                        <span>Liens</span>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Criterion */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Critère
-                </label>
-                <Select value={criterion} onValueChange={setCriterion}>
-                  <SelectTrigger className="border-yellow-300 focus:ring-yellow-500">
-                    <SelectValue placeholder="Sélectionnez le critère" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {getCriteriaList().map((c) => {
-                      const Icon = c.icon;
-                      return (
-                        <SelectItem key={c.value} value={c.value}>
-                          <div className="flex items-center space-x-2">
-                            <Icon className="h-4 w-4" />
-                            <span>{c.label}</span>
-                          </div>
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Period */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Période
-                </label>
-                <Select value={period} onValueChange={setPeriod}>
-                  <SelectTrigger className="border-yellow-300 focus:ring-yellow-500">
-                    <SelectValue placeholder="Sélectionnez la période" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PERIODS.map((p) => (
-                      <SelectItem key={p.value} value={p.value}>
+            <div className="space-y-4">
+              {/* Première ligne: Type d'entité et Critère */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Entity Type */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Type d'entité
+                  </label>
+                  <Select value={entityType} onValueChange={(value: 'users' | 'conversations' | 'messages' | 'links') => setEntityType(value)}>
+                    <SelectTrigger className="border-yellow-300 focus:ring-yellow-500">
+                      <SelectValue placeholder="Sélectionnez le type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="users">
                         <div className="flex items-center space-x-2">
-                          <Calendar className="h-4 w-4" />
-                          <span>{p.label}</span>
+                          <Users className="h-4 w-4" />
+                          <span>Utilisateurs</span>
                         </div>
                       </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                      <SelectItem value="conversations">
+                        <div className="flex items-center space-x-2">
+                          <MessageSquare className="h-4 w-4" />
+                          <span>Conversations</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="messages">
+                        <div className="flex items-center space-x-2">
+                          <FileText className="h-4 w-4" />
+                          <span>Messages</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="links">
+                        <div className="flex items-center space-x-2">
+                          <LinkIcon className="h-4 w-4" />
+                          <span>Liens</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Criterion */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Critère
+                  </label>
+                  <Select value={criterion} onValueChange={setCriterion}>
+                    <SelectTrigger className="border-yellow-300 focus:ring-yellow-500">
+                      <SelectValue placeholder="Sélectionnez le critère" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[400px]">
+                      {/* Champ de recherche */}
+                      <div className="sticky top-0 z-10 bg-white dark:bg-gray-950 p-2 border-b border-gray-200 dark:border-gray-700">
+                        <input
+                          type="text"
+                          placeholder="Filtrer les critères..."
+                          value={criteriaSearch}
+                          onChange={(e) => setCriteriaSearch(e.target.value)}
+                          className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-gray-800 dark:text-gray-100"
+                          onClick={(e) => e.stopPropagation()}
+                          onKeyDown={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                      <div className="max-h-[320px] overflow-y-auto">
+                        {getCriteriaList().length > 0 ? (
+                          getCriteriaList().map((c) => {
+                            const Icon = c.icon;
+                            return (
+                              <SelectItem key={c.value} value={c.value}>
+                                <div className="flex items-center space-x-2">
+                                  <Icon className="h-4 w-4" />
+                                  <span>{c.label}</span>
+                                </div>
+                              </SelectItem>
+                            );
+                          })
+                        ) : (
+                          <div className="p-4 text-sm text-center text-gray-500 dark:text-gray-400">
+                            Aucun critère trouvé
+                          </div>
+                        )}
+                      </div>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
-              {/* Limit */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Nombre de résultats
-                </label>
-                <Select value={limit.toString()} onValueChange={(value) => setLimit(parseInt(value))}>
-                  <SelectTrigger className="border-yellow-300 focus:ring-yellow-500">
-                    <SelectValue placeholder="Nombre de résultats" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="10">Top 10</SelectItem>
-                    <SelectItem value="25">Top 25</SelectItem>
-                    <SelectItem value="50">Top 50</SelectItem>
-                    <SelectItem value="100">Top 100</SelectItem>
-                  </SelectContent>
-                </Select>
+              {/* Deuxième ligne: Période et Nombre de résultats */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Period */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Période
+                  </label>
+                  <Select value={period} onValueChange={setPeriod}>
+                    <SelectTrigger className="border-yellow-300 focus:ring-yellow-500">
+                      <SelectValue placeholder="Sélectionnez la période" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PERIODS.map((p) => (
+                        <SelectItem key={p.value} value={p.value}>
+                          <div className="flex items-center space-x-2">
+                            <Calendar className="h-4 w-4" />
+                            <span>{p.label}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Limit */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Nombre de résultats
+                  </label>
+                  <Select value={limit.toString()} onValueChange={(value) => setLimit(parseInt(value))}>
+                    <SelectTrigger className="border-yellow-300 focus:ring-yellow-500">
+                      <SelectValue placeholder="Nombre de résultats" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="10">Top 10</SelectItem>
+                      <SelectItem value="25">Top 25</SelectItem>
+                      <SelectItem value="50">Top 50</SelectItem>
+                      <SelectItem value="100">Top 100</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
           </CardContent>
@@ -443,14 +494,8 @@ export default function AdminRankingPage() {
               <ResponsiveContainer width="100%" height={400}>
                 <BarChart
                   data={rankings.slice(0, 10).map((item, index) => ({
-                    name: entityType === 'users'
-                      ? (item.displayName || item.username || 'Unknown')
-                      : entityType === 'conversations'
-                      ? (item.title || item.identifier || 'Unknown')
-                      : entityType === 'links'
-                      ? (item.title || item.shortCode || item.identifier || 'Unknown')
-                      : `Message #${index + 1}`,
-                    value: item.count || 0,
+                    name: item.name || `#${index + 1}`,
+                    value: item.value || 0,
                     rank: index + 1
                   }))}
                   layout="vertical"
@@ -510,7 +555,7 @@ export default function AdminRankingPage() {
                 <AreaChart
                   data={rankings.slice(0, 20).map((item, index) => ({
                     position: `#${index + 1}`,
-                    value: item.count || 0,
+                    value: item.value || 0,
                     rank: index + 1
                   }))}
                   margin={{ top: 10, right: 30, left: 20, bottom: 5 }}
@@ -622,44 +667,46 @@ export default function AdminRankingPage() {
                       {entityType === 'users' ? (
                         <>
                           <Avatar className="h-12 w-12 ring-2 ring-yellow-400">
-                            <AvatarImage src={item.avatar} alt={item.displayName || item.username} />
+                            <AvatarImage src={item.avatar} alt={item.name} />
                             <AvatarFallback className="bg-gradient-to-br from-yellow-400 to-amber-500 text-white">
-                              {(item.displayName || item.username || 'U').charAt(0).toUpperCase()}
+                              {(item.name || 'U').charAt(0).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1">
                             <p className="font-semibold text-gray-900 dark:text-gray-100">
-                              {item.displayName || item.username}
+                              {item.name}
                             </p>
                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                              @{item.username}
+                              @{item.metadata.username}
                             </p>
                           </div>
                         </>
                       ) : entityType === 'conversations' ? (
                         <>
                           <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center text-2xl ring-2 ring-yellow-400">
-                            {item.image || item.avatar ? (
+                            {item.avatar ? (
                               <img
-                                src={item.image || item.avatar}
-                                alt={item.title || item.identifier}
+                                src={item.avatar}
+                                alt={item.name}
                                 className="h-12 w-12 rounded-lg object-cover"
                               />
                             ) : (
-                              getTypeIcon(item.type)
+                              getTypeIcon(item.metadata?.type)
                             )}
                           </div>
                           <div className="flex-1">
                             <p className="font-semibold text-gray-900 dark:text-gray-100">
-                              {item.title || item.identifier}
+                              {item.name}
                             </p>
                             <div className="flex items-center space-x-2">
                               <Badge variant="outline" className="text-xs border-yellow-400 text-yellow-700">
-                                {getTypeLabel(item.type)}
+                                {getTypeLabel(item.metadata?.type)}
                               </Badge>
-                              <span className="text-sm text-gray-500 dark:text-gray-400">
-                                {item.identifier}
-                              </span>
+                              {item.metadata?.identifier && (
+                                <span className="text-sm text-gray-500 dark:text-gray-400">
+                                  {item.metadata.identifier}
+                                </span>
+                              )}
                             </div>
                           </div>
                         </>
@@ -671,38 +718,38 @@ export default function AdminRankingPage() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center space-x-2 mb-1">
                               <Avatar className="h-6 w-6">
-                                <AvatarImage src={item.creator?.avatar} alt={item.creator?.displayName || item.creator?.username} />
+                                <AvatarImage src={item.metadata?.creator?.avatar} alt={item.metadata?.creator?.displayName || item.metadata?.creator?.username} />
                                 <AvatarFallback className="text-xs">
-                                  {(item.creator?.displayName || item.creator?.username || 'U').charAt(0).toUpperCase()}
+                                  {(item.metadata?.creator?.displayName || item.metadata?.creator?.username || 'U').charAt(0).toUpperCase()}
                                 </AvatarFallback>
                               </Avatar>
                               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                {item.creator?.displayName || item.creator?.username}
+                                {item.metadata?.creator?.displayName || item.metadata?.creator?.username}
                               </span>
                               <span className="text-xs text-gray-400">•</span>
                               <Badge variant="outline" className="text-xs">
-                                {item.shortCode ? '🔍 Tracké' : '📤 Partage'}
+                                {item.metadata?.shortCode ? '🔍 Tracké' : '📤 Partage'}
                               </Badge>
                             </div>
                             <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                              {item.title || item.shortCode || item.identifier}
+                              {item.name}
                             </p>
-                            {item.originalUrl && (
+                            {item.metadata?.originalUrl && (
                               <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                {item.originalUrl}
+                                {item.metadata.originalUrl}
                               </p>
                             )}
-                            {item.conversation && (
+                            {item.metadata?.conversation && (
                               <p className="text-xs text-gray-500 dark:text-gray-400">
-                                Conversation: {item.conversation.title || item.conversation.identifier}
+                                Conversation: {item.metadata.conversation.title || item.metadata.conversation.identifier}
                               </p>
                             )}
                             <div className="flex items-center space-x-3 mt-1 text-xs text-gray-500">
-                              {item.totalClicks !== undefined && (
-                                <span>👁️ {formatCount(item.totalClicks)} visites</span>
+                              {item.metadata?.totalClicks !== undefined && (
+                                <span>👁️ {formatCount(item.metadata.totalClicks)} visites</span>
                               )}
-                              {item.uniqueClicks !== undefined && (
-                                <span>👤 {formatCount(item.uniqueClicks)} uniques</span>
+                              {item.metadata?.uniqueClicks !== undefined && (
+                                <span>👤 {formatCount(item.metadata.uniqueClicks)} uniques</span>
                               )}
                               {item.currentUses !== undefined && (
                                 <span>✅ {formatCount(item.currentUses)} utilisations</span>
@@ -716,29 +763,29 @@ export default function AdminRankingPage() {
                       ) : (
                         <>
                           <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center text-2xl ring-2 ring-yellow-400">
-                            {getMessageTypeIcon(item.messageType)}
+                            {getMessageTypeIcon(item.metadata?.messageType)}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center space-x-2 mb-1">
                               <Avatar className="h-6 w-6">
-                                <AvatarImage src={item.sender?.avatar} alt={item.sender?.displayName || item.sender?.username} />
+                                <AvatarImage src={item.metadata?.sender?.avatar} alt={item.metadata?.sender?.displayName || item.metadata?.sender?.username} />
                                 <AvatarFallback className="text-xs">
-                                  {(item.sender?.displayName || item.sender?.username || 'U').charAt(0).toUpperCase()}
+                                  {(item.metadata?.sender?.displayName || item.metadata?.sender?.username || 'U').charAt(0).toUpperCase()}
                                 </AvatarFallback>
                               </Avatar>
                               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                {item.sender?.displayName || item.sender?.username}
+                                {item.metadata?.sender?.displayName || item.metadata?.sender?.username}
                               </span>
                               <span className="text-xs text-gray-400">•</span>
                               <span className="text-xs text-gray-500">
-                                {item.conversation?.title || item.conversation?.identifier}
+                                {item.metadata?.conversation?.title || item.metadata?.conversation?.identifier}
                               </span>
                             </div>
                             <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                              {item.contentPreview || item.content}
+                              {item.name}
                             </p>
                             <p className="text-xs text-gray-400 mt-1">
-                              {formatDate(item.createdAt)}
+                              {formatDate(item.metadata?.createdAt)}
                             </p>
                           </div>
                         </>
@@ -761,7 +808,7 @@ export default function AdminRankingPage() {
                               className: 'h-5 w-5 text-yellow-600'
                             })}
                             <span className="text-2xl font-bold text-yellow-600">
-                              {formatCount(item.count)}
+                              {formatCount(item.value)}
                             </span>
                           </div>
                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -809,12 +856,10 @@ export default function AdminRankingPage() {
                       </div>
                     </div>
                     <p className="font-semibold mt-3 text-gray-900 dark:text-gray-100">
-                      {entityType === 'users'
-                        ? (rankings[1].displayName || rankings[1].username)
-                        : (rankings[1].title || rankings[1].identifier)}
+                      {rankings[1].name}
                     </p>
                     <p className="text-2xl font-bold text-gray-600 dark:text-gray-400 mt-1">
-                      {formatCount(rankings[1].count)}
+                      {formatCount(rankings[1].value)}
                     </p>
                   </div>
                 )}
@@ -840,12 +885,10 @@ export default function AdminRankingPage() {
                       </div>
                     </div>
                     <p className="font-bold text-lg mt-3 text-gray-900 dark:text-gray-100">
-                      {entityType === 'users'
-                        ? (rankings[0].displayName || rankings[0].username)
-                        : (rankings[0].title || rankings[0].identifier)}
+                      {rankings[0].name}
                     </p>
                     <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-500 mt-1">
-                      {formatCount(rankings[0].count)}
+                      {formatCount(rankings[0].value)}
                     </p>
                     <Trophy className="h-6 w-6 text-yellow-600 mx-auto mt-2" />
                   </div>
@@ -872,12 +915,10 @@ export default function AdminRankingPage() {
                       </div>
                     </div>
                     <p className="font-semibold mt-3 text-gray-900 dark:text-gray-100">
-                      {entityType === 'users'
-                        ? (rankings[2].displayName || rankings[2].username)
-                        : (rankings[2].title || rankings[2].identifier)}
+                      {rankings[2].name}
                     </p>
                     <p className="text-xl font-bold text-amber-700 dark:text-amber-600 mt-1">
-                      {formatCount(rankings[2].count)}
+                      {formatCount(rankings[2].value)}
                     </p>
                   </div>
                 )}

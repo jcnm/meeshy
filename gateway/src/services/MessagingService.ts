@@ -19,11 +19,13 @@ import { conversationStatsService } from './ConversationStatsService';
 import { TrackingLinkService } from './TrackingLinkService';
 import { MentionService } from './MentionService';
 import { NotificationService } from './NotificationService';
+import { MessageReadStatusService } from './MessageReadStatusService';
 
 export class MessagingService {
   private trackingLinkService: TrackingLinkService;
   private mentionService: MentionService;
   private notificationService?: NotificationService;
+  private readStatusService: MessageReadStatusService;
 
   constructor(
     private readonly prisma: PrismaClient,
@@ -33,6 +35,7 @@ export class MessagingService {
     this.trackingLinkService = new TrackingLinkService(prisma);
     this.mentionService = new MentionService(prisma);
     this.notificationService = notificationService;
+    this.readStatusService = new MessageReadStatusService(prisma);
   }
 
   /**
@@ -170,8 +173,13 @@ export class MessagingService {
       // 7. Mise à jour de la conversation
       await this.updateConversation(conversationId);
 
-      // 8. Marquer comme lu pour l'expéditeur (User ou AnonymousParticipant)
-      await this.markAsRead(message.id, actualSenderId || actualAnonymousSenderId || senderId);
+      // 8. Marquer comme reçu ET lu pour l'expéditeur (User ou AnonymousParticipant)
+      // L'expéditeur est considéré comme ayant lu son propre message
+      await this.readStatusService.markMessagesAsRead(
+        actualSenderId || actualAnonymousSenderId || senderId,
+        conversationId,
+        message.id
+      );
 
       // 9. Queue de traduction (async)
       const translationStatus = await this.queueTranslation(message, originalLanguage);
@@ -901,29 +909,10 @@ export class MessagingService {
   }
 
   /**
-   * Marque le message comme lu pour l'expéditeur
+   * Expose le service de statuts de lecture pour utilisation externe
    */
-  private async markAsRead(messageId: string, userId: string): Promise<void> {
-    try {
-      await this.prisma.messageStatus.upsert({
-        where: {
-          messageId_userId: {
-            messageId,
-            userId
-          }
-        },
-        create: {
-          messageId,
-          userId,
-          readAt: new Date()
-        },
-        update: {
-          readAt: new Date()
-        }
-      });
-    } catch (error) {
-      console.error('[UnifiedMessageHandler] Error marking message as read:', error);
-    }
+  public getReadStatusService(): MessageReadStatusService {
+    return this.readStatusService;
   }
 
   /**

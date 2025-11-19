@@ -40,6 +40,7 @@
       "active": "Ativo",
       "inactive": "Inativo",
       "expired": "Expirado",
+      "expires": "Expira",
       "never": "Nunca",
       "daysRemaining": "{days} dia(s) restante(s)",
       "hoursRemaining": "{hours} hora(s) restante(s)"
@@ -59,6 +60,7 @@
     },
     "actions": {
       "menu": "Menu",
+      "view": "Ver",
       "viewDetails": "Ver detalhes",
       "copy": "Copiar link",
       "edit": "Editar",
@@ -261,6 +263,7 @@
         "1year": "1 ano"
       },
       "stats": {
+        "stats": "Estatísticas",
         "totalLinks": "Total de links",
         "totalClicks": "Cliques totais",
         "uniqueClicks": "Visitantes únicos",
@@ -303,7 +306,33 @@
         "viewStats": "Ver estatísticas",
         "copyShortUrl": "Copiar URL curta",
         "deactivate": "Desativar",
-        "activate": "Ativar"
+        "activate": "Ativar",
+        "edit": "Editar"
+      },
+      "edit": {
+        "title": "Editar link de rastreamento",
+        "description": "Modifique a URL de redirecionamento, token ou configurações do link",
+        "originalUrl": "URL de redirecionamento",
+        "originalUrlDescription": "A URL para a qual os visitantes serão redirecionados",
+        "token": "Token do link curto",
+        "tokenDescription": "6 caracteres alfanuméricos. Deixe inalterado para manter o token atual.",
+        "tokenTaken": "Este token já existe",
+        "tokenAvailable": "Este token está disponível",
+        "expiresAt": "Data de expiração (opcional)",
+        "expiresAtDescription": "Deixe vazio para um link sem expiração",
+        "isActive": "Link ativo",
+        "cancel": "Cancelar",
+        "save": "Salvar",
+        "saving": "Salvando...",
+        "errors": {
+          "urlRequired": "A URL de redirecionamento é obrigatória",
+          "invalidUrl": "A URL deve começar com http:// ou https://",
+          "invalidToken": "O token deve conter exatamente 6 caracteres alfanuméricos",
+          "updateFailed": "Erro ao atualizar o link"
+        },
+        "success": {
+          "updated": "Link de rastreamento atualizado com sucesso"
+        }
       },
       "success": {
         "created": "Link de rastreamento criado com sucesso e copiado para área de transferência",

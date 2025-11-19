@@ -867,13 +867,28 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     onConversationOnlineStats: (data) => {
       if (!data || data.conversationId !== conversationId) return;
       if (Array.isArray(data.onlineUsers)) {
-        setActiveUsersDeduped(data.onlineUsers.map((u: any) => ({
+        // Inclure l'utilisateur connecté dans la liste
+        const usersToDisplay = [...data.onlineUsers];
+
+        // Ajouter l'utilisateur actuel s'il n'est pas déjà dans la liste
+        if (!usersToDisplay.find((u: any) => u.id === user?.id)) {
+          usersToDisplay.unshift({
+            id: user?.id,
+            username: user?.username,
+            firstName: user?.firstName,
+            lastName: user?.lastName,
+            avatar: user?.avatar,
+            systemLanguage: user?.systemLanguage,
+            displayName: user?.displayName
+          });
+        }
+
+        setActiveUsersDeduped(usersToDisplay.map((u: any) => ({
           id: u.id,
           username: u.username,
           firstName: u.firstName,
           lastName: u.lastName,
-          email: '',
-          avatar: '',
+          avatar: u.avatar || '',
           role: 'USER' as const,
           permissions: {
             canAccessAdmin: false,
@@ -886,7 +901,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
             canManageNotifications: false,
             canManageTranslations: false,
           },
-          systemLanguage: 'fr',
+          systemLanguage: u.systemLanguage || 'fr',
           regionalLanguage: 'fr',
           autoTranslateEnabled: true,
           translateToSystemLanguage: true,

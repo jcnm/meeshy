@@ -191,18 +191,25 @@ export function CreateConversationModal({
 
     setIsLoading(true);
     try {
-      const response = await apiService.get<User[]>(`/api/users/search?q=${encodeURIComponent(query)}`);
-      
-      if (response.data) {
-        const users = response.data;
+      const response = await apiService.get<{ success: boolean; data: User[] }>(`/users/search?q=${encodeURIComponent(query)}`);
+
+      // L'API retourne { success: true, data: [...] }
+      if (response.data?.success && Array.isArray(response.data.data)) {
+        const users = response.data.data;
         // Exclure l'utilisateur actuel et les utilisateurs déjà sélectionnés
-        const filteredUsers = users.filter((user: User) => 
-          user.id !== currentUser.id && 
+        const filteredUsers = users.filter((user: User) =>
+          user.id !== currentUser.id &&
           !selectedUsers.some(selected => selected.id === user.id)
         );
         setAvailableUsers(filteredUsers);
       } else {
-        toast.error(t('createConversationModal.errors.searchError'));
+        // Fallback pour l'ancien format (si response.data est directement un tableau)
+        const users = Array.isArray(response.data) ? response.data : [];
+        const filteredUsers = users.filter((user: User) =>
+          user.id !== currentUser.id &&
+          !selectedUsers.some(selected => selected.id === user.id)
+        );
+        setAvailableUsers(filteredUsers);
       }
     } catch (error) {
       console.error('Erreur recherche utilisateurs:', error);
@@ -253,7 +260,7 @@ export function CreateConversationModal({
 
     setIsCheckingIdentifier(true);
     try {
-      const response = await apiService.get<{ success: boolean; available: boolean }>(`/api/conversations/check-identifier/${encodeURIComponent(identifier)}`);
+      const response = await apiService.get<{ success: boolean; available: boolean }>(`/conversations/check-identifier/${encodeURIComponent(identifier)}`);
       if (response.data && response.data.success) {
         setIdentifierAvailable(response.data.available);
       } else {
@@ -447,7 +454,7 @@ export function CreateConversationModal({
       // Log pour debug
       console.log('🔍 [CreateConversation] Request body:', JSON.stringify(requestBody, null, 2));
 
-      const response = await apiService.post<{ success: boolean; data: any }>('/api/conversations', requestBody);
+      const response = await apiService.post<{ success: boolean; data: any }>('/conversations', requestBody);
 
       if (response.data.success) {
         const responseData = response.data;
@@ -518,23 +525,23 @@ export function CreateConversationModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl w-[95vw] max-h-[95vh] p-0 sm:max-w-3xl sm:w-[90vw] sm:max-h-[90vh] md:max-h-[85vh] flex flex-col">
-        <DialogHeader className="px-4 pt-4 sm:px-6 sm:pt-6 pb-4 border-b">
-          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+      <DialogContent className="max-w-3xl w-[95vw] max-h-[95vh] p-0 sm:max-w-3xl sm:w-[90vw] sm:max-h-[90vh] md:max-h-[85vh] flex flex-col dark:bg-gray-900 dark:border-gray-800">
+        <DialogHeader className="px-4 pt-4 sm:px-6 sm:pt-6 pb-4 border-b dark:border-gray-800">
+          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg dark:text-gray-100">
             <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             {t('createConversationModal.title')}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="dark:text-gray-400">
             {t('createConversationModal.description')}
           </DialogDescription>
         </DialogHeader>
-        
+
         {/* Scrollable content area */}
-        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 dark:bg-gray-900">
           <div className="space-y-6">
           {/* User Selection with Input Field - Always visible */}
           <div>
-            <Label className="text-sm font-medium flex items-center gap-2 mb-2">
+            <Label className="text-sm font-medium flex items-center gap-2 mb-2 dark:text-gray-200">
               <UserPlus className="h-4 w-4" />
               {t('createConversationModal.members.title')}
             </Label>
@@ -542,14 +549,14 @@ export function CreateConversationModal({
               placeholder={t('createConversationModal.members.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full"
+              className="w-full dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 dark:placeholder-gray-500"
             />
             
             {/* User Search Results */}
             {searchQuery.length >= 2 && (
-              <div className="mt-2 border rounded-lg bg-background shadow-sm max-h-48 overflow-y-auto">
+              <div className="mt-2 border rounded-lg bg-background dark:bg-gray-800 dark:border-gray-700 shadow-sm max-h-48 overflow-y-auto">
                 {isLoading ? (
-                  <div className="p-3 text-center text-sm text-muted-foreground">
+                  <div className="p-3 text-center text-sm text-muted-foreground dark:text-gray-400">
                     {t('createConversationModal.members.loading')}
                   </div>
                 ) : filteredUsers.length > 0 ? (
@@ -587,7 +594,7 @@ export function CreateConversationModal({
                     ))}
                   </div>
                 ) : (
-                  <div className="p-3 text-center text-sm text-muted-foreground">
+                  <div className="p-3 text-center text-sm text-muted-foreground dark:text-gray-400">
                     {t('createConversationModal.members.noUsersFound')}
                   </div>
                 )}
@@ -610,7 +617,7 @@ export function CreateConversationModal({
           {/* Selected Users with Accent Colors */}
           {selectedUsers.length > 0 && (
             <div>
-              <Label className="text-sm font-medium mb-2">
+              <Label className="text-sm font-medium mb-2 dark:text-gray-200">
                 {t('createConversationModal.members.selectedMembers', { count: selectedUsers.length })}
               </Label>
               <div className="flex flex-wrap gap-2">
@@ -896,7 +903,7 @@ export function CreateConversationModal({
         </div>
         
         {/* Fixed Actions Footer */}
-        <div className="border-t bg-background px-4 sm:px-6 py-4">
+        <div className="border-t bg-background dark:bg-gray-900 dark:border-gray-800 px-4 sm:px-6 py-4">
           <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
             <Button
               onClick={createConversation}

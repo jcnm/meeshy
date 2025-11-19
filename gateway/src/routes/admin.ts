@@ -1394,39 +1394,33 @@ export async function adminRoutes(fastify: FastifyInstance) {
       if (entityType === 'users') {
         switch (criterion) {
           case 'messages_sent':
-            rankings = await fastify.prisma.user.findMany({
+            const allUsersWithMessages = await fastify.prisma.user.findMany({
               select: {
                 id: true,
                 username: true,
                 displayName: true,
                 avatar: true,
-                _count: {
-                  select: {
-                    sentMessages: {
-                      where: startDate ? {
-                        createdAt: { gte: startDate },
-                        isDeleted: false
-                      } : { isDeleted: false }
-                    }
-                  }
-                }
-              },
-              where: {
-                deletedAt: null,
-                isActive: true
-              },
-              orderBy: {
                 sentMessages: {
-                  _count: 'desc'
+                  where: period !== 'all' ? {
+                    createdAt: { gte: startDate },
+                    isDeleted: false
+                  } : { isDeleted: false },
+                  select: { id: true }
                 }
-              },
-              take: parseInt(limit)
+              }
             });
-            rankings = rankings.map(u => ({
-              ...u,
-              count: u._count.sentMessages,
-              _count: undefined
-            }));
+
+            rankings = allUsersWithMessages
+              .map(u => ({
+                id: u.id,
+                username: u.username,
+                displayName: u.displayName,
+                avatar: u.avatar,
+                count: u.sentMessages.length
+              }))
+              .filter(u => u.count > 0)
+              .sort((a, b) => b.count - a.count)
+              .slice(0, parseInt(limit));
             break;
 
           case 'reactions_given':
@@ -1439,16 +1433,12 @@ export async function adminRoutes(fastify: FastifyInstance) {
                 _count: {
                   select: {
                     reactions: {
-                      where: startDate ? {
+                      where: period !== 'all' ? {
                         createdAt: { gte: startDate }
                       } : {}
                     }
                   }
                 }
-              },
-              where: {
-                deletedAt: null,
-                isActive: true
               },
               orderBy: {
                 reactions: {
@@ -1465,74 +1455,71 @@ export async function adminRoutes(fastify: FastifyInstance) {
             break;
 
           case 'mentions_received':
-            rankings = await fastify.prisma.user.findMany({
+            // Compter les mentions reçues par les utilisateurs
+            // IMPORTANT: Prisma ne supporte pas where dans _count.select
+            // On doit charger les mentions et compter manuellement
+            const usersWithMentions = await fastify.prisma.user.findMany({
               select: {
                 id: true,
                 username: true,
                 displayName: true,
                 avatar: true,
-                _count: {
+                mentions: {
+                  where: period !== 'all' ? {
+                    mentionedAt: { gte: startDate }
+                  } : {},
                   select: {
-                    mentions: {
-                      where: startDate ? {
-                        mentionedAt: { gte: startDate }
-                      } : {}
-                    }
+                    id: true
                   }
                 }
-              },
-              where: {
-                deletedAt: null,
-                isActive: true
-              },
-              orderBy: {
-                mentions: {
-                  _count: 'desc'
-                }
-              },
-              take: parseInt(limit)
+              }
             });
-            rankings = rankings.map(u => ({
-              ...u,
-              count: u._count.mentions,
-              _count: undefined
-            }));
+
+            rankings = usersWithMentions
+              .map(u => ({
+                id: u.id,
+                username: u.username,
+                displayName: u.displayName,
+                avatar: u.avatar,
+                count: u.mentions.length
+              }))
+              .filter(u => u.count > 0)
+              .sort((a, b) => b.count - a.count)
+              .slice(0, parseInt(limit));
             break;
 
           case 'conversations_joined':
-            rankings = await fastify.prisma.user.findMany({
+            // IMPORTANT: Prisma ne supporte pas where dans _count.select
+            // On doit charger les conversations et compter manuellement
+            const usersWithConversations = await fastify.prisma.user.findMany({
               select: {
                 id: true,
                 username: true,
                 displayName: true,
                 avatar: true,
-                _count: {
+                conversations: {
+                  where: period !== 'all' ? {
+                    joinedAt: { gte: startDate },
+                    isActive: true
+                  } : { isActive: true },
                   select: {
-                    conversations: {
-                      where: startDate ? {
-                        joinedAt: { gte: startDate },
-                        isActive: true
-                      } : { isActive: true }
-                    }
+                    id: true
                   }
                 }
-              },
-              where: {
-                deletedAt: null,
-                isActive: true
-              },
-              orderBy: {
-                conversations: {
-                  _count: 'desc'
-                }
-              },
-              take: parseInt(limit)
+              }
             });
-            rankings = rankings.map(u => ({
-              ...u,
-              count: u._count.conversations,
-              _count: undefined
-            }));
+
+            rankings = usersWithConversations
+              .map(u => ({
+                id: u.id,
+                username: u.username,
+                displayName: u.displayName,
+                avatar: u.avatar,
+                count: u.conversations.length
+              }))
+              .filter(u => u.count > 0)
+              .sort((a, b) => b.count - a.count)
+              .slice(0, parseInt(limit));
             break;
 
           case 'communities_created':
@@ -1545,16 +1532,12 @@ export async function adminRoutes(fastify: FastifyInstance) {
                 _count: {
                   select: {
                     createdCommunities: {
-                      where: startDate ? {
+                      where: period !== 'all' ? {
                         createdAt: { gte: startDate }
                       } : {}
                     }
                   }
                 }
-              },
-              where: {
-                deletedAt: null,
-                isActive: true
               },
               orderBy: {
                 createdCommunities: {
@@ -1580,16 +1563,12 @@ export async function adminRoutes(fastify: FastifyInstance) {
                 _count: {
                   select: {
                     createdShareLinks: {
-                      where: startDate ? {
+                      where: period !== 'all' ? {
                         createdAt: { gte: startDate }
                       } : {}
                     }
                   }
                 }
-              },
-              where: {
-                deletedAt: null,
-                isActive: true
               },
               orderBy: {
                 createdShareLinks: {
@@ -1618,7 +1597,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
                     _count: {
                       select: {
                         reactions: {
-                          where: startDate ? {
+                          where: period !== 'all' ? {
                             createdAt: { gte: startDate }
                           } : {}
                         }
@@ -1629,10 +1608,6 @@ export async function adminRoutes(fastify: FastifyInstance) {
                     isDeleted: false
                   }
                 }
-              },
-              where: {
-                deletedAt: null,
-                isActive: true
               }
             });
 
@@ -1661,7 +1636,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
                     _count: {
                       select: {
                         replies: {
-                          where: startDate ? {
+                          where: period !== 'all' ? {
                             createdAt: { gte: startDate },
                             isDeleted: false
                           } : { isDeleted: false }
@@ -1673,10 +1648,6 @@ export async function adminRoutes(fastify: FastifyInstance) {
                     isDeleted: false
                   }
                 }
-              },
-              where: {
-                deletedAt: null,
-                isActive: true
               }
             });
 
@@ -1694,6 +1665,8 @@ export async function adminRoutes(fastify: FastifyInstance) {
 
           case 'mentions_sent':
             // Compter les mentions envoyées (dans les messages de l'utilisateur)
+            // IMPORTANT: Prisma ne supporte pas where dans _count.select
+            // On doit charger les mentions et compter manuellement
             const usersWithMentionsSent = await fastify.prisma.user.findMany({
               select: {
                 id: true,
@@ -1702,13 +1675,12 @@ export async function adminRoutes(fastify: FastifyInstance) {
                 avatar: true,
                 sentMessages: {
                   select: {
-                    _count: {
+                    mentions: {
+                      where: period !== 'all' ? {
+                        mentionedAt: { gte: startDate }
+                      } : {},
                       select: {
-                        mentions: {
-                          where: startDate ? {
-                            mentionedAt: { gte: startDate }
-                          } : {}
-                        }
+                        id: true
                       }
                     }
                   },
@@ -1716,10 +1688,6 @@ export async function adminRoutes(fastify: FastifyInstance) {
                     isDeleted: false
                   }
                 }
-              },
-              where: {
-                deletedAt: null,
-                isActive: true
               }
             });
 
@@ -1729,8 +1697,9 @@ export async function adminRoutes(fastify: FastifyInstance) {
                 username: u.username,
                 displayName: u.displayName,
                 avatar: u.avatar,
-                count: u.sentMessages.reduce((sum, msg) => sum + msg._count.mentions, 0)
+                count: u.sentMessages.reduce((sum, msg) => sum + msg.mentions.length, 0)
               }))
+              .filter(u => u.count > 0)
               .sort((a, b) => b.count - a.count)
               .slice(0, parseInt(limit));
             break;
@@ -1743,10 +1712,6 @@ export async function adminRoutes(fastify: FastifyInstance) {
                 username: true,
                 displayName: true,
                 avatar: true
-              },
-              where: {
-                deletedAt: null,
-                isActive: true
               }
             });
 
@@ -1790,10 +1755,6 @@ export async function adminRoutes(fastify: FastifyInstance) {
                     isDeleted: false
                   }
                 }
-              },
-              where: {
-                deletedAt: null,
-                isActive: true
               }
             });
 
@@ -1833,16 +1794,12 @@ export async function adminRoutes(fastify: FastifyInstance) {
                 _count: {
                   select: {
                     sentFriendRequests: {
-                      where: startDate ? {
+                      where: period !== 'all' ? {
                         createdAt: { gte: startDate }
                       } : {}
                     }
                   }
                 }
-              },
-              where: {
-                deletedAt: null,
-                isActive: true
               },
               orderBy: {
                 sentFriendRequests: {
@@ -1868,16 +1825,12 @@ export async function adminRoutes(fastify: FastifyInstance) {
                 _count: {
                   select: {
                     receivedFriendRequests: {
-                      where: startDate ? {
+                      where: period !== 'all' ? {
                         createdAt: { gte: startDate }
                       } : {}
                     }
                   }
                 }
-              },
-              where: {
-                deletedAt: null,
-                isActive: true
               },
               orderBy: {
                 receivedFriendRequests: {
@@ -1903,16 +1856,12 @@ export async function adminRoutes(fastify: FastifyInstance) {
                 _count: {
                   select: {
                     initiatedCalls: {
-                      where: startDate ? {
+                      where: period !== 'all' ? {
                         startedAt: { gte: startDate }
                       } : {}
                     }
                   }
                 }
-              },
-              where: {
-                deletedAt: null,
-                isActive: true
               },
               orderBy: {
                 initiatedCalls: {
@@ -1938,16 +1887,12 @@ export async function adminRoutes(fastify: FastifyInstance) {
                 _count: {
                   select: {
                     callParticipations: {
-                      where: startDate ? {
+                      where: period !== 'all' ? {
                         joinedAt: { gte: startDate }
                       } : {}
                     }
                   }
                 }
-              },
-              where: {
-                deletedAt: null,
-                isActive: true
               },
               orderBy: {
                 callParticipations: {
@@ -1976,7 +1921,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
                     _count: {
                       select: {
                         attachments: {
-                          where: startDate ? {
+                          where: period !== 'all' ? {
                             createdAt: { gte: startDate }
                           } : {}
                         }
@@ -1987,10 +1932,6 @@ export async function adminRoutes(fastify: FastifyInstance) {
                     isDeleted: false
                   }
                 }
-              },
-              where: {
-                deletedAt: null,
-                isActive: true
               }
             });
 
@@ -2017,16 +1958,12 @@ export async function adminRoutes(fastify: FastifyInstance) {
                 _count: {
                   select: {
                     affiliateRelations: {
-                      where: startDate ? {
+                      where: period !== 'all' ? {
                         createdAt: { gte: startDate }
                       } : {}
                     }
                   }
                 }
-              },
-              where: {
-                deletedAt: null,
-                isActive: true
               },
               orderBy: {
                 affiliateRelations: {
@@ -2055,10 +1992,6 @@ export async function adminRoutes(fastify: FastifyInstance) {
                     currentUniqueSessions: true
                   }
                 }
-              },
-              where: {
-                deletedAt: null,
-                isActive: true
               }
             });
 
@@ -2094,10 +2027,6 @@ export async function adminRoutes(fastify: FastifyInstance) {
                     createdAt: true
                   }
                 }
-              },
-              where: {
-                deletedAt: null,
-                isActive: true
               }
             });
 
@@ -2133,16 +2062,12 @@ export async function adminRoutes(fastify: FastifyInstance) {
                 _count: {
                   select: {
                     createdTrackingLinks: {
-                      where: startDate ? {
+                      where: period !== 'all' ? {
                         createdAt: { gte: startDate }
                       } : {}
                     }
                   }
                 }
-              },
-              where: {
-                deletedAt: null,
-                isActive: true
               },
               orderBy: {
                 createdTrackingLinks: {
@@ -2169,12 +2094,11 @@ export async function adminRoutes(fastify: FastifyInstance) {
                 createdTrackingLinks: {
                   select: {
                     totalClicks: true
-                  }
+                  },
+                  where: period !== 'all' ? {
+                    createdAt: { gte: startDate }
+                  } : {}
                 }
-              },
-              where: {
-                deletedAt: null,
-                isActive: true
               }
             });
 
@@ -2212,7 +2136,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
                 _count: {
                   select: {
                     messages: {
-                      where: startDate ? {
+                      where: period !== 'all' ? {
                         createdAt: { gte: startDate },
                         isDeleted: false
                       } : { isDeleted: false }
@@ -2290,7 +2214,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
                     _count: {
                       select: {
                         reactions: {
-                          where: startDate ? {
+                          where: period !== 'all' ? {
                             createdAt: { gte: startDate }
                           } : {}
                         }
@@ -2361,7 +2285,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
                     _count: {
                       select: {
                         attachments: {
-                          where: startDate ? {
+                          where: period !== 'all' ? {
                             createdAt: { gte: startDate }
                           } : {}
                         }
@@ -2405,7 +2329,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
                 _count: {
                   select: {
                     callSessions: {
-                      where: startDate ? {
+                      where: period !== 'all' ? {
                         startedAt: { gte: startDate }
                       } : {}
                     }
@@ -2469,7 +2393,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
                 _count: {
                   select: {
                     reactions: {
-                      where: startDate ? {
+                      where: period !== 'all' ? {
                         createdAt: { gte: startDate }
                       } : {}
                     }
@@ -2528,7 +2452,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
                 _count: {
                   select: {
                     replies: {
-                      where: startDate ? {
+                      where: period !== 'all' ? {
                         createdAt: { gte: startDate },
                         isDeleted: false
                       } : { isDeleted: false }
@@ -2588,7 +2512,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
                 _count: {
                   select: {
                     mentions: {
-                      where: startDate ? {
+                      where: period !== 'all' ? {
                         mentionedAt: { gte: startDate }
                       } : {}
                     }
@@ -2639,9 +2563,17 @@ export async function adminRoutes(fastify: FastifyInstance) {
                 name: true,
                 totalClicks: true,
                 uniqueClicks: true,
-                createdAt: true
+                createdAt: true,
+                creator: {
+                  select: {
+                    id: true,
+                    username: true,
+                    displayName: true,
+                    avatar: true
+                  }
+                }
               },
-              where: startDate ? {
+              where: period !== 'all' ? {
                 createdAt: { gte: startDate }
               } : {},
               orderBy: {
@@ -2651,8 +2583,12 @@ export async function adminRoutes(fastify: FastifyInstance) {
             });
             rankings = rankings.map(l => ({
               ...l,
+              shortCode: l.token,
+              title: l.name,
               count: l.totalClicks,
-              creator: l.createdBy
+              creator: l.creator,
+              token: undefined,
+              name: undefined
             }));
             break;
 
@@ -2667,9 +2603,17 @@ export async function adminRoutes(fastify: FastifyInstance) {
                 name: true,
                 totalClicks: true,
                 uniqueClicks: true,
-                createdAt: true
+                createdAt: true,
+                creator: {
+                  select: {
+                    id: true,
+                    username: true,
+                    displayName: true,
+                    avatar: true
+                  }
+                }
               },
-              where: startDate ? {
+              where: period !== 'all' ? {
                 createdAt: { gte: startDate }
               } : {},
               orderBy: {
@@ -2679,8 +2623,12 @@ export async function adminRoutes(fastify: FastifyInstance) {
             });
             rankings = rankings.map(l => ({
               ...l,
+              shortCode: l.token,
+              title: l.name,
               count: l.uniqueClicks,
-              creator: l.createdBy
+              creator: l.creator,
+              token: undefined,
+              name: undefined
             }));
             break;
 
@@ -2703,7 +2651,14 @@ export async function adminRoutes(fastify: FastifyInstance) {
                     type: true
                   }
                 },
-                createdBy: true
+                creator: {
+                  select: {
+                    id: true,
+                    username: true,
+                    displayName: true,
+                    avatar: true
+                  }
+                }
               },
               where: {
                 isActive: true,
@@ -2717,7 +2672,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
             rankings = rankings.map(l => ({
               ...l,
               count: l.currentUses,
-              creator: l.createdBy
+              creator: l.creator
             }));
             break;
 
@@ -2740,7 +2695,14 @@ export async function adminRoutes(fastify: FastifyInstance) {
                     type: true
                   }
                 },
-                createdBy: true
+                creator: {
+                  select: {
+                    id: true,
+                    username: true,
+                    displayName: true,
+                    avatar: true
+                  }
+                }
               },
               where: {
                 isActive: true,
@@ -2754,7 +2716,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
             rankings = rankings.map(l => ({
               ...l,
               count: l.currentUniqueSessions,
-              creator: l.createdBy
+              creator: l.creator
             }));
             break;
 

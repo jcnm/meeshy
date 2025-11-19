@@ -1941,7 +1941,40 @@ export class MeeshySocketIOManager {
       }
 
       const roomClients = this.io.sockets.adapter.rooms.get(room);
-      
+
+      // 3. Mettre à jour le unreadCount pour tous les membres (sauf l'expéditeur)
+      // Cela permet d'incrémenter le badge en temps réel pour les conversations non ouvertes
+      try {
+        const senderId = message.senderId || message.anonymousSenderId;
+        if (senderId) {
+          // Récupérer tous les membres de la conversation
+          const members = await this.prisma.conversationMember.findMany({
+            where: {
+              conversationId: normalizedId,
+              isActive: true,
+              userId: { not: senderId } // Exclure l'expéditeur
+            },
+            select: { userId: true }
+          });
+
+          // Calculer le unreadCount pour chaque membre et émettre l'événement
+          const { MessageReadStatusService } = await import('../services/MessageReadStatusService.js');
+          const readStatusService = new MessageReadStatusService(this.prisma);
+
+          for (const member of members) {
+            const unreadCount = await readStatusService.getUnreadCount(member.userId, normalizedId);
+
+            // Émettre vers le socket personnel de l'utilisateur
+            this.io.to(`user_${member.userId}`).emit(SERVER_EVENTS.CONVERSATION_UNREAD_UPDATED, {
+              conversationId: normalizedId,
+              unreadCount
+            });
+          }
+        }
+      } catch (unreadError) {
+        console.warn('⚠️ [UNREAD_COUNT] Erreur calcul unreadCount (non-bloquant):', unreadError);
+      }
+
       // Envoyer les notifications de message pour les utilisateurs non connectés à la conversation
       const isAnonymousSender = !!message.anonymousSenderId;
       if (message.senderId) {

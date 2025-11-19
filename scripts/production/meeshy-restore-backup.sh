@@ -43,7 +43,7 @@ show_help() {
     echo ""
     echo "Exemples:"
     echo "  $0 ./backups/pre-update-20241017_143022.tar.gz"
-    echo "  $0 /opt/meeshy/backups/pre-update-20241017_143022.tar.gz"
+    echo "  $0 /opt/meeshy/backups/pre-update-20251017_143022.tar.gz"
     echo ""
 }
 

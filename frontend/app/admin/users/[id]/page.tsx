@@ -235,8 +235,8 @@ export default function UserDetailPage() {
     return (
       <AdminLayout currentPage="/admin/users">
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <span className="ml-3 text-lg">Chargement...</span>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400"></div>
+          <span className="ml-3 text-lg dark:text-gray-200">Chargement...</span>
         </div>
       </AdminLayout>
     );
@@ -246,9 +246,9 @@ export default function UserDetailPage() {
     return (
       <AdminLayout currentPage="/admin/users">
         <div className="text-center py-12">
-          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Utilisateur introuvable</h3>
-          <Button onClick={() => router.push('/admin/users')}>Retour à la liste</Button>
+          <AlertCircle className="h-12 w-12 text-red-500 dark:text-red-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Utilisateur introuvable</h3>
+          <Button onClick={() => router.push('/admin/users')} className="dark:bg-blue-700 dark:hover:bg-blue-800">Retour à la liste</Button>
         </div>
       </AdminLayout>
     );
@@ -263,14 +263,14 @@ export default function UserDetailPage() {
             <Button
               variant="outline"
               onClick={() => router.push('/admin/users')}
-              className="flex items-center space-x-2"
+              className="flex items-center space-x-2 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 dark:text-gray-200"
             >
               <ArrowLeft className="h-4 w-4" />
               <span>Retour</span>
             </Button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">{user.displayName || user.username}</h1>
-              <p className="text-sm text-gray-600">@{user.username}</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{user.displayName || user.username}</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400">@{user.username}</p>
             </div>
           </div>
           <Badge variant={user.isActive ? 'default' : 'secondary'}>
@@ -292,14 +292,14 @@ export default function UserDetailPage() {
           {/* Colonne gauche - Informations principales */}
           <div className="lg:col-span-2 space-y-6">
             {/* Informations du profil */}
-            <Card>
+            <Card className="dark:bg-gray-900 dark:border-gray-800">
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="flex items-center space-x-2">
+                <CardTitle className="flex items-center space-x-2 dark:text-gray-100">
                   <User className="h-5 w-5" />
                   <span>Informations du profil</span>
                 </CardTitle>
                 {!editMode ? (
-                  <Button variant="outline" size="sm" onClick={() => setEditMode(true)}>
+                  <Button variant="outline" size="sm" onClick={() => setEditMode(true)} className="dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 dark:text-gray-200">
                     <Edit2 className="h-4 w-4 mr-1" />
                     Modifier
                   </Button>
@@ -331,29 +331,32 @@ export default function UserDetailPage() {
                   <>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Prénom</label>
+                        <label className="text-sm font-medium dark:text-gray-200">Prénom</label>
                         <Input
                           value={formData.firstName}
                           onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                          className="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Nom</label>
+                        <label className="text-sm font-medium dark:text-gray-200">Nom</label>
                         <Input
                           value={formData.lastName}
                           onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                          className="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
                         />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Nom d'affichage</label>
+                      <label className="text-sm font-medium dark:text-gray-200">Nom d'affichage</label>
                       <Input
                         value={formData.displayName}
                         onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
+                        className="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Nom d'utilisateur (username)</label>
+                      <label className="text-sm font-medium dark:text-gray-200">Nom d'utilisateur (username)</label>
                       <Input
                         value={formData.username}
                         onChange={(e) => {
@@ -361,15 +364,15 @@ export default function UserDetailPage() {
                           const value = e.target.value.replace(/[^a-zA-Z0-9_-]/g, '');
                           setFormData({ ...formData, username: value });
                         }}
-                        className="font-mono"
+                        className="font-mono dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
                         placeholder="nom-utilisateur"
                       />
-                      <p className="text-xs text-gray-500">Uniquement lettres, chiffres, tirets et underscores</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Uniquement lettres, chiffres, tirets et underscores</p>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Biographie</label>
+                      <label className="text-sm font-medium dark:text-gray-200">Biographie</label>
                       <textarea
-                        className="w-full p-2 border rounded-md text-sm min-h-[80px]"
+                        className="w-full p-2 border dark:border-gray-700 rounded-md text-sm min-h-[80px] dark:bg-gray-800 dark:text-gray-100"
                         value={formData.bio}
                         onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                         maxLength={500}
@@ -377,9 +380,9 @@ export default function UserDetailPage() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Langue système</label>
+                        <label className="text-sm font-medium dark:text-gray-200">Langue système</label>
                         <select
-                          className="w-full p-2 border rounded-md text-sm bg-white"
+                          className="w-full p-2 border dark:border-gray-700 rounded-md text-sm bg-white dark:bg-gray-800 dark:text-gray-100"
                           value={formData.systemLanguage}
                           onChange={(e) => setFormData({ ...formData, systemLanguage: e.target.value })}
                         >
@@ -399,9 +402,9 @@ export default function UserDetailPage() {
                         </select>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Langue régionale</label>
+                        <label className="text-sm font-medium dark:text-gray-200">Langue régionale</label>
                         <select
-                          className="w-full p-2 border rounded-md text-sm bg-white"
+                          className="w-full p-2 border dark:border-gray-700 rounded-md text-sm bg-white dark:bg-gray-800 dark:text-gray-100"
                           value={formData.regionalLanguage}
                           onChange={(e) => setFormData({ ...formData, regionalLanguage: e.target.value })}
                         >
@@ -425,46 +428,46 @@ export default function UserDetailPage() {
                 ) : (
                   <div className="space-y-3">
                     <div className="flex items-center text-sm">
-                      <span className="w-32 text-gray-600">Nom complet:</span>
-                      <span className="font-medium">{user.firstName} {user.lastName}</span>
+                      <span className="w-32 text-gray-600 dark:text-gray-400">Nom complet:</span>
+                      <span className="font-medium dark:text-gray-200">{user.firstName} {user.lastName}</span>
                     </div>
                     <div className="flex items-center text-sm">
-                      <span className="w-32 text-gray-600">Username:</span>
-                      <span className="font-medium font-mono flex items-center">
-                        <User className="h-4 w-4 mr-2 text-gray-400" />
+                      <span className="w-32 text-gray-600 dark:text-gray-400">Username:</span>
+                      <span className="font-medium font-mono flex items-center dark:text-gray-200">
+                        <User className="h-4 w-4 mr-2 text-gray-400 dark:text-gray-500" />
                         @{user.username}
                       </span>
                     </div>
                     <div className="flex items-center text-sm">
-                      <span className="w-32 text-gray-600">Email:</span>
-                      <span className="font-medium flex items-center">
-                        <Mail className="h-4 w-4 mr-2 text-gray-400" />
+                      <span className="w-32 text-gray-600 dark:text-gray-400">Email:</span>
+                      <span className="font-medium flex items-center dark:text-gray-200">
+                        <Mail className="h-4 w-4 mr-2 text-gray-400 dark:text-gray-500" />
                         {user.email}
                       </span>
                     </div>
                     {user.phoneNumber && (
                       <div className="flex items-center text-sm">
-                        <span className="w-32 text-gray-600">Téléphone:</span>
-                        <span className="font-medium flex items-center">
-                          <Phone className="h-4 w-4 mr-2 text-gray-400" />
+                        <span className="w-32 text-gray-600 dark:text-gray-400">Téléphone:</span>
+                        <span className="font-medium flex items-center dark:text-gray-200">
+                          <Phone className="h-4 w-4 mr-2 text-gray-400 dark:text-gray-500" />
                           {user.phoneNumber}
                         </span>
                       </div>
                     )}
                     {user.bio && (
                       <div className="text-sm">
-                        <span className="text-gray-600 block mb-1">Biographie:</span>
-                        <p className="text-gray-900">{user.bio}</p>
+                        <span className="text-gray-600 dark:text-gray-400 block mb-1">Biographie:</span>
+                        <p className="text-gray-900 dark:text-gray-200">{user.bio}</p>
                       </div>
                     )}
                     <div className="grid grid-cols-2 gap-4 pt-2">
                       <div className="text-sm">
-                        <span className="text-gray-600 block">Langue système:</span>
-                        <span className="font-medium">{user.systemLanguage}</span>
+                        <span className="text-gray-600 dark:text-gray-400 block">Langue système:</span>
+                        <span className="font-medium dark:text-gray-200">{user.systemLanguage}</span>
                       </div>
                       <div className="text-sm">
-                        <span className="text-gray-600 block">Langue régionale:</span>
-                        <span className="font-medium">{user.regionalLanguage}</span>
+                        <span className="text-gray-600 dark:text-gray-400 block">Langue régionale:</span>
+                        <span className="font-medium dark:text-gray-200">{user.regionalLanguage}</span>
                       </div>
                     </div>
                   </div>
@@ -473,9 +476,9 @@ export default function UserDetailPage() {
             </Card>
 
             {/* Gestion du rôle */}
-            <Card>
+            <Card className="dark:bg-gray-900 dark:border-gray-800">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+                <CardTitle className="flex items-center space-x-2 dark:text-gray-100">
                   <Shield className="h-5 w-5" />
                   <span>Rôle et permissions</span>
                 </CardTitle>
@@ -484,12 +487,12 @@ export default function UserDetailPage() {
                 {!roleEdit.editing ? (
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <span className="text-sm text-gray-600">Rôle actuel:</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">Rôle actuel:</span>
                       <Badge variant={getRoleBadgeVariant(user.role)}>
                         {getRoleLabel(user.role)}
                       </Badge>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => setRoleEdit({ ...roleEdit, editing: true })}>
+                    <Button variant="outline" size="sm" onClick={() => setRoleEdit({ ...roleEdit, editing: true })} className="dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 dark:text-gray-200">
                       <Edit2 className="h-4 w-4 mr-1" />
                       Modifier
                     </Button>
@@ -497,9 +500,9 @@ export default function UserDetailPage() {
                 ) : (
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Nouveau rôle</label>
+                      <label className="text-sm font-medium dark:text-gray-200">Nouveau rôle</label>
                       <select
-                        className="w-full p-2 border rounded-md text-sm bg-white"
+                        className="w-full p-2 border dark:border-gray-700 rounded-md text-sm bg-white dark:bg-gray-800 dark:text-gray-100"
                         value={roleEdit.role}
                         onChange={(e) => setRoleEdit({ ...roleEdit, role: e.target.value })}
                       >
@@ -512,9 +515,9 @@ export default function UserDetailPage() {
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Raison du changement (requis)</label>
+                      <label className="text-sm font-medium dark:text-gray-200">Raison du changement (requis)</label>
                       <textarea
-                        className="w-full p-2 border rounded-md text-sm min-h-[60px]"
+                        className="w-full p-2 border dark:border-gray-700 rounded-md text-sm min-h-[60px] dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500"
                         placeholder="Expliquez pourquoi vous changez ce rôle..."
                         value={roleEdit.reason}
                         onChange={(e) => setRoleEdit({ ...roleEdit, reason: e.target.value })}
@@ -534,41 +537,43 @@ export default function UserDetailPage() {
             </Card>
 
             {/* Sécurité */}
-            <Card>
+            <Card className="dark:bg-gray-900 dark:border-gray-800">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+                <CardTitle className="flex items-center space-x-2 dark:text-gray-100">
                   <Key className="h-5 w-5" />
                   <span>Sécurité</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {!passwordReset.open ? (
-                  <Button variant="outline" onClick={() => setPasswordReset({ ...passwordReset, open: true })}>
+                  <Button variant="outline" onClick={() => setPasswordReset({ ...passwordReset, open: true })} className="dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 dark:text-gray-200">
                     <Key className="h-4 w-4 mr-2" />
                     Réinitialiser le mot de passe
                   </Button>
                 ) : (
-                  <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
+                  <div className="space-y-4 p-4 border dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Nouveau mot de passe</label>
+                      <label className="text-sm font-medium dark:text-gray-200">Nouveau mot de passe</label>
                       <Input
                         type="password"
                         value={passwordReset.newPassword}
                         onChange={(e) => setPasswordReset({ ...passwordReset, newPassword: e.target.value })}
+                        className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Confirmer le mot de passe</label>
+                      <label className="text-sm font-medium dark:text-gray-200">Confirmer le mot de passe</label>
                       <Input
                         type="password"
                         value={passwordReset.confirmPassword}
                         onChange={(e) => setPasswordReset({ ...passwordReset, confirmPassword: e.target.value })}
+                        className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Raison</label>
+                      <label className="text-sm font-medium dark:text-gray-200">Raison</label>
                       <textarea
-                        className="w-full p-2 border rounded-md text-sm min-h-[60px]"
+                        className="w-full p-2 border dark:border-gray-600 rounded-md text-sm min-h-[60px] dark:bg-gray-700 dark:text-gray-100"
                         value={passwordReset.reason}
                         onChange={(e) => setPasswordReset({ ...passwordReset, reason: e.target.value })}
                       />
@@ -590,53 +595,53 @@ export default function UserDetailPage() {
           {/* Colonne droite - Statistiques et actions */}
           <div className="space-y-6">
             {/* Statistiques */}
-            <Card>
+            <Card className="dark:bg-gray-900 dark:border-gray-800">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+                <CardTitle className="flex items-center space-x-2 dark:text-gray-100">
                   <Activity className="h-5 w-5" />
                   <span>Statistiques</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600 flex items-center">
+                  <span className="text-gray-600 dark:text-gray-400 flex items-center">
                     <MessageSquare className="h-4 w-4 mr-2" />
                     Messages
                   </span>
-                  <span className="font-medium">{user._count?.sentMessages || 0}</span>
+                  <span className="font-medium dark:text-gray-200">{user._count?.sentMessages || 0}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600 flex items-center">
+                  <span className="text-gray-600 dark:text-gray-400 flex items-center">
                     <UsersIcon className="h-4 w-4 mr-2" />
                     Conversations
                   </span>
-                  <span className="font-medium">{user._count?.conversations || 0}</span>
+                  <span className="font-medium dark:text-gray-200">{user._count?.conversations || 0}</span>
                 </div>
-                <div className="flex items-center justify-between text-sm pt-2 border-t">
-                  <span className="text-gray-600 flex items-center">
+                <div className="flex items-center justify-between text-sm pt-2 border-t dark:border-gray-700">
+                  <span className="text-gray-600 dark:text-gray-400 flex items-center">
                     <Calendar className="h-4 w-4 mr-2" />
                     Membre depuis
                   </span>
-                  <span className="font-medium text-xs">{formatDate(user.createdAt)}</span>
+                  <span className="font-medium text-xs dark:text-gray-200">{formatDate(user.createdAt)}</span>
                 </div>
                 {user.lastActiveAt && (
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Dernière activité</span>
-                    <span className="font-medium text-xs">{formatDate(user.lastActiveAt)}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Dernière activité</span>
+                    <span className="font-medium text-xs dark:text-gray-200">{formatDate(user.lastActiveAt)}</span>
                   </div>
                 )}
               </CardContent>
             </Card>
 
             {/* Actions */}
-            <Card>
+            <Card className="dark:bg-gray-900 dark:border-gray-800">
               <CardHeader>
-                <CardTitle>Actions rapides</CardTitle>
+                <CardTitle className="dark:text-gray-100">Actions rapides</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <Button
                   variant="outline"
-                  className="w-full justify-start"
+                  className="w-full justify-start dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 dark:text-gray-200"
                   onClick={handleToggleStatus}
                 >
                   {user.isActive ? (
@@ -655,15 +660,15 @@ export default function UserDetailPage() {
                 {!deleteConfirm ? (
                   <Button
                     variant="outline"
-                    className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                    className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/30 dark:border-red-800"
                     onClick={() => setDeleteConfirm(true)}
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
                     Supprimer l'utilisateur
                   </Button>
                 ) : (
-                  <div className="p-4 border border-red-200 rounded-lg bg-red-50 space-y-3">
-                    <p className="text-sm text-red-800 font-medium">
+                  <div className="p-4 border border-red-200 dark:border-red-800 rounded-lg bg-red-50 dark:bg-red-950/30 space-y-3">
+                    <p className="text-sm text-red-800 dark:text-red-400 font-medium">
                       ⚠️ Cette action est irréversible !
                     </p>
                     <div className="flex space-x-2">
@@ -690,13 +695,13 @@ export default function UserDetailPage() {
             </Card>
 
             {/* Informations de sécurité */}
-            <Card>
+            <Card className="dark:bg-gray-900 dark:border-gray-800">
               <CardHeader>
-                <CardTitle>Sécurité du compte</CardTitle>
+                <CardTitle className="dark:text-gray-100">Sécurité du compte</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Email vérifié</span>
+                  <span className="text-gray-600 dark:text-gray-400">Email vérifié</span>
                   {user.emailVerified ? (
                     <Badge variant="default" className="text-xs">
                       <CheckCircle className="h-3 w-3 mr-1" />
@@ -710,7 +715,7 @@ export default function UserDetailPage() {
                   )}
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">2FA activé</span>
+                  <span className="text-gray-600 dark:text-gray-400">2FA activé</span>
                   {user.twoFactorEnabled ? (
                     <Badge variant="default" className="text-xs">
                       <CheckCircle className="h-3 w-3 mr-1" />
@@ -724,14 +729,14 @@ export default function UserDetailPage() {
                   )}
                 </div>
                 {user.profileCompletionRate !== null && (
-                  <div className="pt-2 border-t">
+                  <div className="pt-2 border-t dark:border-gray-700">
                     <div className="flex items-center justify-between text-sm mb-2">
-                      <span className="text-gray-600">Complétion du profil</span>
-                      <span className="font-medium">{user.profileCompletionRate}%</span>
+                      <span className="text-gray-600 dark:text-gray-400">Complétion du profil</span>
+                      <span className="font-medium dark:text-gray-200">{user.profileCompletionRate}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                       <div
-                        className="bg-blue-600 h-2 rounded-full transition-all"
+                        className="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all"
                         style={{ width: `${user.profileCompletionRate}%` }}
                       />
                     </div>

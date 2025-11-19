@@ -40,6 +40,7 @@
       "active": "Active",
       "inactive": "Inactive",
       "expired": "Expired",
+      "expires": "Expires",
       "never": "Never",
       "daysRemaining": "{days} day(s) remaining",
       "hoursRemaining": "{hours} hour(s) remaining"
@@ -59,6 +60,7 @@
     },
     "actions": {
       "menu": "Menu",
+      "view": "View",
       "viewDetails": "View details",
       "copy": "Copy link",
       "edit": "Edit",
@@ -261,6 +263,7 @@
         "1year": "1 year"
       },
       "stats": {
+        "stats": "Stats",
         "totalLinks": "Total links",
         "totalClicks": "Total clicks",
         "uniqueClicks": "Unique visitors",
@@ -303,7 +306,33 @@
         "viewStats": "View statistics",
         "copyShortUrl": "Copy short URL",
         "deactivate": "Deactivate",
-        "activate": "Activate"
+        "activate": "Activate",
+        "edit": "Edit"
+      },
+      "edit": {
+        "title": "Edit tracking link",
+        "description": "Modify the redirect URL, token, or link settings",
+        "originalUrl": "Redirect URL",
+        "originalUrlDescription": "The URL visitors will be redirected to",
+        "token": "Short link token",
+        "tokenDescription": "6 alphanumeric characters. Leave unchanged to keep current token.",
+        "tokenTaken": "This token already exists",
+        "tokenAvailable": "This token is available",
+        "expiresAt": "Expiration date (optional)",
+        "expiresAtDescription": "Leave empty for a link with no expiration",
+        "isActive": "Link is active",
+        "cancel": "Cancel",
+        "save": "Save",
+        "saving": "Saving...",
+        "errors": {
+          "urlRequired": "Redirect URL is required",
+          "invalidUrl": "URL must start with http:// or https://",
+          "invalidToken": "Token must contain exactly 6 alphanumeric characters",
+          "updateFailed": "Error updating link"
+        },
+        "success": {
+          "updated": "Tracking link updated successfully"
+        }
       },
       "success": {
         "created": "Tracking link created successfully and copied to clipboard",

@@ -21,6 +21,17 @@ import { useUser } from '@/stores';
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { OnlineIndicator } from '@/components/ui/online-indicator';
 import { getUserStatus } from '@/lib/user-status';
+import { buildApiUrl } from '@/lib/config';
+import { authManager } from '@/services/auth-manager.service';
+
+interface FriendRequest {
+  id: string;
+  senderId: string;
+  receiverId: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  sender: User;
+  receiver: User;
+}
 
 interface ProfilePageProps {
   params: Promise<{
@@ -38,6 +49,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
   const [loading, setLoading] = useState(true);
   const currentUser = useUser(); // Use global store instead of separate API call
   const [userId, setUserId] = useState<string | null>(null);
+  const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
 
   // Hook pour écouter les changements de statut en temps réel
   const { } = useSocketIOMessaging({
@@ -87,18 +99,46 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     }
   }, [userId]);
 
+  const loadFriendRequests = useCallback(async () => {
+    try {
+      const token = authManager.getAuthToken();
+      if (!token) return;
+
+      const response = await fetch(buildApiUrl('/users/friend-requests'), {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setFriendRequests(data.data || []);
+      }
+    } catch (error) {
+      console.error('Error loading friend requests:', error);
+    }
+  }, []);
+
+  const getPendingRequestWithUser = useCallback((targetUserId: string): FriendRequest | undefined => {
+    return friendRequests.find(
+      (req) =>
+        req.status === 'pending' &&
+        ((req.senderId === currentUser?.id && req.receiverId === targetUserId) ||
+          (req.senderId === targetUserId && req.receiverId === currentUser?.id))
+    );
+  }, [friendRequests, currentUser]);
+
   useEffect(() => {
     const loadData = async () => {
       await Promise.all([
         loadUserProfile(),
         loadUserStats(),
+        loadFriendRequests(),
       ]);
     };
-    
+
     if (userId) {
       loadData();
     }
-  }, [userId, loadUserProfile, loadUserStats]);
+  }, [userId, loadUserProfile, loadUserStats, loadFriendRequests]);
 
   const handleStartConversation = async () => {
     if (!user || !currentUser) {
@@ -142,14 +182,14 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     if (!user) return;
 
     try {
-      const token = localStorage.getItem('authToken');
+      const token = authManager.getAuthToken();
       if (!token) {
         toast.error(t('errors.sessionExpired'));
         router.push('/login');
         return;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/friend-requests`, {
+      const response = await fetch(buildApiUrl('/users/friend-requests'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -160,6 +200,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
 
       if (response.ok) {
         toast.success(t('success.friendRequestSent'));
+        loadFriendRequests(); // Recharger les demandes
       } else {
         const error = await response.json();
         toast.error(error.error || t('errors.sendFriendRequestFailed'));
@@ -299,13 +340,16 @@ export default function ProfilePage({ params }: ProfilePageProps) {
 
                     {!isMyProfile && (
                       <div className="flex flex-col sm:flex-row gap-3">
-                        <Button
-                          onClick={handleSendFriendRequest}
-                          className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
-                        >
-                          <UserPlus className="h-4 w-4 mr-2" />
-                          {t('addFriend')}
-                        </Button>
+                        {/* Ne montrer le bouton "Ajouter" que s'il n'y a pas déjà une demande en attente */}
+                        {!getPendingRequestWithUser(user.id) && (
+                          <Button
+                            onClick={handleSendFriendRequest}
+                            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
+                          >
+                            <UserPlus className="h-4 w-4 mr-2" />
+                            {t('addFriend')}
+                          </Button>
+                        )}
                         <Button
                           onClick={handleStartConversation}
                           variant="outline"

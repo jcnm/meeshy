@@ -290,5 +290,24 @@ export const adminService = {
       console.error('Erreur lors de la récupération des liens de partage:', error);
       throw error;
     }
+  },
+
+  /**
+   * Récupère les classements selon différents critères
+   */
+  async getRankings(entityType: string, criterion: string, period: string, limit: number = 50): Promise<ApiResponse<any>> {
+    try {
+      const params = {
+        entityType,
+        criterion,
+        period,
+        limit: limit.toString()
+      };
+      const response = await apiService.get<any>('/admin/ranking', params);
+      return response;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des classements:', error);
+      throw error;
+    }
   }
 };

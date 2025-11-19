@@ -12,6 +12,7 @@ export interface SupportedLanguageInfo {
   flag: string;
   color?: string;
   translateText?: string;
+  nativeName?: string;
 }
 
 /**

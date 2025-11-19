@@ -5,6 +5,7 @@
 
 import { io, Socket } from 'socket.io-client';
 import { APP_CONFIG, API_CONFIG } from '@/lib/config';
+import { showNotificationToast } from '@/utils/custom-toast';
 
 import type { Attachment } from '@shared/types/attachment';
 
@@ -415,6 +416,11 @@ export class NotificationService {
 
     this.updateCountsFromNotifications();
     this.config?.onNotificationReceived?.(notification);
+
+    // Afficher le toast personnalisé pour les nouvelles notifications
+    if (!notification.isRead && typeof window !== 'undefined') {
+      showNotificationToast(notification);
+    }
   }
 
   /**

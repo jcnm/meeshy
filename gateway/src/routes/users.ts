@@ -855,9 +855,12 @@ export async function userRoutes(fastify: FastifyInstance) {
       }
       
       const { q } = request.query as { q?: string };
-      
+
       if (!q || q.trim().length < 2) {
-        return reply.send([]);
+        return reply.send({
+          success: true,
+          data: []
+        });
       }
       
       const searchTerm = q.trim();
@@ -867,6 +870,7 @@ export async function userRoutes(fastify: FastifyInstance) {
         where: {
           AND: [
             {
+              deletedAt: null, // Exclure les utilisateurs supprimés
               isActive: true // Seulement les utilisateurs actifs
             },
             {
@@ -923,8 +927,11 @@ export async function userRoutes(fastify: FastifyInstance) {
         ],
         take: 20 // Limiter à 20 résultats
       });
-      
-      reply.send(users);
+
+      reply.send({
+        success: true,
+        data: users
+      });
     } catch (error) {
       logError(fastify.log, 'Error searching users', error);
       reply.status(500).send({ 

@@ -447,12 +447,12 @@ export default function ContactsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex flex-col">
       <DashboardLayout title={t('title')} className="!bg-none !bg-transparent !h-auto">
         {/* Contenu principal scrollable avec largeur limitée */}
         <div className="relative z-10 max-w-7xl mx-auto space-y-8 pb-8 w-full py-8">
           {/* Hero Section */}
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 p-8 md:p-12 text-white shadow-2xl">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 dark:from-blue-700 dark:via-indigo-700 dark:to-purple-800 p-8 md:p-12 text-white shadow-2xl">
             <div className="absolute inset-0 bg-black/10"></div>
             <div className="relative z-10">
               <div className="flex items-center gap-3 mb-4">
@@ -471,7 +471,7 @@ export default function ContactsPage() {
           </div>
 
           {/* Main Content Card */}
-          <Card className="border-2 shadow-lg bg-white dark:bg-gray-950">
+          <Card className="border-2 shadow-lg bg-white dark:bg-gray-950 dark:border-gray-800">
             <CardContent className="p-6 space-y-6">
               {/* Tabs */}
               <Tabs value={activeTab} onValueChange={(value) => {
@@ -480,38 +480,38 @@ export default function ContactsPage() {
                 // Mettre à jour le hash de l'URL
                 window.history.replaceState(null, '', `#${newTab}`);
               }}>
-                <TabsList className="w-full grid grid-cols-5 h-auto p-1.5 bg-gray-100 dark:bg-gray-800">
+                <TabsList className="w-full grid grid-cols-5 h-auto p-1.5 bg-gray-100 dark:bg-gray-800 dark:border-gray-700">
                   <TabsTrigger
                     value="all"
-                    className="data-[state=active]:bg-blue-500 data-[state=active]:text-white py-2 md:py-3 px-2 md:px-6 rounded-lg font-medium transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2"
+                    className="data-[state=active]:bg-blue-500 data-[state=active]:text-white dark:text-gray-300 dark:data-[state=active]:text-white py-2 md:py-3 px-2 md:px-6 rounded-lg font-medium transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2"
                   >
                     <Users className="h-4 w-4" />
                     <span className="text-xs md:text-sm">{t('tabs.all')}</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="connected"
-                    className="data-[state=active]:bg-purple-500 data-[state=active]:text-white py-2 md:py-3 px-2 md:px-6 rounded-lg font-medium transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2"
+                    className="data-[state=active]:bg-purple-500 data-[state=active]:text-white dark:text-gray-300 dark:data-[state=active]:text-white py-2 md:py-3 px-2 md:px-6 rounded-lg font-medium transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2"
                   >
                     <UserCheck className="h-4 w-4" />
                     <span className="text-xs md:text-sm">{t('tabs.connected')}</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="pending"
-                    className="data-[state=active]:bg-orange-500 data-[state=active]:text-white py-2 md:py-3 px-2 md:px-6 rounded-lg font-medium transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2"
+                    className="data-[state=active]:bg-orange-500 data-[state=active]:text-white dark:text-gray-300 dark:data-[state=active]:text-white py-2 md:py-3 px-2 md:px-6 rounded-lg font-medium transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2"
                   >
                     <Clock className="h-4 w-4" />
                     <span className="text-xs md:text-sm">{t('tabs.pending')}</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="refused"
-                    className="data-[state=active]:bg-red-500 data-[state=active]:text-white py-2 md:py-3 px-2 md:px-6 rounded-lg font-medium transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2"
+                    className="data-[state=active]:bg-red-500 data-[state=active]:text-white dark:text-gray-300 dark:data-[state=active]:text-white py-2 md:py-3 px-2 md:px-6 rounded-lg font-medium transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2"
                   >
                     <UserX className="h-4 w-4" />
                     <span className="text-xs md:text-sm">{t('tabs.refused')}</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="affiliates"
-                    className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white py-2 md:py-3 px-2 md:px-6 rounded-lg font-medium transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2"
+                    className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white dark:text-gray-300 dark:data-[state=active]:text-white py-2 md:py-3 px-2 md:px-6 rounded-lg font-medium transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2"
                   >
                     <Share2 className="h-4 w-4" />
                     <span className="text-xs md:text-sm">{t('tabs.affiliates')}</span>
@@ -520,21 +520,21 @@ export default function ContactsPage() {
               </Tabs>
 
               {/* Stats in 2x2 grid */}
-              <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+              <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border dark:border-gray-800">
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">{t('stats.totalContacts')}</p>
-                  <p className="text-2xl font-bold text-foreground">{stats.total}</p>
+                  <p className="text-sm font-medium text-muted-foreground dark:text-gray-400">{t('stats.totalContacts')}</p>
+                  <p className="text-2xl font-bold text-foreground dark:text-gray-100">{stats.total}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">{t('stats.connected')}</p>
+                  <p className="text-sm font-medium text-muted-foreground dark:text-gray-400">{t('stats.connected')}</p>
                   <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.connected}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">{t('stats.pending')}</p>
+                  <p className="text-sm font-medium text-muted-foreground dark:text-gray-400">{t('stats.pending')}</p>
                   <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{stats.pending}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">{t('stats.affiliates')}</p>
+                  <p className="text-sm font-medium text-muted-foreground dark:text-gray-400">{t('stats.affiliates')}</p>
                   <p className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">{stats.affiliates}</p>
                 </div>
               </div>
@@ -542,7 +542,7 @@ export default function ContactsPage() {
               {/* Search and Actions */}
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
                   <Input
                     type="text"
                     placeholder={t('searchPlaceholder')}
@@ -551,7 +551,7 @@ export default function ContactsPage() {
                       setSearchQuery(e.target.value);
                       searchUsers(e.target.value);
                     }}
-                    className="pl-10 h-12 text-base border-2 focus:border-primary"
+                    className="pl-10 h-12 text-base border-2 focus:border-primary dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 dark:placeholder-gray-500"
                   />
                 </div>
 
@@ -570,13 +570,13 @@ export default function ContactsPage() {
           {/* Contenu des tabs */}
           <div className="space-y-6">
             {loading ? (
-              <Card className="border-2 bg-white dark:bg-gray-950">
+              <Card className="border-2 bg-white dark:bg-gray-950 dark:border-gray-800">
                 <CardContent className="flex flex-col items-center justify-center py-16">
                   <div className="relative">
-                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-primary"></div>
+                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 dark:border-gray-700 border-t-primary dark:border-t-primary"></div>
                     <Zap className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-6 w-6 text-primary" />
                   </div>
-                  <p className="mt-4 text-muted-foreground font-medium">{t('loading')}</p>
+                  <p className="mt-4 text-muted-foreground dark:text-gray-400 font-medium">{t('loading')}</p>
                 </CardContent>
               </Card>
             ) : activeTab === 'all' ? (
@@ -590,10 +590,10 @@ export default function ContactsPage() {
                       </div>
                     </div>
 
-                    <h3 className="text-2xl font-bold text-foreground mb-3 text-center">
+                    <h3 className="text-2xl font-bold text-foreground dark:text-gray-100 mb-3 text-center">
                       {searchQuery ? t('messages.noContactsFound') : t('messages.noContacts')}
                     </h3>
-                    <p className="text-muted-foreground text-base text-center max-w-md">
+                    <p className="text-muted-foreground dark:text-gray-400 text-base text-center max-w-md">
                       {searchQuery
                         ? t('messages.noContactsFoundDescription')
                         : t('messages.noContactsDescription')
@@ -604,12 +604,12 @@ export default function ContactsPage() {
               ) : (
                 <div className="grid gap-6">
                   {displayedUsers.map((contact) => (
-                    <Card key={contact.id} className="relative border-2 hover:border-primary/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950">
-                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
+                    <Card key={contact.id} className="relative border-2 hover:border-primary/50 hover:shadow-xl transition-all duration-200 overflow-hidden group bg-white dark:bg-gray-950 dark:border-gray-800">
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 dark:from-blue-500/10 dark:to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0"></div>
 
                       <CardContent className="relative z-10 p-4 sm:p-6">
                         <div className="flex items-start space-x-3 sm:space-x-4">
-                          <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-white shadow-lg flex-shrink-0">
+                          <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-white dark:border-gray-700 shadow-lg flex-shrink-0">
                             <AvatarImage src={contact.avatar} alt={getUserDisplayName(contact)} />
                             <AvatarFallback className="text-sm sm:text-lg font-bold">
                               {getUserDisplayName(contact).slice(0, 2).toUpperCase()}
@@ -640,14 +640,14 @@ export default function ContactsPage() {
                                       <span className="sr-only">{t('actions.menu')}</span>
                                     </Button>
                                   </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end" className="w-56 z-[100]">
+                                  <DropdownMenuContent align="end" className="w-56 z-[100] dark:bg-gray-900 dark:border-gray-700">
                                     {(() => {
                                       const pendingRequest = getPendingRequestWithUser(contact.id);
                                       if (pendingRequest) {
                                         return (
                                           <DropdownMenuItem
                                             onClick={() => cancelFriendRequest(pendingRequest.id)}
-                                            className="py-3 text-orange-600"
+                                            className="py-3 text-orange-600 dark:text-orange-400"
                                           >
                                             <X className="h-4 w-4 mr-3" />
                                             <span className="font-medium">{t('actions.cancel')}</span>
@@ -657,7 +657,7 @@ export default function ContactsPage() {
                                       return (
                                         <DropdownMenuItem
                                           onClick={() => sendFriendRequest(contact.id)}
-                                          className="py-3"
+                                          className="py-3 dark:hover:bg-gray-800"
                                         >
                                           <UserPlus className="h-4 w-4 mr-3" />
                                           <span className="font-medium">{t('actions.add')}</span>
@@ -666,20 +666,20 @@ export default function ContactsPage() {
                                     })()}
                                     <DropdownMenuItem
                                       onClick={() => router.push(`/u/${contact.id}`)}
-                                      className="py-3"
+                                      className="py-3 dark:hover:bg-gray-800"
                                     >
                                       <UserCheck className="h-4 w-4 mr-3" />
                                       <span className="font-medium">{t('actions.viewProfile')}</span>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                       onClick={() => startConversation(contact.id)}
-                                      className="py-3"
+                                      className="py-3 dark:hover:bg-gray-800"
                                     >
                                       <MessageSquare className="h-4 w-4 mr-3" />
                                       <span className="font-medium">{t('actions.message')}</span>
                                     </DropdownMenuItem>
                                     {contact.phoneNumber && (
-                                      <DropdownMenuItem className="py-3">
+                                      <DropdownMenuItem className="py-3 dark:hover:bg-gray-800">
                                         <Phone className="h-4 w-4 mr-3" />
                                         <span className="font-medium">{t('actions.call')}</span>
                                       </DropdownMenuItem>
@@ -712,7 +712,7 @@ export default function ContactsPage() {
                                     size="sm"
                                     variant="outline"
                                     onClick={() => cancelFriendRequest(pendingRequest.id)}
-                                    className="flex items-center gap-2 h-9 px-4 border-2 border-orange-500 text-orange-600 hover:bg-orange-50 shadow-md hover:shadow-lg transition-all"
+                                    className="flex items-center gap-2 h-9 px-4 border-2 border-orange-500 text-orange-600 hover:bg-orange-50 dark:border-orange-600 dark:text-orange-400 dark:hover:bg-orange-950/30 shadow-md hover:shadow-lg transition-all"
                                   >
                                     <X className="h-4 w-4" />
                                     <span className="text-sm">{t('actions.cancel')}</span>
@@ -723,7 +723,7 @@ export default function ContactsPage() {
                                 <Button
                                   size="sm"
                                   onClick={() => sendFriendRequest(contact.id)}
-                                  className="flex items-center gap-2 h-9 px-4 bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg transition-all"
+                                  className="flex items-center gap-2 h-9 px-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 shadow-md hover:shadow-lg transition-all"
                                 >
                                   <UserPlus className="h-4 w-4" />
                                   <span className="text-sm">{t('actions.add')}</span>
@@ -785,17 +785,17 @@ export default function ContactsPage() {
                                       <span className="sr-only">{t('actions.menu')}</span>
                                     </Button>
                                   </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end" className="w-56 z-[100]">
+                                  <DropdownMenuContent align="end" className="w-56 z-[100] dark:bg-gray-900 dark:border-gray-700">
                                     <DropdownMenuItem
                                       onClick={() => router.push(`/u/${otherUserId}`)}
-                                      className="py-3"
+                                      className="py-3 dark:hover:bg-gray-800"
                                     >
                                       <UserCheck className="h-4 w-4 mr-3" />
                                       <span className="font-medium">{t('actions.viewProfile')}</span>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                       onClick={() => startConversation(otherUserId)}
-                                      className="py-3"
+                                      className="py-3 dark:hover:bg-gray-800"
                                     >
                                       <MessageSquare className="h-4 w-4 mr-3" />
                                       <span className="font-medium">{t('actions.message')}</span>

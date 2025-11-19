@@ -398,6 +398,10 @@
         "requireBirthday": {
           "label": "Birthday required",
           "description": "Guests must provide their birth date to join"
+        },
+        "requireAccount": {
+          "label": "Account required",
+          "description": "Only users with an account can join this conversation"
         }
       },
       "allowedLanguages": {

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "../styles/bubble-stream.css";
 import "../styles/z-index-fix.css";
+import "../styles/custom-toast.css";
 import { Toaster } from "@/components/ui/sonner";
 import { StoreInitializer } from "@/stores";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
@@ -95,18 +96,19 @@ export default function RootLayout({
           </ThemeProvider>
         </StoreInitializer>
         <Toaster
-          position="bottom-right"
-          expand={false}
+          position="top-right"
+          expand={true}
           richColors
-          visibleToasts={1}
+          visibleToasts={5}
           toastOptions={{
-            duration: 3000,
+            duration: 5000,
             classNames: {
-              toast: 'dark:bg-gray-800 dark:border-gray-700',
+              toast: 'dark:bg-gray-800 dark:border-gray-700 top-0 sm:top-auto',
               title: 'dark:text-white',
               description: 'dark:text-gray-400',
             },
           }}
+          className="!top-4 sm:!top-4 sm:!right-4"
         />
       </body>
     </html>

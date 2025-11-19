@@ -51,7 +51,7 @@ interface NewMessageNotificationData {
   "content": "Bonjour, comment allez-vous ?",
   "conversationId": "conv_456789123",
   "conversationType": "direct",
-  "timestamp": "2024-01-15T10:30:00.000Z",
+  "timestamp": "2025-01-15T10:30:00.000Z",
   "translations": {
     "fr": "Bonjour, comment allez-vous ?",
     "en": "Hello, how are you?",

@@ -5,6 +5,9 @@ export interface OnlineUserInfo {
   username: string;
   firstName: string;
   lastName: string;
+  avatar?: string;
+  systemLanguage?: string;
+  displayName?: string;
 }
 
 export interface ConversationStats {
@@ -246,9 +249,25 @@ export class ConversationStatsService {
 
     const users = await prisma.user.findMany({
       where: { id: { in: allowedIds } },
-      select: { id: true, username: true, firstName: true, lastName: true }
+      select: {
+        id: true,
+        username: true,
+        firstName: true,
+        lastName: true,
+        avatar: true,
+        systemLanguage: true,
+        displayName: true
+      }
     }).catch(() => []);
-    return users.map(u => ({ id: u.id, username: u.username, firstName: u.firstName, lastName: u.lastName }));
+    return users.map(u => ({
+      id: u.id,
+      username: u.username,
+      firstName: u.firstName,
+      lastName: u.lastName,
+      avatar: u.avatar || undefined,
+      systemLanguage: u.systemLanguage || 'fr',
+      displayName: u.displayName || undefined
+    }));
   }
 }
 

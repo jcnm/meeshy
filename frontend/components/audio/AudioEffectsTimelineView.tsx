@@ -21,7 +21,7 @@ const EFFECT_CONFIG: Record<AudioEffectType, { color: string; bgColor: string; i
   'voice-coder': {
     color: 'text-blue-400',
     bgColor: 'bg-blue-500/20',
-    icon: '🎵',
+    icon: '🎤',
   },
   'baby-voice': {
     color: 'text-pink-400',

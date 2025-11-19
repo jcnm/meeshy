@@ -109,6 +109,7 @@ model Conversation {
   shareLinks            ConversationShareLink[]
   community             Community?               @relation(fields: [communityId], references: [id])
   messages              Message[]
+  messageStatuses       MessageStatus[]
   typingIndicators      TypingIndicator[]
   callSessions          CallSession[]
   userPreferences       UserConversationPreferences[]
@@ -228,7 +229,6 @@ model Message {
   updatedAt         DateTime              @updatedAt
 
   status            MessageStatus[]       @relation("MessageStatusMessage")
-  statusResponses   MessageStatus[]       @relation("MessageStatusResponse")
   translations      MessageTranslation[]
   attachments       MessageAttachment[]
   reactions         Reaction[]            @relation("MessageReactions")
@@ -312,19 +312,31 @@ model MessageAttachment {
   @@index([uploadedBy])
 }
 
-/// Statut de reception, lecture ou réponse d'un message par un utilisateur
+/// Curseur de lecture/réception par utilisateur et conversation
+/// Un seul curseur par utilisateur par conversation qui se déplace au fil des messages
+///
+/// Logique de mise à jour:
+/// - Utilisateur reçoit message → messageId = dernier message, receivedAt = now, readAt = null
+/// - Utilisateur lit message → messageId = dernier message, receivedAt = now, readAt = now
+/// - Utilisateur reçoit nouveau message → messageId = nouveau message, receivedAt = now, readAt = null
 model MessageStatus {
-  id         String    @id @default(auto()) @map("_id") @db.ObjectId
-  messageId  String    @db.ObjectId
-  userId     String    @db.ObjectId
-  receivedAt DateTime? /// Quand le message a été reçu par l'utilisateur
-  readAt     DateTime? /// Quand le message a été lu par l'utilisateur
-  answer     String?   @db.ObjectId /// Last answer to the message by the user
-  user       User      @relation(fields: [userId], references: [id])
-  message    Message   @relation("MessageStatusMessage", fields: [messageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  response   Message?  @relation("MessageStatusResponse", fields: [answer], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId String    @db.ObjectId  /// Conversation concernée
+  messageId      String    @db.ObjectId  /// Curseur: pointe vers le dernier message reçu/lu
+  userId         String    @db.ObjectId  /// Utilisateur concerné
+  receivedAt     DateTime? /// Date de réception du message pointé par messageId
+  readAt         DateTime? /// Date de lecture du message pointé par messageId (null si non lu)
+  updatedAt      DateTime  @updatedAt    /// Dernière mise à jour du curseur
 
-  @@unique([messageId, userId], name: "messageId_userId")
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message        Message      @relation("MessageStatusMessage", fields: [messageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  /// Un seul curseur par utilisateur par conversation
+  @@unique([userId, conversationId], name: "userId_conversationId")
+  @@index([conversationId])
+  @@index([messageId])
+  @@index([updatedAt])
 }
 
 /// Réaction emoji sur un message par un utilisateur
