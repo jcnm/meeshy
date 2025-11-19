@@ -398,6 +398,10 @@
         "requireBirthday": {
           "label": "Date de naissance requise",
           "description": "Les invités doivent fournir leur date de naissance pour rejoindre"
+        },
+        "requireAccount": {
+          "label": "Compte requis",
+          "description": "Seuls les utilisateurs avec un compte peuvent rejoindre cette conversation"
         }
       },
       "allowedLanguages": {

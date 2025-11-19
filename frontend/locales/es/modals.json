@@ -398,6 +398,10 @@
         "requireBirthday": {
           "label": "Fecha de nacimiento requerida",
           "description": "Los invitados deben proporcionar su fecha de nacimiento para unirse"
+        },
+        "requireAccount": {
+          "label": "Cuenta requerida",
+          "description": "Solo los usuarios con una cuenta pueden unirse a esta conversación"
         }
       },
       "allowedLanguages": {

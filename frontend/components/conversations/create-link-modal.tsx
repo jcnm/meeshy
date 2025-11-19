@@ -1763,29 +1763,31 @@ export function CreateLinkModalV2({
 
         {/* Navigation buttons - masqués quand la synthèse est affichée */}
         {!generatedLink && (
-          <div className="flex-shrink-0 bg-background border-t px-3 py-3 sm:px-6 sm:py-4">
-            <div className="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0 sm:space-x-4">
-              <div className="flex space-x-2 w-full sm:w-auto">
+          <div className="flex-shrink-0 bg-background dark:bg-gray-900 dark:border-gray-800 border-t px-3 py-3 sm:px-6 sm:py-4">
+            <div className="flex justify-between items-center">
+              {/* Bouton Précédent à gauche */}
+              <div>
                 {currentStep > 1 && (
                   <Button
                     type="button"
                     variant="outline"
                     onClick={prevStep}
-                    className="w-full sm:w-auto text-xs sm:text-sm h-9 sm:h-10"
+                    className="text-xs sm:text-sm h-9 sm:h-10"
                   >
                     <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                     {t('createLinkModal.navigation.previous')}
                   </Button>
                 )}
               </div>
-              
-              <div className="flex space-x-2 w-full sm:w-auto">
+
+              {/* Bouton Suivant/Créer à droite */}
+              <div>
                 {currentStep < totalSteps ? (
                   <Button
                     type="button"
                     onClick={nextStep}
                     disabled={!canProceedToNext()}
-                    className="w-full sm:w-auto text-xs sm:text-sm h-9 sm:h-10"
+                    className="text-xs sm:text-sm h-9 sm:h-10"
                   >
                     {t('createLinkModal.navigation.next')}
                     <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1 sm:ml-2" />
@@ -1795,7 +1797,7 @@ export function CreateLinkModalV2({
                     type="button"
                     onClick={generateLink}
                     disabled={!canCreateLink() || isCreating}
-                    className="flex items-center w-full sm:w-auto text-xs sm:text-sm h-9 sm:h-10"
+                    className="flex items-center text-xs sm:text-sm h-9 sm:h-10"
                   >
                     <Link2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                     {isCreating ? t('createLinkModal.navigation.generating') : t('createLinkModal.navigation.createLink')}
