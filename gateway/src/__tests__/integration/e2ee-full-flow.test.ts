@@ -12,15 +12,15 @@
  * - DMA interoperability
  */
 
-import { PrismaClient } from '../../shared/prisma/client';
+import { PrismaClient } from '../../../shared/prisma/client';
 import { MessagingService } from '../../services/MessagingService';
 import { encryptionService } from '../../services/EncryptionService';
-import type { MessageRequest } from '../../shared/types/messaging';
-import type { EncryptedPayload } from '../../shared/types/encryption';
+import type { MessageRequest } from '../../../shared/types/messaging';
+import type { EncryptedPayload } from '../../../shared/types/encryption';
 import {
   isMessageEncrypted,
   canAutoTranslate,
-} from '../../shared/types/encryption';
+} from '../../../shared/types/encryption';
 
 const prisma = new PrismaClient();
 const messagingService = new MessagingService(prisma);
