@@ -42,6 +42,7 @@ export const SERVER_EVENTS = {
   SYSTEM_MESSAGE: 'system_message',
   CONVERSATION_STATS: 'conversation:stats',
   CONVERSATION_ONLINE_STATS: 'conversation:online_stats',
+  CONVERSATION_UNREAD_UPDATED: 'conversation:unread-updated',
   REACTION_ADDED: 'reaction:added',
   REACTION_REMOVED: 'reaction:removed',
   REACTION_SYNC: 'reaction:sync',
@@ -185,6 +186,14 @@ export interface ConversationOnlineStatsEventData {
 }
 
 /**
+ * Données pour l'événement de mise à jour du compteur de messages non lus
+ */
+export interface ConversationUnreadUpdatedEventData {
+  readonly conversationId: string;
+  readonly unreadCount: number;
+}
+
+/**
  * Données pour l'événement de mise à jour de réaction
  */
 export interface ReactionUpdateEventData {
@@ -240,6 +249,7 @@ export interface ServerToClientEvents {
   [SERVER_EVENTS.SYSTEM_MESSAGE]: (data: SystemMessageEventData) => void;
   [SERVER_EVENTS.CONVERSATION_STATS]: (data: ConversationStatsEventData) => void;
   [SERVER_EVENTS.CONVERSATION_ONLINE_STATS]: (data: ConversationOnlineStatsEventData) => void;
+  [SERVER_EVENTS.CONVERSATION_UNREAD_UPDATED]: (data: ConversationUnreadUpdatedEventData) => void;
   [SERVER_EVENTS.REACTION_ADDED]: (data: ReactionUpdateEventData) => void;
   [SERVER_EVENTS.REACTION_REMOVED]: (data: ReactionUpdateEventData) => void;
   [SERVER_EVENTS.REACTION_SYNC]: (data: ReactionSyncEventData) => void;

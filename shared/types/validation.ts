@@ -4,6 +4,7 @@
  */
 
 import { z } from 'zod';
+import { isValidEmail } from '../utils/email-validator';
 
 /**
  * Validation stricte du mot de passe
@@ -22,14 +23,17 @@ export const strongPasswordSchema = z.string()
   .regex(/[^A-Za-z0-9]/, 'Le mot de passe doit contenir au moins un caractère spécial (!@#$%^&*...)');
 
 /**
- * Validation de l'email
+ * Validation stricte de l'email avec validateur personnalisé
+ * Rejette les emails invalides comme "debu@", "debute@email", etc.
  */
 export const emailSchema = z.string()
-  .min(3, 'Email trop court')
-  .max(255, 'Email trop long')
-  .email('Format email invalide')
+  .min(3, 'Email trop court (minimum 3 caractères)')
+  .max(255, 'Email trop long (maximum 255 caractères)')
+  .trim()
   .toLowerCase()
-  .trim();
+  .refine((email) => isValidEmail(email), {
+    message: 'Format d\'email invalide. Utilisez le format: utilisateur@domaine.com'
+  });
 
 /**
  * Validation du numéro de téléphone (format E.164)
