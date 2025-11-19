@@ -174,8 +174,7 @@ export function ShareAffiliateModal({ isOpen, onClose, userLanguage }: ShareAffi
         try {
           await navigator.share({
             title: t('shareTitle'),
-            text: fullMessage,
-            url: selectedToken.affiliateLink
+            text: fullMessage
           });
           onClose(); // Fermer la modale après partage
         } catch (error) {
@@ -215,8 +214,7 @@ export function ShareAffiliateModal({ isOpen, onClose, userLanguage }: ShareAffi
       try {
         await navigator.share({
           title: t('shareTitle'),
-          text: fullMessage,
-          url: selectedToken.affiliateLink
+          text: fullMessage
         });
         onClose(); // Fermer la modale après partage
       } catch (error) {

@@ -18,6 +18,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { copyToClipboard } from '@/lib/clipboard';
 import { toast } from 'sonner';
@@ -114,25 +115,25 @@ const SelectableSquare = ({ checked, onChange, label, description, icon, disable
         : 'cursor-pointer hover:shadow-md'
     } ${
       checked
-        ? 'border-primary bg-primary/5'
-        : 'border-muted-foreground/20 hover:border-muted-foreground/40'
+        ? 'border-primary bg-primary/5 dark:bg-primary/10 dark:border-primary'
+        : 'border-muted-foreground/20 hover:border-muted-foreground/40 dark:border-muted-foreground/30 dark:hover:border-muted-foreground/50 dark:bg-gray-800/50'
     }`}
     onClick={() => !disabled && onChange(!checked)}
   >
     <div className="flex items-start space-x-3">
       <div className={`w-6 h-6 rounded border-2 flex items-center justify-center flex-shrink-0 ${
         checked
-          ? 'border-primary bg-primary text-primary-foreground'
-          : 'border-muted-foreground/40'
+          ? 'border-primary bg-primary text-primary-foreground dark:border-primary dark:bg-primary'
+          : 'border-muted-foreground/40 dark:border-muted-foreground/50 dark:bg-gray-700/50'
       }`}>
         {checked && <Check className="w-4 h-4" />}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center space-x-2 mb-1">
-          {icon && <div className="text-muted-foreground">{icon}</div>}
-          <Label className={`text-sm font-medium ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>{label}</Label>
+          {icon && <div className="text-muted-foreground dark:text-muted-foreground">{icon}</div>}
+          <Label className={`text-sm font-medium dark:text-gray-200 ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>{label}</Label>
         </div>
-        <p className="text-xs text-muted-foreground">{description}</p>
+        <p className="text-xs text-muted-foreground dark:text-gray-400">{description}</p>
       </div>
     </div>
   </div>
@@ -1114,26 +1115,50 @@ export function CreateLinkModalV2({
 
           <Separator />
 
-            {/* Note: requireNickname est toujours true (pas de toggle) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <SelectableSquare
-                checked={requireAccount ? true : requireEmail}
-                onChange={setRequireEmail}
-                label={t('createLinkModal.permissions.requireEmail.label')}
-                description={t('createLinkModal.permissions.requireEmail.description')}
-                icon={<Settings className="w-4 h-4" />}
-                disabled={requireAccount}
-              />
+            {/* Exigences d'authentification */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium flex items-center">
+                <Shield className="h-4 w-4 mr-2" />
+                {t('createLinkModal.permissions.authRequirements.title')}
+              </h4>
 
-              <SelectableSquare
-                checked={requireAccount ? true : requireBirthday}
-                onChange={setRequireBirthday}
-                label={t('createLinkModal.permissions.requireBirthday.label')}
-                description={t('createLinkModal.permissions.requireBirthday.description')}
-                icon={<Calendar className="w-4 h-4" />}
-                disabled={requireAccount}
-              />
-          </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <SelectableSquare
+                  checked={requireAccount}
+                  onChange={setRequireAccount}
+                  label={t('createLinkModal.permissions.requireAccount.label')}
+                  description={t('createLinkModal.permissions.requireAccount.description')}
+                  icon={<UserPlus className="w-4 h-4" />}
+                />
+
+                <SelectableSquare
+                  checked={requireAccount ? true : requireNickname}
+                  onChange={setRequireNickname}
+                  label={t('createLinkModal.permissions.requireNickname.label')}
+                  description={t('createLinkModal.permissions.requireNickname.description')}
+                  icon={<Users className="w-4 h-4" />}
+                  disabled={requireAccount}
+                />
+
+                <SelectableSquare
+                  checked={requireAccount ? true : requireEmail}
+                  onChange={setRequireEmail}
+                  label={t('createLinkModal.permissions.requireEmail.label')}
+                  description={t('createLinkModal.permissions.requireEmail.description')}
+                  icon={<Settings className="w-4 h-4" />}
+                  disabled={requireAccount}
+                />
+
+                <SelectableSquare
+                  checked={requireAccount ? true : requireBirthday}
+                  onChange={setRequireBirthday}
+                  label={t('createLinkModal.permissions.requireBirthday.label')}
+                  description={t('createLinkModal.permissions.requireBirthday.description')}
+                  icon={<Calendar className="w-4 h-4" />}
+                  disabled={requireAccount}
+                />
+              </div>
+            </div>
         </CardContent>
         )}
       </Card>
@@ -1420,108 +1445,108 @@ export function CreateLinkModalV2({
               {t('summary.permissionsGranted')}
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className={`p-3 rounded-lg border-2 ${allowAnonymousMessages ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
+              <div className={`p-3 rounded-lg border-2 ${allowAnonymousMessages ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30' : 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30'}`}>
                 <div className="flex items-center space-x-2">
-                  <MessageSquare className={`h-4 w-4 ${allowAnonymousMessages ? 'text-green-600' : 'text-red-600'}`} />
-                  <span className="font-medium text-sm">{t('summary.messages')}</span>
+                  <MessageSquare className={`h-4 w-4 ${allowAnonymousMessages ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`} />
+                  <span className="font-medium text-sm dark:text-gray-200">{t('summary.messages')}</span>
                   <Badge variant={allowAnonymousMessages ? 'default' : 'destructive'} className="text-xs">
                     {allowAnonymousMessages ? t('summary.allowed') : t('summary.forbidden')}
                   </Badge>
             </div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground dark:text-gray-400 mt-1">
                   {allowAnonymousMessages ? t('summary.guestsCanSendMessages') : t('summary.guestsCannotSendMessages')}
                 </p>
           </div>
 
-              <div className={`p-3 rounded-lg border-2 ${allowAnonymousImages ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
+              <div className={`p-3 rounded-lg border-2 ${allowAnonymousImages ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30' : 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30'}`}>
                 <div className="flex items-center space-x-2">
-                  <Image className={`h-4 w-4 ${allowAnonymousImages ? 'text-green-600' : 'text-red-600'}`} />
-                  <span className="font-medium text-sm">{t('summary.images')}</span>
+                  <Image className={`h-4 w-4 ${allowAnonymousImages ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`} />
+                  <span className="font-medium text-sm dark:text-gray-200">{t('summary.images')}</span>
                   <Badge variant={allowAnonymousImages ? 'default' : 'destructive'} className="text-xs">
                     {allowAnonymousImages ? t('summary.allowed') : t('summary.forbidden')}
                   </Badge>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground dark:text-gray-400 mt-1">
                   {allowAnonymousImages ? t('summary.guestsCanShareImages') : t('summary.guestsCannotShareImages')}
                 </p>
               </div>
 
-              <div className={`p-3 rounded-lg border-2 ${allowAnonymousFiles ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
+              <div className={`p-3 rounded-lg border-2 ${allowAnonymousFiles ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30' : 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30'}`}>
                 <div className="flex items-center space-x-2">
-                  <FileText className={`h-4 w-4 ${allowAnonymousFiles ? 'text-green-600' : 'text-red-600'}`} />
-                  <span className="font-medium text-sm">{t('summary.files')}</span>
+                  <FileText className={`h-4 w-4 ${allowAnonymousFiles ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`} />
+                  <span className="font-medium text-sm dark:text-gray-200">{t('summary.files')}</span>
                   <Badge variant={allowAnonymousFiles ? 'default' : 'destructive'} className="text-xs">
                     {allowAnonymousFiles ? t('summary.allowed') : t('summary.forbidden')}
                   </Badge>
               </div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground dark:text-gray-400 mt-1">
                   {allowAnonymousFiles ? t('summary.guestsCanShareFiles') : t('summary.guestsCannotShareFiles')}
                 </p>
             </div>
 
-              <div className={`p-3 rounded-lg border-2 ${allowViewHistory ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
+              <div className={`p-3 rounded-lg border-2 ${allowViewHistory ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30' : 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30'}`}>
                 <div className="flex items-center space-x-2">
-                  <Eye className={`h-4 w-4 ${allowViewHistory ? 'text-green-600' : 'text-red-600'}`} />
-                  <span className="font-medium text-sm">{t('summary.history')}</span>
+                  <Eye className={`h-4 w-4 ${allowViewHistory ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`} />
+                  <span className="font-medium text-sm dark:text-gray-200">{t('summary.history')}</span>
                   <Badge variant={allowViewHistory ? 'default' : 'destructive'} className="text-xs">
                     {allowViewHistory ? t('summary.visible') : t('summary.hidden')}
                   </Badge>
       </div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground dark:text-gray-400 mt-1">
                   {allowViewHistory ? t('summary.guestsCanViewHistory') : t('summary.guestsCannotViewHistory')}
                 </p>
     </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-              <div className={`p-3 rounded-lg border-2 ${requireNickname ? 'border-blue-200 bg-blue-50' : 'border-gray-200 bg-gray-50'}`}>
+              <div className={`p-3 rounded-lg border-2 ${requireNickname ? 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30' : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50'}`}>
                 <div className="flex items-center space-x-2">
-                  <Users className={`h-4 w-4 ${requireNickname ? 'text-blue-600' : 'text-gray-600'}`} />
-                  <span className="font-medium text-sm">{t('summary.nicknameRequired')}</span>
+                  <Users className={`h-4 w-4 ${requireNickname ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`} />
+                  <span className="font-medium text-sm dark:text-gray-200">{t('summary.nicknameRequired')}</span>
                   <Badge variant={requireNickname ? 'secondary' : 'outline'} className="text-xs">
                     {requireNickname ? t('summary.yes') : t('summary.no')}
                   </Badge>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground dark:text-gray-400 mt-1">
                   {requireNickname ? t('summary.guestsMustEnterNickname') : t('summary.guestsCanStayAnonymous')}
                 </p>
               </div>
 
-              <div className={`p-3 rounded-lg border-2 ${requireEmail ? 'border-blue-200 bg-blue-50' : 'border-gray-200 bg-gray-50'}`}>
+              <div className={`p-3 rounded-lg border-2 ${requireEmail ? 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30' : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50'}`}>
           <div className="flex items-center space-x-2">
-                  <Settings className={`h-4 w-4 ${requireEmail ? 'text-blue-600' : 'text-gray-600'}`} />
-                  <span className="font-medium text-sm">{t('summary.emailRequired')}</span>
+                  <Settings className={`h-4 w-4 ${requireEmail ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`} />
+                  <span className="font-medium text-sm dark:text-gray-200">{t('summary.emailRequired')}</span>
                   <Badge variant={requireEmail ? 'secondary' : 'outline'} className="text-xs">
                     {requireEmail ? t('summary.yes') : t('summary.no')}
                   </Badge>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground dark:text-gray-400 mt-1">
                   {requireEmail ? t('summary.guestsMustEnterEmail') : t('summary.guestsCanStayAnonymous')}
                 </p>
               </div>
 
-              <div className={`p-3 rounded-lg border-2 ${requireAccount ? 'border-blue-200 bg-blue-50' : 'border-gray-200 bg-gray-50'}`}>
+              <div className={`p-3 rounded-lg border-2 ${requireAccount ? 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30' : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50'}`}>
                 <div className="flex items-center space-x-2">
-                  <UserPlus className={`h-4 w-4 ${requireAccount ? 'text-blue-600' : 'text-gray-600'}`} />
-                  <span className="font-medium text-sm">{t('summary.accountRequired')}</span>
+                  <UserPlus className={`h-4 w-4 ${requireAccount ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`} />
+                  <span className="font-medium text-sm dark:text-gray-200">{t('summary.accountRequired')}</span>
                   <Badge variant={requireAccount ? 'secondary' : 'outline'} className="text-xs">
                     {requireAccount ? t('summary.yes') : t('summary.no')}
                   </Badge>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground dark:text-gray-400 mt-1">
                   {requireAccount ? t('summary.guestsMustHaveAccount') : t('summary.guestsCanJoinWithoutAccount')}
                 </p>
               </div>
 
-              <div className={`p-3 rounded-lg border-2 ${requireBirthday ? 'border-blue-200 bg-blue-50' : 'border-gray-200 bg-gray-50'}`}>
+              <div className={`p-3 rounded-lg border-2 ${requireBirthday ? 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30' : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50'}`}>
                 <div className="flex items-center space-x-2">
-                  <Calendar className={`h-4 w-4 ${requireBirthday ? 'text-blue-600' : 'text-gray-600'}`} />
-                  <span className="font-medium text-sm">{t('summary.birthdayRequired')}</span>
+                  <Calendar className={`h-4 w-4 ${requireBirthday ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`} />
+                  <span className="font-medium text-sm dark:text-gray-200">{t('summary.birthdayRequired')}</span>
                   <Badge variant={requireBirthday ? 'secondary' : 'outline'} className="text-xs">
                     {requireBirthday ? t('summary.yes') : t('summary.no')}
                   </Badge>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground dark:text-gray-400 mt-1">
                   {requireBirthday ? t('summary.guestsMustProvideBirthday') : t('summary.guestsCanOmitBirthday')}
                 </p>
               </div>
@@ -1629,17 +1654,14 @@ export function CreateLinkModalV2({
             // Afficher la page de synthèse finale au lieu des étapes
             <div className="space-y-6">
               {/* En-tête de succès */}
-              <Card className="border-green-200 bg-green-50">
+              <Card className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30">
                 <CardHeader className="text-center">
-                  <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                    <CheckCircle className="h-8 w-8 text-green-600" />
+                  <div className="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center mb-4">
+                    <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
                   </div>
-                  <CardTitle className="text-2xl text-green-700">
+                  <CardTitle className="text-2xl text-green-700 dark:text-green-400">
                     {t('createLinkModal.success.linkCreated')}
                   </CardTitle>
-                  <CardDescription className="text-green-600">
-                    {t('createLinkButton.linkCreated')}
-                  </CardDescription>
                 </CardHeader>
               </Card>
 
@@ -1698,40 +1720,31 @@ export function CreateLinkModalV2({
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="p-4 bg-white border rounded-lg">
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
-                      <Input
-                        value={generatedLink}
-                        readOnly
-                        className="flex-1 text-sm bg-white font-mono"
-                      />
-                      <Button
-                        onClick={copyLink}
-                        size="sm"
-                        variant="outline"
-                        className="w-full sm:w-auto"
-                      >
-                        <Copy className="h-4 w-4 mr-2" />
-                        {t('createLinkButton.copy')}
-                      </Button>
-                    </div>
+                  <div className="p-4 bg-white dark:bg-gray-900 border rounded-lg">
+                    <Input
+                      value={generatedLink}
+                      readOnly
+                      className="w-full text-sm bg-white dark:bg-gray-800 dark:text-gray-100 font-mono"
+                    />
                   </div>
                 </CardContent>
               </Card>
 
               {/* Actions finales */}
-              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+              <div className="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4">
                 <Button
                   onClick={copyLink}
-                  variant="outline"
-                  className="flex-1"
+                  size="lg"
+                  className="w-full sm:w-auto"
                 >
                   <Copy className="mr-2 h-4 w-4" />
                   {t('createLinkModal.actions.copyLink')}
                 </Button>
                 <Button
                   onClick={handleClose}
-                  className="flex-1"
+                  variant="outline"
+                  size="lg"
+                  className="w-full sm:w-auto"
                 >
                   {t('createLinkModal.actions.close')}
                 </Button>

@@ -83,8 +83,8 @@ export function LanguageSelector({
             className="h-9"
           />
           <CommandEmpty>{t('languageSelector.noLanguageFound')}</CommandEmpty>
-          <CommandList>
-            <ScrollArea className="h-[300px]">
+          <CommandList className="max-h-[400px]">
+            <ScrollArea className="max-h-[320px]">
               <CommandGroup>
                 {filteredLanguages.map((lang) => (
                   <CommandItem

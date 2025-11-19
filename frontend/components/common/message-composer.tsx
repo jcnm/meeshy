@@ -20,6 +20,7 @@ import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
 import { MentionAutocomplete } from './MentionAutocomplete';
 import { detectMentionAtCursor } from '@/shared/types/mention';
 import { getCursorPosition, adjustPositionForViewport } from '@/lib/cursor-position';
+import { compressMultipleFiles, needsCompression } from '@/utils/media-compression';
 
 interface MessageComposerProps {
   value: string;
@@ -89,6 +90,10 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   const [uploadProgress, setUploadProgress] = useState<{ [key: number]: number }>({});
   const [showAttachmentLimitModal, setShowAttachmentLimitModal] = useState(false);
   const [attemptedCount, setAttemptedCount] = useState(0); // Compte incluant les fichiers rejetés
+
+  // États pour la compression
+  const [isCompressing, setIsCompressing] = useState(false);
+  const [compressionProgress, setCompressionProgress] = useState<{ [key: number]: { progress: number; status: string } }>({});
 
   // États pour l'enregistrement audio
   const [showAudioRecorder, setShowAudioRecorder] = useState(false);
@@ -345,6 +350,39 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         toast.error(error);
       });
       return;
+    }
+
+    // Vérifier si des fichiers nécessitent une compression
+    const filesToCompress = uniqueFiles.filter(f => needsCompression(f));
+    if (filesToCompress.length > 0) {
+      console.log(`🗜️ ${filesToCompress.length} fichier(s) nécessite(nt) une compression`);
+      setIsCompressing(true);
+      setCompressionProgress({});
+
+      try {
+        // Compresser les fichiers qui le nécessitent
+        const compressedFiles = await compressMultipleFiles(uniqueFiles, (fileIndex, progress, status) => {
+          setCompressionProgress(prev => ({
+            ...prev,
+            [fileIndex]: { progress, status }
+          }));
+        });
+
+        // Utiliser les fichiers compressés
+        uniqueFiles.splice(0, uniqueFiles.length, ...compressedFiles);
+
+        const compressedSize = compressedFiles.reduce((sum, f) => sum + f.size, 0);
+        const savedSize = totalSize - compressedSize;
+        if (savedSize > 0) {
+          toast.success(`Compression réussie ! ${(savedSize / (1024 * 1024)).toFixed(1)}MB économisés`);
+        }
+      } catch (error) {
+        console.error('❌ Erreur compression:', error);
+        toast.error('Erreur lors de la compression, fichiers originaux utilisés');
+      } finally {
+        setIsCompressing(false);
+        setCompressionProgress({});
+      }
     }
 
     // Mise à jour immédiate de l'UI avec les fichiers sélectionnés
@@ -889,6 +927,32 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         </div>
       )}
 
+      {/* Indicateur de compression */}
+      {isCompressing && Object.keys(compressionProgress).length > 0 && (
+        <div className="mb-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+            <span className="text-sm font-medium text-blue-900">Compression en cours...</span>
+          </div>
+          <div className="space-y-1">
+            {Object.entries(compressionProgress).map(([fileIndex, { progress, status }]) => (
+              <div key={fileIndex} className="text-xs text-blue-700">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="truncate">{status}</span>
+                  <span className="ml-2 font-medium">{progress}%</span>
+                </div>
+                <div className="w-full bg-blue-200 rounded-full h-1.5">
+                  <div
+                    className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Carrousel d'attachments - positionné juste après la citation */}
       {((selectedFiles.length > 0 || showAudioRecorder) || showAttachmentLimitModal) && (
         <div className="relative min-h-[120px] mb-2">
@@ -995,12 +1059,13 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         {/* Bouton d'attachement (Document) - Agrandi pour mobile */}
         <Button
           onClick={handleAttachmentClick}
-          disabled={!isComposingEnabled || isUploading}
+          disabled={!isComposingEnabled || isUploading || isCompressing}
           size="sm"
           variant="ghost"
           className="h-[30px] w-[30px] sm:h-[32px] sm:w-[32px] p-0 rounded-full hover:bg-gray-100 relative min-w-0 min-h-0"
+          title={isCompressing ? 'Compression en cours...' : isUploading ? 'Upload en cours...' : 'Ajouter des fichiers'}
         >
-          {isUploading ? (
+          {isCompressing || isUploading ? (
             <Loader2 className="h-[20px] w-[20px] sm:h-[22px] sm:w-[22px] text-blue-600 animate-spin" />
           ) : (
             <Paperclip className="h-[20px] w-[20px] sm:h-[22px] sm:w-[22px] text-gray-600" />
@@ -1040,16 +1105,16 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         {/* Bouton d'envoi (agrandi de 50% sur desktop) */}
         <Button
           onClick={handleSendMessage}
-          disabled={(!value.trim() && selectedFiles.length === 0 && uploadedAttachments.length === 0) || value.length > maxMessageLength || !isComposingEnabled || isUploading || isRecording || (selectedFiles.length + uploadedAttachments.length) > 50}
+          disabled={(!value.trim() && selectedFiles.length === 0 && uploadedAttachments.length === 0) || value.length > maxMessageLength || !isComposingEnabled || isUploading || isCompressing || isRecording || (selectedFiles.length + uploadedAttachments.length) > 50}
           size="sm"
           className="bg-blue-600 hover:bg-blue-700 text-white h-6 w-6 sm:h-9 sm:w-9 p-0 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
-          title={isRecording ? "Arrêtez l'enregistrement avant d'envoyer" : "Envoyer le message"}
+          title={isCompressing ? "Compression en cours..." : isRecording ? "Arrêtez l'enregistrement avant d'envoyer" : "Envoyer le message"}
         >
           <Send className="h-3 w-3 sm:h-5 sm:w-5" />
         </Button>
       </div>
 
-      {/* Input file caché */}
+      {/* Input file caché - Optimisé pour les gros fichiers de la photothèque */}
       <input
         ref={fileInputRef}
         type="file"
@@ -1057,6 +1122,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         className="hidden"
         onChange={handleFileInputChange}
         accept="image/*,video/*,audio/*,application/pdf,text/plain,.doc,.docx,.ppt,.pptx,.md,.sh,.js,.ts,.py,.zip"
+        capture={undefined}
       />
     </div>
   );

@@ -38,6 +38,7 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [showAvatarDialog, setShowAvatarDialog] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (user) {
@@ -60,6 +61,26 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
   };
 
   const handleAvatarSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validation du fichier
+      const validation = validateAvatarFile(file);
+      if (!validation.valid) {
+        toast.error(validation.error || 'Fichier invalide');
+        return;
+      }
+
+      // Lire le fichier et afficher le dialogue de recadrage
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+        setShowAvatarDialog(true);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCameraCapture = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       // Validation du fichier
@@ -212,16 +233,30 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
                 onChange={handleAvatarSelect}
                 className="hidden"
               />
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleCameraCapture}
+                className="hidden"
+              />
+              <Button
+                variant="outline"
+                size="sm"
                 className="w-full sm:w-auto"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <Upload className="h-4 w-4 mr-2" />
                 {t('profile.photo.uploadImage')}
               </Button>
-              <Button variant="outline" size="sm" className="w-full sm:w-auto" disabled>
+              {/* Bouton caméra visible uniquement sur mobile */}
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full sm:hidden"
+                onClick={() => cameraInputRef.current?.click()}
+              >
                 <Camera className="h-4 w-4 mr-2" />
                 {t('profile.photo.takePhoto')}
               </Button>

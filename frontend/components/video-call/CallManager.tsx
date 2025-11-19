@@ -481,7 +481,10 @@ export function CallManager() {
 
         // Stop retrying after MAX_RETRIES attempts
         if (retryCount > MAX_RETRIES) {
-          logger.error('[CallManager]', `Failed to setup listeners after ${MAX_RETRIES} attempts. Stopping retries. Check that user is logged in and socket is connected.`);
+          // Log only once at debug level to avoid spam
+          if (retryCount === MAX_RETRIES + 1) {
+            logger.debug('[CallManager]', `Stopped retrying listener setup after ${MAX_RETRIES} attempts. This is normal if user is not logged in or socket is not connected.`);
+          }
           return;
         }
 

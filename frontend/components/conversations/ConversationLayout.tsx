@@ -109,27 +109,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   // Store global des utilisateurs (mis à jour en temps réel)
   const userStore = useUserStore();
 
-  // Ref pour tracker les notifications déjà marquées
-  const markedNotificationsRef = useRef<Set<string>>(new Set());
-
-  // Marquer les notifications de la conversation comme lues quand on l'ouvre
-  useEffect(() => {
-    if (!effectiveSelectedId) return;
-
-    // Trouver toutes les notifications non lues liées à cette conversation
-    const conversationNotifications = notifications.filter(
-      n => n.conversationId === effectiveSelectedId &&
-           !n.isRead &&
-           !markedNotificationsRef.current.has(n.id)
-    );
-
-    // Marquer chaque notification comme lue
-    conversationNotifications.forEach(notification => {
-      markedNotificationsRef.current.add(notification.id);
-      markAsRead(notification.id);
-    });
-  }, [effectiveSelectedId, notifications, markAsRead]);
-
   // États modaux et UI
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);

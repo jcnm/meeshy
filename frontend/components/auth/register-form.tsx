@@ -12,8 +12,9 @@ import { User } from '@/types';
 import { JoinConversationResponse } from '@/types/frontend';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { useI18n } from '@/hooks/useI18n';
-import { Check, X, Eye, EyeOff } from 'lucide-react';
+import { Check, X, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { isValidEmail, getEmailValidationError } from '@/shared/utils/email-validator';
 
 interface RegisterFormProps {
   onSuccess?: (user: User, token: string) => void; // Optional callback for custom behavior
@@ -50,6 +51,10 @@ export function RegisterForm({
   const [usernameCheckStatus, setUsernameCheckStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
   const usernameCheckTimeout = useRef<NodeJS.Timeout | null>(null);
 
+  // État pour la validation de l'email
+  const [emailValidationStatus, setEmailValidationStatus] = useState<'idle' | 'invalid' | 'valid'>('idle');
+  const [emailErrorMessage, setEmailErrorMessage] = useState<string>('');
+
   const validateUsername = (username: string) => {
     // Validation: longueur minimale de 4 caractères
     if (username.length < 4) {
@@ -58,6 +63,23 @@ export function RegisterForm({
     // Validation: uniquement lettres, chiffres, tirets et underscores
     const usernameRegex = /^[a-zA-Z0-9_-]+$/;
     return usernameRegex.test(username);
+  };
+
+  const validateEmailField = (email: string) => {
+    if (!email.trim()) {
+      setEmailValidationStatus('idle');
+      setEmailErrorMessage('');
+      return;
+    }
+
+    const errorMessage = getEmailValidationError(email);
+    if (errorMessage) {
+      setEmailValidationStatus('invalid');
+      setEmailErrorMessage(errorMessage);
+    } else {
+      setEmailValidationStatus('valid');
+      setEmailErrorMessage('');
+    }
   };
 
   // Vérification de disponibilité du username avec debounce
@@ -114,7 +136,7 @@ export function RegisterForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validation différente selon le mode
     if (linkId) {
       // Mode lien d'invitation - pas de username requis
@@ -137,6 +159,13 @@ export function RegisterForm({
         toast.error(t('register.validation.usernameInvalid'));
         return;
       }
+    }
+
+    // Validation de l'email (pour les deux modes)
+    if (!isValidEmail(formData.email)) {
+      const errorMessage = getEmailValidationError(formData.email);
+      toast.error(errorMessage || 'Format d\'email invalide');
+      return;
     }
 
     setIsLoading(true);
@@ -348,18 +377,52 @@ export function RegisterForm({
 
       <div className="space-y-2">
         <Label htmlFor={`${formPrefix}-email`}>{t('register.emailLabel')}</Label>
-        <Input
-          id={`${formPrefix}-email`}
-          type="email"
-          placeholder={t('register.emailPlaceholder')}
-          value={formData.email}
-          onChange={(e) => {
-            const value = e.target.value.replace(/\s/g, ''); // Supprimer tous les espaces
-            setFormData({ ...formData, email: value });
-          }}
-          disabled={isLoading || disabled}
-          required
-        />
+        <div className="relative">
+          <Input
+            id={`${formPrefix}-email`}
+            type="email"
+            placeholder={t('register.emailPlaceholder')}
+            value={formData.email}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\s/g, ''); // Supprimer tous les espaces
+              setFormData({ ...formData, email: value });
+              validateEmailField(value);
+            }}
+            onBlur={(e) => validateEmailField(e.target.value)}
+            className={cn(
+              "pr-10",
+              emailValidationStatus === 'valid' && "border-green-500 focus-visible:ring-green-500",
+              emailValidationStatus === 'invalid' && "border-red-500 focus-visible:ring-red-500"
+            )}
+            disabled={isLoading || disabled}
+            required
+          />
+          {/* Indicateur de statut */}
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            {emailValidationStatus === 'valid' && (
+              <div className="flex items-center justify-center h-5 w-5 rounded-full bg-green-500">
+                <Check className="h-3 w-3 text-white" />
+              </div>
+            )}
+            {emailValidationStatus === 'invalid' && (
+              <div className="flex items-center justify-center h-5 w-5 rounded-full bg-red-500">
+                <AlertCircle className="h-3 w-3 text-white" />
+              </div>
+            )}
+          </div>
+        </div>
+        {emailValidationStatus === 'valid' && (
+          <p className="text-xs text-green-600 flex items-center gap-1">
+            <Check className="h-3 w-3" />
+            Email valide
+          </p>
+        )}
+        {emailValidationStatus === 'invalid' && emailErrorMessage && (
+          <p className="text-xs text-red-500 flex items-center gap-1">
+            <AlertCircle className="h-3 w-3" />
+            {emailErrorMessage}
+          </p>
+        )}
       </div>
 
       <div className="space-y-2">

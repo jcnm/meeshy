@@ -189,7 +189,7 @@ export default function AdminUsersPage() {
             <Button
               variant="outline"
               onClick={() => router.push('/admin')}
-              className="flex items-center space-x-2 text-sm"
+              className="flex items-center space-x-2 text-sm dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 dark:text-gray-200"
               size="sm"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -204,14 +204,14 @@ export default function AdminUsersPage() {
             <Button
               variant="outline"
               onClick={() => router.push('/admin/anonymous-users')}
-              className="flex items-center space-x-2 text-sm"
+              className="flex items-center space-x-2 text-sm dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 dark:text-gray-200"
               size="sm"
             >
               <Ghost className="h-4 w-4" />
               <span className="hidden md:inline">Anonymes</span>
             </Button>
             <Button
-              className="flex items-center space-x-2 text-sm"
+              className="flex items-center space-x-2 text-sm dark:bg-blue-700 dark:hover:bg-blue-800"
               size="sm"
               onClick={() => router.push('/admin/users/new')}
             >
@@ -223,45 +223,45 @@ export default function AdminUsersPage() {
 
         {/* Statistiques */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <Card>
+          <Card className="dark:bg-gray-900 dark:border-gray-800">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Total</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xl sm:text-2xl font-bold">{stats.totalUsers}</div>
-              <Badge variant="outline" className="mt-1 text-xs">Utilisateurs</Badge>
+              <div className="text-xl sm:text-2xl font-bold dark:text-gray-100">{stats.totalUsers}</div>
+              <Badge variant="outline" className="mt-1 text-xs dark:border-gray-700 dark:text-gray-300">Utilisateurs</Badge>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="dark:bg-gray-900 dark:border-gray-800">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Actifs</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">{stats.activeUsers}</div>
-              <Badge variant="outline" className="mt-1 text-xs text-green-600 dark:text-green-400">
+              <Badge variant="outline" className="mt-1 text-xs text-green-600 dark:text-green-400 dark:border-green-700">
                 {stats.totalUsers > 0 ? Math.round((stats.activeUsers / stats.totalUsers) * 100) : 0}%
               </Badge>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="dark:bg-gray-900 dark:border-gray-800">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Nouveaux</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.newUsers}</div>
-              <Badge variant="outline" className="mt-1 text-xs">7 jours</Badge>
+              <Badge variant="outline" className="mt-1 text-xs dark:border-gray-700 dark:text-gray-300">7 jours</Badge>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="dark:bg-gray-900 dark:border-gray-800">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Admins</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.adminUsers}</div>
-              <Badge variant="outline" className="mt-1 text-xs text-purple-600 dark:text-purple-400">
+              <Badge variant="outline" className="mt-1 text-xs text-purple-600 dark:text-purple-400 dark:border-purple-700">
                 {stats.totalUsers > 0 ? Math.round((stats.adminUsers / stats.totalUsers) * 100) : 0}%
               </Badge>
             </CardContent>
@@ -269,9 +269,9 @@ export default function AdminUsersPage() {
         </div>
 
         {/* Liste des utilisateurs */}
-        <Card>
+        <Card className="dark:bg-gray-900 dark:border-gray-800">
           <CardHeader className="space-y-4">
-            <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
+            <CardTitle className="flex items-center space-x-2 text-base sm:text-lg dark:text-gray-100">
               <Users className="h-4 w-4 sm:h-5 sm:w-5" />
               <span>Utilisateurs ({users?.length || 0})</span>
             </CardTitle>
@@ -282,7 +282,7 @@ export default function AdminUsersPage() {
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" />
                 <Input
                   placeholder="Rechercher par nom, email..."
-                  className="pl-8 text-sm"
+                  className="pl-8 text-sm dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 dark:placeholder-gray-500"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleFilter()}
@@ -326,7 +326,7 @@ export default function AdminUsersPage() {
               </select>
               <Button
                 variant="outline"
-                className="w-full text-sm"
+                className="w-full text-sm dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 dark:text-gray-200"
                 onClick={handleFilter}
               >
                 <Filter className="h-4 w-4 mr-2" />
@@ -385,6 +385,7 @@ export default function AdminUsersPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => router.push(`/admin/users/${user.id}`)}
+                      className="dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 dark:text-gray-200"
                     >
                       <Eye className="h-3 w-3 mr-1" />
                       Voir
@@ -397,7 +398,7 @@ export default function AdminUsersPage() {
             {/* Vue Mobile/Tablet (visible only on mobile/tablet) */}
             <div className="lg:hidden space-y-3">
               {users?.map((user) => (
-                <Card key={user.id} className="hover:shadow-md transition-shadow">
+                <Card key={user.id} className="hover:shadow-md transition-shadow dark:bg-gray-800 dark:border-gray-700">
                   <CardContent className="p-4">
                     <div className="flex items-start space-x-3">
                       <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
@@ -422,7 +423,7 @@ export default function AdminUsersPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-full text-xs"
+                            className="w-full text-xs dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600 dark:text-gray-200"
                             onClick={() => router.push(`/admin/users/${user.id}`)}
                           >
                             <Eye className="h-3 w-3 mr-1" />
@@ -457,12 +458,12 @@ export default function AdminUsersPage() {
                     size="sm"
                     disabled={currentPage === 1}
                     onClick={handlePreviousPage}
-                    className="text-xs sm:text-sm"
+                    className="text-xs sm:text-sm dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 dark:text-gray-200 dark:disabled:opacity-50"
                   >
                     <ChevronLeft className="h-4 w-4" />
                     <span className="hidden sm:inline ml-1">Précédent</span>
                   </Button>
-                  <div className="flex items-center px-3 py-2 border dark:border-gray-700 rounded-md text-xs sm:text-sm font-medium">
+                  <div className="flex items-center px-3 py-2 border dark:border-gray-700 rounded-md text-xs sm:text-sm font-medium dark:bg-gray-800 dark:text-gray-200">
                     {currentPage} / {totalPages}
                   </div>
                   <Button
@@ -470,7 +471,7 @@ export default function AdminUsersPage() {
                     size="sm"
                     disabled={currentPage === totalPages}
                     onClick={handleNextPage}
-                    className="text-xs sm:text-sm"
+                    className="text-xs sm:text-sm dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 dark:text-gray-200 dark:disabled:opacity-50"
                   >
                     <span className="hidden sm:inline mr-1">Suivant</span>
                     <ChevronRight className="h-4 w-4" />
