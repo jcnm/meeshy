@@ -194,8 +194,13 @@ export class NotificationService {
 
       this.socket = io(APP_CONFIG.getBackendUrl(), {
         auth: { token: config.token },
-        transports: ['websocket'],
+        transports: ['websocket', 'polling'], // Permettre polling comme fallback
         autoConnect: true,
+        timeout: 30000, // 30 secondes au lieu de 20 par défaut
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
       });
 
       this.setupEventListeners();

@@ -178,7 +178,15 @@ export const TextViewer: React.FC<TextViewerProps> = ({
 
       {/* Contrôles */}
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
+        {/* Info fichier à gauche */}
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className="text-xs text-gray-600 dark:text-gray-300 truncate">
+            <span className="font-medium">{attachment.originalName}</span>
+          </div>
+        </div>
+
+        {/* Boutons d'action à droite */}
+        <div className="flex items-center gap-1 flex-shrink-0">
           {/* Bouton word wrap */}
           <Button
             onClick={toggleWordWrap}
@@ -207,13 +215,6 @@ export const TextViewer: React.FC<TextViewerProps> = ({
             )}
           </Button>
 
-          {/* Info fichier */}
-          <div className="text-xs text-gray-600 dark:text-gray-300">
-            <span className="font-medium">{attachment.originalName}</span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
           {/* Bouton plein écran / lightbox */}
           {onOpenLightbox && (
             <Button

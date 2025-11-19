@@ -864,14 +864,17 @@ export async function userRoutes(fastify: FastifyInstance) {
       }
       
       const searchTerm = q.trim();
-      
+
       // Rechercher les utilisateurs par nom, prénom, username ou email
       const users = await fastify.prisma.user.findMany({
         where: {
           AND: [
             {
-              deletedAt: null, // Exclure les utilisateurs supprimés
-              isActive: true // Seulement les utilisateurs actifs
+              isActive: true, // Seulement les utilisateurs actifs
+              OR: [
+                { deletedAt: null }, // Champ existe et est null
+                { deletedAt: { isSet: false } } // Champ n'existe pas (MongoDB)
+              ]
             },
             {
               OR: [

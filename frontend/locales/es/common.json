@@ -97,7 +97,8 @@
     },
     "languageSelector": {
       "selectLanguage": "Seleccionar un idioma...",
-      "noLanguageFound": "No se encontraron idiomas."
+      "noLanguageFound": "No se encontraron idiomas.",
+      "searchLanguage": "Buscar idioma..."
     },
     "toasts": {
       "error": "Se produjo un error",

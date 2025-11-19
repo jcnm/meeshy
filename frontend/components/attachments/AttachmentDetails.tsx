@@ -32,7 +32,7 @@ export function AttachmentDetails({
   showIcon = true,
   iconSize = 'md'
 }: AttachmentDetailsProps) {
-  const type = getAttachmentType(attachment.mimeType);
+  const type = getAttachmentType(attachment.mimeType, attachment.originalName);
 
   // Tailles d'icônes
   const iconSizeClass = {
@@ -239,7 +239,7 @@ export function AttachmentDetailsSummary({
   attachment: Attachment;
   className?: string;
 }) {
-  const type = getAttachmentType(attachment.mimeType);
+  const type = getAttachmentType(attachment.mimeType, attachment.originalName);
 
   const getIconAndLabel = () => {
     switch (type) {

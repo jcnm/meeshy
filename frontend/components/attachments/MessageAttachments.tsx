@@ -130,9 +130,9 @@ export const MessageAttachments = React.memo(function MessageAttachments({
   if (!attachments || attachments.length === 0) return null;
 
   // Séparer les images, vidéos, audios, PDFs, PPTX, markdown, texte et autres types
-  const imageAttachments = attachments.filter(att => getAttachmentType(att.mimeType) === 'image');
-  const videoAttachments = attachments.filter(att => getAttachmentType(att.mimeType) === 'video');
-  const audioAttachments = attachments.filter(att => getAttachmentType(att.mimeType) === 'audio');
+  const imageAttachments = attachments.filter(att => getAttachmentType(att.mimeType, att.originalName) === 'image');
+  const videoAttachments = attachments.filter(att => getAttachmentType(att.mimeType, att.originalName) === 'video');
+  const audioAttachments = attachments.filter(att => getAttachmentType(att.mimeType, att.originalName) === 'audio');
   const pdfAttachments = attachments.filter(att => att.mimeType === 'application/pdf');
   const pptxAttachments = attachments.filter(att =>
     att.mimeType === 'application/vnd.ms-powerpoint' ||
@@ -146,14 +146,14 @@ export const MessageAttachments = React.memo(function MessageAttachments({
     att.originalName.toLowerCase().endsWith('.md')
   );
   const textAttachments = attachments.filter(att => {
-    const type = getAttachmentType(att.mimeType);
+    const type = getAttachmentType(att.mimeType, att.originalName);
     return (type === 'text' || type === 'code') &&
            att.mimeType !== 'text/markdown' &&
            att.mimeType !== 'text/x-markdown' &&
            !att.originalName.toLowerCase().endsWith('.md');
   });
   const otherAttachments = attachments.filter(att => {
-    const type = getAttachmentType(att.mimeType);
+    const type = getAttachmentType(att.mimeType, att.originalName);
     const isPdf = att.mimeType === 'application/pdf';
     const isPptx = att.mimeType === 'application/vnd.ms-powerpoint' ||
                    att.mimeType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' ||
@@ -175,9 +175,9 @@ export const MessageAttachments = React.memo(function MessageAttachments({
     : attachments.slice(0, multiRowThreshold);
 
   const getFileIcon = (attachment: Attachment) => {
-    const type = getAttachmentType(attachment.mimeType);
+    const type = getAttachmentType(attachment.mimeType, attachment.originalName);
     const iconClass = "w-4 h-4";
-    
+
     switch (type) {
       case 'image':
         return <ImageIcon className={`${iconClass} text-blue-500`} />;
@@ -186,6 +186,7 @@ export const MessageAttachments = React.memo(function MessageAttachments({
       case 'audio':
         return <Music className={`${iconClass} text-green-500`} />;
       case 'text':
+      case 'code':
         return <FileText className={`${iconClass} text-gray-600 dark:text-gray-400`} />;
       default:
         return <File className={`${iconClass} text-gray-500 dark:text-gray-400`} />;
@@ -198,7 +199,7 @@ export const MessageAttachments = React.memo(function MessageAttachments({
   };
 
   const renderAttachment = (attachment: Attachment, index: number) => {
-    const type = getAttachmentType(attachment.mimeType);
+    const type = getAttachmentType(attachment.mimeType, attachment.originalName);
     const extension = getExtension(attachment.originalName);
 
     // Vérifier si l'utilisateur peut supprimer cet attachment

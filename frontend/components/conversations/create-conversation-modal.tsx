@@ -194,6 +194,7 @@ export function CreateConversationModal({
       const response = await apiService.get<{ success: boolean; data: User[] }>(`/users/search?q=${encodeURIComponent(query)}`);
 
       // L'API retourne { success: true, data: [...] }
+      // apiService enveloppe ça dans { data: { success: true, data: [...] } }
       if (response.data?.success && Array.isArray(response.data.data)) {
         const users = response.data.data;
         // Exclure l'utilisateur actuel et les utilisateurs déjà sélectionnés
