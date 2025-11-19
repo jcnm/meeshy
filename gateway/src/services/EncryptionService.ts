@@ -1,6 +1,7 @@
 /**
- * Encryption Service
+ * Backend Encryption Service
  *
+ * Wraps the shared encryption service with Node.js-specific adapters.
  * Handles encryption/decryption for both modes:
  * - E2EE mode: Server only stores encrypted blobs (cannot decrypt)
  * - Server mode: Server can decrypt for translation (decrypt → translate → re-encrypt)
@@ -13,133 +14,42 @@ import {
   ServerEncryptionKey,
 } from '../../shared/types/encryption';
 import {
-  generateEncryptionKey,
-  generateKeyId,
-  encryptContent,
-  decryptContent,
-  storeE2EEContent,
-  encryptKey,
-  decryptKey,
-} from '../utils/encryption';
+  SharedEncryptionService,
+  prepareForStorage,
+  reconstructPayload,
+} from '../../shared/encryption/index';
+import { nodeCryptoAdapter } from '../adapters/node-crypto-adapter';
+import { nodeKeyStorageAdapter } from '../adapters/node-key-storage-adapter';
 
 /**
- * Simple in-memory key vault
- * In production, this should be replaced with a proper vault service (HashiCorp Vault, AWS KMS, etc.)
+ * Backend Encryption Service
+ *
+ * Uses shared encryption logic with Node.js-specific crypto and storage adapters.
  */
-class KeyVault {
-  private keys: Map<string, Buffer> = new Map();
-  private keyMetadata: Map<string, ServerEncryptionKey> = new Map();
-  private masterKey: Buffer;
+class BackendEncryptionService {
+  private sharedService: SharedEncryptionService;
+  private isInitialized = false;
 
   constructor() {
-    // In production, this should come from environment variable or secure storage
-    const masterKeyEnv = process.env.ENCRYPTION_MASTER_KEY;
-    if (masterKeyEnv) {
-      this.masterKey = Buffer.from(masterKeyEnv, 'base64');
-    } else {
-      // Generate a temporary master key (NOT for production!)
-      this.masterKey = generateEncryptionKey();
-      console.warn(
-        'WARNING: Using temporary encryption master key. Set ENCRYPTION_MASTER_KEY environment variable in production!'
-      );
-    }
+    // Initialize with Node.js adapters
+    this.sharedService = new SharedEncryptionService({
+      cryptoAdapter: nodeCryptoAdapter,
+      keyStorage: nodeKeyStorageAdapter,
+    });
   }
 
   /**
-   * Create and store a new server encryption key
+   * Initialize encryption service
+   * For backend, we initialize with a "system" user
    */
-  async createKey(): Promise<ServerEncryptionKey> {
-    const keyId = generateKeyId();
-    const key = generateEncryptionKey();
+  async initialize(): Promise<void> {
+    if (this.isInitialized) return;
 
-    // Encrypt the key with master key for storage
-    const encryptedKeyData = encryptKey(key, this.masterKey);
-
-    const keyMetadata: ServerEncryptionKey = {
-      id: keyId,
-      algorithm: 'aes-256-gcm',
-      publicKey: key.toString('base64'), // For symmetric encryption, this is just the key
-      privateKey: encryptedKeyData.encryptedKey, // Encrypted with master key
-      createdAt: new Date(),
-    };
-
-    // Store in memory
-    this.keys.set(keyId, key);
-    this.keyMetadata.set(keyId, keyMetadata);
-
-    return keyMetadata;
+    // Backend uses "system" as the user context
+    await this.sharedService.initialize('system');
+    this.isInitialized = true;
   }
 
-  /**
-   * Get a key by ID
-   */
-  async getKey(keyId: string): Promise<Buffer | null> {
-    // Check in-memory cache
-    if (this.keys.has(keyId)) {
-      return this.keys.get(keyId)!;
-    }
-
-    // Try to load from metadata (in production, this would load from vault)
-    const metadata = this.keyMetadata.get(keyId);
-    if (!metadata) {
-      return null;
-    }
-
-    // Decrypt the key
-    const encryptedKeyData = {
-      encryptedKey: metadata.privateKey,
-      iv: '', // Would be stored with metadata
-      authTag: '', // Would be stored with metadata
-    };
-
-    // For simplicity, we'll keep the key in memory
-    // In production, decrypt from vault storage
-    return this.keys.get(keyId) || null;
-  }
-
-  /**
-   * Get current active key (or create one if none exists)
-   */
-  async getCurrentKey(): Promise<{ keyId: string; key: Buffer }> {
-    // For simplicity, return the first key or create a new one
-    if (this.keys.size === 0) {
-      const metadata = await this.createKey();
-      return {
-        keyId: metadata.id,
-        key: this.keys.get(metadata.id)!,
-      };
-    }
-
-    const firstKeyId = Array.from(this.keys.keys())[0];
-    return {
-      keyId: firstKeyId,
-      key: this.keys.get(firstKeyId)!,
-    };
-  }
-
-  /**
-   * Rotate encryption key
-   */
-  async rotateKey(oldKeyId: string): Promise<ServerEncryptionKey> {
-    const newKey = await this.createKey();
-
-    // Mark old key metadata as rotated
-    const oldMetadata = this.keyMetadata.get(oldKeyId);
-    if (oldMetadata) {
-      oldMetadata.rotatedAt = new Date();
-    }
-
-    return newKey;
-  }
-}
-
-// Singleton instance
-const keyVault = new KeyVault();
-
-/**
- * Encryption Service
- */
-export class EncryptionService {
   /**
    * Encrypt message content based on conversation mode
    *
@@ -153,16 +63,21 @@ export class EncryptionService {
     mode: EncryptionMode,
     existingPayload?: EncryptedPayload
   ): Promise<EncryptedPayload> {
+    await this.initialize();
+
     if (mode === 'e2ee') {
       // E2EE mode: Client already encrypted the content
       if (!existingPayload) {
         throw new Error('E2EE mode requires client-encrypted payload');
       }
-      return storeE2EEContent(existingPayload.ciphertext, existingPayload.metadata);
+      // Just pass through the client-encrypted payload
+      return existingPayload;
     } else {
       // Server mode: Encrypt on server for translation capability
-      const { keyId, key } = await keyVault.getCurrentKey();
-      return encryptContent(content, key, keyId);
+      // Generate a deterministic conversation ID based on content hash (or use actual conversationId if available)
+      const conversationId = 'server-key'; // Backend uses a single key for server mode
+
+      return await this.sharedService.encryptMessage(content, conversationId, mode);
     }
   }
 
@@ -174,6 +89,8 @@ export class EncryptionService {
    * @throws Error if message is E2EE mode (server cannot decrypt)
    */
   async decryptMessage(encryptedPayload: EncryptedPayload): Promise<string> {
+    await this.initialize();
+
     const { metadata } = encryptedPayload;
 
     // Check if server can decrypt
@@ -181,14 +98,8 @@ export class EncryptionService {
       throw new Error('Cannot decrypt E2EE messages on server');
     }
 
-    // Get decryption key
-    const key = await keyVault.getKey(metadata.keyId);
-    if (!key) {
-      throw new Error(`Decryption key not found: ${metadata.keyId}`);
-    }
-
-    // Decrypt
-    return decryptContent(encryptedPayload, key);
+    // Use shared service to decrypt
+    return await this.sharedService.decryptMessage(encryptedPayload);
   }
 
   /**
@@ -203,6 +114,8 @@ export class EncryptionService {
     encryptedPayload: EncryptedPayload,
     translatedContent: string
   ): Promise<EncryptedPayload> {
+    await this.initialize();
+
     const { metadata } = encryptedPayload;
 
     // Verify this is server mode
@@ -211,19 +124,36 @@ export class EncryptionService {
     }
 
     // Re-encrypt with same key
-    const key = await keyVault.getKey(metadata.keyId);
-    if (!key) {
-      throw new Error(`Encryption key not found: ${metadata.keyId}`);
-    }
-
-    return encryptContent(translatedContent, key, metadata.keyId);
+    const conversationId = 'server-key';
+    return await this.sharedService.encryptMessage(
+      translatedContent,
+      conversationId,
+      'server'
+    );
   }
 
   /**
    * Get or create server encryption key for a conversation
    */
   async getOrCreateConversationKey(): Promise<string> {
-    const { keyId } = await keyVault.getCurrentKey();
+    await this.initialize();
+
+    // Check if we have a server key
+    const conversationKey = await nodeKeyStorageAdapter.getConversationKey('server-key');
+
+    if (conversationKey) {
+      return conversationKey.keyId;
+    }
+
+    // Generate new server key
+    const key = await nodeCryptoAdapter.generateEncryptionKey();
+    const keyId = `server-key-${Date.now()}`;
+    const keyData = await nodeCryptoAdapter.exportKey(key);
+    const keyString = Buffer.from(keyData).toString('base64');
+
+    await nodeKeyStorageAdapter.storeKey(keyId, keyString);
+    await nodeKeyStorageAdapter.storeConversationKey('server-key', keyId, 'server');
+
     return keyId;
   }
 
@@ -231,7 +161,24 @@ export class EncryptionService {
    * Rotate encryption key
    */
   async rotateKey(currentKeyId: string): Promise<ServerEncryptionKey> {
-    return keyVault.rotateKey(currentKeyId);
+    await this.initialize();
+
+    // Generate new key
+    const key = await nodeCryptoAdapter.generateEncryptionKey();
+    const newKeyId = `server-key-${Date.now()}`;
+    const keyData = await nodeCryptoAdapter.exportKey(key);
+    const keyString = Buffer.from(keyData).toString('base64');
+
+    await nodeKeyStorageAdapter.storeKey(newKeyId, keyString);
+
+    return {
+      id: newKeyId,
+      algorithm: 'aes-256-gcm',
+      publicKey: keyString,
+      privateKey: keyString, // For symmetric encryption, public/private are the same
+      createdAt: new Date(),
+      rotatedAt: new Date(),
+    };
   }
 
   /**
@@ -252,10 +199,12 @@ export class EncryptionService {
       return null;
     }
 
-    return {
-      ciphertext: encryptedContent,
-      metadata: encryptionMetadata as EncryptionMetadata,
-    };
+    try {
+      return reconstructPayload(encryptedContent, encryptionMetadata);
+    } catch (error) {
+      console.error('[EncryptionService] Failed to parse encrypted content:', error);
+      return null;
+    }
   }
 
   /**
@@ -263,14 +212,19 @@ export class EncryptionService {
    */
   prepareForStorage(payload: EncryptedPayload): {
     encryptedContent: string;
-    encryptionMetadata: EncryptionMetadata;
+    encryptionMetadata: Record<string, any>;
   } {
-    return {
-      encryptedContent: payload.ciphertext,
-      encryptionMetadata: payload.metadata,
-    };
+    return prepareForStorage(payload);
+  }
+
+  /**
+   * Get encryption service status
+   */
+  getStatus() {
+    return this.sharedService.getStatus();
   }
 }
 
 // Export singleton instance
-export const encryptionService = new EncryptionService();
+export const encryptionService = new BackendEncryptionService();
+export { BackendEncryptionService as EncryptionService };

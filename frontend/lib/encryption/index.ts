@@ -1,14 +1,27 @@
 /**
- * Encryption Module Exports
+ * Frontend Encryption Module
  *
- * Main entry point for encryption functionality
+ * Uses shared encryption logic with browser-specific adapters (Web Crypto API + IndexedDB).
  */
 
-export { encryptionService, EncryptionService } from './encryption-service';
-export { keyStorage } from './key-storage';
-export * from './crypto-utils';
+import { SharedEncryptionService } from '@/shared/encryption';
+import { webCryptoAdapter } from './adapters/web-crypto-adapter';
+import { indexedDBKeyStorageAdapter } from './adapters/indexeddb-key-storage-adapter';
 
-// Re-export types from shared
+// Create frontend encryption service with browser adapters
+const frontendEncryptionService = new SharedEncryptionService({
+  cryptoAdapter: webCryptoAdapter,
+  keyStorage: indexedDBKeyStorageAdapter,
+});
+
+// Export the configured service
+export const encryptionService = frontendEncryptionService;
+export { SharedEncryptionService as EncryptionService };
+
+// Re-export adapters for advanced usage
+export { webCryptoAdapter, indexedDBKeyStorageAdapter };
+
+// Re-export shared types and utilities
 export type {
   EncryptionMode,
   EncryptionProtocol,
@@ -25,3 +38,9 @@ export {
   canAutoTranslate,
   getEncryptionStatus,
 } from '@/shared/types/encryption';
+
+export {
+  prepareForStorage,
+  reconstructPayload,
+  validateMetadata,
+} from '@/shared/encryption';
