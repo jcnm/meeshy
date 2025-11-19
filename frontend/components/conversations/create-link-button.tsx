@@ -258,7 +258,8 @@ export function CreateLinkButton({
   const handleQuickLinkConfirm = (config: QuickLinkConfig) => {
     if (pendingConversationId) {
       createQuickLink(pendingConversationId, config);
-      setIsQuickConfigModalOpen(false);
+      // Ne PAS fermer le modal ici - il restera ouvert pour afficher l'étape 2
+      // setIsQuickConfigModalOpen(false);
     }
   };
 
