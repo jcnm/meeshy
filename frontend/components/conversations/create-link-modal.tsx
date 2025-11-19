@@ -1587,19 +1587,19 @@ export function CreateLinkModalV2({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl w-[95vw] max-h-[95vh] p-0 gap-0 flex flex-col sm:max-w-2xl sm:w-[90vw] sm:max-h-[90vh] md:w-[85vw] md:max-h-[85vh]">
-        <DialogHeader className="flex-shrink-0 bg-background border-b px-3 py-3 sm:px-6 sm:py-4">
-          <DialogTitle className="text-base sm:text-xl font-bold flex items-center">
+      <DialogContent className="max-w-2xl w-[95vw] max-h-[95vh] p-0 gap-0 flex flex-col sm:max-w-2xl sm:w-[90vw] sm:max-h-[90vh] md:w-[85vw] md:max-h-[85vh] dark:bg-gray-900 dark:border-gray-800">
+        <DialogHeader className="flex-shrink-0 bg-background dark:bg-gray-900 border-b dark:border-gray-800 px-3 py-3 sm:px-6 sm:py-4">
+          <DialogTitle className="text-base sm:text-xl font-bold flex items-center dark:text-gray-100">
             <Link2 className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
             {t('createLinkModal.title')}
           </DialogTitle>
-          <DialogDescription className="text-xs sm:text-sm">
+          <DialogDescription className="text-xs sm:text-sm dark:text-gray-400">
             {t('createLinkModal.description')}
           </DialogDescription>
         </DialogHeader>
 
         {/* Scrollable content area */}
-        <div className="flex-1 overflow-y-auto px-3 sm:px-6">
+        <div className="flex-1 overflow-y-auto px-3 sm:px-6 dark:bg-gray-900">
           {/* Progress indicator - Timeline horizontale */}
           <div className="py-6">
             <div className="flex items-center justify-between">

@@ -347,9 +347,9 @@ function DashboardPageContent() {
 
         {/* Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
-          <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+          <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white dark:from-blue-600 dark:to-blue-700">
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium">{t('stats.conversations')}</CardTitle>
+              <CardTitle className="text-lg font-medium dark:text-gray-100">{t('stats.conversations')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
@@ -362,9 +362,9 @@ function DashboardPageContent() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
+          <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white dark:from-green-600 dark:to-green-700">
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium">{t('stats.communities')}</CardTitle>
+              <CardTitle className="text-lg font-medium dark:text-gray-100">{t('stats.communities')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
@@ -377,9 +377,9 @@ function DashboardPageContent() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+          <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white dark:from-purple-600 dark:to-purple-700">
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium">{t('stats.messages')}</CardTitle>
+              <CardTitle className="text-lg font-medium dark:text-gray-100">{t('stats.messages')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
@@ -392,9 +392,9 @@ function DashboardPageContent() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+          <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white dark:from-orange-600 dark:to-orange-700">
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium">{t('stats.activeConversationsTitle')}</CardTitle>
+              <CardTitle className="text-lg font-medium dark:text-gray-100">{t('stats.activeConversationsTitle')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
@@ -407,9 +407,9 @@ function DashboardPageContent() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white">
+          <Card className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white dark:from-indigo-600 dark:to-indigo-700">
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium">{t('stats.translations')}</CardTitle>
+              <CardTitle className="text-lg font-medium dark:text-gray-100">{t('stats.translations')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
@@ -422,9 +422,9 @@ function DashboardPageContent() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-pink-500 to-pink-600 text-white">
+          <Card className="bg-gradient-to-r from-pink-500 to-pink-600 text-white dark:from-pink-600 dark:to-pink-700">
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium">{t('stats.links')}</CardTitle>
+              <CardTitle className="text-lg font-medium dark:text-gray-100">{t('stats.links')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
@@ -441,12 +441,12 @@ function DashboardPageContent() {
         {/* Main content in grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Recent conversations */}
-          <Card className="dark:bg-gray-800/50 dark:border-gray-700">
+          <Card className="bg-white dark:bg-gray-800/50 border-gray-200 dark:border-gray-700">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center space-x-2">
+                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-gray-100">
                   <MessageSquare className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  <span className="dark:text-gray-100">{t('recentConversations')}</span>
+                  <span>{t('recentConversations')}</span>
                 </CardTitle>
                                   <Button 
                     variant="ghost" 
@@ -658,7 +658,7 @@ function DashboardPageContent() {
                 
                 {recentConversations.length === 0 && (
                   <div className="text-center py-8">
-                    <MessageSquare className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                    <MessageSquare className="h-12 w-12 text-gray-300 dark:text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-500 dark:text-gray-400 text-sm">{t('emptyStates.noRecentConversations')}</p>
                                           <Button 
                         variant="outline" 
@@ -675,12 +675,12 @@ function DashboardPageContent() {
           </Card>
 
           {/* Recent groups */}
-          <Card className="dark:bg-gray-800/50 dark:border-gray-700">
+          <Card className="bg-white dark:bg-gray-800/50 border-gray-200 dark:border-gray-700">
             <CardHeader>
               <div className="flex items-center justify-between">
-                                  <CardTitle className="flex items-center space-x-2">
+                                  <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-gray-100">
                     <Users className="h-5 w-5 text-green-600 dark:text-green-400" />
-                    <span className="dark:text-gray-100">{t('recentCommunities')}</span>
+                    <span>{t('recentCommunities')}</span>
                   </CardTitle>
                                   <Button 
                     variant="ghost" 
@@ -732,7 +732,7 @@ function DashboardPageContent() {
                 
                 {recentCommunities.length === 0 && (
                   <div className="text-center py-8">
-                    <Users className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                    <Users className="h-12 w-12 text-gray-300 dark:text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-500 dark:text-gray-400 text-sm">{t('emptyStates.noRecentCommunities')}</p>
                                           <Button 
                         variant="outline" 
@@ -751,13 +751,13 @@ function DashboardPageContent() {
 
         {/* Quick actions at bottom */}
         <div className="mt-8">
-          <Card className="dark:bg-gray-800/50 dark:border-gray-700">
+          <Card className="bg-white dark:bg-gray-800/50 border-gray-200 dark:border-gray-700">
             <CardHeader>
-                              <CardTitle className="flex items-center space-x-2">
+                              <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-gray-100">
                   <Zap className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
-                  <span className="dark:text-gray-100">{t('quickActions.title')}</span>
+                  <span>{t('quickActions.title')}</span>
                 </CardTitle>
-                <CardDescription className="dark:text-gray-400">
+                <CardDescription className="text-gray-600 dark:text-gray-400">
                   {t('quickActions.description')}
                 </CardDescription>
             </CardHeader>
