@@ -20,6 +20,9 @@ import { TrackingLinkService } from './TrackingLinkService';
 import { MentionService } from './MentionService';
 import { NotificationService } from './NotificationService';
 import { MessageReadStatusService } from './MessageReadStatusService';
+import { encryptionService } from './EncryptionService';
+import { isMessageEncrypted, canAutoTranslate } from '../../shared/types/encryption';
+import type { EncryptedPayload, EncryptionMode } from '../../shared/types/encryption';
 
 export class MessagingService {
   private trackingLinkService: TrackingLinkService;
@@ -661,6 +664,7 @@ export class MessagingService {
     messageType?: string;
     replyToId?: string;
     encrypted?: boolean;
+    encryptedPayload?: EncryptedPayload; // For E2EE mode - client provides encrypted content
     mentionedUserIds?: readonly string[];  // IDs des utilisateurs mentionnés depuis le frontend
   }): Promise<Message> {
     // ÉTAPE 1: Traiter les liens AVANT de sauvegarder le message
@@ -671,17 +675,64 @@ export class MessagingService {
       undefined // messageId sera mis à jour après création
     );
 
+    // ÉTAPE 1.5: Check conversation encryption settings
+    const conversation = await this.prisma.conversation.findUnique({
+      where: { id: data.conversationId },
+      select: {
+        encryptionEnabledAt: true,
+        encryptionMode: true,
+        encryptionProtocol: true,
+        serverEncryptionKeyId: true,
+      }
+    });
+
+    const messageType = data.messageType || 'text';
+
+    // Determine if this message should be encrypted
+    const shouldEncrypt = conversation?.encryptionEnabledAt && messageType !== 'system';
+
+    let encryptedContent: string | null = null;
+    let encryptionMetadata: any = null;
+    let plaintextContent = processedContent.trim();
+
+    if (shouldEncrypt && conversation?.encryptionMode) {
+      // Message should be encrypted
+      const mode = conversation.encryptionMode as EncryptionMode;
+
+      if (mode === 'e2ee') {
+        // E2EE mode: Client provides encrypted content
+        if (!data.encryptedPayload) {
+          throw new Error('E2EE mode requires encrypted payload from client');
+        }
+        const stored = encryptionService.prepareForStorage(data.encryptedPayload);
+        encryptedContent = stored.encryptedContent;
+        encryptionMetadata = stored.encryptionMetadata;
+        plaintextContent = ''; // Don't store plaintext for E2EE
+      } else {
+        // Server mode: Encrypt on server
+        const encrypted = await encryptionService.encryptMessage(
+          processedContent.trim(),
+          mode
+        );
+        const stored = encryptionService.prepareForStorage(encrypted);
+        encryptedContent = stored.encryptedContent;
+        encryptionMetadata = stored.encryptionMetadata;
+        // Keep plaintextContent for server mode (server can decrypt for translation)
+      }
+    }
+
     // ÉTAPE 2: Créer le message avec le contenu traité
     const message = await this.prisma.message.create({
       data: {
         conversationId: data.conversationId,
         senderId: data.senderId,
         anonymousSenderId: data.anonymousSenderId,
-        content: processedContent.trim(),
+        content: plaintextContent,
+        encryptedContent,
+        encryptionMetadata,
         originalLanguage: data.originalLanguage,
-        messageType: data.messageType || 'text',
+        messageType,
         replyToId: data.replyToId
-        // Note: priority et encrypted ne sont pas dans le schéma actuel
       },
       include: {
         sender: {
@@ -917,15 +968,67 @@ export class MessagingService {
 
   /**
    * Queue le message pour traduction asynchrone
+   * ENCRYPTION: Only translate if conversation allows it (plaintext or server mode)
    */
   private async queueTranslation(message: Message, originalLanguage: string): Promise<any> {
     try {
+      // Check if conversation allows translation
+      const conversation = await this.prisma.conversation.findUnique({
+        where: { id: message.conversationId },
+        select: {
+          encryptionEnabledAt: true,
+          encryptionMode: true,
+          autoTranslateEnabled: true,
+        }
+      });
+
+      if (!conversation) {
+        console.warn('[MessagingService] Conversation not found for translation');
+        return {
+          status: 'skipped',
+          reason: 'Conversation not found'
+        };
+      }
+
+      // Check if translation is allowed based on encryption mode
+      const translationAllowed = canAutoTranslate({
+        encryptionEnabledAt: conversation.encryptionEnabledAt,
+        encryptionMode: conversation.encryptionMode as EncryptionMode | null,
+      });
+
+      if (!translationAllowed) {
+        console.log('[MessagingService] Translation skipped: E2EE mode enabled');
+        return {
+          status: 'skipped',
+          reason: 'E2EE encryption prevents server-side translation'
+        };
+      }
+
+      if (!conversation.autoTranslateEnabled) {
+        return {
+          status: 'skipped',
+          reason: 'Auto-translation disabled for this conversation'
+        };
+      }
+
+      // For server-encrypted mode, decrypt content before translation
+      let contentToTranslate = message.content;
+      if (conversation.encryptionMode === 'server' && message.encryptedContent) {
+        const payload = encryptionService.parseEncryptedContent(
+          message.encryptedContent,
+          message.encryptionMetadata
+        );
+        if (payload) {
+          contentToTranslate = await encryptionService.decryptMessage(payload);
+        }
+      }
+
       await this.translationService.handleNewMessage({
         id: message.id,
         conversationId: message.conversationId,
         senderId: message.senderId,
         anonymousSenderId: message.anonymousSenderId,
-        content: message.content,
+        content: contentToTranslate,
         originalLanguage,
         messageType: message.messageType,
         replyToId: message.replyToId
@@ -940,7 +1043,7 @@ export class MessagingService {
       };
 
     } catch (error) {
-      console.error('[UnifiedMessageHandler] Error queuing translation:', error);
+      console.error('[MessagingService] Error queuing translation:', error);
       return {
         status: 'failed',
         languagesRequested: [],

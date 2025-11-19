@@ -29,6 +29,7 @@ import { AuthMiddleware, createUnifiedAuthMiddleware } from './middleware/auth';
 import { registerGlobalRateLimiter } from './middleware/rate-limiter';
 import { authRoutes } from './routes/auth';
 import { conversationRoutes } from './routes/conversations';
+import conversationEncryptionRoutes from './routes/conversation-encryption';
 import { linksRoutes } from './routes/links';
 import { trackingLinksRoutes } from './routes/tracking-links';
 import { anonymousRoutes } from './routes/anonymous';
@@ -45,6 +46,7 @@ import { messagesRoutes } from './routes/admin/messages';
 import { userRoutes } from './routes/users';
 import userPreferencesRoutes from './routes/user-preferences';
 import conversationPreferencesRoutes from './routes/conversation-preferences';
+import userEncryptionPreferencesRoutes from './routes/user-encryption-preferences';
 import { translationRoutes } from './routes/translation-non-blocking';
 import { translationRoutes as translationBlockingRoutes } from './routes/translation';
 import { maintenanceRoutes } from './routes/maintenance';
@@ -613,6 +615,10 @@ class MeeshyServer {
     await this.server.register(async (fastify) => {
       await conversationRoutes(fastify);
     }, { prefix: '/api' });
+
+    // Register conversation encryption routes
+    await this.server.register(conversationEncryptionRoutes);
+
     // Register links management routes
     await this.server.register(linksRoutes, { prefix: '/api' });
     
@@ -657,6 +663,9 @@ class MeeshyServer {
     
     // Register user preferences routes with /api prefix
     await this.server.register(userPreferencesRoutes, { prefix: '/api' });
+
+    // Register user encryption preferences routes
+    await this.server.register(userEncryptionPreferencesRoutes);
 
     // Register conversation preferences routes with /api prefix
     await this.server.register(conversationPreferencesRoutes, { prefix: '/api' });
