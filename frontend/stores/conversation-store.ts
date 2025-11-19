@@ -25,6 +25,7 @@ interface ConversationActions {
   selectConversation: (conversationId: string) => void;
   addConversation: (conversation: Conversation) => void;
   updateConversation: (conversationId: string, updates: Partial<Conversation>) => void;
+  updateUnreadCount: (conversationId: string, unreadCount: number) => void;
   removeConversation: (conversationId: string) => void;
   
   // Messages
@@ -145,6 +146,17 @@ export const useConversationStore = create<ConversationStore>()(
           ),
           currentConversation: state.currentConversation?.id === conversationId
             ? { ...state.currentConversation, ...updates }
+            : state.currentConversation,
+        }));
+      },
+
+      updateUnreadCount: (conversationId: string, unreadCount: number) => {
+        set((state) => ({
+          conversations: state.conversations.map(c =>
+            c.id === conversationId ? { ...c, unreadCount } : c
+          ),
+          currentConversation: state.currentConversation?.id === conversationId
+            ? { ...state.currentConversation, unreadCount }
             : state.currentConversation,
         }));
       },

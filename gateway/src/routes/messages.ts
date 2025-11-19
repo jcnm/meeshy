@@ -476,42 +476,30 @@ export default async function messageRoutes(fastify: FastifyInstance) {
       }
 
       if (status === 'read') {
-        // Utiliser upsert pour créer ou mettre à jour le statut de lecture
-        const status = await prisma.messageStatus.upsert({
-          where: {
-            messageId_userId: {
-              messageId: messageId,
-              userId: userId
-            }
-          },
-          create: {
-            messageId: messageId,
-            userId: userId,
-            readAt: new Date()
-          },
-          update: {
-            readAt: new Date()
-          },
-          include: {
-            user: {
-              select: {
-                id: true,
-                username: true
-              }
-            }
-          }
-        });
+        // TODO: Cette route utilise l'ancien système de MessageStatus
+        // Elle devrait être remplacée par /conversations/:conversationId/mark-as-read
+        // Pour l'instant, on utilise le MessageReadStatusService avec le nouveau système
+
+        const { MessageReadStatusService } = await import('../services/MessageReadStatusService.js');
+        const readStatusService = new MessageReadStatusService(prisma);
+
+        // Marquer tous les messages de la conversation comme lus
+        await readStatusService.markMessagesAsRead(
+          userId,
+          message.conversationId,
+          messageId  // Utiliser ce message comme curseur
+        );
 
         // Diffuser le statut de lecture via Socket.IO
         try {
           const socketIOManager = socketIOHandler.getManager();
           if (socketIOManager) {
             const room = `conversation_${message.conversationId}`;
-            (socketIOManager as any).io.to(room).emit('message:read', {
-              messageId,
-              userId,
+            (socketIOManager as any).io.to(room).emit('read-status:updated', {
               conversationId: message.conversationId,
-              readAt: status.readAt
+              userId,
+              type: 'read',
+              updatedAt: new Date()
             });
           }
         } catch (socketError) {
@@ -521,7 +509,6 @@ export default async function messageRoutes(fastify: FastifyInstance) {
 
         return reply.send({
           success: true,
-          data: status,
           message: 'Message marqué comme lu'
         });
       }

@@ -479,31 +479,13 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         orderBy: { lastMessageAt: 'desc' }
       });
 
-      // Optimisation : Calculer tous les unreadCounts en une seule requête groupée au lieu de N+1
+      // Optimisation : Calculer tous les unreadCounts avec le système de curseur
       const conversationIds = conversations.map(c => c.id);
 
-      const unreadCounts = await prisma.message.groupBy({
-        by: ['conversationId'],
-        where: {
-          conversationId: { in: conversationIds },
-          isDeleted: false,
-          NOT: {
-            status: {
-              some: {
-                userId: userId
-              }
-            }
-          }
-        },
-        _count: {
-          id: true
-        }
-      });
-
-      // Créer un map pour un accès O(1)
-      const unreadCountMap = new Map(
-        unreadCounts.map(uc => [uc.conversationId, uc._count.id])
-      );
+      // Utiliser MessageReadStatusService pour calculer les unreadCounts
+      const { MessageReadStatusService } = await import('../services/MessageReadStatusService.js');
+      const readStatusService = new MessageReadStatusService(prisma);
+      const unreadCountMap = await readStatusService.getUnreadCountsForConversations(userId, conversationIds);
 
       // Compter le nombre total de conversations (optionnel pour performance)
       let totalCount = 0;
@@ -663,6 +645,25 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         id,
         () => [] // REST ne connaît pas les sockets ici; la partie onlineUsers sera vide si non connue par cache
       );
+
+      // Marquer automatiquement toutes les notifications de cette conversation comme lues
+      try {
+        const notificationsMarked = await prisma.notification.updateMany({
+          where: {
+            userId,
+            conversationId,
+            isRead: false
+          },
+          data: { isRead: true }
+        });
+
+        if (notificationsMarked.count > 0) {
+          fastify.log.info(`✅ Auto-marqué ${notificationsMarked.count} notification(s) comme lues pour conversation ${conversationId}, userId ${userId}`);
+        }
+      } catch (notifError) {
+        // Ne pas bloquer la réponse si le marquage des notifications échoue
+        console.error(`❌ Erreur lors du marquage auto des notifications pour conversation ${conversationId}:`, notifError);
+      }
 
       reply.send({
         success: true,
@@ -1150,29 +1151,12 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         const messageIds = messages.map(m => m.id);
 
         try {
-          // Optimisation : Marquer les messages comme reçus (utiliser upsert pour éviter les erreurs de duplication)
-          for (const messageId of messageIds) {
-            try {
-              await prisma.messageStatus.upsert({
-                where: {
-                  messageId_userId: {
-                    messageId,
-                    userId
-                  }
-                },
-                create: {
-                  messageId,
-                  userId,
-                  receivedAt: new Date()
-                },
-                update: {
-                  receivedAt: new Date()
-                }
-              });
-            } catch (err) {
-              console.warn('[GATEWAY] Error upserting message status:', err);
-            }
-          }
+          // Utiliser le nouveau MessageReadStatusService (système de curseur)
+          const { MessageReadStatusService } = await import('../services/MessageReadStatusService.js');
+          const readStatusService = new MessageReadStatusService(prisma);
+
+          // Marquer les messages comme reçus (curseur automatiquement placé sur le dernier message)
+          await readStatusService.markMessagesAsReceived(userId, conversationId);
         } catch (error) {
           console.warn('[GATEWAY] Error marking messages as received:', error);
         }
@@ -1250,28 +1234,15 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // Marquer tous les messages comme lus (utiliser des upserts pour éviter les erreurs de duplication)
-      for (const message of unreadMessages) {
-        try {
-          await prisma.messageStatus.upsert({
-            where: {
-              messageId_userId: {
-                messageId: message.id,
-                userId: userId
-              }
-            },
-            create: {
-              messageId: message.id,
-              userId: userId,
-              readAt: new Date()
-            },
-            update: {
-              readAt: new Date()
-            }
-          });
-        } catch (err) {
-          console.warn('[GATEWAY] Error upserting message status for marking as read:', err);
-        }
+      // Marquer tous les messages comme lus (utiliser le nouveau système de curseur)
+      try {
+        const { MessageReadStatusService } = await import('../services/MessageReadStatusService.js');
+        const readStatusService = new MessageReadStatusService(prisma);
+
+        // Marquer comme lu (curseur automatiquement placé sur le dernier message)
+        await readStatusService.markMessagesAsRead(userId, conversationId);
+      } catch (err) {
+        console.warn('[GATEWAY] Error marking messages as read:', err);
       }
 
       return reply.send({
@@ -1415,20 +1386,14 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         data: { lastMessageAt: new Date() }
       });
 
-      // Marquer le message comme lu pour l'expéditeur
-      await prisma.messageStatus.upsert({
-        where: {
-          messageId_userId: {
-            messageId: message.id,
-            userId
-          }
-        },
-        create: {
-          messageId: message.id,
-          userId
-        },
-        update: {}
-      });
+      // Marquer le message comme lu pour l'expéditeur (nouveau système de curseur)
+      try {
+        const { MessageReadStatusService } = await import('../services/MessageReadStatusService.js');
+        const readStatusService = new MessageReadStatusService(prisma);
+        await readStatusService.markMessagesAsRead(userId, conversationId, message.id);
+      } catch (err) {
+        console.warn('[GATEWAY] Error marking message as read for sender:', err);
+      }
 
       // TRAITEMENT DES MENTIONS ET NOTIFICATIONS
       const mentionService = (fastify as any).mentionService;
@@ -1610,28 +1575,13 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       });
 
       if (unreadMessages.length > 0) {
-        // Utiliser des upserts pour éviter les erreurs de duplication
-        for (const message of unreadMessages) {
-          try {
-            await prisma.messageStatus.upsert({
-              where: {
-                messageId_userId: {
-                  messageId: message.id,
-                  userId
-                }
-              },
-              create: {
-                messageId: message.id,
-                userId,
-                readAt: new Date()
-              },
-              update: {
-                readAt: new Date()
-              }
-            });
-          } catch (err) {
-            console.warn('[GATEWAY] Error upserting message status:', err);
-          }
+        // Utiliser le nouveau système de curseur pour marquer comme lu
+        try {
+          const { MessageReadStatusService } = await import('../services/MessageReadStatusService.js');
+          const readStatusService = new MessageReadStatusService(prisma);
+          await readStatusService.markMessagesAsRead(userId, conversationId);
+        } catch (err) {
+          console.warn('[GATEWAY] Error marking messages as read:', err);
         }
       }
 

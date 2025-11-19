@@ -562,6 +562,18 @@ class MeeshySocketIOService {
       this.onlineStatsListeners.forEach(listener => listener(data));
     });
 
+    // Événement de mise à jour du compteur de messages non lus
+    this.socket.on('conversation:unread-updated', (data: { conversationId: string; unreadCount: number }) => {
+      logger.debug('[SOCKETIO]', 'Unread count updated', {
+        conversationId: data.conversationId,
+        unreadCount: data.unreadCount
+      });
+
+      // Mettre à jour le store
+      const { useConversationStore } = require('@/stores/conversation-store');
+      useConversationStore.getState().updateUnreadCount(data.conversationId, data.unreadCount);
+    });
+
     // Événements de réactions
     this.socket.on(SERVER_EVENTS.REACTION_ADDED, (data: any) => {
       this.reactionAddedListeners.forEach((listener) => {
