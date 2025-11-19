@@ -91,6 +91,39 @@ model User {
   conversationCategories      UserConversationCategory[]
   dmaEnrollments              DMAEnrollment[]
   enabledEncryptionFor        Conversation[]           @relation("ConversationEncryptionEnabler")
+  signalPreKeyBundle          SignalPreKeyBundle?
+}
+
+/// Signal Protocol pre-key bundle for E2EE
+/// Stores the public keys needed for other users to establish encrypted sessions
+model SignalPreKeyBundle {
+  id                    String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId                String    @unique @db.ObjectId
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Identity key (long-term identity)
+  identityKey           String    // Base64-encoded public identity key
+  registrationId        Int       // Unique registration ID
+  deviceId              Int       // Device ID (usually 1 for primary device)
+
+  // One-time pre-key (consumed after first use)
+  preKeyId              Int?      // ID of the one-time pre-key
+  preKeyPublic          String?   // Base64-encoded public pre-key
+
+  // Signed pre-key (rotated periodically)
+  signedPreKeyId        Int       // ID of the signed pre-key
+  signedPreKeyPublic    String    // Base64-encoded public signed pre-key
+  signedPreKeySignature String    // Base64-encoded signature by identity key
+
+  // Kyber pre-key (post-quantum)
+  kyberPreKeyId         Int?      // ID of the Kyber pre-key
+  kyberPreKeyPublic     String?   // Base64-encoded public Kyber pre-key
+  kyberPreKeySignature  String?   // Base64-encoded signature
+
+  createdAt             DateTime  @default(now())
+  lastRotatedAt         DateTime  @default(now())
+
+  @@map("signal_prekey_bundles")
 }
 
 /// Conversation entre utilisateurs (direct, group, public, global)

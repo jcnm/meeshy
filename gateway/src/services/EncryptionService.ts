@@ -18,36 +18,52 @@ import {
   prepareForStorage,
   reconstructPayload,
 } from '../../shared/encryption/index';
+import { SignalProtocolService } from '../../shared/encryption/signal/signal-protocol-service';
+import type { PreKeyBundle } from '../../shared/encryption/signal/signal-types';
 import { nodeCryptoAdapter } from '../adapters/node-crypto-adapter';
 import { nodeKeyStorageAdapter } from '../adapters/node-key-storage-adapter';
+import { createNodeSignalStores } from '../adapters/node-signal-stores';
 
 /**
  * Backend Encryption Service
  *
  * Uses shared encryption logic with Node.js-specific crypto and storage adapters.
+ * Includes full Signal Protocol support for E2EE messaging.
  */
 class BackendEncryptionService {
-  private sharedService: SharedEncryptionService;
+  private sharedService!: SharedEncryptionService;
+  private signalService?: SignalProtocolService;
   private isInitialized = false;
 
   constructor() {
-    // Initialize with Node.js adapters
-    this.sharedService = new SharedEncryptionService({
-      cryptoAdapter: nodeCryptoAdapter,
-      keyStorage: nodeKeyStorageAdapter,
-    });
+    // Will be initialized in initialize()
   }
 
   /**
    * Initialize encryption service
-   * For backend, we initialize with a "system" user
+   * For backend, we initialize with a "system" user and create Signal Protocol stores
    */
   async initialize(): Promise<void> {
     if (this.isInitialized) return;
 
+    // Create Signal Protocol stores for E2EE support
+    const signalStores = await createNodeSignalStores({ userId: 'system' });
+
+    // Create Signal Protocol service
+    this.signalService = new SignalProtocolService(signalStores, 1);
+
+    // Initialize shared service with Signal Protocol support
+    this.sharedService = new SharedEncryptionService({
+      cryptoAdapter: nodeCryptoAdapter,
+      keyStorage: nodeKeyStorageAdapter,
+      signalProtocolService: this.signalService,
+    });
+
     // Backend uses "system" as the user context
     await this.sharedService.initialize('system');
     this.isInitialized = true;
+
+    console.log('[BackendEncryptionService] Initialized with Signal Protocol support');
   }
 
   /**
@@ -55,12 +71,14 @@ class BackendEncryptionService {
    *
    * @param content - Plaintext message content
    * @param mode - Encryption mode (e2ee or server)
+   * @param conversationId - Conversation ID for key derivation
    * @param existingPayload - For E2EE mode, the client provides encrypted content
    * @returns Encrypted payload for storage
    */
   async encryptMessage(
     content: string,
     mode: EncryptionMode,
+    conversationId?: string,
     existingPayload?: EncryptedPayload
   ): Promise<EncryptedPayload> {
     await this.initialize();
@@ -74,10 +92,10 @@ class BackendEncryptionService {
       return existingPayload;
     } else {
       // Server mode: Encrypt on server for translation capability
-      // Generate a deterministic conversation ID based on content hash (or use actual conversationId if available)
-      const conversationId = 'server-key'; // Backend uses a single key for server mode
+      // Use conversation-specific key for better security
+      const keyId = conversationId || 'server-key';
 
-      return await this.sharedService.encryptMessage(content, conversationId, mode);
+      return await this.sharedService.encryptMessage(content, keyId, mode);
     }
   }
 
@@ -222,6 +240,28 @@ class BackendEncryptionService {
    */
   getStatus() {
     return this.sharedService.getStatus();
+  }
+
+  /**
+   * Generate Signal Protocol pre-key bundle for a user
+   * Used for E2EE session establishment
+   */
+  async generatePreKeyBundle(): Promise<PreKeyBundle> {
+    await this.initialize();
+
+    if (!this.signalService) {
+      throw new Error('Signal Protocol service not initialized');
+    }
+
+    return await this.signalService.generatePreKeyBundle();
+  }
+
+  /**
+   * Get Signal Protocol service for direct access
+   * Used by routes that need fine-grained control
+   */
+  getSignalService(): SignalProtocolService | undefined {
+    return this.signalService;
   }
 }
 

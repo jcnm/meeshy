@@ -28,7 +28,7 @@ import {
 import type {
   SignalProtocolStores,
   SignalStoreConfig,
-} from '../../../shared/encryption/signal/signal-store-interface';
+} from '../../shared/encryption/signal/signal-store-interface';
 
 /**
  * In-memory Identity Key Store

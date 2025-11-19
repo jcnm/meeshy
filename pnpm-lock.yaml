@@ -316,6 +316,9 @@ importers:
       '@prisma/client':
         specifier: 6.13.0
         version: 6.13.0(prisma@6.13.0(typescript@5.9.3))(typescript@5.9.3)
+      '@signalapp/libsignal-client':
+        specifier: ^0.65.2
+        version: 0.65.7
       '@types/fluent-ffmpeg':
         specifier: ^2.1.28
         version: 2.1.28
@@ -450,6 +453,9 @@ importers:
         specifier: ^3.25.76
         version: 3.25.76
     devDependencies:
+      '@signalapp/libsignal-client':
+        specifier: ^0.65.7
+        version: 0.65.7
       prisma:
         specifier: ^6.19.0
         version: 6.19.0(typescript@5.9.3)
@@ -2101,6 +2107,10 @@ packages:
     resolution: {integrity: sha512-3NgmNyH3l/Hv6EvsWJbsvpcpUba6R8IREQ83nH83cyakCw7uM1arZKNfHwv1Wz6jgqrF/j4x5ELvR6PnK9nTcA==}
     engines: {node: '>= 8.0.0'}
     hasBin: true
+
+  '@signalapp/libsignal-client@0.65.7':
+    resolution: {integrity: sha512-o1iffr9OcngGi0zx7NTNS8Z8H9ttV50dN899X0inp/HKbn3aJdjivS8uesq5TX7xZ4d16sRKhyjs8iKdhU123w==}
+    deprecated: use 0.66.1 instead
 
   '@sinclair/typebox@0.34.41':
     resolution: {integrity: sha512-6gS8pZzSXdyRHTIqoqSVknxolr1kzfy4/CeDnrzsVz8TTIWUbOBr6gnzOmTYJ3eXQNh4IYHIGi5aIL7sOZ2G/g==}
@@ -8497,6 +8507,12 @@ snapshots:
     dependencies:
       fflate: 0.7.4
       string.prototype.codepointat: 0.2.1
+
+  '@signalapp/libsignal-client@0.65.7':
+    dependencies:
+      node-gyp-build: 4.8.4
+      type-fest: 4.41.0
+      uuid: 8.3.2
 
   '@sinclair/typebox@0.34.41': {}
 

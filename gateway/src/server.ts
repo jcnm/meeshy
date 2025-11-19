@@ -30,6 +30,7 @@ import { registerGlobalRateLimiter } from './middleware/rate-limiter';
 import { authRoutes } from './routes/auth';
 import { conversationRoutes } from './routes/conversations';
 import conversationEncryptionRoutes from './routes/conversation-encryption';
+import signalProtocolRoutes from './routes/signal-protocol';
 import { linksRoutes } from './routes/links';
 import { trackingLinksRoutes } from './routes/tracking-links';
 import { anonymousRoutes } from './routes/anonymous';
@@ -618,6 +619,9 @@ class MeeshyServer {
 
     // Register conversation encryption routes
     await this.server.register(conversationEncryptionRoutes);
+
+    // Register Signal Protocol routes for E2EE key exchange
+    await this.server.register(signalProtocolRoutes);
 
     // Register links management routes
     await this.server.register(linksRoutes, { prefix: '/api' });

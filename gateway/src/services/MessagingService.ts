@@ -712,7 +712,8 @@ export class MessagingService {
         // Server mode: Encrypt on server
         const encrypted = await encryptionService.encryptMessage(
           processedContent.trim(),
-          mode
+          mode,
+          data.conversationId
         );
         const stored = encryptionService.prepareForStorage(encrypted);
         encryptedContent = stored.encryptedContent;

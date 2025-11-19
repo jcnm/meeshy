@@ -949,6 +949,8 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         select: {
           id: true,
           content: true,
+          encryptedContent: true,
+          encryptionMetadata: true,
           originalLanguage: true,
           createdAt: true,
           updatedAt: true,

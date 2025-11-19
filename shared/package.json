@@ -56,7 +56,11 @@
     "@prisma/client": "^6.19.0",
     "zod": "^3.25.76"
   },
+  "peerDependencies": {
+    "@signalapp/libsignal-client": "^0.65.0"
+  },
   "devDependencies": {
+    "@signalapp/libsignal-client": "^0.65.7",
     "prisma": "^6.19.0",
     "typescript": "^5.8.3"
   },
