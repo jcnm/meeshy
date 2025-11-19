@@ -1455,66 +1455,71 @@ export async function adminRoutes(fastify: FastifyInstance) {
             break;
 
           case 'mentions_received':
-            rankings = await fastify.prisma.user.findMany({
+            // Compter les mentions reçues par les utilisateurs
+            // IMPORTANT: Prisma ne supporte pas where dans _count.select
+            // On doit charger les mentions et compter manuellement
+            const usersWithMentions = await fastify.prisma.user.findMany({
               select: {
                 id: true,
                 username: true,
                 displayName: true,
                 avatar: true,
-                _count: {
+                mentions: {
+                  where: period !== 'all' ? {
+                    mentionedAt: { gte: startDate }
+                  } : {},
                   select: {
-                    mentions: {
-                      where: period !== 'all' ? {
-                        mentionedAt: { gte: startDate }
-                      } : {}
-                    }
+                    id: true
                   }
                 }
-              },
-              orderBy: {
-                mentions: {
-                  _count: 'desc'
-                }
-              },
-              take: parseInt(limit)
+              }
             });
-            rankings = rankings.map(u => ({
-              ...u,
-              count: u._count.mentions,
-              _count: undefined
-            }));
+
+            rankings = usersWithMentions
+              .map(u => ({
+                id: u.id,
+                username: u.username,
+                displayName: u.displayName,
+                avatar: u.avatar,
+                count: u.mentions.length
+              }))
+              .filter(u => u.count > 0)
+              .sort((a, b) => b.count - a.count)
+              .slice(0, parseInt(limit));
             break;
 
           case 'conversations_joined':
-            rankings = await fastify.prisma.user.findMany({
+            // IMPORTANT: Prisma ne supporte pas where dans _count.select
+            // On doit charger les conversations et compter manuellement
+            const usersWithConversations = await fastify.prisma.user.findMany({
               select: {
                 id: true,
                 username: true,
                 displayName: true,
                 avatar: true,
-                _count: {
+                conversations: {
+                  where: period !== 'all' ? {
+                    joinedAt: { gte: startDate },
+                    isActive: true
+                  } : { isActive: true },
                   select: {
-                    conversations: {
-                      where: period !== 'all' ? {
-                        joinedAt: { gte: startDate },
-                        isActive: true
-                      } : { isActive: true }
-                    }
+                    id: true
                   }
                 }
-              },
-              orderBy: {
-                conversations: {
-                  _count: 'desc'
-                }
-              },
-              take: parseInt(limit)
+              }
             });
-            rankings = rankings.map(u => ({
-              ...u,
-              count: u._count.conversations,
-              _count: undefined
-            }));
+
+            rankings = usersWithConversations
+              .map(u => ({
+                id: u.id,
+                username: u.username,
+                displayName: u.displayName,
+                avatar: u.avatar,
+                count: u.conversations.length
+              }))
+              .filter(u => u.count > 0)
+              .sort((a, b) => b.count - a.count)
+              .slice(0, parseInt(limit));
             break;
 
           case 'communities_created':
@@ -1660,6 +1665,8 @@ export async function adminRoutes(fastify: FastifyInstance) {
 
           case 'mentions_sent':
             // Compter les mentions envoyées (dans les messages de l'utilisateur)
+            // IMPORTANT: Prisma ne supporte pas where dans _count.select
+            // On doit charger les mentions et compter manuellement
             const usersWithMentionsSent = await fastify.prisma.user.findMany({
               select: {
                 id: true,
@@ -1668,13 +1675,12 @@ export async function adminRoutes(fastify: FastifyInstance) {
                 avatar: true,
                 sentMessages: {
                   select: {
-                    _count: {
+                    mentions: {
+                      where: period !== 'all' ? {
+                        mentionedAt: { gte: startDate }
+                      } : {},
                       select: {
-                        mentions: {
-                          where: period !== 'all' ? {
-                            mentionedAt: { gte: startDate }
-                          } : {}
-                        }
+                        id: true
                       }
                     }
                   },
@@ -1691,7 +1697,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
                 username: u.username,
                 displayName: u.displayName,
                 avatar: u.avatar,
-                count: u.sentMessages.reduce((sum, msg) => sum + msg._count.mentions, 0)
+                count: u.sentMessages.reduce((sum, msg) => sum + msg.mentions.length, 0)
               }))
               .filter(u => u.count > 0)
               .sort((a, b) => b.count - a.count)
