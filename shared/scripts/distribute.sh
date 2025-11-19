@@ -76,7 +76,15 @@ distribute_to_service() {
                 cp utils/*.ts "$service_dir/shared/utils/" 2>/dev/null || true
                 echo "  ✅ Dossier utils/ source (.ts) copié vers $service_name/shared/utils/"
             fi
-            
+
+            # Copier le dossier encryption/ source (fichiers .ts uniquement)
+            if [ -d "encryption" ]; then
+                mkdir -p "$service_dir/shared/encryption"
+                # Copier tous les fichiers .ts du dossier encryption
+                cp encryption/*.ts "$service_dir/shared/encryption/" 2>/dev/null || true
+                echo "  ✅ Dossier encryption/ source (.ts) copié vers $service_name/shared/encryption/"
+            fi
+
             # Copier le client Prisma généré
             if [ -d "prisma/client" ]; then
                 mkdir -p "$service_dir/shared/prisma"
