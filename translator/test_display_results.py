@@ -84,7 +84,7 @@ text_400 = """📢 TEAM UPDATE - Week of Dec 4th
 ⏰ UPCOMING
 • Holiday team building event 🎄
 • Q4 performance reviews
-• 2024 roadmap planning session
+• 2025 roadmap planning session
 
 Great work everyone! Keep up the momentum! 🚀💪
 
@@ -156,7 +156,7 @@ text_900 = """🎉 MAJOR UPDATES - Last 48 Hours 🚀
 #Meeshy #Updates #RealTimeMessaging #AudioMessages"""
 
 # Test 5: 1500 chars
-text_1500 = """📊 Q4 2024 QUARTERLY REPORT
+text_1500 = """📊 Q4 2025 QUARTERLY REPORT
 
 🎯 EXECUTIVE SUMMARY
 We're thrilled to share our strongest quarter yet! Revenue up 145%, user growth at 220%, and customer satisfaction at an all-time high of 96%. Our team has worked incredibly hard to deliver exceptional results. 🚀

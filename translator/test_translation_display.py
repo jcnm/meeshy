@@ -75,7 +75,7 @@ TEST_400_CHARS = [
 ⏰ UPCOMING
 • Holiday team building event 🎄
 • Q4 performance reviews
-• 2024 roadmap planning session
+• 2025 roadmap planning session
 
 Great work everyone! Keep up the momentum! 🚀💪
 
@@ -174,7 +174,7 @@ TEST_900_CHARS = [
 TEST_1500_CHARS = [
     TestCase(
         name="Comprehensive quarterly report",
-        text="""📊 Q4 2024 QUARTERLY REPORT
+        text="""📊 Q4 2025 QUARTERLY REPORT
 
 🎯 EXECUTIVE SUMMARY
 We're thrilled to share our strongest quarter yet! Revenue up 145%, user growth at 220%, and customer satisfaction at an all-time high of 96%. Our team has worked incredibly hard to deliver exceptional results. 🚀

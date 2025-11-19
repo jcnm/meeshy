@@ -129,7 +129,7 @@ create_mongodb_users() {
     
     if [ -z "$mongodb_password" ]; then
         log_warning "Mot de passe MongoDB non trouvé, utilisation d'un mot de passe par défaut"
-        mongodb_password="meeshy_mongodb_2024"
+        mongodb_password="meeshy_mongodb_2025"
     fi
     
     # Script de création des utilisateurs
@@ -212,7 +212,7 @@ initialize_databases() {
     fi
     
     if [ -z "$mongodb_password" ]; then
-        mongodb_password="meeshy_mongodb_2024"
+        mongodb_password="meeshy_mongodb_2025"
     fi
     
     # Script d'initialisation des bases de données
@@ -311,7 +311,7 @@ verify_mongodb_config() {
     fi
     
     if [ -z "$mongodb_password" ]; then
-        mongodb_password="meeshy_mongodb_2024"
+        mongodb_password="meeshy_mongodb_2025"
     fi
     
     # Script de vérification

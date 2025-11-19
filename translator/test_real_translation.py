@@ -265,7 +265,7 @@ We've just launched our new dashboard with real-time analytics. Check it out now
 ⏰ UPCOMING
 • Holiday team building event 🎄
 • Q4 performance reviews
-• 2024 roadmap planning session
+• 2025 roadmap planning session
 
 Great work everyone! Keep up the momentum! 🚀💪
 

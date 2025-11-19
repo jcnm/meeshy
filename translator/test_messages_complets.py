@@ -371,7 +371,7 @@ No🚫issues👍found!""",
    - User growth: +40%
    - Churn rate: -10%
 
-2. Roadmap 2024
+2. Roadmap 2025
    - Mobile app launch
    - AI features
    - Enterprise plan
