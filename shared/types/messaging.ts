@@ -8,6 +8,7 @@
 import type { ApiResponse } from './api-responses';
 import type { ConversationStats } from './conversation';
 import type { SocketIOMessage } from './socketio-events';
+import type { EncryptedPayload } from './encryption';
 
 // ===== TYPES D'AUTHENTIFICATION =====
 
@@ -106,6 +107,7 @@ export interface MessageRequest {
   // Metadata optionnelle
   readonly priority?: MessagePriority;
   readonly encrypted?: boolean;             // Default: false
+  readonly encryptedPayload?: EncryptedPayload;  // For E2EE mode: client-encrypted content
   readonly attachments?: readonly MessageAttachment[];
 
   // Preferences de traduction spécifiques à ce message
