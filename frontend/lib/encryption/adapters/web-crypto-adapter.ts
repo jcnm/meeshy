@@ -87,11 +87,11 @@ export class WebCryptoAdapter implements CryptoAdapter {
     const encrypted = await crypto.subtle.encrypt(
       {
         name: ALGORITHM,
-        iv: iv,
+        iv: iv as BufferSource,
         tagLength: TAG_LENGTH,
       },
       key.getNativeKey(),
-      plaintext
+      plaintext as BufferSource
     );
 
     // Web Crypto API returns ciphertext + auth tag concatenated
@@ -130,11 +130,11 @@ export class WebCryptoAdapter implements CryptoAdapter {
       const decrypted = await crypto.subtle.decrypt(
         {
           name: ALGORITHM,
-          iv: params.iv,
+          iv: params.iv as BufferSource,
           tagLength: TAG_LENGTH,
         },
         key.getNativeKey(),
-        encrypted
+        encrypted as BufferSource
       );
 
       return new Uint8Array(decrypted);
@@ -161,7 +161,7 @@ export class WebCryptoAdapter implements CryptoAdapter {
   async importKey(keyData: Uint8Array): Promise<SharedCryptoKey> {
     const nativeKey = await crypto.subtle.importKey(
       'raw',
-      keyData,
+      keyData as BufferSource,
       {
         name: ALGORITHM,
         length: KEY_LENGTH,
@@ -222,7 +222,7 @@ export class WebCryptoAdapter implements CryptoAdapter {
   async importPublicKey(keyData: Uint8Array): Promise<SharedCryptoKey> {
     const nativeKey = await crypto.subtle.importKey(
       'spki',
-      keyData,
+      keyData as BufferSource,
       {
         name: 'ECDH',
         namedCurve: 'P-256',
@@ -240,7 +240,7 @@ export class WebCryptoAdapter implements CryptoAdapter {
   async importPrivateKey(keyData: Uint8Array): Promise<SharedCryptoKey> {
     const nativeKey = await crypto.subtle.importKey(
       'pkcs8',
-      keyData,
+      keyData as BufferSource,
       {
         name: 'ECDH',
         namedCurve: 'P-256',
@@ -307,7 +307,7 @@ export class WebCryptoAdapter implements CryptoAdapter {
     const derivedKey = await crypto.subtle.deriveKey(
       {
         name: 'PBKDF2',
-        salt: salt,
+        salt: salt as BufferSource,
         iterations: iterations,
         hash: 'SHA-256',
       },
