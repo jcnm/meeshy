@@ -191,7 +191,7 @@ export function CreateConversationModal({
 
     setIsLoading(true);
     try {
-      const response = await apiService.get<{ success: boolean; data: User[] }>(`/api/users/search?q=${encodeURIComponent(query)}`);
+      const response = await apiService.get<{ success: boolean; data: User[] }>(`/users/search?q=${encodeURIComponent(query)}`);
 
       // L'API retourne { success: true, data: [...] }
       if (response.data?.success && Array.isArray(response.data.data)) {
@@ -260,7 +260,7 @@ export function CreateConversationModal({
 
     setIsCheckingIdentifier(true);
     try {
-      const response = await apiService.get<{ success: boolean; available: boolean }>(`/api/conversations/check-identifier/${encodeURIComponent(identifier)}`);
+      const response = await apiService.get<{ success: boolean; available: boolean }>(`/conversations/check-identifier/${encodeURIComponent(identifier)}`);
       if (response.data && response.data.success) {
         setIdentifierAvailable(response.data.available);
       } else {
@@ -454,7 +454,7 @@ export function CreateConversationModal({
       // Log pour debug
       console.log('🔍 [CreateConversation] Request body:', JSON.stringify(requestBody, null, 2));
 
-      const response = await apiService.post<{ success: boolean; data: any }>('/api/conversations', requestBody);
+      const response = await apiService.post<{ success: boolean; data: any }>('/conversations', requestBody);
 
       if (response.data.success) {
         const responseData = response.data;
