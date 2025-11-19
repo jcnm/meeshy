@@ -8,23 +8,25 @@ import {
   ProtocolAddress,
   IdentityKeyPair,
   PublicKey,
+  PrivateKey,
   PreKeyRecord,
   SignedPreKeyRecord,
   KyberPreKeyRecord,
   SessionRecord,
   SenderKeyRecord,
+  IdentityKeyStore,
+  PreKeyStore,
+  SignedPreKeyStore,
+  KyberPreKeyStore,
+  SessionStore,
+  SenderKeyStore,
+  Direction,
+  Uuid,
 } from '@signalapp/libsignal-client';
 
 import type {
-  SignalIdentityKeyStore,
-  SignalPreKeyStore,
-  SignalSignedPreKeyStore,
-  SignalKyberPreKeyStore,
-  SignalSessionStore,
-  SignalSenderKeyStore,
   SignalProtocolStores,
   SignalStoreConfig,
-  Direction,
 } from '../../../shared/encryption/signal/signal-store-interface';
 
 const DB_NAME = 'MeeshySignalProtocol';
@@ -82,12 +84,13 @@ async function openDB(): Promise<IDBDatabase> {
 /**
  * Browser Identity Key Store
  */
-export class BrowserIdentityKeyStore implements SignalIdentityKeyStore {
+export class BrowserIdentityKeyStore extends IdentityKeyStore {
   private identityKeyPair: IdentityKeyPair | null = null;
   private registrationId: number;
   private userId: string;
 
   constructor(userId: string, registrationId: number) {
+    super();
     this.userId = userId;
     this.registrationId = registrationId;
   }
@@ -144,6 +147,11 @@ export class BrowserIdentityKeyStore implements SignalIdentityKeyStore {
     }
 
     return this.identityKeyPair;
+  }
+
+  async getIdentityKey(): Promise<PrivateKey> {
+    const keyPair = await this.getIdentityKeyPair();
+    return keyPair.privateKey;
   }
 
   async getLocalRegistrationId(): Promise<number> {
@@ -242,7 +250,7 @@ export class BrowserIdentityKeyStore implements SignalIdentityKeyStore {
 /**
  * Browser Pre-Key Store
  */
-export class BrowserPreKeyStore implements SignalPreKeyStore {
+export class BrowserPreKeyStore extends PreKeyStore {
   async getPreKey(preKeyId: number): Promise<PreKeyRecord> {
     const db = await openDB();
     const tx = db.transaction([STORES.PRE_KEYS], 'readonly');
@@ -295,7 +303,7 @@ export class BrowserPreKeyStore implements SignalPreKeyStore {
 /**
  * Browser Signed Pre-Key Store
  */
-export class BrowserSignedPreKeyStore implements SignalSignedPreKeyStore {
+export class BrowserSignedPreKeyStore extends SignedPreKeyStore {
   async getSignedPreKey(signedPreKeyId: number): Promise<SignedPreKeyRecord> {
     const db = await openDB();
     const tx = db.transaction([STORES.SIGNED_PRE_KEYS], 'readonly');
@@ -334,7 +342,7 @@ export class BrowserSignedPreKeyStore implements SignalSignedPreKeyStore {
 /**
  * Browser Kyber Pre-Key Store
  */
-export class BrowserKyberPreKeyStore implements SignalKyberPreKeyStore {
+export class BrowserKyberPreKeyStore extends KyberPreKeyStore {
   async getKyberPreKey(kyberPreKeyId: number): Promise<KyberPreKeyRecord> {
     const db = await openDB();
     const tx = db.transaction([STORES.KYBER_PRE_KEYS], 'readonly');
@@ -402,7 +410,7 @@ export class BrowserKyberPreKeyStore implements SignalKyberPreKeyStore {
 /**
  * Browser Session Store
  */
-export class BrowserSessionStore implements SignalSessionStore {
+export class BrowserSessionStore extends SessionStore {
   async getSession(address: ProtocolAddress): Promise<SessionRecord | null> {
     const key = this.getAddressKey(address);
     const db = await openDB();
@@ -439,29 +447,17 @@ export class BrowserSessionStore implements SignalSessionStore {
     db.close();
   }
 
-  async getExistingSessions(addresses: ProtocolAddress[]): Promise<ProtocolAddress[]> {
-    const db = await openDB();
-    const tx = db.transaction([STORES.SESSIONS], 'readonly');
-    const store = tx.objectStore(STORES.SESSIONS);
-
-    const existing: ProtocolAddress[] = [];
+  async getExistingSessions(addresses: ProtocolAddress[]): Promise<SessionRecord[]> {
+    const records: SessionRecord[] = [];
 
     for (const address of addresses) {
-      const key = this.getAddressKey(address);
-      const hasSession = await new Promise<boolean>((resolve, reject) => {
-        const request = store.get(key);
-        request.onsuccess = () => resolve(request.result !== undefined);
-        request.onerror = () => reject(request.error);
-      });
-
-      if (hasSession) {
-        existing.push(address);
+      const record = await this.getSession(address);
+      if (record) {
+        records.push(record);
       }
     }
 
-    db.close();
-
-    return existing;
+    return records;
   }
 
   private getAddressKey(address: ProtocolAddress): string {
@@ -472,10 +468,10 @@ export class BrowserSessionStore implements SignalSessionStore {
 /**
  * Browser Sender Key Store
  */
-export class BrowserSenderKeyStore implements SignalSenderKeyStore {
-  async storeSenderKey(
+export class BrowserSenderKeyStore extends SenderKeyStore {
+  async saveSenderKey(
     sender: ProtocolAddress,
-    distributionId: string,
+    distributionId: Uuid,
     record: SenderKeyRecord
   ): Promise<void> {
     const key = this.getSenderKeyKey(sender, distributionId);
@@ -492,9 +488,9 @@ export class BrowserSenderKeyStore implements SignalSenderKeyStore {
     db.close();
   }
 
-  async loadSenderKey(
+  async getSenderKey(
     sender: ProtocolAddress,
-    distributionId: string
+    distributionId: Uuid
   ): Promise<SenderKeyRecord | null> {
     const key = this.getSenderKeyKey(sender, distributionId);
     const db = await openDB();
@@ -516,7 +512,7 @@ export class BrowserSenderKeyStore implements SignalSenderKeyStore {
     return SenderKeyRecord.deserialize(Buffer.from(record));
   }
 
-  private getSenderKeyKey(sender: ProtocolAddress, distributionId: string): string {
+  private getSenderKeyKey(sender: ProtocolAddress, distributionId: Uuid): string {
     return `${sender.name()}:${sender.deviceId()}:${distributionId}`;
   }
 }
