@@ -84,6 +84,7 @@
       "members": "miembros",
       "member": "miembro",
       "membersCount": "{count} miembros"
-    }
+    },
+    "anonymous": "Anónimo"
   }
 }
