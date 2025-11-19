@@ -91,6 +91,7 @@
       "share": "Share",
       "linkCopied": "Link copied!",
       "linkCopyError": "Error copying link",
+      "shareMessage": "Here is the link to our conversation",
       "viewImages": "View images",
       "changeImage": "Change image",
       "imageUpdated": "Conversation image updated",
