@@ -13,6 +13,7 @@
  * - Priority-based message processing
  */
 
+import Queue from 'bull';
 import { ProtocolMessage } from '../../adapters/ProtocolAdapter';
 import { PrismaClient } from '../../../shared/prisma/client';
 
@@ -52,8 +53,9 @@ export interface QueueStats {
 export class MessageQueue {
   private prisma: PrismaClient;
   private queueName: string = 'dma-message-queue';
+  private queue: Queue.Queue<QueueJob> | null = null;
 
-  // In-memory tracking (until Bull is installed)
+  // In-memory tracking for backward compatibility
   private pendingMessages: Map<string, QueueJob> = new Map();
   private activeMessages: Set<string> = new Set();
   private failedMessages: Map<string, QueueJob> = new Map();
@@ -81,23 +83,31 @@ export class MessageQueue {
     console.log('🚀 Initializing Message Queue');
 
     try {
-      // TODO: Initialize Bull queue when installed
-      // const queue = new Queue(this.queueName, {
-      //   redis: {
-      //     host: process.env.REDIS_HOST || 'localhost',
-      //     port: parseInt(process.env.REDIS_PORT || '6379')
-      //   }
-      // });
+      // Initialize Bull queue with Redis backend
+      this.queue = new Queue<QueueJob>(this.queueName, {
+        redis: {
+          host: process.env.REDIS_HOST || 'localhost',
+          port: parseInt(process.env.REDIS_PORT || '6379')
+        },
+        defaultJobOptions: {
+          attempts: this.config.maxRetries,
+          backoff: {
+            type: 'exponential',
+            delay: this.config.initialBackoffMs
+          },
+          removeOnComplete: true
+        }
+      });
 
       // Setup queue processors
-      // queue.process(this.config.processingConcurrency, this.processMessage.bind(this));
+      await this.queue.process(this.config.processingConcurrency, this.processMessage.bind(this));
 
       // Setup event handlers
-      // queue.on('completed', this.onMessageCompleted.bind(this));
-      // queue.on('failed', this.onMessageFailed.bind(this));
-      // queue.on('error', this.onQueueError.bind(this));
+      this.queue.on('completed', this.onMessageCompleted.bind(this));
+      this.queue.on('failed', this.onMessageFailed.bind(this));
+      this.queue.on('error', this.onQueueError.bind(this));
 
-      console.log('✅ Message Queue initialized');
+      console.log('✅ Message Queue initialized with Bull.js');
     } catch (error) {
       console.error('❌ Failed to initialize Message Queue:', error);
       throw error;
@@ -130,7 +140,25 @@ export class MessageQueue {
       metadata
     };
 
-    // Store in pending queue
+    // Add to Bull queue
+    if (this.queue) {
+      try {
+        await this.queue.add(job, {
+          priority: Math.max(1, Math.min(10, priority)), // Bull uses 1-10 priority
+          attempts: this.config.maxRetries,
+          backoff: {
+            type: 'exponential',
+            delay: this.config.initialBackoffMs
+          },
+          jobId: messageId
+        });
+      } catch (error) {
+        console.error(`❌ Failed to add job to Bull queue: ${error}`);
+        throw error;
+      }
+    }
+
+    // Store in pending queue for compatibility
     this.pendingMessages.set(messageId, job);
 
     // Persist to database
@@ -138,7 +166,7 @@ export class MessageQueue {
       await this.persistMessageJob(job);
     } catch (error) {
       console.error(`⚠️  Failed to persist message job: ${error}`);
-      // Continue anyway - message is in memory
+      // Continue anyway - message is in queue
     }
 
     console.log(`📨 Message enqueued: ${messageId} (priority: ${priority})`);
@@ -183,13 +211,15 @@ export class MessageQueue {
 
   /**
    * Process a single message with retry logic
+   * Handles both Bull jobs and local queue jobs
    */
-  private async processMessage(job: QueueJob): Promise<void> {
+  private async processMessage(bullJob: Queue.Job<QueueJob>): Promise<void> {
+    const job = bullJob.data;
     const messageId = job.messageId;
     this.activeMessages.add(messageId);
 
     try {
-      console.log(`📤 Processing message: ${messageId} (attempt ${job.attempts + 1}/${job.maxAttempts})`);
+      console.log(`📤 Processing message: ${messageId} (attempt ${bullJob.attemptsMade + 1}/${this.config.maxRetries})`);
 
       // TODO: Implement actual message sending
       // This would call the protocol adapter to send the message
@@ -205,25 +235,16 @@ export class MessageQueue {
 
       console.log(`✅ Message completed: ${messageId}`);
     } catch (error) {
-      job.attempts++;
+      // Bull handles retries automatically with backoff
+      // We just need to throw the error and Bull will retry
+      this.activeMessages.delete(messageId);
 
-      if (job.attempts < job.maxAttempts) {
-        // Retry with exponential backoff
-        const backoffMs = this.calculateBackoff(job.attempts);
-        console.warn(
-          `⚠️  Message failed (${error}), retrying in ${backoffMs}ms ` +
-          `(attempt ${job.attempts + 1}/${job.maxAttempts})`
-        );
-
-        // Schedule retry
-        await this.scheduleRetry(job, backoffMs);
-      } else {
+      if (bullJob.attemptsMade >= this.config.maxRetries - 1) {
         // Max retries exceeded
         this.pendingMessages.delete(messageId);
         this.failedMessages.set(messageId, job);
-        this.activeMessages.delete(messageId);
 
-        console.error(`❌ Message failed after ${job.maxAttempts} attempts: ${messageId}`);
+        console.error(`❌ Message failed after ${this.config.maxRetries} attempts: ${messageId}`);
 
         // Persist to dead letter queue
         try {
@@ -231,7 +252,15 @@ export class MessageQueue {
         } catch (dbError) {
           console.error(`⚠️  Failed to persist failed message: ${dbError}`);
         }
+      } else {
+        console.warn(
+          `⚠️  Message failed (${error}), Bull will retry ` +
+          `(attempt ${bullJob.attemptsMade + 1}/${this.config.maxRetries})`
+        );
       }
+
+      // Throw error to let Bull handle the retry
+      throw error;
     }
   }
 
@@ -253,17 +282,21 @@ export class MessageQueue {
 
   /**
    * Schedule message retry after delay
+   * Bull.js handles retries automatically with exponential backoff
    */
   private async scheduleRetry(job: QueueJob, delayMs: number): Promise<void> {
-    // TODO: With Bull, use queue.add() with delay option
-    // For now, update the job with delay info
+    // With Bull, retries are handled automatically by the queue
+    // Update the job with delay info for reference
     job.metadata = {
       ...job.metadata,
       nextRetryAt: new Date(Date.now() + delayMs)
     };
 
-    // Keep in pending queue - will be processed after delay
+    // Keep in pending queue for compatibility
     this.pendingMessages.set(job.messageId, job);
+
+    // Bull will automatically retry with configured backoff strategy
+    console.log(`⏰ Scheduled retry for message ${job.messageId} with delay ${delayMs}ms`);
   }
 
   /**
@@ -366,13 +399,38 @@ export class MessageQueue {
    * Get queue statistics
    */
   async getStats(): Promise<QueueStats> {
-    return {
-      queued: this.pendingMessages.size,
-      active: this.activeMessages.size,
-      completed: this.completedMessages.size,
-      failed: this.failedMessages.size,
-      delayed: 0 // TODO: Count delayed messages
-    };
+    if (!this.queue) {
+      return {
+        queued: this.pendingMessages.size,
+        active: this.activeMessages.size,
+        completed: this.completedMessages.size,
+        failed: this.failedMessages.size,
+        delayed: 0
+      };
+    }
+
+    try {
+      // Get counts from Bull queue
+      const counts = await this.queue.getJobCounts();
+
+      return {
+        queued: counts.waiting + (counts.prioritized || 0),
+        active: counts.active,
+        completed: counts.completed,
+        failed: counts.failed,
+        delayed: counts.delayed
+      };
+    } catch (error) {
+      console.error('Failed to get queue stats from Bull:', error);
+      // Fallback to in-memory stats
+      return {
+        queued: this.pendingMessages.size,
+        active: this.activeMessages.size,
+        completed: this.completedMessages.size,
+        failed: this.failedMessages.size,
+        delayed: 0
+      };
+    }
   }
 
   /**
@@ -406,6 +464,32 @@ export class MessageQueue {
   }
 
   /**
+   * Handle completed messages from Bull queue
+   */
+  private onMessageCompleted(job: Queue.Job<QueueJob>): void {
+    const { messageId } = job.data;
+    console.log(`✅ Message completed via Bull: ${messageId}`);
+    this.pendingMessages.delete(messageId);
+    this.completedMessages.set(messageId, new Date());
+  }
+
+  /**
+   * Handle failed messages from Bull queue
+   */
+  private onMessageFailed(job: Queue.Job<QueueJob>, error: Error): void {
+    const { messageId } = job.data;
+    console.error(`❌ Message failed via Bull: ${messageId} - ${error.message}`);
+    this.failedMessages.set(messageId, job.data);
+  }
+
+  /**
+   * Handle queue errors
+   */
+  private onQueueError(error: Error): void {
+    console.error(`⚠️  Queue error: ${error.message}`);
+  }
+
+  /**
    * Drain the queue (process all pending messages)
    */
   async drainQueue(): Promise<number> {
@@ -434,6 +518,16 @@ export class MessageQueue {
 
     // Drain remaining messages
     await this.drainQueue();
+
+    // Close Bull queue
+    if (this.queue) {
+      try {
+        await this.queue.close();
+        console.log('✅ Bull queue closed');
+      } catch (error) {
+        console.error('⚠️  Error closing Bull queue:', error);
+      }
+    }
 
     // Clear in-memory state
     this.pendingMessages.clear();
