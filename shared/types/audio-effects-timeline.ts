@@ -358,10 +358,10 @@ export function calculateEffectsStats(timeline: AudioEffectsTimeline): AudioEffe
   const activeEffects = new Map<AudioEffectType, { startTime: number; paramSum: Map<string, number[]> }>();
 
   let anyEffectActiveStart: number | null = null;
-  let lastAnyEffectActiveEnd: number | null = null;
+  let _lastAnyEffectActiveEnd: number | null = null;
 
   for (const event of timeline.events) {
-    const { effectType, action, timestamp, params } = event;
+    const { effectType, action, timestamp } = event;
 
     if (!stats.byEffect[effectType]) {
       stats.byEffect[effectType] = {
@@ -398,7 +398,7 @@ export function calculateEffectsStats(timeline: AudioEffectsTimeline): AudioEffe
         // Track any effect active
         if (activeEffects.size === 0 && anyEffectActiveStart !== null) {
           stats.totalActiveTime += timestamp - anyEffectActiveStart;
-          lastAnyEffectActiveEnd = timestamp;
+          _lastAnyEffectActiveEnd = timestamp;
           anyEffectActiveStart = null;
         }
         break;
