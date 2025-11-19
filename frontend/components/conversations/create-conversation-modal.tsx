@@ -191,18 +191,25 @@ export function CreateConversationModal({
 
     setIsLoading(true);
     try {
-      const response = await apiService.get<User[]>(`/api/users/search?q=${encodeURIComponent(query)}`);
-      
-      if (response.data) {
-        const users = response.data;
+      const response = await apiService.get<{ success: boolean; data: User[] }>(`/api/users/search?q=${encodeURIComponent(query)}`);
+
+      // L'API retourne { success: true, data: [...] }
+      if (response.data?.success && Array.isArray(response.data.data)) {
+        const users = response.data.data;
         // Exclure l'utilisateur actuel et les utilisateurs déjà sélectionnés
-        const filteredUsers = users.filter((user: User) => 
-          user.id !== currentUser.id && 
+        const filteredUsers = users.filter((user: User) =>
+          user.id !== currentUser.id &&
           !selectedUsers.some(selected => selected.id === user.id)
         );
         setAvailableUsers(filteredUsers);
       } else {
-        toast.error(t('createConversationModal.errors.searchError'));
+        // Fallback pour l'ancien format (si response.data est directement un tableau)
+        const users = Array.isArray(response.data) ? response.data : [];
+        const filteredUsers = users.filter((user: User) =>
+          user.id !== currentUser.id &&
+          !selectedUsers.some(selected => selected.id === user.id)
+        );
+        setAvailableUsers(filteredUsers);
       }
     } catch (error) {
       console.error('Erreur recherche utilisateurs:', error);
