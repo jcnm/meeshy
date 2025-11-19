@@ -66,7 +66,10 @@ export async function friendRequestRoutes(fastify: FastifyInstance) {
               firstName: true,
               lastName: true,
               displayName: true,
-              avatar: true
+              avatar: true,
+              isOnline: true,
+              lastActiveAt: true,
+              lastSeen: true
             }
           },
           receiver: {
@@ -76,7 +79,10 @@ export async function friendRequestRoutes(fastify: FastifyInstance) {
               firstName: true,
               lastName: true,
               displayName: true,
-              avatar: true
+              avatar: true,
+              isOnline: true,
+              lastActiveAt: true,
+              lastSeen: true
             }
           }
         }
@@ -170,6 +176,7 @@ export async function friendRequestRoutes(fastify: FastifyInstance) {
               displayName: true,
               avatar: true,
               isOnline: true,
+              lastActiveAt: true,
               lastSeen: true
             }
           }
@@ -214,6 +221,7 @@ export async function friendRequestRoutes(fastify: FastifyInstance) {
               displayName: true,
               avatar: true,
               isOnline: true,
+              lastActiveAt: true,
               lastSeen: true
             }
           }
@@ -274,7 +282,10 @@ export async function friendRequestRoutes(fastify: FastifyInstance) {
               firstName: true,
               lastName: true,
               displayName: true,
-              avatar: true
+              avatar: true,
+              isOnline: true,
+              lastActiveAt: true,
+              lastSeen: true
             }
           },
           receiver: {
@@ -284,7 +295,10 @@ export async function friendRequestRoutes(fastify: FastifyInstance) {
               firstName: true,
               lastName: true,
               displayName: true,
-              avatar: true
+              avatar: true,
+              isOnline: true,
+              lastActiveAt: true,
+              lastSeen: true
             }
           }
         }

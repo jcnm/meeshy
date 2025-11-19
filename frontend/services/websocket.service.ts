@@ -81,9 +81,8 @@ class WebSocketService {
     const sessionToken = authManager.getAnonymousSession()?.token;
     
     
-    // Déterminer l'URL du gateway
-    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const wsUrl = isLocalhost ? 'ws://localhost:3000' : 'wss://gate.meeshy.me';
+    // Déterminer l'URL du gateway depuis les variables d'environnement
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3000';
     
     // Préparer auth
     const auth: any = {};

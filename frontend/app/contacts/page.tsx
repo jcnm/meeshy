@@ -41,6 +41,8 @@ import { ShareAffiliateModal } from '@/components/affiliate/share-affiliate-moda
 import { useUser } from '@/stores';
 import { useI18n } from '@/hooks/useI18n';
 import { authManager } from '@/services/auth-manager.service';
+import { OnlineIndicator } from '@/components/ui/online-indicator';
+import { getUserStatus } from '@/lib/user-status';
 
 interface FriendRequest {
   id: string;
@@ -609,12 +611,20 @@ export default function ContactsPage() {
 
                       <CardContent className="relative z-10 p-4 sm:p-6">
                         <div className="flex items-start space-x-3 sm:space-x-4">
-                          <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-white dark:border-gray-700 shadow-lg flex-shrink-0">
-                            <AvatarImage src={contact.avatar} alt={getUserDisplayName(contact)} />
-                            <AvatarFallback className="text-sm sm:text-lg font-bold">
-                              {getUserDisplayName(contact).slice(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
+                          <div className="relative flex-shrink-0">
+                            <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-white dark:border-gray-700 shadow-lg">
+                              <AvatarImage src={contact.avatar} alt={getUserDisplayName(contact)} />
+                              <AvatarFallback className="text-sm sm:text-lg font-bold">
+                                {getUserDisplayName(contact).slice(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <OnlineIndicator
+                              isOnline={getUserStatus(contact) === 'online'}
+                              status={getUserStatus(contact)}
+                              size="md"
+                              className="absolute -bottom-0.5 -right-0.5"
+                            />
+                          </div>
 
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2 mb-1">
@@ -765,12 +775,20 @@ export default function ContactsPage() {
 
                         <CardContent className="relative z-10 p-4 sm:p-6">
                           <div className="flex items-start space-x-3 sm:space-x-4">
-                            <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-white shadow-lg flex-shrink-0">
-                              <AvatarImage src={otherUser?.avatar} alt={getUserDisplayName(otherUser!)} />
-                              <AvatarFallback className="text-sm sm:text-lg font-bold">
-                                {getUserDisplayName(otherUser!).slice(0, 2).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
+                            <div className="relative flex-shrink-0">
+                              <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-white shadow-lg">
+                                <AvatarImage src={otherUser?.avatar} alt={getUserDisplayName(otherUser!)} />
+                                <AvatarFallback className="text-sm sm:text-lg font-bold">
+                                  {getUserDisplayName(otherUser!).slice(0, 2).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <OnlineIndicator
+                                isOnline={getUserStatus(otherUser!) === 'online'}
+                                status={getUserStatus(otherUser!)}
+                                size="md"
+                                className="absolute -bottom-0.5 -right-0.5"
+                              />
+                            </div>
 
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between gap-2 mb-1">
@@ -865,12 +883,20 @@ export default function ContactsPage() {
 
                         <CardContent className="relative z-10 p-4 sm:p-6">
                           <div className="flex items-start space-x-3 sm:space-x-4">
-                            <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-white shadow-lg flex-shrink-0">
-                              <AvatarImage src={otherUser?.avatar} alt={getUserDisplayName(otherUser!)} />
-                              <AvatarFallback className="text-sm sm:text-lg font-bold">
-                                {getUserDisplayName(otherUser!).slice(0, 2).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
+                            <div className="relative flex-shrink-0">
+                              <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-white shadow-lg">
+                                <AvatarImage src={otherUser?.avatar} alt={getUserDisplayName(otherUser!)} />
+                                <AvatarFallback className="text-sm sm:text-lg font-bold">
+                                  {getUserDisplayName(otherUser!).slice(0, 2).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <OnlineIndicator
+                                isOnline={getUserStatus(otherUser!) === 'online'}
+                                status={getUserStatus(otherUser!)}
+                                size="md"
+                                className="absolute -bottom-0.5 -right-0.5"
+                              />
+                            </div>
 
                             <div className="flex-1 min-w-0">
                               <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white mb-1 break-words">
@@ -954,12 +980,20 @@ export default function ContactsPage() {
 
                         <CardContent className="relative z-10 p-4 sm:p-6">
                           <div className="flex items-start space-x-3 sm:space-x-4">
-                            <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-white shadow-lg flex-shrink-0">
-                              <AvatarImage src={otherUser?.avatar} alt={getUserDisplayName(otherUser!)} />
-                              <AvatarFallback className="text-sm sm:text-lg font-bold">
-                                {getUserDisplayName(otherUser!).slice(0, 2).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
+                            <div className="relative flex-shrink-0">
+                              <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-white shadow-lg">
+                                <AvatarImage src={otherUser?.avatar} alt={getUserDisplayName(otherUser!)} />
+                                <AvatarFallback className="text-sm sm:text-lg font-bold">
+                                  {getUserDisplayName(otherUser!).slice(0, 2).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <OnlineIndicator
+                                isOnline={getUserStatus(otherUser!) === 'online'}
+                                status={getUserStatus(otherUser!)}
+                                size="md"
+                                className="absolute -bottom-0.5 -right-0.5"
+                              />
+                            </div>
 
                             <div className="flex-1 min-w-0">
                               <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white mb-1 break-words">
@@ -1027,12 +1061,20 @@ export default function ContactsPage() {
                       <CardContent className="relative z-10 p-6">
                         <div className="flex items-center justify-between">
                           <div className="flex items-start sm:items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
-                            <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-white shadow-lg flex-shrink-0">
-                              <AvatarImage src={relation.referredUser.avatar} alt={getUserDisplayName(relation.referredUser)} />
-                              <AvatarFallback className="text-sm sm:text-lg font-bold">
-                                {getUserDisplayName(relation.referredUser).slice(0, 2).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
+                            <div className="relative flex-shrink-0">
+                              <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-white shadow-lg">
+                                <AvatarImage src={relation.referredUser.avatar} alt={getUserDisplayName(relation.referredUser)} />
+                                <AvatarFallback className="text-sm sm:text-lg font-bold">
+                                  {getUserDisplayName(relation.referredUser).slice(0, 2).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <OnlineIndicator
+                                isOnline={getUserStatus(relation.referredUser) === 'online'}
+                                status={getUserStatus(relation.referredUser)}
+                                size="md"
+                                className="absolute -bottom-0.5 -right-0.5"
+                              />
+                            </div>
 
                             <div className="flex-1 min-w-0">
                               <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white mb-1 break-words">

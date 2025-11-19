@@ -1,15 +1,37 @@
 'use client';
 
 import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 import {
   Download,
   AlertTriangle,
   Maximize,
   X,
-  FileText
+  ChevronLeft,
+  ChevronRight,
+  ZoomIn,
+  ZoomOut
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
+
+// Chargement dynamique pour éviter les erreurs SSR
+const Document = dynamic(
+  () => import('react-pdf').then((mod) => mod.Document),
+  { ssr: false }
+);
+
+const Page = dynamic(
+  () => import('react-pdf').then((mod) => mod.Page),
+  { ssr: false }
+);
+
+// Configuration du worker PDF.js
+if (typeof window !== 'undefined') {
+  import('react-pdf').then((reactPdf) => {
+    reactPdf.pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${reactPdf.pdfjs.version}/pdf.worker.min.js`;
+  });
+}
 
 interface PDFViewerProps {
   attachment: UploadedAttachmentResponse;
@@ -20,11 +42,10 @@ interface PDFViewerProps {
 }
 
 /**
- * Lecteur PDF MODERNE avec affichage inline
- * - Affichage via iframe
- * - Bouton plein écran
- * - Bouton télécharger
- * - Gestion d'erreurs
+ * Lecteur PDF avec react-pdf
+ * - Affichage page par page avec navigation
+ * - Zoom et contrôles
+ * - Gestion d'erreurs robuste
  */
 export const PDFViewer: React.FC<PDFViewerProps> = ({
   attachment,
@@ -33,38 +54,46 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
   onDelete,
   canDelete = false
 }) => {
+  const [numPages, setNumPages] = useState<number>(0);
+  const [pageNumber, setPageNumber] = useState<number>(1);
+  const [scale, setScale] = useState<number>(1.0);
+  const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Utiliser directement l'URL depuis l'attachement qui contient déjà le bon chemin
   const attachmentFileUrl = attachment.fileUrl;
 
-  // Tronquer le nom de fichier sur mobile (32 caractères max)
-  const truncateFilename = (filename: string, maxLength: number = 32): string => {
-    if (filename.length <= maxLength) return filename;
-    const ext = filename.split('.').pop() || '';
-    const nameWithoutExt = filename.substring(0, filename.lastIndexOf('.'));
-    const truncatedName = nameWithoutExt.substring(0, maxLength - ext.length - 4) + '...';
-    return `${truncatedName}.${ext}`;
+  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
+    setNumPages(numPages);
+    setIsLoading(false);
+    setHasError(false);
   };
 
-  // Check if iframe loads successfully
-  React.useEffect(() => {
-    // Set a timeout to detect if PDF fails to load
-    const timer = setTimeout(() => {
-      // If we haven't set an error yet, assume it loaded successfully
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, [attachmentFileUrl]);
-
-  const handleIframeError = () => {
+  const onDocumentLoadError = (error: Error) => {
+    console.error('Erreur chargement PDF:', error);
     setHasError(true);
-    setErrorMessage('Impossible de charger le PDF dans le navigateur');
+    setErrorMessage('Impossible de charger le PDF');
+    setIsLoading(false);
   };
 
   const handleOpenInNewTab = () => {
     window.open(attachmentFileUrl, '_blank');
+  };
+
+  const goToPreviousPage = () => {
+    setPageNumber((prev) => Math.max(prev - 1, 1));
+  };
+
+  const goToNextPage = () => {
+    setPageNumber((prev) => Math.min(prev + 1, numPages));
+  };
+
+  const handleZoomIn = () => {
+    setScale((prev) => Math.min(prev + 0.2, 2.0));
+  };
+
+  const handleZoomOut = () => {
+    setScale((prev) => Math.max(prev - 0.2, 0.5));
   };
 
   return (
@@ -73,37 +102,17 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
         hasError
           ? 'border-red-300 dark:border-red-700'
           : 'border-red-200 dark:border-gray-700'
-      } shadow-md hover:shadow-lg transition-all duration-200 w-full sm:max-w-2xl min-w-0 overflow-hidden ${className}`}
+      } shadow-md hover:shadow-lg transition-all duration-200 w-full max-w-[90vw] sm:max-w-2xl min-w-0 overflow-hidden ${className}`}
     >
-      {/* PDF embed - responsive height */}
-      <div
-        className="relative w-full bg-white dark:bg-gray-900 rounded-lg overflow-hidden h-[210px] sm:h-[280px] md:h-[350px]"
-        style={{
-          touchAction: 'manipulation',
-          WebkitUserSelect: 'none' as any,
-          userSelect: 'none'
-        }}
-      >
-        {!hasError ? (
-          <iframe
-            src={`${attachmentFileUrl}#view=FitH`}
-            className="w-full h-full border-0"
-            title={attachment.originalName}
-            style={{
-              minHeight: '100%',
-              minWidth: '100%',
-              touchAction: 'auto',
-              WebkitTouchCallout: 'none' as any,
-              WebkitUserSelect: 'none' as any,
-              userSelect: 'none',
-              overscrollBehavior: 'contain',
-              WebkitOverflowScrolling: 'touch'
-            } as React.CSSProperties}
-            allow="fullscreen"
-            sandbox="allow-same-origin allow-scripts allow-popups allow-presentation"
-            onError={handleIframeError}
-          />
-        ) : (
+      {/* PDF viewer - responsive height */}
+      <div className="relative w-full bg-white dark:bg-gray-900 rounded-lg overflow-auto h-[210px] sm:h-[280px] md:h-[350px]">
+        {isLoading && !hasError && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+            <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+
+        {hasError ? (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
             <div className="flex flex-col items-center gap-2 text-gray-600 dark:text-gray-400">
               <AlertTriangle className="w-12 h-12" />
@@ -113,22 +122,35 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
                 size="sm"
                 className="mt-2 bg-red-600 hover:bg-red-700 text-white"
               >
-                <FileText className="w-4 h-4 mr-2" />
                 Ouvrir dans un nouvel onglet
               </Button>
             </div>
           </div>
-        )}
-
-        {/* Overlay info */}
-        {!hasError && (
-          <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded max-w-[calc(100%-4rem)]">
-            <span className="truncate block">{attachment.originalName}</span>
+        ) : (
+          <div className="flex items-center justify-center w-full h-full p-2">
+            <Document
+              file={attachmentFileUrl}
+              onLoadSuccess={onDocumentLoadSuccess}
+              onLoadError={onDocumentLoadError}
+              loading={
+                <div className="flex items-center justify-center py-12">
+                  <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
+                </div>
+              }
+            >
+              <Page
+                pageNumber={pageNumber}
+                scale={scale}
+                renderTextLayer={true}
+                renderAnnotationLayer={true}
+                className="shadow-lg"
+              />
+            </Document>
           </div>
         )}
 
         {/* Delete button */}
-        {canDelete && onDelete && (
+        {canDelete && onDelete && !hasError && (
           <Button
             onClick={(e) => {
               e.stopPropagation();
@@ -146,17 +168,72 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
 
       {/* Contrôles */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
+        {/* Info fichier et pagination */}
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          {/* Info fichier */}
           <div className="text-xs text-gray-600 dark:text-gray-300 truncate">
-            <span className="font-medium">
-              <span className="hidden sm:inline">{attachment.originalName}</span>
-              <span className="inline sm:hidden">{truncateFilename(attachment.originalName)}</span>
-            </span>
+            <span className="font-medium">{attachment.originalName}</span>
+            {!hasError && numPages > 0 && (
+              <span className="ml-2 text-gray-500">
+                Page {pageNumber} / {numPages}
+              </span>
+            )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-shrink-0">
+        {/* Contrôles de navigation et zoom */}
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {!hasError && numPages > 1 && (
+            <>
+              <Button
+                onClick={goToPreviousPage}
+                disabled={pageNumber <= 1}
+                size="sm"
+                variant="ghost"
+                className="w-8 h-8 p-0"
+                title="Page précédente"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <Button
+                onClick={goToNextPage}
+                disabled={pageNumber >= numPages}
+                size="sm"
+                variant="ghost"
+                className="w-8 h-8 p-0"
+                title="Page suivante"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+              <div className="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1" />
+            </>
+          )}
+
+          {!hasError && (
+            <>
+              <Button
+                onClick={handleZoomOut}
+                disabled={scale <= 0.5}
+                size="sm"
+                variant="ghost"
+                className="w-8 h-8 p-0"
+                title="Dézoomer"
+              >
+                <ZoomOut className="w-4 h-4" />
+              </Button>
+              <Button
+                onClick={handleZoomIn}
+                disabled={scale >= 2.0}
+                size="sm"
+                variant="ghost"
+                className="w-8 h-8 p-0"
+                title="Zoomer"
+              >
+                <ZoomIn className="w-4 h-4" />
+              </Button>
+              <div className="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1" />
+            </>
+          )}
+
           {/* Bouton plein écran / lightbox */}
           {onOpenLightbox && (
             <Button

@@ -20,6 +20,7 @@ import { AttachmentService } from '../../services/attachmentService';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useI18n } from '@/hooks/useI18n';
 import { toast } from 'sonner';
+import { buildAttachmentUrl } from '@/utils/attachment-url';
 
 interface AttachmentGalleryProps {
   conversationId: string;
@@ -62,6 +63,12 @@ export function AttachmentGallery({
   const touchEndX = useRef<number>(0);
 
   const currentAttachment = attachments[currentIndex];
+
+  // Calculer l'URL normalisée de l'attachment courant
+  const currentAttachmentUrl = React.useMemo(() => {
+    if (!currentAttachment?.fileUrl) return null;
+    return buildAttachmentUrl(currentAttachment.fileUrl);
+  }, [currentAttachment?.fileUrl]);
 
   // Handler pour ouvrir la confirmation de suppression
   const handleOpenDeleteConfirm = useCallback((event: React.MouseEvent) => {
@@ -118,14 +125,14 @@ export function AttachmentGallery({
   }, [attachments.length]);
 
   const handleDownload = () => {
-    if (currentAttachment) {
-      window.open(currentAttachment.fileUrl, '_blank');
+    if (currentAttachmentUrl) {
+      window.open(currentAttachmentUrl, '_blank');
     }
   };
 
   const handleFullscreen = () => {
-    if (currentAttachment) {
-      window.open(currentAttachment.fileUrl, '_blank');
+    if (currentAttachmentUrl) {
+      window.open(currentAttachmentUrl, '_blank');
     }
   };
 
@@ -318,10 +325,10 @@ export function AttachmentGallery({
           >
             {loading ? (
               <div className="text-white">{t('gallery.loading')}</div>
-            ) : currentAttachment ? (
+            ) : currentAttachment && currentAttachmentUrl ? (
               <div className="w-full h-full flex items-center justify-center">
                 <img
-                  src={currentAttachment.fileUrl}
+                  src={currentAttachmentUrl}
                   alt={currentAttachment.originalName}
                   className="w-full h-full object-contain"
                   style={{ maxWidth: '100%', maxHeight: '100%' }}

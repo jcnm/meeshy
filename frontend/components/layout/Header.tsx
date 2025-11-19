@@ -259,6 +259,27 @@ export function Header({
                   showLanguageName={true}
                 />
 
+                {/* Bouton de partage simple (sans affiliation) */}
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    const shareUrl = window.location.origin;
+                    const shareText = 'Rejoignez-moi sur Meeshy - Une plateforme de messagerie multilingue où vous pouvez discuter avec des personnes du monde entier !';
+                    if (navigator.share) {
+                      navigator.share({
+                        title: 'Meeshy',
+                        text: shareText,
+                        url: shareUrl
+                      }).catch(console.error);
+                    } else {
+                      navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
+                    }
+                  }}
+                >
+                  <Share2 className="h-4 w-4 mr-2" />
+                  {t('share')}
+                </Button>
+
                 <Link href="/login">
                   <Button variant="outline">
                     <LogIn className="h-4 w-4 mr-2" />

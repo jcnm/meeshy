@@ -24,6 +24,7 @@ export function ImageLightbox({ images, initialIndex, isOpen, onClose }: ImageLi
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
+  const [imageError, setImageError] = useState(false);
 
   // Update currentIndex when initialIndex changes (when clicking different image)
   useEffect(() => {
@@ -32,44 +33,12 @@ export function ImageLightbox({ images, initialIndex, isOpen, onClose }: ImageLi
     }
   }, [initialIndex, isOpen]);
 
-  // Reset zoom et rotation quand on change d'image
+  // Reset zoom, rotation et erreur quand on change d'image
   useEffect(() => {
     setZoom(1);
     setRotation(0);
+    setImageError(false);
   }, [currentIndex]);
-
-  // Navigation clavier
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      switch (e.key) {
-        case 'Escape':
-          onClose();
-          break;
-        case 'ArrowLeft':
-          goToPrevious();
-          break;
-        case 'ArrowRight':
-          goToNext();
-          break;
-        case '+':
-        case '=':
-          handleZoomIn();
-          break;
-        case '-':
-          handleZoomOut();
-          break;
-        case 'r':
-        case 'R':
-          handleRotate();
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, currentIndex, zoom, rotation]);
 
   // Empêcher le scroll du body quand le lightbox est ouvert
   useEffect(() => {
@@ -84,9 +53,57 @@ export function ImageLightbox({ images, initialIndex, isOpen, onClose }: ImageLi
     };
   }, [isOpen]);
 
-  const currentImage = images[currentIndex];
+  // Vérification de sécurité: si pas d'URL, fermer le lightbox
+  useEffect(() => {
+    // Vérifier que l'image courante existe et a une URL
+    if (isOpen && images && images.length > 0 && currentIndex >= 0 && currentIndex < images.length) {
+      const img = images[currentIndex];
+      if (!img.fileUrl) {
+        console.error('[ImageLightbox] Image sans URL:', img);
+        onClose();
+      }
+    }
+  }, [isOpen, images, currentIndex, onClose]);
+
+  // Navigation clavier - avec logique inline pour éviter les dépendances
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case 'Escape':
+          onClose();
+          break;
+        case 'ArrowLeft':
+          setCurrentIndex((prev) => Math.max(0, prev - 1));
+          break;
+        case 'ArrowRight':
+          setCurrentIndex((prev) => Math.min((images?.length || 0) - 1, prev + 1));
+          break;
+        case '+':
+        case '=':
+          setZoom((prev) => Math.min(prev + 0.5, 3));
+          break;
+        case '-':
+          setZoom((prev) => Math.max(prev - 0.5, 0.5));
+          break;
+        case 'r':
+        case 'R':
+          setRotation((prev) => (prev + 90) % 360);
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, images, onClose]);
+
+  // Calculer les valeurs nécessaires avec vérification de sécurité
+  const currentImage = (images && images.length > 0 && currentIndex >= 0 && currentIndex < images.length)
+    ? images[currentIndex]
+    : null;
   const canGoPrevious = currentIndex > 0;
-  const canGoNext = currentIndex < images.length - 1;
+  const canGoNext = images && currentIndex < images.length - 1;
 
   const goToPrevious = useCallback(() => {
     if (canGoPrevious) {
@@ -124,7 +141,14 @@ export function ImageLightbox({ images, initialIndex, isOpen, onClose }: ImageLi
     document.body.removeChild(link);
   }, [currentImage]);
 
-  if (!isOpen || !currentImage) return null;
+  // Early validation: check if images array and currentIndex are valid
+  // DOIT être après tous les hooks pour respecter les règles des hooks React
+  if (!isOpen || !images || images.length === 0 || !currentImage) {
+    return null;
+  }
+
+  // Vérifier que document.body existe (SSR safety)
+  if (typeof document === 'undefined') return null;
 
   return createPortal(
     <AnimatePresence>
@@ -178,25 +202,48 @@ export function ImageLightbox({ images, initialIndex, isOpen, onClose }: ImageLi
 
         {/* Zone d'affichage de l'image */}
         <div className="absolute inset-0 flex items-center justify-center p-4 md:p-8">
-          <motion.img
-            key={currentImage.id}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{
-              opacity: 1,
-              scale: zoom,
-              rotate: rotation
-            }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.2 }}
-            src={currentImage.fileUrl}
-            alt={currentImage.originalName}
-            className="max-w-full max-h-full object-contain cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              onClose();
-            }}
-            draggable={false}
-          />
+          {imageError ? (
+            <div className="flex flex-col items-center gap-4 text-white">
+              <div className="text-red-400 text-6xl">⚠️</div>
+              <p className="text-lg">Impossible de charger l'image</p>
+              <p className="text-sm text-gray-400">{currentImage.originalName}</p>
+              <Button
+                variant="outline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDownload();
+                }}
+                className="mt-4"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Télécharger quand même
+              </Button>
+            </div>
+          ) : (
+            <motion.img
+              key={currentImage.id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{
+                opacity: 1,
+                scale: zoom,
+                rotate: rotation
+              }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.2 }}
+              src={currentImage.fileUrl}
+              alt={currentImage.originalName}
+              className="max-w-full max-h-full object-contain cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                onClose();
+              }}
+              onError={(e) => {
+                console.error('[ImageLightbox] Erreur chargement image:', currentImage.fileUrl);
+                setImageError(true);
+              }}
+              draggable={false}
+            />
+          )}
         </div>
 
         {/* Navigation gauche */}

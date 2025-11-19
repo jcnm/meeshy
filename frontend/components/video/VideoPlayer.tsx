@@ -106,31 +106,29 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   // Fonction pour mettre à jour le temps avec requestAnimationFrame (fluide)
   const updateProgress = useCallback(() => {
-    if (videoRef.current && !videoRef.current.paused) {
-      setCurrentTime(videoRef.current.currentTime);
+    const video = videoRef.current;
+    if (!video || video.paused) return;
+
+    // Vérifier que la vidéo a chargé ses métadonnées
+    if (video.readyState < 2) {
+      // Réessayer au prochain frame
       animationFrameRef.current = requestAnimationFrame(updateProgress);
+      return;
     }
+
+    const newTime = video.currentTime;
+    const videoDuration = video.duration;
+
+    // Vérifier que les valeurs sont valides
+    if (isFinite(newTime) && newTime >= 0 && isFinite(videoDuration) && videoDuration > 0) {
+      // Ne pas mettre à jour si la valeur est aberrante (> durée)
+      if (newTime <= videoDuration) {
+        setCurrentTime(newTime);
+      }
+    }
+
+    animationFrameRef.current = requestAnimationFrame(updateProgress);
   }, []);
-
-  // Gérer le démarrage/arrêt de l'animation de progression
-  useEffect(() => {
-    if (isPlaying && videoRef.current) {
-      setCurrentTime(videoRef.current.currentTime);
-      animationFrameRef.current = requestAnimationFrame(updateProgress);
-    } else {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-        animationFrameRef.current = null;
-      }
-    }
-
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-        animationFrameRef.current = null;
-      }
-    };
-  }, [isPlaying, updateProgress]);
 
   // Toggle play/pause
   const togglePlay = useCallback(async () => {
@@ -155,6 +153,20 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
         // Arrêter toutes les autres vidéos avant de démarrer celle-ci
         VideoManager.getInstance().play(videoRef.current);
+
+        // Si la vidéo est terminée (currentTime === duration), reset à 0
+        // IMPORTANT: Vérifier que duration est valide avant de comparer
+        const videoDuration = videoRef.current.duration;
+        if (isFinite(videoDuration) && videoDuration > 0) {
+          if (videoRef.current.currentTime >= videoDuration - 0.1) {
+            videoRef.current.currentTime = 0;
+            setCurrentTime(0);
+          }
+        } else {
+          // Si la durée n'est pas encore chargée, reset à 0 par sécurité
+          videoRef.current.currentTime = 0;
+          setCurrentTime(0);
+        }
 
         // Forcer le chargement de la source si nécessaire
         if (videoRef.current.readyState === 0) {
@@ -183,34 +195,37 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   // Handler pour récupérer la durée
   const tryToGetDuration = useCallback(() => {
-    if (attachmentDuration && attachmentDuration > 0 && !hasLoadedMetadata) {
+    // Priorité 1: durée depuis l'attachment
+    if (attachmentDuration && attachmentDuration > 0) {
       setDuration(attachmentDuration);
       setHasLoadedMetadata(true);
       return;
     }
 
+    // Priorité 2: durée depuis la vidéo HTML
     if (videoRef.current) {
       const videoDuration = videoRef.current.duration;
-      if (isFinite(videoDuration) && videoDuration > 0 && !hasLoadedMetadata) {
+      if (isFinite(videoDuration) && videoDuration > 0) {
         setDuration(videoDuration);
         setHasLoadedMetadata(true);
         return;
       }
     }
-  }, [attachmentDuration, hasLoadedMetadata]);
+  }, [attachmentDuration]);
 
   // Handler pour les métadonnées chargées
   const handleLoadedMetadata = useCallback(() => {
     tryToGetDuration();
   }, [tryToGetDuration]);
 
-  // Handler pour la fin de lecture
+  // Handler pour la fin de lecture - Reset à 0 pour permettre un nouveau play
   const handleEnded = useCallback(() => {
     setIsPlaying(false);
-    if (videoRef.current && duration > 0) {
-      setCurrentTime(duration);
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      setCurrentTime(0);
     }
-  }, [duration]);
+  }, []);
 
   // Handler pour les erreurs de l'élément vidéo
   const handleVideoError = useCallback(
@@ -249,10 +264,19 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     [attachmentMimeType, duration]
   );
 
-  // Écouter les événements de pause
+  // Écouter les événements de play/pause/timeupdate pour synchroniser l'état
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
+
+    const handlePlay = () => {
+      setIsPlaying(true);
+      // Démarrer l'animation de la progress bar
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      animationFrameRef.current = requestAnimationFrame(updateProgress);
+    };
 
     const handlePause = () => {
       setIsPlaying(false);
@@ -262,10 +286,35 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       }
     };
 
+    // Backup: utiliser timeupdate comme fallback pour la mise à jour du temps
+    // IMPORTANT: Ne mettre à jour QUE si la vidéo est en train de jouer ET prête
+    const handleTimeUpdate = () => {
+      // Ignorer si la vidéo n'est pas en train de jouer (évite les updates pendant le chargement)
+      if (video.paused) return;
+
+      // Vérifier que la vidéo a chargé ses métadonnées
+      if (video.readyState < 2) return; // HAVE_CURRENT_DATA minimum
+
+      const newTime = video.currentTime;
+      const videoDuration = video.duration;
+
+      // Vérifier que les valeurs sont valides
+      if (isFinite(newTime) && newTime >= 0 && isFinite(videoDuration) && videoDuration > 0) {
+        // Ne pas mettre à jour si la valeur est aberrante (> durée)
+        if (newTime <= videoDuration) {
+          setCurrentTime(newTime);
+        }
+      }
+    };
+
+    video.addEventListener('play', handlePlay);
     video.addEventListener('pause', handlePause);
+    video.addEventListener('timeupdate', handleTimeUpdate);
 
     return () => {
+      video.removeEventListener('play', handlePlay);
       video.removeEventListener('pause', handlePause);
+      video.removeEventListener('timeupdate', handleTimeUpdate);
       video.pause();
       VideoManager.getInstance().stop(video);
 
@@ -277,7 +326,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       video.removeAttribute('src');
       video.load();
     };
-  }, []);
+  }, [updateProgress]);
 
   // Initialiser la durée depuis l'attachment si disponible
   useEffect(() => {
@@ -285,6 +334,14 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       setDuration(attachmentDuration);
     }
   }, [attachmentId, attachmentDuration]);
+
+  // Réinitialiser currentTime à 0 quand on change de vidéo
+  useEffect(() => {
+    setCurrentTime(0);
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+    }
+  }, [attachmentId]);
 
   // Handler pour changer la position dans la vidéo
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -316,19 +373,44 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     }
   };
 
-  // Toggle plein écran
+  // Toggle plein écran - Version cross-browser compatible
   const toggleFullscreen = useCallback(async () => {
     if (!containerRef.current) return;
 
     try {
       if (!isFullscreen) {
-        if (containerRef.current.requestFullscreen) {
-          await containerRef.current.requestFullscreen();
+        // Entrer en plein écran - essayer toutes les variantes
+        const element = containerRef.current as any;
+        if (element.requestFullscreen) {
+          await element.requestFullscreen();
+        } else if (element.webkitRequestFullscreen) {
+          // Safari
+          await element.webkitRequestFullscreen();
+        } else if (element.mozRequestFullScreen) {
+          // Firefox
+          await element.mozRequestFullScreen();
+        } else if (element.msRequestFullscreen) {
+          // IE/Edge
+          await element.msRequestFullscreen();
+        } else {
+          console.warn('Fullscreen API non supporté sur ce navigateur');
+          return;
         }
         setIsFullscreen(true);
       } else {
-        if (document.exitFullscreen) {
-          await document.exitFullscreen();
+        // Sortir du plein écran - essayer toutes les variantes
+        const doc = document as any;
+        if (doc.exitFullscreen) {
+          await doc.exitFullscreen();
+        } else if (doc.webkitExitFullscreen) {
+          // Safari
+          await doc.webkitExitFullscreen();
+        } else if (doc.mozCancelFullScreen) {
+          // Firefox
+          await doc.mozCancelFullScreen();
+        } else if (doc.msExitFullscreen) {
+          // IE/Edge
+          await doc.msExitFullscreen();
         }
         setIsFullscreen(false);
       }
@@ -337,15 +419,30 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     }
   }, [isFullscreen]);
 
-  // Écouter les changements de plein écran
+  // Écouter les changements de plein écran - Version cross-browser compatible
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+      const doc = document as any;
+      const isInFullscreen = !!(
+        doc.fullscreenElement ||
+        doc.webkitFullscreenElement ||
+        doc.mozFullScreenElement ||
+        doc.msFullscreenElement
+      );
+      setIsFullscreen(isInFullscreen);
     };
 
+    // Ajouter tous les event listeners pour compatibilité cross-browser
     document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange); // Safari
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange); // Firefox
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange); // IE/Edge
+
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
     };
   }, []);
 
@@ -357,8 +454,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Calculer le pourcentage de progression
-  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+  // Calculer le pourcentage de progression avec validation
+  const progress = duration > 0 && isFinite(currentTime) && isFinite(duration)
+    ? Math.min(Math.max((currentTime / duration) * 100, 0), 100)
+    : 0;
 
   return (
     <div
@@ -370,7 +469,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       } shadow-md hover:shadow-lg transition-all duration-200 w-full sm:max-w-2xl min-w-0 overflow-hidden ${className}`}
     >
       {/* Élément vidéo - adapts to video aspect ratio */}
-      <div className="relative w-full max-w-full min-w-0 bg-black rounded-lg overflow-hidden" style={{ aspectRatio: attachment.width && attachment.height ? `${attachment.width}/${attachment.height}` : '16/9' }}>
+      <div className="relative w-full max-w-[90vw] sm:max-w-2xl min-w-0 bg-black rounded-lg overflow-hidden" style={{ aspectRatio: attachment.width && attachment.height ? `${attachment.width}/${attachment.height}` : '16/9' }}>
         <video
           ref={videoRef}
           onLoadedMetadata={handleLoadedMetadata}
@@ -440,23 +539,39 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           {formatTime(currentTime)}
         </span>
 
-        {/* Barre de progression */}
-        <div className="flex-1 relative h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-visible group cursor-pointer">
+        {/* Barre de progression avec pourcentage intégré - plus épaisse */}
+        <div className="flex-1 relative h-[15px] bg-gray-200 dark:bg-gray-700 rounded-full overflow-visible group cursor-pointer">
+          {/* Barre de progression remplie avec animation fluide */}
           <div
-            className="absolute top-0 left-0 h-full rounded-full bg-gradient-to-r from-purple-500 via-purple-600 to-purple-500 dark:from-purple-400 dark:via-purple-500 dark:to-purple-400"
+            className={`absolute top-0 left-0 h-full rounded-full ${
+              isPlaying
+                ? 'bg-gradient-to-r from-purple-500 via-purple-600 to-purple-500 dark:from-purple-400 dark:via-purple-500 dark:to-purple-400'
+                : 'bg-purple-600 dark:bg-purple-500'
+            }`}
             style={{
               width: `${progress}%`,
-              transition: 'none',
+              transition: 'none', // Pas de transition pour un rendu fluide à 60fps
             }}
           />
 
+          {/* Curseur de position - Visible au survol avec animation smooth */}
           <div
-            className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white dark:bg-gray-100 rounded-full shadow-lg border-2 border-purple-600 dark:border-purple-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
+            className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white dark:bg-gray-100 rounded-full shadow-lg border-2 border-purple-600 dark:border-purple-400 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-200 pointer-events-none"
             style={{
-              left: `calc(${progress}% - 6px)`,
+              left: `calc(${Math.min(progress, 100)}% - 8px)`,
             }}
           />
 
+          {/* Pourcentage centré dans la barre (horizontalement ET verticalement) */}
+          {duration > 0 && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <span className="text-[9px] font-semibold text-white dark:text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
+                {progress.toFixed(0)}%
+              </span>
+            </div>
+          )}
+
+          {/* Input range invisible pour le contrôle */}
           <input
             type="range"
             min="0"

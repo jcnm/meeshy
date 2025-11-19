@@ -513,7 +513,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                 // Si attachments seuls : dans le flux avec les réactions superposées
                 <>
                   <div className={cn(
-                    "relative mb-1 w-full max-w-full overflow-hidden",
+                    "relative mb-5 w-full max-w-full overflow-visible",
                     isOwnMessage ? "ml-auto" : "mr-auto"
                   )}>
                     <MessageAttachments
@@ -525,16 +525,16 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                       isOwnMessage={isOwnMessage}
                     />
 
-                    {/* Réactions - Superposées en bas des attachments */}
+                    {/* Réactions - Superposées par dessus les attachments (en bas) */}
                     <div
                       className={cn(
-                        "absolute z-[9999] transition-transform duration-200",
+                        "absolute z-[99999] transition-transform duration-200",
                         "group-hover/message:-translate-y-4",
                         isOwnMessage ? "right-0" : "left-0"
                       )}
                       style={{
                         pointerEvents: 'auto',
-                        bottom: '-25px'
+                        bottom: '-18px'
                       }}
                     >
                       <MessageReactions
@@ -704,13 +704,13 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
           {/* Réactions - Superposées en bas de la bulle de message */}
           <div
             className={cn(
-              "absolute z-[9999] transition-transform duration-200",
+              "absolute z-[99999] transition-transform duration-200",
               "group-hover/message:-translate-y-4",
               isOwnMessage ? "right-0" : "left-0"
             )}
             style={{
               pointerEvents: 'auto',
-              bottom: '-25px'
+              bottom: '-18px'
             }}
           >
             <MessageReactions

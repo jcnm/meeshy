@@ -11,8 +11,8 @@ import { Attachment, formatFileSize, getAttachmentType } from '../../shared/type
 import { SimpleAudioPlayer } from '@/components/audio/SimpleAudioPlayer';
 import { VideoPlayer } from '@/components/video/VideoPlayer';
 import { VideoLightbox } from '@/components/video/VideoLightbox';
-import { PDFViewer } from '@/components/pdf/PDFViewer';
-import { PDFLightbox } from '@/components/pdf/PDFLightbox';
+import { PDFViewerWrapper } from '@/components/pdf/PDFViewerWrapper';
+import { PDFLightboxWrapper } from '@/components/pdf/PDFLightboxWrapper';
 import { MarkdownViewer } from '@/components/markdown/MarkdownViewer';
 import { MarkdownLightbox } from '@/components/markdown/MarkdownLightbox';
 import { TextViewer } from '@/components/text/TextViewer';
@@ -38,6 +38,7 @@ import { useI18n } from '@/hooks/useI18n';
 import { AttachmentService } from '@/services/attachmentService';
 import { toast } from 'sonner';
 import { ImageLightbox } from './ImageLightbox';
+import { buildAttachmentsUrls } from '@/utils/attachment-url';
 
 interface MessageAttachmentsProps {
   attachments: Attachment[];
@@ -86,6 +87,12 @@ export const MessageAttachments = React.memo(function MessageAttachments({
   const [pptxLightboxAttachment, setPptxLightboxAttachment] = useState<Attachment | null>(null);
   const { t } = useI18n('common');
 
+  // Construire les URLs complètes des attachments à partir des chemins relatifs
+  // Cela permet au frontend de s'adapter dynamiquement au domaine (localhost, IP locale, production)
+  const attachmentsWithUrls = useMemo(() => {
+    return buildAttachmentsUrls(attachments);
+  }, [attachments]);
+
   // Handler pour ouvrir la confirmation de suppression
   const handleOpenDeleteConfirm = useCallback((attachment: Attachment, event: React.MouseEvent) => {
     // Empêcher le clic normal
@@ -127,32 +134,32 @@ export const MessageAttachments = React.memo(function MessageAttachments({
   }, []);
 
 
-  if (!attachments || attachments.length === 0) return null;
+  if (!attachmentsWithUrls || attachmentsWithUrls.length === 0) return null;
 
   // Séparer les images, vidéos, audios, PDFs, PPTX, markdown, texte et autres types
-  const imageAttachments = attachments.filter(att => getAttachmentType(att.mimeType, att.originalName) === 'image');
-  const videoAttachments = attachments.filter(att => getAttachmentType(att.mimeType, att.originalName) === 'video');
-  const audioAttachments = attachments.filter(att => getAttachmentType(att.mimeType, att.originalName) === 'audio');
-  const pdfAttachments = attachments.filter(att => att.mimeType === 'application/pdf');
-  const pptxAttachments = attachments.filter(att =>
+  const imageAttachments = attachmentsWithUrls.filter(att => getAttachmentType(att.mimeType, att.originalName) === 'image');
+  const videoAttachments = attachmentsWithUrls.filter(att => getAttachmentType(att.mimeType, att.originalName) === 'video');
+  const audioAttachments = attachmentsWithUrls.filter(att => getAttachmentType(att.mimeType, att.originalName) === 'audio');
+  const pdfAttachments = attachmentsWithUrls.filter(att => att.mimeType === 'application/pdf');
+  const pptxAttachments = attachmentsWithUrls.filter(att =>
     att.mimeType === 'application/vnd.ms-powerpoint' ||
     att.mimeType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' ||
     att.originalName.toLowerCase().endsWith('.ppt') ||
     att.originalName.toLowerCase().endsWith('.pptx')
   );
-  const markdownAttachments = attachments.filter(att =>
+  const markdownAttachments = attachmentsWithUrls.filter(att =>
     att.mimeType === 'text/markdown' ||
     att.mimeType === 'text/x-markdown' ||
     att.originalName.toLowerCase().endsWith('.md')
   );
-  const textAttachments = attachments.filter(att => {
+  const textAttachments = attachmentsWithUrls.filter(att => {
     const type = getAttachmentType(att.mimeType, att.originalName);
     return (type === 'text' || type === 'code') &&
            att.mimeType !== 'text/markdown' &&
            att.mimeType !== 'text/x-markdown' &&
            !att.originalName.toLowerCase().endsWith('.md');
   });
-  const otherAttachments = attachments.filter(att => {
+  const otherAttachments = attachmentsWithUrls.filter(att => {
     const type = getAttachmentType(att.mimeType, att.originalName);
     const isPdf = att.mimeType === 'application/pdf';
     const isPptx = att.mimeType === 'application/vnd.ms-powerpoint' ||
@@ -168,11 +175,11 @@ export const MessageAttachments = React.memo(function MessageAttachments({
 
   // Seuil pour passer en mode multi-lignes : 10+ attachments
   const multiRowThreshold = 10;
-  const shouldUseMultiRow = attachments.length >= multiRowThreshold;
-  const shouldShowExpandButton = attachments.length > multiRowThreshold;
-  const displayedAttachments = isExpanded || !shouldShowExpandButton 
-    ? attachments 
-    : attachments.slice(0, multiRowThreshold);
+  const shouldUseMultiRow = attachmentsWithUrls.length >= multiRowThreshold;
+  const shouldShowExpandButton = attachmentsWithUrls.length > multiRowThreshold;
+  const displayedAttachments = isExpanded || !shouldShowExpandButton
+    ? attachmentsWithUrls
+    : attachmentsWithUrls.slice(0, multiRowThreshold);
 
   const getFileIcon = (attachment: Attachment) => {
     const type = getAttachmentType(attachment.mimeType, attachment.originalName);
@@ -417,7 +424,7 @@ export const MessageAttachments = React.memo(function MessageAttachments({
       };
 
       return (
-        <PDFViewer
+        <PDFViewerWrapper
           key={attachment.id}
           attachment={pdfAttachment as any}
           onOpenLightbox={handleOpenPdfLightbox}
@@ -738,7 +745,7 @@ export const MessageAttachments = React.memo(function MessageAttachments({
               <div className="flex flex-col items-center gap-1">
                 <Grid3X3 className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 <span className="text-[9px] text-gray-500 dark:text-gray-400 font-medium">
-                  +{attachments.length - multiRowThreshold}
+                  +{attachmentsWithUrls.length - multiRowThreshold}
                 </span>
               </div>
             </Button>
@@ -778,7 +785,7 @@ export const MessageAttachments = React.memo(function MessageAttachments({
       />
 
       {/* Lightbox pour les PDFs */}
-      <PDFLightbox
+      <PDFLightboxWrapper
         attachment={pdfLightboxAttachment as any}
         isOpen={pdfLightboxOpen}
         onClose={() => setPdfLightboxOpen(false)}

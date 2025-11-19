@@ -162,32 +162,9 @@ export function ShareAffiliateModal({ isOpen, onClose, userLanguage }: ShareAffi
 
   const createAndShareToken = async () => {
     const success = await createNewToken();
-    if (success && selectedToken) {
-      // Partager directement après création
-      const fullMessage = `${shareMessage}\n\n${selectedToken.affiliateLink}`;
-      
-      // D'abord copier le message dans le presse-papiers
-      await copyToClipboard(fullMessage);
-      
-      // Ensuite proposer le partage natif
-      if (navigator.share) {
-        try {
-          await navigator.share({
-            title: t('shareTitle'),
-            text: fullMessage
-          });
-          onClose(); // Fermer la modale après partage
-        } catch (error) {
-          if (error instanceof Error && error.name !== 'AbortError') {
-            console.error('Erreur partage natif:', error);
-          }
-          // Le message est déjà copié, donc on peut fermer la modale
-          onClose();
-        }
-      } else {
-        // Si pas de partage natif, le message est déjà copié
-        onClose();
-      }
+    if (success) {
+      // Passer directement à l'étape de partage après création
+      setCurrentStep('share');
     }
   };
 

@@ -1,17 +1,21 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Download,
   AlertTriangle,
   Maximize,
   X,
-  Presentation
+  ChevronLeft,
+  ChevronRight,
+  ZoomIn,
+  ZoomOut,
+  FileText
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
 
-interface PPTXViewerProps {
+interface PDFViewerWrapperProps {
   attachment: UploadedAttachmentResponse;
   className?: string;
   onOpenLightbox?: () => void;
@@ -20,10 +24,10 @@ interface PPTXViewerProps {
 }
 
 /**
- * PPTX Viewer - PowerPoint presentation viewer with inline display
- * Uses Microsoft Office Online viewer for rendering
+ * Wrapper qui utilise iframe comme fallback
+ * Plus simple et sans dépendance problématique
  */
-export const PPTXViewer: React.FC<PPTXViewerProps> = ({
+export const PDFViewerWrapper: React.FC<PDFViewerWrapperProps> = ({
   attachment,
   className = '',
   onOpenLightbox,
@@ -32,70 +36,68 @@ export const PPTXViewer: React.FC<PPTXViewerProps> = ({
 }) => {
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const attachmentFileUrl = attachment.fileUrl;
 
-  // Microsoft Office Online viewer URL
-  const officeViewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(attachmentFileUrl)}`;
-
   const handleIframeError = () => {
     setHasError(true);
-    setErrorMessage('Impossible de charger la présentation');
+    setErrorMessage('Impossible de charger le PDF');
   };
 
   const handleOpenInNewTab = () => {
     window.open(attachmentFileUrl, '_blank');
   };
 
+  // Truncate filename for mobile
+  const truncateFilename = (filename: string, maxLength: number = 32): string => {
+    if (filename.length <= maxLength) return filename;
+    const ext = filename.split('.').pop() || '';
+    const nameWithoutExt = filename.substring(0, filename.lastIndexOf('.'));
+    const truncatedName = nameWithoutExt.substring(0, maxLength - ext.length - 4) + '...';
+    return `${truncatedName}.${ext}`;
+  };
+
   return (
     <div
-      className={`flex flex-col gap-2 p-3 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-gray-800 dark:to-gray-900 rounded-lg border ${
+      className={`flex flex-col gap-2 p-3 bg-gradient-to-br from-red-50 to-orange-50 dark:from-gray-800 dark:to-gray-900 rounded-lg border ${
         hasError
           ? 'border-red-300 dark:border-red-700'
-          : 'border-orange-200 dark:border-gray-700'
-      } shadow-md hover:shadow-lg transition-all duration-200 w-full max-w-[90vw] sm:max-w-2xl min-w-0 overflow-hidden ${className}`}
+          : 'border-red-200 dark:border-gray-700'
+      } shadow-md hover:shadow-lg transition-all duration-200 w-full sm:max-w-2xl min-w-0 overflow-hidden ${className}`}
     >
-      {/* PPTX iframe - responsive height */}
-      <div className="relative w-full bg-white dark:bg-gray-900 rounded-lg overflow-hidden h-[210px] sm:h-[280px] md:h-[350px]">
+      {/* PDF embed - responsive height */}
+      <div className="relative w-full bg-white dark:bg-gray-900 rounded-lg overflow-auto h-[210px] sm:h-[280px] md:h-[350px]">
         {!hasError ? (
-          <>
-            <iframe
-              src={officeViewerUrl}
-              className="w-full h-full border-0"
-              onError={handleIframeError}
-              title={attachment.originalName}
-              allow="autoplay"
-            />
-          </>
+          <iframe
+            src={`${attachmentFileUrl}#toolbar=1&navpanes=1&view=FitH&page=${currentPage}`}
+            className="w-full h-full border-0"
+            title={attachment.originalName}
+            onError={handleIframeError}
+            style={{
+              minHeight: '100%',
+              minWidth: '100%'
+            }}
+          />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
             <div className="flex flex-col items-center gap-2 text-gray-600 dark:text-gray-400">
               <AlertTriangle className="w-12 h-12" />
               <span className="text-sm text-center px-4">{errorMessage}</span>
-              <p className="text-xs text-center px-4 text-gray-500">
-                Le fichier doit être accessible publiquement pour être visualisé
-              </p>
               <Button
                 onClick={handleOpenInNewTab}
                 size="sm"
-                className="mt-2 bg-orange-600 hover:bg-orange-700 text-white"
+                className="mt-2 bg-red-600 hover:bg-red-700 text-white"
               >
-                <Presentation className="w-4 h-4 mr-2" />
-                Télécharger le fichier
+                <FileText className="w-4 h-4 mr-2" />
+                Ouvrir dans un nouvel onglet
               </Button>
             </div>
           </div>
         )}
 
-        {/* Overlay info */}
-        {!hasError && (
-          <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded max-w-[calc(100%-4rem)]">
-            <span className="truncate block">{attachment.originalName}</span>
-          </div>
-        )}
-
         {/* Delete button */}
-        {canDelete && onDelete && (
+        {canDelete && onDelete && !hasError && (
           <Button
             onClick={(e) => {
               e.stopPropagation();
@@ -104,7 +106,7 @@ export const PPTXViewer: React.FC<PPTXViewerProps> = ({
             size="sm"
             variant="destructive"
             className="absolute top-2 right-2 w-8 h-8 p-0 opacity-0 hover:opacity-100 focus-visible:opacity-100 transition-opacity"
-            title="Supprimer cette présentation"
+            title="Supprimer ce PDF"
           >
             <X className="w-4 h-4" />
           </Button>
@@ -115,9 +117,9 @@ export const PPTXViewer: React.FC<PPTXViewerProps> = ({
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2 min-w-0 flex-1">
           {/* Info fichier */}
-          <div className="text-xs text-gray-600 dark:text-gray-300 flex items-center gap-1 truncate">
-            <Presentation className="w-3 h-3 flex-shrink-0 text-orange-600" />
-            <span className="font-medium truncate">{attachment.originalName}</span>
+          <div className="text-xs text-gray-600 dark:text-gray-300 truncate">
+            <span className="font-medium hidden sm:inline">{attachment.originalName}</span>
+            <span className="font-medium inline sm:hidden">{truncateFilename(attachment.originalName)}</span>
           </div>
         </div>
 
@@ -137,7 +139,7 @@ export const PPTXViewer: React.FC<PPTXViewerProps> = ({
 
           {/* Bouton télécharger */}
           <a
-            href={attachment.fileUrl}
+            href={attachmentFileUrl}
             download={attachment.originalName}
             className="flex-shrink-0 p-1.5 hover:bg-white/50 dark:hover:bg-gray-700/50 rounded-full transition-all duration-200"
             title="Télécharger"

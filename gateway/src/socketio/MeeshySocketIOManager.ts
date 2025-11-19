@@ -163,9 +163,11 @@ export class MeeshySocketIOManager {
       
       // Configurer les événements Socket.IO
       this._setupSocketEvents();
-      // Démarrer le ticker périodique des stats en ligne
-      this._ensureOnlineStatsTicker();
-      
+      // ✅ FIX BUG #3: SUPPRIMER le polling périodique
+      // Le système utilise maintenant uniquement les événements Socket.IO (connect/disconnect)
+      // et le broadcast de statut lors de ces événements
+      // this._ensureOnlineStatsTicker(); // ← SUPPRIMÉ
+
       // Démarrer les tâches de maintenance
       try {
         await this.maintenanceService.startMaintenanceTasks();
@@ -240,6 +242,12 @@ export class MeeshySocketIOManager {
           // Récupérer les informations de l'utilisateur pour déterminer s'il est anonyme
           const user = this.connectedUsers.get(userId);
           const isAnonymous = user?.isAnonymous || false;
+
+          // ✅ FIX BUG #2: Mettre à jour lastActiveAt lors de l'envoi de message (activité utilisateur)
+          // Cela maintient l'utilisateur en "online" (vert) tant qu'il est actif
+          this.maintenanceService.updateUserLastActive(userId, isAnonymous).catch(err => {
+            console.debug('⚠️ [MESSAGE_SEND] Erreur update lastActive:', err);
+          });
 
           // Pour les utilisateurs anonymes, récupérer le nom d'affichage depuis la base de données
           let anonymousDisplayName: string | undefined;
@@ -1564,6 +1572,12 @@ export class MeeshySocketIOManager {
         return;
       }
 
+      // ✅ FIX BUG #2: Mettre à jour lastActiveAt lors du typing (activité utilisateur)
+      // Cela maintient l'utilisateur en "online" (vert) tant qu'il est actif
+      this.maintenanceService.updateUserLastActive(userId, connectedUser.isAnonymous).catch(err => {
+        console.debug('⚠️ [TYPING] Erreur update lastActive:', err);
+      });
+
       let displayName: string;
 
       // FIXED: Gérer les utilisateurs anonymes
@@ -1712,34 +1726,22 @@ export class MeeshySocketIOManager {
     }
   }
 
-  // Envoi périodique des stats d'utilisateurs en ligne pour chaque conversation active
-  private onlineStatsInterval: NodeJS.Timeout | null = null;
+  // ✅ FIX BUG #3: Polling périodique SUPPRIMÉ
+  // Le système utilise maintenant uniquement les événements (connect/disconnect/activity)
+  // L'envoi périodique des stats toutes les 10s était du polling déguisé
+  // Les stats sont maintenant envoyées UNIQUEMENT lors d'événements:
+  // - Connexion/Déconnexion → broadcast USER_STATUS
+  // - Activité (typing, message) → update lastActiveAt
+  // - Maintenance (toutes les 15s) → détecte les inactifs > 30min
 
-  private _ensureOnlineStatsTicker(): void {
-    if (this.onlineStatsInterval) return;
-    this.onlineStatsInterval = setInterval(async () => {
-      try {
-        const conversationIds = conversationStatsService.getActiveConversationIds();
-        for (const conversationId of conversationIds) {
-          const stats = await conversationStatsService.getOrCompute(
-            this.prisma,
-            conversationId,
-            () => this.getConnectedUsers()
-          );
-          // n'envoyer que la partie utilisateurs en ligne à fréquence fixe
-          this.io.to(`conversation_${conversationId}`).emit(SERVER_EVENTS.CONVERSATION_ONLINE_STATS, {
-            conversationId,
-            onlineUsers: stats.onlineUsers,
-            updatedAt: stats.updatedAt
-          } as any);
-        }
-      } catch {}
-    }, 10000); // toutes les 10s par défaut
-  }
+  // MÉTHODE SUPPRIMÉE: _ensureOnlineStatsTicker
+  // private onlineStatsInterval: NodeJS.Timeout | null = null;
+  // private _ensureOnlineStatsTicker(): void { ... }
 
 
   private async _sendConversationStatsToSocket(socket: any, conversationId: string): Promise<void> {
-    this._ensureOnlineStatsTicker();
+    // ✅ FIX BUG #3: Appel au ticker supprimé
+    // Les stats sont envoyées uniquement à la demande, pas périodiquement
     const stats = await conversationStatsService.getOrCompute(
       this.prisma,
       conversationId,
@@ -2474,12 +2476,9 @@ export class MeeshySocketIOManager {
 
   async close(): Promise<void> {
     try {
-      // Arrêter le ticker des stats en ligne
-      if (this.onlineStatsInterval) {
-        clearInterval(this.onlineStatsInterval);
-        this.onlineStatsInterval = null;
-      }
-      
+      // ✅ FIX BUG #3: Ticker supprimé, plus besoin de le nettoyer
+      // Le système n'utilise plus de polling périodique
+
       await this.translationService.close();
       this.io.close();
     } catch (error) {

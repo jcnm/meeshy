@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { User, SUPPORTED_LANGUAGES } from '@/types';
 import { useI18n } from '@/hooks/useI18n';
 import { getUserInitials } from '@/lib/avatar-utils';
+import { OnlineIndicator } from '@/components/ui/online-indicator';
+import { getUserStatus } from '@/lib/user-status';
 
 interface UserSelectorProps {
   users: User[];
@@ -75,11 +77,20 @@ export function UserSelector({ users, onUserSelect, isLoading = false }: UserSel
               onClick={() => handleUserClick(user)}
             >
               <CardHeader className="text-center">
-                <Avatar className="w-16 h-16 mx-auto mb-2">
-                  <AvatarFallback className="text-lg font-bold">
-                    {getUserInitials(user)}
-                  </AvatarFallback>
-                </Avatar>
+                <div className="relative inline-block">
+                  <Avatar className="w-16 h-16 mx-auto mb-2">
+                    <AvatarFallback className="text-lg font-bold">
+                      {getUserInitials(user)}
+                    </AvatarFallback>
+                  </Avatar>
+                  {/* Badge de présence */}
+                  <OnlineIndicator
+                    isOnline={getUserStatus(user) === 'online'}
+                    status={getUserStatus(user)}
+                    size="lg"
+                    className="absolute -bottom-1 -right-1"
+                  />
+                </div>
                 <CardTitle className="text-lg">{user.username}</CardTitle>
                 <CardDescription>
                   {user.isOnline ? (

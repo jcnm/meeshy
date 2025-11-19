@@ -29,6 +29,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import { OnlineIndicator } from '@/components/ui/online-indicator';
+import { getUserStatus } from '@/lib/user-status';
 
 interface Community {
   id: string;
@@ -573,12 +575,20 @@ export function CreateConversationModal({
                           toggleUserSelection(user);
                         }}
                       >
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={user.avatar} />
-                          <AvatarFallback>
-                            {getUserDisplayName(user).charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
+                        <div className="relative flex-shrink-0">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={user.avatar} />
+                            <AvatarFallback>
+                              {getUserDisplayName(user).charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <OnlineIndicator
+                            isOnline={getUserStatus(user) === 'online'}
+                            status={getUserStatus(user)}
+                            size="sm"
+                            className="absolute -bottom-0.5 -right-0.5"
+                          />
+                        </div>
                         <div className="flex-1">
                           <p className="font-medium text-sm">
                             {getUserDisplayName(user)}

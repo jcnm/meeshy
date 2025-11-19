@@ -48,18 +48,62 @@ export type TextMimeType = 'text/plain';
 
 /**
  * Types MIME pour les fichiers de code
+ * Liste exhaustive pour supporter tous les langages et variations de MIME types
  */
-export type CodeMimeType = 
+export type CodeMimeType =
   | 'text/markdown'
   | 'text/x-markdown'
+  // Shell scripts
   | 'application/x-sh'
+  | 'application/x-shellscript'
+  | 'text/x-sh'
+  | 'text/x-shellscript'
+  | 'text/x-script.sh'
+  // JavaScript/TypeScript
   | 'text/javascript'
   | 'application/javascript'
+  | 'application/x-javascript'
   | 'text/typescript'
   | 'application/typescript'
+  | 'text/x-typescript'
+  // Python
   | 'text/x-python'
   | 'text/x-python-script'
-  | 'application/x-python-code';
+  | 'application/x-python-code'
+  | 'text/x-script.python'
+  // HTML/CSS/XML
+  | 'text/html'
+  | 'application/xhtml+xml'
+  | 'text/css'
+  | 'text/xml'
+  | 'application/xml'
+  // C/C++
+  | 'text/x-c'
+  | 'text/x-c++'
+  | 'text/x-csrc'
+  | 'text/x-chdr'
+  // Java
+  | 'text/x-java'
+  | 'text/x-java-source'
+  // PHP
+  | 'text/x-php'
+  | 'application/x-php'
+  // Ruby
+  | 'text/x-ruby'
+  | 'application/x-ruby'
+  // Go
+  | 'text/x-go'
+  // Rust
+  | 'text/x-rust'
+  // SQL
+  | 'text/x-sql'
+  | 'application/sql'
+  // JSON/YAML
+  | 'application/json'
+  | 'text/x-json'
+  | 'application/x-yaml'
+  | 'text/yaml'
+  | 'text/x-yaml';
 
 /**
  * Union de tous les types MIME acceptés
@@ -232,14 +276,57 @@ export const ACCEPTED_MIME_TYPES = {
   CODE: [
     'text/markdown',
     'text/x-markdown',
+    // Shell scripts
     'application/x-sh',
+    'application/x-shellscript',
+    'text/x-sh',
+    'text/x-shellscript',
+    'text/x-script.sh',
+    // JavaScript/TypeScript
     'text/javascript',
     'application/javascript',
+    'application/x-javascript',
     'text/typescript',
     'application/typescript',
+    'text/x-typescript',
+    // Python
     'text/x-python',
     'text/x-python-script',
     'application/x-python-code',
+    'text/x-script.python',
+    // HTML/CSS/XML
+    'text/html',
+    'application/xhtml+xml',
+    'text/css',
+    'text/xml',
+    'application/xml',
+    // C/C++
+    'text/x-c',
+    'text/x-c++',
+    'text/x-csrc',
+    'text/x-chdr',
+    // Java
+    'text/x-java',
+    'text/x-java-source',
+    // PHP
+    'text/x-php',
+    'application/x-php',
+    // Ruby
+    'text/x-ruby',
+    'application/x-ruby',
+    // Go
+    'text/x-go',
+    // Rust
+    'text/x-rust',
+    // SQL
+    'text/x-sql',
+    'application/sql',
+    // JSON/YAML
+    'application/json',
+    'text/x-json',
+    'application/x-yaml',
+    'text/yaml',
+    'text/x-yaml',
   ] as const,
 } as const;
 
@@ -307,9 +394,76 @@ export function isAcceptedMimeType(mimeType: string): mimeType is AcceptedMimeTy
 }
 
 /**
- * Détermine le type d'attachement basé sur le MIME type
+ * Extensions de fichiers considérées comme du code
+ * Liste complète pour supporter tous les langages courants
  */
-export function getAttachmentType(mimeType: string): AttachmentType {
+const CODE_EXTENSIONS = [
+  // Scripts shell
+  '.sh', '.bash', '.zsh', '.fish', '.ksh',
+  // Web
+  '.html', '.htm', '.css', '.scss', '.sass', '.less',
+  '.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs',
+  // Langages compilés
+  '.c', '.h', '.cpp', '.cc', '.cxx', '.hpp', '.hxx',
+  '.java', '.class', '.kt', '.kts',
+  '.cs', '.vb',
+  '.go', '.rs', '.swift',
+  // Langages dynamiques
+  '.py', '.pyw', '.pyc', '.pyo',
+  '.rb', '.erb',
+  '.php', '.phtml',
+  '.pl', '.pm',
+  '.lua',
+  // Fonctionnel
+  '.hs', '.lhs',
+  '.ml', '.mli',
+  '.fs', '.fsi', '.fsx',
+  '.clj', '.cljs', '.cljc',
+  '.scala', '.sc',
+  // Query languages
+  '.sql', '.mysql', '.pgsql',
+  '.graphql', '.gql',
+  // Markup & Data
+  '.xml', '.xsl', '.xslt',
+  '.json', '.jsonc', '.json5',
+  '.yaml', '.yml',
+  '.toml',
+  '.ini', '.cfg', '.conf',
+  // Documentation
+  '.md', '.markdown', '.mdown', '.mkd',
+  '.rst',
+  '.tex',
+  // Autres
+  '.r', '.R',
+  '.m', '.mm',
+  '.dart',
+  '.vim',
+  '.el', '.lisp',
+  '.asm', '.s',
+  '.dockerfile', '.docker',
+  '.makefile', '.mk',
+  '.gradle',
+  '.cmake',
+] as const;
+
+/**
+ * Extensions de fichiers considérées comme du texte
+ */
+const TEXT_EXTENSIONS = [
+  '.txt', '.text',
+  '.log',
+  '.csv', '.tsv',
+  '.rtf',
+] as const;
+
+/**
+ * Détermine le type d'attachement basé sur le MIME type et optionnellement le nom de fichier
+ * @param mimeType - Type MIME du fichier
+ * @param filename - Nom du fichier (optionnel) pour détecter le type par extension
+ * @returns Type d'attachement
+ */
+export function getAttachmentType(mimeType: string, filename?: string): AttachmentType {
+  // 1. D'abord vérifier le MIME type (plus fiable)
   if (isImageMimeType(mimeType)) {
     return 'image';
   }
@@ -325,6 +479,40 @@ export function getAttachmentType(mimeType: string): AttachmentType {
   if (isCodeMimeType(mimeType)) {
     return 'code';
   }
+
+  // 2. Si un nom de fichier est fourni, vérifier l'extension
+  if (filename) {
+    const lowerFilename = filename.toLowerCase();
+
+    // Vérifier les extensions de code
+    for (const ext of CODE_EXTENSIONS) {
+      if (lowerFilename.endsWith(ext)) {
+        return 'code';
+      }
+    }
+
+    // Vérifier les extensions de texte
+    for (const ext of TEXT_EXTENSIONS) {
+      if (lowerFilename.endsWith(ext)) {
+        return 'text';
+      }
+    }
+
+    // Cas spéciaux sans extension ou avec extensions particulières
+    const filenameBase = lowerFilename.split('/').pop() || '';
+    const specialCodeFiles = [
+      'dockerfile', 'makefile', 'rakefile', 'gemfile', 'vagrantfile',
+      '.gitignore', '.dockerignore', '.env', '.env.local', '.env.example',
+      '.eslintrc', '.prettierrc', '.babelrc', 'tsconfig.json', 'package.json',
+      '.editorconfig', '.npmrc', '.yarnrc',
+    ];
+
+    if (specialCodeFiles.some(special => filenameBase === special || filenameBase.endsWith(special))) {
+      return 'code';
+    }
+  }
+
+  // 3. Par défaut, traiter comme document
   return 'document';
 }
 

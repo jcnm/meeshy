@@ -94,57 +94,87 @@ export const TextLightbox: React.FC<TextLightboxProps> = ({
   };
 
   const getLanguageFromExtension = (ext: string): string => {
+    // Map complète d'extensions vers langages Prism
+    // Supporte tous les types de fichiers code courants
     const languageMap: { [key: string]: string } = {
-      // JavaScript/TypeScript
-      'js': 'javascript',
-      'jsx': 'jsx',
-      'ts': 'typescript',
-      'tsx': 'tsx',
-      'mjs': 'javascript',
-      'cjs': 'javascript',
-      // Python
-      'py': 'python',
-      'pyw': 'python',
-      // C/C++
-      'c': 'c',
-      'h': 'c',
-      'cpp': 'cpp',
-      'cc': 'cpp',
-      'cxx': 'cpp',
-      'hpp': 'cpp',
-      'hxx': 'cpp',
-      // Java/Kotlin/Scala
-      'java': 'java',
-      'kt': 'kotlin',
-      'kts': 'kotlin',
-      'scala': 'scala',
       // Web
-      'html': 'html',
-      'htm': 'html',
-      'css': 'css',
-      'scss': 'scss',
-      'sass': 'sass',
-      'less': 'less',
-      // Shell/Bash
-      'sh': 'bash',
-      'bash': 'bash',
-      'zsh': 'bash',
-      // Other languages
+      'js': 'javascript', 'mjs': 'javascript', 'cjs': 'javascript',
+      'jsx': 'jsx', 'ts': 'typescript', 'tsx': 'tsx',
+      'html': 'html', 'htm': 'html',
+      'css': 'css', 'scss': 'scss', 'sass': 'sass', 'less': 'less',
+
+      // Scripts shell
+      'sh': 'bash', 'bash': 'bash', 'zsh': 'bash', 'fish': 'bash', 'ksh': 'bash',
+
+      // Langages compilés
+      'c': 'c', 'h': 'c',
+      'cpp': 'cpp', 'cc': 'cpp', 'cxx': 'cpp', 'hpp': 'cpp', 'hxx': 'cpp',
+      'java': 'java', 'class': 'java',
+      'kt': 'kotlin', 'kts': 'kotlin',
+      'cs': 'csharp', 'vb': 'vbnet',
       'go': 'go',
       'rs': 'rust',
-      'rb': 'ruby',
-      'php': 'php',
       'swift': 'swift',
-      'sql': 'sql',
-      'json': 'json',
-      'xml': 'xml',
-      'yaml': 'yaml',
-      'yml': 'yaml',
-      'md': 'markdown',
-      'r': 'r',
+
+      // Langages dynamiques
+      'py': 'python', 'pyw': 'python', 'pyc': 'python', 'pyo': 'python',
+      'rb': 'ruby', 'erb': 'ruby',
+      'php': 'php', 'phtml': 'php',
+      'pl': 'perl', 'pm': 'perl',
       'lua': 'lua',
+
+      // Fonctionnel
+      'hs': 'haskell', 'lhs': 'haskell',
+      'ml': 'ocaml', 'mli': 'ocaml',
+      'fs': 'fsharp', 'fsi': 'fsharp', 'fsx': 'fsharp',
+      'clj': 'clojure', 'cljs': 'clojure', 'cljc': 'clojure',
+      'scala': 'scala', 'sc': 'scala',
+      'el': 'lisp', 'lisp': 'lisp',
+
+      // Query languages
+      'sql': 'sql', 'mysql': 'sql', 'pgsql': 'sql',
+      'graphql': 'graphql', 'gql': 'graphql',
+
+      // Markup & Data
+      'xml': 'xml', 'xsl': 'xml', 'xslt': 'xml',
+      'json': 'json', 'jsonc': 'json', 'json5': 'json',
+      'yaml': 'yaml', 'yml': 'yaml',
+      'toml': 'toml',
+      'ini': 'ini', 'cfg': 'ini', 'conf': 'ini',
+
+      // Documentation
+      'md': 'markdown', 'markdown': 'markdown', 'mdown': 'markdown', 'mkd': 'markdown',
+      'rst': 'rest',
+      'tex': 'latex',
+
+      // Autres
+      'r': 'r',
+      'm': 'objectivec', 'mm': 'objectivec',
       'dart': 'dart',
+      'vim': 'vim',
+      'asm': 'nasm', 's': 'nasm',
       'dockerfile': 'docker',
+      'makefile': 'makefile', 'mk': 'makefile',
+      'gradle': 'gradle',
+      'cmake': 'cmake',
+
+      // Fichiers de configuration communs
+      'gitignore': 'bash',
+      'dockerignore': 'bash',
+      'env': 'bash',
+      'eslintrc': 'json',
+      'prettierrc': 'json',
+      'babelrc': 'json',
+      'editorconfig': 'editorconfig',
+      'npmrc': 'ini',
+      'yarnrc': 'ini',
+
+      // Texte par défaut
+      'txt': 'text',
+      'text': 'text',
+      'log': 'text',
+      'csv': 'csv',
+      'tsv': 'csv',
     };
 
     return languageMap[ext] || 'text';

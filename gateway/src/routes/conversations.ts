@@ -1550,7 +1550,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
       // Vérifier les permissions d'accès
       let canAccess = false;
-      
+
       if (id === "meeshy") {
         canAccess = true; // Conversation globale accessible à tous les utilisateurs connectés
       } else {
@@ -1559,33 +1559,23 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         });
         canAccess = !!membership;
       }
-      
+
       if (!canAccess) {
         return reply.status(403).send({ success: false, error: 'Accès non autorisé à cette conversation' });
       }
 
-      // Récupérer les messages non lus
-      const unreadMessages = await prisma.message.findMany({
-        where: {
-          conversationId: conversationId, // Utiliser l'ID résolu
-          isDeleted: false,
-          status: { none: { userId } }
-        },
-        select: { id: true }
-      });
+      // ✅ FIX: Utiliser uniquement le nouveau système de curseur
+      // Pas besoin de compter les messages - on marque simplement comme lu
+      const { MessageReadStatusService } = await import('../services/MessageReadStatusService.js');
+      const readStatusService = new MessageReadStatusService(prisma);
 
-      if (unreadMessages.length > 0) {
-        // Utiliser le nouveau système de curseur pour marquer comme lu
-        try {
-          const { MessageReadStatusService } = await import('../services/MessageReadStatusService.js');
-          const readStatusService = new MessageReadStatusService(prisma);
-          await readStatusService.markMessagesAsRead(userId, conversationId);
-        } catch (err) {
-          console.warn('[GATEWAY] Error marking messages as read:', err);
-        }
-      }
+      // Calculer le nombre de messages non lus AVANT de marquer comme lu
+      const unreadCount = await readStatusService.getUnreadCount(userId, conversationId);
 
-      reply.send({ success: true, data: { markedCount: unreadMessages.length } });
+      // Marquer la conversation comme lue (déplace le curseur au dernier message)
+      await readStatusService.markMessagesAsRead(userId, conversationId);
+
+      reply.send({ success: true, data: { markedCount: unreadCount } });
     } catch (error) {
       console.error('[GATEWAY] Error marking conversation as read:', error);
       reply.status(500).send({ success: false, error: 'Erreur lors du marquage comme lu' });

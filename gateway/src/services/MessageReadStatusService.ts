@@ -165,6 +165,8 @@ export class MessageReadStatusService {
       }
 
       // Mettre à jour ou créer le curseur
+      // IMPORTANT: On ne réinitialise PAS readAt lors de la réception d'un nouveau message
+      // readAt doit être conservé pour garder la position de lecture de l'utilisateur
       await this.prisma.messageStatus.upsert({
         where: {
           userId_conversationId: {
@@ -177,12 +179,13 @@ export class MessageReadStatusService {
           conversationId,
           messageId,
           receivedAt: new Date(),
-          readAt: null  // Pas encore lu
+          readAt: null  // Pas encore lu (nouveau curseur)
         },
         update: {
           messageId,
-          receivedAt: new Date(),
-          readAt: null  // Réinitialiser readAt car nouveau message non lu
+          receivedAt: new Date()
+          // ✅ FIX: On ne touche PAS à readAt ici - il garde sa valeur précédente
+          // L'utilisateur a peut-être déjà lu des messages précédents
         }
       });
 
@@ -198,6 +201,8 @@ export class MessageReadStatusService {
    * Appelé quand:
    * - L'utilisateur ouvre une conversation
    * - L'utilisateur scrolle jusqu'au dernier message
+   *
+   * ✅ AMÉLIORATION: Marque aussi automatiquement les notifications de la conversation comme lues
    */
   async markMessagesAsRead(
     userId: string,
@@ -260,6 +265,21 @@ export class MessageReadStatusService {
       });
 
       console.log(`✅ [MessageReadStatus] User ${userId} read message ${messageId} in conversation ${conversationId}`);
+
+      // ✅ FIX BUG #3: Synchroniser avec les notifications
+      // Marquer automatiquement les notifications de cette conversation comme lues
+      try {
+        const { NotificationService } = await import('./NotificationService.js');
+        const notificationService = new NotificationService(this.prisma);
+        const notifCount = await notificationService.markConversationNotificationsAsRead(userId, conversationId);
+
+        if (notifCount > 0) {
+          console.log(`✅ [MessageReadStatus] Marked ${notifCount} notifications as read for conversation ${conversationId}`);
+        }
+      } catch (notifError) {
+        // Ne pas faire échouer l'opération si la synchronisation des notifications échoue
+        console.warn('[MessageReadStatus] Error syncing notifications:', notifError);
+      }
     } catch (error) {
       console.error('[MessageReadStatus] Error marking messages as read:', error);
       throw error;

@@ -323,12 +323,12 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/attachments/file/*',
     {
-      // Use onSend hook to override Helmet's security headers
+      // Use onSend hook to remove restrictive headers
       // This allows PDFs and other attachments to be embedded in iframes
       onSend: async (request, reply, payload) => {
-        // Retirer les restrictions de frame embedding
-        reply.header('X-Frame-Options', 'ALLOWALL');
-        // Permettre l'embedding depuis n'importe quelle origine (nécessaire pour le preview PDF)
+        // Remove X-Frame-Options to allow iframe embedding
+        reply.removeHeader('X-Frame-Options');
+        // Set permissive CSP for iframe embedding
         reply.header('Content-Security-Policy', "frame-ancestors *");
         return payload;
       }
@@ -379,71 +379,20 @@ export async function attachmentRoutes(fastify: FastifyInstance) {
         // Déterminer le type MIME depuis l'extension
         const ext = require('path').extname(decodedPath).toLowerCase();
         const mimeTypes: Record<string, string> = {
-          // Images
           '.jpg': 'image/jpeg',
           '.jpeg': 'image/jpeg',
           '.png': 'image/png',
           '.gif': 'image/gif',
           '.webp': 'image/webp',
           '.svg': 'image/svg+xml',
-          // Documents
           '.pdf': 'application/pdf',
           '.txt': 'text/plain',
-          // Audio
-          '.webm': 'audio/webm',
+          '.mp4': 'video/mp4',
+          '.webm': 'audio/webm', // Support WebM audio
           '.ogg': 'audio/ogg',
           '.mp3': 'audio/mpeg',
           '.wav': 'audio/wav',
           '.m4a': 'audio/mp4',
-          // Video
-          '.mp4': 'video/mp4',
-          // Code & Texte
-          '.py': 'text/x-python',
-          '.js': 'text/javascript',
-          '.jsx': 'text/javascript',
-          '.ts': 'text/x-typescript',
-          '.tsx': 'text/x-typescript',
-          '.c': 'text/x-c',
-          '.cpp': 'text/x-c++',
-          '.cc': 'text/x-c++',
-          '.cxx': 'text/x-c++',
-          '.h': 'text/x-c',
-          '.hpp': 'text/x-c++',
-          '.java': 'text/x-java',
-          '.go': 'text/x-go',
-          '.rs': 'text/x-rust',
-          '.rb': 'text/x-ruby',
-          '.php': 'text/x-php',
-          '.swift': 'text/plain',
-          '.kt': 'text/plain',
-          '.scala': 'text/plain',
-          '.sh': 'text/x-sh',
-          '.bash': 'text/x-sh',
-          '.zsh': 'text/x-sh',
-          '.fish': 'text/x-sh',
-          '.ps1': 'text/plain',
-          '.bat': 'text/plain',
-          '.cmd': 'text/plain',
-          '.html': 'text/html',
-          '.htm': 'text/html',
-          '.xml': 'text/xml',
-          '.json': 'application/json',
-          '.yaml': 'text/x-yaml',
-          '.yml': 'text/x-yaml',
-          '.toml': 'text/plain',
-          '.ini': 'text/plain',
-          '.cfg': 'text/plain',
-          '.conf': 'text/plain',
-          '.md': 'text/markdown',
-          '.markdown': 'text/markdown',
-          '.css': 'text/css',
-          '.scss': 'text/plain',
-          '.sass': 'text/plain',
-          '.less': 'text/plain',
-          '.sql': 'text/plain',
-          '.r': 'text/plain',
-          '.lua': 'text/plain',
-          '.dart': 'text/plain',
         };
         const mimeType = mimeTypes[ext] || 'application/octet-stream';
 

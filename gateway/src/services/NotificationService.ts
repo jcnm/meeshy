@@ -942,4 +942,35 @@ export class NotificationService {
       return 0;
     }
   }
+
+  /**
+   * Marquer toutes les notifications d'une conversation comme lues
+   * Cette méthode est appelée automatiquement quand l'utilisateur ouvre une conversation
+   * et marque les messages comme lus
+   */
+  async markConversationNotificationsAsRead(userId: string, conversationId: string): Promise<number> {
+    try {
+      const result = await this.prisma.notification.updateMany({
+        where: {
+          userId,
+          conversationId,
+          isRead: false
+        },
+        data: {
+          isRead: true
+        }
+      });
+
+      logger.info('✅ Marked conversation notifications as read', {
+        userId,
+        conversationId,
+        count: result.count
+      });
+
+      return result.count;
+    } catch (error) {
+      logger.error('❌ Error marking conversation notifications as read:', error);
+      return 0;
+    }
+  }
 }

@@ -481,6 +481,12 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
         // Arrêter tous les autres audios avant de démarrer celui-ci
         AudioManager.getInstance().play(audioRef.current);
 
+        // Si l'audio est terminé (currentTime === duration), reset à 0
+        if (audioRef.current.currentTime >= audioRef.current.duration - 0.1) {
+          audioRef.current.currentTime = 0;
+          setCurrentTime(0);
+        }
+
         // Forcer le chargement de la source si nécessaire
         if (audioRef.current.readyState === 0) {
           audioRef.current.load();
@@ -532,16 +538,14 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     tryToGetDuration();
   }, [tryToGetDuration]);
 
-  // Handler pour la fin de lecture
+  // Handler pour la fin de lecture - Reset à 0 pour permettre un nouveau play
   const handleEnded = useCallback(() => {
     setIsPlaying(false);
-
-    // À la fin de la lecture, currentTime devrait être à duration pour afficher 0:00.00
-    // Le navigateur réinitialise parfois à 0, donc on force à duration
-    if (audioRef.current && duration > 0) {
-      setCurrentTime(duration);
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      setCurrentTime(0);
     }
-  }, [duration]);
+  }, []);
 
   // Handler pour les erreurs de l'élément audio - VERSION SIMPLIFIÉE
   const handleAudioError = useCallback((e: React.SyntheticEvent<HTMLAudioElement, Event>) => {
@@ -1251,7 +1255,7 @@ export const SimpleAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
     <div
       className={`relative flex flex-col gap-1.5 p-2 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg border ${
         hasError ? 'border-red-300 dark:border-red-700' : 'border-blue-200 dark:border-gray-700'
-      } shadow-md hover:shadow-lg transition-all duration-200 w-full sm:max-w-2xl ${className}`}
+      } shadow-md hover:shadow-lg transition-all duration-200 w-full max-w-[90vw] sm:max-w-2xl ${className}`}
     >
       {/* Ligne principale: Colonne Play + Zone centrale (Timer + Gauge + Effects + Barre) */}
       <div className="flex items-center gap-3">

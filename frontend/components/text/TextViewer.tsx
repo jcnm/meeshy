@@ -96,16 +96,89 @@ export const TextViewer: React.FC<TextViewerProps> = ({
   };
 
   const getLanguageFromExtension = (ext: string): string => {
+    // Map complète d'extensions vers langages Prism
+    // Supporte tous les types de fichiers code courants
     const languageMap: { [key: string]: string } = {
-      'js': 'javascript', 'jsx': 'jsx', 'ts': 'typescript', 'tsx': 'tsx',
-      'py': 'python', 'c': 'c', 'h': 'c', 'cpp': 'cpp', 'cc': 'cpp',
-      'java': 'java', 'kt': 'kotlin', 'scala': 'scala',
-      'html': 'html', 'css': 'css', 'scss': 'scss', 'sass': 'sass',
-      'sh': 'bash', 'bash': 'bash', 'go': 'go', 'rs': 'rust',
-      'rb': 'ruby', 'php': 'php', 'swift': 'swift', 'sql': 'sql',
-      'json': 'json', 'xml': 'xml', 'yaml': 'yaml', 'yml': 'yaml',
-      'md': 'markdown', 'r': 'r', 'lua': 'lua', 'dart': 'dart',
+      // Web
+      'js': 'javascript', 'mjs': 'javascript', 'cjs': 'javascript',
+      'jsx': 'jsx', 'ts': 'typescript', 'tsx': 'tsx',
+      'html': 'html', 'htm': 'html',
+      'css': 'css', 'scss': 'scss', 'sass': 'sass', 'less': 'less',
+
+      // Scripts shell
+      'sh': 'bash', 'bash': 'bash', 'zsh': 'bash', 'fish': 'bash', 'ksh': 'bash',
+
+      // Langages compilés
+      'c': 'c', 'h': 'c',
+      'cpp': 'cpp', 'cc': 'cpp', 'cxx': 'cpp', 'hpp': 'cpp', 'hxx': 'cpp',
+      'java': 'java', 'class': 'java',
+      'kt': 'kotlin', 'kts': 'kotlin',
+      'cs': 'csharp', 'vb': 'vbnet',
+      'go': 'go',
+      'rs': 'rust',
+      'swift': 'swift',
+
+      // Langages dynamiques
+      'py': 'python', 'pyw': 'python', 'pyc': 'python', 'pyo': 'python',
+      'rb': 'ruby', 'erb': 'ruby',
+      'php': 'php', 'phtml': 'php',
+      'pl': 'perl', 'pm': 'perl',
+      'lua': 'lua',
+
+      // Fonctionnel
+      'hs': 'haskell', 'lhs': 'haskell',
+      'ml': 'ocaml', 'mli': 'ocaml',
+      'fs': 'fsharp', 'fsi': 'fsharp', 'fsx': 'fsharp',
+      'clj': 'clojure', 'cljs': 'clojure', 'cljc': 'clojure',
+      'scala': 'scala', 'sc': 'scala',
+      'el': 'lisp', 'lisp': 'lisp',
+
+      // Query languages
+      'sql': 'sql', 'mysql': 'sql', 'pgsql': 'sql',
+      'graphql': 'graphql', 'gql': 'graphql',
+
+      // Markup & Data
+      'xml': 'xml', 'xsl': 'xml', 'xslt': 'xml',
+      'json': 'json', 'jsonc': 'json', 'json5': 'json',
+      'yaml': 'yaml', 'yml': 'yaml',
+      'toml': 'toml',
+      'ini': 'ini', 'cfg': 'ini', 'conf': 'ini',
+
+      // Documentation
+      'md': 'markdown', 'markdown': 'markdown', 'mdown': 'markdown', 'mkd': 'markdown',
+      'rst': 'rest',
+      'tex': 'latex',
+
+      // Autres
+      'r': 'r',
+      'm': 'objectivec', 'mm': 'objectivec',
+      'dart': 'dart',
+      'vim': 'vim',
+      'asm': 'nasm', 's': 'nasm',
+      'dockerfile': 'docker',
+      'makefile': 'makefile', 'mk': 'makefile',
+      'gradle': 'gradle',
+      'cmake': 'cmake',
+
+      // Fichiers de configuration communs
+      'gitignore': 'bash',
+      'dockerignore': 'bash',
+      'env': 'bash',
+      'eslintrc': 'json',
+      'prettierrc': 'json',
+      'babelrc': 'json',
+      'editorconfig': 'editorconfig',
+      'npmrc': 'ini',
+      'yarnrc': 'ini',
+
+      // Texte par défaut
+      'txt': 'text',
+      'text': 'text',
+      'log': 'text',
+      'csv': 'csv',
+      'tsv': 'csv',
     };
+
     return languageMap[ext] || 'text';
   };
 
@@ -114,11 +187,11 @@ export const TextViewer: React.FC<TextViewerProps> = ({
 
   return (
     <div
-      className={`flex flex-col gap-2 p-3 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-gray-800 dark:to-gray-900 rounded-lg border ${
+      className={`flex flex-col gap-2 p-2 sm:p-3 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-gray-800 dark:to-gray-900 rounded-lg border ${
         hasError
           ? 'border-red-300 dark:border-red-700'
           : 'border-blue-200 dark:border-gray-700'
-      } shadow-md hover:shadow-lg transition-all duration-200 w-full sm:max-w-2xl min-w-0 overflow-hidden ${className}`}
+      } shadow-md hover:shadow-lg transition-all duration-200 w-full max-w-[80vw] sm:max-w-2xl min-w-0 overflow-hidden ${className}`}
     >
       {/* Content area - responsive height matching PDF/PPTX */}
       <div className="relative w-full h-[210px] sm:h-[280px] md:h-[350px] bg-gray-50 dark:bg-gray-900 rounded-lg overflow-auto border border-gray-200 dark:border-gray-700">
@@ -147,7 +220,7 @@ export const TextViewer: React.FC<TextViewerProps> = ({
             </div>
 
             {/* Content with syntax highlighting */}
-            <div className="w-full max-w-full overflow-x-auto">
+            <div className="w-full max-w-full overflow-x-auto" style={{ maxWidth: '100%' }}>
               <SyntaxHighlighter
                 language={language}
                 style={isDark ? vscDarkPlus : vs}
@@ -161,11 +234,15 @@ export const TextViewer: React.FC<TextViewerProps> = ({
                   maxHeight: 'calc(100% - 40px)',
                   maxWidth: '100%',
                   width: '100%',
+                  overflow: 'auto',
+                  wordBreak: wordWrap ? 'break-word' : 'normal',
                 }}
                 codeTagProps={{
                   style: {
                     fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
                     maxWidth: '100%',
+                    wordBreak: wordWrap ? 'break-word' : 'normal',
+                    overflowWrap: wordWrap ? 'break-word' : 'normal',
                   }
                 }}
               >

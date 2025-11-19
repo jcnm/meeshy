@@ -302,7 +302,9 @@ if [ "$USE_HTTPS" = true ]; then
   GATEWAY_PROTOCOL="https"
   GATEWAY_URL="https://${LOCAL_IP}:3000"
   GATEWAY_WS_URL="wss://${LOCAL_IP}:3000"
-  CORS_ORIGINS="https://${LOCAL_IP}:3100,https://${LOCAL_IP}:3000,https://${LOCAL_IP}:3100,https://${LOCAL_IP}:3000,https://127.0.0.1:3100,https://127.0.0.1:3000"
+  TRANSLATOR_URL="https://${LOCAL_IP}:8000"
+  # CORS complètes : localhost, 127.0.0.1, LOCAL_IP (ex: smpdev02.local), et variations avec/sans www
+  CORS_ORIGINS="https://localhost:3100,https://localhost:3000,https://127.0.0.1:3100,https://127.0.0.1:3000,https://${LOCAL_IP}:3100,https://${LOCAL_IP}:3000,https://www.${LOCAL_IP}:3100,https://www.${LOCAL_IP}:3000,https://localhost:8000,https://127.0.0.1:8000,https://${LOCAL_IP}:8000"
   echo -e "${GREEN}   Mode HTTPS activé - URLs configurées pour HTTPS/WSS${NC}"
 else
   FRONTEND_PROTOCOL="http"
@@ -311,7 +313,9 @@ else
   GATEWAY_PROTOCOL="http"
   GATEWAY_URL="http://${LOCAL_IP}:3000"
   GATEWAY_WS_URL="ws://${LOCAL_IP}:3000"
-  CORS_ORIGINS="http://localhost:3100,http://localhost:3000,http://${LOCAL_IP}:3100,http://${LOCAL_IP}:3000,http://127.0.0.1:3100,http://127.0.0.1:3000"
+  TRANSLATOR_URL="http://${LOCAL_IP}:8000"
+  # CORS complètes : localhost, 127.0.0.1, LOCAL_IP (ex: smpdev02.local), et variations avec/sans www
+  CORS_ORIGINS="http://localhost:3100,http://localhost:3000,http://127.0.0.1:3100,http://127.0.0.1:3000,http://${LOCAL_IP}:3100,http://${LOCAL_IP}:3000,http://www.${LOCAL_IP}:3100,http://www.${LOCAL_IP}:3000,http://localhost:8000,http://127.0.0.1:8000,http://${LOCAL_IP}:8000"
 fi
 
 # .env racine
@@ -335,11 +339,11 @@ REDIS_URL=redis://localhost:6379
 JWT_SECRET=dev-secret-key-change-in-production-12345678
 
 # Services URLs
-TRANSLATOR_URL=http://localhost:8000
+TRANSLATOR_URL=${TRANSLATOR_URL}
 GATEWAY_URL=${GATEWAY_URL}
 FRONTEND_URL=${FRONTEND_URL}
-DOMAINE=${LOCAL_DOMAIN}
-# CORS
+
+# CORS (inclut toutes les variations : localhost, 127.0.0.1, IP locale)
 CORS_ORIGINS=${CORS_ORIGINS}
 EOF
 echo -e "${GREEN}✅ .env créé${NC}"
@@ -352,14 +356,14 @@ NODE_ENV=development
 LOCAL_IP=${LOCAL_IP}
 DOMAIN=${LOCAL_DOMAIN}
 
-# Public URLs (accessibles côté client)
+# Public URLs (accessibles côté client - utilisent l'IP locale pour accès réseau)
 NEXT_PUBLIC_API_URL=${GATEWAY_URL}
 NEXT_PUBLIC_WS_URL=${GATEWAY_WS_URL}
 NEXT_PUBLIC_BACKEND_URL=${GATEWAY_URL}
-NEXT_PUBLIC_TRANSLATION_URL=http://localhost:8000
+NEXT_PUBLIC_TRANSLATION_URL=${TRANSLATOR_URL}
 NEXT_PUBLIC_FRONTEND_URL=${FRONTEND_URL}
 
-# Server-side URLs
+# Server-side URLs (peuvent utiliser localhost pour communication interne)
 API_URL=${GATEWAY_URL}
 BACKEND_URL=${GATEWAY_URL}
 TRANSLATION_URL=http://localhost:8000
@@ -377,7 +381,7 @@ LOG_LEVEL=debug
 # HTTPS Configuration
 USE_HTTPS=${USE_HTTPS}
 LOCAL_IP=${LOCAL_IP}
-DOMAIN=${DOMAIN}
+DOMAIN=${LOCAL_DOMAIN}
 
 # Base de données (sans authentification pour développement local)
 DATABASE_URL=mongodb://localhost:27017/meeshy?replicaSet=rs0&directConnection=true
@@ -385,7 +389,7 @@ DATABASE_URL=mongodb://localhost:27017/meeshy?replicaSet=rs0&directConnection=tr
 # Redis
 REDIS_URL=redis://localhost:6379
 
-# Services
+# Services (Gateway utilise localhost pour communication interne avec Translator)
 TRANSLATOR_URL=http://localhost:8000
 
 # ZMQ Configuration
@@ -401,7 +405,13 @@ JWT_SECRET=dev-secret-key-change-in-production-12345678
 PORT=3000
 HOST=0.0.0.0
 
-# CORS
+# URLs complètes pour le Gateway et les attachements
+PUBLIC_URL=${GATEWAY_URL}
+BACKEND_URL=${GATEWAY_URL}
+GATEWAY_URL=${GATEWAY_URL}
+FRONTEND_URL=${FRONTEND_URL}
+
+# CORS (inclut toutes les variations : localhost, 127.0.0.1, IP locale)
 CORS_ORIGINS=${CORS_ORIGINS}
 EOF
 echo -e "${GREEN}✅ gateway/.env créé${NC}"
@@ -412,6 +422,9 @@ cat > translator/.env.local << EOF
 # FastAPI Configuration
 ENVIRONMENT=development
 LOG_LEVEL=DEBUG
+
+# HTTPS Configuration
+USE_HTTPS=${USE_HTTPS}
 
 # Base de données (sans authentification pour développement local)
 DATABASE_URL=mongodb://localhost:27017/meeshy?replicaSet=rs0&directConnection=true
@@ -439,7 +452,7 @@ TRANSFORMERS_CACHE=${TRANSLATOR_ABS_DIR}/models
 WORKER_COUNT=2
 
 # CORS
-CORS_ORIGINS=http://localhost:3100,http://localhost:3000,http://localhost:8000
+CORS_ORIGINS=${CORS_ORIGINS}
 EOF
 echo -e "${GREEN}✅ translator/.env.local créé (avec chemins absolus: ${TRANSLATOR_ABS_DIR}/models)${NC}"
 

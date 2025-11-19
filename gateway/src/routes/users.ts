@@ -921,6 +921,7 @@ export async function userRoutes(fastify: FastifyInstance) {
           email: true,
           isOnline: true,
           lastSeen: true,
+          lastActiveAt: true,
           systemLanguage: true
         },
         orderBy: [
@@ -1140,7 +1141,9 @@ export async function userRoutes(fastify: FastifyInstance) {
               lastName: true,
               displayName: true,
               avatar: true,
-              isOnline: true
+              isOnline: true,
+              lastActiveAt: true,
+              lastSeen: true
             }
           },
           receiver: {
@@ -1151,7 +1154,9 @@ export async function userRoutes(fastify: FastifyInstance) {
               lastName: true,
               displayName: true,
               avatar: true,
-              isOnline: true
+              isOnline: true,
+              lastActiveAt: true,
+              lastSeen: true
             }
           }
         },

@@ -214,9 +214,10 @@ export const MessageReactions: React.FC<MessageReactionsProps> = React.memo(({
           }
         } : { scale: 1 }}
         className={cn(
-          'flex flex-nowrap items-end gap-1.5 md:gap-1',
-          'py-2 px-1',
+          'flex flex-nowrap items-end gap-1 md:gap-0.5',
+          'py-1 px-0.5',
           'overflow-visible',
+          'relative z-[99999]',
           className
         )}
         style={{
@@ -258,10 +259,10 @@ export const MessageReactions: React.FC<MessageReactionsProps> = React.memo(({
                     onClick={() => handleReactionClick(reaction.emoji)}
                     disabled={isLoading}
                     style={{
-                      width: '24px',
-                      height: '24px',
-                      minWidth: '24px',
-                      minHeight: '24px'
+                      width: '20px',
+                      height: '20px',
+                      minWidth: '20px',
+                      minHeight: '20px'
                     }}
                     className={cn(
                       'relative flex flex-col items-center justify-center',
@@ -270,17 +271,17 @@ export const MessageReactions: React.FC<MessageReactionsProps> = React.memo(({
                       'border shadow-md',
                       'transition-all duration-200',
                       'disabled:opacity-50 disabled:cursor-not-allowed',
-                      'hover:shadow-lg',
+                      'hover:shadow-lg hover:scale-110',
                       'p-0',
                       hasUserReacted
-                        ? 'border-primary ring-1 ring-primary/20'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-primary/50'
+                        ? 'border-primary ring-1 ring-primary/30 shadow-primary/20'
+                        : 'border-gray-300 dark:border-gray-600 hover:border-primary/60'
                     )}
                   >
                     {/* Emoji */}
                     <motion.span
                       className="leading-none"
-                      style={{ fontSize: '14px' }}
+                      style={{ fontSize: '11px' }}
                       key={`emoji-${reaction.emoji}`}
                       animate={
                         animatingEmojis.has(reaction.emoji)
@@ -318,9 +319,9 @@ export const MessageReactions: React.FC<MessageReactionsProps> = React.memo(({
                         damping: 20,
                       }}
                       style={{
-                        minWidth: '12px',
-                        height: '12px',
-                        fontSize: '8px'
+                        minWidth: '10px',
+                        height: '10px',
+                        fontSize: '6px'
                       }}
                       className={cn(
                         'absolute -top-0.5 -right-0.5',
@@ -329,7 +330,7 @@ export const MessageReactions: React.FC<MessageReactionsProps> = React.memo(({
                         'rounded-full font-bold',
                         'shadow-sm border',
                         animatingEmojis.has(reaction.emoji)
-                          ? 'ring-1 ring-primary/50 ring-offset-1'
+                          ? 'ring-1 ring-primary/50 ring-offset-0.5'
                           : '',
                         hasUserReacted
                           ? 'bg-primary text-primary-foreground border-primary'
@@ -375,10 +376,10 @@ export const MessageReactions: React.FC<MessageReactionsProps> = React.memo(({
               }}
               onClick={onAddReactionClick}
               style={{
-                width: '24px',
-                height: '24px',
-                minWidth: '24px',
-                minHeight: '24px'
+                width: '16px',
+                height: '16px',
+                minWidth: '16px',
+                minHeight: '16px'
               }}
               className={cn(
                 'flex items-center justify-center',
@@ -394,8 +395,8 @@ export const MessageReactions: React.FC<MessageReactionsProps> = React.memo(({
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="12"
-                height="12"
+                width="8"
+                height="8"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"

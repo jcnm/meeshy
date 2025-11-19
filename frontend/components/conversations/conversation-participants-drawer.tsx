@@ -272,7 +272,7 @@ export function ConversationParticipantsDrawer({
                                 isOnline={getUserStatus(user) === 'online'}
                                 status={getUserStatus(user)}
                                 size="md"
-                                className="absolute -bottom-0 -right-0"
+                                className="absolute -bottom-0.5 -right-0.5"
                               />
                             </div>
                             <div className="flex-1 min-w-0">

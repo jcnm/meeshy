@@ -117,7 +117,8 @@ export class AttachmentService {
    */
   validateFile(file: FileToUpload): { valid: boolean; error?: string } {
     // Accepter tous les types de fichiers - pas de restriction MIME
-    const attachmentType = getAttachmentType(file.mimeType);
+    // Passer le filename pour la détection par extension (important pour .sh, .c, .graphql, etc.)
+    const attachmentType = getAttachmentType(file.mimeType, file.filename);
 
     // Vérifier la taille (2GB max)
     const sizeLimit = getSizeLimit(attachmentType);
@@ -153,16 +154,30 @@ export class AttachmentService {
 
   /**
    * Sauvegarde physiquement un fichier
+   * SÉCURITÉ: Retire automatiquement les droits d'exécution pour éviter
+   * l'exécution de code malveillant uploadé
    */
   async saveFile(buffer: Buffer, relativePath: string): Promise<void> {
     const fullPath = path.join(this.uploadBasePath, relativePath);
     const directory = path.dirname(fullPath);
-    
+
     // Créer les répertoires si nécessaire
     await fs.mkdir(directory, { recursive: true });
-    
+
     // Écrire le fichier
     await fs.writeFile(fullPath, buffer);
+
+    // SÉCURITÉ: Retirer tous les droits d'exécution (chmod 644)
+    // - Propriétaire: lecture + écriture (rw-)
+    // - Groupe: lecture seulement (r--)
+    // - Autres: lecture seulement (r--)
+    // Mode 0o644 = rw-r--r-- (pas d'exécution pour personne)
+    try {
+      await fs.chmod(fullPath, 0o644);
+    } catch (error) {
+      console.error('[AttachmentService] ⚠️ Impossible de modifier les permissions du fichier:', error);
+      // Ne pas bloquer l'upload si chmod échoue (peut échouer sur certains systèmes de fichiers)
+    }
   }
 
   /**
@@ -372,6 +387,27 @@ export class AttachmentService {
   }
 
   /**
+   * Génère uniquement le chemin API relatif (sans domaine)
+   * Utilisé pour le stockage en DB - permet de changer le domaine sans migration
+   */
+  getAttachmentPath(filePath: string): string {
+    return `/api/attachments/file/${encodeURIComponent(filePath)}`;
+  }
+
+  /**
+   * Construit l'URL complète à partir d'un chemin relatif
+   * Utilisé lors de la récupération depuis la DB
+   */
+  buildFullUrl(relativePath: string): string {
+    // Si c'est déjà une URL complète (anciennes données), la retourner telle quelle
+    if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) {
+      return relativePath;
+    }
+    // Sinon, construire l'URL complète avec le domaine actuel
+    return `${this.publicUrl}${relativePath}`;
+  }
+
+  /**
    * Upload un seul fichier
    */
   async uploadFile(
@@ -403,8 +439,8 @@ export class AttachmentService {
     // Sauvegarder le fichier
     await this.saveFile(file.buffer, filePath);
 
-    // Déterminer le type
-    const attachmentType = getAttachmentType(file.mimeType);
+    // Déterminer le type (passer le filename pour détection par extension)
+    const attachmentType = getAttachmentType(file.mimeType, file.filename);
 
     // Préparer les métadonnées
     const metadata: AttachmentMetadata = {};
@@ -500,9 +536,10 @@ export class AttachmentService {
       metadata.lineCount = textMeta.lineCount;
     }
 
-    // Générer les URLs
-    const fileUrl = this.getAttachmentUrl(filePath);
-    const thumbnailUrl = thumbnailPath ? this.getAttachmentUrl(thumbnailPath) : undefined;
+    // Générer les chemins API relatifs (sans domaine) pour stockage en DB
+    // Cela permet de changer le domaine sans migration de données
+    const fileUrl = this.getAttachmentPath(filePath);
+    const thumbnailUrl = thumbnailPath ? this.getAttachmentPath(thumbnailPath) : undefined;
 
     // Pour messageId, générer un ObjectId temporaire si non fourni
     // Cela évite l'erreur Prisma car messageId doit être un ObjectId valide

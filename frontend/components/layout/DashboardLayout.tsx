@@ -4,9 +4,10 @@ import { ReactNode, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/hooks/useI18n';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
-import { 
-  MessageSquare, 
-  Bell, 
+import { ShareAffiliateButton } from '@/components/affiliate/share-affiliate-button';
+import {
+  MessageSquare,
+  Bell,
   Search,
   LogOut,
   Settings,
@@ -180,7 +181,14 @@ export function DashboardLayout({
             )}
 
             {/* Menu utilisateur */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              {/* Bouton de partage - visible sur tous les écrans */}
+              <ShareAffiliateButton
+                variant="ghost"
+                size="default"
+                showText={false}
+              />
+
               {/* Notifications */}
               <NotificationBell />
 

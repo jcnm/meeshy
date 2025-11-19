@@ -18,6 +18,28 @@ import {
 import { createThumbnailsBatch, isLowEndDevice } from '@/lib/utils/image-thumbnail';
 import { ImageLightbox } from '@/components/attachments/ImageLightbox';
 import { VideoLightbox } from '@/components/video/VideoLightbox';
+import dynamic from 'next/dynamic';
+
+// Chargement dynamique des lightbox pour éviter les erreurs SSR et webpack
+const PDFLightboxSimple = dynamic(
+  () => import('@/components/pdf/PDFLightboxSimple').then(mod => mod.PDFLightboxSimple),
+  { ssr: false }
+);
+
+const TextLightbox = dynamic(
+  () => import('@/components/text/TextLightbox').then(mod => mod.TextLightbox),
+  { ssr: false }
+);
+
+const PPTXLightbox = dynamic(
+  () => import('@/components/pptx/PPTXLightbox').then(mod => mod.PPTXLightbox),
+  { ssr: false }
+);
+
+const MarkdownLightbox = dynamic(
+  () => import('@/components/markdown/MarkdownLightbox').then(mod => mod.MarkdownLightbox),
+  { ssr: false }
+);
 
 interface AttachmentCarouselProps {
   files: File[];
@@ -217,12 +239,16 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
   // États pour les lightbox
   const [imageLightboxIndex, setImageLightboxIndex] = useState<number>(-1);
   const [videoLightboxIndex, setVideoLightboxIndex] = useState<number>(-1);
+  const [pdfLightboxFile, setPdfLightboxFile] = useState<File | null>(null);
+  const [textLightboxFile, setTextLightboxFile] = useState<File | null>(null);
+  const [pptxLightboxFile, setPptxLightboxFile] = useState<File | null>(null);
+  const [markdownLightboxFile, setMarkdownLightboxFile] = useState<File | null>(null);
   const [fileUrls, setFileUrls] = useState<Map<string, string>>(new Map());
 
   // Détecter si c'est un appareil bas de gamme pour adapter les performances
   const isLowEnd = useMemo(() => isLowEndDevice(), []);
 
-  // Créer les URLs blob pour les fichiers (images et vidéos)
+  // Créer les URLs blob pour les fichiers (images, vidéos, PDFs, textes, PPTX, markdown)
   useEffect(() => {
     const newUrls = new Map<string, string>();
 
@@ -230,8 +256,22 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
       const fileKey = `${file.name}-${file.size}-${file.lastModified}`;
       const type = getAttachmentType(file.type);
 
-      // Créer des URLs blob uniquement pour les images et vidéos
-      if ((type === 'image' || type === 'video') && !fileUrls.has(fileKey)) {
+      // Déterminer si le fichier a besoin d'une URL blob pour la lightbox
+      const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+      const isMarkdown = file.name.toLowerCase().endsWith('.md');
+      const isPPTX = file.type === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' ||
+                    file.type === 'application/vnd.ms-powerpoint' ||
+                    file.name.toLowerCase().endsWith('.pptx') ||
+                    file.name.toLowerCase().endsWith('.ppt');
+      const isText = file.type.startsWith('text/') ||
+                    file.name.toLowerCase().endsWith('.txt') ||
+                    file.name.toLowerCase().endsWith('.sh') ||
+                    file.name.toLowerCase().endsWith('.js') ||
+                    file.name.toLowerCase().endsWith('.ts') ||
+                    file.name.toLowerCase().endsWith('.py');
+
+      // Créer des URLs blob pour tous les types de fichiers qui ont une lightbox
+      if ((type === 'image' || type === 'video' || isPDF || isText || isPPTX || isMarkdown) && !fileUrls.has(fileKey)) {
         const url = URL.createObjectURL(file);
         newUrls.set(fileKey, url);
       }
@@ -413,34 +453,48 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
               } ${
                 isVideo ? 'bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/30 dark:to-violet-900/30 border-purple-400 dark:border-purple-500 p-0' : ''
               }`}>
-                {/* Image preview avec miniature optimisée */}
-                {type === 'image' && thumbnailUrl ? (
+                {/* Image preview avec miniature optimisée OU image originale si pas de miniature */}
+                {type === 'image' ? (
                   <div
-                    className="absolute inset-0 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                    className="absolute inset-0 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 hover:scale-105 transition-all group-hover:ring-2 group-hover:ring-blue-400"
                     onClick={(e) => {
                       e.stopPropagation();
                       const imageFiles = files.filter(f => getAttachmentType(f.type) === 'image');
                       const imageIndex = imageFiles.findIndex(f => `${f.name}-${f.size}-${f.lastModified}` === fileKey);
                       setImageLightboxIndex(imageIndex);
                     }}
+                    title="Cliquez pour voir en plein écran"
                   >
-                    <img
-                      src={thumbnailUrl}
-                      alt={file.name}
-                      className="w-full h-full object-contain"
-                      loading="lazy"
-                      decoding="async"
-                      onError={(e) => {
-                        console.error('Failed to load thumbnail:', file.name);
-                      }}
-                    />
+                    {thumbnailUrl || fileUrls.get(fileKey) ? (
+                      <img
+                        src={thumbnailUrl || fileUrls.get(fileKey) || ''}
+                        alt={file.name}
+                        className="w-full h-full object-contain"
+                        loading="lazy"
+                        decoding="async"
+                        onError={(e) => {
+                          console.error('Failed to load image:', file.name);
+                        }}
+                      />
+                    ) : isLoadingThumbnail ? (
+                      /* Placeholder pendant le chargement de la miniature */
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+                        <div className="text-[9px] text-gray-500 dark:text-gray-400">
+                          Aperçu...
+                        </div>
+                      </div>
+                    ) : (
+                      /* Icône par défaut si pas d'image disponible */
+                      <Image className="w-5 h-5 text-blue-500" />
+                    )}
                     {/* Overlay with extension */}
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-1 py-0.5">
                       <div className="text-white text-[10px] font-medium truncate">
                         {extension.toUpperCase()}
                       </div>
                     </div>
-                    
+
                     {/* Indicateur d'upload pour les images */}
                     {isUploading && (
                       <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
@@ -452,7 +506,7 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
                         </div>
                       </div>
                     )}
-                    
+
                     {/* Indicateur d'upload terminé pour les images */}
                     {isUploaded && (
                       <div className="absolute top-1 right-1">
@@ -529,8 +583,37 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
                   />
                 ) : (
                   <>
-                    {/* Icon pour les autres types */}
-                    <div className="flex flex-col items-center gap-0.5">
+                    {/* Icon pour les autres types - Rendre cliquable pour preview */}
+                    <div
+                      className="absolute inset-0 flex flex-col items-center justify-center gap-0.5 cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Déterminer le type de fichier et ouvrir le bon lightbox
+                        const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+                        const isMarkdown = file.name.toLowerCase().endsWith('.md');
+                        const isPPTX = file.type === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' ||
+                                      file.type === 'application/vnd.ms-powerpoint' ||
+                                      file.name.toLowerCase().endsWith('.pptx') ||
+                                      file.name.toLowerCase().endsWith('.ppt');
+                        const isText = file.type.startsWith('text/') ||
+                                      file.name.toLowerCase().endsWith('.txt') ||
+                                      file.name.toLowerCase().endsWith('.sh') ||
+                                      file.name.toLowerCase().endsWith('.js') ||
+                                      file.name.toLowerCase().endsWith('.ts') ||
+                                      file.name.toLowerCase().endsWith('.py');
+
+                        if (isPDF) {
+                          setPdfLightboxFile(file);
+                        } else if (isPPTX) {
+                          setPptxLightboxFile(file);
+                        } else if (isMarkdown) {
+                          setMarkdownLightboxFile(file);
+                        } else if (isText) {
+                          setTextLightboxFile(file);
+                        }
+                      }}
+                      title="Cliquez pour voir en plein écran"
+                    >
                       {getFileIcon(file)}
                       <div className="text-[10px] font-medium text-gray-600 dark:text-gray-300">
                         {extension.toUpperCase()}
@@ -666,7 +749,7 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
           const fileKey = `${file.name}-${file.size}-${file.lastModified}`;
           return {
             id: fileKey,
-            fileUrl: fileUrls.get(fileKey) || '',
+            fileUrl: fileUrls.get(fileKey) || URL.createObjectURL(file),
             originalName: file.name,
             mimeType: file.type,
             fileSize: file.size,
@@ -676,7 +759,7 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
 
         return (
           <ImageLightbox
-            attachments={imageAttachments as any}
+            images={imageAttachments as any}
             initialIndex={imageLightboxIndex}
             isOpen={true}
             onClose={() => setImageLightboxIndex(-1)}
@@ -691,7 +774,7 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
           const fileKey = `${file.name}-${file.size}-${file.lastModified}`;
           return {
             id: fileKey,
-            fileUrl: fileUrls.get(fileKey) || '',
+            fileUrl: fileUrls.get(fileKey) || URL.createObjectURL(file),
             originalName: file.name,
             mimeType: file.type,
             fileSize: file.size,
@@ -705,6 +788,90 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
             initialIndex={videoLightboxIndex}
             isOpen={true}
             onClose={() => setVideoLightboxIndex(-1)}
+          />
+        );
+      })()}
+
+      {/* Lightbox pour les PDFs */}
+      {pdfLightboxFile && (() => {
+        const fileKey = `${pdfLightboxFile.name}-${pdfLightboxFile.size}-${pdfLightboxFile.lastModified}`;
+        const attachment = {
+          id: fileKey,
+          fileUrl: fileUrls.get(fileKey) || URL.createObjectURL(pdfLightboxFile),
+          originalName: pdfLightboxFile.name,
+          mimeType: pdfLightboxFile.type,
+          fileSize: pdfLightboxFile.size,
+          createdAt: new Date().toISOString(),
+        };
+
+        return (
+          <PDFLightboxSimple
+            attachment={attachment as any}
+            isOpen={true}
+            onClose={() => setPdfLightboxFile(null)}
+          />
+        );
+      })()}
+
+      {/* Lightbox pour les fichiers texte */}
+      {textLightboxFile && (() => {
+        const fileKey = `${textLightboxFile.name}-${textLightboxFile.size}-${textLightboxFile.lastModified}`;
+        const attachment = {
+          id: fileKey,
+          fileUrl: fileUrls.get(fileKey) || URL.createObjectURL(textLightboxFile),
+          originalName: textLightboxFile.name,
+          mimeType: textLightboxFile.type,
+          fileSize: textLightboxFile.size,
+          createdAt: new Date().toISOString(),
+        };
+
+        return (
+          <TextLightbox
+            attachment={attachment as any}
+            isOpen={true}
+            onClose={() => setTextLightboxFile(null)}
+          />
+        );
+      })()}
+
+      {/* Lightbox pour les fichiers PPTX */}
+      {pptxLightboxFile && (() => {
+        const fileKey = `${pptxLightboxFile.name}-${pptxLightboxFile.size}-${pptxLightboxFile.lastModified}`;
+        const attachment = {
+          id: fileKey,
+          fileUrl: fileUrls.get(fileKey) || URL.createObjectURL(pptxLightboxFile),
+          originalName: pptxLightboxFile.name,
+          mimeType: pptxLightboxFile.type,
+          fileSize: pptxLightboxFile.size,
+          createdAt: new Date().toISOString(),
+        };
+
+        return (
+          <PPTXLightbox
+            attachment={attachment as any}
+            isOpen={true}
+            onClose={() => setPptxLightboxFile(null)}
+          />
+        );
+      })()}
+
+      {/* Lightbox pour les fichiers Markdown */}
+      {markdownLightboxFile && (() => {
+        const fileKey = `${markdownLightboxFile.name}-${markdownLightboxFile.size}-${markdownLightboxFile.lastModified}`;
+        const attachment = {
+          id: fileKey,
+          fileUrl: fileUrls.get(fileKey) || URL.createObjectURL(markdownLightboxFile),
+          originalName: markdownLightboxFile.name,
+          mimeType: markdownLightboxFile.type,
+          fileSize: markdownLightboxFile.size,
+          createdAt: new Date().toISOString(),
+        };
+
+        return (
+          <MarkdownLightbox
+            attachment={attachment as any}
+            isOpen={true}
+            onClose={() => setMarkdownLightboxFile(null)}
           />
         );
       })()}

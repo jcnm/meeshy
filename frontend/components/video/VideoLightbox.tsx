@@ -57,7 +57,7 @@ export function VideoLightbox({
     }
   }, [initialIndex, isOpen]);
 
-  // Reset état quand on change de vidéo
+  // Reset état quand on change de vidéo ou au montage initial
   useEffect(() => {
     setIsPlaying(false);
     setCurrentTime(0);
@@ -66,7 +66,7 @@ export function VideoLightbox({
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
     }
-  }, [currentIndex]);
+  }, [currentIndex, isOpen]);
 
   // Fonction pour mettre à jour le temps avec requestAnimationFrame
   const updateProgress = useCallback(() => {
@@ -154,13 +154,47 @@ export function VideoLightbox({
     if (!videoRef.current) return;
 
     try {
-      if (!document.fullscreenElement) {
-        // Entrer en mode plein écran avec la vidéo elle-même
-        await videoRef.current.requestFullscreen();
+      const doc = document as any;
+      const isInFullscreen = !!(
+        doc.fullscreenElement ||
+        doc.webkitFullscreenElement ||
+        doc.mozFullScreenElement ||
+        doc.msFullscreenElement
+      );
+
+      if (!isInFullscreen) {
+        // Entrer en mode plein écran - essayer toutes les variantes
+        const element = videoRef.current as any;
+        if (element.requestFullscreen) {
+          await element.requestFullscreen();
+        } else if (element.webkitRequestFullscreen) {
+          // Safari
+          await element.webkitRequestFullscreen();
+        } else if (element.mozRequestFullScreen) {
+          // Firefox
+          await element.mozRequestFullScreen();
+        } else if (element.msRequestFullscreen) {
+          // IE/Edge
+          await element.msRequestFullscreen();
+        } else {
+          console.warn('Fullscreen API non supporté sur ce navigateur');
+          return;
+        }
         setIsFullscreen(true);
       } else {
-        // Sortir du mode plein écran
-        await document.exitFullscreen();
+        // Sortir du mode plein écran - essayer toutes les variantes
+        if (doc.exitFullscreen) {
+          await doc.exitFullscreen();
+        } else if (doc.webkitExitFullscreen) {
+          // Safari
+          await doc.webkitExitFullscreen();
+        } else if (doc.mozCancelFullScreen) {
+          // Firefox
+          await doc.mozCancelFullScreen();
+        } else if (doc.msExitFullscreen) {
+          // IE/Edge
+          await doc.msExitFullscreen();
+        }
         setIsFullscreen(false);
       }
     } catch (error) {
@@ -168,14 +202,31 @@ export function VideoLightbox({
     }
   }, []);
 
-  // Écouter les changements de plein écran
+  // Écouter les changements de plein écran - Version cross-browser compatible
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+      const doc = document as any;
+      const isInFullscreen = !!(
+        doc.fullscreenElement ||
+        doc.webkitFullscreenElement ||
+        doc.mozFullScreenElement ||
+        doc.msFullscreenElement
+      );
+      setIsFullscreen(isInFullscreen);
     };
 
+    // Ajouter tous les event listeners pour compatibilité cross-browser
     document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange); // Safari
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange); // Firefox
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange); // IE/Edge
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+    };
   }, []);
 
   // Recalculer les dimensions lors du redimensionnement de la fenêtre
@@ -511,23 +562,39 @@ export function VideoLightbox({
         {/* Contrôles vidéo en bas */}
         <div className="absolute bottom-0 left-0 right-0 z-10 p-4 bg-gradient-to-t from-black/70 to-transparent">
           <div className="max-w-6xl mx-auto flex flex-col gap-3">
-            {/* Barre de progression */}
-            <div className="relative w-full h-2 bg-white/20 rounded-full overflow-visible group cursor-pointer">
+            {/* Barre de progression avec pourcentage intégré - plus épaisse */}
+            <div className="relative w-full h-[15px] bg-white/20 rounded-full overflow-visible group cursor-pointer">
+              {/* Barre de progression remplie avec animation fluide */}
               <div
-                className="absolute top-0 left-0 h-full rounded-full bg-gradient-to-r from-purple-500 via-purple-600 to-purple-500"
+                className={`absolute top-0 left-0 h-full rounded-full ${
+                  isPlaying
+                    ? 'bg-gradient-to-r from-purple-500 via-purple-600 to-purple-500'
+                    : 'bg-purple-600'
+                }`}
                 style={{
                   width: `${progress}%`,
-                  transition: 'none',
+                  transition: 'none', // Pas de transition pour un rendu fluide à 60fps
                 }}
               />
 
+              {/* Curseur de position - Visible au survol avec animation smooth */}
               <div
-                className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-lg border-2 border-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
+                className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-lg border-2 border-purple-600 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-200 pointer-events-none"
                 style={{
-                  left: `calc(${progress}% - 8px)`,
+                  left: `calc(${Math.min(progress, 100)}% - 8px)`,
                 }}
               />
 
+              {/* Pourcentage centré dans la barre (horizontalement ET verticalement) */}
+              {duration > 0 && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <span className="text-[9px] font-semibold text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
+                    {progress.toFixed(0)}%
+                  </span>
+                </div>
+              )}
+
+              {/* Input range invisible pour le contrôle */}
               <input
                 type="range"
                 min="0"

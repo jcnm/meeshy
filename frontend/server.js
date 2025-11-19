@@ -40,7 +40,13 @@ app.prepare().then(() => {
       process.exit(1);
     })
     .listen(port, '0.0.0.0', () => {
-      if (domain !== 'smpdev02.local') {
+      console.log('\n🎨 Frontend HTTPS démarré avec succès !');
+      console.log(`   https://localhost:${port}`);
+      console.log(`   https://127.0.0.1:${port}`);
+      console.log(`   https://${localIp}:${port}`);
+      if (domain && domain !== 'localhost' && domain !== localIp) {
+        console.log(`   https://${domain}:${port}`);
       }
+      console.log('');
     });
 });

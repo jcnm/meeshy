@@ -187,16 +187,37 @@ class MeeshyTranslationServer:
         try:
             logger.info("[TRANSLATOR] 🌐 Démarrage de l'API FastAPI...")
             import uvicorn
-            
+
             host = "0.0.0.0"
             port = int(self.settings.fastapi_port or 8000)
-            
+
+            # Configuration SSL/HTTPS si activée
+            use_https = os.getenv('USE_HTTPS', 'false').lower() == 'true'
+            ssl_keyfile = None
+            ssl_certfile = None
+
+            if use_https:
+                # Chemins vers les certificats SSL (mêmes certificats que le frontend)
+                frontend_cert_dir = Path(__file__).parent.parent.parent / 'frontend' / '.cert'
+                ssl_keyfile = str(frontend_cert_dir / 'localhost-key.pem')
+                ssl_certfile = str(frontend_cert_dir / 'localhost.pem')
+
+                if not Path(ssl_keyfile).exists() or not Path(ssl_certfile).exists():
+                    logger.warning(f"[TRANSLATOR] ⚠️ Certificats SSL non trouvés dans {frontend_cert_dir}")
+                    logger.warning("[TRANSLATOR] ⚠️ Démarrage en HTTP au lieu de HTTPS")
+                    ssl_keyfile = None
+                    ssl_certfile = None
+                else:
+                    logger.info(f"[TRANSLATOR] 🔒 Mode HTTPS activé avec certificats: {frontend_cert_dir}")
+
             config = uvicorn.Config(
                 app=self.translation_api.app,
                 host=host,
                 port=port,
                 log_level="info",
-                access_log=True
+                access_log=True,
+                ssl_keyfile=ssl_keyfile,
+                ssl_certfile=ssl_certfile
             )
             
             server = uvicorn.Server(config)

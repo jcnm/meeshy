@@ -12,7 +12,9 @@ export class MaintenanceService {
   private attachmentService: AttachmentService;
   private maintenanceInterval: NodeJS.Timeout | null = null;
   private dailyCleanupInterval: NodeJS.Timeout | null = null;
-  private readonly OFFLINE_THRESHOLD_MINUTES = 5; // 5 minutes d'inactivité = hors ligne
+  // ✅ FIX BUG #1: Aligner avec getUserStatus() - 30 minutes pour offline
+  // Permet l'état "away" (5-30 min) de fonctionner correctement
+  private readonly OFFLINE_THRESHOLD_MINUTES = 30; // 30 minutes d'inactivité = hors ligne (cohérent avec getUserStatus)
   private readonly ORPHANED_ATTACHMENT_THRESHOLD_HOURS = 24; // 24 heures avant suppression des attachments orphelins
   private statusBroadcastCallback: ((userId: string, isOnline: boolean, isAnonymous: boolean) => void) | null = null;
   private lastDailyCleanup: Date | null = null;
@@ -179,13 +181,43 @@ export class MaintenanceService {
       });
 
       logger.info(`👤 Statut utilisateur ${userId} mis à jour: ${isOnline ? 'en ligne' : 'hors ligne'}`);
-      
+
       // CORRECTION: Broadcaster le changement de statut si demandé
       if (broadcast && this.statusBroadcastCallback) {
         this.statusBroadcastCallback(userId, isOnline, false);
       }
     } catch (error) {
       logger.error(`❌ Erreur lors de la mise à jour du statut de l'utilisateur ${userId}:`, error);
+    }
+  }
+
+  /**
+   * ✅ FIX BUG #2: Mettre à jour lastActiveAt sans changer isOnline
+   * Appelé lors d'activités: typing, envoi de message, etc.
+   * Permet de garder l'utilisateur "online" (vert) tant qu'il est actif
+   */
+  async updateUserLastActive(userId: string, isAnonymous: boolean = false): Promise<void> {
+    try {
+      if (isAnonymous) {
+        await this.prisma.anonymousParticipant.update({
+          where: { id: userId },
+          data: {
+            lastActiveAt: new Date()
+          }
+        });
+      } else {
+        await this.prisma.user.update({
+          where: { id: userId },
+          data: {
+            lastActiveAt: new Date()
+          }
+        });
+      }
+
+      logger.debug(`⏱️  LastActive mis à jour pour ${isAnonymous ? 'participant anonyme' : 'utilisateur'} ${userId}`);
+    } catch (error) {
+      // Ne pas logger en erreur car ce n'est pas critique
+      logger.debug(`⚠️  Erreur mise à jour lastActive pour ${userId}:`, error);
     }
   }
 
