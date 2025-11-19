@@ -15,8 +15,10 @@ import {
   PreKeyRecord,
   SignedPreKeyRecord,
   KyberPreKeyRecord,
+  KEMKeyPair,
   PrivateKey,
   PublicKey,
+  IdentityKeyPair,
   processPreKeyBundle,
   signalEncrypt,
   signalDecrypt,
@@ -26,11 +28,17 @@ import {
   CiphertextMessage,
   groupEncrypt,
   groupDecrypt,
-  createSenderKeyDistributionMessage,
+  SenderKeyDistributionMessage,
   processSenderKeyDistributionMessage,
+  Uuid,
+  IdentityKeyStore,
+  SessionStore,
+  PreKeyStore,
+  SignedPreKeyStore,
+  KyberPreKeyStore,
+  SenderKeyStore,
 } from '@signalapp/libsignal-client';
 
-import type { SignalProtocolStores } from './signal-store-interface';
 import type {
   PreKeyBundle as PreKeyBundleType,
   SignalEncryptedMessage,
@@ -47,11 +55,31 @@ const PREKEY_START_ID = 1;
  * Provides high-level encryption/decryption using Signal Protocol
  */
 export class SignalProtocolService {
-  private stores: SignalProtocolStores;
+  private identityStore: IdentityKeyStore;
+  private sessionStore: SessionStore;
+  private preKeyStore: PreKeyStore;
+  private signedPreKeyStore: SignedPreKeyStore;
+  private kyberPreKeyStore: KyberPreKeyStore;
+  private senderKeyStore: SenderKeyStore;
   private deviceId: number;
 
-  constructor(stores: SignalProtocolStores, deviceId: number = 1) {
-    this.stores = stores;
+  constructor(
+    stores: {
+      identityStore: IdentityKeyStore;
+      sessionStore: SessionStore;
+      preKeyStore: PreKeyStore;
+      signedPreKeyStore: SignedPreKeyStore;
+      kyberPreKeyStore: KyberPreKeyStore;
+      senderKeyStore: SenderKeyStore;
+    },
+    deviceId: number = 1
+  ) {
+    this.identityStore = stores.identityStore;
+    this.sessionStore = stores.sessionStore;
+    this.preKeyStore = stores.preKeyStore;
+    this.signedPreKeyStore = stores.signedPreKeyStore;
+    this.kyberPreKeyStore = stores.kyberPreKeyStore;
+    this.senderKeyStore = stores.senderKeyStore;
     this.deviceId = deviceId;
   }
 
@@ -62,39 +90,39 @@ export class SignalProtocolService {
    * to establish an encrypted session.
    */
   async generatePreKeyBundle(): Promise<PreKeyBundleType> {
-    const identityKeyPair = await this.stores.identityStore.getIdentityKeyPair();
-    const registrationId = await this.stores.identityStore.getLocalRegistrationId();
+    const identityKey = await this.identityStore.getIdentityKey();
+    const identityPublicKey = identityKey.getPublicKey();
+    const registrationId = await this.identityStore.getLocalRegistrationId();
 
     // Generate signed pre-key
     const signedPreKeyId = Date.now();
-    const signedPreKeyPair = PrivateKey.generate();
-    const signedPreKeyPublic = signedPreKeyPair.getPublicKey();
-    const signedPreKeySignature = identityKeyPair
-      .privateKey()
-      .sign(signedPreKeyPublic.serialize());
+    const signedPreKeyPrivate = PrivateKey.generate();
+    const signedPreKeyPublic = signedPreKeyPrivate.getPublicKey();
+    const signedPreKeySignature = identityKey.sign(signedPreKeyPublic.serialize());
 
     const signedPreKeyRecord = SignedPreKeyRecord.new(
       signedPreKeyId,
       Date.now(),
-      signedPreKeyPair.getPublicKey(),
-      signedPreKeyPair,
+      signedPreKeyPublic,
+      signedPreKeyPrivate,
       signedPreKeySignature
     );
 
-    await this.stores.signedPreKeyStore.saveSignedPreKey(signedPreKeyId, signedPreKeyRecord);
+    await this.signedPreKeyStore.saveSignedPreKey(signedPreKeyId, signedPreKeyRecord);
 
     // Generate one-time pre-keys
     const preKeyId = Math.floor(Math.random() * 0xffffff);
-    const preKeyPair = PrivateKey.generate();
-    const preKeyRecord = PreKeyRecord.new(preKeyId, preKeyPair.getPublicKey(), preKeyPair);
+    const preKeyPrivate = PrivateKey.generate();
+    const preKeyPublic = preKeyPrivate.getPublicKey();
+    const preKeyRecord = PreKeyRecord.new(preKeyId, preKeyPublic, preKeyPrivate);
 
-    await this.stores.preKeyStore.savePreKey(preKeyId, preKeyRecord);
+    await this.preKeyStore.savePreKey(preKeyId, preKeyRecord);
 
     // Generate Kyber pre-key (post-quantum)
     const kyberPreKeyId = Date.now();
-    const kyberKeyPair = PrivateKey.generate(); // In real implementation, use Kyber key generation
+    const kyberKeyPair = KEMKeyPair.generate();
     const kyberPreKeyPublic = kyberKeyPair.getPublicKey();
-    const kyberPreKeySignature = identityKeyPair.privateKey().sign(kyberPreKeyPublic.serialize());
+    const kyberPreKeySignature = identityKey.sign(kyberPreKeyPublic.serialize());
 
     const kyberPreKeyRecord = KyberPreKeyRecord.new(
       kyberPreKeyId,
@@ -103,17 +131,17 @@ export class SignalProtocolService {
       kyberPreKeySignature
     );
 
-    await this.stores.kyberPreKeyStore.saveKyberPreKey(kyberPreKeyId, kyberPreKeyRecord);
+    await this.kyberPreKeyStore.saveKyberPreKey(kyberPreKeyId, kyberPreKeyRecord);
 
     return {
       registrationId,
       deviceId: this.deviceId,
       preKeyId,
-      preKeyPublic: preKeyPair.getPublicKey().serialize(),
+      preKeyPublic: preKeyPublic.serialize(),
       signedPreKeyId,
       signedPreKeyPublic: signedPreKeyPublic.serialize(),
       signedPreKeySignature,
-      identityKey: identityKeyPair.publicKey().serialize(),
+      identityKey: identityPublicKey.serialize(),
       kyberPreKeyId,
       kyberPreKeyPublic: kyberPreKeyPublic.serialize(),
       kyberPreKeySignature,
@@ -128,10 +156,11 @@ export class SignalProtocolService {
 
     for (let i = 0; i < count; i++) {
       const preKeyId = startId + i;
-      const preKeyPair = PrivateKey.generate();
-      const preKeyRecord = PreKeyRecord.new(preKeyId, preKeyPair.getPublicKey(), preKeyPair);
+      const preKeyPrivate = PrivateKey.generate();
+      const preKeyPublic = preKeyPrivate.getPublicKey();
+      const preKeyRecord = PreKeyRecord.new(preKeyId, preKeyPublic, preKeyPrivate);
 
-      await this.stores.preKeyStore.savePreKey(preKeyId, preKeyRecord);
+      await this.preKeyStore.savePreKey(preKeyId, preKeyRecord);
       preKeyIds.push(preKeyId);
     }
 
@@ -153,24 +182,26 @@ export class SignalProtocolService {
       ? PublicKey.deserialize(Buffer.from(bundle.preKeyPublic))
       : null;
 
+    const kyberPreKeyPublic = bundle.kyberPreKeyPublic
+      ? KEMKeyPair.generate().getPublicKey() // TODO: deserialize properly
+      : null;
+
     const signalBundle = PreKeyBundle.new(
       bundle.registrationId,
       bundle.deviceId,
-      bundle.preKeyId,
+      bundle.preKeyId ?? null,
       preKeyPublic,
       bundle.signedPreKeyId,
       PublicKey.deserialize(Buffer.from(bundle.signedPreKeyPublic)),
       Buffer.from(bundle.signedPreKeySignature),
-      PublicKey.deserialize(Buffer.from(bundle.identityKey))
+      PublicKey.deserialize(Buffer.from(bundle.identityKey)),
+      bundle.kyberPreKeyId,
+      kyberPreKeyPublic,
+      bundle.kyberPreKeySignature ? Buffer.from(bundle.kyberPreKeySignature) : null
     );
 
     // Process bundle to establish session
-    await processPreKeyBundle(
-      signalBundle,
-      recipientAddress,
-      this.stores.sessionStore,
-      this.stores.identityStore
-    );
+    await processPreKeyBundle(signalBundle, recipientAddress, this.sessionStore, this.identityStore);
   }
 
   /**
@@ -188,11 +219,11 @@ export class SignalProtocolService {
     const ciphertext = await signalEncrypt(
       plaintextBuffer,
       recipientAddress,
-      this.stores.sessionStore,
-      this.stores.identityStore
+      this.sessionStore,
+      this.identityStore
     );
 
-    const registrationId = await this.stores.identityStore.getLocalRegistrationId();
+    const registrationId = await this.identityStore.getLocalRegistrationId();
 
     return {
       type: ciphertext.type() as SignalMessageType,
@@ -220,28 +251,23 @@ export class SignalProtocolService {
       plaintext = await signalDecryptPreKey(
         preKeyMessage,
         senderAddress,
-        this.stores.sessionStore,
-        this.stores.identityStore,
-        this.stores.preKeyStore,
-        this.stores.signedPreKeyStore,
-        this.stores.kyberPreKeyStore
+        this.sessionStore,
+        this.identityStore,
+        this.preKeyStore,
+        this.signedPreKeyStore,
+        this.kyberPreKeyStore
       );
 
       // Remove used pre-key
       const preKeyId = preKeyMessage.preKeyId();
       if (preKeyId !== null) {
-        await this.stores.preKeyStore.removePreKey(preKeyId);
+        await this.preKeyStore.removePreKey(preKeyId);
       }
     } else {
       // Regular SignalMessage
       const signalMessage = SignalMessage.deserialize(Buffer.from(message.body));
 
-      plaintext = await signalDecrypt(
-        signalMessage,
-        senderAddress,
-        this.stores.sessionStore,
-        this.stores.identityStore
-      );
+      plaintext = await signalDecrypt(signalMessage, senderAddress, this.sessionStore, this.identityStore);
     }
 
     return plaintext.toString('utf8');
@@ -251,18 +277,18 @@ export class SignalProtocolService {
    * Check if a session exists with the given address
    */
   async hasSession(recipientAddress: ProtocolAddress): Promise<boolean> {
-    const session = await this.stores.sessionStore.getSession(recipientAddress);
-    return session !== null;
+    const session = await this.sessionStore.getSession(recipientAddress);
+    return session !== null && session.hasCurrentState();
   }
 
   /**
    * Get session state information
    */
   async getSessionState(recipientAddress: ProtocolAddress): Promise<SignalSessionState> {
-    const session = await this.stores.sessionStore.getSession(recipientAddress);
+    const session = await this.sessionStore.getSession(recipientAddress);
 
     return {
-      hasSession: session !== null,
+      hasSession: session !== null && session.hasCurrentState(),
       recipientAddress: recipientAddress.name(),
       deviceId: recipientAddress.deviceId(),
     };
@@ -276,14 +302,14 @@ export class SignalProtocolService {
    */
   async createSenderKeyDistributionMessage(
     groupId: string,
-    distributionId: string
+    distributionId: Uuid
   ): Promise<Uint8Array> {
     const senderAddress = ProtocolAddress.new(groupId, this.deviceId);
 
-    const message = await createSenderKeyDistributionMessage(
+    const message = await SenderKeyDistributionMessage.create(
       senderAddress,
-      Buffer.from(distributionId),
-      this.stores.senderKeyStore
+      distributionId,
+      this.senderKeyStore
     );
 
     return message.serialize();
@@ -294,14 +320,11 @@ export class SignalProtocolService {
    */
   async processSenderKeyDistributionMessage(
     senderAddress: ProtocolAddress,
-    distributionId: string,
-    message: Uint8Array
+    distributionId: Uuid,
+    messageData: Uint8Array
   ): Promise<void> {
-    await processSenderKeyDistributionMessage(
-      senderAddress,
-      message,
-      this.stores.senderKeyStore
-    );
+    const message = SenderKeyDistributionMessage.deserialize(Buffer.from(messageData));
+    await processSenderKeyDistributionMessage(senderAddress, message, this.senderKeyStore);
   }
 
   /**
@@ -309,34 +332,22 @@ export class SignalProtocolService {
    */
   async encryptGroupMessage(
     groupId: string,
-    distributionId: string,
+    distributionId: Uuid,
     plaintext: string
   ): Promise<Uint8Array> {
     const senderAddress = ProtocolAddress.new(groupId, this.deviceId);
     const plaintextBuffer = Buffer.from(plaintext, 'utf8');
 
-    const ciphertext = await groupEncrypt(
-      senderAddress,
-      Buffer.from(distributionId),
-      plaintextBuffer,
-      this.stores.senderKeyStore
-    );
+    const ciphertext = await groupEncrypt(senderAddress, distributionId, this.senderKeyStore, plaintextBuffer);
 
-    return ciphertext;
+    return ciphertext.serialize();
   }
 
   /**
    * Decrypt group message using sender key
    */
-  async decryptGroupMessage(
-    senderAddress: ProtocolAddress,
-    ciphertext: Uint8Array
-  ): Promise<string> {
-    const plaintext = await groupDecrypt(
-      senderAddress,
-      ciphertext,
-      this.stores.senderKeyStore
-    );
+  async decryptGroupMessage(senderAddress: ProtocolAddress, ciphertext: Uint8Array): Promise<string> {
+    const plaintext = await groupDecrypt(senderAddress, this.senderKeyStore, Buffer.from(ciphertext));
 
     return plaintext.toString('utf8');
   }
@@ -345,14 +356,14 @@ export class SignalProtocolService {
    * Get registration ID
    */
   async getRegistrationId(): Promise<number> {
-    return await this.stores.identityStore.getLocalRegistrationId();
+    return await this.identityStore.getLocalRegistrationId();
   }
 
   /**
    * Get identity key
    */
   async getIdentityKey(): Promise<Uint8Array> {
-    const identityKeyPair = await this.stores.identityStore.getIdentityKeyPair();
-    return identityKeyPair.publicKey().serialize();
+    const identityKey = await this.identityStore.getIdentityKey();
+    return identityKey.getPublicKey().serialize();
   }
 }

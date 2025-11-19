@@ -15,41 +15,43 @@ import {
   KyberPreKeyRecord,
   SessionRecord,
   SenderKeyRecord,
+  IdentityKeyStore,
+  SessionStore,
+  PreKeyStore,
+  SignedPreKeyStore,
+  KyberPreKeyStore,
+  SenderKeyStore,
+  Direction,
+  Uuid,
 } from '@signalapp/libsignal-client';
 
 import type {
-  SignalIdentityKeyStore,
-  SignalPreKeyStore,
-  SignalSignedPreKeyStore,
-  SignalKyberPreKeyStore,
-  SignalSessionStore,
-  SignalSenderKeyStore,
   SignalProtocolStores,
   SignalStoreConfig,
-  Direction,
 } from '../../../shared/encryption/signal/signal-store-interface';
 
 /**
  * In-memory Identity Key Store
  */
-export class NodeIdentityKeyStore implements SignalIdentityKeyStore {
-  private identityKeyPair: IdentityKeyPair | null = null;
+export class NodeIdentityKeyStore extends IdentityKeyStore {
+  private identityKey: PrivateKey | null = null;
   private registrationId: number;
   private trustedIdentities: Map<string, Uint8Array> = new Map();
 
   constructor(registrationId: number) {
+    super();
     this.registrationId = registrationId;
   }
 
   async initialize(identityKeyPair: IdentityKeyPair): Promise<void> {
-    this.identityKeyPair = identityKeyPair;
+    this.identityKey = identityKeyPair.privateKey;
   }
 
-  async getIdentityKeyPair(): Promise<IdentityKeyPair> {
-    if (!this.identityKeyPair) {
-      throw new Error('Identity key pair not initialized');
+  async getIdentityKey(): Promise<PrivateKey> {
+    if (!this.identityKey) {
+      throw new Error('Identity key not initialized');
     }
-    return this.identityKeyPair;
+    return this.identityKey;
   }
 
   async getLocalRegistrationId(): Promise<number> {
@@ -121,7 +123,7 @@ export class NodeIdentityKeyStore implements SignalIdentityKeyStore {
 /**
  * In-memory Pre-Key Store
  */
-export class NodePreKeyStore implements SignalPreKeyStore {
+export class NodePreKeyStore extends PreKeyStore {
   private preKeys: Map<number, Uint8Array> = new Map();
 
   async getPreKey(preKeyId: number): Promise<PreKeyRecord> {
@@ -144,7 +146,7 @@ export class NodePreKeyStore implements SignalPreKeyStore {
 /**
  * In-memory Signed Pre-Key Store
  */
-export class NodeSignedPreKeyStore implements SignalSignedPreKeyStore {
+export class NodeSignedPreKeyStore extends SignedPreKeyStore {
   private signedPreKeys: Map<number, Uint8Array> = new Map();
 
   async getSignedPreKey(signedPreKeyId: number): Promise<SignedPreKeyRecord> {
@@ -163,7 +165,7 @@ export class NodeSignedPreKeyStore implements SignalSignedPreKeyStore {
 /**
  * In-memory Kyber Pre-Key Store
  */
-export class NodeKyberPreKeyStore implements SignalKyberPreKeyStore {
+export class NodeKyberPreKeyStore extends KyberPreKeyStore {
   private kyberPreKeys: Map<number, Uint8Array> = new Map();
   private usedKeys: Set<number> = new Set();
 
@@ -187,7 +189,7 @@ export class NodeKyberPreKeyStore implements SignalKyberPreKeyStore {
 /**
  * In-memory Session Store
  */
-export class NodeSessionStore implements SignalSessionStore {
+export class NodeSessionStore extends SessionStore {
   private sessions: Map<string, Uint8Array> = new Map();
 
   async getSession(address: ProtocolAddress): Promise<SessionRecord | null> {
@@ -206,11 +208,15 @@ export class NodeSessionStore implements SignalSessionStore {
     this.sessions.set(key, record.serialize());
   }
 
-  async getExistingSessions(addresses: ProtocolAddress[]): Promise<ProtocolAddress[]> {
-    return addresses.filter((address) => {
-      const key = this.getAddressKey(address);
-      return this.sessions.has(key);
-    });
+  async getExistingSessions(addresses: ProtocolAddress[]): Promise<SessionRecord[]> {
+    const records: SessionRecord[] = [];
+    for (const address of addresses) {
+      const record = await this.getSession(address);
+      if (record) {
+        records.push(record);
+      }
+    }
+    return records;
   }
 
   private getAddressKey(address: ProtocolAddress): string {
@@ -221,21 +227,21 @@ export class NodeSessionStore implements SignalSessionStore {
 /**
  * In-memory Sender Key Store
  */
-export class NodeSenderKeyStore implements SignalSenderKeyStore {
+export class NodeSenderKeyStore extends SenderKeyStore {
   private senderKeys: Map<string, Uint8Array> = new Map();
 
-  async storeSenderKey(
+  async saveSenderKey(
     sender: ProtocolAddress,
-    distributionId: string,
+    distributionId: Uuid,
     record: SenderKeyRecord
   ): Promise<void> {
     const key = this.getSenderKeyKey(sender, distributionId);
     this.senderKeys.set(key, record.serialize());
   }
 
-  async loadSenderKey(
+  async getSenderKey(
     sender: ProtocolAddress,
-    distributionId: string
+    distributionId: Uuid
   ): Promise<SenderKeyRecord | null> {
     const key = this.getSenderKeyKey(sender, distributionId);
     const record = this.senderKeys.get(key);
@@ -247,7 +253,7 @@ export class NodeSenderKeyStore implements SignalSenderKeyStore {
     return SenderKeyRecord.deserialize(Buffer.from(record));
   }
 
-  private getSenderKeyKey(sender: ProtocolAddress, distributionId: string): string {
+  private getSenderKeyKey(sender: ProtocolAddress, distributionId: Uuid): string {
     return `${sender.name()}:${sender.deviceId()}:${distributionId}`;
   }
 }
@@ -257,7 +263,14 @@ export class NodeSenderKeyStore implements SignalSenderKeyStore {
  */
 export async function createNodeSignalStores(
   config: SignalStoreConfig
-): Promise<SignalProtocolStores> {
+): Promise<{
+  identityStore: NodeIdentityKeyStore;
+  preKeyStore: NodePreKeyStore;
+  signedPreKeyStore: NodeSignedPreKeyStore;
+  kyberPreKeyStore: NodeKyberPreKeyStore;
+  sessionStore: NodeSessionStore;
+  senderKeyStore: NodeSenderKeyStore;
+}> {
   // Generate a random registration ID (1-16380)
   const registrationId = Math.floor(Math.random() * 16380) + 1;
 
