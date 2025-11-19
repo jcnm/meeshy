@@ -86,7 +86,7 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
       >
         {!hasError ? (
           <iframe
-            src={`${attachmentFileUrl}#toolbar=1&navpanes=1&scrollbars=1&view=FitH&zoom=page-fit`}
+            src={`${attachmentFileUrl}#view=FitH`}
             className="w-full h-full border-0"
             title={attachment.originalName}
             style={{
@@ -96,10 +96,12 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
               WebkitTouchCallout: 'none' as any,
               WebkitUserSelect: 'none' as any,
               userSelect: 'none',
-              overscrollBehavior: 'contain'
+              overscrollBehavior: 'contain',
+              WebkitOverflowScrolling: 'touch'
             } as React.CSSProperties}
             allow="fullscreen"
             sandbox="allow-same-origin allow-scripts allow-popups allow-presentation"
+            onError={handleIframeError}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
