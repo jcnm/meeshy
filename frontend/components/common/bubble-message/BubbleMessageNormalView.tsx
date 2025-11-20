@@ -534,7 +534,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                       )}
                       style={{
                         pointerEvents: 'auto',
-                        bottom: '-22px'
+                        bottom: '-14px'
                       }}
                     >
                       <MessageReactions
@@ -710,7 +710,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
             )}
             style={{
               pointerEvents: 'auto',
-              bottom: '-22px'
+              bottom: '-14px'
             }}
           >
             <MessageReactions
