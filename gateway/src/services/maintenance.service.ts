@@ -171,13 +171,21 @@ export class MaintenanceService {
    */
   async updateUserOnlineStatus(userId: string, isOnline: boolean, broadcast: boolean = false): Promise<void> {
     try {
+      // ✅ FIX: Ne JAMAIS mettre lastActiveAt à undefined
+      // Quand l'utilisateur se déconnecte, on garde sa dernière activité pour calculer "away" vs "offline"
+      const updateData: any = {
+        isOnline,
+        lastSeen: new Date()
+      };
+
+      // Mettre à jour lastActiveAt seulement si l'utilisateur se connecte
+      if (isOnline) {
+        updateData.lastActiveAt = new Date();
+      }
+
       await this.prisma.user.update({
         where: { id: userId },
-        data: {
-          isOnline,
-          lastSeen: new Date(),
-          lastActiveAt: isOnline ? new Date() : undefined
-        }
+        data: updateData
       });
 
       logger.info(`👤 Statut utilisateur ${userId} mis à jour: ${isOnline ? 'en ligne' : 'hors ligne'}`);
@@ -226,17 +234,25 @@ export class MaintenanceService {
    */
   async updateAnonymousOnlineStatus(participantId: string, isOnline: boolean, broadcast: boolean = false): Promise<void> {
     try {
+      // ✅ FIX: Ne JAMAIS mettre lastActiveAt à undefined
+      // Quand l'utilisateur se déconnecte, on garde sa dernière activité pour calculer "away" vs "offline"
+      const updateData: any = {
+        isOnline,
+        lastSeenAt: new Date()
+      };
+
+      // Mettre à jour lastActiveAt seulement si l'utilisateur se connecte
+      if (isOnline) {
+        updateData.lastActiveAt = new Date();
+      }
+
       await this.prisma.anonymousParticipant.update({
         where: { id: participantId },
-        data: {
-          isOnline,
-          lastSeenAt: new Date(),
-          lastActiveAt: isOnline ? new Date() : undefined
-        }
+        data: updateData
       });
 
       logger.info(`👤 Statut participant anonyme ${participantId} mis à jour: ${isOnline ? 'en ligne' : 'hors ligne'}`);
-      
+
       // CORRECTION: Broadcaster le changement de statut si demandé
       if (broadcast && this.statusBroadcastCallback) {
         this.statusBroadcastCallback(participantId, isOnline, true);

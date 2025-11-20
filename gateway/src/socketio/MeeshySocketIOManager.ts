@@ -22,7 +22,8 @@ import type {
   SocketIOUser,
   SocketIOResponse,
   TypingEvent,
-  TranslationEvent
+  TranslationEvent,
+  UserStatusEvent
 } from '../../shared/types/socketio-events';
 import { CLIENT_EVENTS, SERVER_EVENTS } from '../../shared/types/socketio-events';
 import { conversationStatsService } from '../services/ConversationStatsService';
@@ -1503,20 +1504,23 @@ export class MeeshySocketIOManager {
             username: true,
             firstName: true,
             lastName: true,
+            lastActiveAt: true,
             conversationId: true
           }
         });
 
         if (participant) {
           const displayName = `${participant.firstName} ${participant.lastName}`.trim() || participant.username;
-          
+
           // Broadcaster uniquement dans la conversation du participant anonyme
           this.io.to(`conversation_${participant.conversationId}`).emit(SERVER_EVENTS.USER_STATUS, {
             userId: participant.id,
             username: displayName,
-            isOnline
+            isOnline,
+            lastActiveAt: participant.lastActiveAt,
+            lastSeen: undefined // Les participants anonymes n'ont pas de lastSeen
           });
-          
+
         }
       } else {
         const user = await this.prisma.user.findUnique({
@@ -1527,6 +1531,8 @@ export class MeeshySocketIOManager {
             displayName: true,
             firstName: true,
             lastName: true,
+            lastActiveAt: true,
+            lastSeen: true,
             conversations: {
               select: {
                 conversationId: true
@@ -1537,16 +1543,18 @@ export class MeeshySocketIOManager {
 
         if (user) {
           const displayName = user.displayName || `${user.firstName} ${user.lastName}`.trim() || user.username;
-          
+
           // Broadcaster dans toutes les conversations de l'utilisateur
           for (const conv of user.conversations) {
             this.io.to(`conversation_${conv.conversationId}`).emit(SERVER_EVENTS.USER_STATUS, {
               userId: user.id,
               username: displayName,
-              isOnline
+              isOnline,
+              lastActiveAt: user.lastActiveAt,
+              lastSeen: user.lastSeen
             });
           }
-          
+
         }
       }
     } catch (error) {

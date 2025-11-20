@@ -492,6 +492,8 @@ export interface UserStatusEvent {
   userId: string;
   username: string;
   isOnline: boolean;
+  lastActiveAt?: Date | null;
+  lastSeen?: Date | null;
 }
 
 // ===== TYPES POUR LES STATISTIQUES DE CONVERSATION =====

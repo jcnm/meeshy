@@ -35,10 +35,11 @@ export function useUserStatusRealtime() {
     const unsubscribe = socketService.onUserStatus((event: UserStatusEvent) => {
 
       // Mettre à jour le store global
+      // IMPORTANT: Ne jamais mettre lastActiveAt à undefined, toujours garder la valeur reçue
       updateUserStatus(event.userId, {
         isOnline: event.isOnline,
-        lastActiveAt: event.isOnline ? new Date() : undefined,
-        lastSeen: !event.isOnline ? new Date() : undefined
+        lastActiveAt: event.lastActiveAt ? new Date(event.lastActiveAt) : undefined,
+        lastSeen: event.lastSeen ? new Date(event.lastSeen) : undefined
       });
     });
 
