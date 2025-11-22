@@ -159,6 +159,8 @@
       "replyTo": "Responder a esta mensagem",
       "messageFound": "Mensagem encontrada!",
       "messageNotVisible": "Mensagem não visível. Carregando...",
+      "loadingMessage": "Carregando mensagem...",
+      "messageNotFound": "Mensagem não encontrada",
       "allMessagesLoaded": "Todas as mensagens foram carregadas",
       "loadingOlderMessages": "Carregando mensagens antigas...",
       "requestTranslationError": "Erro ao solicitar tradução",

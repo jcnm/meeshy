@@ -143,7 +143,10 @@ export function useAuth() {
     // Routes publiques (pas de vérification nécessaire)
     const publicRoutes = ['/', '/login', '/signin', '/register', '/partners', '/privacy', '/contact', '/about', '/terms'];
     const isPublicRoute = publicRoutes.includes(pathname);
-    
+
+    // Routes de tracking (/l/[token]) - PUBLIQUES, accessibles à tous
+    const isTrackingRoute = pathname.startsWith('/l/');
+
     // Routes de jointure (accessibles sans authentification)
     const isJoinRoute = pathname.startsWith('/join/');
     
@@ -155,7 +158,13 @@ export function useAuth() {
       devLog('[USE_AUTH] Route publique, pas de redirection automatique');
       return;
     }
-    
+
+    if (isTrackingRoute) {
+      // Route de tracking, accessible à tous sans authentification
+      devLog('[USE_AUTH] Route de tracking /l/[token], pas de redirection');
+      return;
+    }
+
     if (isJoinRoute) {
       // Route de jointure, accessible à tous
       return;

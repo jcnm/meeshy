@@ -40,9 +40,22 @@ model User {
   emailVerifiedAt             DateTime?
   phoneVerifiedAt             DateTime?
   twoFactorEnabledAt          DateTime?
-  failedLoginAttempts         Int?                     @default(0)
+  twoFactorSecret             String?                  // TOTP secret (encrypted)
+
+  // Account Lockout
+  failedLoginAttempts         Int                      @default(0)
   lockedUntil                 DateTime?
-  lastPasswordChange          DateTime?                @default(now())
+  lockedReason                String?                  // "FAILED_LOGIN" | "PASSWORD_RESET_ABUSE" | "SUSPICIOUS_ACTIVITY"
+
+  // Password Management
+  lastPasswordChange          DateTime                 @default(now())
+  passwordResetAttempts       Int                      @default(0)
+  lastPasswordResetAttempt    DateTime?
+
+  // Device & Location Tracking
+  lastLoginIp                 String?
+  lastLoginLocation           String?                  // "City, Country"
+  lastLoginDevice             String?                  // Device fingerprint
 
   // Soft delete fields
   deletedAt                   DateTime?
@@ -79,6 +92,12 @@ model User {
   callParticipations          CallParticipant[]        @relation("CallParticipants")
   conversationPrefs           UserConversationPreferences[]
   conversationCategories      UserConversationCategory[]
+
+  // Password Reset Relations
+  passwordResetTokens         PasswordResetToken[]
+  passwordHistory             PasswordHistory[]
+  securityEvents              SecurityEvent[]
+  sessions                    UserSession[]
 }
 
 /// Conversation entre utilisateurs (direct, group, public, global)
@@ -457,6 +476,11 @@ model NotificationPreference {
   missedCallEnabled     Boolean  @default(true)
   systemEnabled         Boolean  @default(true)
   conversationEnabled   Boolean  @default(true)
+  replyEnabled          Boolean  @default(true)
+  mentionEnabled        Boolean  @default(true)
+  reactionEnabled       Boolean  @default(true)
+  contactRequestEnabled Boolean  @default(true)
+  memberJoinedEnabled   Boolean  @default(true)
 
   // Do Not Disturb (ne pas déranger)
   dndEnabled            Boolean  @default(false)
@@ -947,4 +971,125 @@ model UserConversationCategory {
   @@index([userId])
   @@index([userId, order])
   @@map("user_conversation_categories")
+}
+
+/// =====================================================
+/// PASSWORD RESET & SECURITY MODELS
+/// =====================================================
+
+/// Password Reset Token - Stores hashed tokens for secure password reset
+model PasswordResetToken {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String    @db.ObjectId
+
+  /// SHA-256 hash of the token (NOT the token itself)
+  tokenHash         String    @unique
+
+  /// Expiry & Usage
+  expiresAt         DateTime  // 15 minutes from creation
+  usedAt            DateTime? // Null if not used yet
+  isRevoked         Boolean   @default(false)
+  revokedReason     String?   // "MANUAL" | "SUSPICIOUS_ACTIVITY" | "PASSWORD_CHANGED" | "NEW_REQUEST"
+
+  /// Request Metadata (for anomaly detection)
+  ipAddress         String?
+  userAgent         String?
+  deviceFingerprint String?
+  geoLocation       String?   // "City, Country"
+  geoCoordinates    String?   // "lat,lon"
+
+  createdAt         DateTime  @default(now())
+
+  /// Relations
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([createdAt])
+  @@map("password_reset_tokens")
+}
+
+/// Password History - Prevents password reuse
+model PasswordHistory {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String    @db.ObjectId
+  passwordHash  String    // bcrypt hash (cost=12)
+
+  /// Metadata
+  changedVia    String    // "RESET" | "USER_CHANGE" | "ADMIN_RESET" | "FORCED_RESET"
+  ipAddress     String?
+  userAgent     String?
+
+  createdAt     DateTime  @default(now())
+
+  /// Relations
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("password_history")
+}
+
+/// Security Event - Audit log for security-related events
+model SecurityEvent {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String?   @db.ObjectId  // Null for failed login attempts
+
+  /// Event Classification
+  eventType         String    // "PASSWORD_RESET_REQUEST" | "PASSWORD_RESET_SUCCESS" | "PASSWORD_RESET_FAILED" | "ACCOUNT_LOCKED" | etc.
+  severity          String    // "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
+  status            String    // "SUCCESS" | "FAILED" | "BLOCKED"
+
+  /// Event Details
+  description       String?
+  metadata          Json?     // Additional context
+
+  /// Request Context
+  ipAddress         String?
+  userAgent         String?
+  deviceFingerprint String?
+  geoLocation       String?
+
+  createdAt         DateTime  @default(now())
+
+  /// Relations
+  user              User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([severity])
+  @@index([createdAt])
+  @@map("security_events")
+}
+
+/// User Session - For session invalidation after password reset
+model UserSession {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String    @db.ObjectId
+
+  /// Session Data
+  sessionToken      String    @unique  // JWT token hash or session ID
+  refreshToken      String?   @unique  // For refresh token rotation
+
+  /// Metadata
+  ipAddress         String?
+  userAgent         String?
+  deviceFingerprint String?
+
+  /// Lifecycle
+  expiresAt         DateTime
+  isValid           Boolean   @default(true)
+  invalidatedAt     DateTime?
+  invalidatedReason String?   // "PASSWORD_RESET" | "LOGOUT" | "ADMIN_ACTION" | "SECURITY_BREACH"
+
+  createdAt         DateTime  @default(now())
+  lastActivityAt    DateTime  @default(now())
+
+  /// Relations
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([isValid])
+  @@map("user_sessions")
 }
