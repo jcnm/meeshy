@@ -151,8 +151,9 @@ export class AuthService {
         throw new Error('Utilisateur déjà existant');
       }
 
-      // Hasher le mot de passe
-      const hashedPassword = await bcrypt.hash(data.password, 10);
+      // Hasher le mot de passe (bcrypt cost=12 for enhanced security)
+      const BCRYPT_COST = 12;
+      const hashedPassword = await bcrypt.hash(data.password, BCRYPT_COST);
 
       // Créer l'utilisateur avec les données normalisées
       const user = await this.prisma.user.create({
