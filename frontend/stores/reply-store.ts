@@ -5,6 +5,7 @@
 
 import { create } from 'zustand';
 import type { Message } from '@shared/types/conversation';
+import type { Attachment } from '@shared/types/attachment';
 
 export interface ReplyingToMessage {
   id: string;
@@ -23,6 +24,7 @@ export interface ReplyingToMessage {
     targetLanguage: string;
     translatedContent: string;
   }>;
+  attachments?: Attachment[];
 }
 
 interface ReplyState {

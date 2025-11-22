@@ -175,7 +175,12 @@ export function RegisterForm({
       // Générer un username sécurisé à partir de l'email en mode lien (uniquement lettres, chiffres, tirets et underscores)
       const emailUsername = formData.email.split('@')[0];
       const cleanUsername = emailUsername.replace(/[^a-zA-Z0-9_-]/g, '_');
-      
+
+      // Récupérer le token d'affiliation depuis localStorage (peut venir de /join ou /signin/affiliate/[token])
+      const affiliateToken = typeof window !== 'undefined'
+        ? localStorage.getItem('meeshy_affiliate_token')
+        : null;
+
       const requestBody = linkId ? {
         // Mode lien d'invitation
         username: cleanUsername,
@@ -186,13 +191,28 @@ export function RegisterForm({
         phoneNumber: formData.phoneNumber,
         systemLanguage: formData.systemLanguage,
         regionalLanguage: formData.regionalLanguage,
+        ...(affiliateToken && { affiliateToken }), // Ajouter le token d'affiliation si présent
       } : {
         // Mode inscription normale
-        ...formData
+        ...formData,
+        ...(affiliateToken && { affiliateToken }), // Ajouter le token d'affiliation si présent
       };
 
       const apiUrl = buildApiUrl(API_ENDPOINTS.AUTH.REGISTER);
       console.log('[REGISTER_FORM] URL API:', apiUrl);
+
+      // Logs pour débogage de l'affiliation
+      if (affiliateToken) {
+        console.log('[REGISTER_FORM] ✅ Token d\'affiliation détecté:', affiliateToken.substring(0, 10) + '...');
+      } else {
+        console.log('[REGISTER_FORM] ⚠️ Aucun token d\'affiliation trouvé dans localStorage');
+      }
+
+      console.log('[REGISTER_FORM] Request body (sans password):', {
+        ...requestBody,
+        password: '[HIDDEN]',
+        affiliateToken: requestBody.affiliateToken ? requestBody.affiliateToken.substring(0, 10) + '...' : undefined
+      });
 
       const response = await fetch(apiUrl, {
         method: 'POST',

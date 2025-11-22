@@ -53,6 +53,7 @@ import { cn } from '@/lib/utils';
 import { useFixTranslationPopoverZIndex } from '@/hooks/use-fix-z-index';
 import { MarkdownMessage } from '@/components/messages/MarkdownMessage';
 import { MessageAttachments } from '@/components/attachments/MessageAttachments';
+import { AttachmentPreviewReply } from '@/components/attachments/AttachmentPreviewReply';
 import { MessageReactions } from '@/components/common/message-reactions';
 import { EmojiPicker } from '@/components/common/emoji-picker';
 import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
@@ -349,13 +350,25 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
     : (currentUser && message.senderId === currentUser.id);
   
   const canModifyMessage = () => {
+    // Vérifier le délai de 24 heures pour les utilisateurs normaux
+    const messageAge = Date.now() - new Date(message.createdAt).getTime();
+    const twentyFourHoursInMs = 24 * 60 * 60 * 1000; // 24 heures en millisecondes
+
+    // Vérifier si l'utilisateur a des privilèges spéciaux
+    const hasSpecialPrivileges = ['MODERATOR', 'MODO', 'ADMIN', 'CREATOR', 'BIGBOSS'].includes(userRole);
+
+    // Si le message a plus de 24 heures et que l'utilisateur n'a pas de privilèges spéciaux, interdire l'édition
+    if (messageAge > twentyFourHoursInMs && !hasSpecialPrivileges) {
+      return false;
+    }
+
     // Si le parent a fourni onEnterEditMode, c'est qu'on peut éditer
     if (onEnterEditMode) return true;
-    
+
     // Sinon, fallback sur la logique originale
     if (isOwnMessage) return true;
     if (conversationType === 'group' || conversationType === 'public' || conversationType === 'global') {
-      return ['MODERATOR', 'MODO', 'ADMIN', 'CREATOR', 'BIGBOSS'].includes(userRole);
+      return hasSpecialPrivileges;
     }
     return false;
   };
@@ -421,8 +434,7 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
         id={`message-${message.id}`}
         ref={messageRef}
         className={cn(
-          "bubble-message group/message grid grid-cols-10 gap-1 sm:gap-1.5 mb-2 px-2 sm:px-4",
-          isOwnMessage ? "" : ""
+          "bubble-message group/message grid grid-cols-10 gap-1 sm:gap-1.5 mb-2 px-2 sm:px-4"
         )}
       >
         {/* Empty space for sent messages (20% mobile = 2 cols / 40% desktop = 4 cols) */}
@@ -661,6 +673,12 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
                         )}>
                           {replyToContent || message.replyTo.content}
                         </p>
+                        {message.replyTo.attachments && message.replyTo.attachments.length > 0 && (
+                          <AttachmentPreviewReply
+                            attachments={message.replyTo.attachments}
+                            isOwnMessage={isOwnMessage}
+                          />
+                        )}
                       </div>
                       <MessageCircle className={cn(
                         "h-3 w-3 flex-shrink-0 mt-0.5",

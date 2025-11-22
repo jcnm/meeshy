@@ -47,11 +47,18 @@ export const usersService = {
    * Recherche des utilisateurs
    */
   async searchUsers(query: string): Promise<ApiResponse<User[]>> {
+    console.log('[UsersService] searchUsers appelé avec query:', query);
     try {
-      const response = await apiService.get<User[]>(`/users/search?q=${encodeURIComponent(query)}`);
+      const url = `/users/search?q=${encodeURIComponent(query)}`;
+      console.log('[UsersService] URL de recherche:', url);
+
+      const response = await apiService.get<User[]>(url);
+      console.log('[UsersService] ✅ Réponse API:', response);
+      console.log('[UsersService] Nombre d\'utilisateurs trouvés:', Array.isArray(response.data) ? response.data.length : 'N/A');
+
       return response;
     } catch (error) {
-      console.error('Erreur lors de la recherche d\'utilisateurs:', error);
+      console.error('[UsersService] ❌ Erreur lors de la recherche d\'utilisateurs:', error);
       throw error;
     }
   },
@@ -278,7 +285,7 @@ export const usersService = {
       'bg-purple-500', 'bg-pink-500', 'bg-indigo-500', 'bg-teal-500'
     ];
     const colorIndex = user.id.charCodeAt(0) % colors.length;
-    
+
     return `data:image/svg+xml,${encodeURIComponent(`
       <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
         <rect width="40" height="40" fill="#${colors[colorIndex].replace('bg-', '').replace('-500', '')}" rx="20"/>
@@ -287,6 +294,31 @@ export const usersService = {
         </text>
       </svg>
     `)}`;
+  },
+
+  /**
+   * Récupère le dernier token d'affiliation actif d'un utilisateur
+   * Utilisé pour l'affiliation automatique via les liens de conversation /join
+   *
+   * @param userId - ID de l'utilisateur dont on veut récupérer le token d'affiliation
+   * @returns Le token d'affiliation actif ou null si aucun
+   */
+  async getUserAffiliateToken(userId: string): Promise<ApiResponse<{ token: string } | null>> {
+    try {
+      const response = await apiService.get<{ token: string }>(`/users/${userId}/affiliate-token`);
+      return response;
+    } catch (error) {
+      // Échec silencieux - l'affiliation n'est pas critique
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`[UsersService] Impossible de récupérer le token d'affiliation pour l'utilisateur ${userId}:`, error);
+      }
+      // Retourner une réponse avec data null en cas d'erreur
+      return {
+        data: null,
+        status: 500,
+        message: error instanceof Error ? error.message : 'Failed to fetch affiliate token'
+      };
+    }
   },
 };
 

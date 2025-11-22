@@ -960,7 +960,8 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       originalLanguage: message.originalLanguage,
       sender: message.sender,
       createdAt: message.createdAt,
-      translations: message.translations
+      translations: message.translations,
+      attachments: message.attachments
     });
 
     // Focus sur MessageComposer
@@ -970,26 +971,89 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   }, []);
 
   // Naviguer vers un message spécifique
-  const handleNavigateToMessage = useCallback((messageId: string) => {
+  const handleNavigateToMessage = useCallback(async (messageId: string) => {
 
-    const messageElement = document.getElementById(`message-${messageId}`);
-
-    if (messageElement) {
-      messageElement.scrollIntoView({
+    // Fonction helper pour scroller vers un message et le mettre en évidence
+    const scrollToMessageElement = (element: HTMLElement) => {
+      element.scrollIntoView({
         behavior: 'smooth',
         block: 'center'
       });
 
-      messageElement.classList.add('ring-2', 'ring-blue-500', 'ring-offset-2');
+      // Highlight temporaire du message
+      element.classList.add('ring-2', 'ring-blue-500', 'ring-offset-2');
       setTimeout(() => {
-        messageElement.classList.remove('ring-2', 'ring-blue-500', 'ring-offset-2');
+        element.classList.remove('ring-2', 'ring-blue-500', 'ring-offset-2');
       }, 2000);
 
       toast.success(tCommon('messages.messageFound'));
-    } else {
-      toast.info(tCommon('messages.messageNotVisible'));
+    };
+
+    // Fonction helper pour attendre et réessayer de trouver l'élément dans le DOM
+    const waitForElement = async (id: string, maxAttempts = 5): Promise<HTMLElement | null> => {
+      for (let i = 0; i < maxAttempts; i++) {
+        const element = document.getElementById(`message-${id}`);
+        if (element) return element;
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+      return null;
+    };
+
+    // Étape 1: Vérifier si l'élément est déjà dans le DOM
+    let messageElement = document.getElementById(`message-${messageId}`);
+
+    if (messageElement) {
+      scrollToMessageElement(messageElement);
+      return;
     }
-  }, [tCommon]);
+
+    // Étape 2: Vérifier si le message existe dans la liste des messages chargés
+    const messageExists = messages.some(msg => msg.id === messageId);
+
+    if (messageExists) {
+      // Le message est chargé mais pas encore dans le DOM (peut-être en cours de rendu)
+      toast.info(tCommon('messages.loadingMessage'));
+      messageElement = await waitForElement(messageId);
+
+      if (messageElement) {
+        scrollToMessageElement(messageElement);
+        return;
+      }
+    }
+
+    // Étape 3: Le message n'est pas chargé - tenter de charger plus de messages
+    if (!hasMore) {
+      toast.error(tCommon('messages.messageNotFound'));
+      return;
+    }
+
+    toast.info(tCommon('messages.loadingOlderMessages'));
+
+    // Tenter de charger plus de messages (max 3 tentatives)
+    const maxLoadAttempts = 3;
+    for (let attempt = 0; attempt < maxLoadAttempts; attempt++) {
+      if (!hasMore) {
+        break;
+      }
+
+      // Charger plus de messages
+      await loadMore();
+
+      // Attendre que les messages soient chargés
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Vérifier si le message est maintenant disponible
+      messageElement = await waitForElement(messageId, 3);
+
+      if (messageElement) {
+        scrollToMessageElement(messageElement);
+        return;
+      }
+    }
+
+    // Si on arrive ici, le message n'a pas été trouvé après toutes les tentatives
+    toast.error(tCommon('messages.messageNotFound'));
+  }, [tCommon, messages, hasMore, loadMore]);
 
   // Éditer un message
   const handleEditMessage = useCallback(async (messageId: string, newContent: string) => {

@@ -4,13 +4,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/use-auth';
 import { User } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { useI18n } from '@/hooks/useI18n';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, User as UserIcon, Lock } from 'lucide-react';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 
 interface LoginFormProps {
   onSuccess?: (user: User, token: string) => void; // Optional callback for custom behavior
@@ -20,6 +20,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   const router = useRouter();
   const { login } = useAuth();
   const { t } = useI18n('auth');
+  const { isPasswordResetConfigured } = useFeatureFlags();
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -170,80 +171,82 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-3">
       {/* Message d'erreur visible */}
       {error && (
-        <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+        <div className="p-2.5 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
           <p className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>
         </div>
       )}
 
-      <div className="space-y-2">
-        <Label htmlFor="login-form-username">{t('login.usernameLabel')}</Label>
+      {/* Nom d'utilisateur avec icône intégrée */}
+      <div className="relative">
+        <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
         <Input
           id="login-form-username"
           type="text"
-          placeholder={t('login.usernamePlaceholder')}
+          placeholder="Pseudonyme ou numéro de téléphone"
           value={formData.username}
           onChange={(e) => setFormData({ ...formData, username: e.target.value })}
           disabled={isLoading}
           required
+          className="pl-10 h-11"
         />
-        <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-          <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 text-[10px] font-bold">i</span>
-          {t('login.usernamePhoneHelp')}
-        </p>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="login-form-password">{t('login.passwordLabel')}</Label>
+      {/* Mot de passe avec icône intégrée et toggle */}
+      <div>
         <div className="relative">
+          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             id="login-form-password"
             type={showPassword ? 'text' : 'password'}
-            placeholder={t('login.passwordPlaceholder')}
+            placeholder="Mot de passe (min. 8 caractères)"
             value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             disabled={isLoading}
             required
-            className="pr-10"
+            className="pl-10 pr-10 h-11"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-            aria-label={showPassword ? t('login.hidePassword') : t('login.showPassword')}
+            aria-label={showPassword ? 'Masquer' : 'Afficher'}
           >
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
         </div>
-        <p className="text-xs text-gray-500">
-          {t('login.passwordHelp')}
-        </p>
+        {/* Forgot password lien compact */}
+        {isPasswordResetConfigured() && (
+          <div className="text-right mt-1">
+            <a
+              href="/forgot-password"
+              className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium underline"
+            >
+              {t('login.forgotPassword') || 'Mot de passe oublié?'}
+            </a>
+          </div>
+        )}
       </div>
 
-      <Button 
-        type="submit" 
-        className="w-full" 
+      <Button
+        type="submit"
+        className="w-full h-11 font-semibold"
         disabled={isLoading}
       >
         {isLoading ? t('login.loggingIn') : t('login.loginButton')}
       </Button>
-      
-      {/* Liens de navigation */}
-      <div className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+
+      {/* Liens de navigation compacts */}
+      <div className="pt-2 text-center text-sm text-gray-600 dark:text-gray-400">
         <span>{t('login.noAccount')} </span>
-        <a 
-          href="/signin" 
+        <a
+          href="/signin"
           className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium underline"
         >
           {t('login.registerLink')}
-        </a> — <a 
-            href="/login" 
-            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium underline"
-          >
-            {t('register.loginLink')}
-          </a>
+        </a>
       </div>
     </form>
   );

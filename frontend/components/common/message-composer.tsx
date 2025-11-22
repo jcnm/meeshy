@@ -11,6 +11,7 @@ import { useI18n } from '@/hooks/useI18n';
 import { useReplyStore, type ReplyingToMessage } from '@/stores/reply-store';
 import { AttachmentCarousel } from '@/components/attachments/AttachmentCarousel';
 import { AttachmentLimitModal } from '@/components/attachments/AttachmentLimitModal';
+import { AttachmentPreviewReply } from '@/components/attachments/AttachmentPreviewReply';
 import { useTextAttachmentDetection } from '@/hooks/useTextAttachmentDetection';
 import { AttachmentService } from '@/services/attachmentService';
 import { UploadedAttachmentResponse } from '@/shared/types/attachment';
@@ -905,6 +906,12 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
                 <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2 italic">
                   {replyingTo.content}
                 </p>
+                {replyingTo.attachments && replyingTo.attachments.length > 0 && (
+                  <AttachmentPreviewReply
+                    attachments={replyingTo.attachments}
+                    isOwnMessage={false}
+                  />
+                )}
                 {replyingTo.translations && replyingTo.translations.length > 0 && (
                   <div className="mt-1 flex items-center space-x-1">
                     <Languages className="h-3 w-3 text-blue-500/60 dark:text-blue-400/60" />
