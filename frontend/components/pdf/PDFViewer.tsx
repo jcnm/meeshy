@@ -137,12 +137,17 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
                   <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
                 </div>
               }
+              options={{
+                // Désactiver l'ouverture automatique de la sidebar
+                disableAutoFetch: false,
+                disableStream: false
+              }}
             >
               <Page
                 pageNumber={pageNumber}
                 scale={scale}
                 renderTextLayer={true}
-                renderAnnotationLayer={true}
+                renderAnnotationLayer={false}
                 className="shadow-lg"
               />
             </Document>

@@ -6,9 +6,10 @@
 'use client';
 
 import React, { useMemo, useEffect, useState, useRef } from 'react';
-import { X, File, Image, FileText, Video, Music, FileArchive, Loader2, CheckCircle, Play, Pause } from 'lucide-react';
+import { X, File, Image, FileText, Video, Music, FileArchive, Loader2, CheckCircle, Play, Pause, Maximize } from 'lucide-react';
 import { formatFileSize, getAttachmentType } from '../../shared/types/attachment';
 import { Button } from '../ui/button';
+import { CompactVideoPlayer } from '../video/VideoPlayer';
 import {
   Tooltip,
   TooltipContent,
@@ -235,6 +236,12 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
   const [isGeneratingThumbnails, setIsGeneratingThumbnails] = useState(false);
   const processedFilesRef = useRef<Set<string>>(new Set());
   const thumbnailsRef = useRef<Map<string, string>>(new Map());
+  const [isMounted, setIsMounted] = useState(false);
+
+  // S'assurer que le composant est monté avant de charger les lightbox
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // États pour les lightbox
   const [imageLightboxIndex, setImageLightboxIndex] = useState<number>(-1);
@@ -437,9 +444,9 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
 
     // Audio files get wider size (160x80) to match AudioRecorderCard
     const isAudio = type === 'audio';
-    // Video files get wider size for preview (160x120)
+    // Video files get wider size for preview (200x140 pour accommoder CompactVideoPlayer + bouton lightbox)
     const isVideo = type === 'video';
-    const cardSizeClass = isAudio ? 'w-40 h-20' : isVideo ? 'w-40 h-32' : 'w-20 h-20';
+    const cardSizeClass = isAudio ? 'w-40 h-20' : isVideo ? 'w-50 h-36' : 'w-20 h-20';
 
     return (
       <TooltipProvider key={`${file.name}-${index}`}>
@@ -523,39 +530,42 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
                     </div>
                   </div>
                 ) : isVideo ? (
-                  /* Prévisualisation vidéo avec icône play */
+                  /* Prévisualisation vidéo avec CompactVideoPlayer */
                   <>
-                    <div
-                      className="absolute inset-0 rounded-lg overflow-hidden flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const videoFiles = files.filter(f => getAttachmentType(f.type) === 'video');
-                        const videoIndex = videoFiles.findIndex(f => `${f.name}-${f.size}-${f.lastModified}` === fileKey);
-                        setVideoLightboxIndex(videoIndex);
-                      }}
-                    >
-                      <Video className="w-12 h-12 text-purple-500 dark:text-purple-400" />
-                    </div>
+                    <div className="w-full h-full p-2 flex flex-col items-stretch justify-center gap-2">
+                      <CompactVideoPlayer
+                        attachment={{
+                          id: fileKey,
+                          fileUrl: fileUrls.get(fileKey) || URL.createObjectURL(file),
+                          fileName: file.name,
+                          originalName: file.name,
+                          mimeType: file.type,
+                          fileSize: file.size,
+                          duration: undefined, // La vidéo déterminera la durée
+                          createdAt: new Date().toISOString(),
+                        } as any}
+                        className="w-full"
+                      />
 
-                    {/* Icône play centrée */}
-                    <div
-                      className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                    >
-                      <div className="w-10 h-10 bg-purple-600 dark:bg-purple-500 rounded-full flex items-center justify-center">
-                        <div className="w-0 h-0 border-l-[8px] border-l-white border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent ml-0.5"></div>
-                      </div>
-                    </div>
-
-                    {/* Extension badge */}
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-1 py-0.5">
-                      <div className="text-white text-[10px] font-medium truncate">
-                        {extension.toUpperCase()}
-                      </div>
+                      {/* Bouton pour ouvrir en lightbox */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const videoFiles = files.filter(f => getAttachmentType(f.type) === 'video');
+                          const videoIndex = videoFiles.findIndex(f => `${f.name}-${f.size}-${f.lastModified}` === fileKey);
+                          setVideoLightboxIndex(videoIndex);
+                        }}
+                        className="w-full py-1.5 px-3 rounded-md bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/30 dark:hover:bg-purple-800/40 flex items-center justify-center gap-1.5 transition-all text-xs font-medium text-purple-700 dark:text-purple-300"
+                        title="Ouvrir en plein écran"
+                      >
+                        <Maximize className="w-3.5 h-3.5" />
+                        <span>Plein écran</span>
+                      </button>
                     </div>
 
                     {/* Indicateur d'upload pour vidéo */}
                     {isUploading && (
-                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg z-10">
                         <div className="text-center">
                           <Loader2 className="w-4 h-4 text-white animate-spin mx-auto mb-1" />
                           <div className="text-white text-[8px] font-medium">
@@ -567,7 +577,7 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
 
                     {/* Indicateur d'upload terminé pour vidéo */}
                     {isUploaded && (
-                      <div className="absolute top-1 right-1">
+                      <div className="absolute top-1 right-1 z-10">
                         <CheckCircle className="w-3 h-3 text-green-500 bg-white rounded-full" />
                       </div>
                     )}
@@ -700,11 +710,14 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
             {audioRecorderSlot}
           </div>
         )}
-        {files.map((file, index) => (
-          <div key={`${file.name}-${index}`} className="flex-shrink-0" role="listitem">
-            {getFilePreview(file, index)}
-          </div>
-        ))}
+        {files.slice().reverse().map((file, reversedIndex) => {
+          const index = files.length - 1 - reversedIndex;
+          return (
+            <div key={`${file.name}-${index}`} className="flex-shrink-0" role="listitem">
+              {getFilePreview(file, index)}
+            </div>
+          );
+        })}
       </div>
 
       {/* Styles pour la scrollbar Webkit (Chrome, Safari, Edge) */}
@@ -793,7 +806,7 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
       })()}
 
       {/* Lightbox pour les PDFs */}
-      {pdfLightboxFile && (() => {
+      {isMounted && pdfLightboxFile && (() => {
         const fileKey = `${pdfLightboxFile.name}-${pdfLightboxFile.size}-${pdfLightboxFile.lastModified}`;
         const attachment = {
           id: fileKey,
@@ -814,7 +827,7 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
       })()}
 
       {/* Lightbox pour les fichiers texte */}
-      {textLightboxFile && (() => {
+      {isMounted && textLightboxFile && (() => {
         const fileKey = `${textLightboxFile.name}-${textLightboxFile.size}-${textLightboxFile.lastModified}`;
         const attachment = {
           id: fileKey,
@@ -835,7 +848,7 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
       })()}
 
       {/* Lightbox pour les fichiers PPTX */}
-      {pptxLightboxFile && (() => {
+      {isMounted && pptxLightboxFile && (() => {
         const fileKey = `${pptxLightboxFile.name}-${pptxLightboxFile.size}-${pptxLightboxFile.lastModified}`;
         const attachment = {
           id: fileKey,
@@ -856,7 +869,7 @@ export const AttachmentCarousel = React.memo(function AttachmentCarousel({
       })()}
 
       {/* Lightbox pour les fichiers Markdown */}
-      {markdownLightboxFile && (() => {
+      {isMounted && markdownLightboxFile && (() => {
         const fileKey = `${markdownLightboxFile.name}-${markdownLightboxFile.size}-${markdownLightboxFile.lastModified}`;
         const attachment = {
           id: fileKey,

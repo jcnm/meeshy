@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
+import MediaManager from '@/utils/media-manager';
 
 interface VideoPlayerProps {
   attachment: UploadedAttachmentResponse;
@@ -21,9 +22,10 @@ interface VideoPlayerProps {
 }
 
 // Gestionnaire global pour arrêter toutes les autres vidéos
+// Utilise MediaManager pour coordination avec les audios
 class VideoManager {
   private static instance: VideoManager;
-  private currentVideo: HTMLVideoElement | null = null;
+  private mediaManager = MediaManager.getInstance();
 
   static getInstance(): VideoManager {
     if (!VideoManager.instance) {
@@ -33,17 +35,12 @@ class VideoManager {
   }
 
   play(video: HTMLVideoElement) {
-    // Arrêter la vidéo en cours s'il y en a une
-    if (this.currentVideo && this.currentVideo !== video) {
-      this.currentVideo.pause();
-    }
-    this.currentVideo = video;
+    // Utiliser MediaManager pour arrêter tout autre média (audio ou vidéo)
+    this.mediaManager.play(video, 'video');
   }
 
   stop(video: HTMLVideoElement) {
-    if (this.currentVideo === video) {
-      this.currentVideo = null;
-    }
+    this.mediaManager.stop(video);
   }
 }
 
@@ -195,21 +192,27 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   // Handler pour récupérer la durée
   const tryToGetDuration = useCallback(() => {
-    // Priorité 1: durée depuis l'attachment
-    if (attachmentDuration && attachmentDuration > 0) {
-      setDuration(attachmentDuration);
-      setHasLoadedMetadata(true);
-      return;
-    }
-
-    // Priorité 2: durée depuis la vidéo HTML
+    // Priorité 1: durée depuis la vidéo HTML (plus fiable)
     if (videoRef.current) {
       const videoDuration = videoRef.current.duration;
       if (isFinite(videoDuration) && videoDuration > 0) {
         setDuration(videoDuration);
         setHasLoadedMetadata(true);
+        // Assurer que currentTime est à 0 au début
+        if (videoRef.current.currentTime === 0 || !isFinite(videoRef.current.currentTime)) {
+          setCurrentTime(0);
+        }
         return;
       }
+    }
+
+    // Priorité 2: durée depuis l'attachment (fallback)
+    if (attachmentDuration && attachmentDuration > 0) {
+      setDuration(attachmentDuration);
+      setHasLoadedMetadata(true);
+      // Assurer que currentTime est à 0 au début
+      setCurrentTime(0);
+      return;
     }
   }, [attachmentDuration]);
 
@@ -639,6 +642,132 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           <Download className="w-4 h-4 text-gray-600 dark:text-gray-300" />
         </a>
       </div>
+    </div>
+  );
+};
+
+/**
+ * Version compacte du lecteur vidéo pour les previews (reply, citations, etc.)
+ */
+export const CompactVideoPlayer: React.FC<VideoPlayerProps> = ({
+  attachment,
+  className = ''
+}) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [duration, setDuration] = useState(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Extraire la durée de l'attachment
+  const attachmentDuration = attachment.duration ? attachment.duration / 1000 : undefined;
+  const attachmentFileUrl = attachment.fileUrl;
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !attachmentFileUrl) return;
+
+    const isValidUrl =
+      attachmentFileUrl.startsWith('http://') ||
+      attachmentFileUrl.startsWith('https://');
+
+    if (isValidUrl) {
+      video.src = attachmentFileUrl;
+      video.load();
+    }
+  }, [attachmentFileUrl]);
+
+  useEffect(() => {
+    if (attachmentDuration && attachmentDuration > 0) {
+      setDuration(attachmentDuration);
+    }
+  }, [attachmentDuration]);
+
+  const togglePlay = async () => {
+    if (!videoRef.current) return;
+
+    try {
+      if (isPlaying) {
+        videoRef.current.pause();
+        setIsPlaying(false);
+        VideoManager.getInstance().stop(videoRef.current);
+      } else {
+        VideoManager.getInstance().play(videoRef.current);
+        await videoRef.current.play();
+        setIsPlaying(true);
+      }
+    } catch (error) {
+      console.error('CompactVideoPlayer: Play error', error);
+    }
+  };
+
+  const handleLoadedMetadata = () => {
+    if (videoRef.current && videoRef.current.duration && isFinite(videoRef.current.duration)) {
+      setDuration(videoRef.current.duration);
+    }
+  };
+
+  const handleEnded = () => {
+    setIsPlaying(false);
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+    }
+  };
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handlePause = () => setIsPlaying(false);
+    video.addEventListener('pause', handlePause);
+
+    return () => {
+      video.removeEventListener('pause', handlePause);
+      video.pause();
+      VideoManager.getInstance().stop(video);
+    };
+  }, []);
+
+  const formatDuration = (seconds: number): string => {
+    if (!seconds || !isFinite(seconds)) return '0:00';
+    const hours = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+
+    if (hours > 0) {
+      return `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <div className={`inline-flex items-center gap-2 rounded-lg overflow-hidden bg-purple-100 dark:bg-purple-900/30 ${className}`}>
+      {/* Vidéo miniature */}
+      <div className="relative w-24 h-16 bg-black flex-shrink-0">
+        <video
+          ref={videoRef}
+          onLoadedMetadata={handleLoadedMetadata}
+          onEnded={handleEnded}
+          preload="metadata"
+          className="w-full h-full object-cover"
+          playsInline
+        />
+
+        {/* Overlay play/pause */}
+        <button
+          onClick={togglePlay}
+          className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/50 transition-all duration-200"
+        >
+          {isPlaying ? (
+            <Pause className="w-6 h-6 text-white fill-current" />
+          ) : (
+            <Play className="w-6 h-6 text-white ml-0.5 fill-current" />
+          )}
+        </button>
+      </div>
+
+      {/* Durée */}
+      <span className="text-sm font-mono text-purple-700 dark:text-purple-300 pr-2">
+        {formatDuration(duration)}
+      </span>
     </div>
   );
 };

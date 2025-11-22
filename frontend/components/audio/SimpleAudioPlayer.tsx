@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
 import type { AudioEffectType } from '@/shared/types/video-call';
 import { apiService } from '@/services/api.service';
+import MediaManager from '@/utils/media-manager';
 
 interface SimpleAudioPlayerProps {
   attachment: UploadedAttachmentResponse;
@@ -24,9 +25,10 @@ interface SimpleAudioPlayerProps {
 }
 
 // Gestionnaire global pour arrêter tous les autres audios
+// Utilise MediaManager pour coordination avec les vidéos
 class AudioManager {
   private static instance: AudioManager;
-  private currentAudio: HTMLAudioElement | null = null;
+  private mediaManager = MediaManager.getInstance();
 
   static getInstance(): AudioManager {
     if (!AudioManager.instance) {
@@ -36,17 +38,12 @@ class AudioManager {
   }
 
   play(audio: HTMLAudioElement) {
-    // Arrêter l'audio en cours s'il y en a un
-    if (this.currentAudio && this.currentAudio !== audio) {
-      this.currentAudio.pause();
-    }
-    this.currentAudio = audio;
+    // Utiliser MediaManager pour arrêter tout autre média (audio ou vidéo)
+    this.mediaManager.play(audio, 'audio');
   }
 
   stop(audio: HTMLAudioElement) {
-    if (this.currentAudio === audio) {
-      this.currentAudio = null;
-    }
+    this.mediaManager.stop(audio);
   }
 }
 
@@ -1589,7 +1586,18 @@ export const CompactAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
+  const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  // Extraire la durée de l'attachment (en millisecondes dans la DB, convertir en secondes)
+  const attachmentDuration = attachment.duration ? attachment.duration / 1000 : undefined;
+
+  // Initialiser la durée depuis l'attachment
+  useEffect(() => {
+    if (attachmentDuration && attachmentDuration > 0) {
+      setDuration(attachmentDuration);
+    }
+  }, [attachmentDuration]);
 
   // Charger l'audio via apiService
   useEffect(() => {
@@ -1688,7 +1696,7 @@ export const CompactAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
 
       {/* Durée */}
       <span className="text-sm font-mono text-blue-700 dark:text-blue-300">
-        {formatDuration(attachmentDuration || 0)}
+        {formatDuration(duration)}
       </span>
 
       {/* Audio element caché */}
@@ -1696,6 +1704,11 @@ export const CompactAudioPlayer: React.FC<SimpleAudioPlayerProps> = ({
         ref={audioRef}
         src={objectUrl || undefined}
         onEnded={() => setIsPlaying(false)}
+        onLoadedMetadata={() => {
+          if (audioRef.current && audioRef.current.duration && isFinite(audioRef.current.duration)) {
+            setDuration(audioRef.current.duration);
+          }
+        }}
         preload="metadata"
       />
     </div>

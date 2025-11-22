@@ -12,7 +12,7 @@ import { SimpleAudioPlayer } from '@/components/audio/SimpleAudioPlayer';
 import { VideoPlayer } from '@/components/video/VideoPlayer';
 import { VideoLightbox } from '@/components/video/VideoLightbox';
 import { PDFViewerWrapper } from '@/components/pdf/PDFViewerWrapper';
-import { PDFLightboxWrapper } from '@/components/pdf/PDFLightboxWrapper';
+import { PDFLightboxSimple } from '@/components/pdf/PDFLightboxSimple';
 import { MarkdownViewer } from '@/components/markdown/MarkdownViewer';
 import { MarkdownLightbox } from '@/components/markdown/MarkdownLightbox';
 import { TextViewer } from '@/components/text/TextViewer';
@@ -94,10 +94,12 @@ export const MessageAttachments = React.memo(function MessageAttachments({
   }, [attachments]);
 
   // Handler pour ouvrir la confirmation de suppression
-  const handleOpenDeleteConfirm = useCallback((attachment: Attachment, event: React.MouseEvent) => {
-    // Empêcher le clic normal
-    event.preventDefault();
-    event.stopPropagation();
+  const handleOpenDeleteConfirm = useCallback((attachment: Attachment, event?: React.MouseEvent) => {
+    // Empêcher le clic normal si event existe
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
 
     setAttachmentToDelete(attachment);
   }, []);
@@ -420,7 +422,7 @@ export const MessageAttachments = React.memo(function MessageAttachments({
 
       // Handler pour supprimer le PDF
       const handleDeletePdf = () => {
-        handleOpenDeleteConfirm(attachment, {} as React.MouseEvent);
+        handleOpenDeleteConfirm(attachment);
       };
 
       return (
@@ -463,7 +465,7 @@ export const MessageAttachments = React.memo(function MessageAttachments({
 
       // Handler pour supprimer le PPTX
       const handleDeletePptx = () => {
-        handleOpenDeleteConfirm(attachment, {} as React.MouseEvent);
+        handleOpenDeleteConfirm(attachment);
       };
 
       return (
@@ -505,7 +507,7 @@ export const MessageAttachments = React.memo(function MessageAttachments({
 
       // Handler pour supprimer le Markdown
       const handleDeleteMarkdown = () => {
-        handleOpenDeleteConfirm(attachment, {} as React.MouseEvent);
+        handleOpenDeleteConfirm(attachment);
       };
 
       return (
@@ -785,7 +787,7 @@ export const MessageAttachments = React.memo(function MessageAttachments({
       />
 
       {/* Lightbox pour les PDFs */}
-      <PDFLightboxWrapper
+      <PDFLightboxSimple
         attachment={pdfLightboxAttachment as any}
         isOpen={pdfLightboxOpen}
         onClose={() => setPdfLightboxOpen(false)}
