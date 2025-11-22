@@ -1,97 +1,96 @@
 {
   "notifications": {
-    "pageTitle": "Notificações",
-    "markAllRead": "Marcar todas como lidas",
-    "unread": "Não lidas",
-    "totalNotifications": "notificações no total",
-    "preferences": "Preferências",
-    "quickActions": "Ações rápidas",
-    "service": "Serviço",
-    "systemStatus": "Status do sistema",
-    "search": "Pesquisar nas notificações...",
-    "noResults": "Nenhuma notificação encontrada",
-    "empty": {
-      "title": "Nenhuma notificação",
-      "description": "Você não tem novas notificações no momento"
-    },
-    "types": {
-      "message": "Mensagem",
-      "new_message": "Nova mensagem",
-      "missed_call": "Chamada perdida",
-      "mention": "Menção",
-      "user_mentioned": "Você foi mencionado",
-      "invitation": "Convite",
-      "system": "Sistema",
-      "conversation": "Conversa",
-      "translation": "Tradução"
+    "title": "Notificações",
+    "empty": "Sem notificações",
+    "emptyUnread": "Tudo em dia! Sem notificações não lidas.",
+    "emptyMentions": "Sem menções ainda",
+    "markAllAsRead": "Marcar todas como lidas",
+    "markAsRead": "Marcar como lida",
+    "delete": "Excluir",
+    "viewAll": "Ver todas as notificações",
+    "loadMore": "Carregar mais",
+    "loading": "Carregando notificações...",
+    "reachedEnd": "Você chegou ao fim",
+    "tabs": {
+      "all": "Todas",
+      "unread": "Não lidas",
+      "mentions": "Menções"
     },
     "filters": {
+      "title": "Filtros",
+      "type": "Tipo",
+      "status": "Estado",
+      "clearAll": "Limpar tudo",
       "all": "Todas",
-      "new_message": "Mensagens",
-      "friend_request": "Contatos",
-      "missed_call": "Chamadas perdidas",
-      "system": "Sistema",
-      "conversation": "Conversas"
+      "read": "Lidas",
+      "unread": "Não lidas"
     },
-    "unreadCount": {
-      "empty": "Nenhuma notificação não lida",
-      "single": "{count} notificação não lida de {total}",
-      "plural": "{count} notificações não lidas de {total}",
-      "allRead": "{total} notificação{plural} (todas lidas)"
+    "types": {
+      "new_message": "Nova mensagem",
+      "message_reply": "Resposta",
+      "user_mentioned": "Menção",
+      "message_reaction": "Reação",
+      "contact_request": "Pedido de contato",
+      "contact_accepted": "Contato aceito",
+      "new_conversation_direct": "Nova conversa",
+      "new_conversation_group": "Convite de grupo",
+      "member_joined": "Membro entrou",
+      "missed_call": "Chamada perdida",
+      "system": "Notificação do sistema"
     },
-    "timeAgo": {
-      "now": "Agora mesmo",
-      "minute": "há {count} minuto",
-      "hour": "há {count} hora",
-      "day": "há {count} dia"
+    "priorities": {
+      "low": "Baixa",
+      "normal": "Normal",
+      "high": "Importante",
+      "urgent": "Urgente"
     },
-    "attachments": {
-      "audio": "Áudio",
-      "video": "Vídeo",
-      "document": "Documento",
-      "image": "Imagem",
-      "code": "Código",
-      "text": "Texto",
-      "duration": "{duration}",
-      "pages": "{count} páginas",
-      "lines": "{count} linhas",
-      "dimensions": "{width}x{height}"
+    "titles": {
+      "newMessage": "Nova mensagem de {sender}",
+      "reply": "Resposta de {sender}",
+      "mentioned": "{sender} mencionou você",
+      "reaction": "{sender} reagiu {emoji}",
+      "contactRequest": "{sender} quer se conectar",
+      "contactAccepted": "{sender} aceitou seu convite",
+      "newConversationDirect": "Nova conversa com {sender}",
+      "newConversationGroup": "Convite para \"{title}\"",
+      "memberJoined": "Novo membro em \"{title}\"",
+      "missedCall": "Chamada {type} perdida",
+      "system": "Notificação do sistema",
+      "default": "Nova notificação"
+    },
+    "content": {
+      "memberJoinedMessage": "{sender} entrou no grupo",
+      "contactAcceptedMessage": "{sender} aceitou seu convite. Vocês podem conversar agora.",
+      "contactRequestMessage": "{sender} enviou um convite",
+      "notMemberHint": "Você não é membro desta conversa. Clique para entrar."
     },
     "actions": {
-      "markAsRead": "Marcar como lida",
-      "markAsUnread": "Marcar como não lida",
-      "delete": "Excluir",
-      "viewConversation": "Ver conversa",
-      "cancel": "Cancelar",
-      "markAsReadCount": "Marcar como lida ({count})",
-      "deleteCount": "Excluir ({count})",
-      "select": "Selecionar",
-      "selectAll": "Selecionar tudo",
-      "deselectAll": "Desmarcar tudo"
+      "accept": "Aceitar",
+      "decline": "Recusar",
+      "join": "Entrar",
+      "callBack": "Retornar chamada",
+      "view": "Ver",
+      "reply": "Responder"
     },
-    "sortOptions": {
-      "newest": "Mais recentes",
-      "oldest": "Mais antigas",
-      "unreadFirst": "Não lidas primeiro",
-      "byType": "Por tipo"
+    "timestamps": {
+      "justNow": "agora mesmo",
+      "secondsAgo": "há {count} segundo",
+      "secondsAgo_plural": "há {count} segundos",
+      "minutesAgo": "há {count} minuto",
+      "minutesAgo_plural": "há {count} minutos",
+      "hoursAgo": "há {count} hora",
+      "hoursAgo_plural": "há {count} horas",
+      "daysAgo": "há {count} dia",
+      "daysAgo_plural": "há {count} dias",
+      "in": "em"
     },
-    "selection": {
-      "count": "{selected} / {total} selecionado",
-      "countPlural": "{selected} / {total} selecionados"
-    },
-    "friendRequest": {
-      "accepted": "Pedido aceito",
-      "rejected": "Pedido rejeitado",
-      "error": "Erro ao processar o pedido",
-      "connectionError": "Erro de conexão"
-    },
-    "conversationContext": "em {conversationTitle}",
-    "settings": {
-      "title": "Configurações de notificação",
-      "emailNotifications": "Notificações por e-mail",
-      "pushNotifications": "Notificações push",
-      "desktopNotifications": "Notificações de desktop",
-      "soundEnabled": "Som ativado"
+    "attachments": {
+      "photo": "Foto",
+      "video": "Vídeo",
+      "audio": "Áudio",
+      "pdf": "PDF",
+      "document": "Documento",
+      "file": "Arquivo"
     }
   }
 }

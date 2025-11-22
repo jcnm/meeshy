@@ -1,97 +1,96 @@
 {
   "notifications": {
-    "pageTitle": "Notifications",
-    "markAllRead": "Tout marquer comme lu",
-    "unread": "Non lues",
-    "totalNotifications": "notifications au total",
-    "preferences": "Préférences",
-    "quickActions": "Actions rapides",
-    "service": "Service",
-    "systemStatus": "État du système",
-    "search": "Rechercher dans les notifications...",
-    "noResults": "Aucune notification trouvée",
-    "empty": {
-      "title": "Aucune notification",
-      "description": "Vous n'avez aucune nouvelle notification pour le moment"
-    },
-    "types": {
-      "message": "Message",
-      "new_message": "Nouveau message",
-      "missed_call": "Appel manqué",
-      "mention": "Mention",
-      "user_mentioned": "Vous avez été mentionné",
-      "invitation": "Invitation",
-      "system": "Système",
-      "conversation": "Conversation",
-      "translation": "Traduction"
+    "title": "Notifications",
+    "empty": "Aucune notification",
+    "emptyUnread": "Tout est lu ! Aucune notification non lue.",
+    "emptyMentions": "Aucune mention pour le moment",
+    "markAllAsRead": "Tout marquer comme lu",
+    "markAsRead": "Marquer comme lu",
+    "delete": "Supprimer",
+    "viewAll": "Voir toutes les notifications",
+    "loadMore": "Charger plus",
+    "loading": "Chargement des notifications...",
+    "reachedEnd": "Vous avez atteint la fin",
+    "tabs": {
+      "all": "Toutes",
+      "unread": "Non lues",
+      "mentions": "Mentions"
     },
     "filters": {
+      "title": "Filtres",
+      "type": "Type",
+      "status": "Statut",
+      "clearAll": "Tout effacer",
       "all": "Toutes",
-      "new_message": "Messages",
-      "friend_request": "Contacts",
-      "missed_call": "Appels manqués",
-      "system": "Système",
-      "conversation": "Conversations"
+      "read": "Lues",
+      "unread": "Non lues"
     },
-    "unreadCount": {
-      "empty": "Aucune notification non lue",
-      "single": "{count} notification non lue sur {total}",
-      "plural": "{count} notifications non lues sur {total}",
-      "allRead": "{total} notification{plural} (toutes lues)"
+    "types": {
+      "new_message": "Nouveau message",
+      "message_reply": "Réponse",
+      "user_mentioned": "Mention",
+      "message_reaction": "Réaction",
+      "contact_request": "Demande de contact",
+      "contact_accepted": "Contact accepté",
+      "new_conversation_direct": "Nouvelle conversation",
+      "new_conversation_group": "Invitation de groupe",
+      "member_joined": "Membre rejoint",
+      "missed_call": "Appel manqué",
+      "system": "Notification système"
     },
-    "timeAgo": {
-      "now": "À l'instant",
-      "minute": "il y a {count} minute",
-      "hour": "il y a {count} heure",
-      "day": "il y a {count} jour"
+    "priorities": {
+      "low": "Basse",
+      "normal": "Normale",
+      "high": "Important",
+      "urgent": "Urgent"
     },
-    "attachments": {
-      "audio": "Audio",
-      "video": "Vidéo",
-      "document": "Document",
-      "image": "Image",
-      "code": "Code",
-      "text": "Texte",
-      "duration": "{duration}",
-      "pages": "{count} pages",
-      "lines": "{count} lignes",
-      "dimensions": "{width}x{height}"
+    "titles": {
+      "newMessage": "Nouveau message de {sender}",
+      "reply": "Réponse de {sender}",
+      "mentioned": "{sender} vous a mentionné",
+      "reaction": "{sender} a réagi {emoji}",
+      "contactRequest": "{sender} veut se connecter",
+      "contactAccepted": "{sender} a accepté votre invitation",
+      "newConversationDirect": "Nouvelle conversation avec {sender}",
+      "newConversationGroup": "Invitation à \"{title}\"",
+      "memberJoined": "Nouveau membre dans \"{title}\"",
+      "missedCall": "Appel {type} manqué",
+      "system": "Notification système",
+      "default": "Nouvelle notification"
+    },
+    "content": {
+      "memberJoinedMessage": "{sender} a rejoint le groupe",
+      "contactAcceptedMessage": "{sender} a accepté votre invitation. Vous pouvez maintenant discuter ensemble.",
+      "contactRequestMessage": "{sender} vous a envoyé une invitation",
+      "notMemberHint": "Vous n'êtes pas membre de cette conversation. Cliquez pour rejoindre."
     },
     "actions": {
-      "markAsRead": "Marquer comme lu",
-      "markAsUnread": "Marquer comme non lu",
-      "delete": "Supprimer",
-      "viewConversation": "Voir la conversation",
-      "cancel": "Annuler",
-      "markAsReadCount": "Marquer comme lu ({count})",
-      "deleteCount": "Supprimer ({count})",
-      "select": "Sélectionner",
-      "selectAll": "Tout sélectionner",
-      "deselectAll": "Tout désélectionner"
+      "accept": "Accepter",
+      "decline": "Refuser",
+      "join": "Rejoindre",
+      "callBack": "Rappeler",
+      "view": "Voir",
+      "reply": "Répondre"
     },
-    "sortOptions": {
-      "newest": "Plus récentes",
-      "oldest": "Plus anciennes",
-      "unreadFirst": "Non lues d'abord",
-      "byType": "Par type"
+    "timestamps": {
+      "justNow": "à l'instant",
+      "secondsAgo": "il y a {count} seconde",
+      "secondsAgo_plural": "il y a {count} secondes",
+      "minutesAgo": "il y a {count} minute",
+      "minutesAgo_plural": "il y a {count} minutes",
+      "hoursAgo": "il y a {count} heure",
+      "hoursAgo_plural": "il y a {count} heures",
+      "daysAgo": "il y a {count} jour",
+      "daysAgo_plural": "il y a {count} jours",
+      "in": "dans"
     },
-    "selection": {
-      "count": "{selected} / {total} sélectionné",
-      "countPlural": "{selected} / {total} sélectionnés"
-    },
-    "friendRequest": {
-      "accepted": "Demande acceptée",
-      "rejected": "Demande refusée",
-      "error": "Erreur lors du traitement de la demande",
-      "connectionError": "Erreur de connexion"
-    },
-    "conversationContext": "dans {conversationTitle}",
-    "settings": {
-      "title": "Paramètres de notification",
-      "emailNotifications": "Notifications par email",
-      "pushNotifications": "Notifications push",
-      "desktopNotifications": "Notifications de bureau",
-      "soundEnabled": "Son activé"
+    "attachments": {
+      "photo": "Photo",
+      "video": "Vidéo",
+      "audio": "Audio",
+      "pdf": "PDF",
+      "document": "Document",
+      "file": "Fichier"
     }
   }
 }

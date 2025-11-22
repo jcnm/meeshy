@@ -1,97 +1,96 @@
 {
   "notifications": {
-    "pageTitle": "Notificaciones",
-    "markAllRead": "Marcar todo como leído",
-    "unread": "No leídas",
-    "totalNotifications": "notificaciones en total",
-    "preferences": "Preferencias",
-    "quickActions": "Acciones rápidas",
-    "service": "Servicio",
-    "systemStatus": "Estado del sistema",
-    "search": "Buscar en las notificaciones...",
-    "noResults": "No se encontraron notificaciones",
-    "empty": {
-      "title": "No hay notificaciones",
-      "description": "No tiene nuevas notificaciones por el momento"
-    },
-    "types": {
-      "message": "Mensaje",
-      "new_message": "Nuevo mensaje",
-      "missed_call": "Llamada perdida",
-      "mention": "Mención",
-      "user_mentioned": "Ha sido mencionado",
-      "invitation": "Invitación",
-      "system": "Sistema",
-      "conversation": "Conversación",
-      "translation": "Traducción"
+    "title": "Notificaciones",
+    "empty": "Sin notificaciones",
+    "emptyUnread": "¡Al día! Sin notificaciones sin leer.",
+    "emptyMentions": "Sin menciones aún",
+    "markAllAsRead": "Marcar todas como leídas",
+    "markAsRead": "Marcar como leída",
+    "delete": "Eliminar",
+    "viewAll": "Ver todas las notificaciones",
+    "loadMore": "Cargar más",
+    "loading": "Cargando notificaciones...",
+    "reachedEnd": "Has llegado al final",
+    "tabs": {
+      "all": "Todas",
+      "unread": "Sin leer",
+      "mentions": "Menciones"
     },
     "filters": {
+      "title": "Filtros",
+      "type": "Tipo",
+      "status": "Estado",
+      "clearAll": "Borrar todo",
       "all": "Todas",
-      "new_message": "Mensajes",
-      "friend_request": "Contactos",
-      "missed_call": "Llamadas perdidas",
-      "system": "Sistema",
-      "conversation": "Conversaciones"
+      "read": "Leídas",
+      "unread": "Sin leer"
     },
-    "unreadCount": {
-      "empty": "No hay notificaciones no leídas",
-      "single": "{count} notificación no leída de {total}",
-      "plural": "{count} notificaciones no leídas de {total}",
-      "allRead": "{total} notificación{plural} (todas leídas)"
+    "types": {
+      "new_message": "Nuevo mensaje",
+      "message_reply": "Respuesta",
+      "user_mentioned": "Mención",
+      "message_reaction": "Reacción",
+      "contact_request": "Solicitud de contacto",
+      "contact_accepted": "Contacto aceptado",
+      "new_conversation_direct": "Nueva conversación",
+      "new_conversation_group": "Invitación de grupo",
+      "member_joined": "Miembro unido",
+      "missed_call": "Llamada perdida",
+      "system": "Notificación del sistema"
     },
-    "timeAgo": {
-      "now": "Ahora mismo",
-      "minute": "hace {count} minuto",
-      "hour": "hace {count} hora",
-      "day": "hace {count} día"
+    "priorities": {
+      "low": "Baja",
+      "normal": "Normal",
+      "high": "Importante",
+      "urgent": "Urgente"
     },
-    "attachments": {
-      "audio": "Audio",
-      "video": "Video",
-      "document": "Documento",
-      "image": "Imagen",
-      "code": "Código",
-      "text": "Texto",
-      "duration": "{duration}",
-      "pages": "{count} páginas",
-      "lines": "{count} líneas",
-      "dimensions": "{width}x{height}"
+    "titles": {
+      "newMessage": "Nuevo mensaje de {sender}",
+      "reply": "Respuesta de {sender}",
+      "mentioned": "{sender} te mencionó",
+      "reaction": "{sender} reaccionó {emoji}",
+      "contactRequest": "{sender} quiere conectarse",
+      "contactAccepted": "{sender} aceptó tu invitación",
+      "newConversationDirect": "Nueva conversación con {sender}",
+      "newConversationGroup": "Invitación a \"{title}\"",
+      "memberJoined": "Nuevo miembro en \"{title}\"",
+      "missedCall": "Llamada {type} perdida",
+      "system": "Notificación del sistema",
+      "default": "Nueva notificación"
+    },
+    "content": {
+      "memberJoinedMessage": "{sender} se unió al grupo",
+      "contactAcceptedMessage": "{sender} aceptó tu invitación. Ahora pueden chatear juntos.",
+      "contactRequestMessage": "{sender} te envió una invitación",
+      "notMemberHint": "No eres miembro de esta conversación. Haz clic para unirte."
     },
     "actions": {
-      "markAsRead": "Marcar como leído",
-      "markAsUnread": "Marcar como no leído",
-      "delete": "Eliminar",
-      "viewConversation": "Ver la conversación",
-      "cancel": "Cancelar",
-      "markAsReadCount": "Marcar como leído ({count})",
-      "deleteCount": "Eliminar ({count})",
-      "select": "Seleccionar",
-      "selectAll": "Seleccionar todo",
-      "deselectAll": "Deseleccionar todo"
+      "accept": "Aceptar",
+      "decline": "Rechazar",
+      "join": "Unirse",
+      "callBack": "Devolver llamada",
+      "view": "Ver",
+      "reply": "Responder"
     },
-    "sortOptions": {
-      "newest": "Más recientes",
-      "oldest": "Más antiguas",
-      "unreadFirst": "No leídas primero",
-      "byType": "Por tipo"
+    "timestamps": {
+      "justNow": "ahora mismo",
+      "secondsAgo": "hace {count} segundo",
+      "secondsAgo_plural": "hace {count} segundos",
+      "minutesAgo": "hace {count} minuto",
+      "minutesAgo_plural": "hace {count} minutos",
+      "hoursAgo": "hace {count} hora",
+      "hoursAgo_plural": "hace {count} horas",
+      "daysAgo": "hace {count} día",
+      "daysAgo_plural": "hace {count} días",
+      "in": "en"
     },
-    "selection": {
-      "count": "{selected} / {total} seleccionado",
-      "countPlural": "{selected} / {total} seleccionados"
-    },
-    "friendRequest": {
-      "accepted": "Solicitud aceptada",
-      "rejected": "Solicitud rechazada",
-      "error": "Error al procesar la solicitud",
-      "connectionError": "Error de conexión"
-    },
-    "conversationContext": "en {conversationTitle}",
-    "settings": {
-      "title": "Configuración de notificaciones",
-      "emailNotifications": "Notificaciones por email",
-      "pushNotifications": "Notificaciones push",
-      "desktopNotifications": "Notificaciones de escritorio",
-      "soundEnabled": "Sonido activado"
+    "attachments": {
+      "photo": "Foto",
+      "video": "Video",
+      "audio": "Audio",
+      "pdf": "PDF",
+      "document": "Documento",
+      "file": "Archivo"
     }
   }
 }

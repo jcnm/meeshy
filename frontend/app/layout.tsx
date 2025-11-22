@@ -13,6 +13,7 @@ import { defaultFont, getAllFontVariables } from "@/lib/fonts";
 import { preloadCriticalComponents } from "@/lib/lazy-components";
 import { CallManager } from "@/components/video-call";
 import { GoogleAnalytics } from "@/components/analytics";
+import { FirebaseInitializer } from "@/components/providers/FirebaseInitializer";
 import "@/utils/console-override"; // 🔇 Désactive console.log en production
 
 export const metadata: Metadata = {
@@ -82,6 +83,9 @@ export default function RootLayout({
       <body className={`${getAllFontVariables()} antialiased font-nunito`}>
         {/* Google Analytics - Tracking sur toutes les pages */}
         <GoogleAnalytics />
+
+        {/* Firebase Initializer - Vérifie Firebase au démarrage */}
+        <FirebaseInitializer />
 
         <StoreInitializer>
           <ThemeProvider>
