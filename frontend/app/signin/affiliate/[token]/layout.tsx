@@ -3,11 +3,11 @@ import { ReactNode } from 'react';
 
 interface AffiliateLayoutProps {
   children: ReactNode;
-  params: { token: string };
+  params: Promise<{ token: string }>; // Next.js 15: params est une Promise
 }
 
 export async function generateMetadata({ params }: AffiliateLayoutProps): Promise<Metadata> {
-  const { token } = params;
+  const { token } = await params; // Next.js 15: params est une Promise
   const frontendUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3100';
 
   // Pour les pages d'affiliation, utiliser des métadonnées génériques attractives

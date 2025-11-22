@@ -234,18 +234,39 @@ export default function ContactsPage() {
   };
 
   const searchUsers = async (query: string) => {
+    console.log('[CONTACTS] Recherche utilisateurs avec query:', query);
+
     if (!query.trim()) {
+      console.log('[CONTACTS] Query vide, réinitialisation des résultats');
       setSearchResults([]);
       return;
     }
 
     try {
+      console.log('[CONTACTS] Appel usersService.searchUsers...');
       const response = await usersService.searchUsers(query);
-      // S'assurer que response.data est un tableau
-      const searchData = Array.isArray(response.data) ? response.data : [];
+      console.log('[CONTACTS] Réponse reçue:', response);
+
+      // L'API retourne { success: true, data: [...] }
+      // apiService enveloppe ça dans { data: { success: true, data: [...] } }
+      let searchData: User[] = [];
+
+      if (response.data && typeof response.data === 'object' && 'success' in response.data && 'data' in response.data) {
+        // Nouveau format: { data: { success: true, data: [...] } }
+        searchData = Array.isArray(response.data.data) ? response.data.data : [];
+        console.log('[CONTACTS] Format avec success:', searchData.length, 'utilisateurs trouvés');
+      } else if (Array.isArray(response.data)) {
+        // Ancien format: { data: [...] }
+        searchData = response.data;
+        console.log('[CONTACTS] Format tableau direct:', searchData.length, 'utilisateurs trouvés');
+      } else {
+        console.warn('[CONTACTS] Format de réponse inattendu:', response.data);
+      }
+
+      console.log('[CONTACTS] Résultats de recherche:', searchData.length, 'utilisateurs trouvés');
       setSearchResults(searchData);
     } catch (error) {
-      console.error('Erreur lors de la recherche:', error);
+      console.error('[CONTACTS] ❌ Erreur lors de la recherche:', error);
       toast.error(t('errors.searchError'));
       setSearchResults([]); // Initialiser avec un tableau vide en cas d'erreur
     }

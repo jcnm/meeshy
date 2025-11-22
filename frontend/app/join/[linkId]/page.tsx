@@ -40,6 +40,8 @@ import { useAuth } from '@/hooks/use-auth';
 import { useI18n } from '@/hooks/useI18n';
 import { LinkConversationService } from '@/services/link-conversation.service';
 import { authManager } from '@/services/auth-manager.service';
+import { Header } from '@/components/layout/Header';
+import { usersService } from '@/services/users.service';
 
 // Langues supportées pour les participants anonymes
 const ANONYMOUS_LANGUAGES = [
@@ -125,16 +127,59 @@ export default function JoinConversationPage() {
   useEffect(() => {
   }, [currentUser, isChecking]);
 
+  /**
+   * Récupère et stocke le token d'affiliation du créateur du lien
+   * Cela permet d'associer automatiquement les nouveaux utilisateurs qui s'inscrivent
+   * via ce lien avec l'affiliation du créateur
+   *
+   * Utilise usersService pour une meilleure architecture
+   */
+  const fetchAndStoreCreatorAffiliateToken = async (creatorId: string) => {
+    try {
+      // Appel API via usersService (meilleure architecture)
+      const response = await usersService.getUserAffiliateToken(creatorId);
+
+      // Vérifier si des données ont été retournées (response.data contient le token ou null)
+      if (response.data && response.data.token) {
+        const affiliateToken = response.data.token;
+
+        // Stocker dans localStorage (durée: 30 jours)
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('meeshy_affiliate_token', affiliateToken);
+
+          // Stocker dans cookie (durée: 30 jours)
+          document.cookie = `meeshy_affiliate_token=${affiliateToken}; max-age=${30 * 24 * 60 * 60}; path=/; samesite=lax`;
+
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`[JOIN] Token d'affiliation du créateur stocké: ${affiliateToken.substring(0, 10)}...`);
+          }
+        }
+      } else if (process.env.NODE_ENV === 'development') {
+        console.log('[JOIN] Créateur sans token d\'affiliation actif');
+      }
+    } catch (error) {
+      // Échec silencieux - l'affiliation n'est pas critique pour rejoindre
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[JOIN] Erreur récupération token affiliation:', error);
+      }
+    }
+  };
+
   useEffect(() => {
     const initializePage = async () => {
       try {
         // Charger les informations du lien via l'API anonyme
         const linkResponse = await fetch(`${buildApiUrl('/anonymous/link')}/${linkId}`);
-        
+
         if (linkResponse.ok) {
           const result = await linkResponse.json();
           if (result.success) {
             setConversationLink(result.data);
+
+            // AFFILIATION AUTOMATIQUE: Récupérer et stocker le token d'affiliation du créateur
+            if (result.data.creator?.id) {
+              fetchAndStoreCreatorAffiliateToken(result.data.creator.id);
+            }
           } else {
             setLinkError(result.message);
           }
@@ -479,92 +524,12 @@ export default function JoinConversationPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      {/* Header */}
-      <header className="border-b border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="h-8 w-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-              <MessageSquare className="h-5 w-5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-gray-900 dark:text-white">Meeshy</span>
-          </div>
-          
-          {!currentUser && (
-            <div className="flex items-center space-x-2">
-              <Dialog open={authMode === 'login'} onOpenChange={(open) => setAuthMode(open ? 'login' : 'welcome')}>
-                <DialogTrigger asChild>
-                  <Button variant="ghost" size="sm">
-                    <LogIn className="h-4 w-4 mr-2" />
-                    {t('signIn')}
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
-                  {/* Header fixe */}
-                  <div className="px-6 pt-6 pb-4 border-b shrink-0">
-                    <DialogHeader>
-                      <DialogTitle>{t('signIn')}</DialogTitle>
-                      <DialogDescription>
-                        {t('signInToJoin')}
-                      </DialogDescription>
-                    </DialogHeader>
-                  </div>
-                  {/* Contenu scrollable */}
-                  <div className="flex-1 overflow-y-auto px-6 min-h-0 py-4">
-                    <LoginForm onSuccess={onAuthSuccess} />
-                  </div>
-                </DialogContent>
-              </Dialog>
-              
-              <Dialog open={authMode === 'register'} onOpenChange={(open) => setAuthMode(open ? 'register' : 'welcome')}>
-                <DialogTrigger asChild>
-                  <Button size="sm">
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    {t('signUp')}
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
-                  {/* Header fixe */}
-                  <div className="px-6 pt-6 pb-4 border-b shrink-0">
-                    <DialogHeader>
-                      <DialogTitle>{t('createAccount')}</DialogTitle>
-                      <DialogDescription>
-                        {t('createAccountToJoin')}
-                      </DialogDescription>
-                    </DialogHeader>
-                  </div>
-                  {/* Contenu scrollable */}
-                  <div className="flex-1 overflow-y-auto px-6 min-h-0">
-                    <RegisterForm onSuccess={onAuthSuccess} formPrefix="register-join-small" />
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-          )}
-          
-          {currentUser && (
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                {isAnonymous ? t('anonymousSession') : t('connected')}: {currentUser.displayName || `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || currentUser.username}
-              </span>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => {
-                  if (isAnonymous) {
-                    leaveAnonymousSession();
-                  } else {
-                    logout();
-                  }
-                  toast.info(t('sessionClosed'));
-                }}
-              >
-                <UserMinus className="h-4 w-4 mr-2" />
-                {isAnonymous ? t('leaveSession') : t('disconnect')}
-              </Button>
-            </div>
-          )}
-        </div>
-      </header>
+      {/* Header unifié avec la landing page */}
+      <Header
+        mode="landing"
+        authMode={authMode}
+        onAuthModeChange={setAuthMode}
+      />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-16">

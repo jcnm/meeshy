@@ -1,9 +1,9 @@
 import { Metadata } from 'next';
 import { ReactNode } from 'react';
 
-export async function generateMetadata({ params }: { params: { identifier: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ identifier: string }> }): Promise<Metadata> {
   const frontendUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://meeshy.me';
-  const { identifier } = params;
+  const { identifier } = await params; // Next.js 15: params est une Promise
 
   // TODO: Récupérer les informations du groupe via une API pour personnaliser les meta tags
   // Pour l'instant, on utilise des meta tags génériques

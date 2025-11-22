@@ -73,26 +73,47 @@ function detectDevice(userAgent: string): string {
  */
 async function recordClickAndGetUrl(token: string, clickData: any): Promise<string | null> {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-    
-    const response = await fetch(`${apiUrl}/api/tracking-links/${token}/click`, {
+    // Utiliser API_URL (serveur) au lieu de NEXT_PUBLIC_API_URL (client)
+    // Car ce code s'exécute côté serveur (Server Component)
+    const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    const url = `${apiUrl}/api/tracking-links/${token}/click`;
+
+    console.log('[TRACKING_LINK] Enregistrement du clic pour token:', token);
+    console.log('[TRACKING_LINK] URL API:', url);
+    console.log('[TRACKING_LINK] Click data:', clickData);
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(clickData),
       cache: 'no-store',
+      // @ts-ignore - Ignorer la vérification SSL en développement pour certificats auto-signés
+      ...(process.env.NODE_ENV === 'development' && {
+        agent: new (await import('https')).Agent({
+          rejectUnauthorized: false
+        })
+      })
     });
 
+    console.log('[TRACKING_LINK] Réponse HTTP:', response.status, response.statusText);
+
     if (!response.ok) {
-      console.error('Failed to record tracking link click:', response.statusText);
+      const errorText = await response.text();
+      console.error('[TRACKING_LINK] ❌ Erreur API:', response.status, errorText);
       return null;
     }
 
     const data = await response.json();
-    return data.data?.originalUrl || null;
+    console.log('[TRACKING_LINK] Données reçues:', JSON.stringify(data, null, 2));
+
+    const originalUrl = data.data?.originalUrl || data.originalUrl || null;
+    console.log('[TRACKING_LINK] URL originale extraite:', originalUrl);
+
+    return originalUrl;
   } catch (error) {
-    console.error('Error recording tracking link click:', error);
+    console.error('[TRACKING_LINK] ❌ Exception lors de l\'enregistrement:', error);
     return null;
   }
 }
@@ -102,22 +123,34 @@ async function recordClickAndGetUrl(token: string, clickData: any): Promise<stri
  */
 export default async function TrackingLinkPage({ params }: TrackingLinkPageProps) {
   const { token } = await params;
-  
+
+  console.log('[TRACKING_LINK] ========================================');
+  console.log('[TRACKING_LINK] Page de tracking appelée avec token:', token);
+
   // Récupérer les headers
   const headersList = await headers();
   const userAgent = headersList.get('user-agent') || '';
   const ip = headersList.get('x-forwarded-for') || headersList.get('x-real-ip') || 'unknown';
   const referrer = headersList.get('referer') || headersList.get('referrer') || '';
   const acceptLanguage = headersList.get('accept-language') || '';
-  
+
   // Extraire la langue principale
   const language = acceptLanguage.split(',')[0]?.split('-')[0] || 'en';
-  
+
   // Détection des informations du visiteur
   const browser = detectBrowser(userAgent);
   const os = detectOS(userAgent);
   const device = detectDevice(userAgent);
   const deviceFingerprint = generateServerDeviceFingerprint(userAgent, ip);
+
+  console.log('[TRACKING_LINK] Informations visiteur:', {
+    browser,
+    os,
+    device,
+    language,
+    ip,
+    deviceFingerprint: deviceFingerprint.substring(0, 20) + '...'
+  });
 
   // Préparer les données du clic
   const clickData = {
@@ -136,9 +169,11 @@ export default async function TrackingLinkPage({ params }: TrackingLinkPageProps
   const originalUrl = await recordClickAndGetUrl(token, clickData);
 
   if (originalUrl) {
+    console.log('[TRACKING_LINK] ✅ Redirection vers:', originalUrl);
     redirect(originalUrl);
   } else {
-    console.error(`[TrackingLink] Failed to get original URL for token: ${token}`);
+    console.error('[TRACKING_LINK] ❌ Échec récupération URL pour token:', token);
+    console.error('[TRACKING_LINK] ❌ Redirection vers la page d\'accueil avec erreur');
     // Rediriger vers la page d'accueil ou une page d'erreur
     redirect('/?error=invalid-tracking-link');
   }

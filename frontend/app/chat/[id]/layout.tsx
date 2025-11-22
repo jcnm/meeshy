@@ -1,9 +1,9 @@
 import { Metadata } from 'next';
 import { ReactNode } from 'react';
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const frontendUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://meeshy.me';
-  const { id } = params;
+  const { id } = await params; // Next.js 15: params est une Promise
 
   return {
     title: 'Discussion - Meeshy',

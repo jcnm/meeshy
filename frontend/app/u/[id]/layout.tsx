@@ -3,11 +3,11 @@ import { ReactNode } from 'react';
 
 interface UserProfileLayoutProps {
   children: ReactNode;
-  params: { id: string };
+  params: Promise<{ id: string }>; // Next.js 15: params est une Promise
 }
 
 export async function generateMetadata({ params }: UserProfileLayoutProps): Promise<Metadata> {
-  const { id } = params;
+  const { id } = await params; // Next.js 15: params est une Promise
   const frontendUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3100';
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000';
 

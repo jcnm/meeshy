@@ -3,11 +3,11 @@ import { ReactNode } from 'react';
 
 interface JoinLayoutProps {
   children: ReactNode;
-  params: { linkId: string };
+  params: Promise<{ linkId: string }>; // Next.js 15: params est une Promise
 }
 
 export async function generateMetadata({ params }: JoinLayoutProps): Promise<Metadata> {
-  const { linkId } = params;
+  const { linkId } = await params; // Next.js 15: params est une Promise
   const frontendUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3100';
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000';
 
