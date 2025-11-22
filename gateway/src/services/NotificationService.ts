@@ -9,11 +9,27 @@
 
 import { PrismaClient } from '../../shared/prisma/client';
 import { logger } from '../utils/logger';
+import { notificationLogger, securityLogger } from '../utils/logger-enhanced';
+import { SecuritySanitizer } from '../utils/sanitize';
 import type { Server as SocketIOServer } from 'socket.io';
+import * as fs from 'fs';
+
+// ==============================================
+// FIREBASE ADMIN SDK (OPTIONAL)
+// ==============================================
+let admin: any = null;
+let firebaseInitialized = false;
+
+try {
+  admin = require('firebase-admin');
+} catch (error) {
+  logger.warn('[Notifications] firebase-admin not installed - Push notifications disabled');
+  logger.warn('[Notifications] Install with: npm install firebase-admin');
+}
 
 export interface CreateNotificationData {
   userId: string;
-  type: 'new_message' | 'missed_call' | 'new_conversation' | 'message_edited' | 'user_mentioned' | 'system';
+  type: 'new_message' | 'new_conversation_direct' | 'new_conversation_group' | 'message_reply' | 'member_joined' | 'contact_request' | 'contact_accepted' | 'user_mentioned' | 'message_reaction' | 'missed_call' | 'system' | 'new_conversation' | 'message_edited'; // Anciens types maintenus pour compatibilité
   title: string;
   content: string;
   priority?: 'low' | 'normal' | 'high' | 'urgent';
@@ -30,6 +46,8 @@ export interface CreateNotificationData {
   conversationId?: string;
   messageId?: string;
   callSessionId?: string;
+  friendRequestId?: string;
+  reactionId?: string;
 
   // Données supplémentaires
   data?: any;
@@ -57,6 +75,101 @@ export interface NotificationEventData {
   data?: any;
 }
 
+// ==============================================
+// FIREBASE STATUS CHECKER
+// ==============================================
+class FirebaseStatusChecker {
+  private static firebaseAvailable = false;
+  private static checked = false;
+
+  /**
+   * Vérifie si Firebase Admin SDK est disponible et configuré
+   * CRITICAL: Cette vérification ne doit JAMAIS crasher l'application
+   */
+  static checkFirebase(): boolean {
+    if (this.checked) {
+      return this.firebaseAvailable;
+    }
+
+    this.checked = true;
+
+    try {
+      // 1. Vérifier que le module firebase-admin est installé
+      if (!admin) {
+        logger.warn('[Notifications] Firebase Admin SDK not installed');
+        logger.warn('[Notifications] → Push notifications DISABLED (WebSocket only)');
+        this.firebaseAvailable = false;
+        return false;
+      }
+
+      // 2. Vérifier la variable d'environnement
+      const credPath = process.env.FIREBASE_ADMIN_CREDENTIALS_PATH;
+      if (!credPath) {
+        logger.warn('[Notifications] FIREBASE_ADMIN_CREDENTIALS_PATH not configured');
+        logger.warn('[Notifications] → Push notifications DISABLED (WebSocket only)');
+        this.firebaseAvailable = false;
+        return false;
+      }
+
+      // 3. Vérifier que le fichier de credentials existe
+      if (!fs.existsSync(credPath)) {
+        logger.warn(`[Notifications] Firebase credentials file not found: ${credPath}`);
+        logger.warn('[Notifications] → Push notifications DISABLED (WebSocket only)');
+        this.firebaseAvailable = false;
+        return false;
+      }
+
+      // 4. Vérifier que le fichier est lisible et valide JSON
+      try {
+        const credContent = fs.readFileSync(credPath, 'utf8');
+        JSON.parse(credContent); // Valider que c'est du JSON valide
+      } catch (parseError) {
+        logger.error('[Notifications] Firebase credentials file is invalid JSON:', parseError);
+        logger.warn('[Notifications] → Push notifications DISABLED (WebSocket only)');
+        this.firebaseAvailable = false;
+        return false;
+      }
+
+      // 5. Initialiser Firebase Admin SDK
+      try {
+        if (!firebaseInitialized) {
+          admin.initializeApp({
+            credential: admin.credential.cert(credPath)
+          });
+          firebaseInitialized = true;
+        }
+
+        this.firebaseAvailable = true;
+        logger.info('[Notifications] ✅ Firebase Admin SDK initialized successfully');
+        logger.info('[Notifications] → Push notifications ENABLED (WebSocket + Firebase)');
+        return true;
+
+      } catch (initError) {
+        logger.error('[Notifications] Firebase initialization failed:', initError);
+        logger.warn('[Notifications] → Push notifications DISABLED (WebSocket only)');
+        this.firebaseAvailable = false;
+        return false;
+      }
+
+    } catch (error) {
+      logger.error('[Notifications] Unexpected error during Firebase check:', error);
+      logger.warn('[Notifications] → Push notifications DISABLED (WebSocket only)');
+      this.firebaseAvailable = false;
+      return false;
+    }
+  }
+
+  /**
+   * Vérifie si Firebase est disponible (sans réinitialiser)
+   */
+  static isFirebaseAvailable(): boolean {
+    if (!this.checked) {
+      this.checkFirebase();
+    }
+    return this.firebaseAvailable;
+  }
+}
+
 export class NotificationService {
   private io: SocketIOServer | null = null;
   private userSocketsMap: Map<string, Set<string>> = new Map();
@@ -69,9 +182,20 @@ export class NotificationService {
   private readonly MAX_MENTIONS_PER_MINUTE = 5;
   private readonly MENTION_WINDOW_MS = 60000; // 1 minute
 
+  // Compteurs de métriques
+  private metrics = {
+    notificationsCreated: 0,
+    webSocketSent: 0,
+    firebaseSent: 0,
+    firebaseFailed: 0
+  };
+
   constructor(private prisma: PrismaClient) {
     // Nettoyer les mentions anciennes toutes les 2 minutes
     setInterval(() => this.cleanupOldMentions(), 120000);
+
+    // Vérifier Firebase au démarrage (ne crashe jamais)
+    FirebaseStatusChecker.checkFirebase();
   }
 
   /**
@@ -81,6 +205,113 @@ export class NotificationService {
     this.io = io;
     this.userSocketsMap = userSocketsMap;
     logger.info('📢 NotificationService: Socket.IO initialized');
+  }
+
+  /**
+   * Obtenir les métriques du service de notifications
+   */
+  getMetrics() {
+    return {
+      ...this.metrics,
+      firebaseEnabled: FirebaseStatusChecker.isFirebaseAvailable()
+    };
+  }
+
+  /**
+   * Envoyer une notification push Firebase (avec fallback gracieux)
+   * CRITICAL: Ne JAMAIS crasher si Firebase échoue
+   */
+  private async sendFirebasePushNotification(
+    userId: string,
+    notification: NotificationEventData
+  ): Promise<boolean> {
+    // 1. Vérifier si Firebase est disponible
+    if (!FirebaseStatusChecker.isFirebaseAvailable()) {
+      // Pas de Firebase, mais c'est OK - WebSocket fonctionne
+      return false;
+    }
+
+    try {
+      // 2. Récupérer le FCM token de l'utilisateur depuis la DB
+      // NOTE: Il faudra ajouter un champ fcmToken dans le modèle User
+      // Pour l'instant, on simule avec un token vide
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true } // TODO: Ajouter fcmToken quand le champ existera
+      });
+
+      if (!user) {
+        logger.debug(`[Notifications] User ${userId} not found for FCM push`);
+        return false;
+      }
+
+      // TODO: Récupérer le fcmToken réel
+      // const fcmToken = user.fcmToken;
+      const fcmToken = null; // Temporaire
+
+      if (!fcmToken) {
+        // Utilisateur n'a pas de token FCM enregistré
+        // C'est normal, pas d'erreur
+        return false;
+      }
+
+      // 3. Préparer le message Firebase
+      const message = {
+        token: fcmToken,
+        notification: {
+          title: notification.title,
+          body: notification.content
+        },
+        data: {
+          notificationId: notification.id,
+          type: notification.type,
+          conversationId: notification.conversationId || '',
+          messageId: notification.messageId || '',
+          ...(notification.data && { additionalData: JSON.stringify(notification.data) })
+        },
+        android: {
+          priority: 'high' as const,
+          notification: {
+            sound: 'default',
+            channelId: 'meeshy_notifications'
+          }
+        },
+        apns: {
+          payload: {
+            aps: {
+              sound: 'default',
+              badge: 1
+            }
+          }
+        }
+      };
+
+      // 4. Envoyer via Firebase (avec timeout)
+      const response = await Promise.race([
+        admin.messaging().send(message),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Firebase timeout')), 5000)
+        )
+      ]);
+
+      this.metrics.firebaseSent++;
+      logger.debug(`[Notifications] ✅ Firebase push sent successfully to ${userId}`);
+      return true;
+
+    } catch (error: any) {
+      this.metrics.firebaseFailed++;
+
+      // Logger l'erreur mais NE PAS crasher
+      if (error.code === 'messaging/invalid-registration-token' ||
+          error.code === 'messaging/registration-token-not-registered') {
+        logger.debug(`[Notifications] Invalid FCM token for user ${userId}, skipping`);
+        // TODO: Nettoyer le token invalide de la DB
+      } else {
+        logger.error(`[Notifications] Firebase push failed for user ${userId}:`, error.message);
+      }
+
+      return false;
+    }
   }
 
   /**
@@ -174,16 +405,26 @@ export class NotificationService {
       switch (type) {
         case 'new_message':
           return preferences.newMessageEnabled;
+        case 'message_reply':
+          return preferences.replyEnabled || preferences.newMessageEnabled;
+        case 'user_mentioned':
+          return preferences.mentionEnabled || preferences.newMessageEnabled;
+        case 'message_reaction':
+          return preferences.reactionEnabled;
         case 'missed_call':
           return preferences.missedCallEnabled;
         case 'system':
           return preferences.systemEnabled;
         case 'new_conversation':
+        case 'new_conversation_direct':
+        case 'new_conversation_group':
         case 'message_edited':
           return preferences.conversationEnabled;
-        case 'user_mentioned':
-          // Les mentions utilisent la même préférence que les messages
-          return preferences.newMessageEnabled && preferences.conversationEnabled;
+        case 'contact_request':
+        case 'contact_accepted':
+          return preferences.contactRequestEnabled;
+        case 'member_joined':
+          return preferences.memberJoinedEnabled;
         default:
           return true;
       }
@@ -199,38 +440,74 @@ export class NotificationService {
    */
   async createNotification(data: CreateNotificationData): Promise<NotificationEventData | null> {
     try {
+      // SECURITY: Validate notification type against whitelist
+      if (!SecuritySanitizer.isValidNotificationType(data.type)) {
+        securityLogger.logViolation('INVALID_NOTIFICATION_TYPE', {
+          type: data.type,
+          userId: data.userId
+        });
+        throw new Error(`Invalid notification type: ${data.type}`);
+      }
+
+      // SECURITY: Validate priority if provided
+      if (data.priority && !SecuritySanitizer.isValidPriority(data.priority)) {
+        securityLogger.logViolation('INVALID_NOTIFICATION_PRIORITY', {
+          priority: data.priority,
+          userId: data.userId
+        });
+        throw new Error(`Invalid notification priority: ${data.priority}`);
+      }
+
       // Vérifier les préférences de l'utilisateur
       const shouldSend = await this.shouldSendNotification(data.userId, data.type);
       if (!shouldSend) {
-        logger.debug('📢 Notification skipped due to user preferences', {
+        notificationLogger.debug('Notification skipped due to user preferences', {
           type: data.type,
           userId: data.userId
         });
         return null;
       }
 
-      logger.info('📢 Creating notification', {
+      notificationLogger.info('Creating notification', {
         type: data.type,
         userId: data.userId,
         conversationId: data.conversationId
       });
 
-      // Créer la notification en base de données
+      // SECURITY: Sanitize all text inputs before storing
+      const sanitizedTitle = SecuritySanitizer.sanitizeText(data.title);
+      const sanitizedContent = SecuritySanitizer.sanitizeText(data.content);
+      const sanitizedSenderUsername = data.senderUsername
+        ? SecuritySanitizer.sanitizeUsername(data.senderUsername)
+        : undefined;
+      const sanitizedSenderAvatar = data.senderAvatar
+        ? SecuritySanitizer.sanitizeURL(data.senderAvatar)
+        : undefined;
+      const sanitizedMessagePreview = data.messagePreview
+        ? SecuritySanitizer.sanitizeText(data.messagePreview)
+        : undefined;
+
+      // SECURITY: Sanitize JSON data object
+      const sanitizedData = data.data
+        ? SecuritySanitizer.sanitizeJSON(data.data)
+        : null;
+
+      // Créer la notification en base de données avec données sanitizées
       const notification = await this.prisma.notification.create({
         data: {
           userId: data.userId,
           type: data.type,
-          title: data.title,
-          content: data.content,
+          title: sanitizedTitle,
+          content: sanitizedContent,
           priority: data.priority || 'normal',
           senderId: data.senderId,
-          senderUsername: data.senderUsername,
-          senderAvatar: data.senderAvatar,
-          messagePreview: data.messagePreview,
+          senderUsername: sanitizedSenderUsername,
+          senderAvatar: sanitizedSenderAvatar,
+          messagePreview: sanitizedMessagePreview,
           conversationId: data.conversationId,
           messageId: data.messageId,
           callSessionId: data.callSessionId,
-          data: data.data ? JSON.stringify(data.data) : null,
+          data: sanitizedData ? JSON.stringify(sanitizedData) : null,
           expiresAt: data.expiresAt,
           isRead: false
         }
@@ -256,12 +533,28 @@ export class NotificationService {
         data: notification.data ? JSON.parse(notification.data) : undefined
       };
 
-      // Émettre via Socket.IO si disponible
+      // Incrémenter les métriques
+      this.metrics.notificationsCreated++;
+
+      // 1. Émettre via WebSocket (TOUJOURS en priorité)
       this.emitNotification(data.userId, notificationEvent);
+
+      // 2. Tenter d'envoyer via Firebase Push (FALLBACK GRACIEUX)
+      // CRITICAL: Ne JAMAIS bloquer ou crasher si Firebase échoue
+      if (FirebaseStatusChecker.isFirebaseAvailable()) {
+        // Fire-and-forget: on n'attend pas le résultat
+        this.sendFirebasePushNotification(data.userId, notificationEvent)
+          .catch(error => {
+            // Logger silencieusement, ne pas propager l'erreur
+            logger.debug('[Notifications] Firebase push skipped:', error.message);
+          });
+      }
 
       logger.info('✅ Notification created and emitted', {
         notificationId: notification.id,
-        type: notification.type
+        type: notification.type,
+        webSocketSent: this.io !== null,
+        firebaseAvailable: FirebaseStatusChecker.isFirebaseAvailable()
       });
 
       return notificationEvent;
@@ -834,36 +1127,45 @@ export class NotificationService {
 
   /**
    * Émettre une notification via Socket.IO
+   * CRITICAL: Ne JAMAIS crasher, juste logger et continuer
    */
   private emitNotification(userId: string, notification: NotificationEventData) {
-    if (!this.io) {
-      logger.warn('⚠️ Socket.IO not initialized, cannot emit notification');
-      return;
-    }
+    try {
+      if (!this.io) {
+        logger.warn('⚠️ Socket.IO not initialized, cannot emit notification');
+        return;
+      }
 
-    // Récupérer tous les sockets de l'utilisateur
-    const userSockets = this.userSocketsMap.get(userId);
+      // Récupérer tous les sockets de l'utilisateur
+      const userSockets = this.userSocketsMap.get(userId);
 
-    if (!userSockets || userSockets.size === 0) {
-      logger.debug('📢 User not connected, notification saved for later', { userId });
-      return;
-    }
+      if (!userSockets || userSockets.size === 0) {
+        logger.debug('📢 User not connected, notification saved for later', { userId });
+        return;
+      }
 
-    // Émettre la notification à tous les sockets de l'utilisateur
-    userSockets.forEach(socketId => {
-      this.io!.to(socketId).emit('notification', notification);
-      logger.debug('📢 Notification emitted to socket', {
-        socketId,
-        notificationId: notification.id,
-        type: notification.type
+      // Émettre la notification à tous les sockets de l'utilisateur
+      userSockets.forEach(socketId => {
+        this.io!.to(socketId).emit('notification', notification);
+        logger.debug('📢 Notification emitted to socket', {
+          socketId,
+          notificationId: notification.id,
+          type: notification.type
+        });
       });
-    });
 
-    logger.info('📢 Notification broadcasted to user', {
-      userId,
-      socketCount: userSockets.size,
-      notificationId: notification.id
-    });
+      // Incrémenter métrique
+      this.metrics.webSocketSent++;
+
+      logger.info('📢 Notification broadcasted to user', {
+        userId,
+        socketCount: userSockets.size,
+        notificationId: notification.id
+      });
+    } catch (error) {
+      logger.error('❌ Error emitting notification via WebSocket:', error);
+      // Ne pas crasher, juste logger
+    }
   }
 
   /**
@@ -971,6 +1273,490 @@ export class NotificationService {
     } catch (error) {
       logger.error('❌ Error marking conversation notifications as read:', error);
       return 0;
+    }
+  }
+
+  // ==============================================
+  // NOUVELLES MÉTHODES - SYSTÈME DE NOTIFICATIONS V2
+  // ==============================================
+
+  /**
+   * Créer une notification de réponse à un message
+   */
+  async createReplyNotification(data: {
+    originalMessageAuthorId: string;
+    replierId: string;
+    replierUsername: string;
+    replierAvatar?: string;
+    replyContent: string;
+    conversationId: string;
+    conversationTitle?: string;
+    originalMessageId: string;
+    replyMessageId: string;
+    attachments?: Array<{ id: string; filename: string; mimeType: string; fileSize: number }>;
+  }): Promise<NotificationEventData | null> {
+    // Ne pas notifier si l'auteur répond à son propre message
+    if (data.originalMessageAuthorId === data.replierId) {
+      return null;
+    }
+
+    const messagePreview = this.formatMessagePreview(
+      data.replyContent,
+      data.attachments
+    );
+
+    const title = `Réponse de ${data.replierUsername}`;
+    const content = messagePreview;
+
+    return this.createNotification({
+      userId: data.originalMessageAuthorId,
+      type: 'message_reply',
+      title,
+      content,
+      priority: 'normal',
+      senderId: data.replierId,
+      senderUsername: data.replierUsername,
+      senderAvatar: data.replierAvatar,
+      messagePreview,
+      conversationId: data.conversationId,
+      messageId: data.replyMessageId,
+      data: {
+        originalMessageId: data.originalMessageId,
+        conversationTitle: data.conversationTitle,
+        attachments: this.formatAttachmentInfo(data.attachments),
+        action: 'view_message'
+      }
+    });
+  }
+
+  /**
+   * Créer des notifications pour des membres qui rejoignent un groupe (batch)
+   * Envoyées uniquement aux admins/créateur
+   */
+  async createMemberJoinedNotification(data: {
+    groupId: string;
+    groupTitle: string;
+    newMemberId: string;
+    newMemberUsername: string;
+    newMemberAvatar?: string;
+    adminIds: string[];
+    joinMethod?: 'via_link' | 'invited';
+  }): Promise<number> {
+    if (data.adminIds.length === 0) return 0;
+
+    const title = `Nouveau membre dans "${data.groupTitle}"`;
+    const content = `${data.newMemberUsername} a rejoint le groupe`;
+
+    // Créer en batch pour tous les admins
+    const notificationsData = data.adminIds.map(adminId => ({
+      userId: adminId,
+      type: 'member_joined',
+      title,
+      content,
+      priority: 'low',
+      senderId: data.newMemberId,
+      senderUsername: data.newMemberUsername,
+      senderAvatar: data.newMemberAvatar,
+      conversationId: data.groupId,
+      data: JSON.stringify({
+        groupTitle: data.groupTitle,
+        joinMethod: data.joinMethod || 'invited',
+        action: 'view_conversation'
+      }),
+      isRead: false
+    }));
+
+    try {
+      const result = await this.prisma.notification.createMany({
+        data: notificationsData
+      });
+
+      // Récupérer les notifications créées pour les émettre via Socket.IO
+      const createdNotifications = await this.prisma.notification.findMany({
+        where: {
+          conversationId: data.groupId,
+          type: 'member_joined',
+          userId: { in: data.adminIds },
+          senderId: data.newMemberId
+        },
+        orderBy: { createdAt: 'desc' },
+        take: data.adminIds.length
+      });
+
+      for (const notification of createdNotifications) {
+        this.emitNotification(notification.userId, this.formatNotificationEvent(notification));
+      }
+
+      logger.info('✅ Created member joined notifications', {
+        count: result.count,
+        groupId: data.groupId
+      });
+
+      return result.count;
+    } catch (error) {
+      logger.error('❌ Error creating member joined notifications:', error);
+      return 0;
+    }
+  }
+
+  /**
+   * Créer une notification de demande de contact
+   */
+  async createContactRequestNotification(data: {
+    recipientId: string;
+    requesterId: string;
+    requesterUsername: string;
+    requesterAvatar?: string;
+    message?: string;
+    friendRequestId: string;
+  }): Promise<NotificationEventData | null> {
+    const title = `${data.requesterUsername} veut se connecter`;
+    const content = data.message || `${data.requesterUsername} vous a envoyé une invitation`;
+
+    return this.createNotification({
+      userId: data.recipientId,
+      type: 'contact_request',
+      title,
+      content,
+      priority: 'high',
+      senderId: data.requesterId,
+      senderUsername: data.requesterUsername,
+      senderAvatar: data.requesterAvatar,
+      data: {
+        friendRequestId: data.friendRequestId,
+        message: data.message,
+        action: 'accept_or_reject_contact'
+      }
+    });
+  }
+
+  /**
+   * Créer une notification d'acceptation de contact
+   */
+  async createContactAcceptedNotification(data: {
+    requesterId: string;
+    accepterId: string;
+    accepterUsername: string;
+    accepterAvatar?: string;
+    conversationId: string;
+  }): Promise<NotificationEventData | null> {
+    const title = `${data.accepterUsername} accepte la connexion`;
+    const content = `${data.accepterUsername} a accepté votre invitation. Vous pouvez maintenant discuter ensemble.`;
+
+    return this.createNotification({
+      userId: data.requesterId,
+      type: 'contact_accepted',
+      title,
+      content,
+      priority: 'normal',
+      senderId: data.accepterId,
+      senderUsername: data.accepterUsername,
+      senderAvatar: data.accepterAvatar,
+      conversationId: data.conversationId,
+      data: {
+        conversationId: data.conversationId,
+        action: 'view_conversation'
+      }
+    });
+  }
+
+  /**
+   * Créer une notification de réaction à un message
+   */
+  async createReactionNotification(data: {
+    messageAuthorId: string;
+    reactorId: string;
+    reactorUsername: string;
+    reactorAvatar?: string;
+    emoji: string;
+    messageContent: string;
+    conversationId: string;
+    conversationTitle?: string;
+    messageId: string;
+    reactionId: string;
+  }): Promise<NotificationEventData | null> {
+    // Ne pas notifier si l'utilisateur réagit à son propre message
+    if (data.messageAuthorId === data.reactorId) {
+      return null;
+    }
+
+    const messagePreview = this.truncateMessage(data.messageContent, 15);
+    const title = `${data.reactorUsername} a réagi à votre message`;
+    const content = `${data.emoji} ${messagePreview}`;
+
+    return this.createNotification({
+      userId: data.messageAuthorId,
+      type: 'message_reaction',
+      title,
+      content,
+      priority: 'low',
+      senderId: data.reactorId,
+      senderUsername: data.reactorUsername,
+      senderAvatar: data.reactorAvatar,
+      messagePreview,
+      conversationId: data.conversationId,
+      messageId: data.messageId,
+      data: {
+        reactionId: data.reactionId,
+        emoji: data.emoji,
+        conversationTitle: data.conversationTitle,
+        action: 'view_message'
+      }
+    });
+  }
+
+  /**
+   * Créer une notification de nouvelle conversation directe
+   */
+  async createDirectConversationNotification(data: {
+    invitedUserId: string;
+    inviterId: string;
+    inviterUsername: string;
+    inviterAvatar?: string;
+    conversationId: string;
+  }): Promise<NotificationEventData | null> {
+    const title = `Nouvelle conversation avec ${data.inviterUsername}`;
+    const content = `${data.inviterUsername} a démarré une conversation avec vous`;
+
+    return this.createNotification({
+      userId: data.invitedUserId,
+      type: 'new_conversation_direct',
+      title,
+      content,
+      priority: 'normal',
+      senderId: data.inviterId,
+      senderUsername: data.inviterUsername,
+      senderAvatar: data.inviterAvatar,
+      conversationId: data.conversationId,
+      data: {
+        conversationType: 'direct',
+        action: 'view_conversation'
+      }
+    });
+  }
+
+  /**
+   * Créer une notification de nouvelle conversation de groupe
+   */
+  async createGroupConversationNotification(data: {
+    invitedUserId: string;
+    inviterId: string;
+    inviterUsername: string;
+    inviterAvatar?: string;
+    conversationId: string;
+    conversationTitle: string;
+  }): Promise<NotificationEventData | null> {
+    const title = `Invitation à "${data.conversationTitle}"`;
+    const content = `${data.inviterUsername} vous a invité à rejoindre "${data.conversationTitle}"`;
+
+    return this.createNotification({
+      userId: data.invitedUserId,
+      type: 'new_conversation_group',
+      title,
+      content,
+      priority: 'normal',
+      senderId: data.inviterId,
+      senderUsername: data.inviterUsername,
+      senderAvatar: data.inviterAvatar,
+      conversationId: data.conversationId,
+      data: {
+        conversationTitle: data.conversationTitle,
+        conversationType: 'group',
+        action: 'view_conversation'
+      }
+    });
+  }
+
+  /**
+   * Créer une notification système
+   */
+  async createSystemNotification(data: {
+    userId: string;
+    title: string;
+    content: string;
+    priority?: 'low' | 'normal' | 'high' | 'urgent';
+    systemType?: 'maintenance' | 'security' | 'announcement' | 'feature';
+    action?: string;
+    expiresAt?: Date;
+  }): Promise<NotificationEventData | null> {
+    return this.createNotification({
+      userId: data.userId,
+      type: 'system',
+      title: data.title,
+      content: data.content,
+      priority: data.priority || 'normal',
+      expiresAt: data.expiresAt,
+      data: {
+        systemType: data.systemType || 'announcement',
+        action: data.action || 'view_details'
+      }
+    });
+  }
+
+  // ==============================================
+  // MÉTHODES HELPER PRIVÉES
+  // ==============================================
+
+  /**
+   * Formater les informations d'attachment pour les notifications
+   */
+  private formatAttachmentInfo(attachments?: Array<{ id: string; filename: string; mimeType: string; fileSize: number }>): any {
+    if (!attachments || attachments.length === 0) return null;
+
+    const firstAttachment = attachments[0];
+    const attachmentType = firstAttachment.mimeType.split('/')[0];
+
+    return {
+      count: attachments.length,
+      firstType: attachmentType,
+      firstFilename: firstAttachment.filename,
+      firstMimeType: firstAttachment.mimeType
+    };
+  }
+
+  /**
+   * Formater un message avec attachments pour l'aperçu de notification
+   */
+  private formatMessagePreview(
+    messageContent: string,
+    attachments?: Array<{ id: string; filename: string; mimeType: string; fileSize: number }>
+  ): string {
+    let messagePreview: string;
+
+    if (attachments && attachments.length > 0) {
+      const attachment = attachments[0];
+      const attachmentType = attachment.mimeType.split('/')[0];
+
+      let attachmentDescription = '';
+      switch (attachmentType) {
+        case 'image':
+          attachmentDescription = '📷 Photo';
+          break;
+        case 'video':
+          attachmentDescription = '🎥 Vidéo';
+          break;
+        case 'audio':
+          attachmentDescription = '🎵 Audio';
+          break;
+        case 'application':
+          if (attachment.mimeType === 'application/pdf') {
+            attachmentDescription = '📄 PDF';
+          } else {
+            attachmentDescription = '📎 Document';
+          }
+          break;
+        default:
+          attachmentDescription = '📎 Fichier';
+      }
+
+      if (attachments.length > 1) {
+        attachmentDescription += ` (+${attachments.length - 1})`;
+      }
+
+      if (messageContent && messageContent.trim().length > 0) {
+        const textPreview = this.truncateMessage(messageContent, 15);
+        messagePreview = `${textPreview} ${attachmentDescription}`;
+      } else {
+        messagePreview = attachmentDescription;
+      }
+    } else {
+      messagePreview = this.truncateMessage(messageContent, 25);
+    }
+
+    return messagePreview;
+  }
+
+  /**
+   * Formater une notification Prisma en événement Socket.IO
+   */
+  private formatNotificationEvent(notification: any): NotificationEventData {
+    return {
+      id: notification.id,
+      userId: notification.userId,
+      type: notification.type,
+      title: notification.title,
+      content: notification.content,
+      priority: notification.priority,
+      isRead: notification.isRead,
+      createdAt: notification.createdAt,
+      senderId: notification.senderId || undefined,
+      senderUsername: notification.senderUsername || undefined,
+      senderAvatar: notification.senderAvatar || undefined,
+      messagePreview: notification.messagePreview || undefined,
+      conversationId: notification.conversationId || undefined,
+      messageId: notification.messageId || undefined,
+      callSessionId: notification.callSessionId || undefined,
+      data: notification.data ? JSON.parse(notification.data) : undefined
+    };
+  }
+
+  /**
+   * Supprimer toutes les notifications lues d'un utilisateur
+   */
+  async deleteAllReadNotifications(userId: string): Promise<number> {
+    try {
+      const result = await this.prisma.notification.deleteMany({
+        where: {
+          userId,
+          isRead: true
+        }
+      });
+
+      logger.info('✅ Deleted all read notifications', {
+        userId,
+        count: result.count
+      });
+
+      return result.count;
+    } catch (error) {
+      logger.error('❌ Error deleting read notifications:', error);
+      return 0;
+    }
+  }
+
+  /**
+   * Obtenir les statistiques des notifications par type
+   */
+  async getNotificationStats(userId: string): Promise<{
+    total: number;
+    unread: number;
+    byType: Record<string, number>;
+  }> {
+    try {
+      const stats = await this.prisma.notification.groupBy({
+        by: ['type'],
+        where: { userId },
+        _count: {
+          id: true
+        }
+      });
+
+      const totalCount = await this.prisma.notification.count({
+        where: { userId }
+      });
+
+      const unreadCount = await this.prisma.notification.count({
+        where: {
+          userId,
+          isRead: false
+        }
+      });
+
+      return {
+        total: totalCount,
+        unread: unreadCount,
+        byType: stats.reduce((acc: any, stat: any) => {
+          acc[stat.type] = stat._count.id;
+          return acc;
+        }, {} as Record<string, number>)
+      };
+    } catch (error) {
+      logger.error('❌ Error getting notification stats:', error);
+      return {
+        total: 0,
+        unread: 0,
+        byType: {}
+      };
     }
   }
 }

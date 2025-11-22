@@ -48,3 +48,10 @@ package.json.workspace
 
 # Uploads (runtime)
 uploads/
+
+# Firebase credentials (CRITICAL: NEVER commit!)
+secrets/
+secrets/**
+*-firebase-*.json
+firebase-admin*.json
+serviceAccountKey*.json
