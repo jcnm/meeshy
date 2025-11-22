@@ -7,8 +7,10 @@
     "<rootDir>/src/**/*.test.ts"
   ],
   "collectCoverageFrom": [
-    "src/**/__tests__/**/*.ts",
+    "src/services/**/*.ts",
+    "src/utils/**/*.ts",
     "!src/**/*.d.ts",
+    "!src/**/__tests__/**",
     "!src/main.ts",
     "!src/server.ts",
     "!src/routes/**/*",
