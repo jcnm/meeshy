@@ -1713,21 +1713,21 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // Vérifier la restriction temporelle (1 heure max pour les utilisateurs normaux)
+      // Vérifier la restriction temporelle (24 heures max pour les utilisateurs normaux)
       const isAuthor = existingMessage.senderId === userId;
       const messageAge = Date.now() - new Date(existingMessage.createdAt).getTime();
-      const oneHourInMs = 60 * 60 * 1000; // 1 heure en millisecondes
-      
-      if (isAuthor && messageAge > oneHourInMs) {
+      const twentyFourHoursInMs = 24 * 60 * 60 * 1000; // 24 heures en millisecondes
+
+      if (isAuthor && messageAge > twentyFourHoursInMs) {
         // Vérifier si l'utilisateur a des privilèges spéciaux
         const userRole = existingMessage.sender.role;
         // Support both MODO and MODERATOR for backward compatibility
         const hasSpecialPrivileges = userRole === 'MODO' || userRole === 'MODERATOR' || userRole === 'ADMIN' || userRole === 'CREATOR' || userRole === 'BIGBOSS';
-        
+
         if (!hasSpecialPrivileges) {
           return reply.status(403).send({
             success: false,
-            error: 'Vous ne pouvez plus modifier ce message (délai de 1 heure dépassé)'
+            error: 'Vous ne pouvez plus modifier ce message (délai de 24 heures dépassé)'
           });
         }
       }

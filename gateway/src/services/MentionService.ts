@@ -6,7 +6,7 @@
  */
 
 import { PrismaClient, User, ConversationMember } from '../../shared/prisma/client';
-import Redis from 'ioredis';
+import { RedisWrapper } from './RedisWrapper';
 
 export interface MentionSuggestion {
   id: string;
@@ -43,21 +43,18 @@ export class MentionService {
 
   // Cache Redis pour l'autocomplete (TTL: 5 minutes)
   private readonly CACHE_TTL = 300; // 5 minutes en secondes
-  private redis: Redis | null = null;
+  private redis: RedisWrapper;
 
   constructor(
     private readonly prisma: PrismaClient,
     redisUrl?: string
   ) {
-    try {
-      // Utiliser REDIS_URL de l'environnement ou la valeur par défaut
-      const url = redisUrl || process.env.REDIS_URL || 'redis://redis:6379';
-      this.redis = new Redis(url);
-      console.log(`[MentionService] Redis cache initialized at ${url}`);
-    } catch (error) {
-      console.warn('[MentionService] Redis cache initialization failed, continuing without cache:', error);
-      this.redis = null;
-    }
+    // Utiliser REDIS_URL de l'environnement ou la valeur par défaut
+    const url = redisUrl || process.env.REDIS_URL || 'redis://localhost:6379';
+    this.redis = new RedisWrapper(url);
+
+    const stats = this.redis.getCacheStats();
+    console.log(`[MentionService] Cache initialized in ${stats.mode} mode (Redis available: ${stats.redisAvailable})`);
   }
 
   /**
@@ -76,8 +73,6 @@ export class MentionService {
     currentUserId: string,
     query: string
   ): Promise<MentionSuggestion[] | null> {
-    if (!this.redis) return null;
-
     try {
       const cacheKey = this.generateCacheKey(conversationId, currentUserId, query);
       const cached = await this.redis.get(cacheKey);
@@ -105,8 +100,6 @@ export class MentionService {
     query: string,
     suggestions: MentionSuggestion[]
   ): Promise<void> {
-    if (!this.redis) return;
-
     try {
       const cacheKey = this.generateCacheKey(conversationId, currentUserId, query);
       await this.redis.setex(cacheKey, this.CACHE_TTL, JSON.stringify(suggestions));
@@ -120,14 +113,16 @@ export class MentionService {
    * Invalide le cache pour une conversation (appelé quand les membres changent)
    */
   async invalidateCacheForConversation(conversationId: string): Promise<void> {
-    if (!this.redis) return;
 
     try {
       const pattern = `mentions:suggestions:${conversationId}:*`;
       const keys = await this.redis.keys(pattern);
 
       if (keys.length > 0) {
-        await this.redis.del(...keys);
+        // Supprimer les clés une par une
+        for (const key of keys) {
+          await this.redis.del(key);
+        }
         console.log(`[MentionService] Invalidated ${keys.length} cache entries for conversation ${conversationId}`);
       }
     } catch (error) {

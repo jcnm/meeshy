@@ -1,4 +1,4 @@
-import Redis from 'ioredis';
+import { RedisWrapper } from './RedisWrapper';
 import crypto from 'crypto';
 
 export interface TranslationCacheEntry {
@@ -11,14 +11,16 @@ export interface TranslationCacheEntry {
 }
 
 export class TranslationCache {
-  private redis: Redis;
+  private redis: RedisWrapper;
   private readonly TTL = 3600; // 1 heure par défaut
 
   constructor(redisUrl?: string) {
     // Utiliser REDIS_URL de l'environnement ou la valeur par défaut
-    const url = redisUrl || process.env.REDIS_URL || 'redis://redis:6379';
-    this.redis = new Redis(url);
-    console.log(`[TranslationCache] Redis initialized at ${url}`);
+    const url = redisUrl || process.env.REDIS_URL || 'redis://localhost:6379';
+    this.redis = new RedisWrapper(url);
+
+    const stats = this.redis.getCacheStats();
+    console.log(`[TranslationCache] Cache initialized in ${stats.mode} mode (Redis available: ${stats.redisAvailable})`);
   }
 
   /**
@@ -238,6 +240,6 @@ export class TranslationCache {
    * Ferme la connexion Redis
    */
   async close(): Promise<void> {
-    await this.redis.quit();
+    await this.redis.close();
   }
 }

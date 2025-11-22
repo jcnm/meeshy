@@ -808,8 +808,9 @@ export async function userRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // Hasher le nouveau mot de passe
-      const hashedPassword = await bcrypt.hash(body.newPassword, 10);
+      // Hasher le nouveau mot de passe (bcrypt cost=12 for enhanced security)
+      const BCRYPT_COST = 12;
+      const hashedPassword = await bcrypt.hash(body.newPassword, BCRYPT_COST);
 
       // Mettre à jour le mot de passe
       await fastify.prisma.user.update({
@@ -1378,6 +1379,57 @@ export async function userRoutes(fastify: FastifyInstance) {
       return reply.status(500).send({
         success: false,
         error: 'Error updating friend request'
+      });
+    }
+  });
+
+  // Route pour récupérer le token d'affiliation actif d'un utilisateur
+  // Utilisé pour l'affiliation automatique via les liens /join
+  fastify.get('/users/:userId/affiliate-token', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { userId } = request.params as { userId: string };
+
+      // Vérifier que l'utilisateur existe
+      const user = await fastify.prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true }
+      });
+
+      if (!user) {
+        return reply.status(404).send({
+          success: false,
+          message: 'User not found'
+        });
+      }
+
+      // Récupérer le token d'affiliation actif le plus récent de l'utilisateur
+      const affiliateToken = await fastify.prisma.affiliateToken.findFirst({
+        where: {
+          createdBy: userId,
+          isActive: true,
+          OR: [
+            { expiresAt: null }, // Tokens sans expiration
+            { expiresAt: { gt: new Date() } } // Tokens non expirés
+          ]
+        },
+        orderBy: {
+          createdAt: 'desc' // Le plus récent en premier
+        },
+        select: {
+          token: true
+        }
+      });
+
+      // Retourner le token ou null si aucun token actif
+      return reply.send({
+        success: true,
+        data: affiliateToken ? { token: affiliateToken.token } : null
+      });
+    } catch (error) {
+      console.error('[USERS] Error fetching affiliate token:', error);
+      return reply.status(500).send({
+        success: false,
+        message: 'Failed to fetch affiliate token'
       });
     }
   });
