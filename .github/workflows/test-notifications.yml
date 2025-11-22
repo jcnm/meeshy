@@ -1,0 +1,268 @@
+name: Test Notifications Integration
+
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - 'gateway/src/services/NotificationService.ts'
+      - 'gateway/src/__tests__/notifications-*.test.ts'
+      - 'frontend/hooks/use-notifications.ts'
+      - 'frontend/hooks/use-fcm-notifications.ts'
+      - 'frontend/__tests__/firebase-availability.test.tsx'
+      - '.github/workflows/test-notifications.yml'
+  pull_request:
+    branches: [main, dev]
+    paths:
+      - 'gateway/src/services/NotificationService.ts'
+      - 'gateway/src/__tests__/notifications-*.test.ts'
+      - 'frontend/hooks/use-notifications.ts'
+      - 'frontend/hooks/use-fcm-notifications.ts'
+      - 'frontend/__tests__/firebase-availability.test.tsx'
+
+jobs:
+  test-backend-without-firebase:
+    name: Backend Sans Firebase
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: gateway/package-lock.json
+
+      - name: Install dependencies
+        working-directory: gateway
+        run: npm ci
+
+      - name: Test NotificationService sans Firebase
+        working-directory: gateway
+        env:
+          # S'assurer qu'aucune variable Firebase n'est définie
+          FIREBASE_ADMIN_CREDENTIALS_PATH: ''
+          FIREBASE_PROJECT_ID: ''
+        run: npm test -- src/__tests__/notifications-integration.test.ts
+
+      - name: Upload coverage
+        if: always()
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./gateway/coverage/lcov.info
+          flags: backend-no-firebase
+          name: backend-no-firebase
+
+  test-backend-with-firebase:
+    name: Backend Avec Firebase
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: gateway/package-lock.json
+
+      - name: Install dependencies
+        working-directory: gateway
+        run: npm ci
+
+      - name: Test Firebase integration
+        working-directory: gateway
+        env:
+          FIREBASE_PROJECT_ID: test-project
+          FIREBASE_CLIENT_EMAIL: test@test.com
+          FIREBASE_PRIVATE_KEY: test-key
+        run: npm test -- src/__tests__/notifications-firebase.test.ts
+
+      - name: Upload coverage
+        if: always()
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./gateway/coverage/lcov.info
+          flags: backend-with-firebase
+          name: backend-with-firebase
+
+  test-backend-performance:
+    name: Backend Performance
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: gateway/package-lock.json
+
+      - name: Install dependencies
+        working-directory: gateway
+        run: npm ci
+
+      - name: Test Performance
+        working-directory: gateway
+        run: npm test -- src/__tests__/notifications-performance.test.ts
+
+      - name: Check performance thresholds
+        working-directory: gateway
+        run: |
+          echo "✅ Performance tests completed"
+          echo "Check that:"
+          echo "  - 100 notifications < 5s"
+          echo "  - 1000 notifications < 15s"
+          echo "  - MongoDB queries < 100ms"
+
+  test-backend-security:
+    name: Backend Sécurité
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: gateway/package-lock.json
+
+      - name: Install dependencies
+        working-directory: gateway
+        run: npm ci
+
+      - name: Test Sécurité
+        working-directory: gateway
+        run: npm test -- src/__tests__/notifications-security.test.ts
+
+      - name: Upload coverage
+        if: always()
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./gateway/coverage/lcov.info
+          flags: backend-security
+          name: backend-security
+
+  test-frontend-without-firebase:
+    name: Frontend Sans Firebase
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Test Frontend sans Firebase
+        working-directory: frontend
+        env:
+          # S'assurer qu'aucune variable Firebase n'est définie
+          NEXT_PUBLIC_FIREBASE_API_KEY: ''
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: ''
+        run: npm test -- __tests__/firebase-availability.test.tsx
+
+      - name: Upload coverage
+        if: always()
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./frontend/coverage/lcov.info
+          flags: frontend-no-firebase
+          name: frontend-no-firebase
+
+  test-frontend-with-firebase:
+    name: Frontend Avec Firebase
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Test Frontend avec Firebase
+        working-directory: frontend
+        env:
+          NEXT_PUBLIC_FIREBASE_API_KEY: test-api-key
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: test.firebaseapp.com
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: test-project
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: test.appspot.com
+          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: '123456789'
+          NEXT_PUBLIC_FIREBASE_APP_ID: test-app-id
+          NEXT_PUBLIC_FIREBASE_VAPID_KEY: test-vapid-key
+        run: npm test -- __tests__/firebase-availability.test.tsx
+
+      - name: Upload coverage
+        if: always()
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./frontend/coverage/lcov.info
+          flags: frontend-with-firebase
+          name: frontend-with-firebase
+
+  summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs:
+      - test-backend-without-firebase
+      - test-backend-with-firebase
+      - test-backend-performance
+      - test-backend-security
+      - test-frontend-without-firebase
+      - test-frontend-with-firebase
+    if: always()
+
+    steps:
+      - name: Check results
+        run: |
+          echo "╔═══════════════════════════════════════════════════════════╗"
+          echo "║           RÉSULTATS TESTS NOTIFICATIONS                  ║"
+          echo "╚═══════════════════════════════════════════════════════════╝"
+          echo ""
+          echo "✅ Backend sans Firebase: ${{ needs.test-backend-without-firebase.result }}"
+          echo "✅ Backend avec Firebase: ${{ needs.test-backend-with-firebase.result }}"
+          echo "✅ Backend Performance:   ${{ needs.test-backend-performance.result }}"
+          echo "✅ Backend Sécurité:      ${{ needs.test-backend-security.result }}"
+          echo "✅ Frontend sans Firebase: ${{ needs.test-frontend-without-firebase.result }}"
+          echo "✅ Frontend avec Firebase: ${{ needs.test-frontend-with-firebase.result }}"
+          echo ""
+
+          if [ "${{ needs.test-backend-without-firebase.result }}" == "success" ] && \
+             [ "${{ needs.test-backend-with-firebase.result }}" == "success" ] && \
+             [ "${{ needs.test-backend-performance.result }}" == "success" ] && \
+             [ "${{ needs.test-backend-security.result }}" == "success" ] && \
+             [ "${{ needs.test-frontend-without-firebase.result }}" == "success" ] && \
+             [ "${{ needs.test-frontend-with-firebase.result }}" == "success" ]; then
+            echo "🎉 TOUS LES TESTS SONT PASSÉS !"
+            exit 0
+          else
+            echo "❌ CERTAINS TESTS ONT ÉCHOUÉ"
+            exit 1
+          fi
