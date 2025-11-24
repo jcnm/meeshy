@@ -56,8 +56,8 @@ export function RegisterForm({
   const [emailErrorMessage, setEmailErrorMessage] = useState<string>('');
 
   const validateUsername = (username: string) => {
-    // Validation: longueur minimale de 4 caractères
-    if (username.length < 4) {
+    // Validation: longueur entre 2 et 16 caractères
+    if (username.length < 2 || username.length > 16) {
       return false;
     }
     // Validation: uniquement lettres, chiffres, tirets et underscores
@@ -350,13 +350,17 @@ export function RegisterForm({
               onChange={(e) => {
                 // Filtrer les caractères non autorisés en temps réel
                 const value = e.target.value.replace(/[^a-zA-Z0-9_-]/g, '');
-                setFormData({ ...formData, username: value });
+                // Limiter à 16 caractères maximum
+                const limitedValue = value.slice(0, 16);
+                setFormData({ ...formData, username: limitedValue });
               }}
               className={cn(
                 "pr-10",
                 usernameCheckStatus === 'available' && "border-green-500 focus-visible:ring-green-500",
                 usernameCheckStatus === 'taken' && "border-red-500 focus-visible:ring-red-500"
               )}
+              minLength={2}
+              maxLength={16}
               disabled={isLoading || disabled}
               required
             />
@@ -378,7 +382,7 @@ export function RegisterForm({
             </div>
           </div>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            {t('register.usernameHelp')}
+            {t('register.usernameHelp')} (2-16 caractères)
           </p>
           {usernameCheckStatus === 'available' && (
             <p className="text-xs text-green-600 flex items-center gap-1">

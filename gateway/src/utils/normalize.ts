@@ -39,9 +39,26 @@ export function normalizePhoneNumber(phoneNumber: string): string {
 /**
  * Normalise un username
  * Préserve la capitalisation telle qu'entrée par l'utilisateur
+ * Valide la longueur (2-16 caractères)
  */
 export function normalizeUsername(username: string): string {
-  return username.trim();
+  const trimmed = username.trim();
+
+  // Validation de la longueur
+  if (trimmed.length < 2) {
+    throw new Error('Le nom d\'utilisateur doit contenir au moins 2 caractères');
+  }
+  if (trimmed.length > 16) {
+    throw new Error('Le nom d\'utilisateur ne peut pas dépasser 16 caractères');
+  }
+
+  // Validation des caractères (uniquement lettres, chiffres, tirets et underscores)
+  const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+  if (!usernameRegex.test(trimmed)) {
+    throw new Error('Le nom d\'utilisateur ne peut contenir que des lettres, chiffres, tirets et underscores');
+  }
+
+  return trimmed;
 }
 
 /**
