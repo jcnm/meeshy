@@ -157,9 +157,10 @@ export class AuthMiddleware {
         throw new Error('User not found or inactive');
       }
 
-      // NOUVEAU: Mettre à jour lastActiveAt avec throttling (asynchrone, ne bloque pas)
+      // Mettre à jour lastSeen à chaque requête API (activité détectable)
+      // Throttling: 5 secondes (léger pour ne pas surcharger la DB)
       if (this.statusService) {
-        this.statusService.updateUserLastActive(user.id);
+        this.statusService.updateUserLastSeen(user.id);
       }
 
       // Déterminer la langue principale
@@ -234,9 +235,10 @@ export class AuthMiddleware {
         throw new Error('Anonymous participant not found or inactive');
       }
 
-      // NOUVEAU: Mettre à jour lastActiveAt avec throttling (asynchrone, ne bloque pas)
+      // Mettre à jour lastSeenAt à chaque requête API (activité détectable)
+      // Throttling: 5 secondes (léger pour ne pas surcharger la DB)
       if (this.statusService) {
-        this.statusService.updateAnonymousLastActive(anonymousParticipant.id);
+        this.statusService.updateAnonymousLastSeen(anonymousParticipant.id);
       }
 
       // Utiliser les permissions du shareLink et du participant

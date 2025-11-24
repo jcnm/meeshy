@@ -8,6 +8,7 @@ import { Server as HTTPServer } from 'http';
 import { PrismaClient } from '../../shared/prisma/client';
 import { TranslationService, MessageData } from '../services/TranslationService';
 import { MaintenanceService } from '../services/maintenance.service';
+import { StatusService } from '../services/status.service';
 import { MessagingService } from '../services/MessagingService';
 import { CallEventsHandler } from './CallEventsHandler';
 import { CallService } from '../services/CallService';
@@ -50,6 +51,7 @@ export class MeeshySocketIOManager {
   private prisma: PrismaClient;
   private translationService: TranslationService;
   private maintenanceService: MaintenanceService;
+  private statusService: StatusService;
   private messagingService: MessagingService;
   private callEventsHandler: CallEventsHandler;
   private callService: CallService;
@@ -76,6 +78,9 @@ export class MeeshySocketIOManager {
     // Créer l'AttachmentService pour le cleanup automatique
     const attachmentService = new AttachmentService(prisma);
     this.maintenanceService = new MaintenanceService(prisma, attachmentService);
+
+    // Initialiser StatusService pour throttling des updates lastSeen/lastActiveAt
+    this.statusService = new StatusService(prisma);
 
     // CORRECTION: Créer NotificationService AVANT MessagingService pour que les mentions génèrent des notifications
     this.notificationService = new NotificationService(prisma);
@@ -244,11 +249,13 @@ export class MeeshySocketIOManager {
           const user = this.connectedUsers.get(userId);
           const isAnonymous = user?.isAnonymous || false;
 
-          // ✅ FIX BUG #2: Mettre à jour lastActiveAt lors de l'envoi de message (activité utilisateur)
-          // Cela maintient l'utilisateur en "online" (vert) tant qu'il est actif
-          this.maintenanceService.updateUserLastActive(userId, isAnonymous).catch(err => {
-            console.debug('⚠️ [MESSAGE_SEND] Erreur update lastActive:', err);
-          });
+          // Envoi de message = action significative
+          // → Mettre à jour lastSeen (activité détectable) ET lastActiveAt (action importante)
+          // Utilise StatusService pour throttling automatique (5s pour lastSeen, 60s pour lastActiveAt)
+          if (this.statusService) {
+            this.statusService.updateLastSeen(userId, isAnonymous); // Throttled à 5s
+            this.statusService.updateLastActive(userId, isAnonymous); // Throttled à 60s
+          }
 
           // Pour les utilisateurs anonymes, récupérer le nom d'affichage depuis la base de données
           let anonymousDisplayName: string | undefined;
@@ -1580,11 +1587,12 @@ export class MeeshySocketIOManager {
         return;
       }
 
-      // ✅ FIX BUG #2: Mettre à jour lastActiveAt lors du typing (activité utilisateur)
-      // Cela maintient l'utilisateur en "online" (vert) tant qu'il est actif
-      this.maintenanceService.updateUserLastActive(userId, connectedUser.isAnonymous).catch(err => {
-        console.debug('⚠️ [TYPING] Erreur update lastActive:', err);
-      });
+      // Typing = activité détectable mais pas action significative
+      // → Mettre à jour uniquement lastSeen (throttled à 5s)
+      // Ne pas mettre à jour lastActiveAt (réservé aux actions importantes comme envoi message)
+      if (this.statusService) {
+        this.statusService.updateLastSeen(userId, connectedUser.isAnonymous);
+      }
 
       let displayName: string;
 
