@@ -43,11 +43,12 @@ export async function authRoutes(fastify: FastifyInstance) {
       // Générer le token
       const token = authService.generateToken(user);
       
-      // Retourner les informations utilisateur et le token
+      // Retourner les informations utilisateur complètes et le token
       reply.send({
         success: true,
         data: {
           user: {
+            // Identité de base
             id: user.id,
             username: user.username,
             email: user.email,
@@ -56,7 +57,14 @@ export async function authRoutes(fastify: FastifyInstance) {
             displayName: user.displayName,
             bio: user.bio,
             avatar: user.avatar,
+            phoneNumber: user.phoneNumber,
+
+            // Rôle et statut
             role: user.role,
+            isActive: user.isActive,
+            deactivatedAt: user.deactivatedAt,
+
+            // Paramètres de traduction
             systemLanguage: user.systemLanguage,
             regionalLanguage: user.regionalLanguage,
             customDestinationLanguage: user.customDestinationLanguage,
@@ -64,16 +72,29 @@ export async function authRoutes(fastify: FastifyInstance) {
             translateToSystemLanguage: user.translateToSystemLanguage,
             translateToRegionalLanguage: user.translateToRegionalLanguage,
             useCustomDestination: user.useCustomDestination,
+
+            // Statut de présence
             isOnline: user.isOnline,
             lastSeen: user.lastSeen,
             lastActiveAt: user.lastActiveAt,
-            isActive: user.isActive,
+
+            // Sécurité visible (statuts de vérification)
+            emailVerifiedAt: user.emailVerifiedAt,
+            phoneVerifiedAt: user.phoneVerifiedAt,
+            twoFactorEnabledAt: user.twoFactorEnabledAt,
             lastPasswordChange: user.lastPasswordChange,
+
+            // Tracking des connexions (pour dashboard sécurité)
             lastLoginIp: user.lastLoginIp,
             lastLoginLocation: user.lastLoginLocation,
             lastLoginDevice: user.lastLoginDevice,
+
+            // Métadonnées
+            profileCompletionRate: user.profileCompletionRate,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
+
+            // Permissions calculées
             permissions: user.permissions
           },
           token,
@@ -132,6 +153,7 @@ export async function authRoutes(fastify: FastifyInstance) {
         success: true,
         data: {
           user: {
+            // Identité de base
             id: user.id,
             username: user.username,
             email: user.email,
@@ -140,7 +162,14 @@ export async function authRoutes(fastify: FastifyInstance) {
             displayName: user.displayName,
             bio: user.bio,
             avatar: user.avatar,
+            phoneNumber: user.phoneNumber,
+
+            // Rôle et statut
             role: user.role,
+            isActive: user.isActive,
+            deactivatedAt: user.deactivatedAt,
+
+            // Paramètres de traduction
             systemLanguage: user.systemLanguage,
             regionalLanguage: user.regionalLanguage,
             customDestinationLanguage: user.customDestinationLanguage,
@@ -148,16 +177,29 @@ export async function authRoutes(fastify: FastifyInstance) {
             translateToSystemLanguage: user.translateToSystemLanguage,
             translateToRegionalLanguage: user.translateToRegionalLanguage,
             useCustomDestination: user.useCustomDestination,
+
+            // Statut de présence
             isOnline: user.isOnline,
             lastSeen: user.lastSeen,
             lastActiveAt: user.lastActiveAt,
-            isActive: user.isActive,
+
+            // Sécurité visible (statuts de vérification)
+            emailVerifiedAt: user.emailVerifiedAt,
+            phoneVerifiedAt: user.phoneVerifiedAt,
+            twoFactorEnabledAt: user.twoFactorEnabledAt,
             lastPasswordChange: user.lastPasswordChange,
+
+            // Tracking des connexions (pour dashboard sécurité)
             lastLoginIp: user.lastLoginIp,
             lastLoginLocation: user.lastLoginLocation,
             lastLoginDevice: user.lastLoginDevice,
+
+            // Métadonnées
+            profileCompletionRate: user.profileCompletionRate,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
+
+            // Permissions calculées
             permissions: user.permissions
           },
           token,
@@ -209,6 +251,7 @@ export async function authRoutes(fastify: FastifyInstance) {
           success: true,
           data: {
             user: {
+              // Identité de base
               id: user.id,
               username: user.username,
               email: user.email,
@@ -217,7 +260,14 @@ export async function authRoutes(fastify: FastifyInstance) {
               displayName: user.displayName,
               bio: user.bio,
               avatar: user.avatar,
+              phoneNumber: user.phoneNumber,
+
+              // Rôle et statut
               role: user.role,
+              isActive: user.isActive,
+              deactivatedAt: user.deactivatedAt,
+
+              // Paramètres de traduction
               systemLanguage: user.systemLanguage,
               regionalLanguage: user.regionalLanguage,
               customDestinationLanguage: user.customDestinationLanguage,
@@ -225,16 +275,29 @@ export async function authRoutes(fastify: FastifyInstance) {
               translateToSystemLanguage: user.translateToSystemLanguage,
               translateToRegionalLanguage: user.translateToRegionalLanguage,
               useCustomDestination: user.useCustomDestination,
+
+              // Statut de présence
               isOnline: user.isOnline,
               lastSeen: user.lastActiveAt,
               lastActiveAt: user.lastActiveAt,
-              isActive: true,
+
+              // Sécurité visible (statuts de vérification)
+              emailVerifiedAt: user.emailVerifiedAt,
+              phoneVerifiedAt: user.phoneVerifiedAt,
+              twoFactorEnabledAt: user.twoFactorEnabledAt,
               lastPasswordChange: user.lastPasswordChange,
+
+              // Tracking des connexions (pour dashboard sécurité)
               lastLoginIp: user.lastLoginIp,
               lastLoginLocation: user.lastLoginLocation,
               lastLoginDevice: user.lastLoginDevice,
+
+              // Métadonnées
+              profileCompletionRate: user.profileCompletionRate,
               createdAt: user.createdAt,
               updatedAt: user.updatedAt,
+
+              // Permissions calculées
               permissions
             }
           }

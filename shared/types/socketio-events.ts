@@ -451,11 +451,17 @@ export interface SocketIOUser {
   useCustomDestination: boolean;
   isActive: boolean;
   deactivatedAt?: Date;
+  // Verification statuses (exposed for UI state)
+  emailVerifiedAt?: Date;
+  phoneVerifiedAt?: Date;
+  twoFactorEnabledAt?: Date;
   // Security & tracking fields (exposed to frontend)
   lastPasswordChange?: Date;
   lastLoginIp?: string;
   lastLoginLocation?: string;
   lastLoginDevice?: string;
+  // Metadata
+  profileCompletionRate?: number;
   createdAt: Date;
   updatedAt: Date;
   isAnonymous?: boolean; // Indique si c'est un utilisateur anonyme
