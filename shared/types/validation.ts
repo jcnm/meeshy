@@ -109,12 +109,13 @@ export const createUserValidationSchema = z.object({
 
 /**
  * Schéma de mise à jour du profil
+ * Tous les champs sont optionnels pour une requête PATCH
  */
 export const updateUserProfileValidationSchema = z.object({
   firstName: nameSchema.optional(),
   lastName: nameSchema.optional(),
-  displayName: displayNameSchema,
-  bio: bioSchema,
+  displayName: displayNameSchema.optional(),
+  bio: bioSchema.optional(),
   systemLanguage: z.string().length(2).optional(),
   regionalLanguage: z.string().length(2).optional(),
   customDestinationLanguage: z.string().length(2).optional(),
