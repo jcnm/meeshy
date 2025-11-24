@@ -59,11 +59,11 @@ export function TypingIndicator({
 
   const renderTypingMessage = () => {
     if (typingUserNames.length === 1) {
-      return `${typingUserNames[0]} ${t('typingIndicator.isTyping')}${dots}`;
+      return `${typingUserNames[0]} écrit${dots}`;
     } else if (typingUserNames.length === 2) {
-      return `${typingUserNames[0]} et ${typingUserNames[1]} ${t('typingIndicator.areTyping')}${dots}`;
+      return `${typingUserNames[0]} et ${typingUserNames[1]} écrivent${dots}`;
     } else {
-      return `${typingUserNames.length} ${t('typingIndicator.multipleTyping')}${dots}`;
+      return `${typingUserNames.length} personnes écrivent${dots}`;
     }
   };
 

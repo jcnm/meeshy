@@ -1595,26 +1595,39 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         return reply.send({ success: true, data: [] });
       }
 
+      // Rechercher dans TOUTES les conversations publiques/globales + celles dont l'utilisateur est membre
       const conversations = await prisma.conversation.findMany({
         where: {
           isActive: true,
-          members: { some: { userId, isActive: true } },
-          OR: [
-            { title: { contains: q, mode: 'insensitive' } },
+          AND: [
             {
-              members: {
-                some: {
-                  user: {
-                    OR: [
-                      { firstName: { contains: q, mode: 'insensitive' } },
-                      { lastName: { contains: q, mode: 'insensitive' } },
-                      { username: { contains: q, mode: 'insensitive' } },
-                      { displayName: { contains: q, mode: 'insensitive' } }
-                    ],
-                    isActive: true
+              OR: [
+                { title: { contains: q, mode: 'insensitive' } },
+                {
+                  members: {
+                    some: {
+                      user: {
+                        OR: [
+                          { firstName: { contains: q, mode: 'insensitive' } },
+                          { lastName: { contains: q, mode: 'insensitive' } },
+                          { username: { contains: q, mode: 'insensitive' } },
+                          { displayName: { contains: q, mode: 'insensitive' } }
+                        ],
+                        isActive: true
+                      }
+                    }
                   }
                 }
-              }
+              ]
+            },
+            {
+              OR: [
+                // Conversations publiques ou globales (accessibles à tous)
+                { type: 'public' },
+                { type: 'global' },
+                // OU conversations dont l'utilisateur est membre
+                { members: { some: { userId, isActive: true } } }
+              ]
             }
           ]
         },
@@ -1631,11 +1644,13 @@ export async function conversationRoutes(fastify: FastifyInstance) {
                   lastSeen: true
                 }
               }
-            }
+            },
+            take: 10 // Limiter le nombre de membres retournés pour les performances
           },
           messages: { orderBy: { createdAt: 'desc' }, take: 1 }
         },
-        orderBy: { lastMessageAt: 'desc' }
+        orderBy: { lastMessageAt: 'desc' },
+        take: 50 // Limiter le nombre de résultats
       });
 
       // Transformer les conversations pour garantir qu'un titre existe toujours
@@ -1653,10 +1668,14 @@ export async function conversationRoutes(fastify: FastifyInstance) {
               userId
             );
 
+        // Calculer le unreadCount pour l'utilisateur
+        const unreadCount = conversation.messages[0] ? 0 : 0; // TODO: Implémenter le vrai compteur
+
         return {
           ...conversation,
           title: displayTitle,
-          lastMessage: conversation.messages[0] || null
+          lastMessage: conversation.messages[0] || null,
+          unreadCount
         };
       });
 
@@ -2883,6 +2902,156 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       reply.status(500).send({
         success: false,
         error: 'Erreur lors de la suppression du participant'
+      });
+    }
+  });
+
+  // Route pour mettre à jour le rôle d'un participant
+  fastify.patch<{
+    Params: { id: string; userId: string };
+    Body: { role: 'ADMIN' | 'MODERATOR' | 'MEMBER' };
+  }>('/conversations/:id/participants/:userId/role', {
+    preValidation: [requiredAuth]
+  }, async (request, reply) => {
+    try {
+      const { id, userId } = request.params;
+      const { role } = request.body;
+      const authRequest = request as UnifiedAuthRequest;
+      const currentUserId = authRequest.authContext.userId;
+
+      // Valider le rôle
+      if (!['ADMIN', 'MODERATOR', 'MEMBER'].includes(role)) {
+        return reply.status(400).send({
+          success: false,
+          error: 'Rôle invalide. Les rôles acceptés sont: ADMIN, MODERATOR, MEMBER'
+        });
+      }
+
+      // Résoudre l'ID de conversation réel
+      const conversationId = await resolveConversationId(id);
+      if (!conversationId) {
+        return reply.status(403).send({
+          success: false,
+          error: 'Accès non autorisé à cette conversation'
+        });
+      }
+
+      // Vérifier que l'utilisateur actuel a les droits pour modifier les rôles
+      const currentUserMembership = await prisma.conversationMember.findFirst({
+        where: {
+          conversationId: conversationId,
+          userId: currentUserId,
+          isActive: true
+        },
+        include: {
+          user: true
+        }
+      });
+
+      if (!currentUserMembership) {
+        return reply.status(403).send({
+          success: false,
+          error: 'Accès non autorisé à cette conversation'
+        });
+      }
+
+      // Seuls les admins ou le créateur peuvent modifier les rôles
+      const isAdmin = currentUserMembership.user.role === 'ADMIN' || currentUserMembership.user.role === 'BIGBOSS';
+      const isCreator = currentUserMembership.role === 'CREATOR';
+
+      if (!isAdmin && !isCreator) {
+        return reply.status(403).send({
+          success: false,
+          error: 'Vous n\'avez pas les droits pour modifier les rôles des participants'
+        });
+      }
+
+      // Empêcher de modifier son propre rôle
+      if (userId === currentUserId) {
+        return reply.status(400).send({
+          success: false,
+          error: 'Vous ne pouvez pas modifier votre propre rôle'
+        });
+      }
+
+      // Vérifier que le participant cible existe et est actif
+      const targetMembership = await prisma.conversationMember.findFirst({
+        where: {
+          conversationId: conversationId,
+          userId: userId,
+          isActive: true
+        }
+      });
+
+      if (!targetMembership) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Participant non trouvé ou inactif'
+        });
+      }
+
+      // Empêcher de modifier le rôle du créateur de la conversation
+      if (targetMembership.role === 'CREATOR') {
+        return reply.status(403).send({
+          success: false,
+          error: 'Impossible de modifier le rôle du créateur de la conversation'
+        });
+      }
+
+      // Mettre à jour le rôle du participant
+      await prisma.conversationMember.update({
+        where: {
+          id: targetMembership.id
+        },
+        data: {
+          role: role
+        }
+      });
+
+      // Récupérer le participant mis à jour avec ses informations complètes
+      const updatedMembership = await prisma.conversationMember.findUnique({
+        where: { id: targetMembership.id },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              displayName: true,
+              firstName: true,
+              lastName: true,
+              avatar: true
+            }
+          }
+        }
+      });
+
+      // Notifier via Socket.IO
+      const io = (request.server as any).io;
+      if (io) {
+        io.to(conversationId).emit('participant:role-updated', {
+          conversationId,
+          userId,
+          newRole: role,
+          updatedBy: currentUserId,
+          participant: updatedMembership
+        });
+      }
+
+      reply.send({
+        success: true,
+        message: 'Rôle du participant mis à jour avec succès',
+        data: {
+          userId,
+          role,
+          participant: updatedMembership
+        }
+      });
+
+    } catch (error) {
+      console.error('[GATEWAY] Error updating participant role:', error);
+      reply.status(500).send({
+        success: false,
+        error: 'Erreur lors de la mise à jour du rôle du participant'
       });
     }
   });

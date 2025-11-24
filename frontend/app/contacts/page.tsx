@@ -43,6 +43,7 @@ import { useI18n } from '@/hooks/useI18n';
 import { authManager } from '@/services/auth-manager.service';
 import { OnlineIndicator } from '@/components/ui/online-indicator';
 import { getUserStatus } from '@/lib/user-status';
+import { ConversationDropdown } from '@/components/contacts/ConversationDropdown';
 
 interface FriendRequest {
   id: string;
@@ -734,33 +735,42 @@ export default function ContactsPage() {
                               </span>
                             </div>
 
-                            {/* Bouton Ajouter ou Annuler */}
-                            {(() => {
-                              const pendingRequest = getPendingRequestWithUser(contact.id);
-                              if (pendingRequest) {
+                            {/* Boutons d'action */}
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {/* Bouton Ajouter ou Annuler */}
+                              {(() => {
+                                const pendingRequest = getPendingRequestWithUser(contact.id);
+                                if (pendingRequest) {
+                                  return (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => cancelFriendRequest(pendingRequest.id)}
+                                      className="flex items-center gap-2 h-9 px-4 border-2 border-orange-500 text-orange-600 hover:bg-orange-50 dark:border-orange-600 dark:text-orange-400 dark:hover:bg-orange-950/30 shadow-md hover:shadow-lg transition-all"
+                                    >
+                                      <X className="h-4 w-4" />
+                                      <span className="text-sm">{t('actions.cancel')}</span>
+                                    </Button>
+                                  );
+                                }
                                 return (
                                   <Button
                                     size="sm"
-                                    variant="outline"
-                                    onClick={() => cancelFriendRequest(pendingRequest.id)}
-                                    className="flex items-center gap-2 h-9 px-4 border-2 border-orange-500 text-orange-600 hover:bg-orange-50 dark:border-orange-600 dark:text-orange-400 dark:hover:bg-orange-950/30 shadow-md hover:shadow-lg transition-all"
+                                    onClick={() => sendFriendRequest(contact.id)}
+                                    className="flex items-center gap-2 h-9 px-4 bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-800 shadow-md hover:shadow-lg transition-all"
                                   >
-                                    <X className="h-4 w-4" />
-                                    <span className="text-sm">{t('actions.cancel')}</span>
+                                    <UserPlus className="h-4 w-4" />
+                                    <span className="text-sm">{t('actions.add')}</span>
                                   </Button>
                                 );
-                              }
-                              return (
-                                <Button
-                                  size="sm"
-                                  onClick={() => sendFriendRequest(contact.id)}
-                                  className="flex items-center gap-2 h-9 px-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 shadow-md hover:shadow-lg transition-all"
-                                >
-                                  <UserPlus className="h-4 w-4" />
-                                  <span className="text-sm">{t('actions.add')}</span>
-                                </Button>
-                              );
-                            })()}
+                              })()}
+
+                              {/* Dropdown pour gérer les conversations */}
+                              <ConversationDropdown
+                                userId={contact.id}
+                                onCreateNew={() => startConversation(contact.id)}
+                              />
+                            </div>
                           </div>
                         </div>
                       </CardContent>
@@ -866,6 +876,14 @@ export default function ContactsPage() {
                                       </span>
                                     </div>
                                   )}
+                                </div>
+
+                                {/* Dropdown pour gérer les conversations */}
+                                <div className="mt-3">
+                                  <ConversationDropdown
+                                    userId={otherUserId}
+                                    onCreateNew={() => startConversation(otherUserId)}
+                                  />
                                 </div>
                               </div>
                             </div>

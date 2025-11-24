@@ -8,6 +8,7 @@ import { useConversationMessages } from '@/hooks/use-conversation-messages';
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { useConversationsPagination } from '@/hooks/use-conversations-pagination';
 import { useNotifications } from '@/hooks/use-notifications';
+import { useNotificationActionsV2 } from '@/stores/notification-store-v2';
 import { useVirtualKeyboard } from '@/hooks/use-virtual-keyboard';
 import { conversationsService } from '@/services/conversations.service';
 import { messageService } from '@/services/message.service';
@@ -46,6 +47,9 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   const user = useUser(); const isAuthChecking = useIsAuthChecking();
   const { t } = useI18n('conversations');
   const { t: tCommon } = useI18n('common');
+
+  // Hook pour le système de notifications v2
+  const { setActiveConversationId } = useNotificationActionsV2();
   
   // ID unique pour cette instance du composant
   const instanceId = useMemo(() => `layout-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, []);
@@ -126,6 +130,16 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   useEffect(() => {
     localStorage.setItem('conversationListWidth', conversationListWidth.toString());
   }, [conversationListWidth]);
+
+  // Informer le store de notifications de la conversation active
+  useEffect(() => {
+    setActiveConversationId(effectiveSelectedId || null);
+
+    // Nettoyer quand on quitte ou change de conversation
+    return () => {
+      setActiveConversationId(null);
+    };
+  }, [effectiveSelectedId, setActiveConversationId]);
 
   // Handle resize
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -357,13 +371,13 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       // Utiliser la ref au lieu de selectedConversation?.id
       if (message.conversationId === selectedConversationIdRef.current) {
         updateMessage(message.id, message);
-        toast.info(tCommon('messages.messageEditedByOther'));
+        // Toast désactivé - le système de notifications v2 gère les notifications métier
       }
-    }, [updateMessage, tCommon]),
+    }, [updateMessage]),
     onMessageDeleted: useCallback((messageId: string) => {
       removeMessage(messageId);
-      toast.info(tCommon('messages.messageDeletedByOther'));
-    }, [removeMessage, tCommon]),
+      // Toast désactivé - le système de notifications v2 gère les notifications métier
+    }, [removeMessage]),
     onNewMessage: useCallback(async (message: any) => {
       // Utiliser la ref au lieu de selectedConversation?.id
       const currentConvId = selectedConversationIdRef.current;
@@ -397,11 +411,23 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         }
 
         // Créer une copie de la conversation avec les informations mises à jour
+        const currentConversation = prevConversations[conversationIndex];
+        const isMessageFromCurrentUser = user && message.senderId === user.id;
+        const isCurrentlyViewingThisConversation = message.conversationId === currentConvId;
+
+        // Incrémenter unreadCount seulement si:
+        // 1. Le message n'est PAS de l'utilisateur actuel
+        // 2. L'utilisateur ne visualise PAS actuellement cette conversation
+        const shouldIncrementUnread = !isMessageFromCurrentUser && !isCurrentlyViewingThisConversation;
+
         const updatedConversation = {
-          ...prevConversations[conversationIndex],
+          ...currentConversation,
           lastMessage: message,
           lastMessageAt: message.createdAt || new Date(),
-          lastActivityAt: message.createdAt || new Date()
+          lastActivityAt: message.createdAt || new Date(),
+          unreadCount: shouldIncrementUnread
+            ? (currentConversation.unreadCount || 0) + 1
+            : (currentConversation.unreadCount || 0)
         };
 
         // Retirer la conversation de sa position actuelle

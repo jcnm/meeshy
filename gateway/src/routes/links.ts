@@ -493,6 +493,51 @@ export async function linksRoutes(fastify: FastifyInstance) {
         data: { linkId: finalLinkId }
       });
 
+      // Notifier les admins et le créateur de la création du lien
+      try {
+        const admins = await fastify.prisma.conversationMember.findMany({
+          where: {
+            conversationId: conversationId!,
+            isActive: true,
+            OR: [
+              { role: 'admin' },
+              { role: 'creator' }
+            ],
+            userId: { not: userId } // Exclure le créateur du lien
+          },
+          select: { userId: true }
+        });
+
+        const notificationService = (fastify as any).notificationService;
+        if (notificationService && admins.length > 0) {
+          const conversation = await fastify.prisma.conversation.findUnique({
+            where: { id: conversationId! },
+            select: { title: true }
+          });
+
+          for (const admin of admins) {
+            await notificationService.createNotification({
+              userId: admin.userId,
+              type: 'system',
+              title: 'Nouveau lien partagé',
+              content: `Un lien de partage a été créé pour ${conversation?.title || 'la conversation'}${shareLink.name ? ` : ${shareLink.name}` : ''}`,
+              priority: 'normal',
+              senderId: userId,
+              conversationId: conversationId!,
+              data: {
+                shareLinkId: shareLink.id,
+                linkId: finalLinkId,
+                linkName: shareLink.name,
+                action: 'view_conversation'
+              }
+            });
+          }
+        }
+      } catch (notifError) {
+        // Ne pas bloquer la création du lien si la notification échoue
+        fastify.log.error('Error sending share link notification:');
+      }
+
       return reply.status(201).send({
         success: true,
         data: {

@@ -603,6 +603,17 @@ export class ConversationsService {
   }
 
   /**
+   * Mettre à jour le rôle d'un participant
+   */
+  async updateParticipantRole(
+    conversationId: string,
+    userId: string,
+    role: 'ADMIN' | 'MODERATOR' | 'MEMBER'
+  ): Promise<void> {
+    await apiService.patch(`/api/conversations/${conversationId}/participants/${userId}/role`, { role });
+  }
+
+  /**
    * Rechercher dans les conversations
    */
   async searchConversations(query: string): Promise<Conversation[]> {
@@ -914,6 +925,39 @@ export class ConversationsService {
     const controller = new AbortController();
     this.pendingRequests.set(key, controller);
     return controller;
+  }
+
+  /**
+   * Obtenir toutes les conversations directes avec un utilisateur spécifique
+   */
+  async getConversationsWithUser(userId: string): Promise<Conversation[]> {
+    try {
+      // Récupérer toutes les conversations de l'utilisateur courant
+      const { conversations } = await this.getConversations({ skipCache: true });
+
+      // Filtrer pour ne garder que les conversations directes avec cet utilisateur
+      const directConversations = conversations.filter(conv => {
+        // Vérifier que c'est une conversation directe
+        if (conv.type !== 'direct') return false;
+
+        // Vérifier que l'utilisateur ciblé fait partie des participants
+        const hasTargetUser = conv.participants?.some(p => p.userId === userId);
+
+        return hasTargetUser;
+      });
+
+      // Trier par date de dernière activité (plus récente en premier)
+      directConversations.sort((a, b) => {
+        const dateA = a.lastActivityAt || a.updatedAt || a.createdAt;
+        const dateB = b.lastActivityAt || b.updatedAt || b.createdAt;
+        return new Date(dateB).getTime() - new Date(dateA).getTime();
+      });
+
+      return directConversations;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des conversations avec l\'utilisateur:', error);
+      return [];
+    }
   }
 }
 

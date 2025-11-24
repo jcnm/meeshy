@@ -10,6 +10,7 @@
     "memberSince": "Member since",
     "sendMessage": "Send message",
     "addFriend": "Add",
+    "cancelFriendRequest": "Cancel request",
     "userNotFound": "User not found",
     "userNotFoundDescription": "This user does not exist or is no longer available",
     "loading": "Loading profile...",
@@ -34,12 +35,14 @@
       "conversationCreationFailed": "Cannot create conversation",
       "sessionExpired": "Session expired",
       "sendFriendRequestFailed": "Error sending friend request",
+      "cancelFriendRequestFailed": "Error cancelling friend request",
       "notAuthenticated": "Not authenticated",
       "loadProfileError": "Error loading profile"
     },
     "success": {
       "conversationCreated": "Conversation created",
-      "friendRequestSent": "Friend request sent"
+      "friendRequestSent": "Friend request sent",
+      "friendRequestCancelled": "Friend request cancelled"
     }
   }
 }

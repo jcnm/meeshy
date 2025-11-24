@@ -47,7 +47,15 @@
     "resend": "Renvoyer",
     "connection": "Connexion",
     "add": "Ajouter",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "continueConversation": "Poursuivre",
+    "newConversation": "Nouvelle conversation",
+    "newConversationDescription": "Démarrer une nouvelle discussion"
+  },
+  "conversations": {
+    "existing": "Conversations existantes",
+    "untitled": "Sans titre",
+    "latest": "Dernière"
   },
   "messages": {
     "noContacts": "Aucun contact",

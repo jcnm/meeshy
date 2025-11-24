@@ -13,6 +13,7 @@ import {
   Users,
   Activity,
   UserPlus,
+  X,
 } from 'lucide-react';
 import { usersService, conversationsService, type UserStats } from '@/services';
 import { type User } from '@/types';
@@ -23,6 +24,7 @@ import { OnlineIndicator } from '@/components/ui/online-indicator';
 import { getUserStatus } from '@/lib/user-status';
 import { buildApiUrl } from '@/lib/config';
 import { authManager } from '@/services/auth-manager.service';
+import { ConversationDropdown } from '@/components/contacts/ConversationDropdown';
 
 interface FriendRequest {
   id: string;
@@ -211,6 +213,37 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     }
   };
 
+  const handleCancelFriendRequest = async (requestId: string) => {
+    try {
+      const token = authManager.getAuthToken();
+      if (!token) {
+        toast.error(t('errors.sessionExpired'));
+        router.push('/login');
+        return;
+      }
+
+      const response = await fetch(buildApiUrl(`/users/friend-requests/${requestId}`), {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ action: 'cancel' })
+      });
+
+      if (response.ok) {
+        toast.success(t('success.friendRequestCancelled'));
+        loadFriendRequests(); // Recharger les demandes
+      } else {
+        const error = await response.json();
+        toast.error(error.error || t('errors.cancelFriendRequestFailed'));
+      }
+    } catch (error) {
+      console.error('Error cancelling friend request:', error);
+      toast.error(t('errors.cancelFriendRequestFailed'));
+    }
+  };
+
   const getUserDisplayName = (userData: User): string => {
     if (userData.displayName) return userData.displayName;
     
@@ -340,24 +373,38 @@ export default function ProfilePage({ params }: ProfilePageProps) {
 
                     {!isMyProfile && (
                       <div className="flex flex-col sm:flex-row gap-3">
-                        {/* Ne montrer le bouton "Ajouter" que s'il n'y a pas déjà une demande en attente */}
-                        {!getPendingRequestWithUser(user.id) && (
-                          <Button
-                            onClick={handleSendFriendRequest}
-                            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
-                          >
-                            <UserPlus className="h-4 w-4 mr-2" />
-                            {t('addFriend')}
-                          </Button>
-                        )}
-                        <Button
-                          onClick={handleStartConversation}
+                        {/* Afficher soit "Ajouter" soit "Annuler" selon l'état de la demande */}
+                        {(() => {
+                          const pendingRequest = getPendingRequestWithUser(user.id);
+                          if (pendingRequest) {
+                            return (
+                              <Button
+                                onClick={() => handleCancelFriendRequest(pendingRequest.id)}
+                                variant="outline"
+                                className="w-full sm:w-auto border-2 border-orange-500 text-orange-600 hover:bg-orange-50 dark:border-orange-600 dark:text-orange-400 dark:hover:bg-orange-950/30"
+                              >
+                                <X className="h-4 w-4 mr-2" />
+                                {t('cancelFriendRequest')}
+                              </Button>
+                            );
+                          }
+                          return (
+                            <Button
+                              onClick={handleSendFriendRequest}
+                              className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700"
+                            >
+                              <UserPlus className="h-4 w-4 mr-2" />
+                              {t('addFriend')}
+                            </Button>
+                          );
+                        })()}
+                        {/* Dropdown pour gérer les conversations */}
+                        <ConversationDropdown
+                          userId={user.id}
+                          onCreateNew={handleStartConversation}
                           variant="outline"
                           className="w-full sm:w-auto"
-                        >
-                          <MessageSquare className="h-4 w-4 mr-2" />
-                          {t('sendMessage')}
-                        </Button>
+                        />
                       </div>
                     )}
                   </div>

@@ -16,10 +16,13 @@ import {
   formatNotificationContext,
   formatMessagePreview,
   getNotificationLink,
-  requiresUserAction
-} from '@/utils/notification-formatters';
+  requiresUserAction,
+  buildNotificationTitle,
+  buildNotificationContent
+} from '@/utils/notification-helpers';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import { useI18n } from '@/hooks/useI18n';
 
 /**
  * Composant NotificationItem
@@ -33,10 +36,15 @@ export function NotificationItem({
   compact = false
 }: NotificationItemProps) {
   const router = useRouter();
+  const { t } = useI18n('notifications');
   const icon = getNotificationIcon(notification);
   const context = formatNotificationContext(notification);
   const link = getNotificationLink(notification);
   const needsAction = requiresUserAction(notification);
+
+  // Construire le titre et le contenu à partir des données brutes avec traductions
+  const title = buildNotificationTitle(notification, t);
+  const content = buildNotificationContent(notification, t);
 
   /**
    * Gère le clic sur la notification
@@ -90,7 +98,7 @@ export function NotificationItem({
               className="flex-1"
             >
               <Check className="w-4 h-4 mr-1" />
-              Accept
+              {t('actions.accept')}
             </Button>
             <Button
               size="sm"
@@ -103,7 +111,7 @@ export function NotificationItem({
               className="flex-1"
             >
               <X className="w-4 h-4 mr-1" />
-              Decline
+              {t('actions.decline')}
             </Button>
           </div>
         );
@@ -117,13 +125,13 @@ export function NotificationItem({
               onClick={(e) => {
                 e.stopPropagation();
                 if (notification.context?.conversationId) {
-                  router.push(`/chat/${notification.context.conversationId}?action=call`);
+                  router.push(`/conversations/${notification.context.conversationId}?action=call`);
                 }
               }}
               className="flex-1"
             >
               <Phone className="w-4 h-4 mr-1" />
-              Call Back
+              {t('actions.callBack')}
             </Button>
           </div>
         );
@@ -144,7 +152,7 @@ export function NotificationItem({
                 className="flex-1"
               >
                 <UserPlus className="w-4 h-4 mr-1" />
-                Join
+                {t('actions.join')}
               </Button>
             </div>
           );
@@ -159,22 +167,12 @@ export function NotificationItem({
    * Rendu du contenu principal de la notification
    */
   const renderContent = () => {
-    // Pour les messages avec aperçu d'attachment
-    if (notification.metadata?.attachments) {
-      return (
-        <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
-          {formatMessagePreview(
-            notification.content,
-            notification.metadata.attachments
-          )}
-        </p>
-      );
-    }
+    // Utiliser le contenu construit
+    if (!content) return null;
 
-    // Contenu texte normal
     return (
       <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
-        {notification.content}
+        {content}
       </p>
     );
   };
@@ -183,10 +181,10 @@ export function NotificationItem({
     <div
       onClick={handleClick}
       className={cn(
-        'group relative flex gap-3 p-4 transition-colors cursor-pointer',
+        'group relative flex gap-2 p-2 transition-colors cursor-pointer',
         'hover:bg-gray-50 dark:hover:bg-gray-800/50',
         !notification.isRead && 'bg-blue-50/50 dark:bg-blue-900/10',
-        compact && 'p-3'
+        compact && 'p-1.5'
       )}
       role="button"
       tabIndex={0}
@@ -198,13 +196,14 @@ export function NotificationItem({
     >
       {/* Badge non lu */}
       {!notification.isRead && (
-        <div className="absolute top-4 left-2 w-2 h-2 bg-blue-600 rounded-full" />
+        <div className="absolute top-2 left-1 w-1.5 h-1.5 bg-blue-600 rounded-full" />
       )}
 
-      {/* Icône ou Avatar */}
-      <div className="flex-shrink-0">
-        {notification.sender?.avatar ? (
-          <Avatar className={cn('w-10 h-10', compact && 'w-8 h-8')}>
+      {/* Colonne gauche: Avatar + Actions */}
+      <div className="flex-shrink-0 flex flex-col items-center gap-1">
+        {/* Avatar de l'utilisateur */}
+        {notification.sender ? (
+          <Avatar className={cn('w-9 h-9', compact && 'w-7 h-7')}>
             <AvatarImage src={notification.sender.avatar} alt={notification.sender.username} />
             <AvatarFallback>
               {notification.sender.username[0]?.toUpperCase()}
@@ -214,8 +213,8 @@ export function NotificationItem({
           <div
             className={cn(
               'flex items-center justify-center rounded-full',
-              'w-10 h-10 text-lg',
-              compact && 'w-8 h-8 text-base',
+              'w-9 h-9 text-base',
+              compact && 'w-7 h-7 text-sm',
               icon.bgColor,
               icon.color
             )}
@@ -223,28 +222,30 @@ export function NotificationItem({
             {icon.emoji}
           </div>
         )}
+
+        {/* Actions désactivées - géré dans /notifications */}
       </div>
 
-      {/* Contenu */}
-      <div className="flex-1 min-w-0">
-        {/* Titre */}
-        <div className="flex items-start justify-between gap-2 mb-1">
+      {/* Contenu - prend toute la largeur disponible */}
+      <div className="flex-1 min-w-0 w-full">
+        {/* Titre - prend toute la largeur */}
+        <div className="w-full mb-0.5">
           <h4 className={cn(
-            'font-medium text-gray-900 dark:text-white line-clamp-1',
+            'font-medium text-gray-900 dark:text-white line-clamp-1 w-full',
             compact ? 'text-sm' : 'text-base'
           )}>
-            {notification.title}
+            {title}
           </h4>
 
           {/* Badge de priorité */}
           {notification.priority === 'urgent' && (
-            <span className="flex-shrink-0 px-2 py-0.5 text-xs font-semibold text-red-700 bg-red-100 rounded-full dark:bg-red-900 dark:text-red-200">
-              Urgent
+            <span className="inline-block mt-1 px-1.5 py-0.5 text-[10px] font-semibold text-red-700 bg-red-100 rounded-full dark:bg-red-900 dark:text-red-200">
+              {t('priorities.urgent')}
             </span>
           )}
           {notification.priority === 'high' && (
-            <span className="flex-shrink-0 px-2 py-0.5 text-xs font-semibold text-orange-700 bg-orange-100 rounded-full dark:bg-orange-900 dark:text-orange-200">
-              Important
+            <span className="inline-block mt-1 px-1.5 py-0.5 text-[10px] font-semibold text-orange-700 bg-orange-100 rounded-full dark:bg-orange-900 dark:text-orange-200">
+              {t('priorities.high')}
             </span>
           )}
         </div>
@@ -252,9 +253,9 @@ export function NotificationItem({
         {/* Contenu */}
         {renderContent()}
 
-        {/* Contexte (timestamp + conversation) */}
+        {/* Contexte (timestamp + conversation) - prend toute la largeur */}
         {context && (
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 w-full">
             {context}
           </p>
         )}
@@ -263,38 +264,11 @@ export function NotificationItem({
         {renderQuickActions()}
       </div>
 
-      {/* Actions de la notification */}
-      {showActions && (
-        <div className="flex-shrink-0 flex items-start gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          {!notification.isRead && (
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={handleMarkAsRead}
-              className="h-8 w-8"
-              title="Mark as read"
-            >
-              <Check className="h-4 w-4" />
-            </Button>
-          )}
-
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={handleDelete}
-            className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
-            title="Delete"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
-
       {/* Indicateur cliquable */}
       {link && (
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <MessageSquare className="w-4 h-4 text-gray-400" />
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <MessageSquare className="w-3.5 h-3.5 text-gray-400" />
           </div>
         </div>
       )}

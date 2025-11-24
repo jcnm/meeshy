@@ -42,6 +42,10 @@ export * from './audio-effects-timeline';
 // Export des types unifiés Phase 8 - Push Notifications
 export * from './push-notification';
 
+// NOTE: Les types de notifications sont dans /frontend/types/notification-v2.ts
+// Ils ne sont pas dans /shared car ils utilisent des types frontend spécifiques
+// Le backend doit importer NotificationType depuis le frontend si nécessaire
+
 // Export des types communauté
 export * from './community';
 

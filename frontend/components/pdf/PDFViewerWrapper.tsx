@@ -1,15 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Download,
   AlertTriangle,
   Maximize,
   X,
-  ChevronLeft,
-  ChevronRight,
-  ZoomIn,
-  ZoomOut,
   FileText
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -24,8 +20,8 @@ interface PDFViewerWrapperProps {
 }
 
 /**
- * Wrapper qui utilise iframe comme fallback
- * Plus simple et sans dépendance problématique
+ * Wrapper qui utilise iframe pour l'affichage
+ * Compatible Safari mobile - affichage PDF natif du navigateur
  */
 export const PDFViewerWrapper: React.FC<PDFViewerWrapperProps> = ({
   attachment,
@@ -36,7 +32,6 @@ export const PDFViewerWrapper: React.FC<PDFViewerWrapperProps> = ({
 }) => {
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
 
   const attachmentFileUrl = attachment.fileUrl;
 
@@ -47,6 +42,14 @@ export const PDFViewerWrapper: React.FC<PDFViewerWrapperProps> = ({
 
   const handleOpenInNewTab = () => {
     window.open(attachmentFileUrl, '_blank');
+  };
+
+  const goToPreviousPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const goToNextPage = () => {
+    setCurrentPage((prev) => (numPages > 0 ? Math.min(prev + 1, numPages) : prev + 1));
   };
 
   // Truncate filename for mobile
@@ -70,7 +73,7 @@ export const PDFViewerWrapper: React.FC<PDFViewerWrapperProps> = ({
       <div className="relative w-full bg-white dark:bg-gray-900 rounded-lg overflow-auto h-[210px] sm:h-[280px] md:h-[350px]">
         {!hasError ? (
           <iframe
-            src={`${attachmentFileUrl}#toolbar=1&navpanes=1&view=FitH&page=${currentPage}`}
+            src={`${attachmentFileUrl}#toolbar=1&navpanes=1&view=FitH`}
             className="w-full h-full border-0"
             title={attachment.originalName}
             onError={handleIframeError}
@@ -115,15 +118,16 @@ export const PDFViewerWrapper: React.FC<PDFViewerWrapperProps> = ({
 
       {/* Contrôles */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
+        {/* Info fichier */}
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          {/* Info fichier */}
           <div className="text-xs text-gray-600 dark:text-gray-300 truncate">
             <span className="font-medium hidden sm:inline">{attachment.originalName}</span>
             <span className="font-medium inline sm:hidden">{truncateFilename(attachment.originalName)}</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-shrink-0">
+        {/* Contrôles d'action */}
+        <div className="flex items-center gap-1 flex-shrink-0">
           {/* Bouton plein écran / lightbox */}
           {onOpenLightbox && (
             <Button

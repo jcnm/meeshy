@@ -10,6 +10,7 @@
     "memberSince": "Membre depuis",
     "sendMessage": "Envoyer un message",
     "addFriend": "Ajouter",
+    "cancelFriendRequest": "Annuler la demande",
     "userNotFound": "Utilisateur introuvable",
     "userNotFoundDescription": "Cet utilisateur n'existe pas ou n'est plus disponible",
     "loading": "Chargement du profil...",
@@ -34,12 +35,14 @@
       "conversationCreationFailed": "Impossible de créer la conversation",
       "sessionExpired": "Session expirée",
       "sendFriendRequestFailed": "Erreur lors de l'envoi de la demande",
+      "cancelFriendRequestFailed": "Erreur lors de l'annulation de la demande",
       "notAuthenticated": "Non authentifié",
       "loadProfileError": "Erreur lors du chargement du profil"
     },
     "success": {
       "conversationCreated": "Conversation créée",
-      "friendRequestSent": "Demande d'ami envoyée"
+      "friendRequestSent": "Demande d'ami envoyée",
+      "friendRequestCancelled": "Demande d'ami annulée"
     }
   }
 }

@@ -116,7 +116,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   const [mentionedUserIds, setMentionedUserIds] = useState<string[]>([]); // Tracker les IDs des utilisateurs mentionnés
 
   // Utiliser le placeholder fourni ou la traduction par défaut
-  const finalPlaceholder = placeholder || t('conversationSearch.shareMessage');
+  const finalPlaceholder = placeholder || t('writeMessage');
 
   
   // Détection mobile

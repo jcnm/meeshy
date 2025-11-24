@@ -38,6 +38,9 @@ export interface CreateNotificationData {
   senderId?: string;
   senderUsername?: string;
   senderAvatar?: string;
+  senderDisplayName?: string;
+  senderFirstName?: string;
+  senderLastName?: string;
 
   // Aperçu du message
   messagePreview?: string;
@@ -68,6 +71,9 @@ export interface NotificationEventData {
   senderId?: string;
   senderUsername?: string;
   senderAvatar?: string;
+  senderDisplayName?: string;
+  senderFirstName?: string;
+  senderLastName?: string;
   messagePreview?: string;
   conversationId?: string;
   messageId?: string;
@@ -483,6 +489,15 @@ export class NotificationService {
       const sanitizedSenderAvatar = data.senderAvatar
         ? SecuritySanitizer.sanitizeURL(data.senderAvatar)
         : undefined;
+      const sanitizedSenderDisplayName = data.senderDisplayName
+        ? SecuritySanitizer.sanitizeText(data.senderDisplayName)
+        : undefined;
+      const sanitizedSenderFirstName = data.senderFirstName
+        ? SecuritySanitizer.sanitizeText(data.senderFirstName)
+        : undefined;
+      const sanitizedSenderLastName = data.senderLastName
+        ? SecuritySanitizer.sanitizeText(data.senderLastName)
+        : undefined;
       const sanitizedMessagePreview = data.messagePreview
         ? SecuritySanitizer.sanitizeText(data.messagePreview)
         : undefined;
@@ -503,6 +518,9 @@ export class NotificationService {
           senderId: data.senderId,
           senderUsername: sanitizedSenderUsername,
           senderAvatar: sanitizedSenderAvatar,
+          senderDisplayName: sanitizedSenderDisplayName,
+          senderFirstName: sanitizedSenderFirstName,
+          senderLastName: sanitizedSenderLastName,
           messagePreview: sanitizedMessagePreview,
           conversationId: data.conversationId,
           messageId: data.messageId,
@@ -526,6 +544,9 @@ export class NotificationService {
         senderId: notification.senderId || undefined,
         senderUsername: notification.senderUsername || undefined,
         senderAvatar: notification.senderAvatar || undefined,
+        senderDisplayName: notification.senderDisplayName || undefined,
+        senderFirstName: notification.senderFirstName || undefined,
+        senderLastName: notification.senderLastName || undefined,
         messagePreview: notification.messagePreview || undefined,
         conversationId: notification.conversationId || undefined,
         messageId: notification.messageId || undefined,
@@ -572,6 +593,9 @@ export class NotificationService {
     senderId: string;
     senderUsername: string;
     senderAvatar?: string;
+    senderDisplayName?: string;
+    senderFirstName?: string;
+    senderLastName?: string;
     messageContent: string;
     conversationId: string;
     messageId: string;
@@ -635,19 +659,22 @@ export class NotificationService {
       messagePreview = this.truncateMessage(data.messageContent, 25);
     }
 
-    // Titre simple pour tous les types: "Nouveau message de Xena"
-    // Le nom de la conversation est affiché dans le timestamp côté frontend
-    const title = `Nouveau message de ${data.senderUsername}`;
+    // Le titre sera construit côté frontend à partir des données brutes
+    // On garde un titre minimal comme fallback
+    const title = 'Nouveau message';
 
     return this.createNotification({
       userId: data.recipientId,
       type: 'new_message',
-      title,
+      title, // Titre fallback (le frontend construira le vrai titre)
       content: messagePreview,
       priority: 'normal',
       senderId: data.senderId,
       senderUsername: data.senderUsername,
       senderAvatar: data.senderAvatar,
+      senderDisplayName: data.senderDisplayName,
+      senderFirstName: data.senderFirstName,
+      senderLastName: data.senderLastName,
       messagePreview,
       conversationId: data.conversationId,
       messageId: data.messageId,
@@ -674,15 +701,39 @@ export class NotificationService {
   }): Promise<NotificationEventData | null> {
     const callTypeLabel = data.callType === 'audio' ? 'audio' : 'vidéo';
 
+    // Récupérer les informations complètes de l'appelant
+    const senderInfo = await this.fetchSenderInfo(data.callerId);
+    if (!senderInfo) {
+      // Fallback si l'utilisateur n'est pas trouvé
+      return this.createNotification({
+        userId: data.recipientId,
+        type: 'missed_call',
+        title: `Appel ${callTypeLabel} manqué`,
+        content: `Appel manqué de ${data.callerUsername}`,
+        priority: 'high',
+        senderId: data.callerId,
+        senderUsername: data.callerUsername,
+        senderAvatar: data.callerAvatar,
+        conversationId: data.conversationId,
+        callSessionId: data.callSessionId,
+        data: {
+          callType: data.callType || 'video'
+        }
+      });
+    }
+
     return this.createNotification({
       userId: data.recipientId,
       type: 'missed_call',
       title: `Appel ${callTypeLabel} manqué`,
-      content: `Appel manqué de ${data.callerUsername}`,
+      content: `Appel manqué`,
       priority: 'high',
       senderId: data.callerId,
-      senderUsername: data.callerUsername,
-      senderAvatar: data.callerAvatar,
+      senderUsername: senderInfo.senderUsername,
+      senderAvatar: senderInfo.senderAvatar,
+      senderDisplayName: senderInfo.senderDisplayName,
+      senderFirstName: senderInfo.senderFirstName,
+      senderLastName: senderInfo.senderLastName,
       conversationId: data.conversationId,
       callSessionId: data.callSessionId,
       data: {
@@ -703,19 +754,28 @@ export class NotificationService {
     conversationTitle?: string | null;
     conversationType: string;
   }): Promise<NotificationEventData | null> {
+    // Récupérer les informations complètes de l'inviteur
+    const senderInfo = await this.fetchSenderInfo(data.inviterId);
+
     // Déterminer le contenu selon le type de conversation
     let title: string;
     let content: string;
 
     if (data.conversationType === 'direct') {
       // Conversation directe: juste le nom de l'inviteur
-      title = `Nouvelle conversation avec ${data.inviterUsername}`;
-      content = `${data.inviterUsername} a démarré une conversation avec vous`;
+      // Le titre sera construit côté frontend
+      title = 'Nouvelle conversation';
+      content = senderInfo
+        ? 'a démarré une conversation avec vous'
+        : `${data.inviterUsername} a démarré une conversation avec vous`;
     } else {
       // Conversation de groupe: nom de l'inviteur + titre de la conversation
       const conversationName = data.conversationTitle || 'une conversation';
-      title = `Invitation à "${conversationName}"`;
-      content = `${data.inviterUsername} vous a invité à rejoindre "${conversationName}"`;
+      // Le titre sera construit côté frontend
+      title = 'Invitation de groupe';
+      content = senderInfo
+        ? `vous a invité à rejoindre ${conversationName}`
+        : `${data.inviterUsername} vous a invité à rejoindre ${conversationName}`;
     }
 
     return this.createNotification({
@@ -725,8 +785,11 @@ export class NotificationService {
       content,
       priority: 'normal',
       senderId: data.inviterId,
-      senderUsername: data.inviterUsername,
-      senderAvatar: data.inviterAvatar,
+      senderUsername: senderInfo?.senderUsername || data.inviterUsername,
+      senderAvatar: senderInfo?.senderAvatar || data.inviterAvatar,
+      senderDisplayName: senderInfo?.senderDisplayName,
+      senderFirstName: senderInfo?.senderFirstName,
+      senderLastName: senderInfo?.senderLastName,
       conversationId: data.conversationId,
       data: {
         conversationTitle: data.conversationTitle,
@@ -754,8 +817,9 @@ export class NotificationService {
     if (data.isJoiner) {
       // Notification de confirmation pour l'utilisateur qui rejoint
       const conversationName = data.conversationTitle || 'la conversation';
-      title = `Bienvenue dans "${conversationName}"`;
-      content = `Vous avez rejoint "${conversationName}" avec succès`;
+      // Le titre sera construit côté frontend
+      title = 'Bienvenue';
+      content = `Vous avez rejoint ${conversationName} avec succès`;
 
       return this.createNotification({
         userId: data.userId,
@@ -775,8 +839,12 @@ export class NotificationService {
       // Notification pour les admins qu'un nouveau membre a rejoint
       const conversationName = data.conversationTitle || 'la conversation';
       const joinerName = data.joinerUsername || 'Un utilisateur';
-      title = `Nouveau membre dans "${conversationName}"`;
-      content = `${joinerName} a rejoint "${conversationName}" via un lien partagé`;
+      // Le titre sera construit côté frontend
+      title = 'Nouveau membre';
+      content = `${joinerName} a rejoint ${conversationName} via un lien partagé`;
+
+      // Pour les admins, on peut récupérer les infos du joiner si on a son ID
+      // mais dans cette fonction on n'a pas forcément le senderId, donc on utilise juste le username
 
       return this.createNotification({
         userId: data.userId,
@@ -813,6 +881,9 @@ export class NotificationService {
       senderId: string;
       senderUsername: string;
       senderAvatar?: string;
+      senderDisplayName?: string;
+      senderFirstName?: string;
+      senderLastName?: string;
       messageContent: string;
       conversationId: string;
       conversationTitle?: string | null;
@@ -866,12 +937,9 @@ export class NotificationService {
         messagePreview = this.truncateMessage(commonData.messageContent, 20);
       }
 
-      // Déterminer le titre selon le nombre de mentions
-      // Si plusieurs utilisateurs mentionnés: "XXX vous a mentionné au côtés d'autres"
-      // Sinon: "XXX vous a mentionné"
-      const title = mentionedUserIds.length > 1
-        ? `${commonData.senderUsername} vous a mentionné au côtés d'autres`
-        : `${commonData.senderUsername} vous a mentionné`;
+      // Le titre sera construit côté frontend
+      const title = 'Mention';
+      const mentionPrefix = '';
 
       // Filtrer les utilisateurs qui ont dépassé le rate limit
       const validMentionedUserIds: string[] = [];
@@ -918,7 +986,7 @@ export class NotificationService {
         let notificationData: any;
 
         if (isMember) {
-          content = messagePreview;
+          content = `${mentionPrefix} ${messagePreview}`;
           notificationData = {
             conversationTitle: commonData.conversationTitle,
             isMember: true,
@@ -926,7 +994,7 @@ export class NotificationService {
             attachments: attachmentInfo
           };
         } else {
-          content = `${messagePreview}\n\nVous n'êtes pas membre de cette conversation. Cliquez pour la rejoindre.`;
+          content = `${mentionPrefix} ${messagePreview}\n\nVous n'êtes pas membre de cette conversation. Cliquez pour la rejoindre.`;
           notificationData = {
             conversationTitle: commonData.conversationTitle,
             isMember: false,
@@ -944,6 +1012,9 @@ export class NotificationService {
           senderId: commonData.senderId,
           senderUsername: commonData.senderUsername,
           senderAvatar: commonData.senderAvatar,
+          senderDisplayName: commonData.senderDisplayName,
+          senderFirstName: commonData.senderFirstName,
+          senderLastName: commonData.senderLastName,
           messagePreview,
           conversationId: commonData.conversationId,
           messageId: commonData.messageId,
@@ -976,25 +1047,7 @@ export class NotificationService {
 
       // Émettre les notifications via Socket.IO
       for (const notification of createdNotifications) {
-        const notificationEvent: NotificationEventData = {
-          id: notification.id,
-          userId: notification.userId,
-          type: notification.type,
-          title: notification.title,
-          content: notification.content,
-          priority: notification.priority,
-          isRead: notification.isRead,
-          createdAt: notification.createdAt,
-          senderId: notification.senderId || undefined,
-          senderUsername: notification.senderUsername || undefined,
-          senderAvatar: notification.senderAvatar || undefined,
-          messagePreview: notification.messagePreview || undefined,
-          conversationId: notification.conversationId || undefined,
-          messageId: notification.messageId || undefined,
-          data: notification.data ? JSON.parse(notification.data) : undefined
-        };
-
-        this.emitNotification(notification.userId, notificationEvent);
+        this.emitNotification(notification.userId, this.formatNotificationEvent(notification));
       }
 
       return result.count;
@@ -1014,6 +1067,9 @@ export class NotificationService {
     senderId: string;
     senderUsername: string;
     senderAvatar?: string;
+    senderDisplayName?: string;
+    senderFirstName?: string;
+    senderLastName?: string;
     messageContent: string;
     conversationId: string;
     conversationTitle?: string | null;
@@ -1082,8 +1138,8 @@ export class NotificationService {
       messagePreview = this.truncateMessage(data.messageContent, 20);
     }
 
-    // Titre simplifié (conversation name déjà dans timestamp)
-    const title = `${data.senderUsername} vous a mentionné`;
+    // Le titre sera construit côté frontend
+    const title = 'Mention';
 
     // Déterminer le contenu et les données selon si l'utilisateur est membre
     let content: string;
@@ -1118,6 +1174,9 @@ export class NotificationService {
       senderId: data.senderId,
       senderUsername: data.senderUsername,
       senderAvatar: data.senderAvatar,
+      senderDisplayName: data.senderDisplayName,
+      senderFirstName: data.senderFirstName,
+      senderLastName: data.senderLastName,
       messagePreview,
       conversationId: data.conversationId,
       messageId: data.messageId,
@@ -1300,12 +1359,39 @@ export class NotificationService {
       return null;
     }
 
+    // Récupérer les informations complètes du répondeur
+    const senderInfo = await this.fetchSenderInfo(data.replierId);
+    if (!senderInfo) {
+      // Fallback si l'utilisateur n'est pas trouvé
+      const messagePreview = this.formatMessagePreview(data.replyContent, data.attachments);
+      return this.createNotification({
+        userId: data.originalMessageAuthorId,
+        type: 'message_reply',
+        title: 'Réponse',
+        content: messagePreview,
+        priority: 'normal',
+        senderId: data.replierId,
+        senderUsername: data.replierUsername,
+        senderAvatar: data.replierAvatar,
+        messagePreview,
+        conversationId: data.conversationId,
+        messageId: data.replyMessageId,
+        data: {
+          originalMessageId: data.originalMessageId,
+          conversationTitle: data.conversationTitle,
+          attachments: this.formatAttachmentInfo(data.attachments),
+          action: 'view_message'
+        }
+      });
+    }
+
     const messagePreview = this.formatMessagePreview(
       data.replyContent,
       data.attachments
     );
 
-    const title = `Réponse de ${data.replierUsername}`;
+    // Le titre sera construit côté frontend
+    const title = 'Réponse';
     const content = messagePreview;
 
     return this.createNotification({
@@ -1315,8 +1401,11 @@ export class NotificationService {
       content,
       priority: 'normal',
       senderId: data.replierId,
-      senderUsername: data.replierUsername,
-      senderAvatar: data.replierAvatar,
+      senderUsername: senderInfo.senderUsername,
+      senderAvatar: senderInfo.senderAvatar,
+      senderDisplayName: senderInfo.senderDisplayName,
+      senderFirstName: senderInfo.senderFirstName,
+      senderLastName: senderInfo.senderLastName,
       messagePreview,
       conversationId: data.conversationId,
       messageId: data.replyMessageId,
@@ -1344,8 +1433,12 @@ export class NotificationService {
   }): Promise<number> {
     if (data.adminIds.length === 0) return 0;
 
-    const title = `Nouveau membre dans "${data.groupTitle}"`;
-    const content = `${data.newMemberUsername} a rejoint le groupe`;
+    // Récupérer les informations complètes du nouveau membre
+    const senderInfo = await this.fetchSenderInfo(data.newMemberId);
+
+    // Le titre sera construit côté frontend
+    const title = 'Nouveau membre';
+    const content = `${senderInfo?.senderDisplayName || senderInfo?.senderFirstName || data.newMemberUsername} a rejoint le groupe`;
 
     // Créer en batch pour tous les admins
     const notificationsData = data.adminIds.map(adminId => ({
@@ -1355,8 +1448,11 @@ export class NotificationService {
       content,
       priority: 'low',
       senderId: data.newMemberId,
-      senderUsername: data.newMemberUsername,
-      senderAvatar: data.newMemberAvatar,
+      senderUsername: senderInfo?.senderUsername || data.newMemberUsername,
+      senderAvatar: senderInfo?.senderAvatar || data.newMemberAvatar,
+      senderDisplayName: senderInfo?.senderDisplayName,
+      senderFirstName: senderInfo?.senderFirstName,
+      senderLastName: senderInfo?.senderLastName,
       conversationId: data.groupId,
       data: JSON.stringify({
         groupTitle: data.groupTitle,
@@ -1410,8 +1506,31 @@ export class NotificationService {
     message?: string;
     friendRequestId: string;
   }): Promise<NotificationEventData | null> {
-    const title = `${data.requesterUsername} veut se connecter`;
-    const content = data.message || `${data.requesterUsername} vous a envoyé une invitation`;
+    // Récupérer les informations complètes du demandeur
+    const senderInfo = await this.fetchSenderInfo(data.requesterId);
+    if (!senderInfo) {
+      // Fallback si l'utilisateur n'est pas trouvé
+      const content = data.message || `${data.requesterUsername} vous a envoyé une invitation`;
+      return this.createNotification({
+        userId: data.recipientId,
+        type: 'contact_request',
+        title: 'Demande de contact',
+        content,
+        priority: 'high',
+        senderId: data.requesterId,
+        senderUsername: data.requesterUsername,
+        senderAvatar: data.requesterAvatar,
+        data: {
+          friendRequestId: data.friendRequestId,
+          message: data.message,
+          action: 'accept_or_reject_contact'
+        }
+      });
+    }
+
+    // Le titre sera construit côté frontend
+    const title = 'Demande de contact';
+    const content = data.message || 'Nouvelle demande de contact';
 
     return this.createNotification({
       userId: data.recipientId,
@@ -1420,8 +1539,11 @@ export class NotificationService {
       content,
       priority: 'high',
       senderId: data.requesterId,
-      senderUsername: data.requesterUsername,
-      senderAvatar: data.requesterAvatar,
+      senderUsername: senderInfo.senderUsername,
+      senderAvatar: senderInfo.senderAvatar,
+      senderDisplayName: senderInfo.senderDisplayName,
+      senderFirstName: senderInfo.senderFirstName,
+      senderLastName: senderInfo.senderLastName,
       data: {
         friendRequestId: data.friendRequestId,
         message: data.message,
@@ -1440,8 +1562,30 @@ export class NotificationService {
     accepterAvatar?: string;
     conversationId: string;
   }): Promise<NotificationEventData | null> {
-    const title = `${data.accepterUsername} accepte la connexion`;
-    const content = `${data.accepterUsername} a accepté votre invitation. Vous pouvez maintenant discuter ensemble.`;
+    // Récupérer les informations complètes de celui qui accepte
+    const senderInfo = await this.fetchSenderInfo(data.accepterId);
+    if (!senderInfo) {
+      // Fallback
+      return this.createNotification({
+        userId: data.requesterId,
+        type: 'contact_accepted',
+        title: 'Contact accepté',
+        content: `${data.accepterUsername} a accepté votre invitation. Vous pouvez maintenant discuter ensemble.`,
+        priority: 'normal',
+        senderId: data.accepterId,
+        senderUsername: data.accepterUsername,
+        senderAvatar: data.accepterAvatar,
+        conversationId: data.conversationId,
+        data: {
+          conversationId: data.conversationId,
+          action: 'view_conversation'
+        }
+      });
+    }
+
+    // Le titre sera construit côté frontend
+    const title = 'Contact accepté';
+    const content = 'a accepté votre invitation. Vous pouvez maintenant discuter ensemble.';
 
     return this.createNotification({
       userId: data.requesterId,
@@ -1450,8 +1594,11 @@ export class NotificationService {
       content,
       priority: 'normal',
       senderId: data.accepterId,
-      senderUsername: data.accepterUsername,
-      senderAvatar: data.accepterAvatar,
+      senderUsername: senderInfo.senderUsername,
+      senderAvatar: senderInfo.senderAvatar,
+      senderDisplayName: senderInfo.senderDisplayName,
+      senderFirstName: senderInfo.senderFirstName,
+      senderLastName: senderInfo.senderLastName,
       conversationId: data.conversationId,
       data: {
         conversationId: data.conversationId,
@@ -1480,8 +1627,35 @@ export class NotificationService {
       return null;
     }
 
+    // Récupérer les informations complètes du réacteur
+    const senderInfo = await this.fetchSenderInfo(data.reactorId);
+    if (!senderInfo) {
+      // Fallback
+      const messagePreview = this.truncateMessage(data.messageContent, 15);
+      return this.createNotification({
+        userId: data.messageAuthorId,
+        type: 'message_reaction',
+        title: 'Réaction',
+        content: `${data.emoji} ${messagePreview}`,
+        priority: 'low',
+        senderId: data.reactorId,
+        senderUsername: data.reactorUsername,
+        senderAvatar: data.reactorAvatar,
+        messagePreview,
+        conversationId: data.conversationId,
+        messageId: data.messageId,
+        data: {
+          reactionId: data.reactionId,
+          emoji: data.emoji,
+          conversationTitle: data.conversationTitle,
+          action: 'view_message'
+        }
+      });
+    }
+
     const messagePreview = this.truncateMessage(data.messageContent, 15);
-    const title = `${data.reactorUsername} a réagi à votre message`;
+    // Le titre sera construit côté frontend
+    const title = 'Réaction';
     const content = `${data.emoji} ${messagePreview}`;
 
     return this.createNotification({
@@ -1491,8 +1665,11 @@ export class NotificationService {
       content,
       priority: 'low',
       senderId: data.reactorId,
-      senderUsername: data.reactorUsername,
-      senderAvatar: data.reactorAvatar,
+      senderUsername: senderInfo.senderUsername,
+      senderAvatar: senderInfo.senderAvatar,
+      senderDisplayName: senderInfo.senderDisplayName,
+      senderFirstName: senderInfo.senderFirstName,
+      senderLastName: senderInfo.senderLastName,
       messagePreview,
       conversationId: data.conversationId,
       messageId: data.messageId,
@@ -1515,8 +1692,30 @@ export class NotificationService {
     inviterAvatar?: string;
     conversationId: string;
   }): Promise<NotificationEventData | null> {
-    const title = `Nouvelle conversation avec ${data.inviterUsername}`;
-    const content = `${data.inviterUsername} a démarré une conversation avec vous`;
+    // Récupérer les informations complètes de l'inviteur
+    const senderInfo = await this.fetchSenderInfo(data.inviterId);
+    if (!senderInfo) {
+      // Fallback
+      return this.createNotification({
+        userId: data.invitedUserId,
+        type: 'new_conversation_direct',
+        title: 'Nouvelle conversation',
+        content: `${data.inviterUsername} a démarré une conversation avec vous`,
+        priority: 'normal',
+        senderId: data.inviterId,
+        senderUsername: data.inviterUsername,
+        senderAvatar: data.inviterAvatar,
+        conversationId: data.conversationId,
+        data: {
+          conversationType: 'direct',
+          action: 'view_conversation'
+        }
+      });
+    }
+
+    // Le titre sera construit côté frontend
+    const title = 'Nouvelle conversation';
+    const content = 'a démarré une conversation avec vous';
 
     return this.createNotification({
       userId: data.invitedUserId,
@@ -1525,8 +1724,11 @@ export class NotificationService {
       content,
       priority: 'normal',
       senderId: data.inviterId,
-      senderUsername: data.inviterUsername,
-      senderAvatar: data.inviterAvatar,
+      senderUsername: senderInfo.senderUsername,
+      senderAvatar: senderInfo.senderAvatar,
+      senderDisplayName: senderInfo.senderDisplayName,
+      senderFirstName: senderInfo.senderFirstName,
+      senderLastName: senderInfo.senderLastName,
       conversationId: data.conversationId,
       data: {
         conversationType: 'direct',
@@ -1546,8 +1748,31 @@ export class NotificationService {
     conversationId: string;
     conversationTitle: string;
   }): Promise<NotificationEventData | null> {
-    const title = `Invitation à "${data.conversationTitle}"`;
-    const content = `${data.inviterUsername} vous a invité à rejoindre "${data.conversationTitle}"`;
+    // Récupérer les informations complètes de l'inviteur
+    const senderInfo = await this.fetchSenderInfo(data.inviterId);
+    if (!senderInfo) {
+      // Fallback
+      return this.createNotification({
+        userId: data.invitedUserId,
+        type: 'new_conversation_group',
+        title: 'Invitation de groupe',
+        content: `${data.inviterUsername} vous a invité à rejoindre ${data.conversationTitle}`,
+        priority: 'normal',
+        senderId: data.inviterId,
+        senderUsername: data.inviterUsername,
+        senderAvatar: data.inviterAvatar,
+        conversationId: data.conversationId,
+        data: {
+          conversationTitle: data.conversationTitle,
+          conversationType: 'group',
+          action: 'view_conversation'
+        }
+      });
+    }
+
+    // Le titre sera construit côté frontend
+    const title = 'Invitation de groupe';
+    const content = `vous a invité à rejoindre ${data.conversationTitle}`;
 
     return this.createNotification({
       userId: data.invitedUserId,
@@ -1556,8 +1781,11 @@ export class NotificationService {
       content,
       priority: 'normal',
       senderId: data.inviterId,
-      senderUsername: data.inviterUsername,
-      senderAvatar: data.inviterAvatar,
+      senderUsername: senderInfo.senderUsername,
+      senderAvatar: senderInfo.senderAvatar,
+      senderDisplayName: senderInfo.senderDisplayName,
+      senderFirstName: senderInfo.senderFirstName,
+      senderLastName: senderInfo.senderLastName,
       conversationId: data.conversationId,
       data: {
         conversationTitle: data.conversationTitle,
@@ -1596,6 +1824,46 @@ export class NotificationService {
   // ==============================================
   // MÉTHODES HELPER PRIVÉES
   // ==============================================
+
+  /**
+   * Récupérer les informations complètes d'un utilisateur pour les notifications
+   */
+  private async fetchSenderInfo(senderId: string): Promise<{
+    senderUsername: string;
+    senderAvatar?: string;
+    senderDisplayName?: string;
+    senderFirstName?: string;
+    senderLastName?: string;
+  } | null> {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { id: senderId },
+        select: {
+          username: true,
+          avatar: true,
+          displayName: true,
+          firstName: true,
+          lastName: true
+        }
+      });
+
+      if (!user) {
+        logger.warn(`[NotificationService] User ${senderId} not found for notification`);
+        return null;
+      }
+
+      return {
+        senderUsername: user.username,
+        senderAvatar: user.avatar || undefined,
+        senderDisplayName: user.displayName || undefined,
+        senderFirstName: user.firstName,
+        senderLastName: user.lastName
+      };
+    } catch (error) {
+      logger.error(`[NotificationService] Error fetching sender info:`, error);
+      return null;
+    }
+  }
 
   /**
    * Formater les informations d'attachment pour les notifications
@@ -1682,6 +1950,9 @@ export class NotificationService {
       senderId: notification.senderId || undefined,
       senderUsername: notification.senderUsername || undefined,
       senderAvatar: notification.senderAvatar || undefined,
+      senderDisplayName: notification.senderDisplayName || undefined,
+      senderFirstName: notification.senderFirstName || undefined,
+      senderLastName: notification.senderLastName || undefined,
       messagePreview: notification.messagePreview || undefined,
       conversationId: notification.conversationId || undefined,
       messageId: notification.messageId || undefined,

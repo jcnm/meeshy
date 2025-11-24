@@ -1,23 +1,24 @@
 /**
  * Composant NotificationBell v2
- * Icône cloche avec badge compteur et dropdown
+ * Icône cloche avec badge compteur et dropdown simplifié
  */
 
 'use client';
 
 import React, { useState } from 'react';
-import { Bell } from 'lucide-react';
+import { Bell, Search, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger
-} from '@/components/ui/popover';
-import { NotificationListWithFilters } from './NotificationList';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { NotificationList } from './NotificationList';
 import { useNotificationsManager } from '@/hooks/use-notifications-v2';
 import type { NotificationBellProps } from '@/types/notification-v2';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 /**
  * Composant NotificationBell
@@ -30,19 +31,25 @@ export function NotificationBell({
   className
 }: NotificationBellProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const {
     notifications,
     unreadCount,
     isLoading,
     hasMore,
-    filters,
     fetchMore,
-    markAllAsRead,
-    setFilters
+    markAllAsRead
   } = useNotificationsManager();
 
   const displayCount = count ?? unreadCount;
-  const unreadNotifications = notifications.filter(n => !n.isRead);
+
+  // Filtrer les notifications par recherche texte
+  const filteredNotifications = searchQuery
+    ? notifications.filter(n =>
+        n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        n.content.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : notifications;
 
   /**
    * Gère le clic sur la cloche
@@ -62,9 +69,18 @@ export function NotificationBell({
     await markAllAsRead();
   };
 
+  /**
+   * Gère le clic sur une notification
+   */
+  const handleNotificationClick = (notification: any) => {
+    // Fermer le dropdown
+    setIsOpen(false);
+    // La navigation est gérée par NotificationItem
+  };
+
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+      <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
           size="icon"
@@ -74,7 +90,7 @@ export function NotificationBell({
             animated && displayCount > 0 && 'animate-pulse',
             className
           )}
-          aria-label={`Notifications (${displayCount} unread)`}
+          aria-label={`Notifications (${displayCount} non lues)`}
         >
           <Bell className="h-5 w-5" />
 
@@ -92,17 +108,17 @@ export function NotificationBell({
             </span>
           )}
         </Button>
-      </PopoverTrigger>
+      </DropdownMenuTrigger>
 
-      <PopoverContent
+      <DropdownMenuContent
         align="end"
-        className="w-[400px] p-0"
+        className="w-[70vw] sm:w-[420px] p-0"
         sideOffset={8}
       >
-        <div className="flex flex-col h-[600px]">
+        <div className="flex flex-col h-[80vh] sm:h-[600px] max-h-[600px]">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <div className="flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3 border-b border-gray-200 dark:border-gray-700">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
               Notifications
             </h3>
 
@@ -111,96 +127,57 @@ export function NotificationBell({
                 variant="ghost"
                 size="sm"
                 onClick={handleMarkAllAsRead}
-                className="text-xs text-blue-600 hover:text-blue-700"
+                className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 px-2 sm:px-3"
               >
-                Mark all as read
+                <span className="hidden sm:inline">Tout marquer comme lu</span>
+                <span className="sm:hidden">Tout lire</span>
               </Button>
             )}
           </div>
 
-          {/* Tabs */}
-          <Tabs defaultValue="all" className="flex-1 flex flex-col overflow-hidden">
-            <TabsList className="w-full justify-start rounded-none border-b border-gray-200 dark:border-gray-700 bg-transparent px-4">
-              <TabsTrigger value="all" className="relative">
-                All
-                {notifications.length > 0 && (
-                  <span className="ml-2 px-1.5 py-0.5 text-[10px] font-semibold bg-gray-200 text-gray-700 rounded-full dark:bg-gray-700 dark:text-gray-200">
-                    {notifications.length}
-                  </span>
-                )}
-              </TabsTrigger>
-
-              <TabsTrigger value="unread" className="relative">
-                Unread
-                {unreadCount > 0 && (
-                  <span className="ml-2 px-1.5 py-0.5 text-[10px] font-semibold bg-blue-600 text-white rounded-full">
-                    {unreadCount}
-                  </span>
-                )}
-              </TabsTrigger>
-
-              <TabsTrigger value="mentions">
-                Mentions
-              </TabsTrigger>
-            </TabsList>
-
-            {/* Toutes les notifications */}
-            <TabsContent value="all" className="flex-1 overflow-hidden m-0">
-              <NotificationListWithFilters
-                notifications={notifications}
-                filters={filters}
-                onFilterChange={setFilters}
-                onLoadMore={fetchMore}
-                hasMore={hasMore}
-                isLoading={isLoading}
-                emptyMessage="You have no notifications"
-                showFilters={false}
+          {/* Filtre de recherche */}
+          <div className="px-3 sm:px-4 py-2 sm:py-3 border-b border-gray-200 dark:border-gray-700">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Rechercher..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
               />
-            </TabsContent>
+            </div>
+          </div>
 
-            {/* Notifications non lues */}
-            <TabsContent value="unread" className="flex-1 overflow-hidden m-0">
-              <NotificationListWithFilters
-                notifications={unreadNotifications}
-                filters={{ ...filters, isRead: false }}
-                onFilterChange={setFilters}
-                onLoadMore={fetchMore}
-                hasMore={hasMore}
-                isLoading={isLoading}
-                emptyMessage="All caught up! No unread notifications."
-                showFilters={false}
-              />
-            </TabsContent>
+          {/* Liste des notifications */}
+          <div className="flex-1 overflow-auto">
+            <NotificationList
+              notifications={filteredNotifications}
+              onLoadMore={fetchMore}
+              hasMore={hasMore}
+              isLoading={isLoading}
+              emptyMessage={searchQuery ? "Aucune notification trouvée" : "Vous n'avez aucune notification"}
+              onNotificationClick={handleNotificationClick}
+              compact
+            />
+          </div>
 
-            {/* Mentions */}
-            <TabsContent value="mentions" className="flex-1 overflow-hidden m-0">
-              <NotificationListWithFilters
-                notifications={notifications.filter(n => n.type === 'user_mentioned')}
-                filters={{ ...filters, type: 'user_mentioned' }}
-                onFilterChange={setFilters}
-                emptyMessage="No mentions yet"
-                showFilters={false}
-              />
-            </TabsContent>
-          </Tabs>
-
-          {/* Footer */}
-          <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setIsOpen(false);
-                window.location.href = '/notifications';
-              }}
-              className="w-full text-blue-600 hover:text-blue-700"
-            >
-              View all notifications
-            </Button>
+          {/* Footer - Voir toutes les notifications */}
+          <div className="px-3 sm:px-4 py-2 sm:py-3 border-t border-gray-200 dark:border-gray-700">
+            <Link href="/notifications" onClick={() => setIsOpen(false)}>
+              <Button
+                variant="ghost"
+                className="w-full justify-center text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-xs sm:text-sm"
+              >
+                <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Voir toutes les notifications</span>
+                <span className="sm:hidden">Voir tout</span>
+              </Button>
+            </Link>
           </div>
         </div>
-      </PopoverContent>
-    </Popover>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -215,8 +192,9 @@ export function NotificationBellSimple({
   animated = true,
   className
 }: NotificationBellProps) {
-  const { unreadCount } = useNotificationsManager();
-  const displayCount = count ?? unreadCount;
+  // N'utilise PAS useNotificationsManager pour éviter les doublons de toast
+  // Le compteur sera passé via la prop 'count' depuis le composant parent
+  const displayCount = count ?? 0;
 
   return (
     <Button
@@ -228,7 +206,7 @@ export function NotificationBellSimple({
         animated && displayCount > 0 && 'animate-pulse',
         className
       )}
-      aria-label={`Notifications (${displayCount} unread)`}
+      aria-label={`Notifications (${displayCount} non lues)`}
     >
       <Bell className="h-5 w-5" />
 

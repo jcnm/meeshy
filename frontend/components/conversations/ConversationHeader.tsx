@@ -1,8 +1,9 @@
 'use client';
 
 import { useCallback, useState, useEffect } from 'react';
-import { ArrowLeft, UserPlus, Info, MoreVertical, Link2, Video, Ghost, Share2, Image, Pin, Bell, BellOff, Archive, ArchiveRestore } from 'lucide-react';
+import { ArrowLeft, UserPlus, Info, MoreVertical, Link2, Video, Ghost, Share2, Image, Pin, Bell, BellOff, Archive, ArchiveRestore, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { OnlineIndicator } from '@/components/ui/online-indicator';
 import { OngoingCallBanner } from '@/components/video-calls/OngoingCallBanner';
@@ -21,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { getTagColor } from '@/utils/tag-colors';
 import type {
   Conversation,
   SocketIOUser as User,
@@ -86,6 +88,9 @@ export function ConversationHeader({
   const [isMuted, setIsMuted] = useState(false);
   const [isArchived, setIsArchived] = useState(false);
   const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
+  const [customName, setCustomName] = useState<string | undefined>(undefined);
+  const [tags, setTags] = useState<string[]>([]);
+  const [categoryName, setCategoryName] = useState<string | undefined>(undefined);
 
   // État pour gérer l'appel en cours
   const { currentCall, isInCall } = useCallStore();
@@ -119,11 +124,24 @@ export function ConversationHeader({
           setIsPinned(prefs.isPinned);
           setIsMuted(prefs.isMuted);
           setIsArchived(prefs.isArchived);
+          setCustomName(prefs.customName);
+          setTags(prefs.tags || []);
+
+          // Charger le nom de la catégorie si categoryId existe
+          if (prefs.categoryId) {
+            const category = await userPreferencesService.getCategory(prefs.categoryId);
+            setCategoryName(category?.name);
+          } else {
+            setCategoryName(undefined);
+          }
         } else {
-          // Réinitialiser à false si pas de préférences
+          // Réinitialiser si pas de préférences
           setIsPinned(false);
           setIsMuted(false);
           setIsArchived(false);
+          setCustomName(undefined);
+          setTags([]);
+          setCategoryName(undefined);
         }
       } catch (error) {
         console.error('Error loading preferences:', error);
@@ -131,6 +149,9 @@ export function ConversationHeader({
         setIsPinned(false);
         setIsMuted(false);
         setIsArchived(false);
+        setCustomName(undefined);
+        setTags([]);
+        setCategoryName(undefined);
       } finally {
         setIsLoadingPreferences(false);
       }
@@ -485,7 +506,51 @@ export function ConversationHeader({
         />
       )}
 
-      <div className="flex items-center justify-between px-4 py-3 pb-4 border-b border-border bg-card min-h-[80px]">
+      <div className="border-b border-border bg-card">
+        {/* Bande horizontale défilable des tags et catégories */}
+        {!isLoadingPreferences && (categoryName || tags.length > 0) && (
+          <div className="px-4 pt-3 pb-2 border-b border-border/50">
+            <div
+              className="flex items-center gap-2 overflow-x-auto pb-1"
+              style={{
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                WebkitOverflowScrolling: 'touch'
+              }}
+            >
+              {/* Catégorie */}
+              {categoryName && (
+                <Badge
+                  variant="secondary"
+                  className="h-6 px-3 text-xs font-medium flex-shrink-0 shadow-sm"
+                >
+                  {categoryName}
+                </Badge>
+              )}
+              {/* Tags */}
+              {tags.map((tag, index) => {
+                const colors = getTagColor(tag);
+                return (
+                  <Badge
+                    key={index}
+                    variant="outline"
+                    className={cn(
+                      "h-6 px-3 text-xs font-medium border flex-shrink-0 shadow-sm",
+                      colors.bg,
+                      colors.text,
+                      colors.border
+                    )}
+                  >
+                    {tag}
+                  </Badge>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Section principale du header */}
+        <div className="flex items-center justify-between px-4 py-3 min-h-[80px]">
       <div className="flex items-center gap-3 flex-1 min-w-0">
         {/* Bouton retour (mobile ou desktop avec showBackButton) */}
         {(isMobile || showBackButton) && (
@@ -571,11 +636,20 @@ export function ConversationHeader({
 
         {/* Infos de la conversation */}
         <div className="flex-1 min-w-0">
-          <h2 className="font-semibold text-base truncate" id="conversation-title" aria-label={`Conversation: ${getConversationName()}`}>
-            {getConversationName()}
-          </h2>
+          {/* Titre principal avec titre original entre parenthèses si customName existe */}
+          <div className="flex items-center gap-1.5 min-w-0">
+            <h2 className="font-semibold text-base truncate" id="conversation-title" aria-label={`Conversation: ${getConversationName()}`}>
+              {customName ? (
+                <>
+                  {customName} <span className="text-muted-foreground font-normal">({getConversationName()})</span>
+                </>
+              ) : (
+                getConversationName()
+              )}
+            </h2>
+          </div>
 
-          {/* Show participant info and typing only for non-direct conversations */}
+          {/* Deuxième ligne : indicateur de frappe ou participants */}
           {conversation.type !== 'direct' ? (
             <div className="text-sm text-muted-foreground">
               <ConversationParticipants
@@ -585,11 +659,14 @@ export function ConversationHeader({
                 isGroup={conversation.type !== 'direct'}
                 conversationType={conversation.type}
                 typingUsers={typingUsers.map(u => ({ userId: u.userId, conversationId: u.conversationId }))}
+                conversationTitle={customName}
+                conversationTags={tags}
+                conversationCategory={categoryName}
                 className="truncate"
               />
             </div>
           ) : (
-            /* For direct conversations, show typing indicator with username */
+            /* For direct conversations, show only typing indicator */
             <div className="text-sm text-muted-foreground">
               {(() => {
                 const otherTypingUsers = typingUsers.filter(u => u.userId !== currentUser.id);
@@ -597,13 +674,15 @@ export function ConversationHeader({
                   const typingUser = otherTypingUsers[0];
                   const typingUserName = typingUser.username || getConversationName();
                   return (
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs">
+                    <div className="flex items-center gap-1.5">
+                      <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                      <span className="text-sm font-medium">
                         {typingUserName} {t('conversationParticipants.typing') || 'est en train d\'écrire...'}
                       </span>
                     </div>
                   );
                 }
+
                 return null;
               })()}
             </div>
@@ -726,16 +805,6 @@ export function ConversationHeader({
               <Share2 className="h-4 w-4 mr-2" />
               {t('conversationHeader.share') || 'Partager'}
             </DropdownMenuItem>
-
-            {conversation.type !== 'direct' && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  {t('addParticipant')}
-                </DropdownMenuItem>
-              </>
-            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -748,7 +817,8 @@ export function ConversationHeader({
         isUploading={isUploadingImage}
         conversationTitle={conversation.title || conversation.id}
       />
-    </div>
+        </div>
+      </div>
     </>
   );
 }

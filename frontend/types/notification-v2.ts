@@ -55,10 +55,17 @@ export type AttachmentType = 'image' | 'video' | 'audio' | 'document' | 'pdf';
 
 /**
  * Informations sur l'expéditeur
+ * Ordre de priorité pour l'affichage:
+ * 1. displayName (si existe)
+ * 2. firstName + lastName
+ * 3. username (fallback)
  */
 export interface NotificationSender {
   id: string;
   username: string;
+  displayName?: string;
+  firstName?: string;
+  lastName?: string;
   avatar?: string;
 }
 
@@ -95,33 +102,40 @@ export interface NotificationMetadata {
 
 /**
  * Structure complète d'une notification v2
+ *
+ * IMPORTANT: Le backend ne doit PAS construire le `title`.
+ * Le frontend construit le titre via `buildNotificationTitle(notification)`
+ * à partir du `type` et des données brutes (`sender`, `context`, `metadata`).
  */
 export interface NotificationV2 {
   id: string;
   userId: string;
-  type: NotificationType;
-  title: string;
-  content: string;
+  type: NotificationType; // ← Le frontend utilise ce type pour construire le titre
   priority: NotificationPriority;
   isRead: boolean;
   readAt?: Date;
   createdAt: Date;
   expiresAt?: Date;
 
-  // Informations de l'expéditeur
+  // Informations de l'expéditeur (utilisées pour construire le titre)
   sender?: NotificationSender;
 
   // Aperçu du message
   messagePreview?: string;
 
-  // Contexte de navigation
+  // Contexte de navigation (utilisé pour construire le titre)
   context?: NotificationContext;
 
-  // Métadonnées enrichies
+  // Métadonnées enrichies (utilisées pour construire le titre)
   metadata?: NotificationMetadata;
 
   // Données brutes pour compatibilité
   data?: Record<string, unknown>;
+
+  // ⚠️ DEPRECATED: Ne plus utiliser côté backend
+  // Le frontend construit le titre à partir du type + données brutes
+  title?: string; // Fallback seulement si le frontend ne peut pas construire le titre
+  content?: string; // Fallback ou contenu additionnel
 }
 
 /**
@@ -257,6 +271,9 @@ export interface NotificationStoreState {
   // Connexion
   isConnected: boolean;
   lastSync?: Date;
+
+  // Conversation active (pour filtrer les notifications)
+  activeConversationId: string | null;
 }
 
 /**
@@ -286,11 +303,13 @@ export interface NotificationStoreActions {
 
   // Compteurs
   updateCounts: (counts: NotificationCounts) => void;
+  updateCountsFromNotifications: () => void;
 
   // État
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
   setConnected: (isConnected: boolean) => void;
+  setActiveConversationId: (conversationId: string | null) => void;
 }
 
 /**

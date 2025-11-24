@@ -132,8 +132,8 @@ class ApiService {
     // Get token from AuthManager (source unique de vérité)
     const token = authManager.getAuthToken();
 
-    // Pour les requêtes DELETE/POST/PUT sans body, ne pas inclure Content-Type
-    const shouldExcludeContentType = (options.method === 'DELETE' || options.method === 'POST' || options.method === 'PUT') && !options.body;
+    // Pour les requêtes DELETE/POST/PUT/PATCH sans body, ne pas inclure Content-Type
+    const shouldExcludeContentType = (options.method === 'DELETE' || options.method === 'POST' || options.method === 'PUT' || options.method === 'PATCH') && !options.body;
     let defaultHeaders = { ...this.config.headers };
 
     // Supprimer complètement le Content-Type pour les requêtes sans body

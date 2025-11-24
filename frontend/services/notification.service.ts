@@ -5,7 +5,6 @@
 
 import { io, Socket } from 'socket.io-client';
 import { APP_CONFIG, API_CONFIG } from '@/lib/config';
-import { showNotificationToast } from '@/utils/custom-toast';
 
 import type { Attachment } from '@shared/types/attachment';
 
@@ -422,10 +421,12 @@ export class NotificationService {
     this.updateCountsFromNotifications();
     this.config?.onNotificationReceived?.(notification);
 
-    // Afficher le toast personnalisé pour les nouvelles notifications
-    if (!notification.isRead && typeof window !== 'undefined') {
-      showNotificationToast(notification);
-    }
+    // DEPRECATED: Les toasts sont maintenant gérés par le système V2
+    // via use-notifications-v2.tsx avec NotificationV2 et i18n
+    // Cette ligne est commentée pour éviter les doublons de toasts
+    // if (!notification.isRead && typeof window !== 'undefined') {
+    //   showNotificationToast(notification);
+    // }
   }
 
   /**

@@ -2115,14 +2115,48 @@ export class MeeshySocketIOManager {
       // Broadcaster l'événement à tous les participants de la conversation
       const message = await this.prisma.message.findUnique({
         where: { id: data.messageId },
-        select: { conversationId: true }
+        select: {
+          conversationId: true,
+          content: true,
+          senderId: true,
+          anonymousSenderId: true,
+          conversation: {
+            select: {
+              title: true
+            }
+          }
+        }
       });
 
       if (message) {
         const normalizedConversationId = await this.normalizeConversationId(message.conversationId);
-        
+
         this.io.to(normalizedConversationId).emit(SERVER_EVENTS.REACTION_ADDED, updateEvent);
-        
+
+        // Créer une notification pour l'auteur du message (si ce n'est pas lui qui réagit)
+        // Ne notifier que les utilisateurs authentifiés (pas les anonymes)
+        const messageAuthorId = message.senderId;
+        const reactorId = !isAnonymous ? userId : null;
+
+        if (messageAuthorId && reactorId && messageAuthorId !== reactorId) {
+          // Créer la notification de manière asynchrone sans bloquer
+          // Fire-and-forget pour éviter les timeouts
+          this.notificationService.createReactionNotification({
+            messageAuthorId,
+            reactorId,
+            reactorUsername: '', // sera récupéré par fetchSenderInfo
+            reactorAvatar: undefined,
+            emoji: data.emoji,
+            messageContent: message.content,
+            conversationId: message.conversationId,
+            conversationTitle: message.conversation.title || undefined,
+            messageId: data.messageId,
+            reactionId: reaction.id
+          }).catch((notifError) => {
+            console.error('❌ [REACTION_ADDED] Erreur lors de la création de la notification:', notifError);
+          });
+        }
+
       } else {
         console.error(`❌ [REACTION_ADDED] Message ${data.messageId} non trouvé, impossible de broadcaster`);
       }
@@ -2373,6 +2407,20 @@ export class MeeshySocketIOManager {
         return;
       }
 
+      // Vérifier si c'est une réponse à un message
+      let originalMessageAuthorId: string | null = null;
+      if (message.replyToId) {
+        try {
+          const originalMessage = await this.prisma.message.findUnique({
+            where: { id: message.replyToId },
+            select: { senderId: true }
+          });
+          originalMessageAuthorId = originalMessage?.senderId || null;
+        } catch (err) {
+          console.error('❌ [NOTIFICATIONS] Erreur lors de la récupération du message original:', err);
+        }
+      }
+
       // Récupérer les utilisateurs mentionnés dans le message
       // Ils recevront une notification de mention spécifique, pas une notification de message générique
       const mentionedUserIds = new Set<string>();
@@ -2410,16 +2458,50 @@ export class MeeshySocketIOManager {
       // Récupérer les informations de l'expéditeur
       let senderUsername = 'Unknown';
       let senderAvatar: string | undefined;
+      let senderDisplayName: string | undefined;
+      let senderFirstName: string | undefined;
+      let senderLastName: string | undefined;
 
       if (message.sender) {
-        senderUsername = message.sender.displayName || message.sender.username || 'Unknown';
+        senderUsername = message.sender.username || 'Unknown';
         senderAvatar = message.sender.avatar || undefined;
+        senderDisplayName = message.sender.displayName || undefined;
+        senderFirstName = message.sender.firstName || undefined;
+        senderLastName = message.sender.lastName || undefined;
       } else if (message.anonymousSender) {
         const fullName = `${message.anonymousSender.firstName || ''} ${message.anonymousSender.lastName || ''}`.trim();
-        senderUsername = fullName || message.anonymousSender.username || 'Anonymous';
+        senderUsername = message.anonymousSender.username || 'Anonymous';
+        senderFirstName = message.anonymousSender.firstName || undefined;
+        senderLastName = message.anonymousSender.lastName || undefined;
       }
 
-      // Créer une notification pour chaque membre (sauf l'expéditeur ET les utilisateurs mentionnés)
+      // Si c'est une réponse, créer une notification de réponse pour l'auteur du message original
+      // SAUF si l'auteur est mentionné (la mention a la priorité)
+      if (originalMessageAuthorId && originalMessageAuthorId !== senderId) {
+        // Vérifier si l'auteur du message original est mentionné dans ce message
+        const isOriginalAuthorMentioned = mentionedUserIds.has(originalMessageAuthorId);
+
+        if (!isOriginalAuthorMentioned) {
+          // L'auteur n'est pas mentionné, on crée une notification de réponse
+          await this.notificationService.createReplyNotification({
+            originalMessageAuthorId,
+            replierId: message.senderId || '',
+            replierUsername: senderUsername,
+            replierAvatar: senderAvatar,
+            replyContent: message.content,
+            conversationId: message.conversationId,
+            conversationTitle: conversation.title || undefined,
+            originalMessageId: message.replyToId!,
+            replyMessageId: message.id,
+            attachments: messageAttachments.length > 0 ? messageAttachments : undefined
+          });
+          console.log(`📢 [NOTIFICATIONS] Notification de réponse créée pour ${originalMessageAuthorId}`);
+        } else {
+          console.log(`📢 [NOTIFICATIONS] Skip notification de réponse pour ${originalMessageAuthorId} (mentionné - priorité mention)`);
+        }
+      }
+
+      // Créer une notification pour chaque membre (sauf l'expéditeur, les utilisateurs mentionnés ET l'auteur du message original en cas de réponse)
       for (const member of conversationMembers) {
         // Ne pas envoyer de notification de message générique aux utilisateurs mentionnés
         // Ils recevront une notification de mention plus spécifique
@@ -2428,11 +2510,21 @@ export class MeeshySocketIOManager {
           continue;
         }
 
+        // Ne pas envoyer de notification de message générique à l'auteur du message original
+        // Il recevra une notification de réponse spécifique
+        if (originalMessageAuthorId && member.userId === originalMessageAuthorId) {
+          console.log(`📢 [NOTIFICATIONS] Skip notification générique pour ${member.userId} (auteur du message original)`);
+          continue;
+        }
+
         await this.notificationService.createMessageNotification({
           recipientId: member.userId,
           senderId: message.senderId || '',
           senderUsername,
           senderAvatar,
+          senderDisplayName,
+          senderFirstName,
+          senderLastName,
           messageContent: message.content,
           conversationId: message.conversationId,
           messageId: message.id,

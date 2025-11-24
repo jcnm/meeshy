@@ -70,7 +70,8 @@ export const useNotifications = (): UseNotificationsReturn => {
           },
           onNotificationReceived: (notification) => {
             updateNotifications();
-            showToast(notification);
+            // Toast désactivé - le système de notifications v2 gère les notifications métier
+            // showToast(notification);
           },
           onCountsUpdated: (newCounts) => {
             setCounts(newCounts);
@@ -118,13 +119,11 @@ export const useNotifications = (): UseNotificationsReturn => {
     updateNotifications();
   }, [updateNotifications]);
 
-  // Afficher un toast pour une notification
+  // DÉSACTIVÉ : Les toasts pour les notifications métier ne sont plus utilisés
+  // Le système de notifications v2 (NotificationBell) affiche déjà les notifications
   const showToast = useCallback((notification: Notification) => {
-    // Désactiver les toasts sur mobile
-    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
-    if (isMobile) {
-      return;
-    }
+    // Toasts désactivés - utiliser uniquement le système de notifications v2
+    return;
 
     const getToastIcon = (type: string) => {
       switch (type) {

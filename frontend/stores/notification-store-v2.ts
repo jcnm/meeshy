@@ -40,7 +40,8 @@ const initialState = {
     isRead: undefined
   },
   isConnected: false,
-  lastSync: undefined
+  lastSync: undefined,
+  activeConversationId: null // ObjectId de la conversation actuellement affichée
 };
 
 /**
@@ -142,7 +143,8 @@ export const useNotificationStoreV2 = create<NotificationStore>()(
               sortOrder: 'desc'
             });
 
-            if (response.success && response.data) {
+            // Vérifier que response.data et pagination existent
+            if (response.data?.notifications && response.data?.pagination) {
               const { notifications, pagination } = response.data;
 
               set(state => ({
@@ -157,6 +159,18 @@ export const useNotificationStoreV2 = create<NotificationStore>()(
 
               // Mettre à jour les compteurs
               get().updateCountsFromNotifications();
+            } else {
+              console.error('[NotificationStoreV2] Invalid response structure:', {
+                hasData: !!response.data,
+                hasNotifications: !!response.data?.notifications,
+                hasPagination: !!response.data?.pagination,
+                response
+              });
+              set({
+                error: 'Invalid response structure from API',
+                notifications: [],
+                hasMore: false
+              });
             }
           } catch (error) {
             console.error('[NotificationStoreV2] Fetch error:', error);
@@ -200,6 +214,19 @@ export const useNotificationStoreV2 = create<NotificationStore>()(
             // Éviter les doublons
             if (state.notifications.some(n => n.id === notification.id)) {
               return state;
+            }
+
+            // FILTRE: Ignorer les notifications de la conversation active
+            // Si l'utilisateur est déjà dans la conversation, pas besoin de notification
+            if (notification.context?.conversationId) {
+              const notificationConversationId = notification.context.conversationId;
+
+              // Utiliser activeConversationId qui est défini par les composants de conversation
+              // IMPORTANT: Toujours comparer avec les conversationId (ObjectIds), jamais avec les identifiers
+              if (state.activeConversationId === notificationConversationId) {
+                console.log('[NotificationStore] Notification ignorée - utilisateur déjà dans la conversation:', notificationConversationId);
+                return state; // Ignorer cette notification
+              }
             }
 
             // Ajouter au début de la liste
@@ -444,6 +471,14 @@ export const useNotificationStoreV2 = create<NotificationStore>()(
          */
         setConnected: (isConnected: boolean) => {
           set({ isConnected });
+        },
+
+        /**
+         * Définit la conversation active pour filtrer les notifications
+         * @param conversationId - L'ObjectId de la conversation (pas l'identifier!)
+         */
+        setActiveConversationId: (conversationId: string | null) => {
+          set({ activeConversationId: conversationId });
         }
       }),
       {
@@ -454,7 +489,8 @@ export const useNotificationStoreV2 = create<NotificationStore>()(
           unreadCount: state.unreadCount,
           counts: state.counts,
           filters: state.filters,
-          lastSync: state.lastSync
+          lastSync: state.lastSync,
+          activeConversationId: state.activeConversationId
         }),
         // Migration depuis l'ancienne version si nécessaire
         migrate: (persistedState: any, version: number) => {
@@ -506,6 +542,7 @@ export const useNotificationActionsV2 = () =>
       deleteNotification: state.deleteNotification,
       deleteAllRead: state.deleteAllRead,
       setFilters: state.setFilters,
-      clearFilters: state.clearFilters
+      clearFilters: state.clearFilters,
+      setActiveConversationId: state.setActiveConversationId
     }))
   );

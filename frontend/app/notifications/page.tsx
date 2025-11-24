@@ -30,7 +30,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
 import { useNotifications } from '@/hooks/use-notifications';
 import { NotificationTest } from '@/components/notifications/NotificationTest';
-import { useI18n } from '@/hooks/useI18n';
+import { useI18n } from '@/hooks/use-i18n';
 import type { Notification } from '@/services/notification.service';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { NotificationFilters, type NotificationType } from '@/components/notifications/NotificationFilters';
@@ -39,8 +39,67 @@ import { AttachmentDetails } from '@/components/attachments/AttachmentDetails';
 import { buildApiUrl } from '@/lib/config';
 import { authManager } from '@/services/auth-manager.service';
 import { toast } from 'sonner';
+import { getUserDisplayName } from '@/utils/user-display-name';
 
 type SortOption = 'date-desc' | 'date-asc' | 'unread-first' | 'type';
+
+/**
+ * Construit un titre formaté pour une notification avec le nom de l'expéditeur
+ */
+function buildNotificationTitle(notification: Notification, t: (key: string, params?: Record<string, string>) => string): string {
+  // Utiliser la fonction centralisée pour obtenir le nom de l'expéditeur
+  const senderName = getUserDisplayName({
+    displayName: notification.data?.senderDisplayName,
+    firstName: notification.data?.senderFirstName || notification.senderName?.split(' ')[0],
+    lastName: notification.data?.senderLastName || notification.senderName?.split(' ')[1],
+    username: notification.senderUsername
+  }, 'Un utilisateur');
+
+  const conversationTitle = notification.conversationTitle || 'la conversation';
+
+  switch (notification.type) {
+    case 'new_message':
+    case 'message':
+      return t('titles.newMessage', { sender: senderName });
+
+    case 'message_reply':
+      return t('titles.reply', { sender: senderName });
+
+    case 'mention':
+    case 'user_mentioned':
+      return t('titles.mentioned', { sender: senderName });
+
+    case 'message_reaction':
+      const emoji = notification.data?.emoji || '❤️';
+      return t('titles.reaction', { sender: senderName, emoji });
+
+    case 'missed_call':
+      return t('titles.missedCall', { type: 'vidéo' });
+
+    case 'new_conversation':
+    case 'conversation':
+    case 'new_conversation_direct':
+    case 'new_conversation_group':
+      // Déterminer si c'est une conversation directe ou de groupe
+      if (notification.conversationType === 'direct' || notification.type === 'new_conversation_direct') {
+        return t('titles.newConversationDirect', { sender: senderName });
+      } else {
+        return t('titles.newConversationGroup', { title: conversationTitle });
+      }
+
+    case 'contact_request':
+      return t('titles.contactRequest', { sender: senderName });
+
+    case 'contact_accepted':
+      return t('titles.contactAccepted', { sender: senderName });
+
+    case 'system':
+      return notification.title || t('titles.system');
+
+    default:
+      return notification.title || t('titles.default');
+  }
+}
 
 function NotificationsPageContent() {
   const { t } = useI18n('notifications');
@@ -592,7 +651,7 @@ function NotificationsPageContent() {
                                     "text-sm truncate",
                                     !notification.isRead ? 'font-bold text-foreground' : 'font-semibold text-muted-foreground'
                                   )}>
-                                    {notification.title}
+                                    {buildNotificationTitle(notification, t)}
                                   </h4>
                                   {!notification.isRead && (
                                     <span className="inline-block w-2 h-2 bg-primary rounded-full flex-shrink-0"></span>

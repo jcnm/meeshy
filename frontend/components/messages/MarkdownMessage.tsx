@@ -14,6 +14,7 @@ import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus, vs } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { MermaidDiagram } from '@/components/markdown/MermaidDiagram';
 
 interface MarkdownMessageProps {
   content: string;
@@ -47,18 +48,119 @@ const preprocessContent = (content: string): string => {
 
 /**
  * Normalise le markdown en corrigeant les espaces incorrects introduits par la traduction
- * Stratégie: Remplacer les espaces mal placés par des espaces insécables (U+00A0)
+ * et en préservant les retours chariot (Windows \r\n et Linux \n)
+ *
+ * Stratégie:
+ * 1. Normaliser les retours chariot Windows (\r\n) vers Linux (\n)
+ * 2. Préserver les retours chariot multiples en les convertissant en <br> HTML
+ * 3. Normaliser les headers Markdown (# à ######)
+ * 4. Remplacer les espaces mal placés par des espaces insécables (U+00A0)
  *
  * Corrige :
+ * - `\r\n` → `\n` (normalisation Windows → Linux)
+ * - `\n\n` → `<br/><br/>` (préservation des lignes vides)
+ * - `#texte` → `# texte` (headers mal formatés)
+ * - `# texte #` → `# texte` (headers avec # de fermeture)
  * - `** texte **` → `**\u00A0texte\u00A0**` (espaces insécables)
  * - `* texte *` → `*\u00A0texte\u00A0*` (espaces insécables)
  *
+ * Protège :
+ * - Blocs de code (```) : pas de conversion <br/>
+ * - Séparateurs horizontaux (---, ***, ___) : garde \n\n autour pour ReactMarkdown
+ * - Diagrammes Mermaid dans les code blocks
+ *
  * Préserve :
- * - Les retours à la ligne (\n, \r)
+ * - Le nombre exact de retours à la ligne
  * - Les espaces entre les mots dans le contenu
  */
 const normalizeMarkdown = (content: string): string => {
   let normalized = content;
+
+  // ÉTAPE 1: Normaliser les retours chariot Windows → Linux
+  // \r\n → \n (Windows vers Unix)
+  normalized = normalized.replace(/\r\n/g, '\n');
+  // \r → \n (anciens Mac vers Unix)
+  normalized = normalized.replace(/\r/g, '\n');
+
+  // ÉTAPE 2: Préserver les retours chariot multiples
+  // Convertir les lignes vides (2+ \n consécutifs) en <br> HTML
+  // Cela préserve le nombre exact de lignes vides
+  // Exception: Ne pas toucher aux blocs de code (```)
+  const codeBlockRegex = /```[\s\S]*?```/g;
+  const codeBlocks: string[] = [];
+
+  // Sauvegarder les blocs de code
+  normalized = normalized.replace(codeBlockRegex, (match) => {
+    codeBlocks.push(match);
+    return `___CODE_BLOCK_${codeBlocks.length - 1}___`;
+  });
+
+  // ÉTAPE 2.5: Normaliser les headers Markdown AVANT la conversion des \n
+  // Cela permet à ReactMarkdown de les détecter correctement
+
+  // Corriger les headers sans espace après # : #texte → # texte
+  normalized = normalized.replace(/^(#{1,6})([^\s#])/gm, '$1 $2');
+
+  // Corriger les headers avec espaces avant le # de fermeture : # texte # → # texte
+  normalized = normalized.replace(/^(#{1,6}\s+.+?)\s+#{1,6}\s*$/gm, '$1');
+
+  // Corriger les headers avec espaces excessifs : #  texte → # texte
+  normalized = normalized.replace(/^(#{1,6})\s{2,}/gm, '$1 ');
+
+  // Convertir les retours chariot multiples en <br/>
+  // MAIS : Préserver les retours autour des séparateurs horizontaux (---, ***, ___)
+  // pour que ReactMarkdown puisse les détecter
+
+  // Détecter les lignes avec séparateurs horizontaux
+  const lines = normalized.split('\n');
+  const processedLines: string[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const currentLine = lines[i];
+    const isHorizontalRule = /^[-*_]{3,}\s*$/.test(currentLine.trim());
+
+    if (isHorizontalRule) {
+      // C'est un séparateur : garder les retours de ligne autour
+      processedLines.push(currentLine);
+    } else {
+      processedLines.push(currentLine);
+    }
+  }
+
+  // Reconstruire et convertir les \n multiples (sauf autour des séparateurs)
+  normalized = processedLines.join('\n');
+
+  // Conversion des \n multiples en <br/>, mais pas autour des éléments Markdown
+  // (séparateurs horizontaux et headers)
+  normalized = normalized.replace(/\n{2,}/g, (match, offset) => {
+    // Vérifier si on est près d'un séparateur horizontal ou d'un header
+    const before = normalized.substring(Math.max(0, offset - 30), offset);
+    const after = normalized.substring(offset + match.length, offset + match.length + 30);
+
+    // Détecter séparateurs horizontaux
+    const hasHrBefore = /[-*_]{3,}\s*$/.test(before);
+    const hasHrAfter = /^[-*_]{3,}/.test(after);
+
+    // Détecter headers (lignes commençant par #)
+    const hasHeaderBefore = /#{1,6}\s+.+$/.test(before.split('\n').pop() || '');
+    const hasHeaderAfter = /^#{1,6}\s+/.test(after);
+
+    // Si on est autour d'un HR ou d'un header, garder 2 \n (un seul saut de ligne vide)
+    if (hasHrBefore || hasHrAfter || hasHeaderBefore || hasHeaderAfter) {
+      return '\n\n'; // Garder pour que ReactMarkdown détecte les éléments
+    }
+
+    // Sinon, convertir normalement en <br/>
+    const count = match.length;
+    return '<br/>'.repeat(count);
+  });
+
+  // Restaurer les blocs de code
+  normalized = normalized.replace(/___CODE_BLOCK_(\d+)___/g, (_, index) => {
+    return codeBlocks[parseInt(index)];
+  });
+
+  // ÉTAPE 3: Corriger les espaces incorrects autour du formatage Markdown
 
   // Gras ** : remplacer espaces par insécables
   // ** texte ** → **\u00A0texte\u00A0**
@@ -209,6 +311,16 @@ export const MarkdownMessage: React.FC<MarkdownMessageProps> = ({
             const match = /language-(\w+)/.exec(className || '');
             const language = match ? match[1] : '';
 
+            // Si c'est un diagramme Mermaid, utiliser le composant MermaidDiagram
+            if (!inline && language === 'mermaid') {
+              return (
+                <MermaidDiagram
+                  chart={String(children).replace(/\n$/, '')}
+                  className="my-2"
+                />
+              );
+            }
+
             return !inline && language ? (
               <SyntaxHighlighter
                 style={isDark ? vscDarkPlus : vs}
@@ -310,6 +422,27 @@ export const MarkdownMessage: React.FC<MarkdownMessageProps> = ({
               </h3>
             );
           },
+          h4({ node, children, ...props }: any) {
+            return (
+              <h4 className="text-base font-bold my-1 first:mt-0" {...props}>
+                {children}
+              </h4>
+            );
+          },
+          h5({ node, children, ...props }: any) {
+            return (
+              <h5 className="text-sm font-bold my-1 first:mt-0" {...props}>
+                {children}
+              </h5>
+            );
+          },
+          h6({ node, children, ...props }: any) {
+            return (
+              <h6 className="text-sm font-semibold my-1 first:mt-0" {...props}>
+                {children}
+              </h6>
+            );
+          },
 
           // Blockquotes
           blockquote({ node, children, ...props }: any) {
@@ -320,6 +453,16 @@ export const MarkdownMessage: React.FC<MarkdownMessageProps> = ({
               >
                 {children}
               </blockquote>
+            );
+          },
+
+          // Séparateurs horizontaux (---, ***, ___)
+          hr({ node, ...props }: any) {
+            return (
+              <hr
+                className="my-4 border-0 border-t-2 border-gray-300 dark:border-gray-600"
+                {...props}
+              />
             );
           },
 

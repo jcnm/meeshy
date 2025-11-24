@@ -90,6 +90,7 @@ import { AttachmentGallery } from '@/components/attachments/AttachmentGallery';
 
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { useNotifications } from '@/hooks/use-notifications';
+import { useNotificationActionsV2 } from '@/stores/notification-store-v2';
 import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
 import { useMessageTranslations } from '@/hooks/use-message-translations';
 import { useMessageTranslation } from '@/hooks/useMessageTranslation';
@@ -126,6 +127,9 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
   // Hook pour fixer les z-index des composants Radix UI
   useFixRadixZIndex();
+
+  // Hook pour le système de notifications v2
+  const { setActiveConversationId } = useNotificationActionsV2();
 
   // Hook pour la pagination infinie des messages (scroll vers le haut pour charger plus anciens)
   const {
@@ -484,6 +488,14 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     setActiveUsers(deduplicateUsers(users));
   }, [deduplicateUsers]);
 
+  // États de chargement
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [hasLoadedMessages, setHasLoadedMessages] = useState(false);
+  const [hasEstablishedConnection, setHasEstablishedConnection] = useState(false);
+
+  // ObjectId normalisé du backend (pour "meeshy" → vrai ObjectId)
+  const [normalizedConversationId, setNormalizedConversationId] = useState<string | null>(null);
+
   // Fonction pour charger les utilisateurs en ligne
   const loadActiveUsers = useCallback(async () => {
     try {
@@ -493,14 +505,21 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         return;
       }
 
-      const onlineUsers = await conversationsService.getParticipants(conversationId, { onlineOnly: true });
+      // Utiliser normalizedConversationId (ObjectId) au lieu de conversationId (identifier)
+      // Si normalizedConversationId n'est pas encore disponible, ne rien faire
+      if (!normalizedConversationId) {
+        console.warn('[BubbleStreamPage] normalizedConversationId not yet available, skipping active users load');
+        return;
+      }
+
+      const onlineUsers = await conversationsService.getParticipants(normalizedConversationId, { onlineOnly: true });
       setActiveUsersDeduped(onlineUsers);
     } catch (error) {
       console.error('Erreur lors du chargement des utilisateurs actifs:', error);
       // En cas d'erreur, on garde les données WebSocket si disponibles
       // Ne pas afficher d'erreur à l'utilisateur car ce n'est pas critique
     }
-  }, [conversationId, isAnonymousMode, setActiveUsersDeduped]);
+  }, [normalizedConversationId, isAnonymousMode, setActiveUsersDeduped]);
 
   // Fonction pour charger tous les participants (pour les statistiques)
   const loadAllParticipants = useCallback(async () => {
@@ -511,21 +530,20 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         return [];
       }
 
-      const allParticipants = await conversationsService.getParticipants(conversationId);
+      // Utiliser normalizedConversationId (ObjectId) au lieu de conversationId (identifier)
+      // Si normalizedConversationId n'est pas encore disponible, retourner un tableau vide
+      if (!normalizedConversationId) {
+        console.warn('[BubbleStreamPage] normalizedConversationId not yet available, skipping participant load');
+        return [];
+      }
+
+      const allParticipants = await conversationsService.getParticipants(normalizedConversationId);
       return allParticipants;
     } catch (error) {
       console.error('Erreur lors du chargement des participants:', error);
       return [];
     }
-  }, [conversationId, isAnonymousMode]);
-
-  // États de chargement
-  const [isInitializing, setIsInitializing] = useState(true);
-  const [hasLoadedMessages, setHasLoadedMessages] = useState(false);
-  const [hasEstablishedConnection, setHasEstablishedConnection] = useState(false);
-
-  // ObjectId normalisé du backend (pour "meeshy" → vrai ObjectId)
-  const [normalizedConversationId, setNormalizedConversationId] = useState<string | null>(null);
+  }, [normalizedConversationId, isAnonymousMode]);
 
   // Langues utilisées par l'utilisateur (basées sur ses préférences)
   const usedLanguages: string[] = getUserLanguagePreferences();
@@ -548,7 +566,10 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     // FIX: Filtrer les événements typing par conversation
     // Le client peut être connecté à plusieurs rooms, il faut filtrer pour n'afficher
     // que les indicateurs de frappe de la conversation actuelle
-    if (typingConversationId !== conversationIdRef.current) {
+    // IMPORTANT: Utiliser normalizedConversationIdRef (ObjectId) car le backend envoie l'ObjectId
+    // même si on a rejoint avec un identifier comme "meeshy"
+    const currentNormalizedId = normalizedConversationIdRef.current;
+    if (!currentNormalizedId || typingConversationId !== currentNormalizedId) {
       return;
     }
 
@@ -701,10 +722,17 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     const unsubscribe = meeshySocketIOService.onConversationJoined((data: { conversationId: string; userId: string }) => {
       normalizedConversationIdRef.current = data.conversationId;
       setNormalizedConversationId(data.conversationId); // Mettre à jour le state pour re-render
+
+      // Informer le store de notifications de la conversation active
+      setActiveConversationId(data.conversationId);
     });
 
-    return () => unsubscribe();
-  }, []);
+    return () => {
+      unsubscribe();
+      // Nettoyer la conversation active quand on quitte la page
+      setActiveConversationId(null);
+    };
+  }, [setActiveConversationId]);
 
   useEffect(() => {
     userRef.current = user;

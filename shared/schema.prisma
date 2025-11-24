@@ -1,6 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
-  output   = "./client"
+  provider      = "prisma-client-js"
+  output        = "./client"
   binaryTargets = ["native"]
 }
 
@@ -11,118 +11,118 @@ datasource db {
 
 /// Utilisateur enregistré de la plateforme
 model User {
-  id                          String                   @id @default(auto()) @map("_id") @db.ObjectId
-  username                    String                   @unique
+  id                          String    @id @default(auto()) @map("_id") @db.ObjectId
+  username                    String    @unique
   firstName                   String
   lastName                    String
-  bio                         String                   @default("")
-  email                       String                   @unique
+  bio                         String    @default("")
+  email                       String    @unique
   phoneNumber                 String?
   password                    String
   displayName                 String?
   avatar                      String?
-  isOnline                    Boolean                  @default(false)
-  lastSeen                    DateTime                 @default(now())
-  lastActiveAt                DateTime                 @default(now())
-  systemLanguage              String                   @default("en")
-  regionalLanguage            String                   @default("fr")
+  isOnline                    Boolean   @default(false)
+  lastSeen                    DateTime  @default(now())
+  lastActiveAt                DateTime  @default(now())
+  systemLanguage              String    @default("en")
+  regionalLanguage            String    @default("fr")
   customDestinationLanguage   String?
-  autoTranslateEnabled        Boolean                  @default(true)
-  translateToSystemLanguage   Boolean                  @default(true)
-  translateToRegionalLanguage Boolean                  @default(false)
-  useCustomDestination        Boolean                  @default(false)
+  autoTranslateEnabled        Boolean   @default(true)
+  translateToSystemLanguage   Boolean   @default(true)
+  translateToRegionalLanguage Boolean   @default(false)
+  useCustomDestination        Boolean   @default(false)
   /// USER, ADMIN, MODO, AUDIT, ANALYST, BIGBOSS
-  role                        String                   @default("USER")
-  isActive                    Boolean                  @default(true)
+  role                        String    @default("USER")
+  isActive                    Boolean   @default(true)
   deactivatedAt               DateTime?
 
   // Security & verification fields (DateTime? non-null = vérifié/activé)
-  emailVerifiedAt             DateTime?
-  phoneVerifiedAt             DateTime?
-  twoFactorEnabledAt          DateTime?
-  twoFactorSecret             String?                  // TOTP secret (encrypted)
+  emailVerifiedAt    DateTime?
+  phoneVerifiedAt    DateTime?
+  twoFactorEnabledAt DateTime?
+  twoFactorSecret    String? // TOTP secret (encrypted)
 
   // Account Lockout
-  failedLoginAttempts         Int                      @default(0)
-  lockedUntil                 DateTime?
-  lockedReason                String?                  // "FAILED_LOGIN" | "PASSWORD_RESET_ABUSE" | "SUSPICIOUS_ACTIVITY"
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+  lockedReason        String? // "FAILED_LOGIN" | "PASSWORD_RESET_ABUSE" | "SUSPICIOUS_ACTIVITY"
 
   // Password Management
-  lastPasswordChange          DateTime                 @default(now())
-  passwordResetAttempts       Int                      @default(0)
-  lastPasswordResetAttempt    DateTime?
+  lastPasswordChange       DateTime? @default(now())
+  passwordResetAttempts    Int       @default(0)
+  lastPasswordResetAttempt DateTime?
 
   // Device & Location Tracking
-  lastLoginIp                 String?
-  lastLoginLocation           String?                  // "City, Country"
-  lastLoginDevice             String?                  // Device fingerprint
+  lastLoginIp       String?
+  lastLoginLocation String? // "City, Country"
+  lastLoginDevice   String? // Device fingerprint
 
   // Soft delete fields
-  deletedAt                   DateTime?
-  deletedBy                   String?                  @db.ObjectId
+  deletedAt DateTime?
+  deletedBy String?   @db.ObjectId
 
   // Profile completion
-  profileCompletionRate       Int?                     @default(0)
+  profileCompletionRate Int? @default(0)
 
-  createdAt                   DateTime                 @default(now())
-  updatedAt                   DateTime                 @updatedAt
-  
-  createdCommunities          Community[]              @relation("CommunityCreator")
-  communityMemberships        CommunityMember[]
-  conversations               ConversationMember[]
-  conversationPreferences     ConversationPreference[]
-  createdShareLinks           ConversationShareLink[]  @relation("ShareLinkCreator")
-  receivedFriendRequests      FriendRequest[]          @relation("FriendRequestReceiver")
-  sentFriendRequests          FriendRequest[]          @relation("FriendRequestSender")
-  messageStatus               MessageStatus[]
-  sentMessages                Message[]                @relation("MessageSender")
-  reactions                   Reaction[]               @relation("UserReactions")
-  mentions                    Mention[]                @relation("UserMentions")
-  notifications               Notification[]
-  notificationPreference      NotificationPreference?
-  typingIndicators            TypingIndicator[]
-  preferences                 UserPreference[]
-  stats                       UserStats?
-  createdAffiliateTokens      AffiliateToken[]         @relation("AffiliateTokenCreator")
-  affiliateRelations          AffiliateRelation[]      @relation("AffiliateUser")
-  referredRelations           AffiliateRelation[]      @relation("ReferredUser")
-  createdTrackingLinks        TrackingLink[]           @relation("TrackingLinkCreator")
-  trackingLinkClicks          TrackingLinkClick[]      @relation("TrackingLinkClickUser")
-  initiatedCalls              CallSession[]            @relation("CallInitiator")
-  callParticipations          CallParticipant[]        @relation("CallParticipants")
-  conversationPrefs           UserConversationPreferences[]
-  conversationCategories      UserConversationCategory[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdCommunities      Community[]                   @relation("CommunityCreator")
+  communityMemberships    CommunityMember[]
+  conversations           ConversationMember[]
+  conversationPreferences ConversationPreference[]
+  createdShareLinks       ConversationShareLink[]       @relation("ShareLinkCreator")
+  receivedFriendRequests  FriendRequest[]               @relation("FriendRequestReceiver")
+  sentFriendRequests      FriendRequest[]               @relation("FriendRequestSender")
+  messageStatus           MessageStatus[]
+  sentMessages            Message[]                     @relation("MessageSender")
+  reactions               Reaction[]                    @relation("UserReactions")
+  mentions                Mention[]                     @relation("UserMentions")
+  notifications           Notification[]
+  notificationPreference  NotificationPreference?
+  typingIndicators        TypingIndicator[]
+  preferences             UserPreference[]
+  stats                   UserStats?
+  createdAffiliateTokens  AffiliateToken[]              @relation("AffiliateTokenCreator")
+  affiliateRelations      AffiliateRelation[]           @relation("AffiliateUser")
+  referredRelations       AffiliateRelation[]           @relation("ReferredUser")
+  createdTrackingLinks    TrackingLink[]                @relation("TrackingLinkCreator")
+  trackingLinkClicks      TrackingLinkClick[]           @relation("TrackingLinkClickUser")
+  initiatedCalls          CallSession[]                 @relation("CallInitiator")
+  callParticipations      CallParticipant[]             @relation("CallParticipants")
+  conversationPrefs       UserConversationPreferences[]
+  conversationCategories  UserConversationCategory[]
 
   // Password Reset Relations
-  passwordResetTokens         PasswordResetToken[]
-  passwordHistory             PasswordHistory[]
-  securityEvents              SecurityEvent[]
-  sessions                    UserSession[]
+  passwordResetTokens PasswordResetToken[]
+  passwordHistory     PasswordHistory[]
+  securityEvents      SecurityEvent[]
+  sessions            UserSession[]
 }
 
 /// Conversation entre utilisateurs (direct, group, public, global)
 model Conversation {
-  id                    String                   @id @default(auto()) @map("_id") @db.ObjectId
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
   /// Identifiant lisible par l'homme (ex: "mee_meeshy", "general", "mee_support")
-  identifier            String                   @unique
+  identifier    String   @unique
   /// direct, group, public, global
-  type                  String
-  title                 String?
-  description           String?
-  image                 String?
-  avatar                String?
-  communityId           String?                  @db.ObjectId
-  isActive              Boolean                  @default(true)
-  isArchived            Boolean                  @default(false)
-  lastMessageAt         DateTime                 @default(now())
-  createdAt             DateTime                 @default(now())
-  updatedAt             DateTime                 @updatedAt
-  
+  type          String
+  title         String?
+  description   String?
+  image         String?
+  avatar        String?
+  communityId   String?  @db.ObjectId
+  isActive      Boolean  @default(true)
+  isArchived    Boolean  @default(false)
+  lastMessageAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
   anonymousParticipants AnonymousParticipant[]
   members               ConversationMember[]
   preferences           ConversationPreference[]
   shareLinks            ConversationShareLink[]
-  community             Community?               @relation(fields: [communityId], references: [id])
+  community             Community?                    @relation(fields: [communityId], references: [id])
   messages              Message[]
   messageStatuses       MessageStatus[]
   typingIndicators      TypingIndicator[]
@@ -132,127 +132,127 @@ model Conversation {
 
 /// Appartenance d'un utilisateur à une conversation
 model ConversationMember {
-  id               String       @id @default(auto()) @map("_id") @db.ObjectId
-  conversationId   String       @db.ObjectId
-  userId           String       @db.ObjectId
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId   String    @db.ObjectId
+  userId           String    @db.ObjectId
   /// admin, moderator, member
-  role             String       @default("member")
-  canSendMessage   Boolean      @default(true)
-  canSendFiles     Boolean      @default(true)
-  canSendImages    Boolean      @default(true)
-  canSendVideos    Boolean      @default(true)
-  canSendAudios    Boolean      @default(true)
-  canSendLocations Boolean      @default(true)
-  canSendLinks     Boolean      @default(true)
-  joinedAt         DateTime     @default(now())
+  role             String    @default("member")
+  canSendMessage   Boolean   @default(true)
+  canSendFiles     Boolean   @default(true)
+  canSendImages    Boolean   @default(true)
+  canSendVideos    Boolean   @default(true)
+  canSendAudios    Boolean   @default(true)
+  canSendLocations Boolean   @default(true)
+  canSendLinks     Boolean   @default(true)
+  joinedAt         DateTime  @default(now())
   leftAt           DateTime?
-  isActive         Boolean      @default(true)
-  
-  user             User         @relation(fields: [userId], references: [id])
-  conversation     Conversation @relation(fields: [conversationId], references: [id])
+  isActive         Boolean   @default(true)
+
+  user         User         @relation(fields: [userId], references: [id])
+  conversation Conversation @relation(fields: [conversationId], references: [id])
 }
 
 /// Lien de partage pour accès anonyme à une conversation
 model ConversationShareLink {
-  id                     String                 @id @default(auto()) @map("_id") @db.ObjectId
-  linkId                 String                 @unique
+  id                     String    @id @default(auto()) @map("_id") @db.ObjectId
+  linkId                 String    @unique
   /// Identifiant lisible par l'homme (ex: "mshy_meeshy-public", "mshy_support-link")
-  identifier             String                 @unique
-  conversationId         String                 @db.ObjectId
-  createdBy              String                 @db.ObjectId
+  identifier             String    @unique
+  conversationId         String    @db.ObjectId
+  createdBy              String    @db.ObjectId
   name                   String?
   description            String?
   maxUses                Int?
-  currentUses            Int                    @default(0)
+  currentUses            Int       @default(0)
   maxConcurrentUsers     Int?
-  currentConcurrentUsers Int                    @default(0)
+  currentConcurrentUsers Int       @default(0)
   maxUniqueSessions      Int?
-  currentUniqueSessions  Int                    @default(0)
+  currentUniqueSessions  Int       @default(0)
   expiresAt              DateTime?
-  isActive               Boolean                @default(true)
-  allowAnonymousMessages Boolean                @default(true)
-  allowAnonymousFiles    Boolean                @default(false)
-  allowAnonymousImages   Boolean                @default(true)
-  allowViewHistory       Boolean                @default(true)
+  isActive               Boolean   @default(true)
+  allowAnonymousMessages Boolean   @default(true)
+  allowAnonymousFiles    Boolean   @default(false)
+  allowAnonymousImages   Boolean   @default(true)
+  allowViewHistory       Boolean   @default(true)
   /// Si true, seuls les utilisateurs avec compte peuvent rejoindre (bloque l'accès anonyme)
-  requireAccount         Boolean                @default(false)
-  requireNickname        Boolean                @default(true)
-  requireEmail           Boolean                @default(false)
+  requireAccount         Boolean   @default(false)
+  requireNickname        Boolean   @default(true)
+  requireEmail           Boolean   @default(false)
   /// Si true, demande la date de naissance pour vérifier l'âge minimum
-  requireBirthday        Boolean                @default(false)
-  allowedCountries       String[]               @default([])
-  allowedLanguages       String[]               @default([])
-  allowedIpRanges        String[]               @default([])
-  createdAt              DateTime               @default(now())
-  updatedAt              DateTime               @updatedAt
-  
-  anonymousParticipants  AnonymousParticipant[] @relation("ShareLinkParticipants")
-  creator                User                   @relation("ShareLinkCreator", fields: [createdBy], references: [id])
-  conversation           Conversation           @relation(fields: [conversationId], references: [id])
+  requireBirthday        Boolean   @default(false)
+  allowedCountries       String[]  @default([])
+  allowedLanguages       String[]  @default([])
+  allowedIpRanges        String[]  @default([])
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  anonymousParticipants AnonymousParticipant[] @relation("ShareLinkParticipants")
+  creator               User                   @relation("ShareLinkCreator", fields: [createdBy], references: [id])
+  conversation          Conversation           @relation(fields: [conversationId], references: [id])
 }
 
 /// Participant anonyme via lien de partage
 model AnonymousParticipant {
-  id              String                @id @default(auto()) @map("_id") @db.ObjectId
-  conversationId  String                @db.ObjectId
-  shareLinkId     String                @db.ObjectId
-  firstName       String
-  lastName        String
-  username        String
-  email           String?
-  birthday        DateTime?
-  sessionToken    String                @unique
-  ipAddress       String?
-  country         String?
-  language        String                @default("fr")
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId    String    @db.ObjectId
+  shareLinkId       String    @db.ObjectId
+  firstName         String
+  lastName          String
+  username          String
+  email             String?
+  birthday          DateTime?
+  sessionToken      String    @unique
+  ipAddress         String?
+  country           String?
+  language          String    @default("fr")
   deviceFingerprint String?
-  isActive        Boolean               @default(true)
-  isOnline        Boolean               @default(false)
-  lastActiveAt    DateTime              @default(now())
-  canSendMessages Boolean               @default(true)
-  canSendFiles    Boolean               @default(false)
-  canSendImages   Boolean               @default(true)
-  joinedAt        DateTime              @default(now())
-  lastSeenAt      DateTime              @default(now())
-  leftAt          DateTime?
-  
-  shareLink       ConversationShareLink @relation("ShareLinkParticipants", fields: [shareLinkId], references: [id])
-  conversation    Conversation          @relation(fields: [conversationId], references: [id])
-  sentMessages    Message[]             @relation("AnonymousMessageSender")
-  reactions       Reaction[]            @relation("AnonymousReactions")
-  trackingLinkClicks TrackingLinkClick[] @relation("TrackingLinkClickAnonymous")
+  isActive          Boolean   @default(true)
+  isOnline          Boolean   @default(false)
+  lastActiveAt      DateTime  @default(now())
+  canSendMessages   Boolean   @default(true)
+  canSendFiles      Boolean   @default(false)
+  canSendImages     Boolean   @default(true)
+  joinedAt          DateTime  @default(now())
+  lastSeenAt        DateTime  @default(now())
+  leftAt            DateTime?
+
+  shareLink          ConversationShareLink @relation("ShareLinkParticipants", fields: [shareLinkId], references: [id])
+  conversation       Conversation          @relation(fields: [conversationId], references: [id])
+  sentMessages       Message[]             @relation("AnonymousMessageSender")
+  reactions          Reaction[]            @relation("AnonymousReactions")
+  trackingLinkClicks TrackingLinkClick[]   @relation("TrackingLinkClickAnonymous")
 }
 
 /// Message dans une conversation
 model Message {
-  id                String                @id @default(auto()) @map("_id") @db.ObjectId
-  conversationId    String                @db.ObjectId
-  senderId          String?               @db.ObjectId
-  anonymousSenderId String?               @db.ObjectId
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId    String    @db.ObjectId
+  senderId          String?   @db.ObjectId
+  anonymousSenderId String?   @db.ObjectId
   content           String
-  originalLanguage  String                @default("fr")
+  originalLanguage  String    @default("fr")
   /// text, image, file, audio, video, location, system
-  messageType       String                @default("text")
-  isEdited          Boolean               @default(false)
+  messageType       String    @default("text")
+  isEdited          Boolean   @default(false)
   editedAt          DateTime?
-  isDeleted         Boolean               @default(false)
+  isDeleted         Boolean   @default(false)
   deletedAt         DateTime?
-  replyToId         String?               @db.ObjectId
-  validatedMentions String[]              @default([]) // Usernames des mentions validées (pour performance)
-  createdAt         DateTime              @default(now())
-  updatedAt         DateTime              @updatedAt
-  
-  status            MessageStatus[]       @relation("MessageStatusMessage")
-  translations      MessageTranslation[]
-  attachments       MessageAttachment[]
-  reactions         Reaction[]            @relation("MessageReactions")
-  mentions          Mention[]             @relation("MessageMentions")
-  notifications     Notification[]        @relation("NotificationMessage")
-  replyTo           Message?              @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  replies           Message[]             @relation("MessageReplies")
-  anonymousSender   AnonymousParticipant? @relation("AnonymousMessageSender", fields: [anonymousSenderId], references: [id])
-  sender            User?                 @relation("MessageSender", fields: [senderId], references: [id])
-  conversation      Conversation          @relation(fields: [conversationId], references: [id])
+  replyToId         String?   @db.ObjectId
+  validatedMentions String[]  @default([]) // Usernames des mentions validées (pour performance)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  status          MessageStatus[]       @relation("MessageStatusMessage")
+  translations    MessageTranslation[]
+  attachments     MessageAttachment[]
+  reactions       Reaction[]            @relation("MessageReactions")
+  mentions        Mention[]             @relation("MessageMentions")
+  notifications   Notification[]        @relation("NotificationMessage")
+  replyTo         Message?              @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies         Message[]             @relation("MessageReplies")
+  anonymousSender AnonymousParticipant? @relation("AnonymousMessageSender", fields: [anonymousSenderId], references: [id])
+  sender          User?                 @relation("MessageSender", fields: [senderId], references: [id])
+  conversation    Conversation          @relation(fields: [conversationId], references: [id])
 }
 
 /// Traduction d'un message
@@ -262,14 +262,14 @@ model MessageTranslation {
   sourceLanguage    String
   targetLanguage    String
   translatedContent String
-  translationModel  String   // "basic", "medium", "premium"
+  translationModel  String // "basic", "medium", "premium"
   cacheKey          String   @unique
   confidenceScore   Float?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-  
-  message           Message  @relation(fields: [messageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
   // Contrainte d'unicité: une seule traduction par message et langue cible
   // Permet de mettre à jour la traduction existante vers un niveau supérieur
   @@unique([messageId, targetLanguage], name: "messageId_targetLanguage")
@@ -280,48 +280,48 @@ model MessageTranslation {
 
 /// Attachement de fichier pour un message
 model MessageAttachment {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  messageId       String   @db.ObjectId
-  fileName        String   // Nom de fichier généré (unique)
-  originalName    String   // Nom original du fichier
-  mimeType        String   // Type MIME (image/jpeg, application/pdf, etc.)
-  fileSize        Int      // Taille en bytes
-  filePath        String   // Chemin relatif: attachments/YYYY/mm/userId/filename
-  fileUrl         String   // URL complète pour accès
-  
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  messageId    String @db.ObjectId
+  fileName     String // Nom de fichier généré (unique)
+  originalName String // Nom original du fichier
+  mimeType     String // Type MIME (image/jpeg, application/pdf, etc.)
+  fileSize     Int // Taille en bytes
+  filePath     String // Chemin relatif: attachments/YYYY/mm/userId/filename
+  fileUrl      String // URL complète pour accès
+
   // Métadonnées spécifiques aux images
-  width           Int?
-  height          Int?
-  thumbnailPath   String?  // Miniature générée pour images
-  thumbnailUrl    String?
-  
+  width         Int?
+  height        Int?
+  thumbnailPath String? // Miniature générée pour images
+  thumbnailUrl  String?
+
   // Métadonnées spécifiques audio/vidéo
-  duration        Int?     // Durée en MILLISECONDES (précision complète)
-  bitrate         Int?     // Débit en bps (bits per second)
-  sampleRate      Int?     // Fréquence d'échantillonnage en Hz (ex: 44100, 48000)
-  codec           String?  // Codec audio (ex: "opus", "aac", "vorbis", "mp3")
-  channels        Int?     // Nombre de canaux audio (1: mono, 2: stereo)
+  duration   Int? // Durée en MILLISECONDES (précision complète)
+  bitrate    Int? // Débit en bps (bits per second)
+  sampleRate Int? // Fréquence d'échantillonnage en Hz (ex: 44100, 48000)
+  codec      String? // Codec audio (ex: "opus", "aac", "vorbis", "mp3")
+  channels   Int? // Nombre de canaux audio (1: mono, 2: stereo)
 
   // Métadonnées spécifiques vidéo
-  fps             Float?   // Frames per second pour vidéos
-  videoCodec      String?  // Codec vidéo (ex: "h264", "h265", "vp8", "vp9", "av1")
+  fps        Float? // Frames per second pour vidéos
+  videoCodec String? // Codec vidéo (ex: "h264", "h265", "vp8", "vp9", "av1")
 
   // Métadonnées spécifiques documents/PDF
-  pageCount       Int?     // Nombre de pages pour PDF et documents
+  pageCount Int? // Nombre de pages pour PDF et documents
 
   // Métadonnées spécifiques code/texte
-  lineCount       Int?     // Nombre de lignes pour fichiers texte/code
+  lineCount Int? // Nombre de lignes pour fichiers texte/code
 
   // Métadonnées générales
-  uploadedBy      String   @db.ObjectId // ID utilisateur ou anonyme
-  isAnonymous     Boolean  @default(false)
-  
-  createdAt       DateTime @default(now())
+  uploadedBy  String  @db.ObjectId // ID utilisateur ou anonyme
+  isAnonymous Boolean @default(false)
+
+  createdAt DateTime @default(now())
   /// Attachment metadata
-  metadata        Json?           // JSON blob for additional metadata
-  
-  message         Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  
+  metadata  Json? // JSON blob for additional metadata
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
   @@index([messageId])
   @@index([uploadedBy])
 }
@@ -335,16 +335,16 @@ model MessageAttachment {
 /// - Utilisateur reçoit nouveau message → messageId = nouveau message, receivedAt = now, readAt = null
 model MessageStatus {
   id             String    @id @default(auto()) @map("_id") @db.ObjectId
-  conversationId String    @db.ObjectId  /// Conversation concernée
-  messageId      String    @db.ObjectId  /// Curseur: pointe vers le dernier message reçu/lu
-  userId         String    @db.ObjectId  /// Utilisateur concerné
+  conversationId String    @db.ObjectId /// Conversation concernée
+  messageId      String    @db.ObjectId /// Curseur: pointe vers le dernier message reçu/lu
+  userId         String    @db.ObjectId /// Utilisateur concerné
   receivedAt     DateTime? /// Date de réception du message pointé par messageId
   readAt         DateTime? /// Date de lecture du message pointé par messageId (null si non lu)
-  updatedAt      DateTime  @updatedAt    /// Dernière mise à jour du curseur
+  updatedAt      DateTime  @updatedAt /// Dernière mise à jour du curseur
 
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  message        Message      @relation("MessageStatusMessage", fields: [messageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message      Message      @relation("MessageStatusMessage", fields: [messageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   /// Un seul curseur par utilisateur par conversation
   @@unique([userId, conversationId], name: "userId_conversationId")
@@ -355,18 +355,18 @@ model MessageStatus {
 
 /// Réaction emoji sur un message par un utilisateur
 model Reaction {
-  id              String                @id @default(auto()) @map("_id") @db.ObjectId
-  messageId       String                @db.ObjectId
-  userId          String?               @db.ObjectId // null pour utilisateurs anonymes
-  anonymousUserId String?               @db.ObjectId // ID de l'utilisateur anonyme
-  emoji           String                // Emoji libre (ex: 🎉, ❤️, 🔥, ⭐)
-  createdAt       DateTime              @default(now())
-  updatedAt       DateTime              @updatedAt
-  
-  message         Message               @relation("MessageReactions", fields: [messageId], references: [id], onDelete: Cascade)
-  user            User?                 @relation("UserReactions", fields: [userId], references: [id], onDelete: Cascade)
-  anonymousUser   AnonymousParticipant? @relation("AnonymousReactions", fields: [anonymousUserId], references: [id], onDelete: Cascade)
-  
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  messageId       String   @db.ObjectId
+  userId          String?  @db.ObjectId // null pour utilisateurs anonymes
+  anonymousUserId String?  @db.ObjectId // ID de l'utilisateur anonyme
+  emoji           String // Emoji libre (ex: 🎉, ❤️, 🔥, ⭐)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  message       Message               @relation("MessageReactions", fields: [messageId], references: [id], onDelete: Cascade)
+  user          User?                 @relation("UserReactions", fields: [userId], references: [id], onDelete: Cascade)
+  anonymousUser AnonymousParticipant? @relation("AnonymousReactions", fields: [anonymousUserId], references: [id], onDelete: Cascade)
+
   // Contrainte: un utilisateur ne peut ajouter le même emoji qu'une seule fois par message
   @@unique([messageId, userId, emoji], name: "user_reaction_unique")
   // Contrainte: un utilisateur anonyme ne peut ajouter le même emoji qu'une seule fois par message
@@ -384,8 +384,8 @@ model Mention {
   mentionedUserId String   @db.ObjectId
   mentionedAt     DateTime @default(now())
 
-  message         Message  @relation("MessageMentions", fields: [messageId], references: [id], onDelete: Cascade)
-  mentionedUser   User     @relation("UserMentions", fields: [mentionedUserId], references: [id], onDelete: Cascade)
+  message       Message @relation("MessageMentions", fields: [messageId], references: [id], onDelete: Cascade)
+  mentionedUser User    @relation("UserMentions", fields: [mentionedUserId], references: [id], onDelete: Cascade)
 
   // Contrainte: un utilisateur ne peut être mentionné qu'une seule fois par message
   @@unique([messageId, mentionedUserId], name: "message_user_mention_unique")
@@ -406,21 +406,21 @@ model FriendRequest {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  receiver   User     @relation("FriendRequestReceiver", fields: [receiverId], references: [id])
-  sender     User     @relation("FriendRequestSender", fields: [senderId], references: [id])
+  receiver User @relation("FriendRequestReceiver", fields: [receiverId], references: [id])
+  sender   User @relation("FriendRequestSender", fields: [senderId], references: [id])
 }
 
 /// Indicateur de frappe en cours pour des tests... A supprimer après les tests
 model TypingIndicator {
-  id             String       @id @default(auto()) @map("_id") @db.ObjectId
-  conversationId String       @db.ObjectId
-  userId         String       @db.ObjectId
-  isTyping       Boolean      @default(true)
-  startedAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  
-  user           User         @relation(fields: [userId], references: [id])
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId String   @db.ObjectId
+  userId         String   @db.ObjectId
+  isTyping       Boolean  @default(true)
+  startedAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user         User         @relation(fields: [userId], references: [id])
+  conversation Conversation @relation(fields: [conversationId], references: [id])
 }
 
 /// Notification pour un utilisateur
@@ -440,20 +440,23 @@ model Notification {
   createdAt DateTime  @default(now())
 
   /// Informations de l'expéditeur (pour les notifications de messages/appels)
-  senderId       String?   @db.ObjectId
-  senderUsername String?
-  senderAvatar   String?
+  senderId          String? @db.ObjectId
+  senderUsername    String?
+  senderAvatar      String?
+  senderDisplayName String?
+  senderFirstName   String?
+  senderLastName    String?
 
   /// Aperçu du message (tronqué à 32 caractères)
   messagePreview String?
 
   /// Références pour navigation
-  conversationId String?   @db.ObjectId
-  messageId      String?   @db.ObjectId
-  callSessionId  String?   @db.ObjectId
+  conversationId String? @db.ObjectId
+  messageId      String? @db.ObjectId
+  callSessionId  String? @db.ObjectId
 
-  user      User      @relation(fields: [userId], references: [id])
-  message   Message?  @relation("NotificationMessage", fields: [messageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user    User     @relation(fields: [userId], references: [id])
+  message Message? @relation("NotificationMessage", fields: [messageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([userId, isRead])
   @@index([userId, type])
@@ -463,53 +466,53 @@ model Notification {
 
 /// Préférences de notifications par utilisateur
 model NotificationPreference {
-  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId                String   @unique @db.ObjectId
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @unique @db.ObjectId
 
   // Activer/désactiver les notifications
-  pushEnabled           Boolean  @default(true)
-  emailEnabled          Boolean  @default(true)
-  soundEnabled          Boolean  @default(true)
+  pushEnabled  Boolean @default(true)
+  emailEnabled Boolean @default(true)
+  soundEnabled Boolean @default(true)
 
   // Préférences par type de notification
-  newMessageEnabled     Boolean  @default(true)
-  missedCallEnabled     Boolean  @default(true)
-  systemEnabled         Boolean  @default(true)
-  conversationEnabled   Boolean  @default(true)
-  replyEnabled          Boolean  @default(true)
-  mentionEnabled        Boolean  @default(true)
-  reactionEnabled       Boolean  @default(true)
-  contactRequestEnabled Boolean  @default(true)
-  memberJoinedEnabled   Boolean  @default(true)
+  newMessageEnabled     Boolean @default(true)
+  missedCallEnabled     Boolean @default(true)
+  systemEnabled         Boolean @default(true)
+  conversationEnabled   Boolean @default(true)
+  replyEnabled          Boolean @default(true)
+  mentionEnabled        Boolean @default(true)
+  reactionEnabled       Boolean @default(true)
+  contactRequestEnabled Boolean @default(true)
+  memberJoinedEnabled   Boolean @default(true)
 
   // Do Not Disturb (ne pas déranger)
-  dndEnabled            Boolean  @default(false)
-  dndStartTime          String?  // Format: "22:00"
-  dndEndTime            String?  // Format: "08:00"
+  dndEnabled   Boolean @default(false)
+  dndStartTime String? // Format: "22:00"
+  dndEndTime   String? // Format: "08:00"
 
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notification_preferences")
 }
 
 /// Communauté (représente une communauté de conversation)
 model Community {
-  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   /// Identifiant lisible par l'homme (ex: "mshy_meeshy-paris", "mshy_support-lycee-njanda")
-  identifier             String                 @unique
+  identifier  String   @unique
   name        String
   description String?
   avatar      String?
-  isPrivate   Boolean       @default(true)
-  createdBy   String        @db.ObjectId
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  isPrivate   Boolean  @default(true)
+  createdBy   String   @db.ObjectId
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  members     CommunityMember[]
-  creator     User          @relation("CommunityCreator", fields: [createdBy], references: [id])
+  members      CommunityMember[]
+  creator      User              @relation("CommunityCreator", fields: [createdBy], references: [id])
   Conversation Conversation[]
 }
 
@@ -520,10 +523,10 @@ model CommunityMember {
   userId      String   @db.ObjectId
   joinedAt    DateTime @default(now())
   /// admin, moderator, member
-  role             String       @default("member")
+  role        String   @default("member")
 
-  user        User     @relation(fields: [userId], references: [id])
-  community   Community @relation(fields: [communityId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+  community Community @relation(fields: [communityId], references: [id])
 }
 
 /// Statistiques d'utilisation d'un utilisateur
@@ -547,8 +550,8 @@ model UserStats {
   lastActiveAt             DateTime @default(now())
   createdAt                DateTime @default(now())
   updatedAt                DateTime @updatedAt
-  
-  user                     User     @relation(fields: [userId], references: [id])
+
+  user User @relation(fields: [userId], references: [id])
 }
 
 /// Préférence utilisateur générale
@@ -561,127 +564,127 @@ model UserPreference {
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
-  user        User     @relation(fields: [userId], references: [id])
+
+  user User @relation(fields: [userId], references: [id])
 }
 
 /// Préférence spécifique à une conversation
 model ConversationPreference {
-  id             String       @id @default(auto()) @map("_id") @db.ObjectId
-  conversationId String       @db.ObjectId
-  userId         String       @db.ObjectId
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId String   @db.ObjectId
+  userId         String   @db.ObjectId
   key            String
   value          String
-  valueType      String       @default("string")
+  valueType      String   @default("string")
   description    String?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  
-  user           User         @relation(fields: [userId], references: [id])
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user         User         @relation(fields: [userId], references: [id])
+  conversation Conversation @relation(fields: [conversationId], references: [id])
 }
 
 /// Token d'affiliation pour inviter des utilisateurs
 model AffiliateToken {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  token       String   @unique
-  name        String   // Nom de la campagne d'affiliation
-  createdBy   String   @db.ObjectId
-  maxUses     Int?     // Limite d'utilisation (null = illimité)
-  currentUses Int      @default(0)
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  token       String    @unique
+  name        String // Nom de la campagne d'affiliation
+  createdBy   String    @db.ObjectId
+  maxUses     Int? // Limite d'utilisation (null = illimité)
+  currentUses Int       @default(0)
   expiresAt   DateTime? // Date d'expiration (null = pas d'expiration)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  creator     User     @relation("AffiliateTokenCreator", fields: [createdBy], references: [id])
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  creator      User                @relation("AffiliateTokenCreator", fields: [createdBy], references: [id])
   affiliations AffiliateRelation[]
 }
 
 /// Relation d'affiliation entre utilisateurs
 model AffiliateRelation {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  affiliateTokenId String   @db.ObjectId
-  affiliateUserId  String   @db.ObjectId // Utilisateur qui a invité
-  referredUserId   String   @db.ObjectId // Utilisateur invité
-  status          String   @default("pending") // pending, completed, expired
-  createdAt       DateTime @default(now())
-  completedAt     DateTime? // Date de finalisation de l'inscription
-  
-  affiliateToken  AffiliateToken @relation(fields: [affiliateTokenId], references: [id])
-  affiliateUser   User           @relation("AffiliateUser", fields: [affiliateUserId], references: [id])
-  referredUser    User           @relation("ReferredUser", fields: [referredUserId], references: [id])
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
+  affiliateTokenId String    @db.ObjectId
+  affiliateUserId  String    @db.ObjectId // Utilisateur qui a invité
+  referredUserId   String    @db.ObjectId // Utilisateur invité
+  status           String    @default("pending") // pending, completed, expired
+  createdAt        DateTime  @default(now())
+  completedAt      DateTime? // Date de finalisation de l'inscription
+
+  affiliateToken AffiliateToken @relation(fields: [affiliateTokenId], references: [id])
+  affiliateUser  User           @relation("AffiliateUser", fields: [affiliateUserId], references: [id])
+  referredUser   User           @relation("ReferredUser", fields: [referredUserId], references: [id])
 }
 
 /// Lien de tracking pour compter les clics sur les liens partagés
 model TrackingLink {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  token           String   @unique // Token de 6 caractères (ex: "a1b2c3")
-  name            String?  // Nom du lien (max 32 caractères)
-  originalUrl     String   // URL originale complète
-  shortUrl        String   // URL courte générée (meeshy.me/l/<token>)
-  createdBy       String?  @db.ObjectId // Utilisateur qui a créé le lien (null si anonyme)
-  conversationId  String?  @db.ObjectId // Conversation où le lien a été partagé
-  messageId       String?  @db.ObjectId // Message contenant le lien
-  totalClicks     Int      @default(0) // Nombre total de clics
-  uniqueClicks    Int      @default(0) // Nombre de clics uniques (par IP/fingerprint)
-  isActive        Boolean  @default(true) // Le lien est-il actif
-  expiresAt       DateTime? // Date d'expiration (null = pas d'expiration)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  lastClickedAt   DateTime? // Date du dernier clic
-  
-  clicks          TrackingLinkClick[]
-  creator         User?    @relation("TrackingLinkCreator", fields: [createdBy], references: [id])
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  token          String    @unique // Token de 6 caractères (ex: "a1b2c3")
+  name           String? // Nom du lien (max 32 caractères)
+  originalUrl    String // URL originale complète
+  shortUrl       String // URL courte générée (meeshy.me/l/<token>)
+  createdBy      String?   @db.ObjectId // Utilisateur qui a créé le lien (null si anonyme)
+  conversationId String?   @db.ObjectId // Conversation où le lien a été partagé
+  messageId      String?   @db.ObjectId // Message contenant le lien
+  totalClicks    Int       @default(0) // Nombre total de clics
+  uniqueClicks   Int       @default(0) // Nombre de clics uniques (par IP/fingerprint)
+  isActive       Boolean   @default(true) // Le lien est-il actif
+  expiresAt      DateTime? // Date d'expiration (null = pas d'expiration)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  lastClickedAt  DateTime? // Date du dernier clic
+
+  clicks  TrackingLinkClick[]
+  creator User?               @relation("TrackingLinkCreator", fields: [createdBy], references: [id])
 }
 
 /// Clic sur un lien de tracking
 model TrackingLinkClick {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  trackingLinkId  String   @db.ObjectId
-  userId          String?  @db.ObjectId // Utilisateur connecté qui a cliqué (null si anonyme)
-  anonymousId     String?  @db.ObjectId // Participant anonyme qui a cliqué
-  ipAddress       String?  // Adresse IP du visiteur
-  country         String?  // Pays d'origine
-  city            String?  // Ville
-  region          String?  // Région
-  userAgent       String?  // User agent du navigateur
-  browser         String?  // Navigateur détecté
-  os              String?  // Système d'exploitation
-  device          String?  // Type d'appareil (mobile, desktop, tablet)
-  language        String?  // Langue du navigateur
-  referrer        String?  // Page d'origine
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  trackingLinkId    String   @db.ObjectId
+  userId            String?  @db.ObjectId // Utilisateur connecté qui a cliqué (null si anonyme)
+  anonymousId       String?  @db.ObjectId // Participant anonyme qui a cliqué
+  ipAddress         String? // Adresse IP du visiteur
+  country           String? // Pays d'origine
+  city              String? // Ville
+  region            String? // Région
+  userAgent         String? // User agent du navigateur
+  browser           String? // Navigateur détecté
+  os                String? // Système d'exploitation
+  device            String? // Type d'appareil (mobile, desktop, tablet)
+  language          String? // Langue du navigateur
+  referrer          String? // Page d'origine
   deviceFingerprint String? // Empreinte unique du device
-  clickedAt       DateTime @default(now())
-  
-  trackingLink    TrackingLink @relation(fields: [trackingLinkId], references: [id])
-  user            User?        @relation("TrackingLinkClickUser", fields: [userId], references: [id])
-  anonymousUser   AnonymousParticipant? @relation("TrackingLinkClickAnonymous", fields: [anonymousId], references: [id])
+  clickedAt         DateTime @default(now())
+
+  trackingLink  TrackingLink          @relation(fields: [trackingLinkId], references: [id])
+  user          User?                 @relation("TrackingLinkClickUser", fields: [userId], references: [id])
+  anonymousUser AnonymousParticipant? @relation("TrackingLinkClickAnonymous", fields: [anonymousId], references: [id])
 }
 
 /// Journal d'audit des actions administratives
 model AdminAuditLog {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   /// ID de l'utilisateur affecté par l'action
-  userId      String    @db.ObjectId
+  userId    String   @db.ObjectId
   /// ID de l'administrateur qui a effectué l'action
-  adminId     String    @db.ObjectId
+  adminId   String   @db.ObjectId
   /// Type d'action (VIEW_USER, CREATE_USER, UPDATE_PROFILE, etc.)
-  action      String
+  action    String
   /// Type d'entité affectée (User, Community, etc.)
-  entity      String    @default("User")
+  entity    String   @default("User")
   /// ID de l'entité affectée
-  entityId    String
+  entityId  String
   /// Changements effectués (JSON stringifié)
-  changes     String?
+  changes   String?
   /// Métadonnées supplémentaires (JSON stringifié)
-  metadata    String?
+  metadata  String?
   /// Adresse IP de l'admin
-  ipAddress   String?
+  ipAddress String?
   /// User agent du navigateur
-  userAgent   String?
+  userAgent String?
   /// Date de création du log
-  createdAt   DateTime  @default(now())
+  createdAt DateTime @default(now())
 
   @@index([adminId])
   @@index([userId])
@@ -691,33 +694,33 @@ model AdminAuditLog {
 
 /// Signalement de contenu inapproprié
 model Report {
-  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
   /// Type de contenu signalé: message, user, conversation, community
-  reportedType      String
+  reportedType     String
   /// ID de l'entité signalée
-  reportedEntityId  String    @db.ObjectId
+  reportedEntityId String    @db.ObjectId
   /// ID de l'utilisateur qui signale (null si anonyme)
-  reporterId        String?   @db.ObjectId
+  reporterId       String?   @db.ObjectId
   /// Nom de l'utilisateur anonyme qui signale
-  reporterName      String?
+  reporterName     String?
   /// Type de signalement: spam, inappropriate, harassment, violence, hate_speech, other
-  reportType        String
+  reportType       String
   /// Raison détaillée du signalement
-  reason            String?
+  reason           String?
   /// Statut: pending, under_review, resolved, rejected, dismissed
-  status            String    @default("pending")
+  status           String    @default("pending")
   /// ID du modérateur qui traite le signalement
-  moderatorId       String?   @db.ObjectId
+  moderatorId      String?   @db.ObjectId
   /// Notes du modérateur
-  moderatorNotes    String?
+  moderatorNotes   String?
   /// Action prise: none, warning_sent, content_removed, user_suspended, user_banned
-  actionTaken       String?
+  actionTaken      String?
   /// Date de création du signalement
-  createdAt         DateTime  @default(now())
+  createdAt        DateTime  @default(now())
   /// Date de mise à jour
-  updatedAt         DateTime  @updatedAt
+  updatedAt        DateTime  @updatedAt
   /// Date de résolution
-  resolvedAt        DateTime?
+  resolvedAt       DateTime?
 
   @@index([reportedType])
   @@index([reportedEntityId])
@@ -734,206 +737,202 @@ model Report {
 
 /// Call Session - Represents an active or completed video call
 model CallSession {
-  id              String           @id @default(auto()) @map("_id") @db.ObjectId
-  conversationId  String           @db.ObjectId
-  conversation    Conversation     @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId String       @db.ObjectId
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   /// Call mode: p2p for 2 participants, sfu for 3+
-  mode            CallMode         @default(p2p)
+  mode CallMode @default(p2p)
 
   /// Call status: initiated, ringing, active, ended
-  status          CallStatus       @default(initiated)
+  status CallStatus @default(initiated)
 
   /// User who initiated the call
-  initiatorId     String           @db.ObjectId
-  initiator       User             @relation("CallInitiator", fields: [initiatorId], references: [id])
+  initiatorId String @db.ObjectId
+  initiator   User   @relation("CallInitiator", fields: [initiatorId], references: [id])
 
   /// Timestamps
-  startedAt       DateTime         @default(now())
-  answeredAt      DateTime?        // When first participant answered
-  endedAt         DateTime?
-  duration        Int?             // Duration in seconds
+  startedAt  DateTime  @default(now())
+  answeredAt DateTime? // When first participant answered
+  endedAt    DateTime?
+  duration   Int? // Duration in seconds
 
   /// Participants in this call
-  participants    CallParticipant[]
+  participants CallParticipant[]
 
   /// Transcriptions (Phase 2A/2B)
-  transcriptions  Transcription[]
+  transcriptions Transcription[]
 
   /// Call metadata
-  metadata        Json?            // { maxParticipants, recordingEnabled, etc. }
+  metadata Json? // { maxParticipants, recordingEnabled, etc. }
 
   /// Indexes
   @@index([conversationId])
   @@index([status])
   @@index([startedAt])
-
   @@map("call_sessions")
 }
 
 /// Call Participant - Represents a user participating in a call
 model CallParticipant {
-  id              String       @id @default(auto()) @map("_id") @db.ObjectId
-  callSessionId   String       @db.ObjectId
-  callSession     CallSession  @relation(fields: [callSessionId], references: [id], onDelete: Cascade)
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  callSessionId String      @db.ObjectId
+  callSession   CallSession @relation(fields: [callSessionId], references: [id], onDelete: Cascade)
 
   /// Authenticated user (null for anonymous)
-  userId          String?      @db.ObjectId
-  user            User?        @relation("CallParticipants", fields: [userId], references: [id])
+  userId String? @db.ObjectId
+  user   User?   @relation("CallParticipants", fields: [userId], references: [id])
 
   /// Anonymous participant ID (from AnonymousParticipant model)
-  anonymousId     String?
+  anonymousId String?
 
   /// Participant role: initiator or participant
-  role            ParticipantRole @default(participant)
+  role ParticipantRole @default(participant)
 
   /// Timestamps
-  joinedAt        DateTime     @default(now())
-  leftAt          DateTime?
+  joinedAt DateTime  @default(now())
+  leftAt   DateTime?
 
   /// Media state
-  isAudioEnabled  Boolean      @default(true)
-  isVideoEnabled  Boolean      @default(true)
+  isAudioEnabled Boolean @default(true)
+  isVideoEnabled Boolean @default(true)
 
   /// Connection quality metadata
-  connectionQuality Json?      // { latency, packetLoss, bandwidth }
+  connectionQuality Json? // { latency, packetLoss, bandwidth }
 
   /// Indexes
   @@index([callSessionId])
   @@index([userId])
-
   @@map("call_participants")
 }
 
 /// Transcription - Phase 2A/2B (prepared for future)
 /// Stores transcriptions from client or server
 model Transcription {
-  id              String       @id @default(auto()) @map("_id") @db.ObjectId
-  callSessionId   String       @db.ObjectId
-  callSession     CallSession  @relation(fields: [callSessionId], references: [id], onDelete: Cascade)
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  callSessionId String      @db.ObjectId
+  callSession   CallSession @relation(fields: [callSessionId], references: [id], onDelete: Cascade)
 
   /// Participant who spoke
-  participantId   String       @db.ObjectId
+  participantId String @db.ObjectId
 
   /// Transcription source: client (Web Speech API/Whisper.js) or server (faster-whisper)
-  source          TranscriptionSource
+  source TranscriptionSource
 
   /// Transcribed text
-  text            String
+  text String
 
   /// Original language detected/specified
-  language        String
+  language String
 
   /// Confidence score (0-1)
-  confidence      Float?
+  confidence Float?
 
   /// Timestamp in call (milliseconds from call start)
-  timestamp       DateTime     @default(now())
-  offsetMs        Int?         // Offset from call start in milliseconds
+  timestamp DateTime @default(now())
+  offsetMs  Int? // Offset from call start in milliseconds
 
   /// Translations of this transcription (Phase 3)
-  translations    TranslationCall[]
+  translations TranslationCall[]
 
   /// Indexes
   @@index([callSessionId])
   @@index([timestamp])
-
   @@map("transcriptions")
 }
 
 /// Translation - Phase 3 (prepared for future)
 /// Stores translations of transcriptions
 model TranslationCall {
-  id                String        @id @default(auto()) @map("_id") @db.ObjectId
-  transcriptionId   String        @db.ObjectId
-  transcription     Transcription @relation(fields: [transcriptionId], references: [id], onDelete: Cascade)
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  transcriptionId String        @db.ObjectId
+  transcription   Transcription @relation(fields: [transcriptionId], references: [id], onDelete: Cascade)
 
   /// Target language code
-  targetLanguage    String
+  targetLanguage String
 
   /// Translated text
-  translatedText    String
+  translatedText String
 
   /// Translation confidence (0-1)
-  confidence        Float?
+  confidence Float?
 
   /// Translation model used
-  model             String?      // e.g., "gpt-4", "google-translate", etc.
+  model String? // e.g., "gpt-4", "google-translate", etc.
 
   /// Cached translation
-  cached            Boolean      @default(false)
+  cached Boolean @default(false)
 
   /// Timestamp
-  createdAt         DateTime     @default(now())
+  createdAt DateTime @default(now())
 
   /// Indexes
   @@index([transcriptionId])
-
   @@map("translation_calls")
 }
 
 /// Enums for video calls
 
 enum CallMode {
-  p2p    // Peer-to-peer (2 participants)
-  sfu    // Selective Forwarding Unit (3+ participants)
+  p2p // Peer-to-peer (2 participants)
+  sfu // Selective Forwarding Unit (3+ participants)
 }
 
 enum CallStatus {
-  initiated  // Call created, waiting for participants
-  ringing    // Ringing on remote participants
-  active     // Call is active with participants
-  ended      // Call has ended
-  missed     // Call was not answered
-  rejected   // Call was rejected by recipient
+  initiated // Call created, waiting for participants
+  ringing // Ringing on remote participants
+  active // Call is active with participants
+  ended // Call has ended
+  missed // Call was not answered
+  rejected // Call was rejected by recipient
 }
 
 enum ParticipantRole {
-  initiator    // User who started the call
-  participant  // Regular participant
+  initiator // User who started the call
+  participant // Regular participant
 }
 
 enum TranscriptionSource {
-  client  // Client-side (Web Speech API or Whisper.js)
-  server  // Server-side (faster-whisper)
+  client // Client-side (Web Speech API or Whisper.js)
+  server // Server-side (faster-whisper)
 }
 
 /// User-specific conversation preferences (personal settings per conversation)
 model UserConversationPreferences {
-  id                String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId            String    @db.ObjectId
-  conversationId    String    @db.ObjectId
+  id             String @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String @db.ObjectId
+  conversationId String @db.ObjectId
 
   /// Pin conversation to top
-  isPinned          Boolean   @default(false)
+  isPinned Boolean @default(false)
 
   /// Mute notifications for this conversation
-  isMuted           Boolean   @default(false)
+  isMuted Boolean @default(false)
 
   /// Archive conversation (hide from main list)
-  isArchived        Boolean   @default(false)
+  isArchived Boolean @default(false)
 
   /// Personal tags for this conversation
-  tags              String[]  @default([])
+  tags String[] @default([])
 
   /// Assigned category ID
-  categoryId        String?   @db.ObjectId
+  categoryId String? @db.ObjectId
 
   /// Order within category (for manual sorting)
-  orderInCategory   Int?
+  orderInCategory Int?
 
   /// Custom display name override
-  customName        String?
+  customName String?
 
   /// Emoji reaction on conversation
-  reaction          String?
+  reaction String?
 
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  conversation      Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  category          UserConversationCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  user         User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation              @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  category     UserConversationCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
   @@unique([userId, conversationId])
   @@index([userId])
@@ -944,28 +943,28 @@ model UserConversationPreferences {
 
 /// User-defined categories for organizing conversations
 model UserConversationCategory {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String    @db.ObjectId
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @db.ObjectId
 
   /// Category name
-  name        String
+  name String
 
   /// Color hex code (optional)
-  color       String?
+  color String?
 
   /// Icon name/emoji (optional)
-  icon        String?
+  icon String?
 
   /// Display order
-  order       Int       @default(0)
+  order Int @default(0)
 
   /// Accordion expanded state
-  isExpanded  Boolean   @default(true)
+  isExpanded Boolean @default(true)
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
   conversations UserConversationPreferences[]
 
   @@index([userId])
@@ -979,29 +978,29 @@ model UserConversationCategory {
 
 /// Password Reset Token - Stores hashed tokens for secure password reset
 model PasswordResetToken {
-  id                String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId            String    @db.ObjectId
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @db.ObjectId
 
   /// SHA-256 hash of the token (NOT the token itself)
-  tokenHash         String    @unique
+  tokenHash String @unique
 
   /// Expiry & Usage
-  expiresAt         DateTime  // 15 minutes from creation
-  usedAt            DateTime? // Null if not used yet
-  isRevoked         Boolean   @default(false)
-  revokedReason     String?   // "MANUAL" | "SUSPICIOUS_ACTIVITY" | "PASSWORD_CHANGED" | "NEW_REQUEST"
+  expiresAt     DateTime // 15 minutes from creation
+  usedAt        DateTime? // Null if not used yet
+  isRevoked     Boolean   @default(false)
+  revokedReason String? // "MANUAL" | "SUSPICIOUS_ACTIVITY" | "PASSWORD_CHANGED" | "NEW_REQUEST"
 
   /// Request Metadata (for anomaly detection)
   ipAddress         String?
   userAgent         String?
   deviceFingerprint String?
-  geoLocation       String?   // "City, Country"
-  geoCoordinates    String?   // "lat,lon"
+  geoLocation       String? // "City, Country"
+  geoCoordinates    String? // "lat,lon"
 
-  createdAt         DateTime  @default(now())
+  createdAt DateTime @default(now())
 
   /// Relations
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([expiresAt])
@@ -1011,19 +1010,19 @@ model PasswordResetToken {
 
 /// Password History - Prevents password reuse
 model PasswordHistory {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId        String    @db.ObjectId
-  passwordHash  String    // bcrypt hash (cost=12)
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String @db.ObjectId
+  passwordHash String // bcrypt hash (cost=12)
 
   /// Metadata
-  changedVia    String    // "RESET" | "USER_CHANGE" | "ADMIN_RESET" | "FORCED_RESET"
-  ipAddress     String?
-  userAgent     String?
+  changedVia String // "RESET" | "USER_CHANGE" | "ADMIN_RESET" | "FORCED_RESET"
+  ipAddress  String?
+  userAgent  String?
 
-  createdAt     DateTime  @default(now())
+  createdAt DateTime @default(now())
 
   /// Relations
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([createdAt])
@@ -1032,17 +1031,17 @@ model PasswordHistory {
 
 /// Security Event - Audit log for security-related events
 model SecurityEvent {
-  id                String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId            String?   @db.ObjectId  // Null for failed login attempts
+  id     String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId String? @db.ObjectId // Null for failed login attempts
 
   /// Event Classification
-  eventType         String    // "PASSWORD_RESET_REQUEST" | "PASSWORD_RESET_SUCCESS" | "PASSWORD_RESET_FAILED" | "ACCOUNT_LOCKED" | etc.
-  severity          String    // "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
-  status            String    // "SUCCESS" | "FAILED" | "BLOCKED"
+  eventType String // "PASSWORD_RESET_REQUEST" | "PASSWORD_RESET_SUCCESS" | "PASSWORD_RESET_FAILED" | "ACCOUNT_LOCKED" | etc.
+  severity  String // "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
+  status    String // "SUCCESS" | "FAILED" | "BLOCKED"
 
   /// Event Details
-  description       String?
-  metadata          Json?     // Additional context
+  description String?
+  metadata    Json? // Additional context
 
   /// Request Context
   ipAddress         String?
@@ -1050,10 +1049,10 @@ model SecurityEvent {
   deviceFingerprint String?
   geoLocation       String?
 
-  createdAt         DateTime  @default(now())
+  createdAt DateTime @default(now())
 
   /// Relations
-  user              User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([eventType])
@@ -1064,12 +1063,12 @@ model SecurityEvent {
 
 /// User Session - For session invalidation after password reset
 model UserSession {
-  id                String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId            String    @db.ObjectId
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @db.ObjectId
 
   /// Session Data
-  sessionToken      String    @unique  // JWT token hash or session ID
-  refreshToken      String?   @unique  // For refresh token rotation
+  sessionToken String  @unique // JWT token hash or session ID
+  refreshToken String? @unique // For refresh token rotation
 
   /// Metadata
   ipAddress         String?
@@ -1080,13 +1079,13 @@ model UserSession {
   expiresAt         DateTime
   isValid           Boolean   @default(true)
   invalidatedAt     DateTime?
-  invalidatedReason String?   // "PASSWORD_RESET" | "LOGOUT" | "ADMIN_ACTION" | "SECURITY_BREACH"
+  invalidatedReason String? // "PASSWORD_RESET" | "LOGOUT" | "ADMIN_ACTION" | "SECURITY_BREACH"
 
-  createdAt         DateTime  @default(now())
-  lastActivityAt    DateTime  @default(now())
+  createdAt      DateTime @default(now())
+  lastActivityAt DateTime @default(now())
 
   /// Relations
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([expiresAt])

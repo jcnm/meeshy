@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { getTagColor } from '@/utils/tag-colors';
 
 import {
   Popover,
@@ -38,6 +39,9 @@ interface ConversationParticipantsProps {
   conversationType?: string; // Ajouter le type de conversation
   className?: string;
   typingUsers?: Array<{ userId: string; conversationId: string }>;
+  conversationTitle?: string; // Titre de la conversation
+  conversationTags?: string[]; // Tags de la conversation
+  conversationCategory?: string; // Catégorie de la conversation
 }
 
 export function ConversationParticipants({
@@ -47,7 +51,10 @@ export function ConversationParticipants({
   isGroup,
   conversationType = 'group', // Valeur par défaut
   className = "",
-  typingUsers = []
+  typingUsers = [],
+  conversationTitle,
+  conversationTags = [],
+  conversationCategory
 }: ConversationParticipantsProps) {
   const { t } = useI18n('conversations');
 
@@ -57,7 +64,7 @@ export function ConversationParticipants({
   // Filtrer les utilisateurs qui tapent dans cette conversation (exclure l'utilisateur actuel)
   // NOTE: Ne pas filtrer par conversationId car le backend normalise les IDs (ObjectId → identifier)
   // et le hook useMessaging ne remonte déjà que les événements de la conversation courante
-  const usersTypingInChat = (typingUsers || []).filter((typingUser: { userId: string; conversationId: string }) => 
+  const usersTypingInChat = (typingUsers || []).filter((typingUser: { userId: string; conversationId: string }) =>
     typingUser.userId !== currentUser.id
   );
 
@@ -126,66 +133,62 @@ export function ConversationParticipants({
 
   return (
     <>
-      {/* Affichage compact dans l'en-tête */}
+      {/* Affichage dans l'en-tête : Soit indicateur de frappe seul, soit avatars + détails */}
       <div className={cn("flex items-center gap-2", className)}>
-        {/* Avatars des participants en ligne */}
-        <div className="flex -space-x-2">
-          {displayParticipants.map((participant) => {
-            const user = participant.user;
-            const isAnonymous = isAnonymousUser(user);
-            const isCurrentUser = user.id === currentUser.id;
-
-            const avatarElement = (
-              <div key={participant.userId} className="relative group">
-                {isAnonymous ? (
-                  <div className="h-6 w-6 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center border-2 border-background">
-                    <Ghost className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
-                  </div>
-                ) : (
-                  <Avatar className="h-6 w-6 border-2 border-background">
-                    <AvatarImage src={user.avatar} />
-                    <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                      {getAvatarFallback(user)}
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-                {/* Tooltip au survol */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                  <div className="flex items-center gap-1">
-                    {isAnonymous && <Ghost className="h-3 w-3" />}
-                    {getDisplayName(user)}
-                    {isCurrentUser && ` (${t('conversationDetails.you')})`}
-                  </div>
-                </div>
-              </div>
-            );
-
-            // Si l'utilisateur n'est pas anonyme et a un username, le rendre cliquable
-            if (!isAnonymous && user.username) {
-              return (
-                <Link key={participant.userId} href={`/u/${user.username}`} onClick={(e) => e.stopPropagation()}>
-                  {avatarElement}
-                </Link>
-              );
-            }
-
-            return avatarElement;
-          })}
-        </div>
-
-        {/* Nombre total de participants si plus de 3 */}
-        {allParticipantsIncludingCurrent.length > 3 && (
-          <span className="text-xs text-muted-foreground">
-            +{allParticipantsIncludingCurrent.length - displayParticipants.length}
-          </span>
-        )}
-
-        {/* Afficher seulement l'indicateur de frappe quand quelqu'un écrit */}
-        {usersTypingInChat.length > 0 && (
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            <span>{renderTypingMessage()}</span>
+        {usersTypingInChat.length > 0 ? (
+          /* INDICATEUR DE FRAPPE SEUL - Toute la zone est nettoyée */
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+            <span className="font-medium">{renderTypingMessage()}</span>
           </div>
+        ) : (
+          /* AVATARS + DÉTAILS DE LA CONVERSATION */
+          <>
+            {/* Avatars des participants en ligne */}
+            <div className="flex -space-x-2">
+              {displayParticipants.map((participant) => {
+                const user = participant.user;
+                const isAnonymous = isAnonymousUser(user);
+                const isCurrentUser = user.id === currentUser.id;
+
+                const avatarElement = (
+                  <div key={participant.userId} className="relative group">
+                    {isAnonymous ? (
+                      <div className="h-6 w-6 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center border-2 border-background">
+                        <Ghost className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
+                      </div>
+                    ) : (
+                      <Avatar className="h-6 w-6 border-2 border-background">
+                        <AvatarImage src={user.avatar} />
+                        <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                          {getAvatarFallback(user)}
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
+                    {/* Tooltip au survol */}
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                      <div className="flex items-center gap-1">
+                        {isAnonymous && <Ghost className="h-3 w-3" />}
+                        {getDisplayName(user)}
+                        {isCurrentUser && ` (${t('conversationDetails.you')})`}
+                      </div>
+                    </div>
+                  </div>
+                );
+
+                // Si l'utilisateur n'est pas anonyme et a un username, le rendre cliquable
+                if (!isAnonymous && user.username) {
+                  return (
+                    <Link key={participant.userId} href={`/u/${user.username}`} onClick={(e) => e.stopPropagation()}>
+                      {avatarElement}
+                    </Link>
+                  );
+                }
+
+                return avatarElement;
+              })}
+            </div>
+          </>
         )}
       </div>
     </>

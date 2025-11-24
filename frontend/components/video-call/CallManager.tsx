@@ -88,7 +88,7 @@ export function CallManager() {
         reset();
         setIncomingCall(null);
 
-        toast.info('Call ended - no answer');
+        // Toast métier désactivé - utiliser le système de notifications v2
       }
     }, CALL_TIMEOUT_MS);
 
@@ -112,7 +112,7 @@ export function CallManager() {
     if (!user) {
       console.error('❌ [CallManager] User not loaded yet - ignoring call:initiated');
       logger.warn('[CallManager]', 'User not loaded yet - ignoring call:initiated');
-      toast.error('Cannot receive call: User not loaded');
+      // Toast métier désactivé - utiliser le système de notifications v2
       return;
     }
 
@@ -158,7 +158,7 @@ export function CallManager() {
       // Start timeout to auto-cleanup if no one joins
       startCallTimeout(event.callId);
 
-      toast.success('Call started - waiting for participants...');
+      // Toast métier désactivé - utiliser le système de notifications v2
     } else {
       // I am being called - show notification
       console.log('📞 [CallManager] Setting incomingCall state - should show CallNotification', {
@@ -199,7 +199,7 @@ export function CallManager() {
       // Note: CallInterface will handle creating the WebRTC offer
       // based on currentCall.initiatorId check
 
-      toast.success(`${event.participant.username || 'Someone'} joined the call`);
+      // Toast métier désactivé - utiliser le système de notifications v2
     },
     [addParticipant, setCurrentCall, clearCallTimeout]
   );
@@ -230,7 +230,7 @@ export function CallManager() {
       // Remove participant from call (tracked by database participantId)
       removeParticipant(event.participantId);
 
-      toast.info('Participant left the call');
+      // Toast métier désactivé - utiliser le système de notifications v2
     },
     [removeParticipant, removeRemoteStream, removePeerConnection]
   );
@@ -251,7 +251,7 @@ export function CallManager() {
       // Clear incoming call notification
       setIncomingCall(null);
 
-      toast.info('Call ended');
+      // Toast métier désactivé - utiliser le système de notifications v2
     },
     [reset, clearCallTimeout]
   );
@@ -379,7 +379,7 @@ export function CallManager() {
     // Clear notification
     setIncomingCall(null);
 
-    toast.info('Call declined');
+    // Toast métier désactivé - utiliser le système de notifications v2
   }, [incomingCall, clearCallTimeout]);
 
   /**

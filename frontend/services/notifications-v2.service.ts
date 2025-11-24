@@ -105,24 +105,42 @@ export const notificationServiceV2 = {
       }
 
       const response = await apiService.get<{
-        notifications: any[];
-        pagination: NotificationPaginatedResponse['pagination'];
+        success: boolean;
+        data: {
+          notifications: any[];
+          pagination: NotificationPaginatedResponse['pagination'];
+        };
       }>(`/notifications?${params.toString()}`);
 
-      if (response.success && response.data) {
-        // Parser les notifications
-        const notifications: NotificationV2[] = response.data.notifications.map(parseNotification);
+      // Parser les notifications si les données existent
+      // Note: apiService.get wraps the backend response in { data: <backend_response> }
+      // Backend returns { success: true, data: { notifications, pagination } }
+      // So we need to access response.data.data.notifications
+      if (response.data?.data?.notifications) {
+        const notifications: NotificationV2[] = response.data.data.notifications.map(parseNotification);
 
         return {
           ...response,
           data: {
             notifications,
-            pagination: response.data.pagination
+            pagination: response.data.data.pagination
           }
         };
       }
 
-      return response as ApiResponse<NotificationPaginatedResponse>;
+      // Retourner une structure valide si pas de données
+      return {
+        ...response,
+        data: {
+          notifications: [],
+          pagination: {
+            page: 1,
+            limit: 50,
+            total: 0,
+            hasMore: false
+          }
+        }
+      };
     });
   },
 
@@ -256,11 +274,12 @@ export const notificationServiceV2 = {
       '/notifications/test',
       { type }
     ).then(response => {
-      if (response.success && response.data) {
+      // Parser la notification si les données existent
+      if (response.data?.notification) {
         return {
           ...response,
           data: {
-            success: response.data.success,
+            success: response.data.success || true,
             notification: parseNotification(response.data.notification)
           }
         };
@@ -302,7 +321,10 @@ function parseNotification(raw: any): NotificationV2 {
     sender: raw.senderId ? {
       id: raw.senderId,
       username: raw.senderUsername || 'Unknown',
-      avatar: raw.senderAvatar
+      avatar: raw.senderAvatar,
+      displayName: raw.senderDisplayName,
+      firstName: raw.senderFirstName,
+      lastName: raw.senderLastName
     } : undefined,
 
     // Message preview

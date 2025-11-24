@@ -181,6 +181,105 @@ export async function communityRoutes(fastify: FastifyInstance) {
     }
   });
 
+  // Route pour rechercher des communautés PUBLIQUES accessibles à tous
+  fastify.get('/communities/search', { onRequest: [fastify.authenticate] }, async (request, reply) => {
+    try {
+      const { q } = request.query as { q?: string };
+
+      if (!q || q.trim().length === 0) {
+        return reply.send({ success: true, data: [] });
+      }
+
+      // Rechercher UNIQUEMENT dans les communautés PUBLIQUES
+      const communities = await fastify.prisma.community.findMany({
+        where: {
+          isPrivate: false, // Uniquement les communautés publiques
+          OR: [
+            { name: { contains: q, mode: 'insensitive' } },
+            { identifier: { contains: q, mode: 'insensitive' } },
+            { description: { contains: q, mode: 'insensitive' } },
+            // Rechercher aussi dans les noms/usernames des membres
+            {
+              members: {
+                some: {
+                  user: {
+                    OR: [
+                      { username: { contains: q, mode: 'insensitive' } },
+                      { displayName: { contains: q, mode: 'insensitive' } },
+                      { firstName: { contains: q, mode: 'insensitive' } },
+                      { lastName: { contains: q, mode: 'insensitive' } }
+                    ],
+                    isActive: true
+                  }
+                }
+              }
+            }
+          ]
+        },
+        include: {
+          creator: {
+            select: {
+              id: true,
+              username: true,
+              displayName: true,
+              avatar: true
+            }
+          },
+          members: {
+            take: 5, // Limiter le nombre de membres retournés
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  displayName: true,
+                  avatar: true,
+                  isOnline: true
+                }
+              }
+            }
+          },
+          _count: {
+            select: {
+              members: true,
+              Conversation: true
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        },
+        take: 50 // Limiter le nombre de résultats
+      });
+
+      // Transformer les données pour le frontend
+      const communitiesWithCount = communities.map(community => ({
+        id: community.id,
+        name: community.name,
+        identifier: community.identifier,
+        description: community.description,
+        avatar: community.avatar,
+        isPrivate: community.isPrivate,
+        memberCount: community._count.members,
+        conversationCount: community._count.Conversation,
+        createdAt: community.createdAt,
+        creator: community.creator,
+        members: community.members
+      }));
+
+      reply.send({
+        success: true,
+        data: communitiesWithCount
+      });
+    } catch (error) {
+      console.error('[GATEWAY] Error searching communities:', error);
+      reply.status(500).send({
+        success: false,
+        error: 'Failed to search communities'
+      });
+    }
+  });
+
   // Route pour obtenir une communauté par ID ou identifier
   fastify.get('/communities/:id', { onRequest: [fastify.authenticate] }, async (request, reply) => {
     try {

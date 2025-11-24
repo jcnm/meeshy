@@ -72,7 +72,7 @@ export function OnlineIndicator({
   return (
     <div
       className={cn(
-        'rounded-full border-2 border-white',
+        'rounded-full border-2 border-white transition-colors duration-500',
         sizeClasses[size],
         statusColors[effectiveStatus],
         className
