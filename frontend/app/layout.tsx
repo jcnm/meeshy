@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import "@/lib/polyfills"; // ⚡ Polyfills pour anciennes versions Android (DOIT être en premier)
 import "./globals.css";
 import "../styles/bubble-stream.css";
 import "../styles/z-index-fix.css";

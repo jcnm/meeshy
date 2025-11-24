@@ -30,11 +30,25 @@ export function useFirebaseInit() {
 
   useEffect(() => {
     let mounted = true;
+    let timeoutId: NodeJS.Timeout;
 
     async function checkFirebase() {
       try {
         console.info('[Firebase Init] Checking Firebase availability...');
-        const result = await firebaseChecker.check();
+
+        // Timeout de 5 secondes pour éviter les blocages sur connexions lentes
+        const timeoutPromise = new Promise<FirebaseStatus>((_, reject) => {
+          timeoutId = setTimeout(() => {
+            reject(new Error('Firebase check timeout (5s exceeded)'));
+          }, 5000);
+        });
+
+        const checkPromise = firebaseChecker.check();
+
+        // Race entre le check et le timeout
+        const result = await Promise.race([checkPromise, timeoutPromise]);
+
+        clearTimeout(timeoutId);
 
         if (mounted) {
           setStatus(result);
@@ -61,11 +75,12 @@ export function useFirebaseInit() {
       } catch (err) {
         console.error('[Firebase Init] Check failed:', err);
         if (mounted) {
+          // En cas d'erreur ou timeout, continuer sans Firebase
           setStatus({
             available: false,
             pushEnabled: false,
             badgeEnabled: false,
-            reason: 'Check failed',
+            reason: err instanceof Error ? err.message : 'Check failed',
           });
           setError(err instanceof Error ? err.message : 'Unknown error');
           setLoading(false);
@@ -77,6 +92,9 @@ export function useFirebaseInit() {
 
     return () => {
       mounted = false;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
     };
   }, []); // Ne s'exécute qu'une seule fois au montage
 
