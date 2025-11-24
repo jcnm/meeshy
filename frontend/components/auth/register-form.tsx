@@ -55,6 +55,10 @@ export function RegisterForm({
   const [emailValidationStatus, setEmailValidationStatus] = useState<'idle' | 'invalid' | 'valid'>('idle');
   const [emailErrorMessage, setEmailErrorMessage] = useState<string>('');
 
+  // État pour la validation du téléphone
+  const [phoneValidationStatus, setPhoneValidationStatus] = useState<'idle' | 'invalid' | 'valid'>('idle');
+  const [phoneErrorMessage, setPhoneErrorMessage] = useState<string>('');
+
   const validateUsername = (username: string) => {
     // Validation: longueur entre 2 et 16 caractères
     if (username.length < 2 || username.length > 16) {
@@ -80,6 +84,26 @@ export function RegisterForm({
       setEmailValidationStatus('valid');
       setEmailErrorMessage('');
     }
+  };
+
+  const validatePhoneField = (phone: string) => {
+    if (!phone.trim()) {
+      setPhoneValidationStatus('invalid');
+      setPhoneErrorMessage('Le numéro de téléphone est obligatoire');
+      return;
+    }
+
+    // Import dynamique de la validation
+    import('@/utils/phone-validator').then(({ getPhoneValidationError }) => {
+      const errorMessage = getPhoneValidationError(phone);
+      if (errorMessage) {
+        setPhoneValidationStatus('invalid');
+        setPhoneErrorMessage(errorMessage);
+      } else {
+        setPhoneValidationStatus('valid');
+        setPhoneErrorMessage('');
+      }
+    });
   };
 
   // Vérification de disponibilité du username avec debounce
@@ -165,6 +189,20 @@ export function RegisterForm({
     if (!isValidEmail(formData.email)) {
       const errorMessage = getEmailValidationError(formData.email);
       toast.error(errorMessage || 'Format d\'email invalide');
+      return;
+    }
+
+    // Validation du téléphone (obligatoire)
+    if (!formData.phoneNumber.trim()) {
+      toast.error('Le numéro de téléphone est obligatoire');
+      return;
+    }
+
+    // Validation du format du téléphone
+    const { validatePhoneNumber } = await import('@/utils/phone-validator');
+    const phoneValidation = validatePhoneNumber(formData.phoneNumber);
+    if (!phoneValidation.isValid) {
+      toast.error(phoneValidation.error || 'Numéro de téléphone invalide');
       return;
     }
 
@@ -450,19 +488,62 @@ export function RegisterForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor={`${formPrefix}-phoneNumber`}>{t('register.phoneLabel')}</Label>
-        <Input
-          id={`${formPrefix}-phoneNumber`}
-          type="tel"
-          placeholder={t('register.phonePlaceholder')}
-          value={formData.phoneNumber}
-          onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-          disabled={isLoading || disabled}
-        />
-        <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-          <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 text-[10px] font-bold">i</span>
-          {t('register.phoneCountryCodeHelp')}
+        <Label htmlFor={`${formPrefix}-phoneNumber`}>
+          {t('register.phoneLabel')} <span className="text-red-500">*</span>
+        </Label>
+        <div className="relative">
+          <Input
+            id={`${formPrefix}-phoneNumber`}
+            type="tel"
+            placeholder="+33612345678 ou 0033612345678"
+            value={formData.phoneNumber}
+            onChange={(e) => {
+              // Format en temps réel
+              import('@/utils/phone-validator').then(({ formatPhoneNumberInput }) => {
+                const formatted = formatPhoneNumberInput(e.target.value);
+                setFormData({ ...formData, phoneNumber: formatted });
+              });
+            }}
+            onBlur={(e) => validatePhoneField(e.target.value)}
+            className={cn(
+              "pr-10",
+              phoneValidationStatus === 'valid' && "border-green-500 focus-visible:ring-green-500",
+              phoneValidationStatus === 'invalid' && "border-red-500 focus-visible:ring-red-500"
+            )}
+            minLength={8}
+            maxLength={15}
+            disabled={isLoading || disabled}
+            required
+          />
+          {/* Indicateur de statut */}
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            {phoneValidationStatus === 'valid' && (
+              <div className="flex items-center justify-center h-5 w-5 rounded-full bg-green-500">
+                <Check className="h-3 w-3 text-white" />
+              </div>
+            )}
+            {phoneValidationStatus === 'invalid' && (
+              <div className="flex items-center justify-center h-5 w-5 rounded-full bg-red-500">
+                <AlertCircle className="h-3 w-3 text-white" />
+              </div>
+            )}
+          </div>
+        </div>
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          Doit commencer par + ou 00, puis 8-15 chiffres (ex: +33612345678)
         </p>
+        {phoneValidationStatus === 'valid' && (
+          <p className="text-xs text-green-600 flex items-center gap-1">
+            <Check className="h-3 w-3" />
+            Numéro de téléphone valide
+          </p>
+        )}
+        {phoneValidationStatus === 'invalid' && phoneErrorMessage && (
+          <p className="text-xs text-red-500 flex items-center gap-1">
+            <AlertCircle className="h-3 w-3" />
+            {phoneErrorMessage}
+          </p>
+        )}
       </div>
 
       <div className="space-y-2">
