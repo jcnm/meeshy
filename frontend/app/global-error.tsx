@@ -17,35 +17,27 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log l'erreur côté client pour debugging
-    console.error('[Global Error]', {
-      message: error.message,
-      stack: error.stack,
-      digest: error.digest,
-      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A',
-      online: typeof navigator !== 'undefined' ? navigator.onLine : true,
-    });
-
-    // Envoyer l'erreur au backend pour monitoring (optionnel)
+    // Importer dynamiquement le collecteur (évite les erreurs SSR)
     if (typeof window !== 'undefined') {
-      try {
-        fetch('/api/client-error', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            message: error.message,
-            stack: error.stack,
-            digest: error.digest,
-            url: window.location.href,
-            userAgent: navigator.userAgent,
-            timestamp: new Date().toISOString(),
-          }),
-        }).catch(() => {
+      import('@/utils/error-context-collector').then(({ collectErrorContext, sendErrorContext }) => {
+        // Collecter tous les détails du contexte
+        const context = collectErrorContext(error);
+
+        // Log l'erreur côté client pour debugging
+        console.error('[Global Error] Complete context:', context);
+
+        // Envoyer au backend avec tous les détails
+        sendErrorContext(context).catch(() => {
           // Ignorer silencieusement si l'envoi échoue
         });
-      } catch (e) {
-        // Ignorer silencieusement
-      }
+      }).catch((err) => {
+        // Fallback basique si le collecteur échoue
+        console.error('[Global Error] Fallback:', {
+          message: error.message,
+          stack: error.stack,
+          digest: error.digest,
+        });
+      });
     }
   }, [error]);
 

@@ -13,28 +13,59 @@ const LOG_DIR = path.join(process.cwd(), 'logs');
 const LOG_FILE = path.join(LOG_DIR, 'client-errors.log');
 
 /**
- * Écrit une erreur dans le fichier de log
+ * Écrit une erreur dans le fichier de log avec contexte complet
  */
 async function logToFile(errorData: any) {
   try {
     // Créer le dossier logs s'il n'existe pas
     await fs.mkdir(LOG_DIR, { recursive: true });
 
-    // Formater l'entrée de log
+    // Le contexte complet est déjà fourni par error-context-collector
+    // On garde tout pour analyse ultérieure
     const logEntry = {
+      // Informations de base
       timestamp: errorData.timestamp || new Date().toISOString(),
       url: errorData.url,
       message: errorData.message,
       stack: errorData.stack,
-      userAgent: errorData.userAgent,
       digest: errorData.digest,
+
+      // User Agent et détails appareil
+      userAgent: errorData.userAgent,
+      platform: errorData.platform,
+      language: errorData.language,
+      languages: errorData.languages,
+
+      // Appareil
+      device: errorData.device || {
+        type: 'unknown',
+        os: 'Unknown',
+        browser: 'Unknown',
+      },
+
+      // Écran
+      screen: errorData.screen,
+
+      // Réseau (IMPORTANT pour diagnostiquer les problèmes en Afrique)
+      network: errorData.network || {
+        online: true,
+      },
+
+      // Performance
+      performance: errorData.performance,
+
+      // Préférences
+      preferences: errorData.preferences,
+
+      // Localisation (timezone, langue)
+      location: errorData.location,
     };
 
-    // Écrire dans le fichier (append mode)
+    // Écrire dans le fichier (append mode) - une ligne JSON par erreur
     const logLine = JSON.stringify(logEntry) + '\n';
     await fs.appendFile(LOG_FILE, logLine, 'utf-8');
 
-    console.info(`[Client Error] Logged to file: ${LOG_FILE}`);
+    console.info(`[Client Error] Logged to file with full context: ${LOG_FILE}`);
   } catch (fileError) {
     console.error('[Client Error] Failed to write to log file:', fileError);
     // Continue même si l'écriture échoue
