@@ -3,8 +3,8 @@
  *
  * Règles:
  * - Obligatoire
- * - Peut commencer par + ou 00
- * - Contient uniquement des chiffres après le préfixe
+ * - Peut commencer par + ou 00 (optionnel)
+ * - Contient uniquement des chiffres (après préfixe optionnel)
  * - Longueur totale: 8-15 caractères
  */
 
@@ -21,7 +21,7 @@ export function validatePhoneNumber(phone: string): PhoneValidationResult {
   if (!phone || phone.trim() === '') {
     return {
       isValid: false,
-      error: 'Le numéro de téléphone est obligatoire'
+      error: 'phoneRequired' // Clé de traduction
     };
   }
 
@@ -31,25 +31,26 @@ export function validatePhoneNumber(phone: string): PhoneValidationResult {
   if (trimmed.length < 8) {
     return {
       isValid: false,
-      error: 'Le numéro de téléphone doit contenir au moins 8 caractères'
+      error: 'phoneTooShort' // Clé de traduction
     };
   }
 
   if (trimmed.length > 15) {
     return {
       isValid: false,
-      error: 'Le numéro de téléphone ne peut pas dépasser 15 caractères'
+      error: 'phoneTooLong' // Clé de traduction
     };
   }
 
   // Vérifier le format
-  // Peut commencer par + ou 00, suivi uniquement de chiffres
-  const phoneRegex = /^(\+|00)\d+$/;
+  // Peut commencer par + ou 00 (optionnel), suivi uniquement de chiffres
+  // Accepte aussi les numéros sans préfixe
+  const phoneRegex = /^(\+|00)?\d+$/;
 
   if (!phoneRegex.test(trimmed)) {
     return {
       isValid: false,
-      error: 'Le numéro doit commencer par + ou 00 et contenir uniquement des chiffres'
+      error: 'phoneInvalidFormat' // Clé de traduction
     };
   }
 
@@ -60,7 +61,8 @@ export function validatePhoneNumber(phone: string): PhoneValidationResult {
 
 /**
  * Formate un numéro de téléphone en temps réel pendant la saisie
- * Enlève tous les caractères invalides sauf +, 00 au début et chiffres
+ * Enlève tous les caractères invalides (espaces, tirets, etc.)
+ * Accepte +, 00 au début ou juste des chiffres
  */
 export function formatPhoneNumberInput(value: string): string {
   // Si vide, retourner tel quel
@@ -78,21 +80,36 @@ export function formatPhoneNumberInput(value: string): string {
     return '+' + rest;
   }
 
-  // Si ne commence pas par + ou 00, on peut soit:
-  // 1. Forcer à commencer par + (option choisie)
-  // 2. Ou nettoyer et laisser l'utilisateur choisir
-
-  // Option: nettoyer et laisser vide si pas de préfixe valide
+  // Sinon, accepter juste les chiffres (pas de préfixe forcé)
   const cleaned = value.replace(/\D/g, '');
-  return cleaned ? '+' + cleaned : '';
+  return cleaned;
 }
 
 /**
  * Obtient un message d'erreur de validation lisible
+ * Retourne la clé de traduction ou null si valide
  */
 export function getPhoneValidationError(phone: string): string | null {
   const result = validatePhoneNumber(phone);
-  return result.isValid ? null : result.error || 'Numéro de téléphone invalide';
+  return result.isValid ? null : result.error || 'phoneInvalid';
+}
+
+/**
+ * Traduit une clé d'erreur de téléphone
+ * Utilisé pour afficher les messages d'erreur à l'utilisateur
+ */
+export function translatePhoneError(errorKey: string, t: (key: string) => string): string {
+  // Map des clés vers les clés de traduction
+  const translationKeys: Record<string, string> = {
+    phoneRequired: 'register.validation.phoneRequired',
+    phoneTooShort: 'register.validation.phoneTooShort',
+    phoneTooLong: 'register.validation.phoneTooLong',
+    phoneInvalidFormat: 'register.validation.phoneInvalidFormat',
+    phoneInvalid: 'register.validation.phoneInvalid'
+  };
+
+  const translationKey = translationKeys[errorKey] || translationKeys.phoneInvalid;
+  return t(translationKey);
 }
 
 /**
@@ -104,15 +121,16 @@ export function isValidPhoneNumber(phone: string): boolean {
 
 /**
  * Exemples de numéros valides:
- * - +33612345678 (11 caractères)
- * - 0033612345678 (13 caractères)
+ * - +33612345678 (11 caractères, avec préfixe +)
+ * - 0033612345678 (13 caractères, avec préfixe 00)
+ * - 612345678 (9 caractères, sans préfixe)
  * - +1234567890 (11 caractères)
- * - 001234567890 (13 caractères)
+ * - 12345678901 (11 caractères, sans préfixe)
  *
  * Exemples de numéros invalides:
  * - 123456 (trop court, < 8 caractères)
  * - +123456789012345678 (trop long, > 15 caractères)
- * - 612345678 (pas de préfixe + ou 00)
  * - +33 6 12 34 56 78 (espaces non autorisés)
  * - +33-6-12-34-56-78 (tirets non autorisés)
+ * - abc123456789 (lettres non autorisées)
  */

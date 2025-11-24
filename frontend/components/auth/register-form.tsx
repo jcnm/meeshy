@@ -89,16 +89,16 @@ export function RegisterForm({
   const validatePhoneField = (phone: string) => {
     if (!phone.trim()) {
       setPhoneValidationStatus('invalid');
-      setPhoneErrorMessage('Le numéro de téléphone est obligatoire');
+      setPhoneErrorMessage(t('register.validation.phoneRequired'));
       return;
     }
 
     // Import dynamique de la validation
-    import('@/utils/phone-validator').then(({ getPhoneValidationError }) => {
-      const errorMessage = getPhoneValidationError(phone);
-      if (errorMessage) {
+    import('@/utils/phone-validator').then(({ getPhoneValidationError, translatePhoneError }) => {
+      const errorKey = getPhoneValidationError(phone);
+      if (errorKey) {
         setPhoneValidationStatus('invalid');
-        setPhoneErrorMessage(errorMessage);
+        setPhoneErrorMessage(translatePhoneError(errorKey, t));
       } else {
         setPhoneValidationStatus('valid');
         setPhoneErrorMessage('');
@@ -194,15 +194,16 @@ export function RegisterForm({
 
     // Validation du téléphone (obligatoire)
     if (!formData.phoneNumber.trim()) {
-      toast.error('Le numéro de téléphone est obligatoire');
+      toast.error(t('register.validation.phoneRequired'));
       return;
     }
 
     // Validation du format du téléphone
-    const { validatePhoneNumber } = await import('@/utils/phone-validator');
+    const { validatePhoneNumber, translatePhoneError } = await import('@/utils/phone-validator');
     const phoneValidation = validatePhoneNumber(formData.phoneNumber);
     if (!phoneValidation.isValid) {
-      toast.error(phoneValidation.error || 'Numéro de téléphone invalide');
+      const errorKey = phoneValidation.error || 'phoneInvalid';
+      toast.error(translatePhoneError(errorKey, t));
       return;
     }
 
@@ -530,12 +531,12 @@ export function RegisterForm({
           </div>
         </div>
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          Doit commencer par + ou 00, puis 8-15 chiffres (ex: +33612345678)
+          {t('register.validation.phoneHelp')}
         </p>
         {phoneValidationStatus === 'valid' && (
           <p className="text-xs text-green-600 flex items-center gap-1">
             <Check className="h-3 w-3" />
-            Numéro de téléphone valide
+            {t('register.validation.phoneValid')}
           </p>
         )}
         {phoneValidationStatus === 'invalid' && phoneErrorMessage && (
