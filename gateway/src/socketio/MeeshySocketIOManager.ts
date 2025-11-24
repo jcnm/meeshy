@@ -249,12 +249,11 @@ export class MeeshySocketIOManager {
           const user = this.connectedUsers.get(userId);
           const isAnonymous = user?.isAnonymous || false;
 
-          // Envoi de message = action significative
-          // → Mettre à jour lastSeen (activité détectable) ET lastActiveAt (action importante)
-          // Utilise StatusService pour throttling automatique (5s pour lastSeen, 60s pour lastActiveAt)
+          // Envoi de message = activité détectable
+          // → Mettre à jour uniquement lastSeen (throttled à 5s)
+          // lastActiveAt est réservé uniquement pour la connexion
           if (this.statusService) {
-            this.statusService.updateLastSeen(userId, isAnonymous); // Throttled à 5s
-            this.statusService.updateLastActive(userId, isAnonymous); // Throttled à 60s
+            this.statusService.updateLastSeen(userId, isAnonymous);
           }
 
           // Pour les utilisateurs anonymes, récupérer le nom d'affichage depuis la base de données

@@ -183,7 +183,7 @@ export const usersService = {
 
   /**
    * Vérifie si un utilisateur est en ligne
-   * Basé sur lastActiveAt pour refléter l'activité réelle
+   * Basé sur lastSeen pour refléter toute activité détectable (typing, API calls, etc.)
    * Un utilisateur est considéré en ligne s'il a été actif dans les 5 dernières minutes
    */
   isUserOnline(user: User): boolean {
@@ -192,8 +192,8 @@ export const usersService = {
       return false;
     }
 
-    // Vérifier l'activité récente via lastActiveAt
-    const lastActive = new Date(user.lastActiveAt || user.lastSeen);
+    // Utiliser lastSeen (activité détectable) avec fallback sur lastActiveAt (connexion)
+    const lastActive = new Date(user.lastSeen || user.lastActiveAt);
     const now = new Date();
     const diffMs = now.getTime() - lastActive.getTime();
     const diffMinutes = Math.floor(diffMs / (1000 * 60));
@@ -204,6 +204,7 @@ export const usersService = {
 
   /**
    * Calcule le statut détaillé de l'utilisateur
+   * Basé sur lastSeen (activité détectable) avec fallback sur lastActiveAt (connexion)
    * @returns 'online' | 'away' | 'offline'
    */
   getUserStatus(user: User): 'online' | 'away' | 'offline' {
@@ -211,7 +212,8 @@ export const usersService = {
       return 'offline';
     }
 
-    const lastActive = new Date(user.lastActiveAt || user.lastSeen);
+    // Utiliser lastSeen (activité détectable) avec fallback sur lastActiveAt (connexion)
+    const lastActive = new Date(user.lastSeen || user.lastActiveAt);
     const now = new Date();
     const diffMs = now.getTime() - lastActive.getTime();
     const diffMinutes = Math.floor(diffMs / (1000 * 60));

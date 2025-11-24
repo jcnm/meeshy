@@ -2,10 +2,13 @@
  * Service de gestion des statuts utilisateurs en ligne/hors ligne
  *
  * Distinction des champs de présence:
- * - lastSeen: Mis à jour à chaque activité détectable (connexion, heartbeat, requête API, typing, etc.)
+ * - lastSeen: Mis à jour à chaque activité détectable (heartbeat, requête API, typing, envoi message, etc.)
  *   → Throttling léger (5 secondes) pour éviter surcharge DB
- * - lastActiveAt: Mis à jour uniquement lors d'actions significatives (connexion, envoi message)
+ *   → Utilisé par les indicateurs de présence (online/away/offline)
+ *
+ * - lastActiveAt: Mis à jour UNIQUEMENT lors de la connexion (login, Socket.IO connect)
  *   → Throttling plus agressif (1 minute) car moins critique
+ *   → Utilisé pour analytics et tracking d'engagement réel
  *
  * Fonctionnalités:
  * - Throttling différencié pour lastSeen (5s) et lastActiveAt (60s)
@@ -13,7 +16,7 @@
  * - Cache en mémoire avec nettoyage automatique
  * - Updates asynchrones pour ne pas bloquer les requêtes
  *
- * @version 2.0.0
+ * @version 2.1.0
  */
 
 import { PrismaClient } from '../../shared/prisma/client';
@@ -95,9 +98,9 @@ export class StatusService {
   }
 
   /**
-   * Mettre à jour lastActiveAt d'un utilisateur (action significative)
+   * Mettre à jour lastActiveAt d'un utilisateur (connexion uniquement)
    * Throttling: 1 minute
-   * Cas d'usage: connexion, envoi de message
+   * Cas d'usage: connexion (login, Socket.IO connect)
    */
   async updateUserLastActive(userId: string): Promise<void> {
     this.metrics.totalRequests++;
@@ -167,8 +170,9 @@ export class StatusService {
   }
 
   /**
-   * Mettre à jour lastActiveAt d'un participant anonyme (action significative)
+   * Mettre à jour lastActiveAt d'un participant anonyme (connexion uniquement)
    * Throttling: 1 minute
+   * Cas d'usage: connexion (Socket.IO connect)
    */
   async updateAnonymousLastActive(participantId: string): Promise<void> {
     this.metrics.totalRequests++;
@@ -215,8 +219,8 @@ export class StatusService {
   }
 
   /**
-   * Mettre à jour lastActiveAt de manière générique (action significative)
-   * Cas d'usage: connexion, envoi de message
+   * Mettre à jour lastActiveAt de manière générique (connexion uniquement)
+   * Cas d'usage: connexion (login, Socket.IO connect)
    */
   async updateLastActive(userId: string, isAnonymous: boolean = false): Promise<void> {
     if (isAnonymous) {
@@ -290,7 +294,7 @@ export class StatusService {
 
   /**
    * Forcer un update immédiat de lastActiveAt (bypass throttling)
-   * Utile pour Socket.IO connect ou envoi de message critique
+   * Utile pour connexion Socket.IO ou login
    */
   async forceUpdateLastActive(userId: string, isAnonymous: boolean = false): Promise<void> {
     const cacheKey = isAnonymous ? `anon_active_${userId}` : userId;
