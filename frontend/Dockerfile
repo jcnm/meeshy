@@ -39,8 +39,8 @@ COPY shared/package.json ./shared/
 # Copy frontend package files (context is root, so prefix with frontend/)
 COPY frontend/package.json frontend/pnpm-lock.yaml* ./
 
-# Install dependencies with pnpm
-RUN corepack enable pnpm && pnpm i --frozen-lockfile
+# Install dependencies with pnpm (no frozen lockfile for CI compatibility)
+RUN corepack enable pnpm && pnpm i --no-frozen-lockfile
 
 # ===== BUILDER STAGE =====
 FROM base AS builder
