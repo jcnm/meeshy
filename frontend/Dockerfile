@@ -12,45 +12,35 @@ LABEL maintainer="Meeshy Development Team <dev@meeshy.me>" \
       org.opencontainers.image.title="Meeshy Frontend" \
       org.opencontainers.image.description="Next.js frontend application for Meeshy platform"
 
-# === BUILD ARGUMENTS === 
+# === BUILD ARGUMENTS ===
 ARG PNPM_VERSION=9.15.0
-ARG NEXT_TELEMETRY_DISABLED=1 
+ARG NEXT_TELEMETRY_DISABLED=1
+
 # === ENVIRONMENT VARIABLES ===
-ENV NODE_ENV=${NODE_ENV:-production} \
-    PORT=${PORT:-3000} \
+ENV NODE_ENV=production \
+    PORT=3000 \
     HOSTNAME=0.0.0.0 \
-    NEXT_TELEMETRY_DISABLED=${NEXT_TELEMETRY_DISABLED} \
-    NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL} \
-    NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL} \
-    NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL} \
-    NEXT_PUBLIC_TRANSLATION_URL=${NEXT_PUBLIC_TRANSLATION_URL} \
-    NEXT_PUBLIC_FRONTEND_URL=${NEXT_PUBLIC_FRONTEND_URL} \
-    NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION=${NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION} \
-    NEXT_PUBLIC_USE_API_TRANSLATION_ONLY=${NEXT_PUBLIC_USE_API_TRANSLATION_ONLY} \
+    NEXT_TELEMETRY_DISABLED=1 \
     PNPM_HOME="/pnpm" \
-    PATH="$PATH" \
+    PATH="/pnpm:$PATH" \
     NPM_CONFIG_CACHE="/tmp/.npm" \
     YARN_CACHE_FOLDER="/tmp/.yarn" \
     NEXT_CACHE_DIR="/app/.next/cache"
 
 # ===== DEPS STAGE =====
 FROM base AS deps
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat tini
 WORKDIR /app
 
-# Copy workspace configuration and shared package.json first
+# Copy workspace configuration from root context
 COPY pnpm-workspace.yaml ./
 COPY shared/package.json ./shared/
 
-# Install dependencies based on the preferred package manager
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* .npmrc* ./
-RUN \
-  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-  elif [ -f package-lock.json ]; then npm ci; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
-  else corepack enable pnpm && pnpm install; \
-  fi
+# Copy frontend package files (context is root, so prefix with frontend/)
+COPY frontend/package.json frontend/pnpm-lock.yaml* ./
+
+# Install dependencies with pnpm
+RUN corepack enable pnpm && pnpm i --frozen-lockfile
 
 # ===== BUILDER STAGE =====
 FROM base AS builder
@@ -59,27 +49,25 @@ WORKDIR /app
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 
-# Copy source code
-COPY . .
+# Copy frontend source code (context is root)
+COPY frontend/ ./
 
 # Set build environment variables
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://gate.meeshy.me} \
-    NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL:-wss://gate.meeshy.me} \
-    NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL:-https://gate.meeshy.me} \
-    NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION=${NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION:-false} \
-    NEXT_PUBLIC_USE_API_TRANSLATION_ONLY=${NEXT_PUBLIC_USE_API_TRANSLATION_ONLY:-true}
+ARG NEXT_PUBLIC_API_URL=https://gate.meeshy.me
+ARG NEXT_PUBLIC_WS_URL=wss://gate.meeshy.me
+ARG NEXT_PUBLIC_BACKEND_URL=https://gate.meeshy.me
+ARG NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION=false
+ARG NEXT_PUBLIC_USE_API_TRANSLATION_ONLY=true
 
-# Next.js collects completely anonymous telemetry data about general usage.
-# Learn more here: https://nextjs.org/telemetry
-ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL} \
+    NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL} \
+    NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL} \
+    NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION=${NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION} \
+    NEXT_PUBLIC_USE_API_TRANSLATION_ONLY=${NEXT_PUBLIC_USE_API_TRANSLATION_ONLY} \
+    NEXT_TELEMETRY_DISABLED=1
 
-# Build the application
-RUN \
-  if [ -f yarn.lock ]; then yarn run build; \
-  elif [ -f package-lock.json ]; then npm run build; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm run build; \
-  else corepack enable pnpm && pnpm run build; \
-  fi
+# Build the application with pnpm
+RUN corepack enable pnpm && pnpm run build
 
 # ===== RUNNER STAGE =====
 FROM base AS runner
@@ -102,14 +90,14 @@ COPY --from=builder /app/public ./public
 # Copy package.json for npm scripts
 COPY --from=builder /app/package.json ./package.json
 
-# Copy node_modules from the builder stage (full dependencies)
+# Copy node_modules from the builder stage
 COPY --from=builder /app/node_modules ./node_modules
 
 # Copy the entire .next directory from the builder stage
 COPY --from=builder /app/.next ./.next
 
-# Ensure .next directory structure is correct
-RUN ls -la .next/ && ls -la .next/static/ && echo "✅ Static files verified"
+# Verify build artifacts
+RUN ls -la .next/ && ls -la .next/static/ && echo "Static files verified"
 
 # Create logs directory and set permissions
 RUN mkdir -p /app/logs && \
@@ -119,7 +107,7 @@ RUN mkdir -p /app/logs && \
 # Switch to non-root user
 USER nextjs
 
-# Expose port 80 (requires running container with appropriate permissions)
+# Expose port 80
 EXPOSE 80
 
 # Set port to 80

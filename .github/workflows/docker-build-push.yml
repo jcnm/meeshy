@@ -132,16 +132,16 @@ jobs:
           FIRST=true
           HAS_CHANGES=false
 
-          # Frontend
+          # Frontend - needs root context for shared/ access
           if [[ "${{ steps.changes.outputs.frontend }}" == "true" ]]; then
             HAS_CHANGES=true
             VERSION=$(cat frontend/VERSION 2>/dev/null || echo "0.0.1")
             [[ "$FIRST" == "false" ]] && MATRIX+=','
-            MATRIX+='{"service":"frontend","context":"./frontend","dockerfile":"./frontend/Dockerfile","image":"meeshy-frontend","version":"'$VERSION'"}'
+            MATRIX+='{"service":"frontend","context":".","dockerfile":"./frontend/Dockerfile","image":"meeshy-frontend","version":"'$VERSION'"}'
             FIRST=false
           fi
 
-          # Gateway
+          # Gateway - needs root context for shared/ access
           if [[ "${{ steps.changes.outputs.gateway }}" == "true" ]]; then
             HAS_CHANGES=true
             VERSION=$(cat gateway/VERSION 2>/dev/null || echo "0.0.1")
@@ -150,12 +150,12 @@ jobs:
             FIRST=false
           fi
 
-          # Translator
+          # Translator - needs root context for shared/ access
           if [[ "${{ steps.changes.outputs.translator }}" == "true" ]]; then
             HAS_CHANGES=true
             VERSION=$(cat translator/VERSION 2>/dev/null || echo "0.0.1")
             [[ "$FIRST" == "false" ]] && MATRIX+=','
-            MATRIX+='{"service":"translator","context":"./translator","dockerfile":"./translator/Dockerfile","image":"meeshy-translator","version":"'$VERSION'"}'
+            MATRIX+='{"service":"translator","context":".","dockerfile":"./translator/Dockerfile","image":"meeshy-translator","version":"'$VERSION'"}'
             FIRST=false
           fi
 

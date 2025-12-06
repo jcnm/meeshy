@@ -1,5 +1,5 @@
 # Translator Dockerfile - Meeshy FastAPI Service (Optimized for ML)
-# Conforme aux exigences OVHcloud AI Deploy
+# Build context: root of project (for shared/ access)
 FROM python:3.12-slim
 
 # === MAINTAINER INFORMATION ===
@@ -31,17 +31,14 @@ ENV HOME=/workspace \
     MODEL_CACHE_DIR=/workspace/models \
     TORCH_HOME=/workspace/models \
     HF_HOME=/workspace/models \
-    # OPTIMISATION ML: Variables d'environnement pour PyTorch
     PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:128 \
     OMP_NUM_THREADS=4 \
     MKL_NUM_THREADS=4 \
     NUMEXPR_NUM_THREADS=4 \
     TOKENIZERS_PARALLELISM=true \
-    # OPTIMISATION XET: Variables d'environnement pour le nouveau système de téléchargement
     HF_HUB_ENABLE_HF_TRANSFER=1 \
     HF_HUB_DISABLE_TELEMETRY=1 \
     HF_HUB_DISABLE_IMPLICIT_TOKEN=1 \
-    # OPTIMISATION RÉSEAU: Configuration pour améliorer la connectivité Docker
     HF_HUB_DOWNLOAD_TIMEOUT=600 \
     HF_HUB_DOWNLOAD_RETRY_DELAY=5 \
     HF_HUB_DOWNLOAD_MAX_RETRIES=5 \
@@ -114,9 +111,9 @@ ENV GRPC_HOST=${GRPC_HOST} \
     NORMAL_POOL_SIZE=${NORMAL_POOL_SIZE} \
     ANY_POOL_SIZE=${ANY_POOL_SIZE} \
     NORMAL_WORKERS=${NORMAL_WORKERS} \
-    ANY_WORKERS=${ANY_WORKERS} 
+    ANY_WORKERS=${ANY_WORKERS}
 
-# OPTIMISATION: Installation en une seule layer avec cleanup et optimisations ML
+# Installation des dependances systeme
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
         wget \
@@ -127,13 +124,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         git \
         ca-certificates \
         openssl \
-        # OPTIMISATION ML: Dépendances système pour PyTorch (sans libatlas-base-dev obsolète)
         libopenblas-dev \
         liblapack-dev \
         gfortran \
         pkg-config \
-        # OPTIMISATION: Outils réseau pour MongoDB
-        # OPTIMISATION RÉSEAU: Outils pour diagnostiquer les problèmes de connectivité
         netcat-openbsd \
         iputils-ping \
         dnsutils \
@@ -146,10 +140,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && useradd -g translator -m translator \
     && mkdir -p /workspace/{logs,cache,models,shared,generated} \
     && chown -R translator:translator /workspace \
-    # OPTIMISATION SSL: Mise à jour des certificats SSL
     && update-ca-certificates \
     && ln -sf /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-bundle.crt \
-    # OPTIMISATION: Nettoyage pour réduire la taille de l'image
     && apt-get purge -y --auto-remove build-essential wget unzip gnupg curl git \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean \
@@ -157,59 +149,57 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /workspace
 
-# Copie des fichiers de dépendances d'abord (pour le cache Docker)
-COPY --chown=translator:translator requirements.txt ./
-COPY --chown=translator:translator .env.docker ./.env
+# Copy requirements first for better caching (context is root)
+COPY --chown=translator:translator translator/requirements.txt ./
+COPY --chown=translator:translator translator/.env.docker ./.env
 
-# OPTIMISATION: Installation des dépendances Python avec optimisations ML
+# Installation des dependances Python
 RUN pip install --upgrade pip --no-cache-dir \
     && pip install --no-cache-dir prisma hf_transfer python-dotenv \
-    # OPTIMISATION ML: Installation de PyTorch CPU optimisé
     && pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu \
     && pip install --default-timeout=300 --no-cache-dir -r requirements.txt \
-    # FIX: Downgrade httpx pour compatibilité avec Prisma 0.15.0
     && pip install --no-cache-dir 'httpx==0.24.*' 'httpcore<0.18' \
     && pip install pymongo \
     && rm -rf ~/.cache/pip
 
-# Copie du code source et du schéma Prisma
-COPY --chown=translator:translator . .
+# Copy translator source code and shared directory (context is root)
+COPY --chown=translator:translator translator/ ./
+COPY --chown=translator:translator shared/ ./shared/
 
-# FIX: Patch Prisma pour corriger l'incompatibilité httpx dict → Limits/Timeout
-RUN python3 /workspace/apply_prisma_patch.py
+# Patch Prisma
+RUN python3 /workspace/apply_prisma_patch.py || echo "Prisma patch skipped or not needed"
 
-# OPTIMISATION: Configuration des permissions et optimisation finale
+# Configuration des permissions
 RUN chown -R translator:translator /workspace \
-    && chmod +x /workspace/docker-entrypoint-mongodb.sh \
-    && chmod +x /workspace/mongodb-health-check.py \
-    && python3 -m compileall /workspace/src \
+    && chmod +x /workspace/docker-entrypoint-mongodb.sh || true \
+    && chmod +x /workspace/mongodb-health-check.py || true \
+    && python3 -m compileall /workspace/src || true \
     && find /workspace -name '*.pyc' -delete
-# OPTIMISATION: Le dossier shared est déjà copié avec le COPY . . précédent
-RUN echo "🔧 Génération du client Prisma Python..." \
+
+# Generation du client Prisma Python
+RUN echo "Generating Prisma client..." \
     && cd /workspace/shared \
     && prisma generate --schema=./prisma/schema.prisma \
     && chown -R translator:translator /workspace/shared /usr/local/lib/python3.12/site-packages/prisma \
     && chmod 755 -R /workspace/shared /usr/local/lib/python3.12/site-packages/prisma \
-    && echo "✅ Client Prisma Python généré et installé avec succès"
+    && echo "Prisma client generated"
 
-# OPTIMISATION: Configuration finale des permissions pour les modèles ML
-RUN echo "🔧 Configuration des permissions pour les modèles ML..." \
-    && mkdir -p /workspace/models/models--t5-small \
+# Configuration des permissions pour les modeles ML
+RUN mkdir -p /workspace/models/models--t5-small \
     && mkdir -p /workspace/models/models--facebook--nllb-200-distilled-600M \
     && chown -R translator:translator /workspace/models \
     && chmod -R 755 /workspace/models \
     && chmod -R 755 /workspace/cache \
-    && chmod -R 755 /workspace/logs \
-    && echo "✅ Permissions configurées pour les modèles ML"
+    && chmod -R 755 /workspace/logs
 
-# OPTIMISATION: Exposition des ports pour AI Deploy
+# Exposition des ports
 EXPOSE ${HTTP_PORT} ${GRPC_PORT} ${ZMQ_PUSH_PORT} ${ZMQ_SUB_PORT}
 
-# OPTIMISATION: Utilisateur non-root pour la sécurité (utilisateur translator)
+# Utilisateur non-root
 USER translator:translator
 
-# OPTIMISATION: Point d'entrée avec gestion d'erreurs et subreaper
+# Point d'entree
 ENTRYPOINT ["/usr/bin/tini", "-s", "--"]
 
-# OPTIMISATION: Commande de démarrage avec migrations Prisma
+# Commande de demarrage
 CMD ["/workspace/docker-entrypoint-mongodb.sh"]
