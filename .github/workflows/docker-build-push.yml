@@ -9,21 +9,16 @@
 name: Docker Build & Push
 
 on:
-  # Trigger on push to main/master with path filters OR version tags
+  # Trigger on push to branches OR version tags
   push:
     branches:
       - main
       - master
       - develop
+      - dev
     tags:
       - 'v*.*.*'
       - 'v*.*.*-*'
-    paths:
-      - 'frontend/**'
-      - 'gateway/**'
-      - 'translator/**'
-      - 'shared/**'
-      - '.github/workflows/docker-build-push.yml'
 
   # Manual trigger with options
   workflow_dispatch:
