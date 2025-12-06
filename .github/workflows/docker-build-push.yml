@@ -1,0 +1,313 @@
+# =============================================================================
+# MEESHY - Docker Multi-Architecture Build & Push Pipeline
+# =============================================================================
+# DevSecOps Pipeline for building and pushing multi-arch Docker images
+# Supports: linux/amd64, linux/arm64
+# Registry: Docker Hub (isopen/meeshy-*)
+# =============================================================================
+
+name: Docker Build & Push
+
+on:
+  # Trigger on push to main/master with path filters OR version tags
+  push:
+    branches:
+      - main
+      - master
+      - develop
+    tags:
+      - 'v*.*.*'
+      - 'v*.*.*-*'
+    paths:
+      - 'frontend/**'
+      - 'gateway/**'
+      - 'translator/**'
+      - 'shared/**'
+      - '.github/workflows/docker-build-push.yml'
+
+  # Manual trigger with options
+  workflow_dispatch:
+    inputs:
+      services:
+        description: 'Services to build (comma-separated: frontend,gateway,translator or all)'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - frontend
+          - gateway
+          - translator
+          - frontend,gateway
+          - gateway,translator
+          - frontend,translator
+      version_bump:
+        description: 'Version bump type'
+        required: false
+        default: 'none'
+        type: choice
+        options:
+          - none
+          - patch
+          - minor
+          - major
+      push_to_registry:
+        description: 'Push to Docker Hub'
+        required: true
+        default: true
+        type: boolean
+
+env:
+  DOCKER_REGISTRY: docker.io
+  DOCKER_NAMESPACE: isopen
+  PLATFORMS: linux/amd64,linux/arm64
+
+# Ensure only one build runs at a time per branch
+concurrency:
+  group: docker-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ===========================================================================
+  # PREPARE - Detect changes and prepare build matrix
+  # ===========================================================================
+  prepare:
+    name: Prepare Build Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      has_changes: ${{ steps.set-matrix.outputs.has_changes }}
+      is_release: ${{ steps.check-release.outputs.is_release }}
+      version_tag: ${{ steps.check-release.outputs.version_tag }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if release
+        id: check-release
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            echo "is_release=true" >> $GITHUB_OUTPUT
+            echo "version_tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          else
+            echo "is_release=false" >> $GITHUB_OUTPUT
+            echo "version_tag=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Detect changed services
+        id: changes
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            # Manual trigger - use input
+            SERVICES="${{ github.event.inputs.services }}"
+            if [[ "$SERVICES" == "all" ]]; then
+              echo "frontend=true" >> $GITHUB_OUTPUT
+              echo "gateway=true" >> $GITHUB_OUTPUT
+              echo "translator=true" >> $GITHUB_OUTPUT
+            else
+              echo "frontend=$([[ "$SERVICES" == *"frontend"* ]] && echo true || echo false)" >> $GITHUB_OUTPUT
+              echo "gateway=$([[ "$SERVICES" == *"gateway"* ]] && echo true || echo false)" >> $GITHUB_OUTPUT
+              echo "translator=$([[ "$SERVICES" == *"translator"* ]] && echo true || echo false)" >> $GITHUB_OUTPUT
+            fi
+          elif [[ "${{ steps.check-release.outputs.is_release }}" == "true" ]]; then
+            # Release tag - build all
+            echo "frontend=true" >> $GITHUB_OUTPUT
+            echo "gateway=true" >> $GITHUB_OUTPUT
+            echo "translator=true" >> $GITHUB_OUTPUT
+          else
+            # Detect changes from git diff
+            CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} 2>/dev/null || git diff --name-only HEAD~1 HEAD)
+
+            echo "frontend=$([[ "$CHANGED_FILES" == *"frontend/"* ]] || [[ "$CHANGED_FILES" == *"shared/"* ]] && echo true || echo false)" >> $GITHUB_OUTPUT
+            echo "gateway=$([[ "$CHANGED_FILES" == *"gateway/"* ]] || [[ "$CHANGED_FILES" == *"shared/"* ]] && echo true || echo false)" >> $GITHUB_OUTPUT
+            echo "translator=$([[ "$CHANGED_FILES" == *"translator/"* ]] || [[ "$CHANGED_FILES" == *"shared/"* ]] && echo true || echo false)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build matrix
+        id: set-matrix
+        run: |
+          MATRIX='{"include":['
+          FIRST=true
+          HAS_CHANGES=false
+
+          # Frontend
+          if [[ "${{ steps.changes.outputs.frontend }}" == "true" ]]; then
+            HAS_CHANGES=true
+            VERSION=$(cat frontend/VERSION 2>/dev/null || echo "0.0.1")
+            [[ "$FIRST" == "false" ]] && MATRIX+=','
+            MATRIX+='{"service":"frontend","context":"./frontend","dockerfile":"./frontend/Dockerfile","image":"meeshy-frontend","version":"'$VERSION'"}'
+            FIRST=false
+          fi
+
+          # Gateway
+          if [[ "${{ steps.changes.outputs.gateway }}" == "true" ]]; then
+            HAS_CHANGES=true
+            VERSION=$(cat gateway/VERSION 2>/dev/null || echo "0.0.1")
+            [[ "$FIRST" == "false" ]] && MATRIX+=','
+            MATRIX+='{"service":"gateway","context":".","dockerfile":"./gateway/Dockerfile","image":"meeshy-gateway","version":"'$VERSION'"}'
+            FIRST=false
+          fi
+
+          # Translator
+          if [[ "${{ steps.changes.outputs.translator }}" == "true" ]]; then
+            HAS_CHANGES=true
+            VERSION=$(cat translator/VERSION 2>/dev/null || echo "0.0.1")
+            [[ "$FIRST" == "false" ]] && MATRIX+=','
+            MATRIX+='{"service":"translator","context":"./translator","dockerfile":"./translator/Dockerfile","image":"meeshy-translator","version":"'$VERSION'"}'
+            FIRST=false
+          fi
+
+          MATRIX+=']}'
+
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+          echo "has_changes=$HAS_CHANGES" >> $GITHUB_OUTPUT
+
+          echo "Generated matrix: $MATRIX"
+
+  # ===========================================================================
+  # BUILD - Multi-architecture Docker builds
+  # ===========================================================================
+  build:
+    name: Build ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    needs: prepare
+    if: needs.prepare.outputs.has_changes == 'true'
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
+
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64,amd64
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            image=moby/buildkit:master
+            network=host
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_NAMESPACE }}/${{ matrix.image }}
+          tags: |
+            # Version from VERSION file
+            type=raw,value=v${{ matrix.version }}
+            # Latest on main/master
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}
+            # Branch name
+            type=ref,event=branch,prefix=
+            # Git SHA (short)
+            type=sha,prefix=sha-,format=short
+            # Tag version (for releases)
+            type=ref,event=tag
+
+      - name: Build and push
+        id: build-push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          platforms: ${{ env.PLATFORMS }}
+          push: ${{ github.event_name != 'pull_request' && (github.event.inputs.push_to_registry != 'false') }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+          provenance: true
+          sbom: true
+          build-args: |
+            BUILD_DATE=${{ github.event.repository.updated_at }}
+            VCS_REF=${{ github.sha }}
+            VERSION=${{ matrix.version }}
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        if: github.event_name != 'pull_request'
+        with:
+          image: ${{ env.DOCKER_NAMESPACE }}/${{ matrix.image }}:v${{ matrix.version }}
+          format: spdx-json
+          output-file: sbom-${{ matrix.service }}.spdx.json
+
+      - name: Scan for vulnerabilities
+        uses: aquasecurity/trivy-action@master
+        if: github.event_name != 'pull_request'
+        with:
+          image-ref: ${{ env.DOCKER_NAMESPACE }}/${{ matrix.image }}:v${{ matrix.version }}
+          format: 'sarif'
+          output: 'trivy-${{ matrix.service }}.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: github.event_name != 'pull_request'
+        continue-on-error: true
+        with:
+          sarif_file: 'trivy-${{ matrix.service }}.sarif'
+
+      - name: Output image digest
+        run: |
+          echo "### ${{ matrix.service }} Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Image | \`${{ env.DOCKER_NAMESPACE }}/${{ matrix.image }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Version | \`v${{ matrix.version }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Platforms | \`${{ env.PLATFORMS }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Digest | \`${{ steps.build-push.outputs.digest }}\` |" >> $GITHUB_STEP_SUMMARY
+
+  # ===========================================================================
+  # NOTIFY - Build completion notification
+  # ===========================================================================
+  notify:
+    name: Notify
+    runs-on: ubuntu-latest
+    needs: [prepare, build]
+    if: always()
+    steps:
+      - name: Build Summary
+        run: |
+          echo "## Docker Build Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "${{ needs.build.result }}" == "success" ]]; then
+            echo "### Status: SUCCESS" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "All Docker images have been built and pushed successfully." >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ needs.build.result }}" == "skipped" ]]; then
+            echo "### Status: SKIPPED" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "No services required building." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### Status: FAILED" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "One or more Docker builds failed. Please check the logs." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Build Details" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch/Tag**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Actor**: @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY

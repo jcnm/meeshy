@@ -1,0 +1,376 @@
+# =============================================================================
+# MEESHY - Release & Version Management Pipeline
+# =============================================================================
+# Automated release workflow with semantic versioning
+# Manages version bumps, changelog generation, and GitHub releases
+# =============================================================================
+
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version bump type'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - prerelease
+      prerelease_tag:
+        description: 'Pre-release tag (e.g., alpha, beta, rc)'
+        required: false
+        default: 'beta'
+      services:
+        description: 'Services to release (comma-separated or all)'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - frontend
+          - gateway
+          - translator
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  DOCKER_REGISTRY: docker.io
+  DOCKER_NAMESPACE: isopen
+  PLATFORMS: linux/amd64,linux/arm64
+
+jobs:
+  # ===========================================================================
+  # VERSION BUMP
+  # ===========================================================================
+  version-bump:
+    name: Bump Version
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.bump.outputs.new_version }}
+      frontend_version: ${{ steps.bump.outputs.frontend_version }}
+      gateway_version: ${{ steps.bump.outputs.gateway_version }}
+      translator_version: ${{ steps.bump.outputs.translator_version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump versions
+        id: bump
+        run: |
+          bump_version() {
+            local current=$1
+            local type=$2
+            local prerelease_tag=$3
+
+            # Remove any existing prerelease suffix for calculation
+            local base_version=$(echo "$current" | sed 's/-.*$//')
+
+            IFS='.' read -r major minor patch <<< "$base_version"
+
+            case $type in
+              major)
+                major=$((major + 1))
+                minor=0
+                patch=0
+                ;;
+              minor)
+                minor=$((minor + 1))
+                patch=0
+                ;;
+              patch)
+                patch=$((patch + 1))
+                ;;
+              prerelease)
+                # Keep current version, just update prerelease tag
+                ;;
+            esac
+
+            if [[ "$type" == "prerelease" ]] || [[ -n "$prerelease_tag" && "$prerelease_tag" != "none" ]]; then
+              echo "${major}.${minor}.${patch}-${prerelease_tag}"
+            else
+              echo "${major}.${minor}.${patch}"
+            fi
+          }
+
+          SERVICES="${{ github.event.inputs.services }}"
+          VERSION_TYPE="${{ github.event.inputs.version_type }}"
+          PRERELEASE_TAG="${{ github.event.inputs.prerelease_tag }}"
+
+          declare -A NEW_VERSIONS
+
+          for service in frontend gateway translator; do
+            if [[ "$SERVICES" == "all" ]] || [[ "$SERVICES" == *"$service"* ]]; then
+              CURRENT=$(cat ${service}/VERSION 2>/dev/null || echo "0.0.0")
+              NEW=$(bump_version "$CURRENT" "$VERSION_TYPE" "$PRERELEASE_TAG")
+              echo "$NEW" > ${service}/VERSION
+              NEW_VERSIONS[$service]=$NEW
+              echo "${service}_version=$NEW" >> $GITHUB_OUTPUT
+              echo "Bumped $service: $CURRENT -> $NEW"
+            else
+              CURRENT=$(cat ${service}/VERSION 2>/dev/null || echo "0.0.0")
+              NEW_VERSIONS[$service]=$CURRENT
+              echo "${service}_version=$CURRENT" >> $GITHUB_OUTPUT
+            fi
+          done
+
+          # Use frontend version as the main version (or first bumped service)
+          MAIN_VERSION="${NEW_VERSIONS[frontend]:-${NEW_VERSIONS[gateway]:-${NEW_VERSIONS[translator]}}}"
+          echo "new_version=$MAIN_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Commit version changes
+        run: |
+          git add */VERSION
+          git commit -m "chore(release): bump version to v${{ steps.bump.outputs.new_version }}
+
+          Services updated:
+          - frontend: v${{ steps.bump.outputs.frontend_version }}
+          - gateway: v${{ steps.bump.outputs.gateway_version }}
+          - translator: v${{ steps.bump.outputs.translator_version }}
+
+          [skip ci]" || echo "No changes to commit"
+
+          git push origin ${{ github.ref_name }}
+
+      - name: Create release tag
+        run: |
+          TAG="v${{ steps.bump.outputs.new_version }}"
+          git tag -a "$TAG" -m "Release $TAG
+
+          Docker Images:
+          - isopen/meeshy-frontend:$TAG
+          - isopen/meeshy-gateway:$TAG
+          - isopen/meeshy-translator:$TAG"
+
+          git push origin "$TAG"
+
+  # ===========================================================================
+  # BUILD & PUSH ALL SERVICES
+  # ===========================================================================
+  build-frontend:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    needs: version-bump
+    if: contains(github.event.inputs.services, 'frontend') || github.event.inputs.services == 'all'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.version-bump.outputs.new_version }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          platforms: ${{ env.PLATFORMS }}
+          push: true
+          tags: |
+            ${{ env.DOCKER_NAMESPACE }}/meeshy-frontend:v${{ needs.version-bump.outputs.frontend_version }}
+            ${{ env.DOCKER_NAMESPACE }}/meeshy-frontend:latest
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
+          provenance: true
+          sbom: true
+
+  build-gateway:
+    name: Build Gateway
+    runs-on: ubuntu-latest
+    needs: version-bump
+    if: contains(github.event.inputs.services, 'gateway') || github.event.inputs.services == 'all'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.version-bump.outputs.new_version }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Gateway
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./gateway/Dockerfile
+          platforms: ${{ env.PLATFORMS }}
+          push: true
+          tags: |
+            ${{ env.DOCKER_NAMESPACE }}/meeshy-gateway:v${{ needs.version-bump.outputs.gateway_version }}
+            ${{ env.DOCKER_NAMESPACE }}/meeshy-gateway:latest
+          cache-from: type=gha,scope=gateway
+          cache-to: type=gha,mode=max,scope=gateway
+          provenance: true
+          sbom: true
+
+  build-translator:
+    name: Build Translator
+    runs-on: ubuntu-latest
+    needs: version-bump
+    if: contains(github.event.inputs.services, 'translator') || github.event.inputs.services == 'all'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.version-bump.outputs.new_version }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Translator
+        uses: docker/build-push-action@v6
+        with:
+          context: ./translator
+          file: ./translator/Dockerfile
+          platforms: ${{ env.PLATFORMS }}
+          push: true
+          tags: |
+            ${{ env.DOCKER_NAMESPACE }}/meeshy-translator:v${{ needs.version-bump.outputs.translator_version }}
+            ${{ env.DOCKER_NAMESPACE }}/meeshy-translator:latest
+          cache-from: type=gha,scope=translator
+          cache-to: type=gha,mode=max,scope=translator
+          provenance: true
+          sbom: true
+
+  # ===========================================================================
+  # CREATE GITHUB RELEASE
+  # ===========================================================================
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [version-bump, build-frontend, build-gateway, build-translator]
+    if: always() && needs.version-bump.result == 'success'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get commits since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          if [[ -n "$LAST_TAG" ]]; then
+            COMMITS=$(git log ${LAST_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges | head -50)
+          else
+            COMMITS=$(git log --pretty=format:"- %s (%h)" --no-merges -20)
+          fi
+
+          # Write to file for multiline handling
+          echo "$COMMITS" > /tmp/changelog.txt
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.version-bump.outputs.new_version }}
+          name: Release v${{ needs.version-bump.outputs.new_version }}
+          body: |
+            ## Release v${{ needs.version-bump.outputs.new_version }}
+
+            ### Docker Images
+
+            Pull the images with:
+
+            ```bash
+            # Frontend
+            docker pull isopen/meeshy-frontend:v${{ needs.version-bump.outputs.frontend_version }}
+
+            # Gateway
+            docker pull isopen/meeshy-gateway:v${{ needs.version-bump.outputs.gateway_version }}
+
+            # Translator
+            docker pull isopen/meeshy-translator:v${{ needs.version-bump.outputs.translator_version }}
+            ```
+
+            ### Service Versions
+
+            | Service | Version | Image |
+            |---------|---------|-------|
+            | Frontend | v${{ needs.version-bump.outputs.frontend_version }} | `isopen/meeshy-frontend:v${{ needs.version-bump.outputs.frontend_version }}` |
+            | Gateway | v${{ needs.version-bump.outputs.gateway_version }} | `isopen/meeshy-gateway:v${{ needs.version-bump.outputs.gateway_version }}` |
+            | Translator | v${{ needs.version-bump.outputs.translator_version }} | `isopen/meeshy-translator:v${{ needs.version-bump.outputs.translator_version }}` |
+
+            ### Platforms
+
+            - `linux/amd64`
+            - `linux/arm64`
+
+            ### Changelog
+
+            See commit history for detailed changes.
+
+          draft: false
+          prerelease: ${{ contains(needs.version-bump.outputs.new_version, '-') }}
+          generate_release_notes: true
+
+  # ===========================================================================
+  # NOTIFY
+  # ===========================================================================
+  notify:
+    name: Release Summary
+    runs-on: ubuntu-latest
+    needs: [version-bump, build-frontend, build-gateway, build-translator, create-release]
+    if: always()
+    steps:
+      - name: Summary
+        run: |
+          echo "## Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Version: v${{ needs.version-bump.outputs.new_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Build Status" >> $GITHUB_STEP_SUMMARY
+          echo "| Service | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend | ${{ needs.build-frontend.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Gateway | ${{ needs.build-gateway.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Translator | ${{ needs.build-translator.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Docker Images" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull isopen/meeshy-frontend:v${{ needs.version-bump.outputs.frontend_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull isopen/meeshy-gateway:v${{ needs.version-bump.outputs.gateway_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull isopen/meeshy-translator:v${{ needs.version-bump.outputs.translator_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
