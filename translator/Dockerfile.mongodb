@@ -184,10 +184,12 @@ RUN echo "Generating Prisma client..." \
     && chmod 755 -R /workspace/shared /usr/local/lib/python3.12/site-packages/prisma \
     && echo "Prisma client generated"
 
-# Configuration des permissions pour les modeles ML
+# Configuration des permissions pour les modeles ML et repertoires de travail
 RUN mkdir -p /workspace/models/models--t5-small \
     && mkdir -p /workspace/models/models--facebook--nllb-200-distilled-600M \
-    && chown -R translator:translator /workspace/models \
+    && mkdir -p /workspace/cache \
+    && mkdir -p /workspace/logs \
+    && chown -R translator:translator /workspace/models /workspace/cache /workspace/logs \
     && chmod -R 755 /workspace/models \
     && chmod -R 755 /workspace/cache \
     && chmod -R 755 /workspace/logs
