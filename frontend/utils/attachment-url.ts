@@ -10,6 +10,9 @@
  * - Input: "/api/attachments/file/2024/11/userId/photo.jpg"
  *   Output: "https://gate.meeshy.me/api/attachments/file/2024/11/userId/photo.jpg"
  *
+ * - Input: "2024/11/userId/photo.jpg" (chemin relatif sans slash)
+ *   Output: "https://gate.meeshy.me/api/attachments/file/2024/11/userId/photo.jpg"
+ *
  * - Input: "http://localhost:3000/api/attachments/file/..."
  *   Output: "http://localhost:3000/api/attachments/file/..." (passthrough pour compatibilité)
  *
@@ -61,14 +64,29 @@ export function buildAttachmentUrl(relativePath: string | null | undefined): str
     }
   }
 
-  // Si c'est un chemin relatif, construire l'URL complète
-  if (relativePath.startsWith('/')) {
-    // Construire l'URL complète
+  // Si c'est un chemin relatif avec /api/attachments/file/, construire l'URL complète
+  if (relativePath.startsWith('/api/attachments/file/')) {
     return `${backendUrl}${relativePath}`;
   }
 
-  // Si ce n'est ni une URL complète ni un chemin relatif (cas improbable),
-  // le retourner tel quel
+  // Si c'est un chemin relatif commençant par /, ajouter le préfixe API
+  if (relativePath.startsWith('/')) {
+    // Vérifier si c'est un chemin de date (YYYY/MM/)
+    const isDatePath = /^\/\d{4}\/\d{2}\//.test(relativePath);
+    if (isDatePath) {
+      return `${backendUrl}/api/attachments/file${relativePath}`;
+    }
+    return `${backendUrl}${relativePath}`;
+  }
+
+  // Si c'est un chemin relatif sans slash (ex: "2024/11/userId/photo.jpg")
+  // Pattern: YYYY/MM/userId/filename
+  const isDatePath = /^\d{4}\/\d{2}\//.test(relativePath);
+  if (isDatePath) {
+    return `${backendUrl}/api/attachments/file/${relativePath}`;
+  }
+
+  // Cas improbable - retourner tel quel avec un warning
   console.warn('[AttachmentURL] Format de chemin inattendu:', relativePath);
   return relativePath;
 }
