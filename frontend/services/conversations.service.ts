@@ -24,10 +24,18 @@ export interface ParticipantsFilters {
 }
 
 export class ConversationsService {
-  // Cache simple pour les conversations
+  // OPTIMISATION: Cache amélioré avec TTL plus long
   private conversationsCache: { data: Conversation[], timestamp: number } | null = null;
-  private readonly CACHE_DURATION = 30000; // 30 secondes
-  
+  private readonly CACHE_DURATION = 120000; // 2 minutes (était 30s)
+
+  // OPTIMISATION: Cache pour les messages par conversation
+  private messagesCache: Map<string, { data: Message[], timestamp: number, hasMore: boolean }> = new Map();
+  private readonly MESSAGES_CACHE_DURATION = 60000; // 1 minute
+
+  // OPTIMISATION: Cache pour les participants
+  private participantsCache: Map<string, { data: User[], timestamp: number }> = new Map();
+  private readonly PARTICIPANTS_CACHE_DURATION = 30000; // 30 secondes
+
   // Gestion des requêtes en cours pour éviter les race conditions
   private pendingRequests: Map<string, AbortController> = new Map();
 
@@ -623,38 +631,51 @@ export class ConversationsService {
 
   /**
    * Obtenir les participants d'une conversation
+   * OPTIMISATION: Ajout d'un cache pour éviter les requêtes répétées
    */
   async getParticipants(conversationId: string, filters?: ParticipantsFilters): Promise<User[]> {
     try {
       const params: Record<string, string> = {};
-      
+
       if (filters?.onlineOnly) {
         params.onlineOnly = 'true';
       }
-      
+
       if (filters?.role) {
         params.role = filters.role;
       }
-      
+
       if (filters?.search) {
         params.search = filters.search;
       }
-      
+
       if (filters?.limit) {
         params.limit = filters.limit.toString();
       }
 
-      
+      // OPTIMISATION: Vérifier le cache (seulement pour les requêtes sans filtres spéciaux)
+      const cacheKey = `${conversationId}-${JSON.stringify(params)}`;
+      const cached = this.participantsCache.get(cacheKey);
+      if (cached && (Date.now() - cached.timestamp) < this.PARTICIPANTS_CACHE_DURATION) {
+        return cached.data;
+      }
+
       const response = await apiService.get<{ success: boolean; data: User[] }>(
         `/api/conversations/${conversationId}/participants`,
         params
       );
-      
-      return response.data.data || [];
+
+      const participants = response.data.data || [];
+
+      // OPTIMISATION: Mettre en cache
+      this.participantsCache.set(cacheKey, {
+        data: participants,
+        timestamp: Date.now()
+      });
+
+      return participants;
     } catch (error) {
       console.error('[ConversationsService] Erreur lors de la récupération des participants:', error);
-      console.error('[ConversationsService] Conversation ID:', conversationId);
-      console.error('[ConversationsService] Filtres:', filters);
       // Retourner un tableau vide en cas d'erreur pour éviter de casser l'interface
       return [];
     }

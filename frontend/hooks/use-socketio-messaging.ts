@@ -157,16 +157,26 @@ export function useSocketIOMessaging(options: UseSocketIOMessagingOptions = {}) 
   }, [onNewMessage, onMessageEdited, onMessageDeleted, onTranslation, onUserTyping, onUserStatus, onConversationStats, onConversationOnlineStats]);
 
   // ÉTAPE 4: Surveiller l'état de connexion
+  // OPTIMISATION: Réduit la fréquence de polling de 1s à 3s (suffisant pour l'UX)
   useEffect(() => {
+    // Vérification immédiate au montage
+    const diagnostics = meeshySocketIOService.getConnectionDiagnostics();
+    setConnectionStatus({
+      isConnected: diagnostics.isConnected,
+      hasSocket: diagnostics.hasSocket
+    });
+
     const interval = setInterval(() => {
-      const diagnostics = meeshySocketIOService.getConnectionDiagnostics();
-      // CORRECTION: Mettre à jour l'objet complet avec isConnected ET hasSocket
-      setConnectionStatus({
-        isConnected: diagnostics.isConnected,
-        hasSocket: diagnostics.hasSocket
+      const diag = meeshySocketIOService.getConnectionDiagnostics();
+      // OPTIMISATION: Ne mettre à jour que si le statut a changé
+      setConnectionStatus(prev => {
+        if (prev.isConnected !== diag.isConnected || prev.hasSocket !== diag.hasSocket) {
+          return { isConnected: diag.isConnected, hasSocket: diag.hasSocket };
+        }
+        return prev;
       });
-    }, 1000);
-    
+    }, 3000); // OPTIMISATION: 3s au lieu de 1s
+
     return () => clearInterval(interval);
   }, []);
 
