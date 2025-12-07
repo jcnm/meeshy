@@ -12,8 +12,8 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Configuration Docker - disabled standalone for now
-  // output: 'standalone',
+  // Configuration Docker - standalone pour optimiser la taille de l'image
+  output: 'standalone',
   
   poweredByHeader: false,
   
