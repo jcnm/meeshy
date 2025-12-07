@@ -1,4 +1,5 @@
 # syntax=docker.io/docker/dockerfile:1
+# Build context: frontend/ directory (distribute.sh copies shared/ into frontend/)
 FROM node:22-alpine AS base
 
 # === MAINTAINER INFORMATION ===
@@ -32,12 +33,12 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat tini
 WORKDIR /app
 
-# Copy workspace configuration from root context
+# Copy workspace configuration (distribute.sh copies these to frontend/)
 COPY pnpm-workspace.yaml ./
 COPY shared/package.json ./shared/
 
-# Copy frontend package files (context is root, so prefix with frontend/)
-COPY frontend/package.json frontend/pnpm-lock.yaml* ./
+# Copy frontend package files (context is now frontend/)
+COPY package.json pnpm-lock.yaml* ./
 
 # Install dependencies with pnpm (no frozen lockfile for CI compatibility)
 RUN corepack enable pnpm && pnpm i --no-frozen-lockfile
@@ -49,8 +50,8 @@ WORKDIR /app
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 
-# Copy frontend source code (context is root)
-COPY frontend/ ./
+# Copy frontend source code (context is now frontend/)
+COPY . ./
 
 # Set build environment variables
 ARG NEXT_PUBLIC_API_URL=https://gate.meeshy.me

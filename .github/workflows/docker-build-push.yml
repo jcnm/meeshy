@@ -136,30 +136,30 @@ jobs:
           FIRST=true
           HAS_CHANGES=false
 
-          # Frontend - uses ROOT context (Dockerfile uses COPY frontend/...)
-          if [[ "${{ steps.changes.outputs.frontend }}" == "true" ]]; then
-            HAS_CHANGES=true
-            VERSION=$(cat frontend/VERSION 2>/dev/null || echo "0.0.1")
-            [[ "$FIRST" == "false" ]] && MATRIX+=','
-            MATRIX+='{"service":"frontend","context":".","dockerfile":"./frontend/Dockerfile","image":"meeshy-frontend","version":"'$VERSION'"}'
-            FIRST=false
-          fi
-
-          # Gateway - uses LOCAL context after distribute.sh (Dockerfile uses COPY src/..., COPY shared/...)
+          # Gateway - uses LOCAL context (distribute.sh copies shared/ into gateway/)
           if [[ "${{ steps.changes.outputs.gateway }}" == "true" ]]; then
             HAS_CHANGES=true
             VERSION=$(cat gateway/VERSION 2>/dev/null || echo "0.0.1")
             [[ "$FIRST" == "false" ]] && MATRIX+=','
-            MATRIX+='{"service":"gateway","context":"./gateway","dockerfile":"Dockerfile","image":"meeshy-gateway","version":"'$VERSION'"}'
+            MATRIX+='{"service":"gateway","context":"./gateway","dockerfile":"./gateway/Dockerfile","image":"meeshy-gateway","version":"'$VERSION'"}'
             FIRST=false
           fi
 
-          # Translator - uses ROOT context (Dockerfile uses COPY translator/..., COPY shared/...)
+          # Frontend - uses LOCAL context (distribute.sh copies shared/ into frontend/)
+          if [[ "${{ steps.changes.outputs.frontend }}" == "true" ]]; then
+            HAS_CHANGES=true
+            VERSION=$(cat frontend/VERSION 2>/dev/null || echo "0.0.1")
+            [[ "$FIRST" == "false" ]] && MATRIX+=','
+            MATRIX+='{"service":"frontend","context":"./frontend","dockerfile":"./frontend/Dockerfile","image":"meeshy-frontend","version":"'$VERSION'"}'
+            FIRST=false
+          fi
+
+          # Translator - uses LOCAL context (distribute.sh copies shared/ into translator/)
           if [[ "${{ steps.changes.outputs.translator }}" == "true" ]]; then
             HAS_CHANGES=true
             VERSION=$(cat translator/VERSION 2>/dev/null || echo "0.0.1")
             [[ "$FIRST" == "false" ]] && MATRIX+=','
-            MATRIX+='{"service":"translator","context":".","dockerfile":"./translator/Dockerfile","image":"meeshy-translator","version":"'$VERSION'"}'
+            MATRIX+='{"service":"translator","context":"./translator","dockerfile":"./translator/Dockerfile","image":"meeshy-translator","version":"'$VERSION'"}'
             FIRST=false
           fi
 
@@ -180,6 +180,7 @@ jobs:
     if: needs.prepare.outputs.has_changes == 'true'
     strategy:
       fail-fast: false
+      # Parallel builds are OK - distribute.sh runs before each build
       matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
 
     permissions:

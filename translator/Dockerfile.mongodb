@@ -1,5 +1,5 @@
 # Translator Dockerfile - Meeshy FastAPI Service (Optimized for ML)
-# Build context: root of project (for shared/ access)
+# Build context: translator/ directory (distribute.sh copies shared/ into translator/)
 FROM python:3.12-slim
 
 # === MAINTAINER INFORMATION ===
@@ -149,9 +149,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /workspace
 
-# Copy requirements first for better caching (context is root)
-COPY --chown=translator:translator translator/requirements.txt ./
-COPY --chown=translator:translator translator/.env.docker ./.env
+# Copy requirements first for better caching (context is now translator/)
+COPY --chown=translator:translator requirements.txt ./
+COPY --chown=translator:translator .env.docker ./.env
 
 # Installation des dependances Python
 RUN pip install --upgrade pip --no-cache-dir \
@@ -162,8 +162,8 @@ RUN pip install --upgrade pip --no-cache-dir \
     && pip install pymongo \
     && rm -rf ~/.cache/pip
 
-# Copy translator source code and shared directory (context is root)
-COPY --chown=translator:translator translator/ ./
+# Copy translator source code and shared directory (context is now translator/)
+COPY --chown=translator:translator . ./
 COPY --chown=translator:translator shared/ ./shared/
 
 # Patch Prisma
