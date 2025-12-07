@@ -8,10 +8,13 @@
  *
  * Exemples:
  * - Input: "/api/attachments/file/2024/11/userId/photo.jpg"
- *   Output: "https://smpdev02.local:3000/api/attachments/file/2024/11/userId/photo.jpg"
+ *   Output: "https://gate.meeshy.me/api/attachments/file/2024/11/userId/photo.jpg"
  *
  * - Input: "http://localhost:3000/api/attachments/file/..."
  *   Output: "http://localhost:3000/api/attachments/file/..." (passthrough pour compatibilité)
+ *
+ * - Input: "https://meeshy.me/2024/11/userId/photo.jpg" (URL incorrecte ancienne)
+ *   Output: "https://gate.meeshy.me/api/attachments/file/2024/11/userId/photo.jpg" (corrigée)
  *
  * @param relativePath - Chemin relatif ou URL absolue
  * @returns URL complète
@@ -22,20 +25,44 @@ export function buildAttachmentUrl(relativePath: string | null | undefined): str
     return null;
   }
 
-  // Si c'est déjà une URL complète (http:// ou https://), la retourner telle quelle
-  // Cela assure la compatibilité avec les anciennes données
+  // Récupérer l'URL du backend depuis les variables d'environnement
+  const backendUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    'http://localhost:3000'; // Fallback
+
+  // Si c'est déjà une URL complète (http:// ou https://)
   if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) {
-    return relativePath;
+    try {
+      const url = new URL(relativePath);
+      const pathname = url.pathname;
+
+      // Détecter les URLs mal formées qui n'ont pas le préfixe /api/attachments/file/
+      // mais qui pointent vers un chemin de fichier (pattern: /YYYY/MM/userId/filename)
+      const isDatePath = /^\/\d{4}\/\d{2}\//.test(pathname);
+      const hasCorrectPrefix = pathname.startsWith('/api/attachments/file/');
+
+      if (isDatePath && !hasCorrectPrefix) {
+        // URL mal formée, reconstruire avec le bon préfixe et le bon domaine
+        const correctedPath = `/api/attachments/file${pathname}`;
+        return `${backendUrl}${correctedPath}`;
+      }
+
+      // Si l'URL a le bon préfixe mais pointe vers le mauvais domaine (meeshy.me au lieu de gate.meeshy.me)
+      if (hasCorrectPrefix && url.hostname === 'meeshy.me') {
+        return `${backendUrl}${pathname}`;
+      }
+
+      // URL déjà correcte, la retourner telle quelle
+      return relativePath;
+    } catch (e) {
+      // URL invalide, retourner telle quelle
+      return relativePath;
+    }
   }
 
   // Si c'est un chemin relatif, construire l'URL complète
   if (relativePath.startsWith('/')) {
-    // Récupérer l'URL du backend depuis les variables d'environnement
-    const backendUrl =
-      process.env.NEXT_PUBLIC_BACKEND_URL ||
-      process.env.NEXT_PUBLIC_API_URL ||
-      'http://localhost:3000'; // Fallback
-
     // Construire l'URL complète
     return `${backendUrl}${relativePath}`;
   }
