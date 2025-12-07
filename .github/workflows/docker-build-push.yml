@@ -127,7 +127,7 @@ jobs:
           FIRST=true
           HAS_CHANGES=false
 
-          # Frontend - needs root context for shared/ access
+          # Frontend - uses ROOT context (Dockerfile uses COPY frontend/...)
           if [[ "${{ steps.changes.outputs.frontend }}" == "true" ]]; then
             HAS_CHANGES=true
             VERSION=$(cat frontend/VERSION 2>/dev/null || echo "0.0.1")
@@ -136,16 +136,16 @@ jobs:
             FIRST=false
           fi
 
-          # Gateway - needs root context for shared/ access
+          # Gateway - uses LOCAL context after distribute.sh (Dockerfile uses COPY src/..., COPY shared/...)
           if [[ "${{ steps.changes.outputs.gateway }}" == "true" ]]; then
             HAS_CHANGES=true
             VERSION=$(cat gateway/VERSION 2>/dev/null || echo "0.0.1")
             [[ "$FIRST" == "false" ]] && MATRIX+=','
-            MATRIX+='{"service":"gateway","context":".","dockerfile":"./gateway/Dockerfile","image":"meeshy-gateway","version":"'$VERSION'"}'
+            MATRIX+='{"service":"gateway","context":"./gateway","dockerfile":"Dockerfile","image":"meeshy-gateway","version":"'$VERSION'"}'
             FIRST=false
           fi
 
-          # Translator - needs root context for shared/ access
+          # Translator - uses ROOT context (Dockerfile uses COPY translator/..., COPY shared/...)
           if [[ "${{ steps.changes.outputs.translator }}" == "true" ]]; then
             HAS_CHANGES=true
             VERSION=$(cat translator/VERSION 2>/dev/null || echo "0.0.1")
@@ -181,6 +181,45 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Distribute shared files to services
+        run: |
+          echo "🚀 Running distribute.sh to prepare services for Docker build..."
+          cd shared && chmod +x scripts/distribute.sh && ./scripts/distribute.sh
+          cd ..
+
+          echo "📝 Creating .env.docker files for services..."
+
+          # Create gateway .env.docker (required by gateway Dockerfile)
+          cat > gateway/.env.docker << 'ENVEOF'
+          NODE_ENV=production
+          FASTIFY_PORT=3000
+          FASTIFY_HOST=0.0.0.0
+          LOG_LEVEL=info
+          ENVEOF
+
+          # Create translator .env.docker (required by translator Dockerfile)
+          cat > translator/.env.docker << 'ENVEOF'
+          DEBUG=false
+          WORKERS=2
+          FASTAPI_PORT=8000
+          GRPC_PORT=50051
+          LOG_LEVEL=info
+          DEFAULT_LANGUAGE=fr
+          SUPPORTED_LANGUAGES=fr,en,es,de,pt,zh,ja,ar
+          ENVEOF
+
+          echo "✅ Distribution and env files completed"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
