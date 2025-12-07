@@ -1060,19 +1060,8 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     }
   }, [connectionStatus.isConnected, connectionStatus.hasSocket, hasShownConnectionToast, t]);
 
-  // Surveillance du statut de connexion WebSocket
-  useEffect(() => {
-    const checkConnection = () => {
-      const isReallyConnected = connectionStatus.isConnected && connectionStatus.hasSocket;
-
-    };
-
-    checkConnection();
-    
-    // Vérifier périodiquement le statut
-    const interval = setInterval(checkConnection, 5000);
-    return () => clearInterval(interval);
-  }, [connectionStatus]);
+  // OPTIMISATION: Polling de connexion supprimé - connectionStatus du hook suffit
+  // Le hook useSocketIOMessaging gère déjà le polling toutes les 3 secondes
 
   // Géolocalisation
   useEffect(() => {
@@ -1164,14 +1153,30 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     // Pas de simulation d'utilisateurs actifs: alimentés par WebSocket
   }, []);
 
-  // Charger les messages existants dès que possible, sans attendre la connexion WebSocket
+  // OPTIMISATION: Chargement parallèle des messages ET des utilisateurs actifs
+  // Combine les deux effets précédents pour éviter le chargement séquentiel
   useEffect(() => {
-    if (conversationId && !hasLoadedMessages) {
-      // Charger immédiatement les messages existants via HTTP API
-      refreshMessages();
-      setHasLoadedMessages(true);
+    if (!conversationId || hasLoadedMessages) return;
+
+    // Charger messages ET utilisateurs actifs EN PARALLÈLE avec Promise.all
+    const loadPromises: Promise<void>[] = [
+      refreshMessages(), // Messages via HTTP API
+    ];
+
+    // Charger les utilisateurs actifs seulement si la liste est vide
+    if (activeUsers.length === 0) {
+      loadPromises.push(loadActiveUsers());
     }
-  }, [conversationId]); // Supprimé refreshMessages des dépendances
+
+    Promise.all(loadPromises)
+      .then(() => {
+        setHasLoadedMessages(true);
+      })
+      .catch(error => {
+        console.error('[BubbleStreamPage] Erreur chargement parallèle:', error);
+        setHasLoadedMessages(true); // Marquer comme chargé même en cas d'erreur
+      });
+  }, [conversationId]); // Dépendances minimales pour éviter les re-exécutions
 
   // Separately handle WebSocket connection for real-time updates
   useEffect(() => {
@@ -1182,7 +1187,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
     if (connectionStatus.isConnected) {
       setHasEstablishedConnection(true);
-      
+
       if (!hasShownConnectionToast) {
         setHasShownConnectionToast(true);
       }
@@ -1196,65 +1201,65 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     }
   }, [hasLoadedMessages, isLoadingMessages]);
 
-  // Charger les utilisateurs actifs au démarrage
-  useEffect(() => {
-    if (conversationId && activeUsers.length === 0) {
-      loadActiveUsers();
-    }
-  }, [conversationId]); // Supprimé loadActiveUsers des dépendances
+  // OPTIMISATION: Calcul des stats de langues avec debounce et mémorisation
+  // Évite les recalculs excessifs à chaque nouveau message
+  const lastStatsUpdateRef = useRef<number>(0);
+  const participantsLoadedRef = useRef<boolean>(false);
 
-  // Calculer les statistiques de langues à partir des messages chargés
   useEffect(() => {
-    if (messages.length > 0) {
-      // Calculer les statistiques des langues des messages
-      const languageCounts: { [key: string]: number } = {};
-      const userLanguages: { [key: string]: Set<string> } = {}; // Pour les langues des utilisateurs
-      
-      messages.forEach(message => {
-        // Compter les langues originales des messages
-        const originalLang = message.originalLanguage || 'fr';
-        languageCounts[originalLang] = (languageCounts[originalLang] || 0) + 1;
-        
-        // Simuler les langues des utilisateurs (en réalité, on devrait avoir les préférences des utilisateurs)
-        if (message.sender?.id) {
-          if (!userLanguages[originalLang]) {
-            userLanguages[originalLang] = new Set();
-          }
-          userLanguages[originalLang].add(message.sender.id);
+    if (messages.length === 0) return;
+
+    // OPTIMISATION: Debounce de 2 secondes pour éviter les calculs trop fréquents
+    const now = Date.now();
+    if (now - lastStatsUpdateRef.current < 2000) return;
+    lastStatsUpdateRef.current = now;
+
+    // Calculer les statistiques des langues des messages
+    const languageCounts: { [key: string]: number } = {};
+    const userLanguages: { [key: string]: Set<string> } = {};
+
+    messages.forEach(message => {
+      const originalLang = message.originalLanguage || 'fr';
+      languageCounts[originalLang] = (languageCounts[originalLang] || 0) + 1;
+
+      if (message.sender?.id) {
+        if (!userLanguages[originalLang]) {
+          userLanguages[originalLang] = new Set();
         }
-      });
-      
-      // Convertir en format LanguageStats pour les messages
-      const messageStats: LanguageStats[] = Object.entries(languageCounts)
-        .map(([code, count], index) => ({
-          language: code,
-          flag: getLanguageFlag(code),
-          count: count,
-          color: `hsl(${(index * 137.5) % 360}, 60%, 60%)` // Couleurs automatiques
-        }))
-        .filter(stat => stat.count > 0)
-        .sort((a, b) => b.count - a.count);
-      
-      // Convertir en format LanguageStats pour les utilisateurs actifs
-      const userStats: LanguageStats[] = Object.entries(userLanguages)
-        .map(([code, users], index) => ({
-          language: code,
-          flag: getLanguageFlag(code),
-          count: users.size,
-          color: `hsl(${(index * 137.5) % 360}, 50%, 50%)` // Couleurs automatiques
-        }))
-        .filter(stat => stat.count > 0)
-        .sort((a, b) => b.count - a.count);
-      
-      setMessageLanguageStats(messageStats);
-      setActiveLanguageStats(userStats);
-      
-      // Charger tous les participants pour calculer les statistiques des utilisateurs
+        userLanguages[originalLang].add(message.sender.id);
+      }
+    });
+
+    const messageStats: LanguageStats[] = Object.entries(languageCounts)
+      .map(([code, count], index) => ({
+        language: code,
+        flag: getLanguageFlag(code),
+        count: count,
+        color: `hsl(${(index * 137.5) % 360}, 60%, 60%)`
+      }))
+      .filter(stat => stat.count > 0)
+      .sort((a, b) => b.count - a.count);
+
+    const userStats: LanguageStats[] = Object.entries(userLanguages)
+      .map(([code, users], index) => ({
+        language: code,
+        flag: getLanguageFlag(code),
+        count: users.size,
+        color: `hsl(${(index * 137.5) % 360}, 50%, 50%)`
+      }))
+      .filter(stat => stat.count > 0)
+      .sort((a, b) => b.count - a.count);
+
+    setMessageLanguageStats(messageStats);
+    setActiveLanguageStats(userStats);
+
+    // OPTIMISATION: Charger les participants UNE SEULE FOIS
+    if (!participantsLoadedRef.current && normalizedConversationId) {
+      participantsLoadedRef.current = true;
       loadAllParticipants().then(allParticipants => {
         if (allParticipants.length > 0) {
-          // Recalculer les statistiques des utilisateurs avec les vraies données
           const realUserLanguages: { [key: string]: Set<string> } = {};
-          
+
           allParticipants.forEach(participant => {
             const lang = participant.systemLanguage || 'fr';
             if (!realUserLanguages[lang]) {
@@ -1262,7 +1267,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
             }
             realUserLanguages[lang].add(participant.id);
           });
-          
+
           const realUserStats: LanguageStats[] = Object.entries(realUserLanguages)
             .map(([code, users], index) => ({
               language: code,
@@ -1272,12 +1277,12 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
             }))
             .filter(stat => stat.count > 0)
             .sort((a, b) => b.count - a.count);
-          
+
           setActiveLanguageStats(realUserStats);
         }
       });
     }
-  }, [messages.length]); // Supprimé les dépendances qui causent des boucles
+  }, [messages.length, normalizedConversationId]);
 
   // Afficher l'écran de chargement pendant l'initialisation
   if (isInitializing) {

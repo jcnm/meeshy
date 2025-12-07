@@ -231,8 +231,9 @@ export function useConversationMessages(
   }, [conversationId, currentUser, enabled, limit]); // Retirer offset puisqu'on utilise offsetRef
 
   // Version debounced de loadMessages pour éviter les appels multiples
+  // OPTIMISATION: Réduit de 300ms à 100ms pour une réponse plus rapide
   const loadMessages = useMemo(
-    () => debounce(loadMessagesInternal, 300),
+    () => debounce(loadMessagesInternal, 100),
     [loadMessagesInternal]
   );
 
@@ -356,35 +357,27 @@ export function useConversationMessages(
         clearTimeout(scrollTimeoutRef.current);
       }
 
-      // Debounce le scroll
+      // OPTIMISATION: Réduit le debounce scroll de 100ms à 30ms pour une pagination plus réactive
       scrollTimeoutRef.current = setTimeout(() => {
         // Protection contre les conteneurs trop petits
         if (clientHeight >= scrollHeight || scrollHeight <= clientHeight + threshold) {
-          if (process.env.NODE_ENV === 'development') {
-          }
           return;
         }
-        
+
         // Déterminer la direction de scroll
         let shouldLoadMore = false;
-        
+
         if (scrollDirection === 'up') {
           shouldLoadMore = scrollTop <= threshold;
-          if (process.env.NODE_ENV === 'development') {
-          }
         } else {
           const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
           shouldLoadMore = distanceFromBottom <= threshold;
-          if (process.env.NODE_ENV === 'development') {
-          }
         }
 
         if (shouldLoadMore) {
-          if (process.env.NODE_ENV === 'development') {
-          }
           loadMore();
         }
-      }, 100);
+      }, 30);
     };
 
       container.addEventListener('scroll', handleScroll, { passive: true });

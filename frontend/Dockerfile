@@ -85,25 +85,23 @@ RUN addgroup --system --gid 1001 nodejs && \
 # Install tini for proper signal handling
 RUN apk add --no-cache tini
 
+# OPTIMISATION: Utiliser le mode standalone de Next.js
+# Copie uniquement les fichiers nécessaires (~90% plus petit que node_modules complet)
+
 # Copy public assets
 COPY --from=builder /app/public ./public
 
-# Copy package.json for npm scripts
-COPY --from=builder /app/package.json ./package.json
+# Copy standalone output (includes minimal node_modules)
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 
-# Copy node_modules from the builder stage
-COPY --from=builder /app/node_modules ./node_modules
-
-# Copy the entire .next directory from the builder stage
-COPY --from=builder /app/.next ./.next
+# Copy static files (not included in standalone)
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # Verify build artifacts
-RUN ls -la .next/ && ls -la .next/static/ && echo "Static files verified"
+RUN ls -la .next/ && echo "Standalone build verified"
 
-# Create logs directory and set permissions
-RUN mkdir -p /app/logs && \
-    chown -R nextjs:nodejs /app && \
-    chmod -R 755 /app
+# Create logs directory
+RUN mkdir -p /app/logs && chown nextjs:nodejs /app/logs
 
 # Switch to non-root user
 USER nextjs
@@ -122,5 +120,5 @@ ENTRYPOINT ["/sbin/tini", "--"]
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
     CMD node -e "const http=require('http');const req=http.get({hostname:'0.0.0.0',port:80,path:'/api/health',timeout:5000},(res)=>process.exit(res.statusCode===200?0:1));req.on('error',()=>process.exit(1));req.on('timeout',()=>{req.destroy();process.exit(1);});"
 
-# Start Next.js in production mode
-CMD ["npm", "start"]
+# Start Next.js standalone server
+CMD ["node", "server.js"]

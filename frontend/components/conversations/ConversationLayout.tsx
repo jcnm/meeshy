@@ -248,13 +248,10 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   const [translatingMessages, setTranslatingMessages] = useState<Map<string, Set<string>>>(new Map());
   const [usedLanguages, setUsedLanguages] = useState<string[]>([]);
   
-  // État de connexion WebSocket
-  const [connectionStatus, setConnectionStatus] = useState<{
-    isConnected: boolean;
-    hasSocket: boolean;
-  }>({ isConnected: false, hasSocket: false });
-  
-  // Ref pour éviter les reconnexions multiples
+  // OPTIMISATION: Supprimé l'état local connectionStatus - utiliser socketConnectionStatus du hook
+  // pour éviter le double polling (2s local + 3s hook = surcharge inutile)
+
+  // Ref pour éviter les reconnexions multiples (gardée pour la logique de reconnexion)
   const hasAttemptedReconnect = useRef(false);
 
   // Fonctions pour gérer l'état des traductions en cours
@@ -358,6 +355,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   }, [user]);
 
   // Hook Socket.IO messaging pour la communication temps réel
+  // OPTIMISATION: Utiliser connectionStatus du hook au lieu d'un état local dupliqué
   const {
     sendMessage: sendMessageViaSocket,
     connectionStatus: socketConnectionStatus,
@@ -520,6 +518,10 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       });
     }, [updateMessage, removeTranslatingState])
   });
+
+  // OPTIMISATION: Alias pour utiliser socketConnectionStatus partout sans renommer
+  // Élimine le besoin d'un état local et d'un polling séparé
+  const connectionStatus = socketConnectionStatus;
 
   // Détection du mobile
   useEffect(() => {
@@ -1407,24 +1409,8 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     }
   }, [selectedConversation?.id, user, sendMessageViaSocket]);
 
-  // Surveillance de l'état de connexion WebSocket
-  useEffect(() => {
-    const checkConnection = () => {
-      const diagnostics = meeshySocketIOService.getConnectionDiagnostics();
-      setConnectionStatus({
-        isConnected: diagnostics.isConnected,
-        hasSocket: diagnostics.hasSocket
-      });
-    };
-
-    // Vérification initiale
-    checkConnection();
-
-    // Vérifier toutes les 2 secondes
-    const interval = setInterval(checkConnection, 2000);
-
-    return () => clearInterval(interval);
-  }, []);
+  // OPTIMISATION: Polling de connexion supprimé - utilise désormais socketConnectionStatus du hook
+  // Le hook useSocketIOMessaging gère le polling toutes les 3 secondes
 
   // Reconnexion automatique si la connexion est perdue (AVEC PROTECTION CONTRE BOUCLE)
   useEffect(() => {
@@ -1474,42 +1460,40 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   }, [user?.id]); // Dépendre SEULEMENT de l'ID du user, pas de l'objet complet
 
 
-  // Charger une conversation directement si elle n'est pas dans la liste
+  // OPTIMISATION: Chargement parallèle de la conversation et des participants
+  // Combine les deux effets précédents pour éviter le chargement séquentiel
   useEffect(() => {
-    if (selectedConversationId && user && conversations.length > 0 && !selectedConversation?.id) {
-      loadDirectConversation(selectedConversationId);
-    }
-  }, [selectedConversationId, user, conversations.length, selectedConversation?.id, loadDirectConversation, instanceId]);
-
-  // Charger les participants quand la conversation change via URL
-  // Note: Utilise previousConversationIdRef déjà déclaré plus haut (ligne 165)
-  // pour tracker l'ID précédent et éviter de clear les messages
-  // quand c'est juste une mise à jour de l'objet conversation
-
-  useEffect(() => {
-    const currentId = selectedConversation?.id;
+    const targetId = selectedConversationId || selectedConversation?.id;
     const previousId = previousConversationIdRef.current;
 
-    // Charger les participants seulement si l'ID a vraiment changé
-    if (currentId && currentId !== previousId) {
-      loadParticipants(currentId);
-      // Vider les anciens messages SEULEMENT quand on change réellement de conversation
-      clearMessages();
-      previousConversationIdRef.current = currentId;
+    // Rien à faire si pas d'ID ou si c'est le même que précédemment
+    if (!targetId || !user) return;
+    if (targetId === previousId) return;
 
-      // CORRECTION MINEURE: Ne PAS marquer comme lu ici automatiquement au changement de conversation
-      // On veut marquer comme lu uniquement quand l'utilisateur arrive au dernier message
-      // Le marquage se fera via le scroll ou l'envoi de message
-      // conversationsService.markAsRead(currentId).catch(error => {
-      //   console.error(`[ConversationLayout-${instanceId}] Erreur lors du marquage comme lu:`, error);
-      // });
-    } else if (currentId === previousId && currentId) {
-      // Même conversation, pas de rechargement
-    } else if (!currentId && previousId) {
-      // Pas de conversation sélectionnée (retour à la liste)
-      previousConversationIdRef.current = null;
+    // Vider les anciens messages immédiatement
+    clearMessages();
+    previousConversationIdRef.current = targetId;
+
+    // Déterminer ce qu'il faut charger
+    const needsConversation = !conversations.find(c => c.id === targetId);
+
+    // OPTIMISATION: Charger conversation et participants EN PARALLÈLE avec Promise.all
+    const loadPromises: Promise<void>[] = [];
+
+    // Charger la conversation si pas dans la liste
+    if (needsConversation) {
+      loadPromises.push(loadDirectConversation(targetId));
     }
-  }, [selectedConversation?.id, loadParticipants, clearMessages, instanceId]);
+
+    // Toujours charger les participants pour la nouvelle conversation
+    loadPromises.push(loadParticipants(targetId));
+
+    // Exécuter en parallèle
+    Promise.all(loadPromises).catch(error => {
+      console.error(`[ConversationLayout-${instanceId}] Erreur chargement parallèle:`, error);
+    });
+
+  }, [selectedConversationId, selectedConversation?.id, user, conversations, loadDirectConversation, loadParticipants, clearMessages, instanceId]);
 
   // CORRECTION MAJEURE: Marquer la conversation comme lue quand on scroll jusqu'au dernier message
   useEffect(() => {
