@@ -115,18 +115,10 @@ jobs:
             # Detect changes from git diff
             CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} 2>/dev/null || git diff --name-only HEAD~1 HEAD)
 
-            # If workflow or Dockerfiles changed, rebuild all services
-            if [[ "$CHANGED_FILES" == *".github/workflows/docker-build-push.yml"* ]] || \
-               [[ "$CHANGED_FILES" == *"Dockerfile"* ]]; then
-              echo "🔄 Workflow or Dockerfile changed - rebuilding all services"
-              echo "frontend=true" >> $GITHUB_OUTPUT
-              echo "gateway=true" >> $GITHUB_OUTPUT
-              echo "translator=true" >> $GITHUB_OUTPUT
-            else
-              echo "frontend=$([[ "$CHANGED_FILES" == *"frontend/"* ]] || [[ "$CHANGED_FILES" == *"shared/"* ]] && echo true || echo false)" >> $GITHUB_OUTPUT
-              echo "gateway=$([[ "$CHANGED_FILES" == *"gateway/"* ]] || [[ "$CHANGED_FILES" == *"shared/"* ]] && echo true || echo false)" >> $GITHUB_OUTPUT
-              echo "translator=$([[ "$CHANGED_FILES" == *"translator/"* ]] || [[ "$CHANGED_FILES" == *"shared/"* ]] && echo true || echo false)" >> $GITHUB_OUTPUT
-            fi
+            # Only build services if their directory or shared/ is modified
+            echo "frontend=$([[ "$CHANGED_FILES" == *"frontend/"* ]] || [[ "$CHANGED_FILES" == *"shared/"* ]] && echo true || echo false)" >> $GITHUB_OUTPUT
+            echo "gateway=$([[ "$CHANGED_FILES" == *"gateway/"* ]] || [[ "$CHANGED_FILES" == *"shared/"* ]] && echo true || echo false)" >> $GITHUB_OUTPUT
+            echo "translator=$([[ "$CHANGED_FILES" == *"translator/"* ]] || [[ "$CHANGED_FILES" == *"shared/"* ]] && echo true || echo false)" >> $GITHUB_OUTPUT
           fi
 
       - name: Build matrix
