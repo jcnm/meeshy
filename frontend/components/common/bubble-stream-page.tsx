@@ -1060,19 +1060,8 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     }
   }, [connectionStatus.isConnected, connectionStatus.hasSocket, hasShownConnectionToast, t]);
 
-  // Surveillance du statut de connexion WebSocket
-  useEffect(() => {
-    const checkConnection = () => {
-      const isReallyConnected = connectionStatus.isConnected && connectionStatus.hasSocket;
-
-    };
-
-    checkConnection();
-    
-    // Vérifier périodiquement le statut
-    const interval = setInterval(checkConnection, 5000);
-    return () => clearInterval(interval);
-  }, [connectionStatus]);
+  // OPTIMISATION: Polling de connexion supprimé - connectionStatus du hook suffit
+  // Le hook useSocketIOMessaging gère déjà le polling toutes les 3 secondes
 
   // Géolocalisation
   useEffect(() => {
@@ -1164,14 +1153,30 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     // Pas de simulation d'utilisateurs actifs: alimentés par WebSocket
   }, []);
 
-  // Charger les messages existants dès que possible, sans attendre la connexion WebSocket
+  // OPTIMISATION: Chargement parallèle des messages ET des utilisateurs actifs
+  // Combine les deux effets précédents pour éviter le chargement séquentiel
   useEffect(() => {
-    if (conversationId && !hasLoadedMessages) {
-      // Charger immédiatement les messages existants via HTTP API
-      refreshMessages();
-      setHasLoadedMessages(true);
+    if (!conversationId || hasLoadedMessages) return;
+
+    // Charger messages ET utilisateurs actifs EN PARALLÈLE avec Promise.all
+    const loadPromises: Promise<void>[] = [
+      refreshMessages(), // Messages via HTTP API
+    ];
+
+    // Charger les utilisateurs actifs seulement si la liste est vide
+    if (activeUsers.length === 0) {
+      loadPromises.push(loadActiveUsers());
     }
-  }, [conversationId]); // Supprimé refreshMessages des dépendances
+
+    Promise.all(loadPromises)
+      .then(() => {
+        setHasLoadedMessages(true);
+      })
+      .catch(error => {
+        console.error('[BubbleStreamPage] Erreur chargement parallèle:', error);
+        setHasLoadedMessages(true); // Marquer comme chargé même en cas d'erreur
+      });
+  }, [conversationId]); // Dépendances minimales pour éviter les re-exécutions
 
   // Separately handle WebSocket connection for real-time updates
   useEffect(() => {
@@ -1182,7 +1187,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
     if (connectionStatus.isConnected) {
       setHasEstablishedConnection(true);
-      
+
       if (!hasShownConnectionToast) {
         setHasShownConnectionToast(true);
       }
@@ -1195,13 +1200,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       setIsInitializing(false);
     }
   }, [hasLoadedMessages, isLoadingMessages]);
-
-  // Charger les utilisateurs actifs au démarrage
-  useEffect(() => {
-    if (conversationId && activeUsers.length === 0) {
-      loadActiveUsers();
-    }
-  }, [conversationId]); // Supprimé loadActiveUsers des dépendances
 
   // OPTIMISATION: Calcul des stats de langues avec debounce et mémorisation
   // Évite les recalculs excessifs à chaque nouveau message
