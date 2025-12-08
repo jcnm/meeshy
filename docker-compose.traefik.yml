@@ -307,7 +307,7 @@ services:
     networks:
       - meeshy-network
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://0.0.0.0:3100"]
+      test: ["CMD", "node", "-e", "const http=require('http');const req=http.get({hostname:'127.0.0.1',port:3100,path:'/api/health',timeout:5000},(res)=>process.exit(res.statusCode===200?0:1));req.on('error',()=>process.exit(1));req.on('timeout',()=>{req.destroy();process.exit(1)});"]
       interval: 30s
       timeout: 10s
       retries: 3

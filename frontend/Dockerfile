@@ -106,11 +106,11 @@ RUN mkdir -p /app/logs && chown nextjs:nodejs /app/logs
 # Switch to non-root user
 USER nextjs
 
-# Expose port 80
-EXPOSE 80
+# Expose port 3100 (used by Traefik routing)
+EXPOSE 3100
 
-# Set port to 80
-ENV PORT=80
+# Set port to 3100 (matching docker-compose.traefik.yml)
+ENV PORT=3100
 ENV HOSTNAME="0.0.0.0"
 
 # Use tini as entrypoint for proper signal handling
@@ -118,7 +118,7 @@ ENTRYPOINT ["/sbin/tini", "--"]
 
 # === HEALTH CHECK ===
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
-    CMD node -e "const http=require('http');const req=http.get({hostname:'0.0.0.0',port:80,path:'/api/health',timeout:5000},(res)=>process.exit(res.statusCode===200?0:1));req.on('error',()=>process.exit(1));req.on('timeout',()=>{req.destroy();process.exit(1);});"
+    CMD node -e "const http=require('http');const req=http.get({hostname:'0.0.0.0',port:3100,path:'/api/health',timeout:5000},(res)=>process.exit(res.statusCode===200?0:1));req.on('error',()=>process.exit(1));req.on('timeout',()=>{req.destroy();process.exit(1);});"
 
 # Start Next.js standalone server
 CMD ["node", "server.js"]
