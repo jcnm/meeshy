@@ -216,7 +216,11 @@ export function ConversationHeader({
       return currentUser?.role as UserRoleEnum || UserRoleEnum.USER;
     }
 
-    const currentUserParticipant = conversationParticipants.find(p => p.userId === currentUser.id);
+    // CORRECTION: Normaliser l'ID pour comparaison cohérente
+    const roleCurrentUserId = String(currentUser.id);
+    const currentUserParticipant = conversationParticipants.find(p =>
+      String(p.userId) === roleCurrentUserId
+    );
     return currentUserParticipant?.role as UserRoleEnum || currentUser?.role as UserRoleEnum || UserRoleEnum.USER;
   }, [conversation, currentUser?.id, currentUser?.role, conversationParticipants]);
 
@@ -226,10 +230,15 @@ export function ConversationHeader({
       return conversation.title || 'Groupe sans nom';
     }
 
+    // CORRECTION: Normaliser l'ID de l'utilisateur courant en String pour comparaison cohérente
+    const currentUserId = currentUser?.id ? String(currentUser.id) : null;
+
     // Pour les conversations directes, essayer plusieurs sources de données
 
     // 1. Utiliser les participants chargés (conversationParticipants)
-    const otherParticipant = conversationParticipants.find(p => p.userId !== currentUser?.id);
+    const otherParticipant = conversationParticipants.find(p =>
+      currentUserId && String(p.userId) !== currentUserId
+    );
     if (otherParticipant?.user) {
       const user = otherParticipant.user;
       return user.displayName ||
@@ -241,7 +250,9 @@ export function ConversationHeader({
     }
 
     // 2. Fallback: utiliser conversation.participants (données de la conversation)
-    const otherConvParticipant = (conversation as any).participants?.find((p: any) => p.userId !== currentUser?.id);
+    const otherConvParticipant = (conversation as any).participants?.find((p: any) =>
+      currentUserId && String(p.userId) !== currentUserId
+    );
     if (otherConvParticipant?.user) {
       const user = otherConvParticipant.user;
       return user.displayName ||
@@ -254,7 +265,9 @@ export function ConversationHeader({
 
     // 3. Fallback: utiliser conversation.members si disponible
     if ((conversation as any).members) {
-      const otherMember = (conversation as any).members.find((m: any) => m.userId !== currentUser?.id);
+      const otherMember = (conversation as any).members.find((m: any) =>
+        currentUserId && String(m.userId) !== currentUserId
+      );
       if (otherMember?.user) {
         const user = otherMember.user;
         return user.displayName ||
@@ -283,21 +296,30 @@ export function ConversationHeader({
 
   const getConversationAvatarUrl = useCallback(() => {
     if (conversation.type === 'direct') {
+      // CORRECTION: Normaliser l'ID pour comparaison cohérente
+      const currentUserId = currentUser?.id ? String(currentUser.id) : null;
+
       // 1. Essayer avec conversationParticipants
-      const otherParticipant = conversationParticipants.find(p => p.userId !== currentUser?.id);
+      const otherParticipant = conversationParticipants.find(p =>
+        currentUserId && String(p.userId) !== currentUserId
+      );
       if (otherParticipant?.user?.avatar) {
         return otherParticipant.user.avatar;
       }
 
       // 2. Fallback: utiliser conversation.participants
-      const otherConvParticipant = (conversation as any).participants?.find((p: any) => p.userId !== currentUser?.id);
+      const otherConvParticipant = (conversation as any).participants?.find((p: any) =>
+        currentUserId && String(p.userId) !== currentUserId
+      );
       if (otherConvParticipant?.user?.avatar) {
         return otherConvParticipant.user.avatar;
       }
 
       // 3. Fallback: utiliser conversation.members si disponible
       if ((conversation as any).members) {
-        const otherMember = (conversation as any).members.find((m: any) => m.userId !== currentUser?.id);
+        const otherMember = (conversation as any).members.find((m: any) =>
+          currentUserId && String(m.userId) !== currentUserId
+        );
         return otherMember?.user?.avatar;
       }
     }
@@ -372,21 +394,30 @@ export function ConversationHeader({
   // Vérifier si l'autre participant est anonyme
   const isOtherParticipantAnonymous = useCallback(() => {
     if (conversation.type === 'direct') {
+      // CORRECTION: Normaliser l'ID pour comparaison cohérente
+      const currentUserId = currentUser?.id ? String(currentUser.id) : null;
+
       // 1. Essayer avec conversationParticipants
-      const otherParticipant = conversationParticipants.find(p => p.userId !== currentUser?.id);
+      const otherParticipant = conversationParticipants.find(p =>
+        currentUserId && String(p.userId) !== currentUserId
+      );
       if (otherParticipant?.user) {
         return isAnonymousUser(otherParticipant.user);
       }
 
       // 2. Fallback: utiliser conversation.participants
-      const otherConvParticipant = (conversation as any).participants?.find((p: any) => p.userId !== currentUser?.id);
+      const otherConvParticipant = (conversation as any).participants?.find((p: any) =>
+        currentUserId && String(p.userId) !== currentUserId
+      );
       if (otherConvParticipant?.user) {
         return isAnonymousUser(otherConvParticipant.user);
       }
 
       // 3. Fallback: utiliser conversation.members si disponible
       if ((conversation as any).members) {
-        const otherMember = (conversation as any).members.find((m: any) => m.userId !== currentUser?.id);
+        const otherMember = (conversation as any).members.find((m: any) =>
+          currentUserId && String(m.userId) !== currentUserId
+        );
         return otherMember?.user ? isAnonymousUser(otherMember.user) : false;
       }
     }
@@ -396,15 +427,22 @@ export function ConversationHeader({
   // Obtenir le statut de l'autre participant pour les conversations directes
   const getOtherParticipantStatus = useCallback((): UserStatus => {
     if (conversation.type === 'direct') {
+      // CORRECTION: Normaliser l'ID pour comparaison cohérente
+      const currentUserId = currentUser?.id ? String(currentUser.id) : null;
+
       // 1. Trouver l'ID de l'autre participant
       let otherUserId: string | undefined;
-      const otherParticipant = conversationParticipants.find(p => p.userId !== currentUser?.id);
+      const otherParticipant = conversationParticipants.find(p =>
+        currentUserId && String(p.userId) !== currentUserId
+      );
       if (otherParticipant) {
-        otherUserId = otherParticipant.userId;
+        otherUserId = String(otherParticipant.userId);
       } else {
         // Fallback: chercher dans conversation.participants
-        const otherConvParticipant = (conversation as any).participants?.find((p: any) => p.userId !== currentUser?.id);
-        otherUserId = otherConvParticipant?.userId;
+        const otherConvParticipant = (conversation as any).participants?.find((p: any) =>
+          currentUserId && String(p.userId) !== currentUserId
+        );
+        otherUserId = otherConvParticipant?.userId ? String(otherConvParticipant.userId) : undefined;
       }
 
       if (otherUserId) {
@@ -669,7 +707,11 @@ export function ConversationHeader({
             /* For direct conversations, show only typing indicator */
             <div className="text-sm text-muted-foreground">
               {(() => {
-                const otherTypingUsers = typingUsers.filter(u => u.userId !== currentUser.id);
+                // CORRECTION: Normaliser l'ID pour comparaison cohérente
+                const typingCurrentUserId = currentUser?.id ? String(currentUser.id) : null;
+                const otherTypingUsers = typingUsers.filter(u =>
+                  typingCurrentUserId && String(u.userId) !== typingCurrentUserId
+                );
                 if (otherTypingUsers.length > 0) {
                   const typingUser = otherTypingUsers[0];
                   const typingUserName = typingUser.username || getConversationName();

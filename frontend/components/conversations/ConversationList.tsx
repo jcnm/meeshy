@@ -191,7 +191,11 @@ const ConversationItem = memo(function ConversationItem({
   // Helper pour obtenir l'autre participant dans une conversation directe
   const getOtherParticipantUser = useCallback(() => {
     if (conversation.type !== 'direct') return null;
-    const otherParticipant = conversation.participants?.find(p => p.userId !== currentUser?.id);
+    // CORRECTION: Normaliser l'ID pour comparaison cohérente
+    const currentUserId = currentUser?.id ? String(currentUser.id) : null;
+    const otherParticipant = conversation.participants?.find(p =>
+      currentUserId && String(p.userId) !== currentUserId
+    );
     return otherParticipant ? (otherParticipant as any).user : null;
   }, [conversation, currentUser]);
 
@@ -302,7 +306,9 @@ const ConversationItem = memo(function ConversationItem({
           const participantUser = getOtherParticipantUser();
           if (participantUser) {
             // PRIORITÉ: Utiliser le store global pour les données en temps réel
-            const userFromStore = userStore.getUserById(participantUser.id);
+            // CORRECTION: Normaliser l'ID pour accès au store
+            const participantUserId = String(participantUser.id);
+            const userFromStore = userStore.getUserById(participantUserId);
             const effectiveUser = userFromStore || participantUser;
             const status = getUserStatus(effectiveUser);
             return (

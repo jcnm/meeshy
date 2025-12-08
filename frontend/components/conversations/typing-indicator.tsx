@@ -41,10 +41,13 @@ export function TypingIndicator({
     return () => clearInterval(interval);
   }, []);
 
+  // CORRECTION: Normaliser l'ID de l'utilisateur courant pour comparaisons cohérentes
+  const normalizedCurrentUserId = currentUserId ? String(currentUserId) : null;
+
   // Filtrer les utilisateurs qui tapent dans ce chat (exclure l'utilisateur actuel)
-  const usersTypingInChat = typingUsers.filter(typingUser => 
-    typingUser.conversationId === chatId && 
-    typingUser.userId !== currentUserId
+  const usersTypingInChat = typingUsers.filter(typingUser =>
+    String(typingUser.conversationId) === String(chatId) &&
+    normalizedCurrentUserId && String(typingUser.userId) !== normalizedCurrentUserId
   );
 
   if (usersTypingInChat.length === 0) {
@@ -53,7 +56,7 @@ export function TypingIndicator({
 
   // Obtenir les noms des utilisateurs qui tapent
   const typingUserNames = usersTypingInChat.map(typingUser => {
-    const user = users.find(u => u.id === typingUser.userId);
+    const user = users.find(u => String(u.id) === String(typingUser.userId));
     return user?.username || typingUser.userId;
   });
 

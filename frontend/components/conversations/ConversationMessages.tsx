@@ -160,14 +160,18 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
       // Un message est considéré non lu si :
       // 1. Ce n'est pas un message de l'utilisateur courant
       // 2. Il n'a pas de readStatus ou l'utilisateur n'est pas dans readStatus
-      if (msg.senderId === currentUser.id) return false;
-      
+      // CORRECTION: Normaliser les IDs pour comparaison cohérente
+      const msgCurrentUserId = currentUser?.id ? String(currentUser.id) : null;
+      if (msgCurrentUserId && String(msg.senderId) === msgCurrentUserId) return false;
+
       if (!msg.readStatus || msg.readStatus.length === 0) return true;
-      
-      const userReadStatus = msg.readStatus.find(rs => rs.userId === currentUser.id);
+
+      const userReadStatus = msg.readStatus.find((rs: { userId: string; readAt?: Date }) =>
+        msgCurrentUserId && String(rs.userId) === msgCurrentUserId
+      );
       return !userReadStatus || !userReadStatus.readAt;
     });
-    
+
     return firstUnread || null;
   }, [messages, currentUser]);
 
@@ -293,7 +297,9 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
         const lastMessage = messages[messages.length - 1];
 
         // AMÉLIORATION: Toujours scroller sur NOTRE propre message (envoi)
-        if (lastMessage && lastMessage.senderId === currentUser?.id) {
+        // CORRECTION: Normaliser les IDs pour comparaison cohérente
+        const scrollCurrentUserId = currentUser?.id ? String(currentUser.id) : null;
+        if (lastMessage && scrollCurrentUserId && String(lastMessage.senderId) === scrollCurrentUserId) {
           // En mode scrollDirection='down' (BubbleStream), scroller vers le haut
           if (scrollDirection === 'down') {
             scrollToTop(true); // true = avec animation fluide

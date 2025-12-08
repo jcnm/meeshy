@@ -622,23 +622,28 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     try {
       const participantsData = await conversationsService.getAllParticipants(conversationId);
 
+      // CORRECTION: Normaliser tous les IDs en String pour cohérence avec les comparaisons
       const allParticipants: ThreadMember[] = [
         ...participantsData.authenticatedParticipants.map(user => ({
-          id: user.id,
+          id: String(user.id),
           conversationId,
-          userId: user.id,
-          user: user,
+          userId: String(user.id),
+          user: {
+            ...user,
+            id: String(user.id) // Normaliser aussi l'ID dans l'objet user
+          },
           role: user.role as UserRoleEnum,
           joinedAt: new Date(),
           isActive: true,
           isAnonymous: false
         })),
         ...participantsData.anonymousParticipants.map(participant => ({
-          id: participant.id,
+          id: String(participant.id),
           conversationId,
-          userId: participant.id,
+          userId: String(participant.id),
           user: {
             ...participant,
+            id: String(participant.id), // Normaliser l'ID
             displayName: participant.username,
             email: '',
             phoneNumber: '',
@@ -664,21 +669,21 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
           isAnonymous: true
         }))
       ];
-      
+
       // Déduplication des participants basée sur userId
       // Priorité aux participants authentifiés en cas de doublon
       const participantsMap = new Map<string, ThreadMember>();
-      
+
       // D'abord ajouter les participants anonymes
       allParticipants
         .filter(p => p.isAnonymous)
         .forEach(p => participantsMap.set(p.userId, p));
-      
+
       // Puis ajouter/écraser avec les participants authentifiés (prioritaires)
       allParticipants
         .filter(p => !p.isAnonymous)
         .forEach(p => participantsMap.set(p.userId, p));
-      
+
       const uniqueParticipants = Array.from(participantsMap.values());
 
       // Synchroniser le store global avec les participants chargés
