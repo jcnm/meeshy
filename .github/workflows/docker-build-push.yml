@@ -9,12 +9,11 @@
 name: Docker Build & Push
 
 on:
-  # Trigger on push to branches OR version tags
+  # Trigger on push to main/dev branches OR version tags
+  # NOTE: Does NOT trigger on pull requests - only on merge to main/dev
   push:
     branches:
       - main
-      - master
-      - develop
       - dev
     tags:
       - 'v*.*.*'
@@ -250,8 +249,8 @@ jobs:
           tags: |
             # Version from VERSION file
             type=raw,value=v${{ matrix.version }}
-            # Latest on main/master
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}
+            # Latest on main and dev branches
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' }}
             # Branch name
             type=ref,event=branch,prefix=
             # Git SHA (short)
