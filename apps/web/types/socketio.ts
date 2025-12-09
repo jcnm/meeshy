@@ -4,7 +4,7 @@
  */
 
 // ===== IMPORT DES TYPES PARTAGÉS =====
-export * from '../shared/types';
+export * from '@meeshy/shared/types';
 
 // Alias pour rétrocompatibilité  
 import type { 
@@ -14,7 +14,7 @@ import type {
   TranslationData,
   ConnectionStatus,
   ConnectionDiagnostics
-} from '../shared/types/socketio-events';
+} from '@meeshy/shared/types/socketio-events';
 
 export type Message = SocketIOMessage;
 export type SocketResponse<T = unknown> = SocketIOResponse<T>;

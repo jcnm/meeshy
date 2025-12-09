@@ -27,8 +27,8 @@ import {
 import { useI18n } from '@/hooks/useI18n';
 import { createTrackingLink, copyTrackingLinkToClipboard } from '@/services/tracking-links';
 import { conversationsService } from '@/services/conversations.service';
-import type { Conversation } from '@shared/types';
-import type { CreateTrackingLinkRequest } from '@shared/types/tracking-link';
+import type { Conversation } from '@meeshy/shared/types';
+import type { CreateTrackingLinkRequest } from '@meeshy/shared/types/tracking-link';
 
 interface CreateTrackingLinkModalProps {
   isOpen: boolean;

@@ -24,7 +24,7 @@ import { ConversationDetailsSidebar } from './conversation-details-sidebar';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, MessageSquare } from 'lucide-react';
-import type { Conversation, ThreadMember, UserRoleEnum, Attachment } from '@shared/types';
+import type { Conversation, ThreadMember, UserRoleEnum, Attachment } from '@meeshy/shared/types';
 import { useReplyStore } from '@/stores/reply-store';
 import { toast } from 'sonner';
 import { getAuthToken } from '@/utils/token-utils';

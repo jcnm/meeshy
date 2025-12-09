@@ -8,7 +8,7 @@
 import type {
   SocketIOUser,
   TranslationData
-} from '@shared/types';
+} from '@meeshy/shared/types';
 
 // Import des types de messages consolidés
 import type {
@@ -17,10 +17,10 @@ import type {
   UITranslationState,
   UIMessage,
   GatewayMessage
-} from '@shared/types';
+} from '@meeshy/shared/types';
 
 // Ré-export des types partagés essentiels
-export * from '@shared/types';
+export * from '@meeshy/shared/types';
 
 // Export des types spécifiques frontend
 export type { CreateUserDto, ChatRoom } from './frontend';

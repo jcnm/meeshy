@@ -21,7 +21,7 @@ import type {
   CallEndedEvent,
   CallMediaToggleEvent,
   CallError,
-} from '@shared/types/video-call';
+} from '@meeshy/shared/types/video-call';
 
 const CALL_TIMEOUT_MS = 30000; // 30 seconds
 

@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { MessageSquare, ChevronDown, Plus, Clock } from 'lucide-react';
 import { conversationsService } from '@/services';
-import { Conversation } from '@shared/types';
+import { Conversation } from '@meeshy/shared/types';
 import { useI18n } from '@/hooks/useI18n';
 
 interface ConversationDropdownProps {

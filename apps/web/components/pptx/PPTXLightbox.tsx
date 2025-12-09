@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { X, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
+import type { UploadedAttachmentResponse } from '@meeshy/shared/types/attachment';
 
 interface PPTXLightboxProps {
   attachment: UploadedAttachmentResponse | null;

@@ -1,4 +1,4 @@
-import type { User } from '@shared/types';
+import type { User } from '@meeshy/shared/types';
 
 /**
  * Génère les initiales d'un utilisateur à partir de ses informations

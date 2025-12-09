@@ -6,9 +6,9 @@ import type {
   Message,
   MessageWithTranslations,
   SocketIOUser as User
-} from '@shared/types';
+} from '@meeshy/shared/types';
 import { MessagesDisplay } from '@/components/common/messages-display';
-import { UserRoleEnum } from '@shared/types';
+import { UserRoleEnum } from '@meeshy/shared/types';
 import { useFixRadixZIndex } from '@/hooks/use-fix-z-index';
 import { Button } from '@/components/ui/button';
 import { ArrowDown, ArrowUp } from 'lucide-react';

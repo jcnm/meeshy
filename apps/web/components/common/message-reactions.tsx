@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useMessageReactions } from '@/hooks/use-message-reactions';
 import { useI18n } from '@/hooks/use-i18n';
-import type { ReactionAggregation } from '@shared/types/reaction';
+import type { ReactionAggregation } from '@meeshy/shared/types/reaction';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface MessageReactionsProps {

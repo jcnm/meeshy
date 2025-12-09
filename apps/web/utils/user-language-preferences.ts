@@ -4,7 +4,7 @@
  */
 import type { User } from '@/types';
 import type { LanguageChoice } from '@/types/bubble-stream';
-import { SUPPORTED_LANGUAGES } from '@shared/utils/languages';
+import { SUPPORTED_LANGUAGES } from '@meeshy/shared/utils/languages';
 
 /**
  * Génère les choix de langues disponibles pour un utilisateur

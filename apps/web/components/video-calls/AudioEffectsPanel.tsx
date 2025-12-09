@@ -40,7 +40,7 @@ import type {
   BackSoundParams,
   AudioEffectType,
   VoiceCoderPreset,
-} from '@shared/types/video-call';
+} from '@meeshy/shared/types/video-call';
 
 interface AudioEffectsPanelProps {
   effectsState: AudioEffectsState;

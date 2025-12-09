@@ -1,4 +1,4 @@
-import { UserRoleEnum } from '../../../shared/types';
+import { UserRoleEnum } from '@meeshy/shared/types';
 
 export interface AdminPermissions {
   canAccessAdmin: boolean;

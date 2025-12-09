@@ -9,7 +9,7 @@ import React, { useEffect, useRef } from 'react';
 import { Phone, PhoneOff, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { CallInitiatedEvent } from '@shared/types/video-call';
+import type { CallInitiatedEvent } from '@meeshy/shared/types/video-call';
 
 interface CallNotificationProps {
   call: CallInitiatedEvent;

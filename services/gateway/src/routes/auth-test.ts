@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import type { AuthenticationContext, AuthenticationType } from '../../shared/types';
+import type { AuthenticationContext, AuthenticationType } from '@meeshy/shared/types';
 
 interface AuthTestRequest extends FastifyRequest {
   headers: {

@@ -4,24 +4,32 @@
   "description": "Shared library for Meeshy - Types, Prisma Schema, Utilities",
   "private": true,
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/types/index.js",
+  "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.js"
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/types/index.js",
+      "require": "./dist/types/index.js"
     },
     "./types": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/types/index.js"
     },
     "./types/*": {
-      "types": "./dist/*.d.ts",
-      "import": "./dist/*.js"
+      "types": "./dist/types/*.d.ts",
+      "import": "./dist/types/*.js"
+    },
+    "./utils/*": {
+      "types": "./dist/utils/*.d.ts",
+      "import": "./dist/utils/*.js"
     },
     "./prisma": {
       "types": "./prisma/schema.prisma"
+    },
+    "./prisma/client": {
+      "types": "./prisma/client/index.d.ts",
+      "import": "./prisma/client/index.js"
     }
   },
   "files": [

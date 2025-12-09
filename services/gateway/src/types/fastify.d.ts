@@ -5,7 +5,7 @@
  * and properties that are available throughout the application.
  */
 
-import { PrismaClient } from '../shared/prisma/client';
+import { PrismaClient } from '@meeshy/shared/prisma/client';
 import { TranslationService } from '../services/TranslationService';
 import { FastifyRequest, FastifyReply } from 'fastify';
 

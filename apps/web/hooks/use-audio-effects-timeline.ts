@@ -40,9 +40,9 @@ import type {
   AudioEffectAction,
   AudioEffectParamsUnion,
   ZERO_EFFECT_PARAMS,
-} from '@shared/types/audio-effects-timeline';
-import type { AudioEffectType } from '@shared/types/video-call';
-import { AUDIO_EFFECTS_TIMELINE_VERSION } from '@shared/types/audio-effects-timeline';
+} from '@meeshy/shared/types/audio-effects-timeline';
+import type { AudioEffectType } from '@meeshy/shared/types/video-call';
+import { AUDIO_EFFECTS_TIMELINE_VERSION } from '@meeshy/shared/types/audio-effects-timeline';
 import { logger } from '@/utils/logger';
 
 /**

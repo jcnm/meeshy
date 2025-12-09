@@ -24,16 +24,16 @@ import {
   ChevronUp,
   ChevronDown
 } from 'lucide-react';
-import { ThreadMember } from '@shared/types';
+import { ThreadMember } from '@meeshy/shared/types';
 import { conversationsService } from '@/services/conversations.service';
 import { usersService } from '@/services/users.service';
-import type { User as SocketIOUser } from '@shared/types';
+import type { User as SocketIOUser } from '@meeshy/shared/types';
 import { toast } from 'sonner';
 import { useI18n } from '@/hooks/useI18n';
-import { UserRoleEnum } from '@shared/types';
+import { UserRoleEnum } from '@meeshy/shared/types';
 import { InviteUserModal } from './invite-user-modal';
 import { getUserInitials } from '@/lib/avatar-utils';
-import type { AnonymousParticipant } from '@shared/types/anonymous';
+import type { AnonymousParticipant } from '@meeshy/shared/types/anonymous';
 import { useUserStatusRealtime } from '@/hooks/use-user-status-realtime';
 import { useUserStore } from '@/stores/user-store';
 import { useManualStatusRefresh } from '@/hooks/use-manual-status-refresh';

@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import type { Conversation, SocketIOUser as User } from '@shared/types';
+import type { Conversation, SocketIOUser as User } from '@meeshy/shared/types';
 import type { UserConversationPreferences, UserConversationCategory } from '@/types/user-preferences';
 import { CreateLinkButton } from './create-link-button';
 import { userPreferencesService } from '@/services/user-preferences.service';

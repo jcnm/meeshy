@@ -3,7 +3,7 @@
  * Gestion des tâches de maintenance automatiques
  */
 
-import { PrismaClient } from '../../shared/prisma/client';
+import { PrismaClient } from '@meeshy/shared/prisma/client';
 import { logger } from '../utils/logger';
 import { AttachmentService } from './AttachmentService';
 

@@ -1,9 +1,9 @@
-import { PrismaClient } from '../../shared/prisma/client';
+import { PrismaClient } from '@meeshy/shared/prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { SocketIOUser, UserRoleEnum } from '../../shared/types';
+import { SocketIOUser, UserRoleEnum } from '@meeshy/shared/types';
 import { normalizeEmail, normalizeUsername, capitalizeName, normalizeDisplayName, normalizePhoneNumber } from '../utils/normalize';
-import { emailSchema } from '../../shared/types/validation';
+import { emailSchema } from '@meeshy/shared/types/validation';
 
 export interface LoginCredentials {
   username: string;

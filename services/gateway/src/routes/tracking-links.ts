@@ -7,7 +7,7 @@ import {
   UnifiedAuthRequest,
   isRegisteredUser
 } from '../middleware/auth';
-import type { TrackingLink } from '../../shared/types/tracking-link';
+import type { TrackingLink } from '@meeshy/shared/types/tracking-link';
 
 /**
  * Helper pour enrichir un TrackingLink avec l'URL complète

@@ -17,7 +17,7 @@ import { Switch } from '@/components/ui/switch';
 import { ChevronRight, Sparkles } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { cn } from '@/lib/utils';
-import type { AudioEffectType } from '@shared/types/video-call';
+import type { AudioEffectType } from '@meeshy/shared/types/video-call';
 import {
   Dialog,
   DialogContent,

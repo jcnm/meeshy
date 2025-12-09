@@ -23,7 +23,7 @@ import type {
 } from '@/types';
 
 // Import des constantes d'événements depuis les types partagés
-import { SERVER_EVENTS, CLIENT_EVENTS } from '@shared/types/socketio-events';
+import { SERVER_EVENTS, CLIENT_EVENTS } from '@meeshy/shared/types/socketio-events';
 
 // Import des traductions
 import enTranslations from '@/locales/en';

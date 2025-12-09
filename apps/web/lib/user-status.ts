@@ -2,8 +2,8 @@
  * Utilitaire pour calculer le statut d'un utilisateur basé sur sa dernière activité
  */
 
-import type { SocketIOUser as User } from '@shared/types';
-import type { AnonymousParticipant } from '@shared/types/anonymous';
+import type { SocketIOUser as User } from '@meeshy/shared/types';
+import type { AnonymousParticipant } from '@meeshy/shared/types/anonymous';
 
 export type UserStatus = 'online' | 'away' | 'offline';
 

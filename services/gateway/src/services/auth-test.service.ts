@@ -1,4 +1,4 @@
-import { UserRoleEnum } from '../../shared/types';
+import { UserRoleEnum } from '@meeshy/shared/types';
 
 // Interface pour les utilisateurs de test
 export interface TestUser {

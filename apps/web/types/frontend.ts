@@ -4,7 +4,7 @@ import type {
   Conversation, 
   Message, 
   LanguageCode 
-} from '@shared/types';
+} from '@meeshy/shared/types';
 
 export interface CreateUserDto {
   firstName: string;

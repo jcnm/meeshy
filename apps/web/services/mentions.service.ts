@@ -1,5 +1,5 @@
 import { apiService, ApiResponse } from './api.service';
-import type { MentionSuggestion } from '../../shared/types/mention';
+import type { MentionSuggestion } from '@meeshy/shared/types/mention';
 
 export interface MentionSuggestionsParams {
   conversationId: string;

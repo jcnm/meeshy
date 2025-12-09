@@ -3,15 +3,15 @@ import { TranslationService } from '../services/TranslationService';
 import { TrackingLinkService } from '../services/TrackingLinkService';
 import { AttachmentService } from '../services/AttachmentService';
 import { conversationStatsService } from '../services/ConversationStatsService';
-import { UserRoleEnum, ErrorCode } from '../../shared/types';
-import { createError, sendErrorResponse } from '../../shared/utils/errors';
-import { ConversationSchemas, validateSchema } from '../../shared/utils/validation';
+import { UserRoleEnum, ErrorCode } from '@meeshy/shared/types';
+import { createError, sendErrorResponse } from '@meeshy/shared/utils/errors';
+import { ConversationSchemas, validateSchema } from '@meeshy/shared/utils/validation';
 import { 
   resolveUserLanguage, 
   generateConversationIdentifier as sharedGenerateConversationIdentifier,
   isValidMongoId,
   generateDefaultConversationTitle
-} from '../../shared/utils/conversation-helpers';
+} from '@meeshy/shared/utils/conversation-helpers';
 import { createUnifiedAuthMiddleware, UnifiedAuthRequest } from '../middleware/auth';
 import { messageValidationHook } from '../middleware/rate-limiter';
 

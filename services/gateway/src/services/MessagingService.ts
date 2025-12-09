@@ -4,7 +4,7 @@
  * Centralise la logique de messaging avec les champs disponibles dans le schéma
  */
 
-import { PrismaClient, Message } from '../../shared/prisma/client';
+import { PrismaClient, Message } from '@meeshy/shared/prisma/client';
 import type {
   MessageRequest,
   MessageResponse,
@@ -13,7 +13,7 @@ import type {
   MessageResponseMetadata,
   AuthenticationContext,
   AuthenticationType
-} from '../../shared/types';
+} from '@meeshy/shared/types';
 import { TranslationService } from './TranslationService';
 import { conversationStatsService } from './ConversationStatsService';
 import { TrackingLinkService } from './TrackingLinkService';

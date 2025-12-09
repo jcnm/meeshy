@@ -32,7 +32,7 @@ import type {
   BackSoundParams,
   AudioEffectsState,
   VoiceCoderPreset,
-} from '@shared/types/video-call';
+} from '@meeshy/shared/types/video-call';
 
 // Default parameters for each effect
 // IMPORTANT: Tous les paramètres sont initialisés à ZÉRO lors de l'activation

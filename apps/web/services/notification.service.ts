@@ -6,7 +6,7 @@
 import { io, Socket } from 'socket.io-client';
 import { APP_CONFIG, API_CONFIG } from '@/lib/config';
 
-import type { Attachment } from '@shared/types/attachment';
+import type { Attachment } from '@meeshy/shared/types/attachment';
 
 export interface Notification {
   id: string;

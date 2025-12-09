@@ -14,8 +14,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
-import type { AudioEffectType } from '@/shared/types/video-call';
+import type { UploadedAttachmentResponse } from '@meeshy/shared/types/attachment';
+import type { AudioEffectType } from '@meeshy/shared/types/video-call';
 import { apiService } from '@/services/api.service';
 import MediaManager from '@/utils/media-manager';
 

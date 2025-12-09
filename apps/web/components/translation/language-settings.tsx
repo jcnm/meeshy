@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { LanguageSelector } from '@/components/translation/language-selector';
 import { Badge } from '@/components/ui/badge';
 import { User as UserType } from '@/types';
-import { SUPPORTED_LANGUAGES } from '@/shared/utils/languages';
+import { SUPPORTED_LANGUAGES } from '@meeshy/shared/utils/languages';
 import { toast } from 'sonner';
 import { Globe, Languages, Target } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';

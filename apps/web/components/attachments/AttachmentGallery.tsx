@@ -15,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle
 } from '../ui/dialog';
-import { Attachment } from '../../shared/types/attachment';
+import { Attachment } from '@meeshy/shared/types/attachment';
 import { AttachmentService } from '../../services/attachmentService';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useI18n } from '@/hooks/useI18n';

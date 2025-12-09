@@ -54,7 +54,7 @@ import {
   getLanguageName,
   getLanguageFlag,
   type SupportedLanguageInfo
-} from '@shared/types';
+} from '@meeshy/shared/types';
 
 // Constantes locales (non disponibles dans shared)
 import { getMaxMessageLength } from '@/lib/constants/languages';
@@ -98,7 +98,7 @@ import { useFixRadixZIndex } from '@/hooks/use-fix-z-index';
 import { detectLanguage } from '@/utils/language-detection';
 import { useI18n } from '@/hooks/useI18n';
 import { cn } from '@/lib/utils';
-import { UserRoleEnum, type User, type Message, type BubbleTranslation, type Attachment } from '@shared/types';
+import { UserRoleEnum, type User, type Message, type BubbleTranslation, type Attachment } from '@meeshy/shared/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { messageTranslationService } from '@/services/message-translation.service';
 import { getAuthToken } from '@/utils/token-utils';

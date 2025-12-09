@@ -7,7 +7,7 @@
  * - Gérer le formatage et la troncature du contenu
  */
 
-import { PrismaClient } from '../../shared/prisma/client';
+import { PrismaClient } from '@meeshy/shared/prisma/client';
 import { logger } from '../utils/logger';
 import { notificationLogger, securityLogger } from '../utils/logger-enhanced';
 import { SecuritySanitizer } from '../utils/sanitize';

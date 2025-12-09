@@ -8,8 +8,8 @@
 
 import React from 'react';
 import { useI18n } from '@/hooks/useI18n';
-import type { AudioEffectsTimeline, AudioEffectType } from '@shared/types';
-import { calculateEffectsStats } from '@shared/types/audio-effects-timeline';
+import type { AudioEffectsTimeline, AudioEffectType } from '@meeshy/shared/types';
+import { calculateEffectsStats } from '@meeshy/shared/types/audio-effects-timeline';
 import { cn } from '@/lib/utils';
 
 interface AudioEffectsTimelineViewProps {

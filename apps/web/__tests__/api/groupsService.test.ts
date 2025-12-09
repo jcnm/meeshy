@@ -1,7 +1,7 @@
 import { groupsService } from '@/services/groupsService';
 import { apiService } from '@/services/apiService';
 import { mockGroups, mockGroupMembers, mockUsers } from '@/services/mockApiService';
-import { UserRoleEnum } from '../../../shared/types';
+import { UserRoleEnum } from '@meeshy/shared/types';
 
 // Mock du service API
 jest.mock('@/services/apiService');

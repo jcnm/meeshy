@@ -41,10 +41,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { User, BubbleTranslation } from '@shared/types';
-import { SUPPORTED_LANGUAGES, getLanguageInfo } from '@shared/utils/languages';
-import type { Message } from '@shared/types/conversation';
-import { mentionsToLinks } from '@/shared/types/mention';
+import type { User, BubbleTranslation } from '@meeshy/shared/types';
+import { SUPPORTED_LANGUAGES, getLanguageInfo } from '@meeshy/shared/utils/languages';
+import type { Message } from '@meeshy/shared/types/conversation';
+import { mentionsToLinks } from '@meeshy/shared/types/mention';
 import type { BubbleStreamMessage } from '@/types/bubble-stream';
 import { Z_CLASSES } from '@/lib/z-index';
 import { useI18n } from '@/hooks/useI18n';
@@ -57,12 +57,12 @@ import { AttachmentPreviewReply } from '@/components/attachments/AttachmentPrevi
 import { MessageReactions } from '@/components/common/message-reactions';
 import { EmojiPicker } from '@/components/common/emoji-picker';
 import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
-import { CLIENT_EVENTS } from '@shared/types/socketio-events';
+import { CLIENT_EVENTS } from '@meeshy/shared/types/socketio-events';
 import { useMessageReactions } from '@/hooks/use-message-reactions';
 import { useAuth } from '@/hooks/use-auth';
 import type { BubbleMessage, MessageTranslation, MessageVersion, MessageSender, AnonymousSender } from './types';
 import { MessageActionsBar } from './MessageActionsBar';
-import { getAttachmentType } from '@shared/types/attachment';
+import { getAttachmentType } from '@meeshy/shared/types/attachment';
 import { LanguageSelectionMessageView } from './LanguageSelectionMessageView';
 import { ImageLightbox } from '@/components/attachments/ImageLightbox';
 

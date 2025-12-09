@@ -33,15 +33,15 @@ import {
 import { cn } from '@/lib/utils';
 import { OnlineIndicator } from '@/components/ui/online-indicator';
 import { getUserStatus } from '@/lib/user-status';
-import type { Conversation, User, Message } from '@shared/types';
-import type { AnonymousParticipant } from '@shared/types/anonymous';
+import type { Conversation, User, Message } from '@meeshy/shared/types';
+import type { AnonymousParticipant } from '@meeshy/shared/types/anonymous';
 import { conversationsService } from '@/services/conversations.service';
 import { userPreferencesService } from '@/services/user-preferences.service';
 import { getLanguageDisplayName, getLanguageFlag } from '@/utils/language-utils';
 import { toast } from 'sonner';
 import { ConversationLinksSection } from './conversation-links-section';
 import { CreateLinkButton } from './create-link-button';
-import { UserRoleEnum } from '@shared/types';
+import { UserRoleEnum } from '@meeshy/shared/types';
 import { useI18n } from '@/hooks/useI18n';
 import { copyToClipboard } from '@/lib/clipboard';
 import { ConversationImageUploadDialog } from './conversation-image-upload-dialog';

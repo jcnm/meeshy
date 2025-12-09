@@ -30,8 +30,8 @@ import {
 } from 'lucide-react';
 import { LoginForm } from '@/components/auth/login-form';
 import { RegisterForm } from '@/components/auth/register-form';
-import { User } from '@shared/types';
-import { ConversationLink } from '@shared/types';
+import { User } from '@meeshy/shared/types';
+import { ConversationLink } from '@meeshy/shared/types';
 import { AuthMode } from '@/types';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';

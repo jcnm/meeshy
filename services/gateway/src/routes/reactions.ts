@@ -17,7 +17,7 @@ import type {
   ReactionUpdateEventData,
   ReactionSyncEventData,
   SERVER_EVENTS
-} from '../../shared/types';
+} from '@meeshy/shared/types';
 
 interface AddReactionBody {
   messageId: string;

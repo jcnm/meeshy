@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { getUserInitials } from '@/lib/avatar-utils';
 import { mentionsService } from '@/services/mentions.service';
-import type { MentionSuggestion } from '../../../shared/types/mention';
+import type { MentionSuggestion } from '@meeshy/shared/types/mention';
 
 interface MentionAutocompleteProps {
   conversationId: string;

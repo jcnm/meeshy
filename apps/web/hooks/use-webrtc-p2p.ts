@@ -17,7 +17,7 @@ import type {
   CallSignalEvent,
   WebRTCSignal,
   CALL_ERROR_CODES,
-} from '@shared/types/video-call';
+} from '@meeshy/shared/types/video-call';
 
 export interface UseWebRTCP2POptions {
   callId: string;

@@ -3,7 +3,7 @@
  * Real-time security event monitoring, anomaly detection, and alerting
  */
 
-import { PrismaClient } from '../../shared/prisma/client';
+import { PrismaClient } from '@meeshy/shared/prisma/client';
 import { EmailService } from './EmailService';
 
 export type SecurityEventType =

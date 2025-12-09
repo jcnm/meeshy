@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
-import type { TrackingLink } from '@shared/types/tracking-link';
+import type { TrackingLink } from '@meeshy/shared/types/tracking-link';
 import { buildApiUrl } from '@/lib/config';
 import { toast } from 'sonner';
 import { useI18n } from '@/hooks/useI18n';

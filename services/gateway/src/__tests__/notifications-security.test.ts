@@ -13,7 +13,7 @@
 
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { NotificationService, CreateNotificationData } from '../services/NotificationService';
-import { PrismaClient } from '../../shared/prisma/client';
+import { PrismaClient } from '@meeshy/shared/prisma/client';
 
 // Mock Prisma
 jest.mock('../../shared/prisma/client', () => {

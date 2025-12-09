@@ -6,7 +6,7 @@ import { X, Trash2, AlertTriangle, FileText, Heart, Paperclip, Check } from 'luc
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import type { Message } from '@shared/types';
+import type { Message } from '@meeshy/shared/types';
 import type { BubbleMessage } from './types';
 import { useI18n } from '@/hooks/useI18n';
 

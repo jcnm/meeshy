@@ -1,4 +1,4 @@
-import type { PrismaClient } from '../../../shared/prisma/client';
+import type { PrismaClient } from '@meeshy/shared/prisma/client';
 import type {
   Report,
   CreateReportDTO,
@@ -10,7 +10,7 @@ import type {
   ReportStatus,
   ReportType,
   ReportedType
-} from '../../../shared/types';
+} from '@meeshy/shared/types';
 
 /**
  * Service de gestion des signalements

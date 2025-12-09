@@ -23,7 +23,7 @@ import type {
   TypingEvent,
   UserStatusEvent
 } from '@/types';
-import { SERVER_EVENTS, CLIENT_EVENTS } from '@shared/types/socketio-events';
+import { SERVER_EVENTS, CLIENT_EVENTS } from '@meeshy/shared/types/socketio-events';
 import { authManager } from './auth-manager.service';
 
 class WebSocketService {

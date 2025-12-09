@@ -12,13 +12,13 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { FileImage, FileText, Music, Video, File, Maximize } from 'lucide-react';
-import { Attachment, getAttachmentType } from '@shared/types/attachment';
+import { Attachment, getAttachmentType } from '@meeshy/shared/types/attachment';
 import { buildAttachmentsUrls } from '@/utils/attachment-url';
 import { cn } from '@/lib/utils';
 import { ImageLightbox } from './ImageLightbox';
 import { CompactAudioPlayer } from '../audio/SimpleAudioPlayer';
 import { CompactVideoPlayer } from '../video/VideoPlayer';
-import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
+import type { UploadedAttachmentResponse } from '@meeshy/shared/types/attachment';
 
 // Chargement dynamique des lightbox pour éviter les erreurs SSR
 const PDFLightboxSimple = dynamic(

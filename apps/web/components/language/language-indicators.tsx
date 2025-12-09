@@ -1,8 +1,8 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { getLanguageInfo } from '@shared/types';
-import type { LanguageStats } from '@shared/types';
+import { getLanguageInfo } from '@meeshy/shared/types';
+import type { LanguageStats } from '@meeshy/shared/types';
 
 /**
  * Composant pour afficher les indicateurs de langues

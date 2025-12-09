@@ -23,7 +23,7 @@ import {
   BarChart,
   Edit
 } from 'lucide-react';
-import type { TrackingLink } from '@shared/types/tracking-link';
+import type { TrackingLink } from '@meeshy/shared/types/tracking-link';
 import { useI18n } from '@/hooks/useI18n';
 import { useRouter } from 'next/navigation';
 

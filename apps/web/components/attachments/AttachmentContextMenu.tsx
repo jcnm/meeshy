@@ -18,7 +18,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Attachment } from '@shared/types';
+import { Attachment } from '@meeshy/shared/types';
 import { createPortal } from 'react-dom';
 
 export interface AttachmentContextMenuProps {

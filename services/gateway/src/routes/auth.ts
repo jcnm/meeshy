@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { AuthService, LoginCredentials, RegisterData } from '../services/auth.service';
-import { SocketIOUser } from '../../shared/types';
+import { SocketIOUser } from '@meeshy/shared/types';
 import { createUnifiedAuthMiddleware } from '../middleware/auth';
 
 export async function authRoutes(fastify: FastifyInstance) {

@@ -10,11 +10,11 @@
  */
 
 import { Socket } from 'socket.io';
-import { PrismaClient } from '../../shared/prisma/client';
+import { PrismaClient } from '@meeshy/shared/prisma/client';
 import { CallService } from '../services/CallService';
 import { NotificationService } from '../services/NotificationService';
 import { logger } from '../utils/logger';
-import { CALL_EVENTS, CALL_ERROR_CODES } from '../../shared/types/video-call';
+import { CALL_EVENTS, CALL_ERROR_CODES } from '@meeshy/shared/types/video-call';
 import { validateSocketEvent } from '../middleware/validation';
 import {
   socketInitiateCallSchema,
@@ -34,7 +34,7 @@ import type {
   CallEndedEvent,
   CallMediaToggleEvent,
   CallError
-} from '../../shared/types/video-call';
+} from '@meeshy/shared/types/video-call';
 
 // ICE servers configuration (STUN/TURN)
 const ICE_SERVERS_CONFIG = {

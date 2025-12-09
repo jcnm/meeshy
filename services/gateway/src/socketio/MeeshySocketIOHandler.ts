@@ -6,9 +6,9 @@
 import { FastifyInstance } from 'fastify';
 import { Server as HTTPServer } from 'http';
 import { MeeshySocketIOManager } from './MeeshySocketIOManager';
-import { PrismaClient } from '../../shared/prisma/client';
+import { PrismaClient } from '@meeshy/shared/prisma/client';
 import { logger } from '../utils/logger';
-import { SERVER_EVENTS } from '../../shared/types/socketio-events';
+import { SERVER_EVENTS } from '@meeshy/shared/types/socketio-events';
 
 export class MeeshySocketIOHandler {
   private socketIOManager: MeeshySocketIOManager | null = null;

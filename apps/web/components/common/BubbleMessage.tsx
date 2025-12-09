@@ -3,8 +3,8 @@
 import { memo, useMemo, useCallback, useRef, useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import type { User, BubbleTranslation } from '@shared/types';
-import type { Message } from '@shared/types/conversation';
+import type { User, BubbleTranslation } from '@meeshy/shared/types';
+import type { Message } from '@meeshy/shared/types/conversation';
 import { useI18n } from '@/hooks/useI18n';
 import { useMessageView } from '@/hooks/use-message-view-state';
 import { reportService } from '@/services/report.service';

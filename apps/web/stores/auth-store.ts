@@ -10,7 +10,7 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
-import type { User } from '@shared/types';
+import type { User } from '@meeshy/shared/types';
 import { AUTH_STORAGE_KEYS, authManager } from '@/services/auth-manager.service';
 interface AuthState {
   user: User | null;

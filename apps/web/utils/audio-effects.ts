@@ -16,7 +16,7 @@ import type {
   BabyVoiceParams,
   DemonVoiceParams,
   BackSoundParams,
-} from '@shared/types/video-call';
+} from '@meeshy/shared/types/video-call';
 
 /**
  * Audio effect processor interface

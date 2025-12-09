@@ -6,7 +6,7 @@ import {
   UserResponse,
   UserAuditLog,
   UserRoleEnum
-} from '../../../shared/types';
+} from '@meeshy/shared/types';
 import { permissionsService } from './permissions.service';
 
 export class UserSanitizationService {

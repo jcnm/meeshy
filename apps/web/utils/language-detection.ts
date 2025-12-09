@@ -2,7 +2,7 @@
  * Utilitaires pour la détection et gestion des langues
  */
 
-import { SUPPORTED_LANGUAGES as SHARED_LANGUAGES } from '@/shared/utils/languages';
+import { SUPPORTED_LANGUAGES as SHARED_LANGUAGES } from '@meeshy/shared/utils/languages';
 
 export interface Language {
   code: string;

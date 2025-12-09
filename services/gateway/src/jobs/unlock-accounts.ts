@@ -3,7 +3,7 @@
  * Background job that runs daily to unlock accounts with expired lockouts
  */
 
-import { PrismaClient } from '../../shared/prisma/client';
+import { PrismaClient } from '@meeshy/shared/prisma/client';
 
 export class UnlockAccountsJob {
   private intervalId: NodeJS.Timeout | null = null;

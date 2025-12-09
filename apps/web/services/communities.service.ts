@@ -3,7 +3,7 @@ import type {
   Conversation, 
   User,
   ApiResponse 
-} from '@shared/types';
+} from '@meeshy/shared/types';
 
 export interface Community {
   id: string;

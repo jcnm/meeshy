@@ -9,7 +9,7 @@ import {
   Presentation
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
+import type { UploadedAttachmentResponse } from '@meeshy/shared/types/attachment';
 
 interface PPTXViewerProps {
   attachment: UploadedAttachmentResponse;

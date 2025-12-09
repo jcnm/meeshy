@@ -9,7 +9,7 @@ import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { authManager } from '@/services/auth-manager.service';
 import { apiService } from '@/services/api.service';
 import { debounce } from '@/utils/debounce';
-import type { User, Message } from '@shared/types';
+import type { User, Message } from '@meeshy/shared/types';
 
 export interface ConversationMessagesOptions {
   limit?: number;

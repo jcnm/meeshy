@@ -12,7 +12,7 @@
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach, jest } from '@jest/globals';
 import { NotificationService, CreateNotificationData } from '../services/NotificationService';
-import { PrismaClient } from '../../shared/prisma/client';
+import { PrismaClient } from '@meeshy/shared/prisma/client';
 
 // Mock Firebase Admin (simule que Firebase est configuré)
 const mockFirebaseMessaging = {

@@ -5,14 +5,14 @@
  * des réactions avec support utilisateurs authentifiés et anonymes
  */
 
-import { PrismaClient, Reaction } from '../../shared/prisma/client';
+import { PrismaClient, Reaction } from '@meeshy/shared/prisma/client';
 import type {
   ReactionData,
   ReactionAggregation,
   ReactionSync,
   ReactionUpdateEvent
-} from '../../shared/types';
-import { sanitizeEmoji, isValidEmoji } from '../../shared/types/reaction';
+} from '@meeshy/shared/types';
+import { sanitizeEmoji, isValidEmoji } from '@meeshy/shared/types/reaction';
 
 export interface AddReactionOptions {
   messageId: string;

@@ -3,7 +3,7 @@
  * Central management for all background jobs
  */
 
-import { PrismaClient } from '../../shared/prisma/client';
+import { PrismaClient } from '@meeshy/shared/prisma/client';
 import { CleanupExpiredTokens } from './cleanup-expired-tokens';
 import { UnlockAccountsJob } from './unlock-accounts';
 

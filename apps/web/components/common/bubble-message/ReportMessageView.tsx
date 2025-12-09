@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import type { Message } from '@shared/types';
+import type { Message } from '@meeshy/shared/types';
 import { useI18n } from '@/hooks/useI18n';
 
 interface ReportMessageViewProps {

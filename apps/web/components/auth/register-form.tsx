@@ -14,7 +14,7 @@ import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { useI18n } from '@/hooks/useI18n';
 import { Check, X, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { isValidEmail, getEmailValidationError } from '@/shared/utils/email-validator';
+import { isValidEmail, getEmailValidationError } from '@meeshy/shared/utils/email-validator';
 
 interface RegisterFormProps {
   onSuccess?: (user: User, token: string) => void; // Optional callback for custom behavior

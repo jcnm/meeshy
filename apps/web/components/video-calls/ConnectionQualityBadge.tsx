@@ -18,7 +18,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import type { ConnectionQualityStats } from '@shared/types/video-call';
+import type { ConnectionQualityStats } from '@meeshy/shared/types/video-call';
 import {
   getQualityColor,
   getQualityIcon,

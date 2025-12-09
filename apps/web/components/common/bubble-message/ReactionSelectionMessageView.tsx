@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
-import type { Message } from '@shared/types/conversation';
+import type { Message } from '@meeshy/shared/types/conversation';
 import { useMessageReactions } from '@/hooks/use-message-reactions';
 import { useI18n } from '@/hooks/useI18n';
 

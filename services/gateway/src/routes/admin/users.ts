@@ -11,7 +11,7 @@ import {
   UpdateRoleDTO,
   UpdateStatusDTO,
   ResetPasswordDTO
-} from '../../../shared/types';
+} from '@meeshy/shared/types';
 import {
   createUserValidationSchema,
   updateUserProfileValidationSchema,
@@ -20,7 +20,7 @@ import {
   updateStatusValidationSchema,
   resetPasswordValidationSchema,
   formatZodErrors
-} from '../../../shared/types/validation';
+} from '@meeshy/shared/types/validation';
 import { UserManagementService } from '../../services/admin/user-management.service';
 import { UserAuditService } from '../../services/admin/user-audit.service';
 import { sanitizationService } from '../../services/admin/user-sanitization.service';

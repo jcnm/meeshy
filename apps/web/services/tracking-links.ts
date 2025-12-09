@@ -11,7 +11,7 @@ import type {
   CreateTrackingLinkResponse,
   RecordClickRequest,
   RecordClickResponse
-} from '@shared/types/tracking-link';
+} from '@meeshy/shared/types/tracking-link';
 
 /**
  * Interface pour la réponse de récupération des liens d'un utilisateur

@@ -18,7 +18,7 @@ import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import speakeasy from 'speakeasy';
 import zxcvbn from 'zxcvbn';
-import { PrismaClient } from '../../shared/prisma/client';
+import { PrismaClient } from '@meeshy/shared/prisma/client';
 import { RedisWrapper } from './RedisWrapper';
 import { EmailService } from './EmailService';
 import { GeoIPService } from './GeoIPService';

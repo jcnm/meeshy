@@ -5,7 +5,7 @@
  * dans les messages, ainsi que la suggestion d'utilisateurs pour l'autocomplete.
  */
 
-import { PrismaClient, User, ConversationMember } from '../../shared/prisma/client';
+import { PrismaClient, User, ConversationMember } from '@meeshy/shared/prisma/client';
 import { RedisWrapper } from './RedisWrapper';
 
 export interface MentionSuggestion {

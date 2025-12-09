@@ -9,7 +9,7 @@
  * - readAt = date de lecture du dernier message
  */
 
-import { PrismaClient, Message } from '../../shared/prisma/client';
+import { PrismaClient, Message } from '@meeshy/shared/prisma/client';
 
 export class MessageReadStatusService {
   constructor(private readonly prisma: PrismaClient) {}

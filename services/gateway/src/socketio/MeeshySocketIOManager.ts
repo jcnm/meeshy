@@ -5,7 +5,7 @@
 
 import { Server as SocketIOServer } from 'socket.io';
 import { Server as HTTPServer } from 'http';
-import { PrismaClient } from '../../shared/prisma/client';
+import { PrismaClient } from '@meeshy/shared/prisma/client';
 import { TranslationService, MessageData } from '../services/TranslationService';
 import { MaintenanceService } from '../services/maintenance.service';
 import { StatusService } from '../services/status.service';
@@ -25,11 +25,11 @@ import type {
   TypingEvent,
   TranslationEvent,
   UserStatusEvent
-} from '../../shared/types/socketio-events';
-import { CLIENT_EVENTS, SERVER_EVENTS } from '../../shared/types/socketio-events';
+} from '@meeshy/shared/types/socketio-events';
+import { CLIENT_EVENTS, SERVER_EVENTS } from '@meeshy/shared/types/socketio-events';
 import { conversationStatsService } from '../services/ConversationStatsService';
-import type { MessageRequest, MessageResponse } from '../../shared/types/messaging';
-import type { Message } from '../../shared/types/index';
+import type { MessageRequest, MessageResponse } from '@meeshy/shared/types/messaging';
+import type { Message } from '@meeshy/shared/types/index';
 
 export interface SocketUser {
   id: string;

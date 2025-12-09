@@ -1,4 +1,4 @@
-import { PrismaClient } from '../../../shared/prisma/client';
+import { PrismaClient } from '@meeshy/shared/prisma/client';
 import {
   FullUser,
   UserFilters,
@@ -11,7 +11,7 @@ import {
   UpdateRoleDTO,
   UpdateStatusDTO,
   ResetPasswordDTO
-} from '../../../shared/types';
+} from '@meeshy/shared/types';
 import * as bcrypt from 'bcrypt';
 
 export class UserManagementService {

@@ -14,12 +14,12 @@ import { AttachmentLimitModal } from '@/components/attachments/AttachmentLimitMo
 import { AttachmentPreviewReply } from '@/components/attachments/AttachmentPreviewReply';
 import { useTextAttachmentDetection } from '@/hooks/useTextAttachmentDetection';
 import { AttachmentService } from '@/services/attachmentService';
-import { UploadedAttachmentResponse } from '@/shared/types/attachment';
+import { UploadedAttachmentResponse } from '@meeshy/shared/types/attachment';
 import { toast } from 'sonner';
 import { AudioRecorderWithEffects } from '@/components/audio/AudioRecorderWithEffects';
 import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
 import { MentionAutocomplete } from './MentionAutocomplete';
-import { detectMentionAtCursor } from '@/shared/types/mention';
+import { detectMentionAtCursor } from '@meeshy/shared/types/mention';
 import { getCursorPosition, adjustPositionForViewport } from '@/lib/cursor-position';
 import { compressMultipleFiles, needsCompression } from '@/utils/media-compression';
 

@@ -1,10 +1,10 @@
-import { PrismaClient } from '../../../shared/prisma/client';
+import { PrismaClient } from '@meeshy/shared/prisma/client';
 import {
   UserAuditAction,
   UserAuditLog,
   AuditChange,
   AuditMetadata
-} from '../../../shared/types';
+} from '@meeshy/shared/types';
 
 export interface CreateAuditLogParams {
   userId: string;

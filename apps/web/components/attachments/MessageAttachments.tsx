@@ -7,7 +7,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { Download, File, Image as ImageIcon, FileText, Video, Music, ChevronRight, Grid3X3, X } from 'lucide-react';
-import { Attachment, formatFileSize, getAttachmentType } from '../../shared/types/attachment';
+import { Attachment, formatFileSize, getAttachmentType } from '@meeshy/shared/types/attachment';
 import { SimpleAudioPlayer } from '@/components/audio/SimpleAudioPlayer';
 import { VideoPlayer } from '@/components/video/VideoPlayer';
 import { VideoLightbox } from '@/components/video/VideoLightbox';

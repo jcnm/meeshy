@@ -1,5 +1,5 @@
 import { SocketIOUser } from '@/types';
-import { UserRoleEnum } from '../shared/types';
+import { UserRoleEnum } from '@meeshy/shared/types';
 import { buildApiUrl } from '@/lib/config';
 import { authManager } from './auth-manager.service';
 

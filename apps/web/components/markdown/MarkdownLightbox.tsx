@@ -11,7 +11,7 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { X, Download, Eye, Code } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
+import type { UploadedAttachmentResponse } from '@meeshy/shared/types/attachment';
 import { MermaidDiagram } from '@/components/markdown/MermaidDiagram';
 
 interface MarkdownLightboxProps {

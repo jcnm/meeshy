@@ -2,7 +2,7 @@ import { apiService, ApiResponse } from './api.service';
 import { User } from '@/types';
 import { getDefaultPermissions } from '@/utils/user-adapter';
 // Importer les types partagés pour cohérence
-import type { UpdateUserRequest, UpdateUserResponse } from '../shared/types';
+import type { UpdateUserRequest, UpdateUserResponse } from '@meeshy/shared/types';
 
 export interface UserStats {
   messagesSent: number;

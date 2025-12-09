@@ -16,7 +16,7 @@ import { logger } from '@/utils/logger';
 import type {
   ConnectionQualityLevel,
   ConnectionQualityStats,
-} from '@shared/types/video-call';
+} from '@meeshy/shared/types/video-call';
 
 export interface UseCallQualityOptions {
   peerConnection: RTCPeerConnection | null;

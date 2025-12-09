@@ -1,6 +1,6 @@
-import { PrismaClient } from '../../shared/prisma/client';
+import { PrismaClient } from '@meeshy/shared/prisma/client';
 import { AuthService } from './auth.service';
-import { UserRoleEnum } from '../../shared/types';
+import { UserRoleEnum } from '@meeshy/shared/types';
 
 export class InitService {
   private prisma: PrismaClient;

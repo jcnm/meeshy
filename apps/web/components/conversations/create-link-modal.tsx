@@ -51,8 +51,8 @@ import {
   X
 } from 'lucide-react';
 import { conversationsService } from '@/services/conversations.service';
-import { Conversation } from '@shared/types';
-import { User } from '@shared/types';
+import { Conversation } from '@meeshy/shared/types';
+import { User } from '@meeshy/shared/types';
 import { useI18n } from '@/hooks/useI18n';
 import { useUser } from '@/stores';
 import { generateLinkName } from '@/utils/link-name-generator';

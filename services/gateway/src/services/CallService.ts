@@ -8,9 +8,9 @@
  * - Validation (DIRECT/GROUP conversations only)
  */
 
-import { PrismaClient, CallMode, CallStatus, ParticipantRole, Prisma } from '../../shared/prisma/client';
+import { PrismaClient, CallMode, CallStatus, ParticipantRole, Prisma } from '@meeshy/shared/prisma/client';
 import { logger } from '../utils/logger';
-import { CALL_ERROR_CODES } from '../../shared/types/video-call';
+import { CALL_ERROR_CODES } from '@meeshy/shared/types/video-call';
 import { TURNCredentialService } from './TURNCredentialService';
 
 // Type for CallSession with populated participants

@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { UserRoleEnum } from '../../shared/types';
+import { UserRoleEnum } from '@meeshy/shared/types';
 import { permissionsService } from '../services/admin/permissions.service';
 import { UnifiedAuthContext } from './auth';
 

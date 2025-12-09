@@ -1,120 +1,10 @@
 /**
- * Configuration des polices optimisée - Next.js 15 compatible
- * Toutes les polices sont créées au niveau module comme exigé par Next.js
+ * Configuration des polices - Version sans Google Fonts pour CI
+ * Utilise des polices système avec fallbacks
  */
 
-import { 
-  Inter, 
-  Nunito, 
-  Poppins, 
-  Open_Sans, 
-  Lato,
-  Comic_Neue,
-  Lexend,
-  Roboto,
-  Geist,
-  Geist_Mono
-} from "next/font/google";
-
-// Toutes les instances de polices créées au niveau module
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: 'swap',
-  preload: false,
-});
-
-const nunito = Nunito({
-  subsets: ["latin"],
-  variable: "--font-nunito",
-  display: 'swap',
-  preload: true, // Police par défaut préchargée
-});
-
-const poppins = Poppins({
-  subsets: ["latin"],
-  variable: "--font-poppins",
-  weight: ["400", "500", "600"],
-  display: 'swap',
-  preload: false,
-});
-
-const openSans = Open_Sans({
-  subsets: ["latin"],
-  variable: "--font-open-sans",
-  display: 'swap',
-  preload: false,
-});
-
-const lato = Lato({
-  subsets: ["latin"],
-  variable: "--font-lato",
-  weight: ["400", "700"],
-  display: 'swap',
-  preload: false,
-});
-
-const comicNeue = Comic_Neue({
-  subsets: ["latin"],
-  variable: "--font-comic-neue",
-  weight: ["400", "700"],
-  display: 'swap',
-  preload: false,
-});
-
-const lexend = Lexend({
-  subsets: ["latin"],
-  variable: "--font-lexend",
-  display: 'swap',
-  preload: false,
-});
-
-const roboto = Roboto({
-  subsets: ["latin"],
-  variable: "--font-roboto",
-  weight: ["400", "500", "700"],
-  display: 'swap',
-  preload: false,
-});
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-  display: 'swap',
-  preload: false,
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: 'swap',
-  preload: false,
-});
-
-// Police par défaut - Nunito (la plus utilisée pour les jeunes)
-export const defaultFont = nunito;
-
-// Map des polices pour accès facile
-const fontInstances = {
-  'inter': inter,
-  'nunito': nunito,
-  'poppins': poppins,
-  'open-sans': openSans,
-  'lato': lato,
-  'comic-neue': comicNeue,
-  'lexend': lexend,
-  'roboto': roboto,
-  'geist-sans': geistSans,
-  'geist-mono': geistMono,
-} as const;
-
-// Fonction pour obtenir l'instance d'une police
-export const getFontInstance = (fontId: FontFamily) => {
-  return fontInstances[fontId] || nunito;
-};
-
 // Types et configuration
-export type FontFamily = 
+export type FontFamily =
   | 'inter'
   | 'nunito'
   | 'poppins'
@@ -137,6 +27,45 @@ export interface FontConfig {
   ageGroup: 'kids' | 'teens' | 'adults' | 'all';
   accessibility: 'high' | 'medium' | 'low';
 }
+
+// Font instances with CSS variables (system font fallbacks)
+const createFontConfig = (variable: string) => ({
+  variable,
+  className: variable.replace('--', ''),
+});
+
+const inter = createFontConfig('--font-inter');
+const nunito = createFontConfig('--font-nunito');
+const poppins = createFontConfig('--font-poppins');
+const openSans = createFontConfig('--font-open-sans');
+const lato = createFontConfig('--font-lato');
+const comicNeue = createFontConfig('--font-comic-neue');
+const lexend = createFontConfig('--font-lexend');
+const roboto = createFontConfig('--font-roboto');
+const geistSans = createFontConfig('--font-geist-sans');
+const geistMono = createFontConfig('--font-geist-mono');
+
+// Police par défaut - Nunito (la plus utilisée pour les jeunes)
+export const defaultFont = nunito;
+
+// Map des polices pour accès facile
+const fontInstances = {
+  'inter': inter,
+  'nunito': nunito,
+  'poppins': poppins,
+  'open-sans': openSans,
+  'lato': lato,
+  'comic-neue': comicNeue,
+  'lexend': lexend,
+  'roboto': roboto,
+  'geist-sans': geistSans,
+  'geist-mono': geistMono,
+} as const;
+
+// Fonction pour obtenir l'instance d'une police
+export const getFontInstance = (fontId: FontFamily) => {
+  return fontInstances[fontId] || nunito;
+};
 
 export const availableFonts: FontConfig[] = [
   {
@@ -250,7 +179,7 @@ export function getFontVariable(fontId?: FontFamily): string {
   if (!fontId) {
     return nunito.variable;
   }
-  
+
   const fontInstance = getFontInstance(fontId);
   return fontInstance.variable;
 }
@@ -258,9 +187,9 @@ export function getFontVariable(fontId?: FontFamily): string {
 // Fonction pour obtenir la classe CSS de la police active
 export function getFontClassName(fontId?: FontFamily): string {
   if (!fontId) {
-    return 'font-nunito'; // classe par défaut
+    return 'font-nunito';
   }
-  
+
   return `font-${fontId}`;
 }
 
@@ -276,8 +205,8 @@ export function getRecommendedFonts(ageGroup?: 'kids' | 'teens' | 'adults' | 'al
   if (!ageGroup) {
     return availableFonts.filter(font => font.recommended);
   }
-  
-  return availableFonts.filter(font => 
+
+  return availableFonts.filter(font =>
     font.recommended && (font.ageGroup === ageGroup || font.ageGroup === 'all')
   );
 }

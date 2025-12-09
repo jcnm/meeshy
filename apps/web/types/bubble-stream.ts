@@ -2,7 +2,7 @@
  * Interface pour les extensions de Message avec traductions
  * Utilisé dans les composants BubbleMessage et stream pages
  */
-import type { User, MessageWithTranslations } from '@shared/types';
+import type { User, MessageWithTranslations } from '@meeshy/shared/types';
 
 export interface BubbleStreamMessage extends MessageWithTranslations {
   isTranslated: boolean;

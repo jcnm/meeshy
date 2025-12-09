@@ -1,6 +1,6 @@
 import { apiService } from './api.service';
 import { socketIOUserToUser } from '@/utils/user-adapter';
-import { UserRoleEnum, MessageType } from '@shared/types';
+import { UserRoleEnum, MessageType } from '@meeshy/shared/types';
 import { generateLinkName } from '@/utils/link-name-generator';
 import { authManager } from './auth-manager.service';
 import type {
@@ -11,7 +11,7 @@ import type {
   UserPermissions,
   CreateConversationRequest,
   SendMessageRequest
-} from '@shared/types';
+} from '@meeshy/shared/types';
 
 /**
  * Options de filtrage pour les participants

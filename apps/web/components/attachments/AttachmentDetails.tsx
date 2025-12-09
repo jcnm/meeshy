@@ -12,8 +12,8 @@ import {
   AlignLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { Attachment } from '@shared/types/attachment';
-import { getAttachmentType } from '@shared/types/attachment';
+import type { Attachment } from '@meeshy/shared/types/attachment';
+import { getAttachmentType } from '@meeshy/shared/types/attachment';
 
 interface AttachmentDetailsProps {
   attachment: Attachment;

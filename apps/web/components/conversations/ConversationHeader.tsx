@@ -27,12 +27,12 @@ import type {
   Conversation,
   SocketIOUser as User,
   ThreadMember
-} from '@shared/types';
-import type { AnonymousParticipant } from '@shared/types/anonymous';
+} from '@meeshy/shared/types';
+import type { AnonymousParticipant } from '@meeshy/shared/types/anonymous';
 import { ConversationParticipants } from './conversation-participants';
 import { ConversationParticipantsDrawer } from './conversation-participants-drawer';
 import { CreateLinkButton } from './create-link-button';
-import { UserRoleEnum } from '@shared/types';
+import { UserRoleEnum } from '@meeshy/shared/types';
 import { toast } from 'sonner';
 import { ConversationImageUploadDialog } from './conversation-image-upload-dialog';
 import { AttachmentService } from '@/services/attachmentService';

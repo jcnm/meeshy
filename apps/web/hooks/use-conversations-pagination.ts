@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { Conversation } from '@shared/types';
+import type { Conversation } from '@meeshy/shared/types';
 import { conversationsService } from '@/services/conversations.service';
 
 interface UseConversationsPaginationOptions {

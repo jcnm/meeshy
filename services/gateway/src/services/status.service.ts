@@ -19,7 +19,7 @@
  * @version 2.1.0
  */
 
-import { PrismaClient } from '../../shared/prisma/client';
+import { PrismaClient } from '@meeshy/shared/prisma/client';
 import { logger } from '../utils/logger';
 
 export interface StatusUpdateMetrics {

@@ -5,7 +5,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
-import type { Conversation, Message, MessageTranslation } from '@shared/types';
+import type { Conversation, Message, MessageTranslation } from '@meeshy/shared/types';
 
 interface ConversationState {
   conversations: Conversation[];

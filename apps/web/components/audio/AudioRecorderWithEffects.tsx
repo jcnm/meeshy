@@ -8,8 +8,8 @@ import { useI18n } from '@/hooks/useI18n';
 import { useAudioEffects } from '@/hooks/use-audio-effects';
 import { useAudioEffectsTimeline, type InitialEffectState } from '@/hooks/use-audio-effects-timeline';
 import { AudioEffectsCarousel } from '@/components/video-calls/AudioEffectsCarousel';
-import type { AudioEffectType } from '@shared/types/video-call';
-import type { AudioEffectsTimeline } from '@shared/types/audio-effects-timeline';
+import type { AudioEffectType } from '@meeshy/shared/types/video-call';
+import type { AudioEffectsTimeline } from '@meeshy/shared/types/audio-effects-timeline';
 
 // Types
 interface AudioMetadata {

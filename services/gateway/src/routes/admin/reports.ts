@@ -7,7 +7,7 @@ import type {
   UpdateReportDTO,
   ReportFilters,
   ReportPaginationParams
-} from '../../../shared/types';
+} from '@meeshy/shared/types';
 
 // Schémas de validation Zod
 const createReportSchema = z.object({

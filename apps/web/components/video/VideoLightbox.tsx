@@ -20,7 +20,7 @@ import {
   Minimize,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Attachment, formatFileSize } from '../../shared/types/attachment';
+import { Attachment, formatFileSize } from '@meeshy/shared/types/attachment';
 import { Button } from '../ui/button';
 
 interface VideoLightboxProps {

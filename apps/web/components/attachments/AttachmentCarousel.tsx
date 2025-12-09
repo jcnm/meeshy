@@ -7,7 +7,7 @@
 
 import React, { useMemo, useEffect, useState, useRef } from 'react';
 import { X, File, Image, FileText, Video, Music, FileArchive, Loader2, CheckCircle, Play, Pause, Maximize } from 'lucide-react';
-import { formatFileSize, getAttachmentType } from '../../shared/types/attachment';
+import { formatFileSize, getAttachmentType } from '@meeshy/shared/types/attachment';
 import { Button } from '../ui/button';
 import { CompactVideoPlayer } from '../video/VideoPlayer';
 import {

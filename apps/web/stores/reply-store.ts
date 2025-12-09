@@ -4,8 +4,8 @@
  */
 
 import { create } from 'zustand';
-import type { Message } from '@shared/types/conversation';
-import type { Attachment } from '@shared/types/attachment';
+import type { Message } from '@meeshy/shared/types/conversation';
+import type { Attachment } from '@meeshy/shared/types/attachment';
 
 export interface ReplyingToMessage {
   id: string;

@@ -1,7 +1,7 @@
 'use client';
 
 import { Globe2 } from 'lucide-react';
-import type { LanguageStats } from '@shared/types';
+import type { LanguageStats } from '@meeshy/shared/types';
 import { useI18n } from '@/hooks/useI18n';
 
 /**

@@ -13,7 +13,7 @@ import type {
   CallParticipant,
   CallControls,
   CallState,
-} from '@shared/types/video-call';
+} from '@meeshy/shared/types/video-call';
 
 interface CallStoreState extends CallState {
   // Actions: Call management

@@ -18,8 +18,8 @@ import type {
   ReactionAggregation,
   ReactionSync,
   ReactionUpdateEvent
-} from '@shared/types/reaction';
-import { CLIENT_EVENTS, SERVER_EVENTS } from '@shared/types/socketio-events';
+} from '@meeshy/shared/types/reaction';
+import { CLIENT_EVENTS, SERVER_EVENTS } from '@meeshy/shared/types/socketio-events';
 import { useI18n } from '@/hooks/useI18n';
 
 export interface UseMessageReactionsOptions {

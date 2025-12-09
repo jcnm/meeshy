@@ -1,6 +1,6 @@
 import { apiService } from './api.service';
-import type { ApiResponse } from '@shared/types';
-import type { AdminUser } from '@shared/types';
+import type { ApiResponse } from '@meeshy/shared/types';
+import type { AdminUser } from '@meeshy/shared/types';
 
 export interface AdminStats {
   // 1. Utilisateurs

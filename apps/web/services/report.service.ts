@@ -1,5 +1,5 @@
 import { apiService } from './api.service';
-import type { CreateReportDTO, Report } from '@shared/types';
+import type { CreateReportDTO, Report } from '@meeshy/shared/types';
 
 /**
  * Service pour gérer les signalements

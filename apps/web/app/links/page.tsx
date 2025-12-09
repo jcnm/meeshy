@@ -41,7 +41,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
-import type { TrackingLink } from '@shared/types/tracking-link';
+import type { TrackingLink } from '@meeshy/shared/types/tracking-link';
 import { useI18n } from '@/hooks/useI18n';
 import { ExpandableLinkCard } from '@/components/links/expandable-link-card';
 import { ExpandableTrackingLinkCard } from '@/components/links/expandable-tracking-link-card';

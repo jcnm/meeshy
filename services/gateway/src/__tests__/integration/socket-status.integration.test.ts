@@ -13,9 +13,9 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from
 import { Server as HTTPServer, createServer } from 'http';
 import { AddressInfo } from 'net';
 import { io as ioClient, Socket as ClientSocket } from 'socket.io-client';
-import { PrismaClient } from '../shared/prisma/client';
+import { PrismaClient } from '@meeshy/shared/prisma/client';
 import { MeeshySocketIOManager } from '../../socketio/MeeshySocketIOManager';
-import { CLIENT_EVENTS, SERVER_EVENTS } from '../../../shared/types/socketio-events';
+import { CLIENT_EVENTS, SERVER_EVENTS } from '@meeshy/shared/types/socketio-events';
 import jwt from 'jsonwebtoken';
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));

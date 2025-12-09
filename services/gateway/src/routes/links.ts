@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { logError } from '../utils/logger';
-import { UserRoleEnum } from '../../shared/types';
+import { UserRoleEnum } from '@meeshy/shared/types';
 import { TrackingLinkService } from '../services/TrackingLinkService';
 import { 
   createUnifiedAuthMiddleware,

@@ -34,7 +34,7 @@ import { cn } from '@/lib/utils';
 import { isValidJWTFormat } from '@/utils/auth';
 import { communitiesService } from '@/services/communities.service';
 import { conversationsService } from '@/services/conversations.service';
-import type { Conversation } from '@shared/types';
+import type { Conversation } from '@meeshy/shared/types';
 import { generateCommunityIdentifier, validateCommunityIdentifier, sanitizeCommunityIdentifier } from '@/utils/community-identifier';
 import { authManager } from '@/services/auth-manager.service';
 

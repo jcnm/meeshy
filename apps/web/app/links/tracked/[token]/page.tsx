@@ -28,7 +28,7 @@ import { toast } from 'sonner';
 import { useI18n } from '@/hooks/useI18n';
 import { getTrackingLinkStats } from '@/services/tracking-links';
 import { copyToClipboard } from '@/lib/clipboard';
-import type { TrackingLink } from '@shared/types/tracking-link';
+import type { TrackingLink } from '@meeshy/shared/types/tracking-link';
 import {
   ComposedChart,
   Bar,

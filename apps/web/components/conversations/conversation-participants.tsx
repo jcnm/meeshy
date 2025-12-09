@@ -18,8 +18,8 @@ import {
   Loader2,
   Ghost
 } from 'lucide-react';
-import { SocketIOUser as User, ThreadMember, UserRoleEnum } from '@shared/types';
-import type { AnonymousParticipant } from '@shared/types/anonymous';
+import { SocketIOUser as User, ThreadMember, UserRoleEnum } from '@meeshy/shared/types';
+import type { AnonymousParticipant } from '@meeshy/shared/types/anonymous';
 import { conversationsService } from '@/services/conversations.service';
 import { toast } from 'sonner';
 import { useI18n } from '@/hooks/useI18n';

@@ -4,7 +4,7 @@
  */
 
 // Constants et types
-export * from '@shared/types';
+export * from '@meeshy/shared/types';
 export * from '@/types/bubble-stream';
 
 // Composants UI

@@ -8,7 +8,7 @@ import type {
   UpdateUserConversationCategoryRequest,
   UserPreferencesResponse,
   UserCategoriesResponse,
-} from '@shared/types/user-preferences';
+} from '@meeshy/shared/types/user-preferences';
 
 /**
  * Service pour gérer les préférences utilisateur des conversations

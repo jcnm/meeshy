@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { useSingleTap } from '@/hooks/use-single-tap';
-import type { Message } from '@shared/types/conversation';
+import type { Message } from '@meeshy/shared/types/conversation';
 
 // 30 emojis les plus fréquemment utilisés pour les réactions (6x5 grid)
 const FREQUENT_REACTIONS = [

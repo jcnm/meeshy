@@ -3,7 +3,7 @@
  * Background job that runs every 15 minutes to clean up expired tokens
  */
 
-import { PrismaClient } from '../../shared/prisma/client';
+import { PrismaClient } from '@meeshy/shared/prisma/client';
 
 export class CleanupExpiredTokens {
   private intervalId: NodeJS.Timeout | null = null;

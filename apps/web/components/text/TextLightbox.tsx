@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import type { UploadedAttachmentResponse } from '@/shared/types/attachment';
+import type { UploadedAttachmentResponse } from '@meeshy/shared/types/attachment';
 import { toast } from 'sonner';
 
 interface TextLightboxProps {

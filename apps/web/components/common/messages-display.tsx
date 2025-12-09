@@ -7,7 +7,7 @@ import { BubbleMessage } from './BubbleMessage';
 import { messageTranslationService } from '@/services/message-translation.service';
 import { useFixRadixZIndex } from '@/hooks/use-fix-z-index';
 import { useI18n } from '@/hooks/useI18n';
-import type { User, Message, MessageWithTranslations } from '@shared/types';
+import type { User, Message, MessageWithTranslations } from '@meeshy/shared/types';
 
 interface MessagesDisplayProps {
   messages: Message[];

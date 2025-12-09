@@ -3,7 +3,7 @@
  * Gère l'upload, le stockage, les miniatures et la suppression de fichiers
  */
 
-import { PrismaClient } from '../../shared/prisma/client';
+import { PrismaClient } from '@meeshy/shared/prisma/client';
 import sharp from 'sharp';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -19,7 +19,7 @@ import {
   getSizeLimit,
   UPLOAD_LIMITS,
   ACCEPTED_MIME_TYPES
-} from '../../shared/types/attachment';
+} from '@meeshy/shared/types/attachment';
 
 export interface FileToUpload {
   buffer: Buffer;

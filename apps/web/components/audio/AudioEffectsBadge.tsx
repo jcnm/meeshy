@@ -15,7 +15,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import type { AudioEffectsTimeline } from '@shared/types/audio-effects-timeline';
+import type { AudioEffectsTimeline } from '@meeshy/shared/types/audio-effects-timeline';
 import { AudioEffectsTimelineView } from './AudioEffectsTimelineView';
 
 interface AudioEffectsBadgeProps {

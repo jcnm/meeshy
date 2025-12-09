@@ -7,11 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { getLanguageInfo } from '@shared/types';
-import type { Message } from '@shared/types';
+import { getLanguageInfo } from '@meeshy/shared/types';
+import type { Message } from '@meeshy/shared/types';
 import { useI18n } from '@/hooks/useI18n';
 import { MentionAutocomplete } from '@/components/common/MentionAutocomplete';
-import { detectMentionAtCursor } from '@/shared/types/mention';
+import { detectMentionAtCursor } from '@meeshy/shared/types/mention';
 import { getCursorPosition, adjustPositionForViewport } from '@/lib/cursor-position';
 
 interface EditMessageViewProps {
