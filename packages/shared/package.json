@@ -24,6 +24,14 @@
       "types": "./dist/utils/*.d.ts",
       "import": "./dist/utils/*.js"
     },
+    "./encryption": {
+      "types": "./dist/encryption/index.d.ts",
+      "import": "./dist/encryption/index.js"
+    },
+    "./encryption/*": {
+      "types": "./dist/encryption/*.d.ts",
+      "import": "./dist/encryption/*.js"
+    },
     "./prisma": {
       "types": "./prisma/schema.prisma"
     },
@@ -36,7 +44,8 @@
     "dist",
     "prisma",
     "types",
-    "utils"
+    "utils",
+    "encryption"
   ],
   "scripts": {
     "build": "tsc --project tsconfig.json",
@@ -64,7 +73,11 @@
     "@prisma/client": "^6.19.0",
     "zod": "^3.25.76"
   },
+  "optionalDependencies": {
+    "@signalapp/libsignal-client": "^0.58.2"
+  },
   "devDependencies": {
+    "@types/node": "^22.15.21",
     "prisma": "^6.19.0",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"

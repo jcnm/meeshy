@@ -44,6 +44,7 @@
     "node_modules",
     "dist",
     "client",
+    "encryption",
     "**/*.test.ts",
     "**/*.spec.ts",
     "**/*.d.ts",

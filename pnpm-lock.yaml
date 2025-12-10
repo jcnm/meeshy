@@ -297,7 +297,14 @@ importers:
       zod:
         specifier: ^3.25.76
         version: 3.25.76
+    optionalDependencies:
+      '@signalapp/libsignal-client':
+        specifier: ^0.58.2
+        version: 0.58.3
     devDependencies:
+      '@types/node':
+        specifier: ^22.15.21
+        version: 22.19.1
       prisma:
         specifier: ^6.19.0
         version: 6.19.0(typescript@5.9.3)
@@ -2950,6 +2957,9 @@ packages:
     resolution: {integrity: sha512-3NgmNyH3l/Hv6EvsWJbsvpcpUba6R8IREQ83nH83cyakCw7uM1arZKNfHwv1Wz6jgqrF/j4x5ELvR6PnK9nTcA==}
     engines: {node: '>= 8.0.0'}
     hasBin: true
+
+  '@signalapp/libsignal-client@0.58.3':
+    resolution: {integrity: sha512-eKdy5cwGmrBRHqHp6S6ho+pOKOO2YKECUb2KWuVY/QsuOhU+F2K51z/Y6EAIC27LxgxZyzUdcB18VDBp6Wp6iw==}
 
   '@sinclair/typebox@0.34.41':
     resolution: {integrity: sha512-6gS8pZzSXdyRHTIqoqSVknxolr1kzfy4/CeDnrzsVz8TTIWUbOBr6gnzOmTYJ3eXQNh4IYHIGi5aIL7sOZ2G/g==}
@@ -11469,6 +11479,13 @@ snapshots:
     dependencies:
       fflate: 0.7.4
       string.prototype.codepointat: 0.2.1
+
+  '@signalapp/libsignal-client@0.58.3':
+    dependencies:
+      node-gyp-build: 4.8.4
+      type-fest: 4.41.0
+      uuid: 8.3.2
+    optional: true
 
   '@sinclair/typebox@0.34.41': {}
 

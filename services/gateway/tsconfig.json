@@ -59,5 +59,9 @@
   "exclude": [
     "node_modules",
     "dist",
+    "src/routes/conversation-encryption.ts",
+    "src/routes/signal-protocol.ts",
+    "src/routes/user-encryption-preferences.ts",
+    "src/dma-interoperability/**/*"
   ]
 }
