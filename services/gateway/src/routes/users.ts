@@ -202,7 +202,7 @@ export async function userRoutes(fastify: FastifyInstance) {
           }
         }),
         
-        // Conversations récentes
+        // Conversations récentes (optimisé - limiter les données)
         fastify.prisma.conversation.findMany({
           where: {
             members: {
@@ -212,7 +212,12 @@ export async function userRoutes(fastify: FastifyInstance) {
               }
             }
           },
-          include: {
+          select: {
+            id: true,
+            identifier: true,
+            title: true,
+            type: true,
+            updatedAt: true,
             messages: {
               orderBy: { createdAt: 'desc' },
               take: 1,
@@ -225,45 +230,19 @@ export async function userRoutes(fastify: FastifyInstance) {
                     username: true,
                     displayName: true
                   }
-                },
-                attachments: {
-                  select: {
-                    id: true,
-                    fileName: true,
-                    originalName: true,
-                    mimeType: true,
-                    fileSize: true,
-                    fileUrl: true,
-                    thumbnailUrl: true,
-                    width: true,
-                    height: true,
-                    duration: true,
-                    bitrate: true,
-                    sampleRate: true,
-                    codec: true,
-                    channels: true,
-                    fps: true,
-                    videoCodec: true,
-                    pageCount: true,
-                    lineCount: true,
-                    metadata: true, // Contient audioEffectsTimeline
-                    uploadedBy: true,
-                    isAnonymous: true,
-                    createdAt: true
-                  }
                 }
               }
             },
             members: {
               where: { isActive: true },
+              take: 5, // Limiter à 5 membres max
               select: {
                 user: {
                   select: {
                     id: true,
                     username: true,
                     displayName: true,
-                    avatar: true,
-                    isOnline: true
+                    avatar: true
                   }
                 }
               }
@@ -280,7 +259,7 @@ export async function userRoutes(fastify: FastifyInstance) {
           }
         }),
         
-        // Communautés récentes
+        // Communautés récentes (optimisé - limiter les membres)
         fastify.prisma.community.findMany({
           where: {
             members: {
@@ -289,8 +268,17 @@ export async function userRoutes(fastify: FastifyInstance) {
               }
             }
           },
-          include: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            isPrivate: true,
+            updatedAt: true,
+            _count: {
+              select: { members: true }
+            },
             members: {
+              take: 5, // Limiter à 5 membres
               select: {
                 user: {
                   select: {
@@ -384,21 +372,20 @@ export async function userRoutes(fastify: FastifyInstance) {
           lastMessage: conv.messages && conv.messages.length > 0 ? {
             content: conv.messages[0].content,
             createdAt: conv.messages[0].createdAt,
-            sender: conv.messages[0].sender,
-            attachments: conv.messages[0].attachments || [] // Inclure les attachments avec metadata
+            sender: conv.messages[0].sender
           } : null,
-          members: conv.members.map(member => member.user)
+          members: conv.members.map((member: any) => member.user)
         };
       });
 
       // Transformer les communautés récentes
-      const transformedCommunities = recentCommunities.map(community => ({
+      const transformedCommunities = recentCommunities.map((community: any) => ({
         id: community.id,
         name: community.name,
         description: community.description,
         isPrivate: community.isPrivate,
-        members: community.members.map(member => member.user),
-        memberCount: community.members.length
+        members: community.members.map((member: any) => member.user),
+        memberCount: community._count?.members || community.members.length
       }));
 
       return reply.send({
