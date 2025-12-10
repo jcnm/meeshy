@@ -39,12 +39,11 @@
     /* Completeness */
     "skipLibCheck": true
   },
-  "include": ["types/**/*.ts", "utils/**/*.ts"],
+  "include": ["types/**/*.ts", "utils/**/*.ts", "encryption/**/*.ts"],
   "exclude": [
     "node_modules",
     "dist",
     "client",
-    "encryption",
     "**/*.test.ts",
     "**/*.spec.ts",
     "**/*.d.ts",

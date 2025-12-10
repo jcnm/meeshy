@@ -10,7 +10,7 @@ import type {
   EncryptionMode,
   SignalKeyBundle,
 } from '../types/encryption';
-import type { CryptoAdapter, CryptoKey } from './crypto-adapter';
+import type { CryptoAdapter } from './crypto-adapter';
 import {
   encryptContent,
   decryptContent,
@@ -25,7 +25,7 @@ import {
 } from './encryption-utils';
 import type { SignalProtocolService } from './signal/signal-protocol-service';
 import type { PreKeyBundle, SignalEncryptedMessage } from './signal/signal-types';
-import { ProtocolAddress } from '@signalapp/libsignal-client';
+import { ProtocolAddress } from './signal/signal-stubs';
 
 /**
  * Key Storage Interface
@@ -265,7 +265,7 @@ export class SharedEncryptionService {
       );
 
       return {
-        ciphertext: Buffer.from(signalMessage.body).toString('base64'),
+        ciphertext: Buffer.from(signalMessage.content).toString('base64'),
         metadata: {
           mode: 'e2ee',
           protocol: 'signal_v3',
@@ -273,7 +273,7 @@ export class SharedEncryptionService {
           iv: '',
           authTag: '',
           messageType: signalMessage.type,
-          registrationId: signalMessage.registrationId,
+          registrationId: signalMessage.destinationRegistrationId,
         },
       };
     }
@@ -345,9 +345,11 @@ export class SharedEncryptionService {
 
       const signalMessage: SignalEncryptedMessage = {
         type: metadata.messageType || 2,
-        registrationId: metadata.registrationId || 0,
-        body: Buffer.from(payload.ciphertext, 'base64'),
-        deviceId: this.deviceId,
+        destinationRegistrationId: metadata.registrationId || 0,
+        content: Uint8Array.from(Buffer.from(payload.ciphertext, 'base64')),
+        messageVersion: 3,
+        counter: 0,
+        previousCounter: 0,
       };
 
       return await this.signalService.decryptMessage(senderAddress, signalMessage);

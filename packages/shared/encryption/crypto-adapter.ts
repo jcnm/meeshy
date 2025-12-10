@@ -122,7 +122,10 @@ export interface CryptoAdapter {
 export function uint8ArrayToBase64(buffer: Uint8Array): string {
   let binary = '';
   for (let i = 0; i < buffer.byteLength; i++) {
-    binary += String.fromCharCode(buffer[i]);
+    const byte = buffer[i];
+    if (byte !== undefined) {
+      binary += String.fromCharCode(byte);
+    }
   }
   return btoa(binary);
 }

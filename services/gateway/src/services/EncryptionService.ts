@@ -10,8 +10,11 @@ import * as crypto from 'crypto';
 
 /**
  * Encryption mode types
+ * - 'e2ee': End-to-end encryption only (client-side Signal Protocol)
+ * - 'server': Server-side encryption only (AES-256-GCM)
+ * - 'hybrid': Double encryption - E2EE + server layer (allows server translation)
  */
-type EncryptionMode = 'e2ee' | 'server';
+type EncryptionMode = 'e2ee' | 'server' | 'hybrid';
 
 /**
  * Encrypted payload structure
@@ -27,6 +30,33 @@ interface EncryptedPayload {
     messageType?: number;
     registrationId?: number;
   };
+}
+
+/**
+ * Hybrid encrypted payload structure
+ * Double encryption: E2EE envelope + Server-accessible content
+ */
+interface HybridEncryptedPayload {
+  /** E2EE layer - only sender/recipient can decrypt (client-side Signal Protocol) */
+  e2ee: {
+    ciphertext: string; // Base64-encoded Signal Protocol ciphertext
+    type: number; // Signal message type (PreKey=1, Whisper=2, SenderKey=3)
+    senderRegistrationId: number;
+    recipientRegistrationId: number;
+  };
+  /** Server layer - server can decrypt for translation (AES-256-GCM) */
+  server: {
+    ciphertext: string; // Base64-encoded AES ciphertext
+    iv: string; // Base64-encoded IV
+    authTag: string; // Base64-encoded auth tag
+    keyId: string; // Key identifier
+  };
+  /** Mode indicator */
+  mode: 'hybrid';
+  /** Whether translation is available */
+  canTranslate: boolean;
+  /** Timestamp */
+  timestamp: number;
 }
 
 /**
@@ -228,6 +258,188 @@ export class EncryptionService {
   }
 
   /**
+   * Encrypt the server layer of a hybrid message
+   *
+   * This creates the server-accessible encryption layer that allows
+   * the server to decrypt for translation while keeping the E2EE layer intact.
+   *
+   * @param plaintext The plaintext content to encrypt
+   * @param conversationId Optional conversation ID for key reuse
+   * @returns Server layer encryption data
+   */
+  async encryptHybridServerLayer(
+    plaintext: string,
+    conversationId?: string
+  ): Promise<HybridEncryptedPayload['server']> {
+    // Get or create key for conversation
+    let keyId: string;
+    if (conversationId) {
+      const existingKeyId = this.keyVault.getConversationKeyId(conversationId);
+      if (existingKeyId) {
+        keyId = existingKeyId;
+      } else {
+        const { keyId: newKeyId } = this.keyVault.generateKey();
+        this.keyVault.setConversationKey(conversationId, newKeyId);
+        keyId = newKeyId;
+      }
+    } else {
+      const { keyId: newKeyId } = this.keyVault.generateKey();
+      keyId = newKeyId;
+    }
+
+    const key = this.keyVault.getKey(keyId);
+    if (!key) {
+      throw new Error('Encryption key not found');
+    }
+
+    // Generate IV
+    const iv = crypto.randomBytes(12);
+
+    // Encrypt using AES-256-GCM
+    const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+    const ciphertext = Buffer.concat([
+      cipher.update(plaintext, 'utf8'),
+      cipher.final(),
+    ]);
+    const authTag = cipher.getAuthTag();
+
+    return {
+      ciphertext: ciphertext.toString('base64'),
+      iv: iv.toString('base64'),
+      authTag: authTag.toString('base64'),
+      keyId,
+    };
+  }
+
+  /**
+   * Decrypt the server layer of a hybrid message
+   *
+   * This decrypts only the server-accessible layer. The E2EE layer
+   * remains encrypted and must be decrypted client-side.
+   *
+   * @param serverLayer The server encryption layer data
+   * @returns Decrypted plaintext content
+   */
+  async decryptHybridServerLayer(
+    serverLayer: HybridEncryptedPayload['server']
+  ): Promise<string> {
+    const key = this.keyVault.getKey(serverLayer.keyId);
+    if (!key) {
+      throw new Error(`Decryption key not found: ${serverLayer.keyId}`);
+    }
+
+    const iv = Buffer.from(serverLayer.iv, 'base64');
+    const authTag = Buffer.from(serverLayer.authTag, 'base64');
+    const ciphertext = Buffer.from(serverLayer.ciphertext, 'base64');
+
+    // Decrypt using AES-256-GCM
+    const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+    decipher.setAuthTag(authTag);
+
+    const plaintext = Buffer.concat([
+      decipher.update(ciphertext),
+      decipher.final(),
+    ]);
+
+    return plaintext.toString('utf8');
+  }
+
+  /**
+   * Translate a hybrid encrypted message
+   *
+   * This decrypts the server layer, replaces it with translated content,
+   * and re-encrypts while preserving the E2EE layer.
+   *
+   * @param payload The hybrid encrypted payload
+   * @param translatedContent The translated content to encrypt
+   * @returns New hybrid payload with translated server layer
+   */
+  async translateHybridMessage(
+    payload: HybridEncryptedPayload,
+    translatedContent: string
+  ): Promise<HybridEncryptedPayload> {
+    if (payload.mode !== 'hybrid' || !payload.canTranslate) {
+      throw new Error('Message does not support server-side translation');
+    }
+
+    // Get the key for re-encryption
+    const key = this.keyVault.getKey(payload.server.keyId);
+    if (!key) {
+      throw new Error(`Encryption key not found: ${payload.server.keyId}`);
+    }
+
+    // Generate new IV for the translated content
+    const iv = crypto.randomBytes(12);
+
+    const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+    const ciphertext = Buffer.concat([
+      cipher.update(translatedContent, 'utf8'),
+      cipher.final(),
+    ]);
+    const authTag = cipher.getAuthTag();
+
+    return {
+      // E2EE layer remains unchanged - only client can decrypt
+      e2ee: payload.e2ee,
+      // Server layer updated with translated content
+      server: {
+        ciphertext: ciphertext.toString('base64'),
+        iv: iv.toString('base64'),
+        authTag: authTag.toString('base64'),
+        keyId: payload.server.keyId,
+      },
+      mode: 'hybrid',
+      canTranslate: true,
+      timestamp: Date.now(),
+    };
+  }
+
+  /**
+   * Create a hybrid encrypted payload
+   *
+   * This is called by the client after encrypting with Signal Protocol.
+   * The server adds its own encryption layer on top.
+   *
+   * @param e2eeData The E2EE layer data from client
+   * @param plaintext The plaintext for server layer
+   * @param conversationId Optional conversation ID
+   * @returns Complete hybrid encrypted payload
+   */
+  async createHybridPayload(
+    e2eeData: HybridEncryptedPayload['e2ee'],
+    plaintext: string,
+    conversationId?: string
+  ): Promise<HybridEncryptedPayload> {
+    const serverLayer = await this.encryptHybridServerLayer(plaintext, conversationId);
+
+    return {
+      e2ee: e2eeData,
+      server: serverLayer,
+      mode: 'hybrid',
+      canTranslate: true,
+      timestamp: Date.now(),
+    };
+  }
+
+  /**
+   * Validate a hybrid encrypted payload structure
+   */
+  isValidHybridPayload(payload: unknown): payload is HybridEncryptedPayload {
+    if (!payload || typeof payload !== 'object') return false;
+    const p = payload as Record<string, unknown>;
+
+    return (
+      p.mode === 'hybrid' &&
+      typeof p.canTranslate === 'boolean' &&
+      typeof p.timestamp === 'number' &&
+      p.e2ee !== null &&
+      typeof p.e2ee === 'object' &&
+      p.server !== null &&
+      typeof p.server === 'object'
+    );
+  }
+
+  /**
    * Generate Signal Protocol pre-key bundle
    */
   async generatePreKeyBundle(): Promise<PreKeyBundle> {
@@ -337,3 +549,6 @@ export const encryptionService = {
     return encryptionServiceInstance.getSignalService();
   },
 };
+
+// Export types for external use
+export type { EncryptionMode, EncryptedPayload, HybridEncryptedPayload, PreKeyBundle };

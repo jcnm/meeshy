@@ -8,7 +8,6 @@
 import type {
   EncryptedPayload,
   EncryptionMetadata,
-  EncryptionMode,
 } from '../types/encryption';
 import type { CryptoAdapter, CryptoKey } from './crypto-adapter';
 import {
@@ -19,7 +18,7 @@ import {
 } from './crypto-adapter';
 
 const IV_LENGTH = 12; // bytes (96 bits)
-const TAG_LENGTH = 16; // bytes (128 bits)
+// TAG_LENGTH = 16 bytes (128 bits) - handled by crypto adapter
 
 /**
  * Encrypt content using AES-256-GCM
