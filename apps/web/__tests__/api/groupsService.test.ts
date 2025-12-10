@@ -1,11 +1,47 @@
-import { groupsService } from '@/services/groupsService';
-import { apiService } from '@/services/apiService';
-import { mockGroups, mockGroupMembers, mockUsers } from '@/services/mockApiService';
+import { groupsService } from '@/services/groups.service';
+import { apiService } from '@/services/api.service';
 import { UserRoleEnum } from '@meeshy/shared/types';
 
 // Mock du service API
-jest.mock('@/services/apiService');
+jest.mock('@/services/api.service');
 const mockedApiService = jest.mocked(apiService);
+
+// Mock data
+const mockUsers = [
+  { id: 'user-1', username: 'john_doe', email: 'john@example.com', avatar: null },
+  { id: 'user-2', username: 'jane_doe', email: 'jane@example.com', avatar: null },
+];
+
+const mockGroups = [
+  {
+    id: 'group-1',
+    name: 'Groupe de test',
+    description: 'Description du groupe',
+    isPrivate: false,
+    maxMembers: 100,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    members: [],
+    conversations: [],
+  },
+  {
+    id: 'group-2',
+    name: 'Groupe privé',
+    description: 'Groupe privé',
+    isPrivate: true,
+    maxMembers: 50,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    members: [],
+    conversations: [],
+  },
+];
+
+const mockGroupMembers = [
+  { id: 'member-1', userId: 'user-1', groupId: 'group-1', role: 'ADMIN', joinedAt: new Date(), user: mockUsers[0] },
+  { id: 'member-2', userId: 'user-2', groupId: 'group-1', role: 'MEMBER', joinedAt: new Date(), user: mockUsers[1] },
+  { id: 'member-3', userId: 'user-3', groupId: 'group-1', role: 'MEMBER', joinedAt: new Date(), user: mockUsers[0] },
+];
 
 describe('GroupsService', () => {
   beforeEach(() => {

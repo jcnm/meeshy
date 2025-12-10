@@ -3,7 +3,8 @@
  * Tests encryption, decryption, TTL, and sanitization
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+// Jest provides describe, it, expect, beforeEach globally
+// Use jest.fn() instead of vi.fn()
 import { SecureStorage, sanitizeNotificationForStorage } from '../secure-storage';
 
 describe('SecureStorage', () => {

@@ -13,7 +13,12 @@ const customJestConfig = {
   moduleNameMapper: {
     // Handle module aliases (this will be automatically configured for you soon)
     '^@/(.*)$': '<rootDir>/$1',
+    '^@meeshy/shared/(.*)$': '<rootDir>/../../packages/shared/dist/$1',
   },
+  // Transform ESM packages
+  transformIgnorePatterns: [
+    '/node_modules/(?!(lucide-react|@radix-ui|sonner|cmdk|@tanstack|recharts|d3-.*|internmap|delaunator|robust-predicates)/)',
+  ],
   collectCoverageFrom: [
     'app/**/*.{js,jsx,ts,tsx}',
     'components/**/*.{js,jsx,ts,tsx}',

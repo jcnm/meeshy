@@ -3,13 +3,13 @@
  * Ces tests simulent des interactions réelles avec l'API et testent la logique métier
  */
 
-import { groupsService } from '@/services/groupsService';
-import { apiService } from '@/services/apiService';
+import { groupsService } from '@/services/groups.service';
+import { apiService } from '@/services/api.service';
 import { Group, GroupMember, User } from '@/types';
 import { UserRoleEnum } from '@meeshy/shared/types';
 
 // Mock de l'apiService
-jest.mock('@/services/apiService');
+jest.mock('@/services/api.service');
 const mockApiService = jest.mocked(apiService);
 
 describe('Groups API Integration - Real Data Flow', () => {

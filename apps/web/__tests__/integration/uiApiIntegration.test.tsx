@@ -1,14 +1,31 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { conversationsService } from '../../services/conversationsService';
-import { groupsService } from '../../services/groupsService';
+import * as conversationsServiceModule from '../../services/conversations.service';
+import * as groupsServiceModule from '../../services/groups.service';
 import type { Conversation, Group } from '../../types';
-import type { ApiResponse, GroupsResponse } from '../../services/groupsService';
 
 // Mock the services
-jest.mock('../../services/conversationsService');
-jest.mock('../../services/groupsService');
+jest.mock('../../services/conversations.service');
+jest.mock('../../services/groups.service');
+
+const conversationsService = conversationsServiceModule as jest.Mocked<typeof conversationsServiceModule>;
+const groupsService = groupsServiceModule as jest.Mocked<typeof groupsServiceModule>;
+
+// Types for API responses
+interface GroupsResponse {
+  groups: Group[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+interface ApiResponse<T> {
+  data: T;
+  status: number;
+  message: string;
+}
 
 const mockConversationsService = conversationsService as jest.Mocked<typeof conversationsService>;
 const mockGroupsService = groupsService as jest.Mocked<typeof groupsService>;
