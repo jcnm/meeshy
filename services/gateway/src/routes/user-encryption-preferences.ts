@@ -7,9 +7,10 @@
  * - Manage encryption key bundles
  */
 
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { FastifyInstance } from 'fastify';
 import { createUnifiedAuthMiddleware, UnifiedAuthRequest } from '../middleware/auth';
-import type { EncryptionPreference } from '@meeshy/shared/types/encryption';
+
+type EncryptionPreference = 'disabled' | 'optional' | 'always';
 
 interface UpdateEncryptionPreferenceRequest {
   encryptionPreference: EncryptionPreference;

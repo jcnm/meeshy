@@ -64,6 +64,27 @@ model User {
   // Profile completion
   profileCompletionRate Int? @default(0)
 
+  // ============================================
+  // E2EE / SIGNAL PROTOCOL ENCRYPTION FIELDS
+  // ============================================
+  /// User encryption preference: disabled, optional, always
+  encryptionPreference String @default("optional")
+
+  /// Signal Protocol identity key (public part - base64 encoded)
+  signalIdentityKeyPublic String?
+
+  /// Signal Protocol identity key (private part - encrypted, base64 encoded)
+  signalIdentityKeyPrivate String?
+
+  /// Signal Protocol registration ID (14-bit random number)
+  signalRegistrationId Int?
+
+  /// Pre-key bundle version (incremented on rotation)
+  signalPreKeyBundleVersion Int?
+
+  /// Last key rotation timestamp
+  lastKeyRotation DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -98,6 +119,9 @@ model User {
   passwordHistory     PasswordHistory[]
   securityEvents      SecurityEvent[]
   sessions            UserSession[]
+
+  // Signal Protocol E2EE Relations
+  signalPreKeyBundle SignalPreKeyBundle?
 }
 
 /// Conversation entre utilisateurs (direct, group, public, global)
@@ -117,6 +141,27 @@ model Conversation {
   lastMessageAt DateTime @default(now())
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  // ============================================
+  // E2EE / ENCRYPTION FIELDS
+  // ============================================
+  /// Encryption mode: null (disabled), 'server' (server-side), 'e2ee' (end-to-end)
+  encryptionMode String?
+
+  /// Encryption protocol: 'aes-256-gcm' (server), 'signal_v3' (e2ee)
+  encryptionProtocol String?
+
+  /// When encryption was enabled (immutable once set)
+  encryptionEnabledAt DateTime?
+
+  /// User who enabled encryption
+  encryptionEnabledBy String? @db.ObjectId
+
+  /// Server encryption key ID (for server mode only)
+  serverEncryptionKeyId String?
+
+  /// Auto-translation (disabled for E2EE mode)
+  autoTranslateEnabled Boolean @default(true)
 
   anonymousParticipants AnonymousParticipant[]
   members               ConversationMember[]
@@ -241,6 +286,21 @@ model Message {
   validatedMentions String[]  @default([]) // Usernames des mentions validées (pour performance)
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
+
+  // ============================================
+  // E2EE / ENCRYPTION FIELDS
+  // ============================================
+  /// Encrypted content (base64 encoded ciphertext)
+  encryptedContent String?
+
+  /// Encryption mode when message was sent: 'server', 'e2ee', null (plaintext)
+  encryptionMode String?
+
+  /// Encryption metadata (IV, auth tag, key version, etc.)
+  encryptionMetadata Json?
+
+  /// Flag indicating if message is encrypted
+  isEncrypted Boolean @default(false)
 
   status          MessageStatus[]       @relation("MessageStatusMessage")
   translations    MessageTranslation[]
@@ -1091,4 +1151,48 @@ model UserSession {
   @@index([expiresAt])
   @@index([isValid])
   @@map("user_sessions")
+}
+
+/// =====================================================
+/// SIGNAL PROTOCOL E2EE - PRE-KEY BUNDLE STORAGE
+/// =====================================================
+
+/// Signal Pre-Key Bundle - Stores Signal Protocol keys for E2EE
+/// Each user has one active pre-key bundle for establishing encrypted sessions
+model SignalPreKeyBundle {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @unique @db.ObjectId
+
+  /// Identity key (public part, base64 encoded, 32 bytes)
+  identityKey String
+
+  /// Registration ID (14-bit random number, unique per device)
+  registrationId Int
+
+  /// Device ID (for multi-device support)
+  deviceId Int @default(1)
+
+  /// One-time pre-key (consumed after first use)
+  preKeyId     Int?
+  preKeyPublic String? // Base64 encoded
+
+  /// Signed pre-key (rotated periodically, typically weekly)
+  signedPreKeyId        Int
+  signedPreKeyPublic    String // Base64 encoded
+  signedPreKeySignature String // Base64 encoded signature
+
+  /// Kyber post-quantum pre-key (future-proofing)
+  kyberPreKeyId        Int?
+  kyberPreKeyPublic    String? // Base64 encoded
+  kyberPreKeySignature String? // Base64 encoded signature
+
+  /// Timestamps
+  createdAt      DateTime @default(now())
+  lastRotatedAt  DateTime @default(now())
+
+  /// Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([lastRotatedAt])
+  @@map("signal_pre_key_bundles")
 }

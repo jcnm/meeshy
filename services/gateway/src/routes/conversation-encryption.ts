@@ -7,22 +7,46 @@
  * - Encryption is immutable (cannot be disabled once enabled)
  */
 
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { encryptionService } from '../services/EncryptionService';
-import { getEncryptionStatus } from '@meeshy/shared/types/encryption';
-import type { EncryptionMode } from '@meeshy/shared/types/encryption';
+import { FastifyInstance } from 'fastify';
+import { getEncryptionService } from '../services/EncryptionService';
 import { createUnifiedAuthMiddleware, UnifiedAuthRequest } from '../middleware/auth';
 
+type EncryptionMode = 'e2ee' | 'server';
+
 interface EnableEncryptionRequest {
-  mode: EncryptionMode; // 'e2ee' or 'server'
+  mode: EncryptionMode;
 }
 
 interface EncryptionStatusParams {
   conversationId: string;
 }
 
+/**
+ * Get encryption status from conversation data
+ */
+function getEncryptionStatus(conversation: {
+  encryptionEnabledAt: Date | null;
+  encryptionMode: string | null;
+  encryptionEnabledBy: string | null;
+}): {
+  isEncrypted: boolean;
+  mode: string | null;
+  enabledAt: Date | null;
+  enabledBy: string | null;
+  canTranslate: boolean;
+} {
+  return {
+    isEncrypted: !!conversation.encryptionEnabledAt,
+    mode: conversation.encryptionMode,
+    enabledAt: conversation.encryptionEnabledAt,
+    enabledBy: conversation.encryptionEnabledBy,
+    canTranslate: conversation.encryptionMode !== 'e2ee',
+  };
+}
+
 export default async function encryptionRoutes(fastify: FastifyInstance) {
   const prisma = fastify.prisma;
+  const encryptionService = getEncryptionService(prisma);
   const authMiddleware = createUnifiedAuthMiddleware(prisma, {
     requireAuth: true,
     allowAnonymous: false
@@ -80,7 +104,7 @@ export default async function encryptionRoutes(fastify: FastifyInstance) {
 
         const status = getEncryptionStatus({
           encryptionEnabledAt: conversation.encryptionEnabledAt,
-          encryptionMode: conversation.encryptionMode as EncryptionMode | null,
+          encryptionMode: conversation.encryptionMode,
           encryptionEnabledBy: conversation.encryptionEnabledBy,
         });
 
@@ -226,7 +250,7 @@ export default async function encryptionRoutes(fastify: FastifyInstance) {
           success: true,
           data: getEncryptionStatus({
             encryptionEnabledAt: updatedConversation.encryptionEnabledAt,
-            encryptionMode: updatedConversation.encryptionMode as EncryptionMode,
+            encryptionMode: updatedConversation.encryptionMode,
             encryptionEnabledBy: updatedConversation.encryptionEnabledBy,
           }),
           message: `${mode === 'e2ee' ? 'End-to-end' : 'Server-side'} encryption enabled successfully`

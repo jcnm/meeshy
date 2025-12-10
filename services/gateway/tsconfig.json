@@ -23,10 +23,9 @@
     "rootDir": "./",
     "baseUrl": "./",
     "paths": {
-      "@meeshy/shared": ["../shared/dist/index.d.ts"],
-      "@meeshy/shared/*": ["../shared/dist/*"],
-      "@shared/*": ["./shared/*"],
-      "@prisma/client": ["@/shared/prisma/client"]
+      "@meeshy/shared": ["../../packages/shared/dist/index.d.ts"],
+      "@meeshy/shared/*": ["../../packages/shared/dist/*"],
+      "@shared/*": ["./shared/*"]
     },
     "declaration": true,
     "declarationMap": true,
@@ -59,9 +58,7 @@
   "exclude": [
     "node_modules",
     "dist",
-    "src/routes/conversation-encryption.ts",
-    "src/routes/signal-protocol.ts",
-    "src/routes/user-encryption-preferences.ts",
-    "src/dma-interoperability/**/*"
+    "src/dma-interoperability/**/*",
+    "../../packages/shared/encryption/**/*"
   ]
 }
